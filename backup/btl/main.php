@@ -1,0 +1,1 @@
+Fatal error: Cannot redeclare bntm_kb_get_pages() (previously declared in C:\xamp\htdocs\bentamo\wp-content\plugins\bntm-hub\modules\btl\main.php:22) in C:\xamp\htdocs\bentamo\wp-content\plugins\bntm-hub\modules\kb\main.php on line 22

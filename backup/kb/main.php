@@ -1343,43 +1343,7 @@ function bntm_shortcode_kb_admin() {
 
     ob_start();
     ?>
-    <script>
-    var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
-
-    window.kbAdminApprove = function(id, nonce) {
-        if (!confirm('Approve this fund?')) return;
-        kbAdminAction('kb_admin_approve_fund', {fund_id: id, _ajax_nonce: nonce});
-    };
-    window.kbAdminReject = function(id, nonce) {
-        const reason = prompt('Reason for rejection (optional):');
-        if (reason === null) return;
-        kbAdminAction('kb_admin_reject_fund', {fund_id: id, reason: reason, _ajax_nonce: nonce});
-    };
-    window.kbAdminToggleBadge = function(id, current, nonce) {
-        kbAdminAction('kb_admin_verify_badge', {fund_id: id, verified: current ? '0' : '1', _ajax_nonce: nonce});
-    };
-    window.kbAdminSuspend = function(id, nonce) {
-        if (!confirm('Suspend this fund?')) return;
-        kbAdminAction('kb_admin_suspend', {fund_id: id, _ajax_nonce: nonce});
-    };
-    window.kbAdminEscrow = function(id, action, nonce) {
-        kbAdminAction('kb_admin_' + action + '_escrow', {fund_id: id, _ajax_nonce: nonce});
-    };
-    window.kbAdminAction = function(action, params) {
-        const fd = new FormData();
-        fd.append('action', action);
-        Object.keys(params).forEach(function(k) { fd.append(k, params[k]); });
-        fetch(ajaxurl, {method: 'POST', body: fd})
-        .then(function(r) { return r.json(); })
-        .then(function(json) {
-            var msg = (json.data && json.data.message) ? json.data.message : (json.data || 'Action completed.');
-            alert(msg);
-            if (json.success) location.reload();
-        })
-        .catch(function(err) { alert('Request failed. Please try again.'); console.error(err); });
-    };
-    </script>
-
+    <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
     <div class="bntm-kb-container">
         <div class="bntm-tabs">
             <a href="?tab=pending"      class="bntm-tab <?php echo $active_tab === 'pending'      ? 'active' : ''; ?>">Pending Approval</a>
@@ -1453,6 +1417,35 @@ function kb_admin_pending_tab() {
         <?php endforeach; endif; ?>
     </div>
 
+    <script>
+    window.kbAdminApprove = function(id, nonce) {
+        if (!confirm('Approve this fund?')) return;
+        kbAdminAction('kb_admin_approve_fund', {fund_id: id, nonce});
+    };
+    window.kbAdminReject = function(id, nonce) {
+        const reason = prompt('Reason for rejection:');
+        if (reason === null) return;
+        kbAdminAction('kb_admin_reject_fund', {fund_id: id, reason, nonce});
+    };
+    window.kbAdminToggleBadge = function(id, current, nonce) {
+        kbAdminAction('kb_admin_verify_badge', {fund_id: id, verified: current ? '0' : '1', nonce});
+    };
+    window.kbAdminSuspend = function(id, nonce) {
+        if (!confirm('Suspend this account?')) return;
+        kbAdminAction('kb_admin_suspend', {fund_id: id, nonce});
+    };
+    window.kbAdminEscrow = function(id, action, nonce) {
+        kbAdminAction('kb_admin_' + action + '_escrow', {fund_id: id, nonce});
+    };
+    window.kbAdminAction = function(action, params) {
+        const fd = new FormData();
+        fd.append('action', action);
+        Object.keys(params).forEach(k => fd.append(k, params[k]));
+        fetch(ajaxurl, {method:'POST', body:fd})
+        .then(r => r.json())
+        .then(json => { alert(json.data.message || json.data); if (json.success) location.reload(); });
+    };
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -1590,11 +1583,11 @@ function kb_admin_withdrawals_tab() {
                                 <?php if ($wd->status === 'pending'): ?>
                                 <div class="kb-admin-actions">
                                     <button class="bntm-btn-primary bntm-btn-small"
-                                        onclick="kbAdminAction('kb_admin_process_withdrawal', {withdrawal_id: <?php echo $wd->id; ?>, action_type: 'approve', _ajax_nonce: '<?php echo $nonce; ?>'})">
+                                        onclick="kbAdminAction('kb_admin_process_withdrawal', {withdrawal_id: <?php echo $wd->id; ?>, action_type: 'approve', nonce: '<?php echo $nonce; ?>'})">
                                         Approve & Release
                                     </button>
                                     <button class="bntm-btn-danger bntm-btn-small"
-                                        onclick="kbAdminAction('kb_admin_process_withdrawal', {withdrawal_id: <?php echo $wd->id; ?>, action_type: 'reject', _ajax_nonce: '<?php echo $nonce; ?>'})">
+                                        onclick="kbAdminAction('kb_admin_process_withdrawal', {withdrawal_id: <?php echo $wd->id; ?>, action_type: 'reject', nonce: '<?php echo $nonce; ?>'})">
                                         Reject
                                     </button>
                                 </div>
@@ -1639,11 +1632,11 @@ function kb_admin_reports_tab() {
                 </div>
                 <div class="kb-admin-actions" style="margin-top:12px;">
                     <button class="bntm-btn-danger bntm-btn-small"
-                        onclick="kbAdminAction('kb_admin_suspend', {fund_id: <?php echo $report->fund_id; ?>, _ajax_nonce: '<?php echo $nonce; ?>'})">
+                        onclick="kbAdminAction('kb_admin_suspend', {fund_id: <?php echo $report->fund_id; ?>, nonce: '<?php echo $nonce; ?>'})">
                         Suspend Fund
                     </button>
                     <button class="bntm-btn-secondary bntm-btn-small"
-                        onclick="kbAdminAction('kb_admin_dismiss_report', {report_id: <?php echo $report->id; ?>, _ajax_nonce: '<?php echo $nonce; ?>'})">
+                        onclick="kbAdminAction('kb_admin_dismiss_report', {report_id: <?php echo $report->id; ?>, nonce: '<?php echo $nonce; ?>'})">
                         Dismiss Report
                     </button>
                 </div>
@@ -1909,7 +1902,7 @@ function bntm_ajax_kb_get_fund_details() {
 // ============================================================
 
 function bntm_ajax_kb_admin_approve_fund() {
-    check_ajax_referer('kb_admin_action');
+    check_ajax_referer('kb_admin_action', 'nonce');
     if (!current_user_can('manage_options')) { wp_send_json_error(['message' => 'Unauthorized']); }
 
     global $wpdb;
@@ -1921,7 +1914,7 @@ function bntm_ajax_kb_admin_approve_fund() {
 }
 
 function bntm_ajax_kb_admin_reject_fund() {
-    check_ajax_referer('kb_admin_action');
+    check_ajax_referer('kb_admin_action', 'nonce');
     if (!current_user_can('manage_options')) { wp_send_json_error(['message' => 'Unauthorized']); }
 
     global $wpdb;
@@ -1933,7 +1926,7 @@ function bntm_ajax_kb_admin_reject_fund() {
 }
 
 function bntm_ajax_kb_admin_suspend() {
-    check_ajax_referer('kb_admin_action');
+    check_ajax_referer('kb_admin_action', 'nonce');
     if (!current_user_can('manage_options')) { wp_send_json_error(['message' => 'Unauthorized']); }
 
     global $wpdb;
@@ -1945,7 +1938,7 @@ function bntm_ajax_kb_admin_suspend() {
 }
 
 function bntm_ajax_kb_admin_verify_badge() {
-    check_ajax_referer('kb_admin_action');
+    check_ajax_referer('kb_admin_action', 'nonce');
     if (!current_user_can('manage_options')) { wp_send_json_error(['message' => 'Unauthorized']); }
 
     global $wpdb;
@@ -1958,7 +1951,7 @@ function bntm_ajax_kb_admin_verify_badge() {
 }
 
 function bntm_ajax_kb_admin_release_escrow() {
-    check_ajax_referer('kb_admin_action');
+    check_ajax_referer('kb_admin_action', 'nonce');
     if (!current_user_can('manage_options')) { wp_send_json_error(['message' => 'Unauthorized']); }
 
     global $wpdb;
@@ -1970,7 +1963,7 @@ function bntm_ajax_kb_admin_release_escrow() {
 }
 
 function bntm_ajax_kb_admin_hold_escrow() {
-    check_ajax_referer('kb_admin_action');
+    check_ajax_referer('kb_admin_action', 'nonce');
     if (!current_user_can('manage_options')) { wp_send_json_error(['message' => 'Unauthorized']); }
 
     global $wpdb;
@@ -1982,7 +1975,7 @@ function bntm_ajax_kb_admin_hold_escrow() {
 }
 
 function bntm_ajax_kb_admin_dismiss_report() {
-    check_ajax_referer('kb_admin_action');
+    check_ajax_referer('kb_admin_action', 'nonce');
     if (!current_user_can('manage_options')) { wp_send_json_error(['message' => 'Unauthorized']); }
 
     global $wpdb;
@@ -1994,7 +1987,7 @@ function bntm_ajax_kb_admin_dismiss_report() {
 }
 
 function bntm_ajax_kb_admin_process_withdrawal() {
-    check_ajax_referer('kb_admin_action');
+    check_ajax_referer('kb_admin_action', 'nonce');
     if (!current_user_can('manage_options')) { wp_send_json_error(['message' => 'Unauthorized']); }
 
     global $wpdb;
