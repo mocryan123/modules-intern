@@ -1,0 +1,11 @@
+{
+  "apiVersion": 2,
+  "name": "bae/social-kit",
+  "title": "BAE — Social Media Kit",
+  "description": "Profile frame, cover photo and post template",
+  "category": "widgets",
+  "icon": "share",
+  "keywords": ["brand", "social", "media"],
+  "supports": { "html": false },
+  "textdomain": "bntm-bae"
+}

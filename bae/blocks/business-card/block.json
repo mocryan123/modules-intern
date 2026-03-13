@@ -1,0 +1,11 @@
+{
+  "apiVersion": 2,
+  "name": "bae/business-card",
+  "title": "BAE — Business Card",
+  "description": "Your branded business card layout",
+  "category": "widgets",
+  "icon": "id-alt",
+  "keywords": ["brand", "card", "contact"],
+  "supports": { "html": false },
+  "textdomain": "bntm-bae"
+}

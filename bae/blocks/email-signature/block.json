@@ -1,0 +1,11 @@
+{
+  "apiVersion": 2,
+  "name": "bae/email-signature",
+  "title": "BAE — Email Signature",
+  "description": "Branded HTML email signature",
+  "category": "widgets",
+  "icon": "email",
+  "keywords": ["brand", "email", "signature"],
+  "supports": { "html": false },
+  "textdomain": "bntm-bae"
+}

@@ -1,0 +1,11 @@
+{
+  "apiVersion": 2,
+  "name": "bae/brand-guideline",
+  "title": "BAE — Brand Guidelines",
+  "description": "One-page brand rules document",
+  "category": "widgets",
+  "icon": "book-alt",
+  "keywords": ["brand", "guidelines", "rules"],
+  "supports": { "html": false },
+  "textdomain": "bntm-bae"
+} 

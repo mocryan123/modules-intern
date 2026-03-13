@@ -1,0 +1,12 @@
+{
+  "apiVersion": 2,
+  "name": "bae/letterhead",
+  "title": "BAE — Letterhead",
+  "description": "Branded A4 letterhead header and footer",
+  "category": "widgets",
+  "icon": "media-document",
+  "keywords": ["brand", "letter", "document"],
+  "editorScript": "file:./index.js",
+  "supports": { "html": false },
+  "textdomain": "bntm-bae"
+}
