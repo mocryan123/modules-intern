@@ -16,6 +16,10 @@ if (!defined('ABSPATH')) exit;
 define('BNTM_BAE_PATH', dirname(__FILE__) . '/');
 define('BNTM_BAE_URL', plugin_dir_url(__FILE__));
 
+// Load ticketing system
+require_once BNTM_BAE_PATH . 'ticket.php';
+
+
 // =============================================================================
 // STEP-BY-STEP PROCESS THIS MODULE PERFORMS:
 //
@@ -213,6 +217,499 @@ function bae_safe_color($value, $fallback = '#000000') {
 // MAIN DASHBOARD SHORTCODE
 // =============================================================================
 
+// =============================================================================
+// WIZARD: Guided onboarding — shown to new users before any profile exists
+// One question per screen, Pomelli-style. Zero design knowledge needed.
+// Saves via existing bae_save_profile AJAX — no new backend needed.
+// =============================================================================
+
+function bae_wizard_shortcode($user_id) {
+    $nonce = wp_create_nonce('bae_save_profile');
+    ob_start();
+    ?>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+    .bae-wiz-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+    .bae-wiz-wrap {
+        font-family: 'Geist', -apple-system, sans-serif;
+        background: #09090e;
+        color: #ede9ff;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 24px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+    }
+    .bae-wiz-wrap::before {
+        content: '';
+        position: absolute;
+        width: 600px; height: 600px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
+        top: -200px; right: -100px; pointer-events: none;
+    }
+    .bae-wiz-wrap::after {
+        content: '';
+        position: absolute;
+        width: 400px; height: 400px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(236,72,153,0.07) 0%, transparent 70%);
+        bottom: -100px; left: -100px; pointer-events: none;
+    }
+    .bae-wiz-progress-bar {
+        position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        background: rgba(255,255,255,0.06);
+    }
+    .bae-wiz-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #6d28d9, #ec4899);
+        border-radius: 0 3px 3px 0;
+        transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+        width: 0%;
+    }
+    .bae-wiz-step-label {
+        position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+        font-size: 11px; font-weight: 700; color: #4d4a65;
+        text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap;
+    }
+    .bae-wiz-skip {
+        position: absolute; top: 16px; right: 20px;
+        font-size: 12px; color: #4d4a65; text-decoration: none;
+        transition: color 0.2s; font-family: 'Geist', sans-serif;
+    }
+    .bae-wiz-skip:hover { color: #8b88a4; }
+    .bae-wiz-screen {
+        width: 100%; max-width: 540px;
+        text-align: center;
+        position: relative; z-index: 1;
+    }
+    .bae-wiz-question {
+        font-family: 'Instrument Serif', serif;
+        font-size: clamp(22px, 5vw, 34px);
+        font-style: italic; font-weight: 400;
+        color: #ede9ff; line-height: 1.25;
+        margin-bottom: 8px;
+    }
+    .bae-wiz-hint { font-size: 14px; color: #4d4a65; margin-bottom: 32px; line-height: 1.6; }
+    .bae-wiz-input {
+        width: 100%;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(139,92,246,0.25);
+        border-radius: 14px; padding: 16px 20px;
+        font-size: 17px; font-family: 'Geist', sans-serif;
+        color: #ede9ff; outline: none; text-align: center;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        margin-bottom: 18px; display: block;
+    }
+    .bae-wiz-input:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+    .bae-wiz-input::placeholder { color: #4d4a65; }
+    .bae-wiz-tiles {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 10px; margin-bottom: 22px;
+    }
+    .bae-wiz-tile {
+        background: rgba(255,255,255,0.04);
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 14px; padding: 18px 14px;
+        cursor: pointer; transition: all 0.2s; text-align: left;
+    }
+    .bae-wiz-tile:hover { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.08); }
+    .bae-wiz-tile.selected { border-color: #8b5cf6; background: rgba(139,92,246,0.15); box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
+    .bae-wiz-tile-icon { font-size: 26px; margin-bottom: 7px; display: block; }
+    .bae-wiz-tile-label { font-size: 13px; font-weight: 700; color: #ede9ff; margin-bottom: 2px; }
+    .bae-wiz-tile-desc { font-size: 11px; color: #4d4a65; }
+    .bae-wiz-color-tiles {
+        display: grid; grid-template-columns: repeat(4,1fr);
+        gap: 8px; margin-bottom: 22px;
+    }
+    .bae-wiz-color-tile {
+        border-radius: 12px; padding: 14px 6px 10px;
+        cursor: pointer; border: 2px solid transparent;
+        transition: all 0.2s; text-align: center;
+    }
+    .bae-wiz-color-tile:hover { transform: translateY(-3px); }
+    .bae-wiz-color-tile.selected { border-color: white; transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .bae-wiz-color-swatch { width: 44px; height: 44px; border-radius: 10px; margin: 0 auto 6px; border: 1px solid rgba(255,255,255,0.15); }
+    .bae-wiz-color-name { font-size: 11px; font-weight: 700; color: #ede9ff; }
+    .bae-wiz-taglines { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .bae-wiz-tagline-opt {
+        background: rgba(255,255,255,0.04);
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 12px; padding: 14px 18px;
+        cursor: pointer; font-size: 14px; font-style: italic;
+        color: #8b88a4; transition: all 0.2s; text-align: left;
+    }
+    .bae-wiz-tagline-opt:hover { border-color: rgba(139,92,246,0.4); color: #ede9ff; }
+    .bae-wiz-tagline-opt.selected { border-color: #8b5cf6; color: #ede9ff; background: rgba(139,92,246,0.1); }
+    .bae-wiz-tagline-custom {
+        width: 100%; background: rgba(255,255,255,0.04);
+        border: 1.5px dashed rgba(139,92,246,0.3);
+        border-radius: 12px; padding: 12px 16px;
+        font-size: 13px; font-family: 'Geist', sans-serif;
+        color: #ede9ff; outline: none; transition: border-color 0.2s;
+    }
+    .bae-wiz-tagline-custom:focus { border-color: #8b5cf6; border-style: solid; }
+    .bae-wiz-tagline-custom::placeholder { color: #4d4a65; }
+    .bae-wiz-next {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+        color: white; border: none; border-radius: 13px;
+        padding: 15px 32px; font-size: 15px; font-weight: 700;
+        font-family: 'Geist', sans-serif; cursor: pointer;
+        transition: all 0.2s; box-shadow: 0 8px 28px rgba(109,40,217,0.4);
+        width: 100%; margin-top: 4px;
+    }
+    .bae-wiz-next:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(109,40,217,0.5); }
+    .bae-wiz-next:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+    .bae-wiz-back {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: none; border: none; color: #4d4a65;
+        font-size: 13px; font-weight: 500; cursor: pointer;
+        margin-top: 14px; font-family: 'Geist', sans-serif; transition: color 0.2s;
+    }
+    .bae-wiz-back:hover { color: #8b88a4; }
+    .bae-wiz-error { font-size: 12px; color: #fb7185; margin-bottom: 12px; display: none; margin-top: -8px; }
+    .bae-wiz-generating { text-align: center; }
+    .bae-wiz-spinner {
+        width: 52px; height: 52px;
+        border: 3px solid rgba(139,92,246,0.2);
+        border-top-color: #8b5cf6; border-radius: 50%;
+        margin: 0 auto 24px;
+        animation: bae-wiz-spin 0.9s linear infinite;
+    }
+    @keyframes bae-wiz-spin { to { transform: rotate(360deg); } }
+    .bae-wiz-gen-title { font-family: 'Instrument Serif', serif; font-size: 26px; font-style: italic; color: #ede9ff; margin-bottom: 8px; }
+    .bae-wiz-gen-sub { font-size: 13px; color: #4d4a65; }
+    @media (max-width: 480px) {
+        .bae-wiz-color-tiles { grid-template-columns: repeat(2,1fr); }
+        .bae-wiz-question { font-size: 20px; }
+    }
+    </style>
+
+    <div class="bae-wiz-wrap" id="bae-wiz-wrap">
+        <div class="bae-wiz-progress-bar"><div class="bae-wiz-progress-fill" id="bae-wiz-progress"></div></div>
+        <div class="bae-wiz-step-label" id="bae-wiz-step-label">Step 1 of 5</div>
+        <a href="?tab=overview" class="bae-wiz-skip">Skip to full form &rarr;</a>
+
+        <!-- Step 1: Name -->
+        <div class="bae-wiz-screen" id="bae-step-1">
+            <div class="bae-wiz-question">What's your business name?</div>
+            <div class="bae-wiz-hint">This will appear on all your brand assets.</div>
+            <input type="text" class="bae-wiz-input" id="bae-wiz-name" placeholder="e.g. Dela Cruz Bakery" autocomplete="off">
+            <div class="bae-wiz-error" id="bae-wiz-name-err">Please enter your business name.</div>
+            <button class="bae-wiz-next" onclick="baeWizGo(2)">Continue &rarr;</button>
+        </div>
+
+        <!-- Step 2: Industry -->
+        <div class="bae-wiz-screen" id="bae-step-2" style="display:none;">
+            <div class="bae-wiz-question">What does your business do?</div>
+            <div class="bae-wiz-hint">Pick the one that fits best.</div>
+            <div class="bae-wiz-tiles" id="bae-wiz-industry-tiles">
+                <div class="bae-wiz-tile" data-value="Food &amp; Beverage" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#127869;</span><div class="bae-wiz-tile-label">Food &amp; Drinks</div><div class="bae-wiz-tile-desc">Restaurant, bakery, cafe</div></div>
+                <div class="bae-wiz-tile" data-value="Retail &amp; Commerce" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128717;</span><div class="bae-wiz-tile-label">Retail &amp; Selling</div><div class="bae-wiz-tile-desc">Store, shop, e-commerce</div></div>
+                <div class="bae-wiz-tile" data-value="Professional Services" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128188;</span><div class="bae-wiz-tile-label">Services</div><div class="bae-wiz-tile-desc">Freelance, consulting, agency</div></div>
+                <div class="bae-wiz-tile" data-value="Health &amp; Wellness" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#10024;</span><div class="bae-wiz-tile-label">Health &amp; Beauty</div><div class="bae-wiz-tile-desc">Clinic, salon, spa</div></div>
+                <div class="bae-wiz-tile" data-value="Technology" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128187;</span><div class="bae-wiz-tile-label">Tech &amp; Digital</div><div class="bae-wiz-tile-desc">App, software, IT</div></div>
+                <div class="bae-wiz-tile" data-value="Education &amp; Training" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128218;</span><div class="bae-wiz-tile-label">Education</div><div class="bae-wiz-tile-desc">School, tutoring, coaching</div></div>
+                <div class="bae-wiz-tile" data-value="Creative &amp; Media" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#127912;</span><div class="bae-wiz-tile-label">Creative &amp; Media</div><div class="bae-wiz-tile-desc">Design, photography</div></div>
+                <div class="bae-wiz-tile" data-value="Other" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128161;</span><div class="bae-wiz-tile-label">Something Else</div><div class="bae-wiz-tile-desc">My business is unique</div></div>
+            </div>
+            <div class="bae-wiz-error" id="bae-wiz-industry-err">Please pick what your business does.</div>
+            <button class="bae-wiz-next" id="bae-wiz-next-2" onclick="baeWizGo(3)" disabled>Continue &rarr;</button>
+            <button class="bae-wiz-back" onclick="baeWizGo(1)">&#8592; Back</button>
+        </div>
+
+        <!-- Step 3: Vibe -->
+        <div class="bae-wiz-screen" id="bae-step-3" style="display:none;">
+            <div class="bae-wiz-question">Pick your brand's vibe</div>
+            <div class="bae-wiz-hint">This sets your colors and personality. You can refine later.</div>
+            <div class="bae-wiz-color-tiles" id="bae-wiz-vibe-tiles">
+                <div class="bae-wiz-color-tile" style="background:linear-gradient(145deg,#1a0533,#2d1066);" data-primary="#6d28d9" data-secondary="#2d1066" data-accent="#ec4899" data-personality="Bold, premium, innovative" onclick="baeWizSelectVibe(this)"><div class="bae-wiz-color-swatch" style="background:linear-gradient(135deg,#6d28d9,#ec4899);"></div><div class="bae-wiz-color-name">Bold</div></div>
+                <div class="bae-wiz-color-tile" style="background:linear-gradient(145deg,#0a1628,#0d2240);" data-primary="#1d4ed8" data-secondary="#1e3a5f" data-accent="#38bdf8" data-personality="Professional, trustworthy, reliable" onclick="baeWizSelectVibe(this)"><div class="bae-wiz-color-swatch" style="background:linear-gradient(135deg,#1d4ed8,#38bdf8);"></div><div class="bae-wiz-color-name">Pro</div></div>
+                <div class="bae-wiz-color-tile" style="background:linear-gradient(145deg,#0d1f12,#0f2e18);" data-primary="#16a34a" data-secondary="#14532d" data-accent="#86efac" data-personality="Natural, fresh, community-focused" onclick="baeWizSelectVibe(this)"><div class="bae-wiz-color-swatch" style="background:linear-gradient(135deg,#16a34a,#86efac);"></div><div class="bae-wiz-color-name">Fresh</div></div>
+                <div class="bae-wiz-color-tile" style="background:linear-gradient(145deg,#1f0d06,#3b1008);" data-primary="#ea580c" data-secondary="#7c2d12" data-accent="#fb923c" data-personality="Warm, energetic, approachable" onclick="baeWizSelectVibe(this)"><div class="bae-wiz-color-swatch" style="background:linear-gradient(135deg,#ea580c,#fb923c);"></div><div class="bae-wiz-color-name">Warm</div></div>
+                <div class="bae-wiz-color-tile" style="background:linear-gradient(145deg,#1a1008,#2e1c0c);" data-primary="#b45309" data-secondary="#451a03" data-accent="#fbbf24" data-personality="Luxury, refined, classic" onclick="baeWizSelectVibe(this)"><div class="bae-wiz-color-swatch" style="background:linear-gradient(135deg,#b45309,#fbbf24);"></div><div class="bae-wiz-color-name">Luxury</div></div>
+                <div class="bae-wiz-color-tile" style="background:linear-gradient(145deg,#1a0a1a,#2e0f2e);" data-primary="#db2777" data-secondary="#831843" data-accent="#f9a8d4" data-personality="Playful, feminine, creative" onclick="baeWizSelectVibe(this)"><div class="bae-wiz-color-swatch" style="background:linear-gradient(135deg,#db2777,#f9a8d4);"></div><div class="bae-wiz-color-name">Playful</div></div>
+                <div class="bae-wiz-color-tile" style="background:linear-gradient(145deg,#0f0f0f,#1a1a1a);" data-primary="#404040" data-secondary="#0a0a0a" data-accent="#a3a3a3" data-personality="Minimal, modern, clean" onclick="baeWizSelectVibe(this)"><div class="bae-wiz-color-swatch" style="background:linear-gradient(135deg,#404040,#a3a3a3);"></div><div class="bae-wiz-color-name">Minimal</div></div>
+                <div class="bae-wiz-color-tile" style="background:linear-gradient(145deg,#080c18,#0c1425);" data-primary="#0f172a" data-secondary="#020617" data-accent="#6366f1" data-personality="Tech-forward, analytical, precise" onclick="baeWizSelectVibe(this)"><div class="bae-wiz-color-swatch" style="background:linear-gradient(135deg,#0f172a,#6366f1);"></div><div class="bae-wiz-color-name">Tech</div></div>
+            </div>
+            <div class="bae-wiz-error" id="bae-wiz-vibe-err">Please pick a vibe.</div>
+            <button class="bae-wiz-next" id="bae-wiz-next-3" onclick="baeWizGo(4)" disabled>Continue &rarr;</button>
+            <button class="bae-wiz-back" onclick="baeWizGo(2)">&#8592; Back</button>
+        </div>
+
+        <!-- Step 4: Tagline -->
+        <div class="bae-wiz-screen" id="bae-step-4" style="display:none;">
+            <div class="bae-wiz-question">Pick or write your tagline</div>
+            <div class="bae-wiz-hint">One line that sums up what you do. You can always change it.</div>
+            <div class="bae-wiz-taglines" id="bae-wiz-tagline-opts"></div>
+            <input type="text" class="bae-wiz-tagline-custom" id="bae-wiz-tagline-custom" placeholder="Or write your own tagline here...">
+            <div class="bae-wiz-error" id="bae-wiz-tagline-err" style="margin-top:8px;">Please pick or write a tagline.</div>
+            <button class="bae-wiz-next" style="margin-top:16px;" onclick="baeWizGo(5)">Continue &rarr;</button>
+            <button class="bae-wiz-back" onclick="baeWizGo(3)">&#8592; Back</button>
+        </div>
+
+        <!-- Step 5: Contact -->
+        <div class="bae-wiz-screen" id="bae-step-5" style="display:none;">
+            <div class="bae-wiz-question">Almost done!</div>
+            <div class="bae-wiz-hint">Add your contact info so it appears on your assets. All optional.</div>
+            <input type="email" class="bae-wiz-input" id="bae-wiz-email" placeholder="Business email (optional)">
+            <input type="text" class="bae-wiz-input" id="bae-wiz-phone" placeholder="Phone number (optional)">
+            <input type="text" class="bae-wiz-input" id="bae-wiz-website" placeholder="Website (optional)">
+            <button class="bae-wiz-next" onclick="baeWizSubmit()">Build My Brand &#9654;</button>
+            <button class="bae-wiz-back" onclick="baeWizGo(4)">&#8592; Back</button>
+        </div>
+
+        <!-- Generating -->
+        <div class="bae-wiz-screen bae-wiz-generating" id="bae-step-gen" style="display:none;">
+            <div class="bae-wiz-spinner"></div>
+            <div class="bae-wiz-gen-title">Building your brand...</div>
+            <div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>
+        </div>
+
+        <!-- Celebration screen -->
+        <div class="bae-wiz-screen" id="bae-step-done" style="display:none;text-align:center;">
+            <div id="bae-cel-icon" style="width:64px;height:64px;background:linear-gradient(135deg,#6d28d9,#ec4899);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div class="bae-wiz-question" style="margin-bottom:8px;" id="bae-cel-title">Your brand is ready.</div>
+            <div class="bae-wiz-hint" id="bae-cel-sub">All assets powered by your profile.<br>Let's see what we built.</div>
+            <div id="bae-cel-swatches" style="display:flex;justify-content:center;gap:10px;margin:24px 0;"></div>
+            <button class="bae-wiz-next" style="max-width:280px;margin:0 auto;" onclick="window.location.href=window.location.pathname+'?tab=identity'">
+                Open My Brand
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        var ajaxurl = '<?php echo esc_js(admin_url("admin-ajax.php")); ?>';
+        var nonce   = '<?php echo esc_js($nonce); ?>';
+        var state   = { step:1, name:'', industry:'', primary:'', secondary:'', accent:'', personality:'', tagline:'', email:'', phone:'', website:'' };
+
+        function setProgress(s) {
+            var pct = ((s-1)/5)*100;
+            document.getElementById('bae-wiz-progress').style.width = pct + '%';
+            document.getElementById('bae-wiz-step-label').textContent = 'Step ' + s + ' of 5';
+        }
+        function showScreen(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = 'block';
+            if (window.gsap) gsap.fromTo(el, {opacity:0,y:20}, {opacity:1,y:0,duration:0.4,ease:'power3.out'});
+            var inp = el.querySelector('input:not([type=hidden])');
+            if (inp) setTimeout(function(){ inp.focus(); }, 420);
+        }
+        function hideScreen(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            if (window.gsap) {
+                gsap.to(el, {opacity:0,y:-14,duration:0.22,ease:'power2.in',onComplete:function(){ el.style.display='none'; el.style.opacity=''; el.style.transform=''; }});
+            } else { el.style.display='none'; }
+        }
+
+        window.baeWizGo = function(step) {
+            if (step > state.step) {
+                if (state.step === 1) {
+                    state.name = (document.getElementById('bae-wiz-name').value||'').trim();
+                    if (!state.name) { document.getElementById('bae-wiz-name-err').style.display='block'; if(window.gsap) gsap.fromTo('#bae-wiz-name',{x:-5},{x:0,duration:0.35,ease:'elastic.out(1,0.4)'}); return; }
+                    document.getElementById('bae-wiz-name-err').style.display='none';
+                }
+                if (state.step === 2) {
+                    if (!state.industry) { document.getElementById('bae-wiz-industry-err').style.display='block'; return; }
+                    document.getElementById('bae-wiz-industry-err').style.display='none';
+                }
+                if (state.step === 3) {
+                    if (!state.primary) { document.getElementById('bae-wiz-vibe-err').style.display='block'; return; }
+                    document.getElementById('bae-wiz-vibe-err').style.display='none';
+                    buildTaglines();
+                }
+                if (state.step === 4) {
+                    var sel = document.querySelector('.bae-wiz-tagline-opt.selected');
+                    var cus = (document.getElementById('bae-wiz-tagline-custom').value||'').trim();
+                    state.tagline = cus || (sel ? sel.dataset.value : '');
+                    if (!state.tagline) { document.getElementById('bae-wiz-tagline-err').style.display='block'; return; }
+                    document.getElementById('bae-wiz-tagline-err').style.display='none';
+                }
+            }
+            hideScreen('bae-step-' + state.step);
+            state.step = step;
+            setProgress(step);
+            showScreen('bae-step-' + step);
+        };
+
+        // Industry → default vibe mapping (one source of truth)
+        var industryVibeMap = {
+            'Food & Beverage':       'Warm',
+            'Retail & Commerce':     'Bold',
+            'Professional Services': 'Pro',
+            'Health & Wellness':     'Fresh',
+            'Technology':            'Tech',
+            'Education & Training':  'Pro',
+            'Creative & Media':      'Playful',
+            'Other':                 'Bold'
+        };
+
+        window.baeWizSelectTile = function(el) {
+            document.querySelectorAll('#bae-wiz-industry-tiles .bae-wiz-tile').forEach(function(t){t.classList.remove('selected');});
+            el.classList.add('selected');
+            state.industry = el.dataset.value;
+            document.getElementById('bae-wiz-next-2').disabled = false;
+            document.getElementById('bae-wiz-industry-err').style.display = 'none';
+            if (window.gsap) gsap.fromTo(el,{scale:0.96},{scale:1,duration:0.28,ease:'back.out(2)'});
+
+            // Auto-select matching vibe tile on step 3
+            var targetVibe = industryVibeMap[state.industry] || 'Bold';
+            document.querySelectorAll('.bae-wiz-color-tile').forEach(function(tile) {
+                tile.classList.remove('selected');
+                if (tile.querySelector('.bae-wiz-color-name') &&
+                    tile.querySelector('.bae-wiz-color-name').textContent.trim() === targetVibe) {
+                    tile.classList.add('selected');
+                    state.primary     = tile.dataset.primary;
+                    state.secondary   = tile.dataset.secondary;
+                    state.accent      = tile.dataset.accent;
+                    state.personality = tile.dataset.personality;
+                    document.getElementById('bae-wiz-next-3').disabled = false;
+                }
+            });
+        };
+
+        window.baeWizSelectVibe = function(el) {
+            document.querySelectorAll('.bae-wiz-color-tile').forEach(function(t){t.classList.remove('selected');});
+            el.classList.add('selected');
+            state.primary     = el.dataset.primary;
+            state.secondary   = el.dataset.secondary;
+            state.accent      = el.dataset.accent;
+            state.personality = el.dataset.personality;
+            document.getElementById('bae-wiz-next-3').disabled = false;
+            document.getElementById('bae-wiz-vibe-err').style.display = 'none';
+            if (window.gsap) gsap.fromTo(el,{scale:0.95},{scale:1,duration:0.3,ease:'back.out(2)'});
+        };
+
+        function buildTaglines() {
+            var map = {
+                'Bold, premium, innovative':          ['Stand out. Be bold.','Built different.','The future of ' + state.name + '.'],
+                'Professional, trustworthy, reliable':['Your trusted partner.','Excellence, every time.','Built on trust.'],
+                'Natural, fresh, community-focused':  ['Fresh from the heart.','Good for you. Good for all.','Grown with care.'],
+                'Warm, energetic, approachable':      ['Made with love.','Where everyone belongs.','Energy in every detail.'],
+                'Luxury, refined, classic':           ['Crafted for those who know.','Timeless by design.','Excellence is the standard.'],
+                'Playful, feminine, creative':        ['Life is better with ' + state.name + '.','Because you deserve it.','Made to delight.'],
+                'Minimal, modern, clean':             ['Less, but better.','Simple. Powerful.','Clean by design.'],
+                'Tech-forward, analytical, precise':  ['Precision at scale.','Engineered for results.','Smarter, faster, better.']
+            };
+            var opts = map[state.personality] || ['Quality you can trust.','Built with purpose.','Your brand, your story.'];
+            var c = document.getElementById('bae-wiz-tagline-opts');
+            c.innerHTML = '';
+            opts.forEach(function(opt) {
+                var d = document.createElement('div');
+                d.className = 'bae-wiz-tagline-opt';
+                d.dataset.value = opt;
+                d.textContent = '"' + opt + '"';
+                d.onclick = function() {
+                    c.querySelectorAll('.bae-wiz-tagline-opt').forEach(function(o){o.classList.remove('selected');});
+                    d.classList.add('selected');
+                    document.getElementById('bae-wiz-tagline-custom').value = '';
+                    if (window.gsap) gsap.fromTo(d,{scale:0.97},{scale:1,duration:0.22,ease:'back.out(2)'});
+                };
+                c.appendChild(d);
+            });
+        }
+
+        document.getElementById('bae-wiz-tagline-custom').addEventListener('input', function() {
+            if (this.value.trim()) document.querySelectorAll('.bae-wiz-tagline-opt').forEach(function(o){o.classList.remove('selected');});
+        });
+        document.getElementById('bae-wiz-name').addEventListener('keydown', function(e){ if(e.key==='Enter') baeWizGo(2); });
+
+        window.baeWizSubmit = function() {
+            state.email   = (document.getElementById('bae-wiz-email').value||'').trim();
+            state.phone   = (document.getElementById('bae-wiz-phone').value||'').trim();
+            state.website = (document.getElementById('bae-wiz-website').value||'').trim();
+            hideScreen('bae-step-5');
+            showScreen('bae-step-gen');
+
+            var fd = new FormData();
+            fd.append('action',          'bae_save_profile');
+            fd.append('nonce',           nonce);
+            fd.append('business_name',   state.name);
+            fd.append('industry',        state.industry);
+            fd.append('tagline',         state.tagline);
+            fd.append('personality',     state.personality);
+            fd.append('email',           state.email);
+            fd.append('phone',           state.phone);
+            fd.append('website',         state.website);
+            fd.append('address',         '');
+            fd.append('primary_color',   state.primary);
+            fd.append('secondary_color', state.secondary);
+            fd.append('accent_color',    state.accent);
+            fd.append('font_heading',    'Inter');
+            fd.append('font_body',       'Inter');
+            fd.append('logo_style',      'wordmark');
+            fd.append('logo_icon',       '');
+
+            document.getElementById('bae-wiz-gen-status').textContent = 'Saving your brand profile...';
+
+            fetch(ajaxurl, {method:'POST', body:fd})
+            .then(function(r){ return r.json(); })
+            .then(function(j){
+                if (j.success) {
+                    document.getElementById('bae-wiz-gen-status').textContent = 'Brand created!';
+                    // Build celebration swatches from chosen vibe
+                    var swatchContainer = document.getElementById('bae-cel-swatches');
+                    if (swatchContainer && state.primary) {
+                        [state.primary, state.secondary, state.accent].forEach(function(col) {
+                            var sw = document.createElement('div');
+                            sw.style.cssText = 'width:48px;height:48px;border-radius:14px;background:'+col+';border:1px solid rgba(255,255,255,0.15);';
+                            swatchContainer.appendChild(sw);
+                        });
+                    }
+                    // Update celebration title with business name
+                    var celTitle = document.getElementById('bae-cel-title');
+                    if (celTitle && state.name) celTitle.textContent = state.name + ' is ready.';
+
+                    hideScreen('bae-step-gen');
+                    showScreen('bae-step-done');
+
+                    // Animate celebration icon
+                    if (window.gsap) {
+                        gsap.fromTo('#bae-cel-icon',
+                            {scale: 0, rotate: -15},
+                            {scale: 1, rotate: 0, duration: 0.5, ease: 'back.out(2)', delay: 0.1}
+                        );
+                        gsap.fromTo('#bae-cel-swatches > div',
+                            {scale: 0, y: 10},
+                            {scale: 1, y: 0, duration: 0.4, stagger: 0.08, ease: 'back.out(2)', delay: 0.3}
+                        );
+                        gsap.to('#bae-cel-icon', {
+                            boxShadow: '0 0 36px rgba(139,92,246,0.6)',
+                            duration: 1.4, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.8
+                        });
+                    }
+                } else {
+                    document.getElementById('bae-wiz-gen-status').textContent = 'Something went wrong. Please try again.';
+                    hideScreen('bae-step-gen');
+                    showScreen('bae-step-5');
+                }
+            })
+            .catch(function(){
+                document.getElementById('bae-wiz-gen-status').textContent = 'Connection error. Please try again.';
+                hideScreen('bae-step-gen');
+                showScreen('bae-step-5');
+            });
+        };
+
+        setProgress(1);
+        showScreen('bae-step-1');
+    })();
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
 function bntm_shortcode_bae() {
     if (!is_user_logged_in()) {
         return '<div class="bntm-notice">Please log in to access the Brand Asset Engine.</div>';
@@ -220,12 +717,38 @@ function bntm_shortcode_bae() {
 
     $user_id    = get_current_user_id();
     $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overview';
-    $profile    = bae_get_profile($user_id);
+
+    // Use ticket as identity — read from cookie
+    $ticket  = '';
+    $profile = null;
+    if ( !empty($_COOKIE['bae_ticket']) ) {
+        $raw = strtoupper( sanitize_text_field( $_COOKIE['bae_ticket'] ) );
+        if ( preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw) ) {
+            $ticket  = $raw;
+            global $wpdb;
+            $wpdb->hide_errors();
+            $profile = $wpdb->get_row(
+                $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}bae_profiles WHERE ticket = %s", $ticket ),
+                ARRAY_A
+            );
+            $wpdb->show_errors();
+        }
+    }
+
+    // No ticket cookie → show ticket screen (never fall through to wizard without ticket)
+    if ( empty( $ticket ) ) {
+        return bntm_bae_ticket_screen();
+    }
+
+    // Has ticket but no business name yet → show wizard
+    if ( ( empty($profile) || empty($profile['business_name']) ) && !isset($_GET['tab']) ) {
+        return bae_wizard_shortcode($user_id);
+    }
 
     ob_start();
     ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
+    <script>var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';</script>
 
     <div class="bae-wrap" id="bae-wrap">
 
@@ -235,7 +758,10 @@ function bntm_shortcode_bae() {
             <div class="bae-logo-text">Brand<span>Asset</span></div>
             <div class="bae-header-right">
                 <button class="bae-theme-btn" id="bae-theme-btn" onclick="baeToggleTheme()">
-                    <span id="bae-theme-icon">☀️</span>
+                    <span id="bae-theme-icon">
+                        <svg id="bae-icon-sun" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                        <svg id="bae-icon-moon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    </span>
                     <span id="bae-theme-label">Light</span>
                     <div class="bae-toggle-track on" id="bae-toggle-track">
                         <div class="bae-toggle-thumb"></div>
@@ -283,7 +809,7 @@ function bntm_shortcode_bae() {
                 'identity' => 'Identity Board',
                 'assets'   => 'Asset Generator',
                 'kit'      => 'Brand Kit',
-                'startup'  => '🚀 Startup Toolkit',
+                'startup'  => 'Launch Toolkit',
                 'settings' => 'Settings',
             ];
             $base_url = strtok($_SERVER['REQUEST_URI'], '?');
@@ -717,6 +1243,31 @@ function bntm_shortcode_bae() {
     .bae-swatch-block { width: 72px; height: 72px; border-radius: 16px; border: 1px solid var(--border); }
     .bae-swatch-label { font-size: 11px; color: var(--text-3); text-align: center; transition: color 0.5s; }
     .bae-swatch-hex { font-size: 11px; font-weight: 700; color: var(--text-2); font-family: monospace; transition: color 0.5s; }
+    .bae-swatch { cursor: pointer; }
+    .bae-swatch-copy-btn {
+        font-size: 10px; font-weight: 700;
+        padding: 3px 9px; border-radius: 999px;
+        background: var(--bg-3); color: var(--text-3);
+        border: 1px solid var(--border-2);
+        cursor: pointer; font-family: 'Geist', sans-serif;
+        transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+        opacity: 0; transform: translateY(3px);
+    }
+    .bae-swatch:hover .bae-swatch-copy-btn { opacity: 1; transform: translateY(0); }
+    .bae-swatch-copy-btn svg { width: 10px; height: 10px; }
+    .bae-swatch-copy-btn.copied { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.2); }
+    .bae-font-copy-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .bae-font-copy-btn {
+        font-size: 10px; font-weight: 700;
+        padding: 3px 9px; border-radius: 999px;
+        background: var(--bg-3); color: var(--text-3);
+        border: 1px solid var(--border-2);
+        cursor: pointer; font-family: 'Geist', sans-serif;
+        transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .bae-font-copy-btn:hover { color: var(--text); border-color: var(--brand-soft); }
+    .bae-font-copy-btn svg { width: 10px; height: 10px; }
+    .bae-font-copy-btn.copied { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.2); }
 
     .bae-font-sample {
         padding: 20px; border: 1px solid var(--border); border-radius: 14px;
@@ -813,6 +1364,23 @@ function bntm_shortcode_bae() {
     }
 
     /* ── SCROLLBAR ── */
+    /* ── COMPLETENESS INDICATOR ── */
+    .bae-completeness-bar {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 14px; padding: 16px 20px; margin-bottom: 20px;
+        transition: background 0.5s, border-color 0.5s;
+    }
+    .bae-completeness-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .bae-completeness-label { font-size: 12px; font-weight: 600; color: var(--text-2); transition: color 0.5s; }
+    .bae-completeness-pct { font-family: 'Instrument Serif', serif; font-size: 16px; font-style: italic; color: var(--brand-soft); transition: color 0.5s; }
+    .bae-completeness-track { height: 4px; background: var(--bg-3); border-radius: 999px; overflow: hidden; margin-bottom: 12px; transition: background 0.5s; }
+    .bae-completeness-fill { height: 100%; background: linear-gradient(90deg, var(--brand-deep), var(--brand-soft)); border-radius: 999px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+    .bae-completeness-items { display: flex; flex-wrap: wrap; gap: 6px; }
+    .bae-completeness-item { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 4px; }
+    .bae-completeness-item svg { width: 10px; height: 10px; }
+    .bae-completeness-item.done { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+    .bae-completeness-item.todo { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--border); }
+
     .bae-wrap ::-webkit-scrollbar { width: 5px; }
     .bae-wrap ::-webkit-scrollbar-track { background: transparent; }
     .bae-wrap ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 999px; }
@@ -929,16 +1497,16 @@ function bntm_shortcode_bae() {
             var tl = gsap.timeline();
             tl.to(overlay, { opacity: 0.3, duration: 0.18, ease: 'power2.in' })
               .call(function() {
-                  if (baeIsDark) { wrap.classList.remove('bae-light'); track.classList.add('on'); label.textContent = 'Light'; icon.textContent = '☀️'; }
-                  else { wrap.classList.add('bae-light'); track.classList.remove('on'); label.textContent = 'Dark'; icon.textContent = '🌙'; }
+                  if (baeIsDark) { wrap.classList.remove('bae-light'); track.classList.add('on'); label.textContent = 'Light'; document.getElementById('bae-icon-sun').style.display=''; document.getElementById('bae-icon-moon').style.display='none'; }
+                  else { wrap.classList.add('bae-light'); track.classList.remove('on'); label.textContent = 'Dark'; document.getElementById('bae-icon-sun').style.display='none'; document.getElementById('bae-icon-moon').style.display=''; }
               })
               .to(overlay, { opacity: 0, duration: 0.35, ease: 'power2.out' })
               .call(function() { overlay.remove(); });
             gsap.to('.bae-toggle-thumb', { x: baeIsDark ? 16 : 0, duration: 0.4, ease: 'back.out(1.8)' });
             gsap.fromTo('.bae-stat-card, .bae-card, .bae-asset-card', { scale: 0.995 }, { scale: 1, duration: 0.35, stagger: 0.01, ease: 'power3.out' });
         } else {
-            if (baeIsDark) { wrap.classList.remove('bae-light'); track.classList.add('on'); label.textContent = 'Light'; icon.textContent = '☀️'; }
-            else { wrap.classList.add('bae-light'); track.classList.remove('on'); label.textContent = 'Dark'; icon.textContent = '🌙'; }
+            if (baeIsDark) { wrap.classList.remove('bae-light'); track.classList.add('on'); label.textContent = 'Light'; document.getElementById('bae-icon-sun').style.display=''; document.getElementById('bae-icon-moon').style.display='none'; }
+            else { wrap.classList.add('bae-light'); track.classList.remove('on'); label.textContent = 'Dark'; document.getElementById('bae-icon-sun').style.display='none'; document.getElementById('bae-icon-moon').style.display=''; }
             overlay.remove();
         }
     }
@@ -962,8 +1530,7 @@ function bntm_shortcode_bae() {
     </script>
 
     <?php
-    $content = ob_get_clean();
-    return bntm_universal_container('Brand Asset Engine', $content);
+    return ob_get_clean();
 }
 
 // =============================================================================
@@ -1018,11 +1585,55 @@ function bae_overview_tab($user_id, $profile) {
         </div>
     </div>
 
-    <?php if ($is_new): ?>
-    <div class="bae-notice bae-notice-info" style="margin-bottom:24px;">
-        Welcome! Start by filling in your brand profile below. This information powers all your generated assets.
+    <?php
+    // Completeness indicator — check which fields are filled
+    $fields_done = [];
+    $fields_todo = [];
+
+    $check = [
+        'business_name' => 'Business name',
+        'industry'      => 'Industry',
+        'tagline'       => 'Tagline',
+        'email'         => 'Email',
+        'phone'         => 'Phone',
+        'primary_color' => 'Brand colors',
+        'logo_style'    => 'Logo style',
+        'font_heading'  => 'Typography',
+    ];
+    foreach ($check as $field => $label) {
+        if (!empty($p[$field])) {
+            $fields_done[] = $label;
+        } else {
+            $fields_todo[] = $label;
+        }
+    }
+    $total = count($check);
+    $done  = count($fields_done);
+    $pct   = $total > 0 ? round(($done / $total) * 100) : 0;
+    ?>
+    <div class="bae-completeness-bar">
+        <div class="bae-completeness-top">
+            <span class="bae-completeness-label">Profile Completeness</span>
+            <span class="bae-completeness-pct"><?php echo $pct; ?>%</span>
+        </div>
+        <div class="bae-completeness-track">
+            <div class="bae-completeness-fill" style="width:<?php echo $pct; ?>%;"></div>
+        </div>
+        <div class="bae-completeness-items">
+            <?php foreach ($fields_done as $f): ?>
+            <span class="bae-completeness-item done">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                <?php echo esc_html($f); ?>
+            </span>
+            <?php endforeach; ?>
+            <?php foreach ($fields_todo as $f): ?>
+            <span class="bae-completeness-item todo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                <?php echo esc_html($f); ?>
+            </span>
+            <?php endforeach; ?>
+        </div>
     </div>
-    <?php endif; ?>
 
     <!-- Profile Form -->
     <div class="bae-card">
@@ -1224,7 +1835,7 @@ function bae_overview_tab($user_id, $profile) {
     <div class="bae-card" style="margin-top:0;">
         <div class="bae-card-header">
             <div>
-                <div class="bae-card-title">🚀 Startup Toolkit</div>
+                <div class="bae-card-title"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:6px;color:var(--brand-soft)"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>Launch Toolkit</div>
                 <div class="bae-card-desc">Everything a new business needs to get online — generated from your brand profile.</div>
             </div>
             <span class="bae-badge bae-badge-yellow">Auto-generated</span>
@@ -1271,7 +1882,7 @@ function bae_overview_tab($user_id, $profile) {
 
         <!-- Domain Suggestions -->
         <div style="margin-bottom:28px;">
-            <div class="bae-section-label" style="margin-bottom:12px;">🌐 Domain Name Ideas</div>
+            <div class="bae-section-label" style="margin-bottom:12px;">Domain Name Ideas</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
                 <?php foreach ($domains as $i => $domain): ?>
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid <?php echo $i === 0 ? '#111827' : '#e5e7eb'; ?>;border-radius:8px;background:<?php echo $i === 0 ? '#111827' : '#fff'; ?>;">
@@ -1280,27 +1891,27 @@ function bae_overview_tab($user_id, $profile) {
                 </div>
                 <?php endforeach; ?>
             </div>
-            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">💡 Check availability at <strong>namecheap.com</strong>, <strong>godaddy.com</strong>, or <strong>dot.ph</strong> (for .ph domains)</p>
+            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">Check availability at <strong>namecheap.com</strong>, <strong>godaddy.com</strong>, or <strong>dot.ph</strong> (for .ph domains)</p>
         </div>
 
         <div class="bae-divider"></div>
 
         <!-- Social Handles -->
         <div style="margin-bottom:28px;">
-            <div class="bae-section-label" style="margin-bottom:12px;">📱 Social Media Handles to Register</div>
+            <div class="bae-section-label" style="margin-bottom:12px;">Social Media Handles to Register</div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;">
                 <?php foreach ($handles as $handle): ?>
                 <span style="padding:8px 16px;background:#f3f4f6;border-radius:8px;font-size:13px;font-weight:500;color:#374151;font-family:'Courier New',monospace;"><?php echo esc_html($handle); ?></span>
                 <?php endforeach; ?>
             </div>
-            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">💡 Register the same handle on Facebook, Instagram, TikTok, and YouTube — consistency builds trust.</p>
+            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">Register the same handle on Facebook, Instagram, TikTok, and YouTube — consistency builds trust.</p>
         </div>
 
         <div class="bae-divider"></div>
 
         <!-- Tagline Variants -->
         <div style="margin-bottom:28px;">
-            <div class="bae-section-label" style="margin-bottom:12px;">✍️ Tagline Variants</div>
+            <div class="bae-section-label" style="margin-bottom:12px;">Tagline Variants</div>
             <div style="display:flex;flex-direction:column;gap:8px;">
                 <?php foreach ($tagline_variants as $variant): ?>
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;">
@@ -1316,13 +1927,13 @@ function bae_overview_tab($user_id, $profile) {
 
         <!-- Business Email -->
         <div>
-            <div class="bae-section-label" style="margin-bottom:12px;">📧 Business Email Ideas</div>
+            <div class="bae-section-label" style="margin-bottom:12px;">Business Email Ideas</div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;">
                 <?php foreach ($email_suggestions as $email): ?>
                 <span style="padding:8px 16px;background:#f3f4f6;border-radius:8px;font-size:13px;color:#374151;font-family:'Courier New',monospace;"><?php echo esc_html($email); ?></span>
                 <?php endforeach; ?>
             </div>
-            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">💡 Get a professional business email via <strong>Google Workspace</strong> or <strong>Zoho Mail</strong> — avoid using personal Gmail for business.</p>
+            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">Get a professional business email via <strong>Google Workspace</strong> or <strong>Zoho Mail</strong> — avoid using personal Gmail for business.</p>
         </div>
 
     </div>
@@ -1465,10 +2076,14 @@ function bae_identity_tab($user_id, $profile) {
             ];
             foreach ($colors as $label => $hex):
             ?>
-            <div class="bae-swatch">
+            <div class="bae-swatch" onclick="baeCopyHex('<?php echo esc_js(strtoupper($hex)); ?>', this)">
                 <div class="bae-swatch-block" style="background:<?php echo esc_attr($hex); ?>;"></div>
                 <div class="bae-swatch-label"><?php echo $label; ?></div>
                 <div class="bae-swatch-hex"><?php echo strtoupper($hex); ?></div>
+                <button class="bae-swatch-copy-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    Copy
+                </button>
             </div>
             <?php endforeach; ?>
             <div class="bae-swatch">
@@ -1508,11 +2123,19 @@ function bae_identity_tab($user_id, $profile) {
             </div>
         </div>
         <div style="margin-top:16px;display:flex;gap:24px;flex-wrap:wrap;">
-            <div style="font-size:13px;color:#6b7280;">
+            <div style="font-size:13px;color:var(--text-2);">
                 <strong>Heading:</strong> <?php echo esc_html($p['font_heading']); ?> — Bold 700
+                <button class="bae-font-copy-btn" onclick="baeCopyText('<?php echo esc_js($p['font_heading']); ?>', this)" style="margin-left:8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    Copy name
+                </button>
             </div>
-            <div style="font-size:13px;color:#6b7280;">
+            <div style="font-size:13px;color:var(--text-2);">
                 <strong>Body:</strong> <?php echo esc_html($p['font_body']); ?> — Regular 400
+                <button class="bae-font-copy-btn" onclick="baeCopyText('<?php echo esc_js($p['font_body']); ?>', this)" style="margin-left:8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    Copy name
+                </button>
             </div>
         </div>
     </div>
@@ -1538,6 +2161,28 @@ function bae_identity_tab($user_id, $profile) {
         <a href="?tab=assets" class="bae-btn bae-btn-primary">Generate Assets &rarr;</a>
         <a href="?tab=overview" class="bae-btn bae-btn-outline">&larr; Edit Profile</a>
     </div>
+    <script>
+    function baeCopyHex(hex, swatchEl) {
+        navigator.clipboard.writeText(hex).then(function() {
+            var btn = swatchEl.querySelector('.bae-swatch-copy-btn');
+            if (!btn) return;
+            var orig = btn.innerHTML;
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Copied';
+            btn.classList.add('copied');
+            if (window.gsap) gsap.fromTo(btn, {scale:0.9}, {scale:1, duration:0.3, ease:'back.out(2)'});
+            setTimeout(function() { btn.innerHTML = orig; btn.classList.remove('copied'); }, 1800);
+        });
+    }
+    function baeCopyText(text, btnEl) {
+        navigator.clipboard.writeText(text).then(function() {
+            var orig = btnEl.innerHTML;
+            btnEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Copied';
+            btnEl.classList.add('copied');
+            if (window.gsap) gsap.fromTo(btnEl, {scale:0.9}, {scale:1, duration:0.3, ease:'back.out(2)'});
+            setTimeout(function() { btnEl.innerHTML = orig; btnEl.classList.remove('copied'); }, 1800);
+        });
+    }
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -2014,7 +2659,8 @@ function bae_settings_tab($user_id, $profile) {
     })();
     </script>
     <?php
-    return ob_get_clean();
+    $output = ob_get_clean();
+    return apply_filters( 'bae_settings_tab_output', $output );
 }
 
 // =============================================================================
@@ -2394,11 +3040,11 @@ function bae_generate_asset_html($type, $profile) {
     </div>
     <div style='display:grid;grid-template-columns:1fr 1fr;gap:16px;'>
       <div style='padding:16px;border:1px solid #d1fae5;background:#f0fdf4;border-radius:10px;'>
-        <div style='font-size:11px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;'>✓ We Sound Like</div>
+        <div style='font-size:11px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;'>We Sound Like</div>
         <div style='font-size:13px;color:#374151;line-height:1.7;'>" . bae_get_voice_examples($tone_tags, true) . "</div>
       </div>
       <div style='padding:16px;border:1px solid #fee2e2;background:#fff5f5;border-radius:10px;'>
-        <div style='font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;'>✗ We Don't Sound Like</div>
+        <div style='font-size:11px;font-weight:700;color:#991b1b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;'>We Don't Sound Like</div>
         <div style='font-size:13px;color:#374151;line-height:1.7;'>" . bae_get_voice_examples($tone_tags, false) . "</div>
       </div>
     </div>
@@ -2652,52 +3298,62 @@ function bntm_ajax_bae_save_profile() {
     check_ajax_referer('bae_save_profile', 'nonce');
     if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
 
+    // Ticket = identity. Must have a valid ticket to save.
+    $ticket = '';
+    if ( !empty($_COOKIE['bae_ticket']) ) {
+        $raw = strtoupper( sanitize_text_field( $_COOKIE['bae_ticket'] ) );
+        if ( preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw) ) {
+            $ticket = $raw;
+        }
+    }
+    if ( empty($ticket) ) {
+        wp_send_json_error(['message' => 'No valid ticket found. Please refresh.']);
+    }
+
     global $wpdb;
-    $table   = $wpdb->prefix . 'bae_profiles';
-    $user_id = get_current_user_id();
+    $table = $wpdb->prefix . 'bae_profiles';
 
     $data = [
         'business_name'   => sanitize_text_field($_POST['business_name'] ?? ''),
         'industry'        => sanitize_text_field($_POST['industry']       ?? ''),
-        'tagline'         => sanitize_text_field($_POST['tagline']         ?? ''),
-        'personality'     => sanitize_text_field($_POST['personality']     ?? ''),
-        // CHANGED: Save contact fields
+        'tagline'         => sanitize_text_field($_POST['tagline']        ?? ''),
+        'personality'     => sanitize_text_field($_POST['personality']    ?? ''),
         'email'           => sanitize_email($_POST['email']               ?? ''),
-        'phone'           => sanitize_text_field($_POST['phone']           ?? ''),
-        'website'         => esc_url_raw($_POST['website']                ?? ''),
-        'address'         => sanitize_text_field($_POST['address']         ?? ''),
+        'phone'           => sanitize_text_field($_POST['phone']          ?? ''),
+        'website'         => esc_url_raw($_POST['website']               ?? ''),
+        'address'         => sanitize_text_field($_POST['address']        ?? ''),
         'primary_color'   => bae_safe_color($_POST['primary_color']   ?? '', '#1a1a2e'),
         'secondary_color' => bae_safe_color($_POST['secondary_color'] ?? '', '#16213e'),
         'accent_color'    => bae_safe_color($_POST['accent_color']    ?? '', '#e94560'),
-        'font_heading'    => sanitize_text_field($_POST['font_heading']    ?? 'Inter'),
-        'font_body'       => sanitize_text_field($_POST['font_body']       ?? 'Inter'),
-        'logo_style'      => sanitize_text_field($_POST['logo_style']      ?? 'wordmark'),
-        'logo_icon'       => sanitize_text_field($_POST['logo_icon']       ?? ''),
+        'font_heading'    => sanitize_text_field($_POST['font_heading']   ?? 'Inter'),
+        'font_body'       => sanitize_text_field($_POST['font_body']      ?? 'Inter'),
+        'logo_style'      => sanitize_text_field($_POST['logo_style']     ?? 'wordmark'),
+        'logo_icon'       => sanitize_text_field($_POST['logo_icon']      ?? ''),
+        'ticket'          => $ticket,
     ];
 
     if (empty($data['business_name'])) {
         wp_send_json_error(['message' => 'Business name is required.']);
     }
 
-    $existing = $wpdb->get_row($wpdb->prepare("SELECT id FROM {$table} WHERE user_id = %d", $user_id));
+    // Look up ONLY by ticket — each ticket is its own brand
+    $wpdb->hide_errors();
+    $existing = $wpdb->get_row($wpdb->prepare("SELECT id FROM {$table} WHERE ticket = %s", $ticket));
+    $wpdb->show_errors();
 
     if ($existing) {
-        $result = $wpdb->update($table, $data, ['user_id' => $user_id]);
-        $msg    = 'Brand profile updated successfully!';
+        $wpdb->update($table, $data, ['id' => $existing->id]);
+        wp_send_json_success(['message' => 'Brand profile updated successfully!']);
     } else {
         $data['rand_id']  = bntm_rand_id();
-        $data['user_id']  = $user_id;
+        $data['user_id']  = is_user_logged_in() ? get_current_user_id() : 0;
         $data['kit_slug'] = sanitize_title($data['business_name']) . '-' . substr($data['rand_id'], 0, 6);
-        $result = $wpdb->insert($table, $data);
-        $msg    = 'Brand profile created successfully!';
+        $r = $wpdb->insert($table, $data);
+        if ($r === false) wp_send_json_error(['message' => 'Failed to save profile. Please try again.']);
+        wp_send_json_success(['message' => 'Brand profile created successfully!']);
     }
-
-    if ($result === false) {
-        wp_send_json_error(['message' => 'Failed to save profile. Please try again.']);
-    }
-
-    wp_send_json_success(['message' => $msg]);
 }
+
 
 function bntm_ajax_bae_generate_asset() {
     check_ajax_referer('bae_generate_asset', 'nonce');
@@ -3337,7 +3993,7 @@ function bae_startup_tab($user_id, $profile) {
     ob_start();
     ?>
     <div style="margin-bottom:24px;">
-        <div class="bae-card-title" style="font-size:20px;">🚀 Startup Toolkit</div>
+        <div class="bae-card-title" style="font-size:20px;">Launch Toolkit</div>
         <div class="bae-card-desc" style="margin-top:6px;">Everything you need to launch <?php echo esc_html($biz_raw); ?> — from domain to legal registration. All generated from your brand profile.</div>
     </div>
 
@@ -3345,7 +4001,7 @@ function bae_startup_tab($user_id, $profile) {
     <div class="bae-card">
         <div class="bae-card-header">
             <div>
-                <div class="bae-card-title">🌐 Domain Name Ideas</div>
+                <div class="bae-card-title">Domain Name Ideas</div>
                 <div class="bae-card-desc">Suggested domain names based on your business name. Check availability before registering.</div>
             </div>
         </div>
@@ -3357,8 +4013,8 @@ function bae_startup_tab($user_id, $profile) {
                     <div style="font-size:11px;color:<?php echo $d['rec'] ? 'rgba(255,255,255,0.5)' : '#9ca3af'; ?>;margin-top:2px;"><?php echo esc_html($d['note']); ?></div>
                 </div>
                 <div style="display:flex;gap:6px;align-items:center;">
-                    <?php if ($d['rec']): ?><span style="font-size:10px;background:<?php echo '#fff'; ?>;color:#111827;padding:2px 8px;border-radius:999px;font-weight:700;">★ TOP</span><?php endif; ?>
-                    <button onclick="navigator.clipboard.writeText('<?php echo esc_js($d['domain']); ?>');this.textContent='✓';setTimeout(()=>this.textContent='Copy',1500);"
+                    <?php if ($d['rec']): ?><span style="font-size:9px;background:#fff;color:#111827;padding:2px 8px;border-radius:999px;font-weight:800;">TOP</span><?php endif; ?>
+                    <button onclick="navigator.clipboard.writeText('<?php echo esc_js($d['domain']); ?>');this.textContent='Done';setTimeout(()=>this.textContent='Copy',1500);"
                             style="border:1px solid <?php echo $d['rec'] ? 'rgba(255,255,255,0.3)' : '#d1d5db'; ?>;background:none;color:<?php echo $d['rec'] ? '#fff' : '#6b7280'; ?>;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:6px;">Copy</button>
                 </div>
             </div>
@@ -3373,7 +4029,7 @@ function bae_startup_tab($user_id, $profile) {
     <div class="bae-card">
         <div class="bae-card-header">
             <div>
-                <div class="bae-card-title">📱 Social Media Handles</div>
+                <div class="bae-card-title">Social Media Handles</div>
                 <div class="bae-card-desc">Register the same handle on every platform — consistency is a brand asset.</div>
             </div>
         </div>
@@ -3388,7 +4044,7 @@ function bae_startup_tab($user_id, $profile) {
             <?php endforeach; ?>
         </div>
         <div class="bae-notice bae-notice-info" style="margin-top:16px;">
-            💡 Register all handles even if you're not active on every platform yet — prevents brand squatting and ensures consistency when you scale.
+            Register all handles even if you're not active on every platform yet — prevents brand squatting and ensures consistency when you scale.
         </div>
     </div>
 
@@ -3396,7 +4052,7 @@ function bae_startup_tab($user_id, $profile) {
     <div class="bae-card">
         <div class="bae-card-header">
             <div>
-                <div class="bae-card-title">✍️ Tagline Variants</div>
+                <div class="bae-card-title">Tagline Variants</div>
                 <div class="bae-card-desc">Use these across your website, social bios, packaging, and marketing materials.</div>
             </div>
         </div>
@@ -3418,7 +4074,7 @@ function bae_startup_tab($user_id, $profile) {
     <div class="bae-card">
         <div class="bae-card-header">
             <div>
-                <div class="bae-card-title">📧 Business Email Suggestions</div>
+                <div class="bae-card-title">Business Email Suggestions</div>
                 <div class="bae-card-desc">A professional email builds trust immediately. Avoid using personal Gmail for business communications.</div>
             </div>
         </div>
@@ -3443,7 +4099,7 @@ function bae_startup_tab($user_id, $profile) {
     <div class="bae-card">
         <div class="bae-card-header">
             <div>
-                <div class="bae-card-title">🗺️ Recommended Website Pages</div>
+                <div class="bae-card-title">Recommended Website Pages</div>
                 <div class="bae-card-desc">Based on your industry (<?php echo esc_html($industry); ?>), these are the pages your website needs.</div>
             </div>
             <a href="?tab=assets" class="bae-btn bae-btn-outline bae-btn-sm">Generate Full Sitemap →</a>
@@ -3470,7 +4126,7 @@ function bae_startup_tab($user_id, $profile) {
     <div class="bae-card">
         <div class="bae-card-header">
             <div>
-                <div class="bae-card-title">✅ Launch Checklist for <?php echo esc_html($biz_raw); ?></div>
+                <div class="bae-card-title">Launch Checklist for <?php echo esc_html($biz_raw); ?></div>
                 <div class="bae-card-desc">Complete these steps to officially launch your business online and legally in the Philippines.</div>
             </div>
         </div>
@@ -3484,7 +4140,7 @@ function bae_startup_tab($user_id, $profile) {
                         <input type="checkbox" style="margin-top:3px;width:16px;height:16px;cursor:pointer;flex-shrink:0;">
                         <div>
                             <div style="font-size:13px;color:#374151;font-weight:500;"><?php echo esc_html($task['task']); ?></div>
-                            <div style="font-size:11px;color:#9ca3af;margin-top:3px;">🔧 <?php echo esc_html($task['tools']); ?></div>
+                            <div style="font-size:11px;color:#9ca3af;margin-top:3px;"><?php echo esc_html($task['tools']); ?></div>
                         </div>
                     </div>
                 </div>
