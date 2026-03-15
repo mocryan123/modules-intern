@@ -91,6 +91,7 @@ function bntm_bae_get_tables() {
             logo_style VARCHAR(50) NOT NULL DEFAULT 'wordmark',
             logo_icon VARCHAR(50) NOT NULL DEFAULT '',
             logo_url VARCHAR(500) NOT NULL DEFAULT '',
+            plan VARCHAR(20) NOT NULL DEFAULT 'free',
             tone_statement TEXT NOT NULL DEFAULT '',
             kit_visibility VARCHAR(10) NOT NULL DEFAULT 'private',
             kit_slug VARCHAR(100) UNIQUE NOT NULL DEFAULT '',
@@ -335,7 +336,7 @@ function bae_wizard_shortcode($user_id) {
     }
     .bae-wiz-tile:hover { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.08); }
     .bae-wiz-tile.selected { border-color: #8b5cf6; background: rgba(139,92,246,0.15); box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
-    .bae-wiz-tile-icon { font-size: 26px; margin-bottom: 7px; display: block; }
+    .bae-wiz-tile-icon { width: 28px; height: 28px; margin-bottom: 7px; display: flex; align-items: center; justify-content: center; color: #ede9ff; opacity: 0.85; }
     .bae-wiz-tile-label { font-size: 13px; font-weight: 700; color: #ede9ff; margin-bottom: 2px; }
     .bae-wiz-tile-desc { font-size: 11px; color: #4d4a65; }
     .bae-wiz-color-tiles {
@@ -425,14 +426,14 @@ function bae_wizard_shortcode($user_id) {
             <div class="bae-wiz-question">What does your business do?</div>
             <div class="bae-wiz-hint">Pick the one that fits best.</div>
             <div class="bae-wiz-tiles" id="bae-wiz-industry-tiles">
-                <div class="bae-wiz-tile" data-value="Food &amp; Beverage" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#127869;</span><div class="bae-wiz-tile-label">Food &amp; Drinks</div><div class="bae-wiz-tile-desc">Restaurant, bakery, cafe</div></div>
-                <div class="bae-wiz-tile" data-value="Retail &amp; Commerce" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128717;</span><div class="bae-wiz-tile-label">Retail &amp; Selling</div><div class="bae-wiz-tile-desc">Store, shop, e-commerce</div></div>
-                <div class="bae-wiz-tile" data-value="Professional Services" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128188;</span><div class="bae-wiz-tile-label">Services</div><div class="bae-wiz-tile-desc">Freelance, consulting, agency</div></div>
-                <div class="bae-wiz-tile" data-value="Health &amp; Wellness" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#10024;</span><div class="bae-wiz-tile-label">Health &amp; Beauty</div><div class="bae-wiz-tile-desc">Clinic, salon, spa</div></div>
-                <div class="bae-wiz-tile" data-value="Technology" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128187;</span><div class="bae-wiz-tile-label">Tech &amp; Digital</div><div class="bae-wiz-tile-desc">App, software, IT</div></div>
-                <div class="bae-wiz-tile" data-value="Education &amp; Training" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128218;</span><div class="bae-wiz-tile-label">Education</div><div class="bae-wiz-tile-desc">School, tutoring, coaching</div></div>
-                <div class="bae-wiz-tile" data-value="Creative &amp; Media" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#127912;</span><div class="bae-wiz-tile-label">Creative &amp; Media</div><div class="bae-wiz-tile-desc">Design, photography</div></div>
-                <div class="bae-wiz-tile" data-value="Other" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon">&#128161;</span><div class="bae-wiz-tile-label">Something Else</div><div class="bae-wiz-tile-desc">My business is unique</div></div>
+                <div class="bae-wiz-tile" data-value="Food &amp; Beverage" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></span><div class="bae-wiz-tile-label">Food &amp; Drinks</div><div class="bae-wiz-tile-desc">Restaurant, bakery, cafe</div></div>
+                <div class="bae-wiz-tile" data-value="Retail &amp; Commerce" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span><div class="bae-wiz-tile-label">Retail &amp; Selling</div><div class="bae-wiz-tile-desc">Store, shop, e-commerce</div></div>
+                <div class="bae-wiz-tile" data-value="Professional Services" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span><div class="bae-wiz-tile-label">Services</div><div class="bae-wiz-tile-desc">Freelance, consulting, agency</div></div>
+                <div class="bae-wiz-tile" data-value="Health &amp; Wellness" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span><div class="bae-wiz-tile-label">Health &amp; Beauty</div><div class="bae-wiz-tile-desc">Clinic, salon, spa</div></div>
+                <div class="bae-wiz-tile" data-value="Technology" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span><div class="bae-wiz-tile-label">Tech &amp; Digital</div><div class="bae-wiz-tile-desc">App, software, IT</div></div>
+                <div class="bae-wiz-tile" data-value="Education &amp; Training" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></span><div class="bae-wiz-tile-label">Education</div><div class="bae-wiz-tile-desc">School, tutoring, coaching</div></div>
+                <div class="bae-wiz-tile" data-value="Creative &amp; Media" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></span><div class="bae-wiz-tile-label">Creative &amp; Media</div><div class="bae-wiz-tile-desc">Design, photography</div></div>
+                <div class="bae-wiz-tile" data-value="Other" onclick="baeWizSelectTile(this)"><span class="bae-wiz-tile-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg></span><div class="bae-wiz-tile-label">Something Else</div><div class="bae-wiz-tile-desc">My business is unique</div></div>
             </div>
             <div class="bae-wiz-error" id="bae-wiz-industry-err">Please pick what your business does.</div>
             <button class="bae-wiz-next" id="bae-wiz-next-2" onclick="baeWizGo(3)" disabled>Continue &rarr;</button>
@@ -1044,7 +1045,18 @@ function bntm_shortcode_bae() {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script>var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';</script>
 
-    <div class="bae-wrap" id="bae-wrap">
+    <div class="bae-wrap" id="bae-wrap" style="opacity:0;transition:opacity 0.25s ease;">
+
+        <!-- Page loader -->
+        <div id="bae-page-loader" style="position:absolute;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;border-radius:20px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+                <div style="width:36px;height:36px;border:3px solid rgba(139,92,246,0.2);border-top-color:#8b5cf6;border-radius:50%;animation:bae-spin 0.8s linear infinite;"></div>
+                <div style="font-size:12px;color:var(--text-3);font-family:'Geist',sans-serif;letter-spacing:0.05em;">Loading...</div>
+            </div>
+        </div>
+        <style>
+        @keyframes bae-spin { to { transform: rotate(360deg); } }
+        </style>
 
         <!-- Header -->
         <div class="bae-header">
@@ -1095,6 +1107,90 @@ function bntm_shortcode_bae() {
             </div>
         </div>
 
+        <!-- Pricing Modal -->
+        <div id="bae-pricing-overlay" class="bae-pricing-overlay" style="display:none;">
+            <div class="bae-pricing-modal">
+                <button class="bae-pricing-close" onclick="baePricingClose()">&times;</button>
+
+                <div class="bae-pricing-header">
+                    <div class="bae-pricing-eyebrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                        Unlock the full Brand Asset Engine
+                    </div>
+                    <div class="bae-pricing-title" id="bae-pricing-title">Take your brand further</div>
+                    <div class="bae-pricing-subtitle" id="bae-pricing-subtitle">Regenerate assets anytime, use the custom AI generator, and share your brand kit publicly.</div>
+                </div>
+
+                <div class="bae-pricing-cards">
+                    <!-- Starter -->
+                    <div class="bae-pricing-card">
+                        <div class="bae-pricing-plan-name">Starter</div>
+                        <div class="bae-pricing-price">₱49 <span>/mo</span></div>
+                        <div class="bae-pricing-period">or ₱199 one-time lifetime</div>
+                        <ul class="bae-pricing-features">
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                All 7 brand assets — generate anytime
+                            </li>
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                Regenerate assets as often as you want
+                            </li>
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                Public brand kit page with shareable link
+                            </li>
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                Custom AI Generator — 10 uses/month
+                            </li>
+                            <li class="locked">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5c5972" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
+                                Multiple brand profiles
+                            </li>
+                        </ul>
+                        <button class="bae-pricing-cta outline" onclick="baePricingSelect('starter')">Get Starter</button>
+                    </div>
+
+                    <!-- Pro -->
+                    <div class="bae-pricing-card recommended">
+                        <div class="bae-pricing-recommended-badge">✦ Most Popular</div>
+                        <div class="bae-pricing-plan-name">Pro</div>
+                        <div class="bae-pricing-price">₱99 <span>/mo</span></div>
+                        <div class="bae-pricing-period">Best value for growing brands</div>
+                        <ul class="bae-pricing-features">
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                Everything in Starter
+                            </li>
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                Unlimited Custom AI Generator
+                            </li>
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                Multiple brand profiles
+                            </li>
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                Priority AI generation
+                            </li>
+                            <li>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                Early access to new features
+                            </li>
+                        </ul>
+                        <button class="bae-pricing-cta primary" onclick="baePricingSelect('pro')">Get Pro — ₱99/mo</button>
+                    </div>
+                </div>
+
+                <div class="bae-pricing-footer">
+                    Your free assets are always yours — upgrading unlocks more power, not access to what you already have.<br>
+                    <a href="#" onclick="baePricingClose()" style="color:var(--text-3);text-decoration:underline;margin-top:4px;display:inline-block;">Continue with Free</a>
+                </div>
+            </div>
+        </div>
+
         <!-- Tab Nav -->
         <div class="bae-tabs">
             <?php
@@ -1106,13 +1202,25 @@ function bntm_shortcode_bae() {
                 'startup'  => 'Launch Toolkit',
                 'settings' => 'Settings',
             ];
+
+            // Tier detection — read from profile or cookie/DB
+            $user_plan = bae_get_user_plan($user_id, $profile);
+            $is_free   = $user_plan === 'free';
+
+            // Which tabs show a Pro badge for free users
+            $pro_tabs = ['assets' => true, 'kit' => true];
+
             $base_url = strtok($_SERVER['REQUEST_URI'], '?');
             foreach ($tabs as $slug => $label):
                 $class = $active_tab === $slug ? 'bae-tab active' : 'bae-tab';
             ?>
                 <a href="<?php echo $base_url; ?>?tab=<?php echo $slug; ?>" class="<?php echo $class; ?>">
                     <?php echo $label; ?>
-                    <?php if ($slug === 'identity' && empty($profile)) echo '<span class="bae-tab-lock">&#9670;</span>'; ?>
+                    <?php if ($slug === 'identity' && empty($profile)): ?>
+                        <span class="bae-tab-lock">&#9670;</span>
+                    <?php elseif ($is_free && isset($pro_tabs[$slug])): ?>
+                        <span class="bae-tab-pro-badge">PRO</span>
+                    <?php endif; ?>
                 </a>
             <?php endforeach; ?>
         </div>
@@ -1297,6 +1405,140 @@ function bntm_shortcode_bae() {
         background: var(--surface);
     }
     .bae-tab-lock { font-size: 9px; color: var(--text-3); }
+
+    /* ── PRO BADGE on tabs ── */
+    .bae-tab-pro-badge {
+        font-size: 9px; font-weight: 800;
+        letter-spacing: 0.06em;
+        padding: 2px 6px; border-radius: 5px;
+        background: linear-gradient(135deg, #6d28d9, #ec4899);
+        color: white;
+        animation: bae-pro-pulse 2.5s ease-in-out infinite;
+        box-shadow: 0 0 8px rgba(139,92,246,0.5);
+    }
+    @keyframes bae-pro-pulse {
+        0%, 100% { box-shadow: 0 0 6px rgba(139,92,246,0.4); }
+        50%       { box-shadow: 0 0 14px rgba(236,72,153,0.7); }
+    }
+
+    /* ── PRICING MODAL ── */
+    .bae-pricing-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
+        z-index: 999999; display: flex; align-items: center; justify-content: center;
+        padding: 24px; animation: bae-fade-in 0.2s ease;
+    }
+    @keyframes bae-fade-in { from { opacity:0; } to { opacity:1; } }
+    .bae-pricing-modal {
+        background: var(--bg-2); border: 1px solid var(--border);
+        border-radius: 24px; width: 100%; max-width: 680px;
+        max-height: 90vh; overflow-y: auto;
+        box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,92,246,0.1);
+        animation: bae-slide-up 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes bae-slide-up { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    .bae-pricing-header {
+        padding: 32px 32px 0;
+        text-align: center;
+    }
+    .bae-pricing-eyebrow {
+        font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+        text-transform: uppercase; color: var(--brand-soft);
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        margin-bottom: 12px;
+    }
+    .bae-pricing-title {
+        font-family: 'Instrument Serif', serif;
+        font-size: 28px; font-style: italic;
+        color: var(--text); margin-bottom: 8px;
+    }
+    .bae-pricing-subtitle { font-size: 14px; color: var(--text-3); margin-bottom: 28px; }
+    .bae-pricing-cards {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 14px; padding: 0 32px 32px;
+    }
+    .bae-pricing-card {
+        background: var(--surface); border: 1.5px solid var(--border);
+        border-radius: 18px; padding: 24px;
+        position: relative; transition: border-color 0.2s;
+    }
+    .bae-pricing-card.recommended {
+        border-color: #8b5cf6;
+        background: linear-gradient(145deg, rgba(109,40,217,0.08), rgba(139,92,246,0.04));
+    }
+    .bae-pricing-recommended-badge {
+        position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+        background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+        color: white; font-size: 10px; font-weight: 800;
+        padding: 3px 14px; border-radius: 999px; letter-spacing: 0.08em;
+        white-space: nowrap;
+    }
+    .bae-pricing-plan-name {
+        font-size: 13px; font-weight: 700; color: var(--text-2);
+        text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;
+    }
+    .bae-pricing-price {
+        font-family: 'Instrument Serif', serif;
+        font-size: 36px; color: var(--text); line-height: 1;
+        margin-bottom: 4px;
+    }
+    .bae-pricing-price span { font-size: 16px; font-family: 'Geist', sans-serif; color: var(--text-3); }
+    .bae-pricing-period { font-size: 12px; color: var(--text-3); margin-bottom: 20px; }
+    .bae-pricing-features { list-style: none; margin-bottom: 20px; display: flex; flex-direction: column; gap: 9px; }
+    .bae-pricing-features li {
+        font-size: 13px; color: var(--text-2);
+        display: flex; align-items: flex-start; gap: 8px; line-height: 1.4;
+    }
+    .bae-pricing-features li svg { flex-shrink: 0; margin-top: 1px; }
+    .bae-pricing-features li.locked { color: var(--text-3); }
+    .bae-pricing-cta {
+        width: 100%; padding: 12px; border-radius: 12px;
+        font-size: 14px; font-weight: 700; font-family: 'Geist', sans-serif;
+        cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .bae-pricing-cta.primary {
+        background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+        color: white; box-shadow: 0 6px 20px rgba(109,40,217,0.35);
+    }
+    .bae-pricing-cta.primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(109,40,217,0.45); }
+    .bae-pricing-cta.outline {
+        background: var(--surface-2); color: var(--text-2);
+        border: 1px solid var(--border-2);
+    }
+    .bae-pricing-cta.outline:hover { border-color: var(--brand-soft); color: var(--text); }
+    .bae-pricing-close {
+        position: absolute; top: 16px; right: 16px;
+        background: var(--bg-3); border: none; width: 30px; height: 30px;
+        border-radius: 8px; cursor: pointer; color: var(--text-2);
+        font-size: 18px; display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+    }
+    .bae-pricing-close:hover { background: var(--border-2); color: var(--text); }
+    .bae-pricing-footer {
+        text-align: center; padding: 0 32px 24px;
+        font-size: 12px; color: var(--text-3);
+    }
+    /* ── LOCKED ASSET CARD OVERLAY ── */
+    .bae-asset-locked-overlay {
+        position: absolute; inset: 0;
+        background: rgba(10,10,15,0.7); backdrop-filter: blur(3px);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 8px; border-radius: 18px; z-index: 2;
+        cursor: pointer; transition: background 0.2s;
+    }
+    .bae-asset-locked-overlay:hover { background: rgba(10,10,15,0.6); }
+    .bae-asset-locked-icon {
+        width: 36px; height: 36px; border-radius: 10px;
+        background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .bae-asset-locked-label { font-size: 12px; font-weight: 700; color: white; }
+    .bae-asset-locked-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
+    @media (max-width: 540px) {
+        .bae-pricing-cards { grid-template-columns: 1fr; }
+        .bae-pricing-header { padding: 24px 20px 0; }
+        .bae-pricing-cards { padding: 0 20px 24px; }
+    }
 
     /* ── TAB CONTENT ── */
     .bae-tab-content { padding: 28px; background: var(--bg); transition: background 0.5s; }
@@ -1565,24 +1807,23 @@ function bntm_shortcode_bae() {
     .bae-font-copy-btn.copied { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.2); }
 
     .bae-font-sample {
-        padding: 20px; border: 1px solid var(--border); border-radius: 14px;
-        margin-top: 14px; background: var(--bg-2);
-        transition: background 0.5s, border-color 0.5s;
+        padding: 20px; border: 1px solid #e5e7eb; border-radius: 14px;
+        margin-top: 14px; background: #ffffff;
+        transition: border-color 0.5s;
     }
     .bae-font-heading-sample {
         font-family: 'Instrument Serif', serif;
         font-size: 26px; font-style: italic; line-height: 1.2;
         color: var(--brand-soft); transition: color 0.5s;
     }
-    .bae-font-body-sample { font-size: 14px; color: var(--text-2); margin-top: 8px; line-height: 1.7; transition: color 0.5s; }
+    .bae-font-body-sample { font-size: 14px; color: #374151; margin-top: 8px; line-height: 1.7; }
 
     /* ── LOGO MOCKUP ── */
     .bae-logo-mockup {
         display: flex; align-items: center; gap: 16px;
-        padding: 24px; border: 1px solid var(--border);
+        padding: 24px; border: 1px solid #e5e7eb;
         border-radius: 14px; margin-top: 14px;
-        background: var(--surface);
-        transition: background 0.5s, border-color 0.5s;
+        background: #ffffff;
     }
     .bae-logo-mockup.dark-bg { background: var(--bg); }
     .bae-logo-icon-shape {
@@ -1770,19 +2011,81 @@ function bntm_shortcode_bae() {
                 confirmCallback = null;
             });
         }
+
+        // ── Pricing Modal ──────────────────────────────────────────────────
+        window.baePricingOpen = function(title, subtitle) {
+            var overlay = document.getElementById('bae-pricing-overlay');
+            if (!overlay) return;
+            if (title)    document.getElementById('bae-pricing-title').textContent    = title;
+            if (subtitle) document.getElementById('bae-pricing-subtitle').textContent = subtitle;
+            overlay.style.display = 'flex';
+            if (window.gsap) gsap.fromTo('.bae-pricing-modal', {opacity:0,y:20}, {opacity:1,y:0,duration:0.35,ease:'power3.out'});
+        };
+
+        window.baePricingClose = function() {
+            var overlay = document.getElementById('bae-pricing-overlay');
+            if (!overlay) return;
+            if (window.gsap) {
+                gsap.to('.bae-pricing-modal', {opacity:0, y:16, duration:0.2, ease:'power2.in', onComplete:function(){ overlay.style.display='none'; }});
+            } else { overlay.style.display = 'none'; }
+        };
+
+        window.baePricingSelect = function(plan) {
+            // UI only for now — show coming soon
+            var btns = document.querySelectorAll('.bae-pricing-cta');
+            btns.forEach(function(b){ b.textContent = 'Coming soon...'; b.disabled = true; });
+            setTimeout(baePricingClose, 1800);
+        };
+
+        // Close on overlay click
+        var pricingOverlay = document.getElementById('bae-pricing-overlay');
+        if (pricingOverlay) {
+            pricingOverlay.addEventListener('click', function(e) {
+                if (e.target === this) baePricingClose();
+            });
+        }
     })();
     </script>
 
     <script>
     /* BAE — THEME TOGGLE + GSAP */
-    var baeIsDark = true;
+    var baeIsDark = (localStorage.getItem('bae_theme') !== 'light');
 
-    function baeToggleTheme() {
-        baeIsDark = !baeIsDark;
+    function baeApplyTheme(dark, animate) {
         var wrap  = document.getElementById('bae-wrap');
         var track = document.getElementById('bae-toggle-track');
         var label = document.getElementById('bae-theme-label');
-        var icon  = document.getElementById('bae-theme-icon');
+        if (!wrap) return;
+
+        if (dark) {
+            wrap.classList.remove('bae-light');
+            if (track) track.classList.add('on');
+            if (label) label.textContent = 'Light';
+            var sun = document.getElementById('bae-icon-sun');
+            var moon = document.getElementById('bae-icon-moon');
+            if (sun)  sun.style.display  = '';
+            if (moon) moon.style.display = 'none';
+        } else {
+            wrap.classList.add('bae-light');
+            if (track) track.classList.remove('on');
+            if (label) label.textContent = 'Dark';
+            var sun2 = document.getElementById('bae-icon-sun');
+            var moon2 = document.getElementById('bae-icon-moon');
+            if (sun2)  sun2.style.display  = 'none';
+            if (moon2) moon2.style.display = '';
+        }
+
+        if (animate && window.gsap) {
+            gsap.to('.bae-toggle-thumb', { x: dark ? 16 : 0, duration: 0.4, ease: 'back.out(1.8)' });
+        } else if (window.gsap) {
+            // Instant set without animation on page load
+            gsap.set('.bae-toggle-thumb', { x: dark ? 16 : 0 });
+        }
+    }
+
+    function baeToggleTheme() {
+        baeIsDark = !baeIsDark;
+        localStorage.setItem('bae_theme', baeIsDark ? 'dark' : 'light');
 
         var overlay = document.createElement('div');
         overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;pointer-events:none;background:' + (baeIsDark ? '#0a0a0f' : '#fafafa') + ';opacity:0;';
@@ -1791,28 +2094,56 @@ function bntm_shortcode_bae() {
         if (window.gsap) {
             var tl = gsap.timeline();
             tl.to(overlay, { opacity: 0.3, duration: 0.18, ease: 'power2.in' })
-              .call(function() {
-                  if (baeIsDark) { wrap.classList.remove('bae-light'); track.classList.add('on'); label.textContent = 'Light'; document.getElementById('bae-icon-sun').style.display=''; document.getElementById('bae-icon-moon').style.display='none'; }
-                  else { wrap.classList.add('bae-light'); track.classList.remove('on'); label.textContent = 'Dark'; document.getElementById('bae-icon-sun').style.display='none'; document.getElementById('bae-icon-moon').style.display=''; }
-              })
+              .call(function() { baeApplyTheme(baeIsDark, true); })
               .to(overlay, { opacity: 0, duration: 0.35, ease: 'power2.out' })
               .call(function() { overlay.remove(); });
-            gsap.to('.bae-toggle-thumb', { x: baeIsDark ? 16 : 0, duration: 0.4, ease: 'back.out(1.8)' });
             gsap.fromTo('.bae-stat-card, .bae-card, .bae-asset-card', { scale: 0.995 }, { scale: 1, duration: 0.35, stagger: 0.01, ease: 'power3.out' });
         } else {
-            if (baeIsDark) { wrap.classList.remove('bae-light'); track.classList.add('on'); label.textContent = 'Light'; document.getElementById('bae-icon-sun').style.display=''; document.getElementById('bae-icon-moon').style.display='none'; }
-            else { wrap.classList.add('bae-light'); track.classList.remove('on'); label.textContent = 'Dark'; document.getElementById('bae-icon-sun').style.display='none'; document.getElementById('bae-icon-moon').style.display=''; }
+            baeApplyTheme(baeIsDark, false);
             overlay.remove();
         }
     }
 
+    // Apply saved theme immediately on load (before DOMContentLoaded to avoid flash)
+    (function() {
+        var wrap = document.getElementById('bae-wrap');
+        if (wrap && !baeIsDark) wrap.classList.add('bae-light');
+    })();
+
     document.addEventListener('DOMContentLoaded', function() {
+        // Sync toggle thumb position to saved theme
+        baeApplyTheme(baeIsDark, false);
+
+        // Reveal the wrap — hide loader, fade in content
+        var wrap   = document.getElementById('bae-wrap');
+        var loader = document.getElementById('bae-page-loader');
+
+        function revealWrap() {
+            if (loader) {
+                loader.style.opacity = '0';
+                loader.style.transition = 'opacity 0.2s ease';
+                setTimeout(function() {
+                    if (loader) loader.style.display = 'none';
+                }, 200);
+            }
+            if (wrap) {
+                wrap.style.opacity = '1';
+            }
+        }
+
+        // Use document.fonts if available for proper font-load timing
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(function() {
+                requestAnimationFrame(revealWrap);
+            });
+        } else {
+            // Fallback: short delay
+            setTimeout(revealWrap, 120);
+        }
+
         if (!window.gsap) return;
-        gsap.fromTo('.bae-header', { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.1 });
-        gsap.fromTo('.bae-tab', { opacity: 0, y: -6 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: 'power3.out', delay: 0.2 });
-        gsap.fromTo('.bae-stat-card', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: 'power3.out', delay: 0.35 });
-        gsap.fromTo('.bae-card', { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, ease: 'power3.out', delay: 0.45 });
-        gsap.fromTo('.bae-asset-card', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.3 });
+        // Hover micro-interactions only — entry animations removed,
+        // the wrap opacity fade-in handles the reveal cleanly
         document.querySelectorAll('.bae-stat-card, .bae-asset-card, .bae-card').forEach(function(el) {
             el.addEventListener('mouseenter', function() { gsap.to(el, { y: -3, duration: 0.22, ease: 'power2.out' }); });
             el.addEventListener('mouseleave', function() { gsap.to(el, { y: 0, duration: 0.22, ease: 'power2.out' }); });
@@ -1844,6 +2175,9 @@ function bae_overview_tab($user_id, $profile) {
     $kit_status   = !empty($p['kit_visibility']) ? $p['kit_visibility'] : 'private';
 
     ob_start();
+
+    $user_plan = bae_get_user_plan($user_id, $profile);
+    $is_free   = $user_plan === 'free';
     ?>
     <!-- Stats Row -->
     <div class="bae-stats-row">
@@ -1862,15 +2196,20 @@ function bae_overview_tab($user_id, $profile) {
             <div class="bae-stat-value"><?php echo $assets_count; ?></div>
             <div class="bae-stat-sub">of 7 available</div>
         </div>
-        <div class="bae-stat-card">
-            <div class="bae-stat-label">Brand Kit</div>
+        <div class="bae-stat-card" style="cursor:<?php echo $is_free ? 'pointer' : 'default'; ?>;" <?php if ($is_free) echo 'onclick="baePricingOpen()"'; ?>>
+            <div class="bae-stat-label">Current Plan</div>
             <div class="bae-stat-value" style="font-size:18px;margin-top:10px;">
-                <?php if ($kit_status === 'public'): ?>
-                    <span class="bae-badge bae-badge-green">Public</span>
+                <?php if ($user_plan === 'pro'): ?>
+                    <span class="bae-badge bae-badge-purple">Pro ✦</span>
+                <?php elseif ($user_plan === 'starter'): ?>
+                    <span class="bae-badge bae-badge-green">Starter</span>
                 <?php else: ?>
-                    <span class="bae-badge bae-badge-gray">Private</span>
+                    <span class="bae-badge bae-badge-gray">Free</span>
                 <?php endif; ?>
             </div>
+            <?php if ($is_free): ?>
+            <div class="bae-stat-sub" style="color:var(--brand-soft);font-size:11px;margin-top:4px;">Upgrade ✦</div>
+            <?php endif; ?>
         </div>
         <div class="bae-stat-card">
             <div class="bae-stat-label">Last Updated</div>
@@ -1996,7 +2335,7 @@ function bae_overview_tab($user_id, $profile) {
             <!-- CHANGED: NEW Contact Information section — used in all generated assets -->
             <div style="margin-bottom:28px;">
                 <div class="bae-section-label">Contact Information</div>
-                <small style="display:block;color:#9ca3af;font-size:12px;margin-bottom:16px;">
+                <small style="display:block;color:var(--text-3);font-size:12px;margin-bottom:16px;">
                     Used in business cards, letterheads, email signatures, and other assets — no more placeholder text.
                 </small>
                 <div class="bae-form-grid">
@@ -2112,6 +2451,14 @@ function bae_overview_tab($user_id, $profile) {
             <div style="margin-bottom:28px;">
                 <div class="bae-section-label">Logo</div>
 
+                <!-- Method A: Upload -->
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--brand-deep),var(--brand));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <span style="font-size:11px;font-weight:800;color:white;">A</span>
+                    </div>
+                    <div style="font-size:12px;font-weight:700;color:var(--text-2);">Upload Your Own Logo <span style="font-size:11px;font-weight:400;color:var(--text-3);">— Use your actual logo file (PNG, SVG, JPG)</span></div>
+                </div>
+
                 <!-- Logo Upload -->
                 <div style="margin-bottom:20px;padding:20px;background:var(--bg-3);border:2px dashed var(--border-2);border-radius:14px;transition:border-color .2s;" id="bae-logo-upload-area">
                     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -2154,10 +2501,27 @@ function bae_overview_tab($user_id, $profile) {
 
                 <div class="bae-form-grid">
                     <div class="bae-form-group">
-                        <label>Logo Type <small style="font-weight:400;color:var(--text-3);">(CSS builder — used when no logo uploaded)</small></label>
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                            <div style="width:22px;height:22px;border-radius:6px;background:var(--bg-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <span style="font-size:11px;font-weight:800;color:var(--text-2);">B</span>
+                            </div>
+                            <div style="font-size:12px;font-weight:700;color:var(--text-2);">CSS Logo Builder <span style="font-size:11px;font-weight:400;color:var(--text-3);">— Used in assets when no logo uploaded</span></div>
+                        </div>
+                        <label>Logo Type</label>
                         <select name="logo_style">
                             <?php
-                            $styles = ['wordmark' => 'Wordmark — Business name as logo', 'lettermark' => 'Lettermark — Initials only', 'combination' => 'Combination — Icon + Name'];
+                            $styles = [
+                                'wordmark'    => 'Wordmark — Business name as logo',
+                                'lettermark'  => 'Lettermark — Initials only',
+                                'combination' => 'Combination — Icon + Name',
+                                'emblem'      => 'Emblem — Icon inside a badge shape',
+                                'monogram'    => 'Monogram — Stylized initials',
+                                'abstract'    => 'Abstract Mark — Icon only, no text',
+                                'badge'       => 'Badge — Circular seal style',
+                                'stacked'     => 'Stacked — Icon above name',
+                                'outlined'    => 'Outlined — Name with border frame',
+                                'minimal'     => 'Minimal — Initials with dot/line',
+                            ];
                             $sls = $p['logo_style'] ?? 'wordmark';
                             foreach ($styles as $val => $lbl):
                             ?>
@@ -2266,11 +2630,11 @@ function bae_overview_tab($user_id, $profile) {
                 <?php foreach ($domains as $i => $domain): ?>
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid <?php echo $i === 0 ? '#111827' : '#e5e7eb'; ?>;border-radius:8px;background:<?php echo $i === 0 ? '#111827' : '#fff'; ?>;">
                     <span style="font-size:13px;font-weight:<?php echo $i === 0 ? '600' : '400'; ?>;color:<?php echo $i === 0 ? '#fff' : '#374151'; ?>;font-family:'Courier New',monospace;"><?php echo esc_html($domain); ?></span>
-                    <?php if ($i === 0): ?><span style="font-size:10px;background:#fff;color:#111827;padding:2px 8px;border-radius:999px;font-weight:700;">TOP</span><?php endif; ?>
+                    <?php if ($i === 0): ?><span style="font-size:10px;background:var(--surface);color:var(--text);padding:2px 8px;border-radius:999px;font-weight:700;">TOP</span><?php endif; ?>
                 </div>
                 <?php endforeach; ?>
             </div>
-            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">Check availability at <strong>namecheap.com</strong>, <strong>godaddy.com</strong>, or <strong>dot.ph</strong> (for .ph domains)</p>
+            <p style="font-size:12px;color:var(--text-3);margin-top:10px;">Check availability at <strong>namecheap.com</strong>, <strong>godaddy.com</strong>, or <strong>dot.ph</strong> (for .ph domains)</p>
         </div>
 
         <div class="bae-divider"></div>
@@ -2280,10 +2644,10 @@ function bae_overview_tab($user_id, $profile) {
             <div class="bae-section-label" style="margin-bottom:12px;">Social Media Handles to Register</div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;">
                 <?php foreach ($handles as $handle): ?>
-                <span style="padding:8px 16px;background:#f3f4f6;border-radius:8px;font-size:13px;font-weight:500;color:#374151;font-family:'Courier New',monospace;"><?php echo esc_html($handle); ?></span>
+                <span style="padding:8px 16px;background:var(--bg-3);border-radius:8px;font-size:13px;font-weight:500;color:var(--text-2);font-family:'Courier New',monospace;"><?php echo esc_html($handle); ?></span>
                 <?php endforeach; ?>
             </div>
-            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">Register the same handle on Facebook, Instagram, TikTok, and YouTube — consistency builds trust.</p>
+            <p style="font-size:12px;color:var(--text-3);margin-top:10px;">Register the same handle on Facebook, Instagram, TikTok, and YouTube — consistency builds trust.</p>
         </div>
 
         <div class="bae-divider"></div>
@@ -2293,10 +2657,10 @@ function bae_overview_tab($user_id, $profile) {
             <div class="bae-section-label" style="margin-bottom:12px;">Tagline Variants</div>
             <div style="display:flex;flex-direction:column;gap:8px;">
                 <?php foreach ($tagline_variants as $variant): ?>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid #e5e7eb;border-radius:8px;background:#fafafa;">
-                    <span style="font-size:14px;color:#374151;font-style:italic;">"<?php echo esc_html($variant); ?>"</span>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--bg-2);">
+                    <span style="font-size:14px;color:var(--text-2);font-style:italic;">"<?php echo esc_html($variant); ?>"</span>
                     <button onclick="navigator.clipboard.writeText('<?php echo esc_js($variant); ?>');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500);"
-                            style="border:none;background:none;color:#9ca3af;font-size:12px;cursor:pointer;padding:4px 8px;">Copy</button>
+                            style="border:none;background:none;color:var(--text-3);font-size:12px;cursor:pointer;padding:4px 8px;">Copy</button>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -2309,10 +2673,10 @@ function bae_overview_tab($user_id, $profile) {
             <div class="bae-section-label" style="margin-bottom:12px;">Business Email Ideas</div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;">
                 <?php foreach ($email_suggestions as $email): ?>
-                <span style="padding:8px 16px;background:#f3f4f6;border-radius:8px;font-size:13px;color:#374151;font-family:'Courier New',monospace;"><?php echo esc_html($email); ?></span>
+                <span style="padding:8px 16px;background:var(--bg-3);border-radius:8px;font-size:13px;color:var(--text-2);font-family:'Courier New',monospace;"><?php echo esc_html($email); ?></span>
                 <?php endforeach; ?>
             </div>
-            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">Get a professional business email via <strong>Google Workspace</strong> or <strong>Zoho Mail</strong> — avoid using personal Gmail for business.</p>
+            <p style="font-size:12px;color:var(--text-3);margin-top:10px;">Get a professional business email via <strong>Google Workspace</strong> or <strong>Zoho Mail</strong> — avoid using personal Gmail for business.</p>
         </div>
 
     </div>
@@ -2671,7 +3035,7 @@ function bae_identity_tab($user_id, $profile) {
         </div>
 
         <!-- Light background -->
-        <div class="bae-logo-mockup" style="background:#fff;">
+        <div class="bae-logo-mockup" style="background:#ffffff;">
             <?php if (!empty($p['logo_url'])): ?>
                 <img src="<?php echo esc_url($p['logo_url']); ?>" style="max-height:52px;max-width:160px;object-fit:contain;" alt="<?php echo esc_attr($p['business_name']); ?>">
             <?php else: ?>
@@ -2746,12 +3110,12 @@ function bae_identity_tab($user_id, $profile) {
                 <div class="bae-swatch-hex">60%</div>
             </div>
             <div class="bae-swatch">
-                <div class="bae-swatch-block" style="background:#ffffff;border:1px solid #e5e7eb;"></div>
+                <div class="bae-swatch-block" style="background:var(--surface);border:1px solid var(--border);"></div>
                 <div class="bae-swatch-label">White</div>
                 <div class="bae-swatch-hex">#FFFFFF</div>
             </div>
             <div class="bae-swatch">
-                <div class="bae-swatch-block" style="background:#f9fafb;"></div>
+                <div class="bae-swatch-block" style="background:var(--bg-3);"></div>
                 <div class="bae-swatch-label">Off-White</div>
                 <div class="bae-swatch-hex">#F9FAFB</div>
             </div>
@@ -2804,7 +3168,7 @@ function bae_identity_tab($user_id, $profile) {
             <?php endforeach; ?>
         </div>
         <?php if (!empty($p['personality'])): ?>
-        <div style="margin-top:16px;padding:16px;background:#f9fafb;border-radius:8px;font-size:14px;color:#374151;line-height:1.7;">
+        <div style="margin-top:16px;padding:16px;background:var(--bg-3);border-radius:8px;font-size:14px;color:var(--text-2);line-height:1.7;">
             <strong>Target Audience:</strong> <?php echo esc_html($p['personality']); ?>
         </div>
         <?php endif; ?>
@@ -2867,6 +3231,8 @@ function bae_assets_tab($user_id, $profile) {
     $nonce        = wp_create_nonce('bae_generate_asset');
     $assets_table = $wpdb->prefix . 'bae_assets';
     $profile_id   = $p['id'];
+    $user_plan    = bae_get_user_plan($user_id, $profile);
+    $is_free      = $user_plan === 'free';
 
     $generated = $wpdb->get_results($wpdb->prepare(
         "SELECT * FROM {$assets_table} WHERE profile_id = %d AND user_id = %d",
@@ -2906,12 +3272,27 @@ function bae_assets_tab($user_id, $profile) {
             <div class="bae-card-title">Asset Generator</div>
             <div class="bae-card-desc">Generate branded HTML assets ready for download or handoff.</div>
         </div>
+        <?php if ($is_free): ?>
+        <button class="bae-btn bae-btn-outline" onclick="baePricingOpen('Generate all 7 assets at once', 'Free plan lets you generate each asset individually. Upgrade to generate all 7 in one click, and regenerate anytime.')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
+            Generate All — Starter+
+        </button>
+        <?php else: ?>
         <button class="bae-btn bae-btn-primary" id="bae-generate-all-btn"
                 data-nonce="<?php echo $nonce; ?>"
                 data-pid="<?php echo $profile_id; ?>">
             Generate All Assets
         </button>
+        <?php endif; ?>
     </div>
+
+    <?php if ($is_free): ?>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(135deg,rgba(109,40,217,.1),rgba(236,72,153,.06));border:1px solid rgba(139,92,246,.2);border-radius:12px;margin-bottom:20px;flex-wrap:wrap;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+        <span style="font-size:13px;color:var(--text-2);flex:1;"><strong>Free plan</strong> — click <strong>Generate</strong> on any card below to generate it free, once per asset. You also get <strong>1 free Custom AI generation</strong>. Assets are yours to keep. Upgrade for Generate All, unlimited regeneration, and unlimited Custom AI.</span>
+        <button class="bae-btn bae-btn-primary bae-btn-sm" onclick="baePricingOpen()" style="white-space:nowrap;">Upgrade Now ✦</button>
+    </div>
+    <?php endif; ?>
 
     <!-- CHANGED: Progress UI for sequential generate-all -->
     <div class="bae-progress-wrap" id="bae-progress-wrap">
@@ -2963,12 +3344,19 @@ function bae_assets_tab($user_id, $profile) {
                         Preview
                     </button>
                     <?php if ( empty($meta['custom']) ): ?>
+                    <?php if ($is_free): ?>
+                    <button class="bae-btn bae-btn-outline bae-btn-sm" onclick="baePricingOpen('Regenerate anytime', 'Free plan generates each asset once. Upgrade to regenerate whenever you update your brand.')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
+                        Regen
+                    </button>
+                    <?php else: ?>
                     <button class="bae-btn bae-btn-primary bae-btn-sm bae-regen-btn"
                             data-type="<?php echo $type; ?>"
                             data-nonce="<?php echo $nonce; ?>"
                             data-pid="<?php echo $profile_id; ?>">
                         Regenerate
                     </button>
+                    <?php endif; ?>
                     <?php endif; ?>
                     <button class="bae-btn bae-btn-outline bae-btn-sm bae-delete-btn"
                             data-type="<?php echo $type; ?>"
@@ -2984,6 +3372,12 @@ function bae_assets_tab($user_id, $profile) {
                             data-pid="<?php echo $profile_id; ?>">
                         Generate
                     </button>
+                    <?php if ($is_free): ?>
+                    <span style="font-size:10px;font-weight:600;color:var(--brand-soft);white-space:nowrap;display:flex;align-items:center;gap:3px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                        Free taste
+                    </span>
+                    <?php endif; ?>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
@@ -2992,7 +3386,27 @@ function bae_assets_tab($user_id, $profile) {
     </div>
 
     <!-- Custom AI Generator -->
-    <div class="bae-card" style="margin-top:24px;">
+    <?php
+    // Count custom AI assets already generated by this user
+    $custom_ai_count = 0;
+    foreach ( $gen_map as $type => $asset ) {
+        if ( strpos($type, 'custom_') === 0 ) $custom_ai_count++;
+    }
+    $free_ai_used = $is_free && $custom_ai_count >= 1;
+    ?>
+    <div class="bae-card" style="margin-top:24px;position:relative;overflow:hidden;">
+        <?php if ($free_ai_used): ?>
+        <div style="position:absolute;inset:0;background:rgba(10,10,15,.75);backdrop-filter:blur(4px);border-radius:18px;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;" onclick="baePricingOpen('Unlock more AI generations', 'You\'ve used your one free AI generation. Upgrade to keep generating custom brand assets with AI.')">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#6d28d9,#8b5cf6);display:flex;align-items:center;justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:14px;font-weight:700;color:white;margin-bottom:4px;">You've used your free AI generation</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.5);">Upgrade for unlimited custom AI assets</div>
+            </div>
+            <button style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:white;border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;font-family:'Geist',sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(109,40,217,.4);">Upgrade to Unlock ✦</button>
+        </div>
+        <?php endif; ?>
         <div class="bae-card-title" style="display:flex;align-items:center;gap:8px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-soft)"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
             Custom AI Generator
@@ -3371,14 +3785,30 @@ function bae_kit_tab($user_id, $profile) {
         return ob_get_clean();
     }
 
-    $p        = $profile;
-    $kit_slug = !empty($p['kit_slug']) ? $p['kit_slug'] : sanitize_title($p['business_name']) . '-' . substr($p['rand_id'], 0, 6);
-    $kit_url  = get_permalink(get_page_by_path('brand-kit')) . '?slug=' . $kit_slug;
-    $is_pub   = $p['kit_visibility'] === 'public';
-    $nonce    = wp_create_nonce('bae_save_kit_settings');
+    $p         = $profile;
+    $kit_slug  = !empty($p['kit_slug']) ? $p['kit_slug'] : sanitize_title($p['business_name']) . '-' . substr($p['rand_id'], 0, 6);
+    $kit_url   = get_permalink(get_page_by_path('brand-kit')) . '?slug=' . $kit_slug;
+    $is_pub    = $p['kit_visibility'] === 'public';
+    $nonce     = wp_create_nonce('bae_save_kit_settings');
+    $user_plan = bae_get_user_plan($user_id, $profile);
+    $is_free   = $user_plan === 'free';
 
     ob_start();
     ?>
+    <?php if ($is_free): ?>
+    <!-- Free plan kit lock banner -->
+    <div style="position:relative;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:linear-gradient(135deg,rgba(109,40,217,.1),rgba(236,72,153,.06));border:1px solid rgba(139,92,246,.25);border-radius:14px;flex-wrap:wrap;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
+            <div style="flex:1;">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">Public Brand Kit is a Starter+ feature</div>
+                <div style="font-size:12px;color:var(--text-3);">Upgrade to share your brand kit with designers, vendors, and partners via a public link.</div>
+            </div>
+            <button class="bae-btn bae-btn-primary bae-btn-sm" onclick="baePricingOpen('Share your Brand Kit publicly', 'Give designers, vendors, and clients a single link to your brand — colors, fonts, logo, and usage rules.')" style="white-space:nowrap;">Upgrade Now ✦</button>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <div class="bae-card">
         <div class="bae-card-header">
             <div>
@@ -3390,8 +3820,8 @@ function bae_kit_tab($user_id, $profile) {
             </span>
         </div>
 
-        <?php if ($is_pub): ?>
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <?php if ($is_pub && !$is_free): ?>
+        <div style="background:#f0fdf4;border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
             <div style="font-size:13px;color:#065f46;font-family:'Courier New',monospace;word-break:break-all;">
                 <?php echo esc_url($kit_url); ?>
             </div>
@@ -3404,21 +3834,32 @@ function bae_kit_tab($user_id, $profile) {
         <form id="bae-kit-form">
             <div class="bae-form-grid">
                 <div class="bae-form-group">
-                    <label>Kit Visibility</label>
+                    <label>Kit Visibility <?php if ($is_free) echo '<span style="font-size:10px;font-weight:700;background:linear-gradient(135deg,#6d28d9,#ec4899);color:white;padding:2px 7px;border-radius:5px;margin-left:6px;vertical-align:middle;">STARTER+</span>'; ?></label>
+                    <?php if ($is_free): ?>
+                    <select name="kit_visibility" disabled onclick="baePricingOpen()" style="opacity:.5;cursor:not-allowed;">
+                        <option>Private — Upgrade to make public</option>
+                    </select>
+                    <small style="color:var(--brand-soft);cursor:pointer;" onclick="baePricingOpen('Make your Brand Kit public', 'Share your brand with the world on Starter plan.')">Upgrade to unlock public sharing →</small>
+                    <?php else: ?>
                     <select name="kit_visibility">
                         <option value="private" <?php selected($p['kit_visibility'], 'private'); ?>>Private — Only you can see it</option>
                         <option value="public"  <?php selected($p['kit_visibility'], 'public'); ?>>Public — Anyone with the link</option>
                     </select>
+                    <?php endif; ?>
                 </div>
                 <div class="bae-form-group">
                     <label>Kit URL Slug</label>
-                    <input type="text" name="kit_slug" value="<?php echo esc_attr($kit_slug); ?>" placeholder="my-brand-kit">
+                    <input type="text" name="kit_slug" value="<?php echo esc_attr($kit_slug); ?>" placeholder="my-brand-kit" <?php echo $is_free ? 'disabled style="opacity:.5;"' : ''; ?>>
                     <small>Unique identifier in the shareable URL.</small>
                 </div>
             </div>
             <input type="hidden" name="action" value="bae_save_kit_settings">
             <input type="hidden" name="nonce" value="<?php echo $nonce; ?>">
+            <?php if (!$is_free): ?>
             <button type="submit" class="bae-btn bae-btn-primary" style="margin-top:16px;">Save Kit Settings</button>
+            <?php else: ?>
+            <button type="button" class="bae-btn bae-btn-outline" style="margin-top:16px;" onclick="baePricingOpen()">Upgrade to Save Settings ✦</button>
+            <?php endif; ?>
             <div id="bae-kit-msg"></div>
         </form>
     </div>
@@ -3427,7 +3868,7 @@ function bae_kit_tab($user_id, $profile) {
     <div class="bae-card">
         <div class="bae-card-title">Kit Preview</div>
         <div class="bae-card-desc" style="margin-top:4px;margin-bottom:20px;">What partners and designers will see when they open your Brand Kit link.</div>
-        <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+        <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
             <?php echo bae_render_kit_html($p); ?>
         </div>
     </div>
@@ -3467,10 +3908,64 @@ function bae_kit_tab($user_id, $profile) {
 // =============================================================================
 
 function bae_settings_tab($user_id, $profile) {
-    $nonce = wp_create_nonce('bae_reset_profile');
+    $nonce     = wp_create_nonce('bae_reset_profile');
+    $user_plan = bae_get_user_plan($user_id, $profile);
+    $is_free   = $user_plan === 'free';
 
     ob_start();
     ?>
+    <!-- Current Plan Card -->
+    <div class="bae-card" style="background:linear-gradient(135deg,rgba(109,40,217,.08),rgba(236,72,153,.04));border-color:rgba(139,92,246,.2);">
+        <div class="bae-card-header" style="margin-bottom:0;">
+            <div>
+                <div class="bae-card-title">Current Plan</div>
+                <div class="bae-card-desc" style="margin-top:4px;">
+                    <?php if ($user_plan === 'pro'): ?>
+                        You're on <strong>Pro</strong> — everything is unlocked. Thank you!
+                    <?php elseif ($user_plan === 'starter'): ?>
+                        You're on <strong>Starter</strong> — assets, regeneration, and brand kit sharing enabled.
+                    <?php else: ?>
+                        You're on the <strong>Free plan</strong> — generate each asset once, identity board and wizard always free.
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+                <?php if ($user_plan === 'pro'): ?>
+                    <span class="bae-badge bae-badge-purple" style="font-size:13px;padding:6px 14px;">Pro ✦</span>
+                <?php elseif ($user_plan === 'starter'): ?>
+                    <span class="bae-badge bae-badge-green" style="font-size:13px;padding:6px 14px;">Starter</span>
+                    <button class="bae-btn bae-btn-primary bae-btn-sm" onclick="baePricingOpen()">Upgrade to Pro ✦</button>
+                <?php else: ?>
+                    <span class="bae-badge bae-badge-gray" style="font-size:13px;padding:6px 14px;">Free</span>
+                    <button class="bae-btn bae-btn-primary bae-btn-sm" onclick="baePricingOpen()" style="white-space:nowrap;">Upgrade Now ✦</button>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php if ($is_free): ?>
+        <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <?php
+            $features = [
+                ['label' => 'Wizard & Identity Board', 'free' => true],
+                ['label' => 'Generate 7 assets (once)', 'free' => true],
+                ['label' => 'Regenerate assets anytime', 'free' => false],
+                ['label' => 'Public brand kit link', 'free' => false],
+                ['label' => 'Custom AI Generator', 'free' => false],
+                ['label' => 'Multiple brand profiles', 'free' => false],
+            ];
+            foreach ($features as $f):
+            ?>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:<?php echo $f['free'] ? 'var(--text-2)' : 'var(--text-3)'; ?>;">
+                <?php if ($f['free']): ?>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                <?php else: ?>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5c5972" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
+                <?php endif; ?>
+                <?php echo $f['label']; ?>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+    </div>
     <div class="bae-card">
         <div class="bae-card-title">Export</div>
         <div class="bae-card-desc" style="margin-top:4px;margin-bottom:16px;">Download all your brand assets and profile data.</div>
@@ -3490,8 +3985,8 @@ function bae_settings_tab($user_id, $profile) {
             foreach ($info as $k => $v):
             ?>
             <div style="font-size:13px;">
-                <span style="color:#9ca3af;"><?php echo $k; ?>: </span>
-                <span style="color:#111827;font-weight:500;"><?php echo $v; ?></span>
+                <span style="color:var(--text-3);"><?php echo $k; ?>: </span>
+                <span style="color:var(--text);font-weight:500;"><?php echo $v; ?></span>
             </div>
             <?php endforeach; ?>
         </div>
@@ -3506,10 +4001,10 @@ function bae_settings_tab($user_id, $profile) {
             </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:#fff8f8;border:1px solid #fecaca;border-radius:8px;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--surface)8f8;border:1px solid rgba(244,63,94,0.3);border-radius:8px;flex-wrap:wrap;gap:10px;">
                 <div>
-                    <div style="font-size:14px;font-weight:600;color:#111827;">Reset Brand Profile</div>
-                    <div style="font-size:13px;color:#6b7280;margin-top:2px;">Clears your brand profile and all generated assets. Cannot be undone.</div>
+                    <div style="font-size:14px;font-weight:600;color:var(--text);">Reset Brand Profile</div>
+                    <div style="font-size:13px;color:var(--text-3);margin-top:2px;">Clears your brand profile and all generated assets. Cannot be undone.</div>
                 </div>
                 <button class="bae-btn bae-btn-danger bae-btn-sm" id="bae-reset-btn" data-nonce="<?php echo $nonce; ?>">
                     Reset Everything
@@ -3553,7 +4048,7 @@ function bae_settings_tab($user_id, $profile) {
 function bntm_shortcode_bae_kit() {
     $slug = isset($_GET['slug']) ? sanitize_text_field($_GET['slug']) : '';
     if (empty($slug)) {
-        return '<div style="text-align:center;padding:60px;color:#9ca3af;">Brand Kit not found.</div>';
+        return '<div style="text-align:center;padding:60px;color:var(--text-3);">Brand Kit not found.</div>';
     }
 
     global $wpdb;
@@ -3564,7 +4059,7 @@ function bntm_shortcode_bae_kit() {
     ), ARRAY_A);
 
     if (!$profile) {
-        return '<div style="text-align:center;padding:60px;color:#9ca3af;">This Brand Kit is private or does not exist.</div>';
+        return '<div style="text-align:center;padding:60px;color:var(--text-3);">This Brand Kit is private or does not exist.</div>';
     }
 
     // CHANGED: Inject OG tags into <head> for social sharing previews
@@ -4921,6 +5416,18 @@ function bae_get_profile($user_id) {
     return $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE user_id = %d", $user_id), ARRAY_A);
 }
 
+// =============================================================================
+// PLAN DETECTION
+// Returns 'free', 'starter', or 'pro'
+// For now reads from bae_profiles.plan column (add this via dbDelta or ALTER)
+// Falls back to 'free' if column doesn't exist yet
+// =============================================================================
+function bae_get_user_plan($user_id, $profile = null) {
+    if ( empty($profile) ) return 'free';
+    // Read plan from profile — defaults to 'free' if column missing
+    return isset($profile['plan']) ? ($profile['plan'] ?: 'free') : 'free';
+}
+
 function bae_count_assets($user_id) {
     global $wpdb;
     $table = $wpdb->prefix . 'bae_assets';
@@ -5391,62 +5898,62 @@ function bae_generate_tagline_variants($biz_name, $industry, $current_tagline) {
 
 function bae_get_industry_sitemap($industry, $biz_name) {
     $base = [
-        ['name' => 'Home',    'slug' => '/',         'icon' => '🏠', 'priority' => 'high',   'desc' => 'Main landing page. Hero section, key offerings, and primary CTA. First impression — make it count.'],
-        ['name' => 'About',   'slug' => '/about',    'icon' => '👤', 'priority' => 'high',   'desc' => 'Your story, mission, values, and team. Builds trust and humanizes your brand.'],
-        ['name' => 'Contact', 'slug' => '/contact',  'icon' => '📬', 'priority' => 'high',   'desc' => 'Contact form, phone, email, map/address, and business hours.'],
-        ['name' => 'Privacy', 'slug' => '/privacy',  'icon' => '🔒', 'priority' => 'low',    'desc' => 'Privacy policy — required for any business collecting customer data or using analytics.'],
+        ['name' => 'Home',    'slug' => '/',         'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>', 'priority' => 'high',   'desc' => 'Main landing page. Hero section, key offerings, and primary CTA. First impression — make it count.'],
+        ['name' => 'About',   'slug' => '/about',    'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>', 'priority' => 'high',   'desc' => 'Your story, mission, values, and team. Builds trust and humanizes your brand.'],
+        ['name' => 'Contact', 'slug' => '/contact',  'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>', 'priority' => 'high',   'desc' => 'Contact form, phone, email, map/address, and business hours.'],
+        ['name' => 'Privacy', 'slug' => '/privacy',  'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>', 'priority' => 'low',    'desc' => 'Privacy policy — required for any business collecting customer data or using analytics.'],
     ];
 
     $industry_pages = [
         'Food & Beverage' => [
-            ['name' => 'Menu',      'slug' => '/menu',      'icon' => '🍽️', 'priority' => 'high',   'desc' => 'Full menu with categories, descriptions, photos, and prices. Your most-visited page.'],
+            ['name' => 'Menu',      'slug' => '/menu',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>', 'priority' => 'high',   'desc' => 'Full menu with categories, descriptions, photos, and prices. Your most-visited page.'],
             ['name' => 'Order',     'slug' => '/order',     'icon' => '🛒', 'priority' => 'high',   'desc' => 'Online ordering or reservation system. Direct revenue driver.'],
-            ['name' => 'Gallery',   'slug' => '/gallery',   'icon' => '📸', 'priority' => 'medium', 'desc' => 'Food photography and restaurant ambiance shots. Social proof through visuals.'],
-            ['name' => 'Blog',      'slug' => '/blog',      'icon' => '📝', 'priority' => 'low',    'desc' => 'Recipes, behind-the-scenes stories, and food culture content. Boosts SEO.'],
+            ['name' => 'Gallery',   'slug' => '/gallery',   'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>', 'priority' => 'medium', 'desc' => 'Food photography and restaurant ambiance shots. Social proof through visuals.'],
+            ['name' => 'Blog',      'slug' => '/blog',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>', 'priority' => 'low',    'desc' => 'Recipes, behind-the-scenes stories, and food culture content. Boosts SEO.'],
         ],
         'Retail & Commerce' => [
-            ['name' => 'Shop',      'slug' => '/shop',      'icon' => '🛍️', 'priority' => 'high',   'desc' => 'Product catalog with filters, search, and categories. Core of your retail experience.'],
-            ['name' => 'Products',  'slug' => '/products',  'icon' => '📦', 'priority' => 'high',   'desc' => 'Individual product pages with photos, specs, and add-to-cart.'],
-            ['name' => 'Deals',     'slug' => '/deals',     'icon' => '🏷️', 'priority' => 'medium', 'desc' => 'Promotions, sale items, and limited-time offers. High traffic potential.'],
-            ['name' => 'FAQ',       'slug' => '/faq',       'icon' => '❓', 'priority' => 'medium', 'desc' => 'Common questions about shipping, returns, sizing, and policies.'],
+            ['name' => 'Shop',      'slug' => '/shop',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>', 'priority' => 'high',   'desc' => 'Product catalog with filters, search, and categories. Core of your retail experience.'],
+            ['name' => 'Products',  'slug' => '/products',  'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12.89 1.45 8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"/><polyline points="2.32 6.16 12 11 21.68 6.16"/><line x1="12" y1="22.76" x2="12" y2="11"/></svg>', 'priority' => 'high',   'desc' => 'Individual product pages with photos, specs, and add-to-cart.'],
+            ['name' => 'Deals',     'slug' => '/deals',     'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>', 'priority' => 'medium', 'desc' => 'Promotions, sale items, and limited-time offers. High traffic potential.'],
+            ['name' => 'FAQ',       'slug' => '/faq',       'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', 'priority' => 'medium', 'desc' => 'Common questions about shipping, returns, sizing, and policies.'],
         ],
         'Professional Services' => [
-            ['name' => 'Services',  'slug' => '/services',  'icon' => '💼', 'priority' => 'high',   'desc' => 'What you offer — detailed service descriptions with pricing or inquiry CTAs.'],
-            ['name' => 'Portfolio', 'slug' => '/portfolio', 'icon' => '🗂️', 'priority' => 'high',   'desc' => 'Past projects, case studies, and results. Social proof for high-ticket services.'],
-            ['name' => 'Pricing',   'slug' => '/pricing',   'icon' => '💳', 'priority' => 'medium', 'desc' => 'Transparent pricing tiers or estimate range. Builds trust and filters leads.'],
-            ['name' => 'Blog',      'slug' => '/blog',      'icon' => '📝', 'priority' => 'medium', 'desc' => 'Thought leadership and industry insights. Positions you as an expert.'],
+            ['name' => 'Services',  'slug' => '/services',  'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>', 'priority' => 'high',   'desc' => 'What you offer — detailed service descriptions with pricing or inquiry CTAs.'],
+            ['name' => 'Portfolio', 'slug' => '/portfolio', 'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>', 'priority' => 'high',   'desc' => 'Past projects, case studies, and results. Social proof for high-ticket services.'],
+            ['name' => 'Pricing',   'slug' => '/pricing',   'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>', 'priority' => 'medium', 'desc' => 'Transparent pricing tiers or estimate range. Builds trust and filters leads.'],
+            ['name' => 'Blog',      'slug' => '/blog',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>', 'priority' => 'medium', 'desc' => 'Thought leadership and industry insights. Positions you as an expert.'],
         ],
         'Health & Wellness' => [
-            ['name' => 'Services',  'slug' => '/services',  'icon' => '💊', 'priority' => 'high',   'desc' => 'Treatments, programs, and wellness offerings with full descriptions.'],
-            ['name' => 'Book',      'slug' => '/book',      'icon' => '📅', 'priority' => 'high',   'desc' => 'Appointment booking system — reduce friction to conversion.'],
-            ['name' => 'Resources', 'slug' => '/resources', 'icon' => '📚', 'priority' => 'medium', 'desc' => 'Health guides, tips, and educational content. Builds authority and SEO value.'],
-            ['name' => 'FAQ',       'slug' => '/faq',       'icon' => '❓', 'priority' => 'low',    'desc' => 'Answers to common patient/client questions about services and policies.'],
+            ['name' => 'Services',  'slug' => '/services',  'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>', 'priority' => 'high',   'desc' => 'Treatments, programs, and wellness offerings with full descriptions.'],
+            ['name' => 'Book',      'slug' => '/book',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>', 'priority' => 'high',   'desc' => 'Appointment booking system — reduce friction to conversion.'],
+            ['name' => 'Resources', 'slug' => '/resources', 'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>', 'priority' => 'medium', 'desc' => 'Health guides, tips, and educational content. Builds authority and SEO value.'],
+            ['name' => 'FAQ',       'slug' => '/faq',       'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', 'priority' => 'low',    'desc' => 'Answers to common patient/client questions about services and policies.'],
         ],
         'Technology' => [
-            ['name' => 'Products',  'slug' => '/products',  'icon' => '⚙️', 'priority' => 'high',   'desc' => 'Product feature pages with demos, screenshots, and use cases.'],
-            ['name' => 'Pricing',   'slug' => '/pricing',   'icon' => '💳', 'priority' => 'high',   'desc' => 'Subscription tiers or license options with feature comparison table.'],
-            ['name' => 'Docs',      'slug' => '/docs',      'icon' => '📄', 'priority' => 'medium', 'desc' => 'Technical documentation, API reference, and integration guides.'],
-            ['name' => 'Blog',      'slug' => '/blog',      'icon' => '📝', 'priority' => 'medium', 'desc' => 'Product updates, tutorials, and industry insights. Key for developer audiences.'],
+            ['name' => 'Products',  'slug' => '/products',  'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>', 'priority' => 'high',   'desc' => 'Product feature pages with demos, screenshots, and use cases.'],
+            ['name' => 'Pricing',   'slug' => '/pricing',   'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>', 'priority' => 'high',   'desc' => 'Subscription tiers or license options with feature comparison table.'],
+            ['name' => 'Docs',      'slug' => '/docs',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>', 'priority' => 'medium', 'desc' => 'Technical documentation, API reference, and integration guides.'],
+            ['name' => 'Blog',      'slug' => '/blog',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>', 'priority' => 'medium', 'desc' => 'Product updates, tutorials, and industry insights. Key for developer audiences.'],
         ],
         'Education & Training' => [
-            ['name' => 'Courses',   'slug' => '/courses',   'icon' => '🎓', 'priority' => 'high',   'desc' => 'Course catalog with descriptions, duration, and enrollment CTAs.'],
-            ['name' => 'Enroll',    'slug' => '/enroll',    'icon' => '✍️', 'priority' => 'high',   'desc' => 'Enrollment or registration form. Direct conversion page.'],
-            ['name' => 'Faculty',   'slug' => '/faculty',   'icon' => '👨‍🏫', 'priority' => 'medium', 'desc' => 'Instructor profiles and credentials. Builds trust with prospective students.'],
-            ['name' => 'Blog',      'slug' => '/blog',      'icon' => '📝', 'priority' => 'low',    'desc' => 'Learning tips, career guidance, and educational resources.'],
+            ['name' => 'Courses',   'slug' => '/courses',   'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>', 'priority' => 'high',   'desc' => 'Course catalog with descriptions, duration, and enrollment CTAs.'],
+            ['name' => 'Enroll',    'slug' => '/enroll',    'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>', 'priority' => 'high',   'desc' => 'Enrollment or registration form. Direct conversion page.'],
+            ['name' => 'Faculty',   'slug' => '/faculty',   'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>', 'priority' => 'medium', 'desc' => 'Instructor profiles and credentials. Builds trust with prospective students.'],
+            ['name' => 'Blog',      'slug' => '/blog',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>', 'priority' => 'low',    'desc' => 'Learning tips, career guidance, and educational resources.'],
         ],
         'Fashion & Apparel' => [
-            ['name' => 'Collection','slug' => '/collection','icon' => '👗', 'priority' => 'high',   'desc' => 'Current and seasonal collections with editorial-style photography.'],
-            ['name' => 'Shop',      'slug' => '/shop',      'icon' => '🛍️', 'priority' => 'high',   'desc' => 'E-commerce catalog with filters for size, color, and category.'],
-            ['name' => 'Lookbook',  'slug' => '/lookbook',  'icon' => '📸', 'priority' => 'medium', 'desc' => 'Styled outfit inspirations. Drives aspiration and upselling.'],
-            ['name' => 'Journal',   'slug' => '/journal',   'icon' => '📓', 'priority' => 'low',    'desc' => 'Brand storytelling, style tips, and behind-the-scenes content.'],
+            ['name' => 'Collection','slug' => '/collection','icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>', 'priority' => 'high',   'desc' => 'Current and seasonal collections with editorial-style photography.'],
+            ['name' => 'Shop',      'slug' => '/shop',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>', 'priority' => 'high',   'desc' => 'E-commerce catalog with filters for size, color, and category.'],
+            ['name' => 'Lookbook',  'slug' => '/lookbook',  'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>', 'priority' => 'medium', 'desc' => 'Styled outfit inspirations. Drives aspiration and upselling.'],
+            ['name' => 'Journal',   'slug' => '/journal',   'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>', 'priority' => 'low',    'desc' => 'Brand storytelling, style tips, and behind-the-scenes content.'],
         ],
     ];
 
     $extra = $industry_pages[$industry] ?? [
-        ['name' => 'Services',  'slug' => '/services',  'icon' => '⭐', 'priority' => 'high',   'desc' => 'What you offer — describe your core products or services in detail.'],
-        ['name' => 'Portfolio', 'slug' => '/portfolio', 'icon' => '🗂️', 'priority' => 'medium', 'desc' => 'Showcase your work, projects, or past clients. Builds credibility.'],
-        ['name' => 'Blog',      'slug' => '/blog',      'icon' => '📝', 'priority' => 'low',    'desc' => 'Content marketing — share insights, news, and tips for SEO and authority.'],
-        ['name' => 'FAQ',       'slug' => '/faq',       'icon' => '❓', 'priority' => 'low',    'desc' => 'Answer common questions to reduce support load and build confidence.'],
+        ['name' => 'Services',  'slug' => '/services',  'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>', 'priority' => 'high',   'desc' => 'What you offer — describe your core products or services in detail.'],
+        ['name' => 'Portfolio', 'slug' => '/portfolio', 'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>', 'priority' => 'medium', 'desc' => 'Showcase your work, projects, or past clients. Builds credibility.'],
+        ['name' => 'Blog',      'slug' => '/blog',      'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>', 'priority' => 'low',    'desc' => 'Content marketing — share insights, news, and tips for SEO and authority.'],
+        ['name' => 'FAQ',       'slug' => '/faq',       'icon' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', 'priority' => 'low',    'desc' => 'Answer common questions to reduce support load and build confidence.'],
     ];
 
     // Merge base + industry pages (home first, then industry-specific, then contact/privacy last)
@@ -5496,13 +6003,22 @@ function bae_startup_tab($user_id, $profile) {
         ['domain' => 'the' . $biz_slug . '.com',  'type' => '.com',   'rec' => false, 'note' => 'Classic brand framing'],
     ];
 
+    $social_svgs = [
+        'fb' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>',
+        'ig' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>',
+        'tt' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>',
+        'yt' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>',
+        'x'  => '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.741-8.851L1.254 2.25H8.08l4.265 5.638L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+        'li' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>',
+    ];
+
     $handles = [
-        ['platform' => 'Facebook',   'icon' => 'fb',  'handle' => '@' . $biz_slug],
-        ['platform' => 'Instagram',  'icon' => 'ig',  'handle' => '@' . $biz_slug],
-        ['platform' => 'TikTok',     'icon' => 'tt',  'handle' => '@' . $biz_slug],
-        ['platform' => 'YouTube',    'icon' => 'yt',  'handle' => '@' . $biz_slug],
-        ['platform' => 'X (Twitter)','icon' => 'x',   'handle' => '@' . $biz_slug],
-        ['platform' => 'LinkedIn',   'icon' => 'li',  'handle' => $biz_slug],
+        ['platform' => 'Facebook',   'icon' => 'fb',  'handle' => '@' . $biz_slug, 'color' => '#1877f2'],
+        ['platform' => 'Instagram',  'icon' => 'ig',  'handle' => '@' . $biz_slug, 'color' => '#e1306c'],
+        ['platform' => 'TikTok',     'icon' => 'tt',  'handle' => '@' . $biz_slug, 'color' => '#010101'],
+        ['platform' => 'YouTube',    'icon' => 'yt',  'handle' => '@' . $biz_slug, 'color' => '#ff0000'],
+        ['platform' => 'X (Twitter)','icon' => 'x',   'handle' => '@' . $biz_slug, 'color' => '#000000'],
+        ['platform' => 'LinkedIn',   'icon' => 'li',  'handle' => $biz_slug,        'color' => '#0077b5'],
     ];
 
     $tagline_variants = bae_generate_tagline_variants($p['business_name'], $industry, $p['tagline'] ?? '');
@@ -5570,7 +6086,7 @@ function bae_startup_tab($user_id, $profile) {
                     <div style="font-size:11px;color:<?php echo $d['rec'] ? 'rgba(255,255,255,0.5)' : '#9ca3af'; ?>;margin-top:2px;"><?php echo esc_html($d['note']); ?></div>
                 </div>
                 <div style="display:flex;gap:6px;align-items:center;">
-                    <?php if ($d['rec']): ?><span style="font-size:9px;background:#fff;color:#111827;padding:2px 8px;border-radius:999px;font-weight:800;">TOP</span><?php endif; ?>
+                    <?php if ($d['rec']): ?><span style="font-size:9px;background:var(--surface);color:var(--text);padding:2px 8px;border-radius:999px;font-weight:800;">TOP</span><?php endif; ?>
                     <button onclick="navigator.clipboard.writeText('<?php echo esc_js($d['domain']); ?>');this.textContent='Done';setTimeout(()=>this.textContent='Copy',1500);"
                             style="border:1px solid <?php echo $d['rec'] ? 'rgba(255,255,255,0.3)' : '#d1d5db'; ?>;background:none;color:<?php echo $d['rec'] ? '#fff' : '#6b7280'; ?>;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:6px;">Copy</button>
                 </div>
@@ -5592,13 +6108,19 @@ function bae_startup_tab($user_id, $profile) {
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
             <?php foreach ($handles as $h): ?>
-            <div style="padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px;">
-                <div style="font-size:12px;font-weight:600;color:#6b7280;margin-bottom:6px;"><?php echo esc_html($h['platform']); ?></div>
-                <div style="font-size:14px;font-weight:700;color:#111827;font-family:'Courier New',monospace;"><?php echo esc_html($h['handle']); ?></div>
+            <div style="padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);transition:border-color .2s;" onmouseenter="this.style.borderColor='var(--border-2)'" onmouseleave="this.style.borderColor='var(--border)'">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <div style="width:28px;height:28px;border-radius:7px;background:<?php echo esc_attr($h['color']); ?>;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:white;">
+                        <?php echo $social_svgs[$h['icon']] ?? ''; ?>
+                    </div>
+                    <div style="font-size:12px;font-weight:600;color:var(--text-2);"><?php echo esc_html($h['platform']); ?></div>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);font-family:'Courier New',monospace;"><?php echo esc_html($h['handle']); ?></div>
                 <button onclick="navigator.clipboard.writeText('<?php echo esc_js($h['handle']); ?>');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500);"
-                        style="margin-top:8px;border:1px solid #e5e7eb;background:none;color:#6b7280;font-size:11px;cursor:pointer;padding:4px 10px;border-radius:6px;width:100%;">Copy</button>
+                        style="margin-top:8px;border:1px solid var(--border-2);background:none;color:var(--text-3);font-size:11px;cursor:pointer;padding:4px 10px;border-radius:6px;width:100%;font-family:'Geist',sans-serif;transition:all .2s;">Copy</button>
             </div>
             <?php endforeach; ?>
+        </div>
         </div>
         <div class="bae-notice bae-notice-info" style="margin-top:16px;">
             Register all handles even if you're not active on every platform yet — prevents brand squatting and ensures consistency when you scale.
@@ -5617,11 +6139,11 @@ function bae_startup_tab($user_id, $profile) {
             <?php foreach ($tagline_variants as $i => $variant): ?>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border:1px solid <?php echo $i === 0 ? '#111827' : '#e5e7eb'; ?>;border-radius:10px;background:<?php echo $i === 0 ? '#fafafa' : '#fff'; ?>;">
                 <div>
-                    <span style="font-size:15px;color:#374151;font-style:italic;">"<?php echo esc_html($variant); ?>"</span>
+                    <span style="font-size:15px;color:var(--text-2);font-style:italic;">"<?php echo esc_html($variant); ?>"</span>
                     <?php if ($i === 0 && !empty($p['tagline'])): ?><span style="margin-left:10px;font-size:10px;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:999px;font-weight:700;">CURRENT</span><?php endif; ?>
                 </div>
                 <button onclick="navigator.clipboard.writeText('<?php echo esc_js($variant); ?>');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500);"
-                        style="border:1px solid #d1d5db;background:none;color:#6b7280;font-size:11px;cursor:pointer;padding:5px 12px;border-radius:6px;white-space:nowrap;">Copy</button>
+                        style="border:1px solid var(--border-2);background:none;color:var(--text-3);font-size:11px;cursor:pointer;padding:5px 12px;border-radius:6px;white-space:nowrap;">Copy</button>
             </div>
             <?php endforeach; ?>
         </div>
@@ -5637,13 +6159,13 @@ function bae_startup_tab($user_id, $profile) {
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">
             <?php foreach ($email_ideas as $email => $note): ?>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid #e5e7eb;border-radius:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:10px;">
                 <div>
-                    <div style="font-size:14px;font-weight:600;color:#374151;font-family:'Courier New',monospace;"><?php echo esc_html($email); ?></div>
-                    <div style="font-size:12px;color:#9ca3af;margin-top:3px;"><?php echo esc_html($note); ?></div>
+                    <div style="font-size:14px;font-weight:600;color:var(--text-2);font-family:'Courier New',monospace;"><?php echo esc_html($email); ?></div>
+                    <div style="font-size:12px;color:var(--text-3);margin-top:3px;"><?php echo esc_html($note); ?></div>
                 </div>
                 <button onclick="navigator.clipboard.writeText('<?php echo esc_js($email); ?>');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500);"
-                        style="border:1px solid #d1d5db;background:none;color:#6b7280;font-size:11px;cursor:pointer;padding:5px 12px;border-radius:6px;">Copy</button>
+                        style="border:1px solid var(--border-2);background:none;color:var(--text-3);font-size:11px;cursor:pointer;padding:5px 12px;border-radius:6px;">Copy</button>
             </div>
             <?php endforeach; ?>
         </div>
@@ -5661,19 +6183,19 @@ function bae_startup_tab($user_id, $profile) {
             </div>
             <a href="?tab=assets" class="bae-btn bae-btn-outline bae-btn-sm">Generate Full Sitemap →</a>
         </div>
-        <div style="display:flex;flex-direction:column;gap:0;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+        <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
             <?php foreach ($pages as $i => $page):
                 $bg = $i % 2 === 0 ? '#fff' : '#fafafa';
                 $priority_bg = $page['priority'] === 'high' ? '#d1fae5' : ($page['priority'] === 'medium' ? '#fef3c7' : '#f3f4f6');
                 $priority_txt = $page['priority'] === 'high' ? '#065f46' : ($page['priority'] === 'medium' ? '#92400e' : '#6b7280');
             ?>
             <div style="display:grid;grid-template-columns:36px 130px 60px 1fr;gap:0;background:<?php echo $bg; ?>;border-bottom:1px solid #f3f4f6;align-items:center;">
-                <div style="padding:12px;text-align:center;font-size:16px;"><?php echo $page['icon']; ?></div>
-                <div style="padding:10px 8px;font-size:13px;font-weight:600;color:#111827;"><?php echo esc_html($page['name']); ?></div>
+                <div style="padding:12px;display:flex;align-items:center;justify-content:center;color:var(--text-2);"><?php echo $page['icon']; ?></div>
+                <div style="padding:10px 8px;font-size:13px;font-weight:600;color:var(--text);"><?php echo esc_html($page['name']); ?></div>
                 <div style="padding:10px 8px;">
                     <span style="font-size:10px;padding:2px 8px;border-radius:999px;background:<?php echo $priority_bg; ?>;color:<?php echo $priority_txt; ?>;font-weight:700;"><?php echo ucfirst($page['priority']); ?></span>
                 </div>
-                <div style="padding:10px 16px;font-size:12px;color:#6b7280;line-height:1.6;"><?php echo esc_html($page['desc']); ?></div>
+                <div style="padding:10px 16px;font-size:12px;color:var(--text-3);line-height:1.6;"><?php echo esc_html($page['desc']); ?></div>
             </div>
             <?php endforeach; ?>
         </div>
@@ -5692,12 +6214,12 @@ function bae_startup_tab($user_id, $profile) {
             <div class="bae-section-label" style="margin-bottom:10px;"><?php echo $section; ?></div>
             <div style="display:flex;flex-direction:column;gap:6px;">
                 <?php foreach ($tasks as $task): ?>
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);">
                     <div style="display:flex;align-items:flex-start;gap:10px;flex:1;">
                         <input type="checkbox" style="margin-top:3px;width:16px;height:16px;cursor:pointer;flex-shrink:0;">
                         <div>
-                            <div style="font-size:13px;color:#374151;font-weight:500;"><?php echo esc_html($task['task']); ?></div>
-                            <div style="font-size:11px;color:#9ca3af;margin-top:3px;"><?php echo esc_html($task['tools']); ?></div>
+                            <div style="font-size:13px;color:var(--text-2);font-weight:500;"><?php echo esc_html($task['task']); ?></div>
+                            <div style="font-size:11px;color:var(--text-3);margin-top:3px;"><?php echo esc_html($task['tools']); ?></div>
                         </div>
                     </div>
                 </div>
@@ -5761,7 +6283,7 @@ function bae_render_sitemap_cards($pages, $pc, $sc, $ac, $domain_sm) {
         $prio_label = ucfirst($page['priority']);
         $out .= "<div style='display:flex;flex-direction:column;align-items:center;min-width:100px;max-width:130px;'>"
               . "<div style='border:2px solid {$color};border-radius:8px;padding:10px 12px;text-align:center;width:100%;background:#fff;'>"
-              . "<div style='font-size:16px;margin-bottom:4px;'>{$page['icon']}</div>"
+              . "<div style='display:flex;align-items:center;justify-content:center;margin-bottom:6px;color:#6b7280;'>{$page['icon']}</div>"
               . "<div style='font-size:12px;font-weight:600;color:#111827;'>" . esc_html($page['name']) . "</div>"
               . "<div style='font-size:10px;color:#9ca3af;margin-top:2px;font-family:monospace;'>{$domain_sm}" . esc_html($page['slug']) . "</div>"
               . "</div>"
@@ -5777,7 +6299,7 @@ function bae_render_sitemap_table($pages) {
     foreach ($pages as $page) {
         $bg = $i % 2 === 0 ? '#fff' : '#fafafa';
         $out .= "<div style='display:grid;grid-template-columns:32px 120px 1fr;gap:0;background:{$bg};border-bottom:1px solid #f3f4f6;'>"
-              . "<div style='padding:12px;text-align:center;font-size:14px;'>{$page['icon']}</div>"
+              . "<div style='padding:12px;display:flex;align-items:center;justify-content:center;color:#6b7280;'>{$page['icon']}</div>"
               . "<div style='padding:12px 8px;font-size:13px;font-weight:600;color:#111827;border-right:1px solid #f3f4f6;'>" . esc_html($page['name']) . "</div>"
               . "<div style='padding:12px 16px;font-size:12px;color:#6b7280;line-height:1.6;'>" . esc_html($page['desc']) . "</div>"
               . "</div>";
