@@ -972,9 +972,9 @@ function bntm_shortcode_kbf_dashboard() {
     window.kbfOpenWd = function(fundId, available, title) {
         document.getElementById('wd-fund-id').value = fundId;
         document.getElementById('wd-fund-title').textContent = title || 'Fund #'+fundId;
-        document.getElementById('wd-available-label').textContent = 'â‚±' + parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+        document.getElementById('wd-available-label').textContent = '₱' + parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
         document.getElementById('wd-amount').max = available;
-        document.getElementById('wd-amount').placeholder = 'Max â‚±'+parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2});
+        document.getElementById('wd-amount').placeholder = 'Max ₱'+parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2});
         document.getElementById('kbf-wd-msg').innerHTML = '';
         document.getElementById('kbf-wd-form').reset();
         document.getElementById('wd-fund-id').value = fundId; // re-set after reset
@@ -1058,7 +1058,7 @@ function kbf_dashboard_overview_tab($business_id) {
           <div class="kbf-stat-icon" style="background:linear-gradient(135deg,#16a34a,#15803d);">
             <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
-          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">â‚±<?php echo number_format($total_raised,0); ?></div><div class="kbf-stat-sub">across all funds</div></div>
+          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">₱<?php echo number_format($total_raised,0); ?></div><div class="kbf-stat-sub">across all funds</div></div>
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon" style="background:linear-gradient(135deg,#e8a020,#d4911a);">
@@ -1102,15 +1102,14 @@ function kbf_dashboard_overview_tab($business_id) {
           <div class="kbf-card-header">
             <div>
               <strong style="font-size:15px;"><?php echo esc_html($f->title); ?></strong>
-              <?php if($f->verified_badge): ?><span class="kbf-verified-badge"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Verified</span><?php endif; ?>
               <div class="kbf-meta" style="margin-top:4px;"><?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?></div>
             </div>
             <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
           </div>
           <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div class="kbf-fund-amounts">
-            <span><strong>â‚±<?php echo number_format($f->raised_amount,2); ?></strong>raised</span>
-            <span><strong>â‚±<?php echo number_format($f->goal_amount,2); ?></strong>goal</span>
+            <span><strong>₱<?php echo number_format($f->raised_amount,2); ?></strong>raised</span>
+            <span><strong>₱<?php echo number_format($f->goal_amount,2); ?></strong>goal</span>
             <span><strong><?php echo round($pct); ?>%</strong>funded</span>
           </div>
         </div>
@@ -1175,7 +1174,6 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
                 <strong style="font-size:15px;"><?php echo esc_html($f->title); ?></strong>
-                <?php if($f->verified_badge): ?><span class="kbf-verified-badge"><svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Verified</span><?php endif; ?>
                 <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
               </div>
               <div class="kbf-meta">
@@ -1188,8 +1186,8 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
           </div>
           <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div class="kbf-fund-amounts">
-            <span><strong>â‚±<?php echo number_format($f->raised_amount,2); ?></strong>raised</span>
-            <span><strong>â‚±<?php echo number_format($f->goal_amount,2); ?></strong>goal</span>
+            <span><strong>₱<?php echo number_format($f->raised_amount,2); ?></strong>raised</span>
+            <span><strong>₱<?php echo number_format($f->goal_amount,2); ?></strong>goal</span>
             <span><strong><?php echo round($pct); ?>%</strong>funded</span>
           </div>
           <div class="kbf-btn-group" style="margin-top:12px;">
@@ -1228,7 +1226,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
                 <?php foreach($sponsors as $sp): ?>
                   <tr>
                     <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
-                    <td><strong style="color:var(--kbf-green);">â‚±<?php echo number_format($sp->amount,2); ?></strong></td>
+                    <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($sp->amount,2); ?></strong></td>
                     <td><?php echo esc_html($sp->payment_method==='online_payment'?'Online Payment':($sp->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',$sp->payment_method??'--')))); ?></td>
                     <td class="kbf-meta"><?php echo date('M d, Y',strtotime($sp->created_at)); ?></td>
                   </tr>
@@ -1281,7 +1279,7 @@ function kbf_dashboard_sponsorships_tab($business_id) {
             <tr>
               <td><strong><?php echo esc_html($s->fund_title); ?></strong></td>
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?><?php if($s->email): ?><div class="kbf-meta"><?php echo esc_html($s->email); ?></div><?php endif; ?></td>
-              <td><strong style="color:var(--kbf-green);">â‚±<?php echo number_format($s->amount,2); ?></strong></td>
+              <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($s->amount,2); ?></strong></td>
               <td><?php echo esc_html($s->payment_method==='online_payment'?'Online Payment':($s->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',$s->payment_method??'--')))); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
               <td style="font-size:12.5px;color:var(--kbf-text-sm);font-style:italic;max-width:180px;"><?php echo esc_html($s->message?:' -- '); ?></td>
@@ -1318,7 +1316,7 @@ function kbf_dashboard_withdrawals_tab($business_id) {
           <?php else: foreach($rows as $w): ?>
             <tr>
               <td><strong><?php echo esc_html($w->fund_title); ?></strong></td>
-              <td><strong>â‚±<?php echo number_format($w->amount,2); ?></strong></td>
+              <td><strong>₱<?php echo number_format($w->amount,2); ?></strong></td>
               <td><?php echo esc_html($w->method); ?></td>
               <td class="kbf-meta"><?php echo esc_html($w->account_name); ?> &bull; <?php echo esc_html($w->account_number); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
@@ -1398,7 +1396,7 @@ function kbf_dashboard_profile_tab($business_id) {
           <div class="kbf-stat-icon" style="background:linear-gradient(135deg,#0f2044,#243b78);">
             <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
-          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">â‚±<?php echo number_format($profile->total_raised,0); ?></div></div>
+          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">₱<?php echo number_format($profile->total_raised,0); ?></div></div>
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon" style="background:linear-gradient(135deg,#e8a020,#d4911a);">
@@ -1484,7 +1482,7 @@ function kbf_dashboard_find_funds_tab() {
                 <label class="kbf-checkbox-row"><input type="checkbox" id="kbff-anon" onchange="document.getElementById('kbff-name').disabled=this.checked"> Sponsor Anonymously</label>
               </div>
             </div>
-            <div class="kbf-form-group"><label>Amount (PHP) *</label><input type="number" name="amount" placeholder="Min. â‚±10" min="10" step="1" required></div>
+            <div class="kbf-form-group"><label>Amount (PHP) *</label><input type="number" name="amount" placeholder="Min. ₱10" min="10" step="1" required></div>
             <div class="kbf-form-group"><label>Encouraging Message (optional)</label><textarea name="message" rows="2" placeholder="Leave a message for the organizer..."></textarea></div>
             <div class="kbf-form-row">
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
@@ -1618,9 +1616,6 @@ function kbf_dashboard_find_funds_tab() {
           <?php if($days!==null): ?>
           <div style="position:absolute;top:10px;right:10px;background:<?php echo $days<7?'rgba(220,38,38,.85)':'rgba(15,32,68,.75)'; ?>;backdrop-filter:blur(4px);color:#fff;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;"><?php echo $days; ?>d left</div>
           <?php endif; ?>
-          <?php if($f->verified_badge): ?>
-          <div style="position:absolute;bottom:10px;right:10px;"><span class="kbf-badge kbf-badge-verified" style="font-size:10px;">Verified</span></div>
-          <?php endif; ?>
           <?php if($is_own): ?>
           <div style="position:absolute;bottom:10px;left:10px;background:rgba(15,32,68,.85);color:var(--kbf-accent);padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;">Your Fund</div>
           <?php endif; ?>
@@ -1645,8 +1640,8 @@ function kbf_dashboard_find_funds_tab() {
           <!-- Progress -->
           <div class="kbf-progress-wrap" style="margin-bottom:6px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:14px;">
-            <span><strong style="color:var(--kbf-navy);font-size:13.5px;">â‚±<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
-            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of â‚±<?php echo number_format($f->goal_amount,0); ?></span>
+            <span><strong style="color:var(--kbf-navy);font-size:13.5px;">₱<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
+            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ₱<?php echo number_format($f->goal_amount,0); ?></span>
           </div>
 
           <!-- Action buttons -->
@@ -1691,7 +1686,7 @@ function kbf_dashboard_find_funds_tab() {
             +'<strong style="font-size:14px;color:var(--kbf-navy);">'+title+'</strong>'
             +'<div style="margin-top:8px;" class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+pct+'%"></div></div>'
             +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:5px;color:var(--kbf-slate);">'
-            +'<span>â‚±'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% of â‚±'+parseFloat(goal).toLocaleString()+'</span></div>';
+            +'<span>₱'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% of ₱'+parseFloat(goal).toLocaleString()+'</span></div>';
         document.getElementById('kbff-modal-sponsor').style.display='flex';
     };
     window.kbffSubmitSponsor=function(nonce){
@@ -2009,14 +2004,12 @@ function bntm_shortcode_kbf_browse() {
             <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($f->title); ?>" style="width:100%;height:190px;object-fit:cover;display:block;">
             <div class="kbf-fund-cat-badge"><?php echo esc_html($f->category); ?></div>
             <?php if($days!==null): ?><div class="kbf-fund-days-badge" style="background:<?php echo $days_bg; ?>;color:<?php echo $days_color; ?>;backdrop-filter:blur(4px);"><?php echo $days; ?>d left</div><?php endif; ?>
-            <?php if($f->verified_badge): ?><div style="position:absolute;bottom:10px;right:10px;"><span class="kbf-badge kbf-badge-verified"><svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Verified</span></div><?php endif; ?>
           </div>
           <?php else: ?>
           <div class="kbf-fund-photo-placeholder" style="position:relative;">
             <svg width="48" height="48" fill="none" stroke="rgba(255,255,255,.2)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
             <div class="kbf-fund-cat-badge"><?php echo esc_html($f->category); ?></div>
             <?php if($days!==null): ?><div class="kbf-fund-days-badge" style="background:<?php echo $days_bg; ?>;color:<?php echo $days_color; ?>;"><?php echo $days; ?>d left</div><?php endif; ?>
-            <?php if($f->verified_badge): ?><div style="position:absolute;bottom:10px;right:10px;"><span class="kbf-badge kbf-badge-verified">Verified</span></div><?php endif; ?>
           </div>
           <?php endif; ?>
         </a>
@@ -2042,8 +2035,8 @@ function bntm_shortcode_kbf_browse() {
           <!-- Progress -->
           <div class="kbf-progress-wrap" style="margin-bottom:8px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:16px;">
-            <span><strong style="color:var(--kbf-navy);font-size:14px;">â‚±<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
-            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of â‚±<?php echo number_format($f->goal_amount,0); ?></span>
+            <span><strong style="color:var(--kbf-navy);font-size:14px;">₱<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
+            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ₱<?php echo number_format($f->goal_amount,0); ?></span>
           </div>
 
           <!-- Actions -->
@@ -2079,7 +2072,7 @@ function bntm_shortcode_kbf_browse() {
             (img?'<img src="'+img+'" style="width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:10px;display:block;">':'')
             +'<strong style="font-size:15px;color:var(--kbf-navy);">'+title+'</strong>'
             +'<div style="margin-top:8px;" class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+pct+'%"></div></div>'
-            +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:var(--kbf-slate);"><span>â‚±'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% funded</span></div>';
+            +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:var(--kbf-slate);"><span>₱'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% funded</span></div>';
         document.getElementById('kbf-modal-sponsor').style.display='flex';
     };
     window.kbfSubmitSponsor=function(nonce){
@@ -2138,7 +2131,7 @@ function bntm_shortcode_kbf_browse() {
                         +'</div>'
                         +'<div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:6px;">'+f.category+' &bull; '+f.sponsor_count+' sponsor'+(f.sponsor_count!==1?'s':'')+'</div>'
                         +'<div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+f.pct+'%"></div></div>'
-                        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--kbf-slate);margin-top:4px;"><span>â‚±'+f.raised+' raised</span><span>'+f.pct+'% of â‚±'+f.goal+'</span></div>'
+                        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--kbf-slate);margin-top:4px;"><span>₱'+f.raised+' raised</span><span>'+f.pct+'% of ₱'+f.goal+'</span></div>'
                         +'</div>').join('')
                       + '</div>'
                     : '<div style="text-align:center;padding:16px;color:var(--kbf-slate);font-size:13px;margin-top:16px;">No fund history yet.</div>';
@@ -2170,7 +2163,7 @@ function bntm_shortcode_kbf_browse() {
                 +'</div></div>'
                 // Stats
                 +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:4px;">'
-                +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Raised</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">â‚±'+parseFloat(d.total_raised).toLocaleString()+'</div></div>'
+                +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Raised</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">₱'+parseFloat(d.total_raised).toLocaleString()+'</div></div>'
                 +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Sponsors</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">'+d.total_sponsors+'</div></div>'
                 +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Funds</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">'+d.total_funds+'</div></div>'
                 +'</div>'
@@ -2342,8 +2335,8 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-modal-header"><h3>Sponsor "<?php echo esc_html(wp_trim_words($fund->title,6)); ?>"</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-sponsor').style.display='none'">&times;</button></div>
         <div class="kbf-modal-body">
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:12px 16px;margin-bottom:18px;display:flex;justify-content:space-between;font-size:13px;">
-            <span><strong style="color:var(--kbf-green);">â‚±<?php echo number_format($fund->raised_amount,2); ?></strong> raised</span>
-            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of â‚±<?php echo number_format($fund->goal_amount,2); ?> goal</span>
+            <span><strong style="color:var(--kbf-green);">₱<?php echo number_format($fund->raised_amount,2); ?></strong> raised</span>
+            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ₱<?php echo number_format($fund->goal_amount,2); ?> goal</span>
           </div>
           <form id="kbf-sponsor-form">
             <input type="hidden" name="fund_id" value="<?php echo $fund->id; ?>">
@@ -2351,7 +2344,7 @@ function bntm_shortcode_kbf_fund_details() {
               <div class="kbf-form-group"><label>Name / Company / Organization</label><input type="text" name="sponsor_name" id="spd-name" placeholder="Your name, company, or org"></div>
               <div class="kbf-form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;"><label class="kbf-checkbox-row"><input type="checkbox" id="spd-anon" onchange="document.getElementById('spd-name').disabled=this.checked"> Sponsor Anonymously</label></div>
             </div>
-            <div class="kbf-form-group"><label>Amount (PHP) *</label><input type="number" name="amount" placeholder="Min. â‚±10" min="10" step="1" required></div>
+            <div class="kbf-form-group"><label>Amount (PHP) *</label><input type="number" name="amount" placeholder="Min. ₱10" min="10" step="1" required></div>
             <div class="kbf-form-group"><label>Encouraging Message (optional)</label><textarea name="message" rows="2" placeholder="Leave a message for the organizer..."></textarea></div>
             <div class="kbf-form-row">
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
@@ -2466,7 +2459,6 @@ function bntm_shortcode_kbf_fund_details() {
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
             <span style="background:var(--kbf-accent-lt);color:#92400e;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"><?php echo esc_html($fund->category); ?></span>
             <span class="kbf-badge kbf-badge-<?php echo $fund->status; ?>"><?php echo ucfirst($fund->status); ?></span>
-            <?php if($fund->verified_badge): ?><span class="kbf-badge kbf-badge-verified"><svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Verified</span><?php endif; ?>
           </div>
           <h1 style="font-size:24px;font-weight:800;color:var(--kbf-navy);margin:0 0 10px;line-height:1.3;"><?php echo esc_html($fund->title); ?></h1>
           <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--kbf-slate);">
@@ -2519,7 +2511,7 @@ function bntm_shortcode_kbf_fund_details() {
               <?php if($organizer&&$organizer->rating_count>0): ?>
               <div style="display:flex;align-items:center;gap:4px;margin-top:5px;">
                 <?php for($i=1;$i<=5;$i++): ?><svg width="12" height="12" viewBox="0 0 24 24" fill="<?php echo $i<=round($organizer->rating)?'#fbbf24':'#d1d5db'; ?>"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg><?php endfor; ?>
-                <span style="font-size:11.5px;color:var(--kbf-slate);margin-left:2px;"><?php echo number_format($organizer->rating,1); ?>/5 &bull; â‚±<?php echo number_format($organizer->total_raised,0); ?> raised</span>
+                <span style="font-size:11.5px;color:var(--kbf-slate);margin-left:2px;"><?php echo number_format($organizer->rating,1); ?>/5 &bull; ₱<?php echo number_format($organizer->total_raised,0); ?> raised</span>
               </div>
               <?php else: ?>
               <div style="font-size:12px;color:var(--kbf-slate);margin-top:4px;">Click to view fund history &amp; reviews</div>
@@ -2547,7 +2539,7 @@ function bntm_shortcode_kbf_fund_details() {
                 <?php if($sp->message): ?><div style="font-size:12px;color:var(--kbf-slate);font-style:italic;margin-top:2px;">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
               </div>
               <div style="text-align:right;flex-shrink:0;">
-                <div style="font-weight:800;font-size:14px;color:var(--kbf-green);">â‚±<?php echo number_format($sp->amount,0); ?></div>
+                <div style="font-weight:800;font-size:14px;color:var(--kbf-green);">₱<?php echo number_format($sp->amount,0); ?></div>
                 <div style="font-size:11px;color:var(--kbf-slate);"><?php echo date('M d',strtotime($sp->created_at)); ?></div>
               </div>
             </div>
@@ -2563,8 +2555,8 @@ function bntm_shortcode_kbf_fund_details() {
           <!-- Progress -->
           <div style="margin-bottom:16px;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
-              <span style="font-size:24px;font-weight:800;color:var(--kbf-green);">â‚±<?php echo number_format($fund->raised_amount,2); ?></span>
-              <span style="font-size:13px;color:var(--kbf-slate);">of â‚±<?php echo number_format($fund->goal_amount,2); ?></span>
+              <span style="font-size:24px;font-weight:800;color:var(--kbf-green);">₱<?php echo number_format($fund->raised_amount,2); ?></span>
+              <span style="font-size:13px;color:var(--kbf-slate);">of ₱<?php echo number_format($fund->goal_amount,2); ?></span>
             </div>
             <div class="kbf-progress-wrap" style="height:10px;margin-bottom:10px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%;height:10px;"></div></div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
@@ -2682,7 +2674,7 @@ function bntm_shortcode_kbf_fund_details() {
               </div>
               <!-- Amount -->
               <div style="text-align:right;flex-shrink:0;">
-                <div style="font-size:13.5px;font-weight:800;color:var(--kbf-green);">â‚±<?php echo number_format($entry->total_given, 0); ?></div>
+                <div style="font-size:13.5px;font-weight:800;color:var(--kbf-green);">₱<?php echo number_format($entry->total_given, 0); ?></div>
               </div>
             </div>
             <!-- Relative bar -->
@@ -2806,7 +2798,7 @@ function bntm_shortcode_kbf_organizer_profile() {
               <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
             </div>
             <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
-            <div class="kbf-fund-amounts"><span><strong>â‚±<?php echo number_format($f->raised_amount,2); ?></strong>raised</span><span><strong>â‚±<?php echo number_format($f->goal_amount,2); ?></strong>goal</span><span><strong><?php echo round($pct); ?>%</strong>funded</span></div>
+            <div class="kbf-fund-amounts"><span><strong>₱<?php echo number_format($f->raised_amount,2); ?></strong>raised</span><span><strong>₱<?php echo number_format($f->goal_amount,2); ?></strong>goal</span><span><strong><?php echo round($pct); ?>%</strong>funded</span></div>
             <?php if($f->status==='active'): ?><a href="?page_id=<?php echo urlencode(get_the_ID()); ?>&fund_id=<?php echo $f->id; ?>" class="kbf-btn kbf-btn-primary kbf-btn-sm" style="margin-top:10px;">View Fund</a><?php endif; ?>
           </div>
         <?php endforeach; endif; ?>
@@ -2832,7 +2824,7 @@ function bntm_shortcode_kbf_organizer_profile() {
         <div class="kbf-card" style="margin-bottom:16px;">
           <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Stats</h4>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Raised</span><strong style="color:var(--kbf-green);">â‚±<?php echo number_format($profile->total_raised,0); ?></strong></div>
+            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Raised</span><strong style="color:var(--kbf-green);">₱<?php echo number_format($profile->total_raised,0); ?></strong></div>
             <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Sponsors</span><strong><?php echo number_format($profile->total_sponsors); ?></strong></div>
             <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Active Funds</span><strong><?php echo count(array_filter($funds,fn($f)=>$f->status==='active')); ?></strong></div>
           </div>
@@ -2945,7 +2937,7 @@ function kbf_admin_pending_tab() {
               <div class="kbf-meta" style="margin-top:4px;">by <?php echo esc_html($f->organizer); ?> &bull; <?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?> &bull; <?php echo ucwords(str_replace('_',' ',$f->funder_type)); ?></div>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:8px 0 0;"><?php echo esc_html(wp_trim_words($f->description,40)); ?></p>
               <div style="display:flex;gap:20px;margin-top:10px;font-size:12.5px;color:var(--kbf-slate);flex-wrap:wrap;">
-                <span><strong>Goal:</strong> â‚±<?php echo number_format($f->goal_amount,2); ?></span>
+                <span><strong>Goal:</strong> ₱<?php echo number_format($f->goal_amount,2); ?></span>
                 <span><strong>Deadline:</strong> <?php echo $f->deadline?date('M d, Y',strtotime($f->deadline)):'None'; ?></span>
                 <span><strong>Email:</strong> <?php echo esc_html($f->email); ?></span>
                 <span><strong>Phone:</strong> <?php echo esc_html($f->phone); ?></span>
@@ -2993,8 +2985,8 @@ function kbf_admin_all_funds_tab() {
               <td><strong><?php echo esc_html(wp_trim_words($f->title,6)); ?></strong></td>
               <td><?php echo esc_html($f->organizer); ?></td>
               <td><?php echo esc_html($f->category); ?></td>
-              <td>â‚±<?php echo number_format($f->goal_amount,0); ?></td>
-              <td><strong style="color:var(--kbf-green);">â‚±<?php echo number_format($f->raised_amount,0); ?></strong></td>
+              <td>₱<?php echo number_format($f->goal_amount,0); ?></td>
+              <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($f->raised_amount,0); ?></strong></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>"><?php echo ucfirst($f->escrow_status); ?></span></td>
               <td><?php echo $f->verified_badge?'<span style="color:var(--kbf-green);font-weight:700;">Yes</span>':'No'; ?></td>
@@ -3035,7 +3027,7 @@ function kbf_admin_transactions_tab() {
             <tr>
               <td><strong><?php echo esc_html(wp_trim_words($s->fund_title,5)); ?></strong></td>
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?></td>
-              <td><strong style="color:var(--kbf-green);">â‚±<?php echo number_format($s->amount,2); ?></strong></td>
+              <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($s->amount,2); ?></strong></td>
               <td><?php echo esc_html($s->payment_method==='online_payment'?'Online Payment':($s->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',$s->payment_method??'--')))); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
               <td class="kbf-meta"><?php echo esc_html($s->payment_reference?:'--'); ?></td>
@@ -3147,7 +3139,7 @@ function kbf_admin_organizers_tab() {
             <tr>
               <td><strong><?php echo esc_html($p->display_name); ?></strong></td>
               <td class="kbf-meta"><?php echo esc_html($p->user_email); ?></td>
-              <td><strong style="color:var(--kbf-green);">â‚±<?php echo number_format($p->total_raised,0); ?></strong></td>
+              <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($p->total_raised,0); ?></strong></td>
               <td><?php echo number_format($p->total_sponsors); ?></td>
               <td><?php echo number_format($p->rating,1); ?>/5 (<?php echo $p->rating_count; ?>)</td>
               <td><?php echo $p->is_verified?'<span style="color:var(--kbf-green);font-weight:700;">Verified</span>':'--'; ?></td>
@@ -3175,7 +3167,7 @@ function bntm_ajax_kbf_create_fund() {
         if(empty($_POST[$f])) wp_send_json_error(['message'=>'Please fill all required fields.']);
     }
     $goal=floatval($_POST['goal_amount']);
-    if($goal<100) wp_send_json_error(['message'=>'Minimum goal is â‚±100.']);
+    if($goal<100) wp_send_json_error(['message'=>'Minimum goal is ₱100.']);
     $valid_id='';
     if(!empty($_FILES['valid_id']['name'])) {
         if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');
@@ -3285,7 +3277,7 @@ function bntm_ajax_kbf_request_withdrawal() {
             wp_send_json_error(['message'=>'Unauthorized. Please use the funder email on record.']);
         }
     }
-    if($fund->status !== 'completed') wp_send_json_error(['message'=>'Withdrawals are allowed only after the fundraiser ends (status: completed).']);
+    if(!in_array($fund->status, ['active', 'completed'])) wp_send_json_error(['message'=>'Withdrawals are only available for active or completed fundraisers.']);
     if($fund->escrow_status !== 'holding') wp_send_json_error(['message'=>'Funds must be in escrow before requesting withdrawal.']);
     if($amount<=0) wp_send_json_error(['message'=>'Please enter a valid amount.']);
     if($amount>$fund->raised_amount) wp_send_json_error(['message'=>'Amount exceeds total raised funds (PHP '.number_format($fund->raised_amount,2).' ).']);
@@ -3458,7 +3450,7 @@ function bntm_ajax_kbf_create_checkout() {
     $is_anon      = intval($_POST['is_anonymous'] ?? 0);
     $method       = sanitize_text_field($_POST['payment_method'] ?? 'online_payment');
 
-    if ($amount < 10) wp_send_json_error(['message' => 'Minimum sponsorship is â‚±10.']);
+    if ($amount < 10) wp_send_json_error(['message' => 'Minimum sponsorship is ₱10.']);
 
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'", $fund_id));
     if (!$fund) wp_send_json_error(['message' => 'Fund not found or not accepting sponsorships.']);
@@ -3655,7 +3647,7 @@ function bntm_ajax_kbf_sponsor_fund() {
     check_ajax_referer('kbf_sponsor','nonce');
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$st=$wpdb->prefix.'kbf_sponsorships';
     $id=intval($_POST['fund_id']);$amount=floatval($_POST['amount']);
-    if($amount<10) wp_send_json_error(['message'=>'Minimum sponsorship is â‚±10.']);
+    if($amount<10) wp_send_json_error(['message'=>'Minimum sponsorship is ₱10.']);
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'",$id));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found or not accepting sponsorships.']);
     $anon=intval($_POST['is_anonymous']??0);
@@ -3699,8 +3691,8 @@ function bntm_ajax_kbf_sponsor_fund() {
         $cnt=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$fund->business_id));
         $wpdb->update($pt,['total_raised'=>$total,'total_sponsors'=>$cnt],['business_id'=>$fund->business_id],['%f','%d'],['%d']);
         $msg = $just_completed
-            ? 'Sponsorship confirmed! â‚±'.number_format($amount,2).' added. This fund has now reached its goal!'
-            : 'Sponsorship confirmed! â‚±'.number_format($amount,2).' has been added to this fund. Thank you for your support!';
+            ? 'Sponsorship confirmed! ₱'.number_format($amount,2).' added. This fund has now reached its goal!'
+            : 'Sponsorship confirmed! ₱'.number_format($amount,2).' has been added to this fund. Thank you for your support!';
         wp_send_json_success(['message'=>$msg,'fund_completed'=>$just_completed]);
     } else {
         wp_send_json_error(['message'=>'Sponsorship failed. Please try again.']);
