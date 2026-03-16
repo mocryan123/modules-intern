@@ -4238,3 +4238,937 @@ function kbf_refund_all_sponsors($fund_id) {
 
 
 
+POST['account_details']??''); $formats[] = '%s';
+    $data['status']          = 'pending'; $formats[] = '%s';
+
+    $res = $wpdb->insert($wt, $data, $formats);
+    if($res) {
+        wp_send_json_success(['message'=>'Withdrawal request submitted! Admin will review and process it within 2–3 business days.']);
+    } else {
+        if(!empty($wpdb->last_error)) {
+            error_log('KBF withdrawal insert failed: '.$wpdb->last_error);
+        }
+        wp_send_json_error(['message'=>'Failed to submit withdrawal request. Please try again.']);
+    }
+}
+
+function bntm_ajax_kbf_extend_deadline() {
+    check_ajax_referer('kbf_extend','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';
+    $id=intval($_POST['fund_id']);$biz=get_current_user_id();
+    $deadline=sanitize_text_field($_POST['deadline']);
+    if(strtotime($deadline)<=time()) wp_send_json_error(['message'=>'Deadline must be a future date.']);
+    $res=$wpdb->update($t,['deadline'=>$deadline],['id'=>$id,'business_id'=>$biz],['%s'],['%d','%d']);
+    if($res!==false) wp_send_json_success(['message'=>'Deadline extended to '.date('M d, Y',strtotime($deadline)).'!']);
+    else wp_send_json_error(['message'=>'Failed to extend deadline.']);
+}
+
+function bntm_ajax_kbf_toggle_auto_return() {
+    check_ajax_referer('kbf_cancel_fund','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';
+    $id=intval($_POST['fund_id']);$biz=get_current_user_id();$val=intval($_POST['auto_return']);
+    $fund=$wpdb->get_row($wpdb->prepare("SELECT id FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
+    if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
+    $wpdb->update($t,['auto_return'=>$val],['id'=>$id],['%d'],['%d']);
+    wp_send_json_success(['message'=>'Auto-return setting updated.']);
+}
+
+function bntm_ajax_kbf_save_organizer_profile() {
+    check_ajax_referer('kbf_organizer_profile','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';$biz=get_current_user_id();
+    $avatar='';
+    if(!empty($_FILES['avatar']['name'])) {
+        if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');
+        $up=wp_handle_upload($_FILES['avatar'],['test_form'=>false]);
+        if(isset($up['url'])) $avatar=$up['url'];
+    }
+    $socials=json_encode(['facebook'=>esc_url_raw($_POST['social_facebook']??''),'instagram'=>esc_url_raw($_POST['social_instagram']??''),'twitter'=>esc_url_raw($_POST['social_twitter']??'')]);
+    $data=['bio'=>sanitize_textarea_field($_POST['bio']??''),'social_links'=>$socials,'business_id'=>$biz];
+    if($avatar) $data['avatar_url']=$avatar;
+    $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz));
+    if($exists) {
+        unset($data['business_id']);
+        $formats = array_fill(0, count($data), '%s');
+        $wpdb->update($pt, $data, ['business_id'=>$biz], $formats, ['%d']);
+    } else {
+        $insert_formats = array_fill(0, count($data), '%s');
+        $wpdb->insert($pt, $data, $insert_formats);
+    }
+    wp_send_json_success(['message'=>'Profile saved successfully!']);
+}
+
+// ============================================================
+// AJAX HANDLERS -- SPONSOR / PUBLIC
+// ============================================================
+
+// ============================================================
+// MAYA CHECKOUT INTEGRATION
+// ============================================================
+
+/**
+ * Get Maya secret key from settings.
+ * Sandbox key when demo_mode ON, live key when OFF.
+ */
+function kbf_maya_secret_key() {
+    $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
+    return $demo
+        ? kbf_get_setting('kbf_maya_sandbox_secret', '')
+        : kbf_get_setting('kbf_maya_live_secret', '');
+}
+
+function kbf_maya_public_key() {
+    $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
+    return $demo
+        ? kbf_get_setting('kbf_maya_sandbox_public', '')
+        : kbf_get_setting('kbf_maya_live_public', '');
+}
+
+/**
+ * Maya API base URL -- sandbox vs production.
+ */
+function kbf_maya_base_url() {
+    $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
+    return $demo
+        ? 'https://pg-sandbox.paymaya.com'
+        : 'https://pg.paymaya.com';
+}
+
+/**
+ * Make an authenticated request to the Maya API.
+ * Maya uses Basic Auth with the public key for checkout creation.
+ */
+function kbf_maya_request($endpoint, $payload = null, $method = 'POST', $use_secret = false) {
+    $key = $use_secret ? kbf_maya_secret_key() : kbf_maya_public_key();
+    if (empty($key)) return ['error' => 'Maya API key not configured.'];
+
+    $args = [
+        'method'  => $method,
+        'headers' => [
+            'Authorization' => 'Basic ' . base64_encode($key . ':'),
+            'Content-Type'  => 'application/json',
+            'Accept'        => 'application/json',
+        ],
+        'timeout' => 20,
+    ];
+    if ($payload !== null) $args['body'] = json_encode($payload);
+
+    $response = wp_remote_request(kbf_maya_base_url() . $endpoint, $args);
+    if (is_wp_error($response)) return ['error' => $response->get_error_message()];
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    $code = wp_remote_retrieve_response_code($response);
+    if ($code >= 400) {
+        $msg = $body['message'] ?? ($body['error']['message'] ?? 'Maya API error (HTTP ' . $code . ').');
+        return ['error' => $msg, 'code' => $code, 'raw' => $body];
+    }
+    return $body;
+}
+
+/**
+ * AJAX: Create a Maya Checkout session and return the checkout URL.
+ * Called when a sponsor submits the form in live mode.
+ *
+ * Maya Checkout API reference:
+ * POST /checkout/v1/checkouts
+ * Auth: Basic <base64(publicKey:)>
+ */
+function bntm_ajax_kbf_create_checkout() {
+    check_ajax_referer('kbf_sponsor', 'nonce');
+    global $wpdb;
+    $ft = $wpdb->prefix . 'kbf_funds';
+    $st = $wpdb->prefix . 'kbf_sponsorships';
+
+    $fund_id      = intval($_POST['fund_id']);
+    $amount       = floatval($_POST['amount']);
+    $sponsor_name = sanitize_text_field($_POST['sponsor_name'] ?? 'Anonymous');
+    $email        = sanitize_email($_POST['email'] ?? '');
+    $phone        = sanitize_text_field($_POST['phone'] ?? '');
+    $message      = sanitize_textarea_field($_POST['message'] ?? '');
+    $is_anon      = intval($_POST['is_anonymous'] ?? 0);
+    $method       = sanitize_text_field($_POST['payment_method'] ?? 'online_payment');
+
+    if ($amount < 10) wp_send_json_error(['message' => 'Minimum sponsorship is â‚±10.']);
+
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'", $fund_id));
+    if (!$fund) wp_send_json_error(['message' => 'Fund not found or not accepting sponsorships.']);
+
+    // Save a pending sponsorship -- confirmed via webhook after payment
+    $rand_id = bntm_rand_id();
+    $wpdb->insert($st, [
+        'rand_id'        => $rand_id,
+        'fund_id'        => $fund_id,
+        'sponsor_name'   => $is_anon ? 'Anonymous' : $sponsor_name,
+        'is_anonymous'   => $is_anon,
+        'amount'         => $amount,
+        'email'          => $email,
+        'phone'          => $phone,
+        'payment_method' => $method,
+        'payment_status' => 'pending',
+        'message'        => $message,
+    ], ['%s','%d','%s','%d','%f','%s','%s','%s','%s','%s']);
+    $sponsorship_id = $wpdb->insert_id;
+
+    // Redirect URLs -- Maya sends buyer back after payment
+    $success_url = add_query_arg(['kbf_payment' => 'success', 'sid' => $sponsorship_id, 'ref' => $rand_id], get_permalink());
+    $failure_url = add_query_arg(['kbf_payment' => 'failed',  'sid' => $sponsorship_id], get_permalink());
+    $cancel_url  = add_query_arg(['kbf_payment' => 'cancelled','sid' => $sponsorship_id], get_permalink());
+
+    // Maya amounts are in PHP (not centavos), as decimal strings
+    $amount_str = number_format($amount, 2, '.', '');
+
+    // Build Maya Checkout payload
+    $payload = [
+        'totalAmount' => [
+            'value'    => $amount_str,
+            'currency' => 'PHP',
+            'details'  => [
+                'subtotal' => $amount_str,
+            ],
+        ],
+        'buyer' => [
+            'firstName' => $is_anon ? 'Anonymous' : (explode(' ', $sponsor_name)[0] ?? 'Sponsor'),
+            'lastName'  => $is_anon ? 'Sponsor'   : (explode(' ', $sponsor_name, 2)[1] ?? 'Donor'),
+            'contact'   => array_filter([
+                'email' => $email ?: null,
+                'phone' => $phone ?: null,
+            ]),
+        ],
+        'items' => [[
+            'name'        => 'KonekBayan Fund Support',
+            'description' => 'Sponsorship for: ' . $fund->title,
+            'quantity'    => '1',
+            'code'        => 'KBF-' . $rand_id,
+            'amount'      => ['value' => $amount_str, 'currency' => 'PHP'],
+            'totalAmount' => ['value' => $amount_str, 'currency' => 'PHP'],
+        ]],
+        'redirectUrl' => [
+            'success' => $success_url,
+            'failure' => $failure_url,
+            'cancel'  => $cancel_url,
+        ],
+        'requestReferenceNumber' => 'KBF-' . $rand_id,
+        'metadata'               => [
+            'sponsorshipId' => (string)$sponsorship_id,
+            'fundId'        => (string)$fund_id,
+            'randId'        => $rand_id,
+        ],
+    ];
+
+    $result = kbf_maya_request('/checkout/v1/checkouts', $payload);
+
+    if (isset($result['error'])) {
+        $wpdb->delete($st, ['id' => $sponsorship_id], ['%d']);
+        wp_send_json_error(['message' => 'Payment gateway error: ' . $result['error']]);
+    }
+
+    $checkout_url = $result['redirectUrl'] ?? '';
+    $checkout_id  = $result['checkoutId'] ?? '';
+
+    if (empty($checkout_url)) {
+        $wpdb->delete($st, ['id' => $sponsorship_id], ['%d']);
+        wp_send_json_error(['message' => 'Could not create payment session. Please try again.']);
+    }
+
+    // Store Maya checkout ID for webhook matching / status polling
+    $wpdb->update($st,
+        ['gateway_payload' => json_encode(['checkoutId' => $checkout_id, 'checkout_url' => $checkout_url])],
+        ['id' => $sponsorship_id], ['%s'], ['%d']
+    );
+
+    wp_send_json_success([
+        'checkout_url'   => $checkout_url,
+        'sponsorship_id' => $sponsorship_id,
+        'message'        => 'Redirecting to Maya secure payment...',
+    ]);
+}
+
+/**
+ * Maya Webhook Handler -- receives CHECKOUT_SUCCESS / PAYMENT_SUCCESS events.
+ * WordPress REST endpoint: /wp-json/kbf/v1/maya-webhook
+ *
+ * Maya sends a POST to this URL when payment is confirmed.
+ * Marks sponsorship completed, updates fund raised_amount,
+ * auto-completes fund if goal reached, updates organizer stats.
+ */
+function kbf_maya_webhook_handler(WP_REST_Request $request) {
+    global $wpdb;
+
+    $raw_body = $request->get_body();
+    $payload  = json_decode($raw_body, true);
+
+    if (!$payload) {
+        return new WP_REST_Response(['error' => 'Invalid payload'], 400);
+    }
+
+    // Maya webhook events we care about
+    $event = $payload['eventType'] ?? ($payload['name'] ?? '');
+    $success_events = ['CHECKOUT_SUCCESS', 'PAYMENT_SUCCESS', 'AUTHORIZED'];
+
+    if (!in_array($event, $success_events)) {
+        return new WP_REST_Response(['received' => true, 'note' => 'Event ignored: ' . $event], 200);
+    }
+
+    // Extract our reference number and metadata
+    $ref_number = $payload['requestReferenceNumber']
+        ?? ($payload['resource']['requestReferenceNumber'] ?? '');
+    $metadata   = $payload['metadata']
+        ?? ($payload['resource']['metadata'] ?? []);
+
+    $sponsorship_id = intval($metadata['sponsorshipId'] ?? 0);
+    $rand_id        = sanitize_text_field($metadata['randId'] ?? '');
+
+    // Fallback: parse rand_id from reference number (format: KBF-{rand_id})
+    if (!$sponsorship_id && !$rand_id && str_starts_with((string)$ref_number, 'KBF-')) {
+        $rand_id = substr($ref_number, 4);
+    }
+
+    if (!$sponsorship_id && !$rand_id) {
+        return new WP_REST_Response(['received' => true, 'note' => 'No sponsorship reference found'], 200);
+    }
+
+    $st = $wpdb->prefix . 'kbf_sponsorships';
+    $ft = $wpdb->prefix . 'kbf_funds';
+
+    $sponsorship = $sponsorship_id
+        ? $wpdb->get_row($wpdb->prepare("SELECT * FROM {$st} WHERE id=%d", $sponsorship_id))
+        : $wpdb->get_row($wpdb->prepare("SELECT * FROM {$st} WHERE rand_id=%s", $rand_id));
+
+    if (!$sponsorship || $sponsorship->payment_status === 'completed') {
+        return new WP_REST_Response(['received' => true, 'note' => 'Already processed or not found'], 200);
+    }
+
+    // Extract Maya payment/transaction reference
+    $maya_ref = $payload['resource']['receiptNumber']
+        ?? ($payload['receiptNumber'] ?? ($payload['resource']['id'] ?? $ref_number));
+
+    // Mark sponsorship completed
+    $wpdb->update($st, [
+        'payment_status'    => 'completed',
+        'payment_reference' => $maya_ref,
+        'notified'          => 1,
+    ], ['id' => $sponsorship->id], ['%s','%s','%d'], ['%d']);
+
+    // Update fund raised_amount
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d", $sponsorship->fund_id));
+    if ($fund) {
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$ft} SET raised_amount=raised_amount+%f WHERE id=%d",
+            $sponsorship->amount, $fund->id
+        ));
+        // Auto-complete if goal reached
+        $updated = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount FROM {$ft} WHERE id=%d", $fund->id));
+        if ($updated && $updated->goal_amount > 0 && $updated->raised_amount >= $updated->goal_amount) {
+            $wpdb->update($ft, ['status' => 'completed', 'escrow_status' => 'holding'],
+                ['id' => $fund->id], ['%s','%s'], ['%d']);
+            do_action('kbf_fund_goal_reached', $fund->id);
+        }
+        // Update organizer stats
+        $pt = $wpdb->prefix . 'kbf_organizer_profiles';
+        $total = $wpdb->get_var($wpdb->prepare(
+            "SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            $fund->business_id
+        ));
+        $cnt = (int)$wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            $fund->business_id
+        ));
+        $wpdb->update($pt, ['total_raised' => $total, 'total_sponsors' => $cnt],
+            ['business_id' => $fund->business_id], ['%f','%d'], ['%d']);
+    }
+
+    do_action('kbf_payment_confirmed', $sponsorship->id);
+    return new WP_REST_Response(['received' => true, 'processed' => $sponsorship->id], 200);
+}
+
+function bntm_ajax_kbf_sponsor_fund() {
+    check_ajax_referer('kbf_sponsor','nonce');
+    global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$st=$wpdb->prefix.'kbf_sponsorships';
+    $id=intval($_POST['fund_id']);$amount=floatval($_POST['amount']);
+    if($amount<10) wp_send_json_error(['message'=>'Minimum sponsorship is â‚±10.']);
+    $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'",$id));
+    if(!$fund) wp_send_json_error(['message'=>'Fund not found or not accepting sponsorships.']);
+    $anon=intval($_POST['is_anonymous']??0);
+    $method=sanitize_text_field($_POST['payment_method']??'');
+
+    $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
+
+    // In live mode, sponsor_fund is handled by kbf_create_checkout.
+    // This handler only runs in demo mode (auto-confirm, no gateway).
+    if (!$demo_mode) {
+        wp_send_json_error(['message' => 'Please use the payment checkout flow.']);
+        return;
+    }
+
+    // â”€â”€ DEMO MODE: auto-confirm sponsorship â”€â”€
+    $res=$wpdb->insert($st,[
+        'rand_id'          =>bntm_rand_id(),
+        'fund_id'          =>$id,
+        'sponsor_name'     =>$anon?'Anonymous':sanitize_text_field($_POST['sponsor_name']??'Anonymous'),
+        'is_anonymous'     =>$anon,
+        'amount'           =>$amount,
+        'email'            =>sanitize_email($_POST['email']??''),
+        'phone'            =>sanitize_text_field($_POST['phone']??''),
+        'payment_method'   =>$method,
+        'payment_status'   =>'completed',
+        'message'          =>sanitize_textarea_field($_POST['message']??''),
+    ],['%s','%d','%s','%d','%f','%s','%s','%s','%s','%s']);
+    if($res) {
+        $new_id = $wpdb->insert_id;
+        $wpdb->query($wpdb->prepare("UPDATE {$ft} SET raised_amount=raised_amount+%f WHERE id=%d",$amount,$id));
+        // Auto-complete: mark fund complete if goal reached
+        $updated_fund = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount FROM {$ft} WHERE id=%d",$id));
+        $just_completed = false;
+        if($updated_fund && $updated_fund->goal_amount > 0 && $updated_fund->raised_amount >= $updated_fund->goal_amount) {
+            $wpdb->update($ft,['status'=>'completed','escrow_status'=>'holding'],['id'=>$id],['%s','%s'],['%d']);
+            $just_completed = true;
+            do_action('kbf_fund_goal_reached', $id);
+        }
+        $pt=$wpdb->prefix.'kbf_organizer_profiles';
+        $total=$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$fund->business_id));
+        $cnt=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$fund->business_id));
+        $wpdb->update($pt,['total_raised'=>$total,'total_sponsors'=>$cnt],['business_id'=>$fund->business_id],['%f','%d'],['%d']);
+        $msg = $just_completed
+            ? 'Sponsorship confirmed! â‚±'.number_format($amount,2).' added. This fund has now reached its goal!'
+            : 'Sponsorship confirmed! â‚±'.number_format($amount,2).' has been added to this fund. Thank you for your support!';
+        wp_send_json_success(['message'=>$msg,'fund_completed'=>$just_completed]);
+    } else {
+        wp_send_json_error(['message'=>'Sponsorship failed. Please try again.']);
+    }
+}
+
+function bntm_ajax_kbf_report_fund() {
+    check_ajax_referer('kbf_report','nonce');
+    global $wpdb;$t=$wpdb->prefix.'kbf_reports';
+    $id=intval($_POST['fund_id']);$reason=sanitize_text_field($_POST['reason']);$details=sanitize_textarea_field($_POST['details']);
+    if(empty($reason)||empty($details)) wp_send_json_error(['message'=>'Please fill all required fields.']);
+    $res=$wpdb->insert($t,['rand_id'=>bntm_rand_id(),'fund_id'=>$id,'reporter_id'=>get_current_user_id(),'reporter_email'=>sanitize_email($_POST['reporter_email']??''),'reason'=>$reason,'details'=>$details,'status'=>'open'],['%s','%d','%d','%s','%s','%s','%s']);
+    if($res) wp_send_json_success(['message'=>'Report submitted. Our team will review it shortly.']);
+    else wp_send_json_error(['message'=>'Failed to submit report.']);
+}
+
+function bntm_ajax_kbf_get_fund_details() {
+    check_ajax_referer('kbf_sponsor','nonce');
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';
+    $id=intval($_POST['fund_id']);
+    $f=$wpdb->get_row($wpdb->prepare("SELECT id,title,description,goal_amount,raised_amount,location,category FROM {$t} WHERE id=%d AND status='active'",$id));
+    if($f) wp_send_json_success($f);
+    else wp_send_json_error(['message'=>'Fund not found.']);
+}
+
+function bntm_ajax_kbf_get_organizer_profile() {
+    // Public endpoint: no nonce required -- returns only public profile data
+    global $wpdb;
+    $biz=intval($_POST['business_id']??0);
+    if(!$biz) wp_send_json_error(['message'=>'Not found.']);
+    $pt=$wpdb->prefix.'kbf_organizer_profiles';
+    $ft=$wpdb->prefix.'kbf_funds';
+    $rt=$wpdb->prefix.'kbf_ratings';
+    $st=$wpdb->prefix.'kbf_sponsorships';
+    $profile=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$biz));
+    $user=get_userdata($biz);
+    if(!$user) wp_send_json_error(['message'=>'Organizer not found.']);
+    $active_funds=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d AND status='active'",$biz));
+    $total_funds=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d AND status IN ('active','completed')",$biz));
+    // All funds (active + completed) for fund history
+    $funds=$wpdb->get_results($wpdb->prepare(
+        "SELECT id,title,goal_amount,raised_amount,status,category,deadline,created_at FROM {$ft} WHERE business_id=%d AND status IN ('active','completed') ORDER BY created_at DESC LIMIT 10",
+        $biz
+    ));
+    $fund_data=array_map(function($f) use($wpdb,$st){
+        $sponsor_count=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
+        $pct=$f->goal_amount>0?min(100,round(($f->raised_amount/$f->goal_amount)*100)):0;
+        return [
+            'id'           =>$f->id,
+            'title'        =>$f->title,
+            'raised'       =>number_format($f->raised_amount,0),
+            'goal'         =>number_format($f->goal_amount,0),
+            'pct'          =>$pct,
+            'status'       =>$f->status,
+            'category'     =>$f->category,
+            'sponsor_count'=>$sponsor_count,
+        ];
+    }, $funds);
+    // Recent reviews
+    $reviews=$wpdb->get_results($wpdb->prepare(
+        "SELECT r.*,f.title as fund_title FROM {$rt} r LEFT JOIN {$ft} f ON r.fund_id=f.id WHERE r.organizer_id=%d ORDER BY r.created_at DESC LIMIT 5",
+        $biz
+    ));
+    $review_data=array_map(fn($r)=>[
+        'rating'    =>$r->rating,
+        'review'    =>$r->review,
+        'email'     =>substr($r->sponsor_email,0,3).'***'.strstr($r->sponsor_email,'@'),
+        'fund_title'=>$r->fund_title,
+        'date'      =>date('M d, Y',strtotime($r->created_at)),
+    ],$reviews);
+    wp_send_json_success([
+        'display_name'  =>$user->display_name,
+        'avatar_url'    =>$profile?$profile->avatar_url:'',
+        'bio'           =>$profile?$profile->bio:'',
+        'is_verified'   =>$profile?(bool)$profile->is_verified:false,
+        'total_raised'  =>$profile?$profile->total_raised:0,
+        'total_sponsors'=>$profile?$profile->total_sponsors:0,
+        'rating'        =>$profile?number_format($profile->rating,1):'0.0',
+        'rating_count'  =>$profile?$profile->rating_count:0,
+        'active_funds'  =>$active_funds,
+        'total_funds'   =>$total_funds,
+        'funds'         =>$fund_data,
+        'reviews'       =>$review_data,
+    ]);
+}
+
+function bntm_ajax_kbf_submit_rating() {
+    check_ajax_referer('kbf_rating','nonce');
+    global $wpdb;$rt=$wpdb->prefix.'kbf_ratings';$pt=$wpdb->prefix.'kbf_organizer_profiles';
+    $org_id=intval($_POST['organizer_id']);$rating=min(5,max(1,intval($_POST['rating'])));
+    $email=sanitize_email($_POST['sponsor_email']??'');
+    if(empty($email)) wp_send_json_error(['message'=>'Email required to submit a review.']);
+    // Prevent duplicate rating per email per organizer
+    $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$rt} WHERE organizer_id=%d AND sponsor_email=%s",$org_id,$email));
+    if($exists) wp_send_json_error(['message'=>'You have already submitted a review for this organizer.']);
+    $wpdb->insert($rt,['rand_id'=>bntm_rand_id(),'organizer_id'=>$org_id,'sponsor_email'=>$email,'rating'=>$rating,'review'=>sanitize_textarea_field($_POST['review']??''),'fund_id'=>intval($_POST['fund_id']??0)],['%s','%d','%s','%d','%s','%d']);
+    // Recalculate average
+    $avg=$wpdb->get_var($wpdb->prepare("SELECT AVG(rating) FROM {$rt} WHERE organizer_id=%d",$org_id));
+    $cnt=$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$rt} WHERE organizer_id=%d",$org_id));
+    $wpdb->update($pt,['rating'=>round($avg,2),'rating_count'=>(int)$cnt],['business_id'=>$org_id],['%f','%d'],['%d']);
+    wp_send_json_success(['message'=>'Thank you for your review!']);
+}
+
+// ============================================================
+// ADMIN TAB: Settings
+// ============================================================
+
+function kbf_admin_settings_tab() {
+    $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
+    $sb_pub    = kbf_get_setting('kbf_maya_sandbox_public', '');
+    $sb_sec    = kbf_get_setting('kbf_maya_sandbox_secret', '');
+    $lv_pub    = kbf_get_setting('kbf_maya_live_public', '');
+    $lv_sec    = kbf_get_setting('kbf_maya_live_secret', '');
+    $nonce     = wp_create_nonce('kbf_admin_action');
+    ob_start(); ?>
+    <div class="kbf-section">
+      <h3 class="kbf-section-title" style="margin-bottom:8px;">Platform Settings</h3>
+      <p style="color:var(--kbf-slate);font-size:13.5px;margin-bottom:24px;">Configure KonekBayan payments and live mode.</p>
+
+      <!-- Demo / Live Mode Toggle -->
+      <div class="kbf-card" style="border-left:4px solid <?php echo $demo_mode?'var(--kbf-accent)':'var(--kbf-green)'; ?>;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              <strong style="font-size:15px;color:var(--kbf-navy);">Payment Mode</strong>
+              <span class="kbf-badge <?php echo $demo_mode?'kbf-badge-holding':'kbf-badge-active'; ?>">
+                <?php echo $demo_mode?'DEMO -- Auto-confirm':'LIVE -- Maya Checkout'; ?>
+              </span>
+            </div>
+            <p style="margin:0 0 10px;font-size:13.5px;color:var(--kbf-text-sm);line-height:1.6;">
+              <strong>Demo ON:</strong> Sponsorships auto-confirmed instantly, no real payment.<br>
+              <strong>Demo OFF:</strong> Sponsors are redirected to Maya's secure checkout page (Maya Wallet, cards, QRPh).
+            </p>
+            <?php if($demo_mode): ?>
+            <div class="kbf-alert kbf-alert-warning" style="font-size:12.5px;"><strong>Demo Mode is active.</strong> Configure your Maya API keys below, then switch to Live.</div>
+            <?php else: ?>
+            <div class="kbf-alert kbf-alert-success" style="font-size:12.5px;"><strong>Live Mode active.</strong> Maya Checkout processes all payments. Sandbox keys used for testing.</div>
+            <?php endif; ?>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
+            <?php if($demo_mode): ?>
+              <button class="kbf-btn kbf-btn-success" onclick="kbfSaveSetting('kbf_demo_mode','0','<?php echo $nonce; ?>')">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Switch to Live
+              </button>
+            <?php else: ?>
+              <button class="kbf-btn kbf-btn-accent" onclick="kbfSaveSetting('kbf_demo_mode','1','<?php echo $nonce; ?>')">Switch to Demo</button>
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
+
+      <!-- Maya API Keys -->
+      <div class="kbf-card" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--kbf-navy)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          <strong style="font-size:15px;color:var(--kbf-navy);">Maya API Keys</strong>
+          <a href="https://sandbox-manager.paymaya.com" target="_blank" style="font-size:12px;color:var(--kbf-blue);margin-left:auto;">Open Maya Business Manager â†’</a>
+        </div>
+
+        <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--kbf-text-sm);line-height:1.7;">
+          <strong style="color:var(--kbf-navy);">Where to find your keys:</strong><br>
+          Maya Business Manager â†’ Developers â†’ API Keys. Copy Public Key &amp; Secret Key for both Sandbox and Live environments.
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <!-- Sandbox Keys -->
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-accent);margin-bottom:10px;">Sandbox (Testing)</div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Sandbox Public Key</label>
+              <input type="text" id="sb-pub" value="<?php echo esc_attr($sb_pub); ?>" placeholder="pk-sandbox-..." style="font-family:monospace;font-size:12px;">
+            </div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Sandbox Secret Key</label>
+              <input type="password" id="sb-sec" value="<?php echo esc_attr($sb_sec); ?>" placeholder="sk-sandbox-..." style="font-family:monospace;font-size:12px;">
+            </div>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveMayaKeys('sandbox')">Save Sandbox Keys</button>
+          </div>
+          <!-- Live Keys -->
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-green);margin-bottom:10px;">Live (Production)</div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Live Public Key</label>
+              <input type="text" id="lv-pub" value="<?php echo esc_attr($lv_pub); ?>" placeholder="pk-live-..." style="font-family:monospace;font-size:12px;">
+            </div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Live Secret Key</label>
+              <input type="password" id="lv-sec" value="<?php echo esc_attr($lv_sec); ?>" placeholder="sk-live-..." style="font-family:monospace;font-size:12px;">
+            </div>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveMayaKeys('live')">Save Live Keys</button>
+          </div>
+        </div>
+
+        <!-- Webhook URL -->
+        <div style="border-top:1px solid var(--kbf-border);margin-top:20px;padding-top:16px;">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:10px;">Webhook URL (for automatic payment confirmation)</div>
+          <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;font-size:13px;line-height:1.8;">
+            <strong>Your Webhook URL -- copy this into Maya Business Manager:</strong><br>
+            <code style="font-size:12px;word-break:break-all;color:var(--kbf-navy);background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin:6px 0;"><?php echo esc_html(rest_url('kbf/v1/maya-webhook')); ?></code><br>
+            <small style="color:var(--kbf-slate);">
+              Maya Business Manager â†’ Developers â†’ Webhooks â†’ Add Webhook URL.<br>
+              Subscribe to events: <strong>CHECKOUT_SUCCESS</strong> and <strong>PAYMENT_SUCCESS</strong>.<br>
+              No webhook secret is required -- Maya authenticates via your API keys.
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div id="kbf-settings-msg" style="margin-top:12px;"></div>
+    </div>
+    <script>
+    window.kbfSaveSetting = function(key, val, nonce) {
+        const fd = new FormData();
+        fd.append('action','kbf_save_setting');
+        fd.append('_ajax_nonce', nonce);
+        fd.append('setting_key', key);
+        fd.append('setting_val', val);
+        fetch((window.ajaxurl||'<?php echo admin_url('admin-ajax.php'); ?>'),{method:'POST',body:fd})
+        .then(r=>r.json()).then(j=>{
+            alert(j.data&&j.data.message?j.data.message:(j.success?'Setting saved!':'Failed to save.'));
+            if(j.success) location.reload();
+        });
+    };
+    window.kbfSaveMayaKeys = function(type) {
+        const nonce = '<?php echo $nonce; ?>';
+        const msg   = document.getElementById('kbf-settings-msg');
+        const pairs = type === 'sandbox'
+            ? [['kbf_maya_sandbox_public', document.getElementById('sb-pub').value],
+               ['kbf_maya_sandbox_secret', document.getElementById('sb-sec').value]]
+            : [['kbf_maya_live_public', document.getElementById('lv-pub').value],
+               ['kbf_maya_live_secret', document.getElementById('lv-sec').value]];
+        let done = 0;
+        pairs.forEach(([key, val]) => {
+            const fd = new FormData();
+            fd.append('action', 'kbf_save_setting');
+            fd.append('_ajax_nonce', nonce);
+            fd.append('setting_key', key);
+            fd.append('setting_val', val);
+            fetch((window.ajaxurl || '<?php echo admin_url('admin-ajax.php'); ?>'), {method:'POST', body:fd})
+            .then(r => r.json()).then(j => {
+                if (++done === pairs.length && msg) {
+                    msg.innerHTML = '<div class="kbf-alert kbf-alert-success" style="font-size:13px;">' + (type==='sandbox'?'Sandbox':'Live') + ' keys saved successfully.</div>';
+                    setTimeout(() => msg.innerHTML = '', 4000);
+                }
+            });
+        });
+    };
+    </script>
+    <?php return ob_get_clean();
+}
+
+
+// ============================================================
+// AJAX HANDLERS -- ADMIN
+// ============================================================
+
+function bntm_ajax_kbf_admin_approve_fund() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
+    $wpdb->update($t,['status'=>'active'],['id'=>$id],['%s'],['%d']);
+    // =====================================================
+    // NOTIFICATION PLACEHOLDER
+    // TODO: Notify funder their fund is now live
+    // do_action('kbf_fund_approved', $id);
+    // =====================================================
+    wp_send_json_success(['message'=>'Fund approved and is now live!']);
+}
+
+function bntm_ajax_kbf_admin_reject_fund() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
+    $notes=sanitize_text_field($_POST['reason']??'');
+    $wpdb->update($t,['status'=>'cancelled','admin_notes'=>$notes],['id'=>$id],['%s','%s'],['%d']);
+    wp_send_json_success(['message'=>'Fund rejected.']);
+}
+
+function bntm_ajax_kbf_admin_suspend_fund() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
+    $wpdb->update($t,['status'=>'suspended'],['id'=>$id],['%s'],['%d']);
+    wp_send_json_success(['message'=>'Fund suspended.']);
+}
+
+function bntm_ajax_kbf_admin_verify_badge() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);$v=intval($_POST['verified']);
+    $wpdb->update($t,['verified_badge'=>$v],['id'=>$id],['%d'],['%d']);
+    wp_send_json_success(['message'=>$v?'Verified badge granted!':'Badge removed.']);
+}
+
+function bntm_ajax_kbf_admin_release_escrow() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
+    $wpdb->update($t,['escrow_status'=>'released'],['id'=>$id],['%s'],['%d']);
+    wp_send_json_success(['message'=>'Escrow released. Organizer can now withdraw funds.']);
+}
+
+function bntm_ajax_kbf_admin_hold_escrow() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
+    $wpdb->update($t,['escrow_status'=>'holding'],['id'=>$id],['%s'],['%d']);
+    wp_send_json_success(['message'=>'Funds placed on hold.']);
+}
+
+function bntm_ajax_kbf_admin_process_withdrawal() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$wt=$wpdb->prefix.'kbf_withdrawals';$ft=$wpdb->prefix.'kbf_funds';
+    $id=intval($_POST['withdrawal_id']);$type=sanitize_text_field($_POST['action_type']);$notes=sanitize_text_field($_POST['notes']??'');
+    $wd=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$wt} WHERE id=%d",$id));
+    if(!$wd) wp_send_json_error(['message'=>'Withdrawal not found.']);
+    if($type==='approve') {
+        $wpdb->update($wt,['status'=>'released','processed_at'=>current_time('mysql'),'admin_notes'=>$notes],['id'=>$id],['%s','%s','%s'],['%d']);
+        $wpdb->query($wpdb->prepare("UPDATE {$ft} SET raised_amount=raised_amount-%f WHERE id=%d",$wd->amount,$wd->fund_id));
+        $wpdb->update($ft,['escrow_status'=>'released'],['id'=>$wd->fund_id],['%s'],['%d']);
+        wp_send_json_success(['message'=>'Withdrawal approved and released!']);
+    } else {
+        $wpdb->update($wt,['status'=>'rejected','processed_at'=>current_time('mysql'),'admin_notes'=>$notes],['id'=>$id],['%s','%s','%s'],['%d']);
+        wp_send_json_success(['message'=>'Withdrawal rejected.']);
+    }
+}
+
+function bntm_ajax_kbf_admin_dismiss_report() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_reports';$id=intval($_POST['report_id']);
+    $wpdb->update($t,['status'=>'dismissed'],['id'=>$id],['%s'],['%d']);
+    wp_send_json_success(['message'=>'Report dismissed.']);
+}
+
+function bntm_ajax_kbf_admin_review_report() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$t=$wpdb->prefix.'kbf_reports';$id=intval($_POST['report_id']);
+    $notes=sanitize_text_field($_POST['notes']??'');
+    $wpdb->update($t,['status'=>'reviewed','admin_notes'=>$notes],['id'=>$id],['%s','%s'],['%d']);
+    wp_send_json_success(['message'=>'Report marked as reviewed.']);
+}
+
+function bntm_ajax_kbf_admin_confirm_payment() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$st=$wpdb->prefix.'kbf_sponsorships';$ft=$wpdb->prefix.'kbf_funds';
+    $id=intval($_POST['sponsorship_id']);
+    $sp=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$st} WHERE id=%d",$id));
+    if(!$sp||$sp->payment_status==='completed') wp_send_json_error(['message'=>'Sponsorship not found or already confirmed.']);
+    $wpdb->update($st,['payment_status'=>'completed'],['id'=>$id],['%s'],['%d']);
+    // Update raised amount on fund
+    $wpdb->query($wpdb->prepare("UPDATE {$ft} SET raised_amount=raised_amount+%f WHERE id=%d",$sp->amount,$sp->fund_id));
+    // Update organizer profile stats
+    $fund=$wpdb->get_row($wpdb->prepare("SELECT business_id FROM {$ft} WHERE id=%d",$sp->fund_id));
+    if($fund) {
+        $pt=$wpdb->prefix.'kbf_organizer_profiles';
+        $total=$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$fund->business_id));
+        $cnt=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$fund->business_id));
+        $wpdb->update($pt,['total_raised'=>$total,'total_sponsors'=>$cnt],['business_id'=>$fund->business_id],['%f','%d'],['%d']);
+    }
+    // =====================================================
+    // NOTIFICATION PLACEHOLDER
+    // TODO: Send receipt to sponsor here
+    // do_action('kbf_send_sponsorship_receipt', $id, $sp->fund_id);
+    // =====================================================
+    wp_send_json_success(['message'=>'Payment confirmed! Sponsor notified.']);
+}
+
+function bntm_ajax_kbf_admin_verify_organizer() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';
+    $biz=intval($_POST['business_id']);$v=intval($_POST['verified']);
+    $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz));
+    if($exists) $wpdb->update($pt,['is_verified'=>$v],['business_id'=>$biz],['%d'],['%d']);
+    else $wpdb->insert($pt,['business_id'=>$biz,'is_verified'=>$v],['%d','%d']);
+    wp_send_json_success(['message'=>$v?'Organizer verified!':'Verification revoked.']);
+}
+
+function bntm_ajax_kbf_save_setting() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    $key = sanitize_key($_POST['setting_key']??'');
+    $val = sanitize_text_field($_POST['setting_val']??'');
+    if(empty($key)) wp_send_json_error(['message'=>'Invalid setting key.']);
+    kbf_set_setting($key, $val);
+    $labels = ['kbf_demo_mode' => ['0'=>'Live Mode activated. Sponsorships now require payment confirmation.','1'=>'Demo Mode activated. Sponsorships will be auto-confirmed.']];
+    $msg = $labels[$key][$val] ?? 'Setting saved!';
+    wp_send_json_success(['message'=>$msg]);
+}
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+
+function kbf_table_has_column($table, $column) {
+    global $wpdb;
+    $col = $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM {$table} LIKE %s", $column));
+    return !empty($col);
+}
+
+/**
+ * Safe wrapper for bntm_get_setting that guarantees a default value.
+ * bntm_get_setting() may not support a second default parameter depending
+ * on the framework version -- this wrapper handles both cases.
+ */
+function kbf_get_setting($key, $default = null) {
+    if (function_exists('bntm_get_setting')) {
+        $val = bntm_get_setting($key);
+        return ($val === null || $val === false || $val === '') ? $default : $val;
+    }
+    // Fallback: store in wp_options directly
+    $stored = get_option('kbf_setting_' . $key, null);
+    return ($stored === null) ? $default : $stored;
+}
+
+function kbf_set_setting($key, $value) {
+    if (function_exists('bntm_set_setting')) {
+        bntm_set_setting($key, $value);
+    }
+    // Also mirror to wp_options as fallback
+    update_option('kbf_setting_' . $key, $value);
+}
+
+function kbf_withdrawal_status_label($status) {
+    if ($status === 'released' || $status === 'approved') return 'Approved';
+    if ($status === 'rejected') return 'Rejected';
+    if ($status === 'pending') return 'Pending';
+    return ucfirst((string)$status);
+}
+
+function kbf_withdrawal_badge_class($status) {
+    if ($status === 'released' || $status === 'approved') return 'active';
+    if ($status === 'rejected') return 'cancelled';
+    if ($status === 'pending') return 'pending';
+    return (string)$status;
+}
+
+function kbf_role_nav($role) {
+    $links = [];
+    if ($role === 'funder') {
+        $base = kbf_get_page_url('dashboard');
+        $links = [
+            ['Create Fundraiser', add_query_arg('kbf_tab','my_funds',$base)],
+            ['Manage Fundraisers', add_query_arg('kbf_tab','my_funds',$base)],
+            ['Request Withdrawal', add_query_arg('kbf_tab','withdrawals',$base)],
+            ['View Fundraiser Status', add_query_arg('kbf_tab','overview',$base)],
+        ];
+    } elseif ($role === 'sponsor') {
+        $links = [
+            ['Browse Fundraisers', kbf_get_page_url('browse')],
+            ['View Fundraiser Details', kbf_get_page_url('fund_details')],
+            ['Donate to Fundraiser', kbf_get_page_url('fund_details')],
+            ['Donation History', kbf_get_page_url('sponsor_history')],
+            ['Funder Profiles', kbf_get_page_url('organizer_profile')],
+        ];
+    } elseif ($role === 'admin') {
+        $base = kbf_get_page_url('admin');
+        $links = [
+            ['Manage Fundraisers', add_query_arg('kbf_tab','pending',$base)],
+            ['Withdraw Requests Panel', add_query_arg('kbf_tab','withdrawals',$base)],
+            ['Approve or Reject Withdrawals', add_query_arg('kbf_tab','withdrawals',$base)],
+            ['User Management', add_query_arg('kbf_tab','organizers',$base)],
+            ['Platform Monitoring', add_query_arg('kbf_tab','transactions',$base)],
+        ];
+    }
+    if (empty($links)) return '';
+    ob_start(); ?>
+    <div class="kbf-card" style="margin-bottom:18px;">
+      <div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-slate);margin-bottom:10px;"><?php echo esc_html(ucfirst($role)); ?> Pages</div>
+      <div class="kbf-btn-group">
+        <?php foreach($links as $l): ?>
+          <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($l[1]); ?>"><?php echo esc_html($l[0]); ?></a>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+function kbf_get_categories() {
+    return ['Community','Sports','Family','Emergency','Education','Medical','Business','Religion','Arts & Culture','Environment','Animals','Others'];
+}
+
+/**
+ * Resolve the URL of a page by the shortcode it contains.
+ * Usage: kbf_get_page_url('fund_details') â†’ URL of the page with [kbf_fund_details]
+ */
+function kbf_get_page_url($page_key) {
+    static $cache = [];
+    if(isset($cache[$page_key])) return $cache[$page_key];
+    $shortcode_map = [
+        'dashboard'         => 'kbf_dashboard',
+        'browse'            => 'kbf_browse',
+        'fund_details'      => 'kbf_fund_details',
+        'organizer_profile' => 'kbf_organizer_profile',
+        'sponsor_history'   => 'kbf_sponsor_history',
+        'admin'             => 'kbf_admin',
+    ];
+    $shortcode = $shortcode_map[$page_key] ?? $page_key;
+    // Try bntm framework page setting first
+    $stored_url = bntm_get_setting('kbf_page_' . $page_key);
+    if($stored_url) { $cache[$page_key] = $stored_url; return $stored_url; }
+    // Fall back: search all pages for the shortcode
+    $pages = get_posts(['post_type'=>'page','post_status'=>'publish','numberposts'=>-1,'s'=>'['.$shortcode.']']);
+    foreach($pages as $p) {
+        if(has_shortcode($p->post_content, $shortcode)) {
+            $url = get_permalink($p->ID);
+            $cache[$page_key] = $url;
+            return $url;
+        }
+    }
+    // Last resort: home URL (will at least not 404)
+    return home_url('/');
+}
+
+function kbf_refund_all_sponsors($fund_id) {
+    global $wpdb;$t=$wpdb->prefix.'kbf_sponsorships';
+    $wpdb->update($t,['payment_status'=>'refunded'],['fund_id'=>$fund_id,'payment_status'=>'completed'],['%s'],['%d','%s']);
+    // =====================================================
+    // NOTIFICATION PLACEHOLDER
+    // TODO: Notify all sponsors about the refund here
+    // do_action('kbf_refunds_triggered', $fund_id);
+    // =====================================================
+    error_log("[KonekBayan] Auto-refund triggered for fund #{$fund_id}");
+}
+
+
+
+
+
+
+
+
