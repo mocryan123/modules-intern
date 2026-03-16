@@ -51,7 +51,7 @@ function bntm_bae_read_ticket() {
  * Validate ticket format: BAE-XXXX-XXXX (uppercase letters + digits, no 0/O/1/I)
  */
 function bntm_bae_ticket_valid( $t ) {
-    return (bool) preg_match( '/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $t );
+    return (bool) preg_match( '/^(BAE|ADM)-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $t );
 }
 
 /**
@@ -95,6 +95,18 @@ function bntm_bae_ajax_ticket_check() {
 
     if ( ! bntm_bae_ticket_valid( $ticket ) ) {
         wp_send_json_error( [ 'message' => 'Invalid ticket format. Expected: BAE-XXXX-XXXX' ] );
+    }
+
+    // ADM tickets are admin codes — validate against BAE_ADMIN_SECRET and set admin session
+    if ( strpos( $ticket, 'ADM-' ) === 0 ) {
+        if ( ! defined('BAE_ADMIN_SECRET') || ! hash_equals( BAE_ADMIN_SECRET, $ticket ) ) {
+            wp_send_json_error( [ 'message' => 'Invalid admin code.' ] );
+        }
+        // Set admin session cookie
+        $token   = bae_admin_make_token();
+        $expires = time() + DAY_IN_SECONDS;
+        setcookie( BAE_ADMIN_COOKIE, $token, $expires, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+        wp_send_json_success( [ 'ticket' => $ticket, 'is_admin' => true ] );
     }
 
     // Ticket must exist in DB — no random codes allowed
@@ -272,7 +284,7 @@ function bntm_bae_ticket_screen() {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-    .baetk { font-family:'Geist',-apple-system,sans-serif; background:#09090e; color:#ede9ff; min-height:520px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; position:relative; overflow:hidden; border-radius:20px; isolation:isolate; }
+    .baetk { font-family:'Geist',-apple-system,sans-serif; background:#09090e; color:#ede9ff; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; position:relative; overflow:hidden; border-radius:0; isolation:isolate; }
     .baetk::before { content:''; position:absolute; width:480px; height:480px; border-radius:50%; background:radial-gradient(circle,rgba(139,92,246,.13) 0%,transparent 70%); top:-160px; right:-80px; pointer-events:none; z-index:0; }
     .baetk::after  { content:''; position:absolute; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(236,72,153,.08) 0%,transparent 70%); bottom:-80px; left:-80px; pointer-events:none; z-index:0; }
     .baetk-in { width:100%; max-width:400px; text-align:center; position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; }
@@ -343,12 +355,21 @@ function bntm_bae_ticket_screen() {
         var f = _baeTkEl('baetk-f');
         if (!f) return;
 
+        // Auto-format input as user types → BAE-XXXX-XXXX or ADM-XXXX-XXXX
+        var f = _baeTkEl('baetk-f');
+        if (!f) return;
+
         f.addEventListener('input', function() {
             var raw = this.value.replace(/[^A-Z0-9]/gi, '').toUpperCase().substring(0, 12);
             var out = raw;
-            if (raw.length > 3 && raw.substring(0, 3) === 'BAE') {
-                var rest = raw.substring(3);
-                out = rest.length <= 4 ? 'BAE-' + rest : 'BAE-' + rest.substring(0, 4) + '-' + rest.substring(4, 8);
+            var prefix = '';
+            if (raw.length >= 3) {
+                var p3 = raw.substring(0, 3);
+                if (p3 === 'BAE' || p3 === 'ADM') {
+                    prefix = p3;
+                    var rest = raw.substring(3);
+                    out = rest.length <= 4 ? prefix + '-' + rest : prefix + '-' + rest.substring(0, 4) + '-' + rest.substring(4, 8);
+                }
             }
             this.value = out;
             var err = _baeTkEl('baetk-err');
@@ -384,7 +405,7 @@ function bntm_bae_ticket_screen() {
             return;
         }
 
-        if (!/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(t)) {
+        if (!/^(BAE|ADM)-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(t)) {
             if (err) { err.textContent = 'Invalid format. Expected: BAE-XXXX-XXXX'; err.style.display = 'block'; }
             if (window.gsap) gsap.fromTo(f, {x:-5}, {x:0, duration:.35, ease:'elastic.out(1,.4)'});
             return;
@@ -403,6 +424,17 @@ function bntm_bae_ticket_screen() {
         .then(function(r) { return r.json(); })
         .then(function(j) {
             if (j.success) {
+                if (j.data.is_admin) {
+                    // Admin code — route to admin view on same page
+                    if (lbl) lbl.textContent = 'Opening Admin...';
+                    var adminUrl = window.location.pathname + '?bae=admin';
+                    if (window.gsap) {
+                        gsap.to('#baetk-in', {opacity:0, y:-20, duration:.3, ease:'power2.in', onComplete:function(){ window.location.href = adminUrl; }});
+                    } else {
+                        window.location.href = adminUrl;
+                    }
+                    return;
+                }
                 var exp = new Date(Date.now() + 365*24*60*60*1000).toUTCString();
                 document.cookie = 'bae_ticket=' + encodeURIComponent(j.data.ticket) + '; expires=' + exp + '; path=/; SameSite=Lax';
                 if (lbl) lbl.textContent = 'Opening...';
@@ -522,6 +554,14 @@ function bntm_bae_ticket_override_shortcode() {
 }
 
 function bntm_bae_ticket_shortcode_wrapper( $atts ) {
+    // Admin route — ?bae=admin with valid admin session
+    if ( isset( $_GET['bae'] ) && $_GET['bae'] === 'admin' ) {
+        if ( bae_admin_check_session() ) {
+            return bae_admin_dashboard();
+        }
+        // No valid session — drop back to ticket screen
+    }
+
     // Step 1: read ticket
     $ticket = bntm_bae_read_ticket();
     $valid  = bntm_bae_ticket_valid( $ticket );
@@ -711,36 +751,43 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
     .bae-wrap .bae-toggle-track.on .bae-toggle-thumb { transform: translateX(16px); }
 
     /* ── TABS ── */
-    .bae-tabs {
-        display: flex; gap: 2px;
-        padding: 12px 24px 0;
-        border-bottom: 1px solid var(--border);
+    /* ── STEPPER ── */
+    .bae-stepper {
+        display: flex; align-items: center;
+        padding: 0 24px;
         background: var(--bg-2);
-        overflow-x: auto;
+        border-bottom: 1px solid var(--border);
+        overflow-x: auto; scrollbar-width: none;
         transition: background 0.5s, border-color 0.5s;
-        scrollbar-width: none;
+        min-height: 56px;
     }
-    .bae-tabs::-webkit-scrollbar { display: none; }
-
-    .bae-tab {
-        padding: 10px 18px;
-        font-size: 13px; font-weight: 500;
-        color: var(--text-3);
-        text-decoration: none;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -1px;
-        white-space: nowrap;
-        display: flex; align-items: center; gap: 6px;
-        border-radius: 10px 10px 0 0;
-        transition: color 0.2s, background 0.2s, border-color 0.2s;
+    .bae-stepper::-webkit-scrollbar { display: none; }
+    .bae-step-wrap { display: flex; align-items: center; flex-shrink: 0; }
+    .bae-step {
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 4px; text-decoration: none; cursor: pointer;
+        transition: all .15s; white-space: nowrap;
+        border: none; background: none; font-family: 'Geist', sans-serif;
     }
-    .bae-tab:hover { color: var(--text-2); background: var(--surface); }
-    .bae-tab.active {
-        color: var(--text);
-        border-bottom-color: var(--brand);
-        background: var(--surface);
+    .bae-step-node {
+        width: 24px; height: 24px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; font-weight: 700; flex-shrink: 0;
+        transition: all .2s; border: 1.5px solid var(--border-2);
+        color: var(--text-3); background: var(--bg-3);
     }
-    .bae-tab-lock { font-size: 9px; color: var(--text-3); }
+    .bae-step-label { font-size: 12px; font-weight: 500; color: var(--text-3); transition: color .15s; }
+    .bae-step:hover .bae-step-node { border-color: var(--brand-s); color: var(--brand-s); }
+    .bae-step:hover .bae-step-label { color: var(--text-2); }
+    .bae-step-active .bae-step-node { background: var(--brand); border-color: var(--brand); color: white; box-shadow: 0 0 0 3px rgba(139,92,246,.2); }
+    .bae-step-active .bae-step-label { color: var(--text); font-weight: 700; }
+    .bae-step-done .bae-step-node { background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.4); color: #34d399; }
+    .bae-step-done .bae-step-label { color: var(--text-2); }
+    .bae-step-done:hover .bae-step-node { background: rgba(52,211,153,.2); border-color: #34d399; }
+    .bae-step-locked { opacity: .35; cursor: not-allowed; pointer-events: none; }
+    .bae-step-locked .bae-step-node { border-style: dashed; }
+    .bae-step-line { width: 28px; height: 1.5px; background: var(--border-2); flex-shrink: 0; margin: 0 4px; transition: background .3s; }
+    .bae-step-line-done { background: rgba(52,211,153,.4); }
 
     /* ── TAB CONTENT ── */
     .bae-tab-content { padding: 28px; background: var(--bg); transition: background 0.5s; }
@@ -1129,6 +1176,7 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
         .bae-assets-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 680px) {
+        .bae-stepper { padding: 0 16px; }
         .bae-tab-content { padding: 18px; }
         .bae-form-grid { grid-template-columns: 1fr; }
         .bae-form-grid.three { grid-template-columns: 1fr; }
@@ -1252,7 +1300,7 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
     document.addEventListener('DOMContentLoaded', function() {
         if (!window.gsap) return;
         gsap.fromTo('.bae-header', { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.1 });
-        gsap.fromTo('.bae-tab', { opacity: 0, y: -6 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: 'power3.out', delay: 0.2 });
+        gsap.fromTo('.bae-step', { opacity: 0, y: -6 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: 'power3.out', delay: 0.2 });
         gsap.fromTo('.bae-stat-card', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: 'power3.out', delay: 0.35 });
         gsap.fromTo('.bae-card', { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.07, ease: 'power3.out', delay: 0.45 });
         gsap.fromTo('.bae-asset-card', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.05, ease: 'power3.out', delay: 0.3 });
@@ -1329,20 +1377,76 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
             </div>
         </div>
 
-        <!-- Tab Nav -->
-        <div class="bae-tabs">
-            <?php foreach ( $tabs as $slug => $label ) :
-                $class = $active_tab === $slug ? 'bae-tab active' : 'bae-tab'; ?>
-                <a href="<?php echo esc_url( $base_url ); ?>?tab=<?php echo esc_attr( $slug ); ?>" class="<?php echo $class; ?>">
-                    <?php echo esc_html( $label ); ?>
-                    <?php if ( $slug === 'identity' && empty( $profile ) ) echo '<span class="bae-tab-lock">&#9670;</span>'; ?>
+        <!-- Stepper Nav -->
+        <div class="bae-stepper">
+            <?php
+            $tab_keys    = array_keys( $tabs );
+            $total       = count( $tab_keys );
+            $has_profile = !empty( $profile ) && !empty( $profile['business_name'] );
+            $needs_profile = ['identity','assets','kit','startup'];
+            $user_plan   = $profile['plan'] ?? 'free';
+            $is_free     = $user_plan === 'free';
+            $pro_tabs    = ['kit'];
+            $completed_steps = [
+                'overview' => $has_profile,
+                'identity' => $has_profile && !empty($profile['primary_color']) && $profile['primary_color'] !== '#1a1a2e',
+                'assets'   => false,
+                'kit'      => false,
+                'startup'  => false,
+                'settings' => false,
+            ];
+            if ( $has_profile ) {
+                global $wpdb;
+                $ac = (int)$wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE ticket = %s AND is_generated = 1", $ticket
+                ));
+                $completed_steps['assets'] = $ac > 0;
+            }
+            foreach ( $tab_keys as $i => $slug ):
+                $label          = $tabs[$slug];
+                $short          = explode(' ', $label)[0];
+                $is_active      = $active_tab === $slug;
+                $is_done        = ($completed_steps[$slug] ?? false) && !$is_active;
+                $locked_profile = in_array($slug, $needs_profile) && !$has_profile;
+                $locked_pro     = in_array($slug, $pro_tabs) && $is_free;
+                $is_locked      = $locked_profile || $locked_pro;
+                $is_last        = $i === $total - 1;
+                $step_num       = $i + 1;
+            ?>
+            <div class="bae-step-wrap">
+                <?php if ($is_locked): ?>
+                <div class="bae-step bae-step-locked" title="<?php echo $locked_pro ? 'Upgrade to unlock' : 'Complete Brand Profile first'; ?>">
+                    <div class="bae-step-node"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg></div>
+                    <div class="bae-step-label"><?php echo esc_html($short); ?></div>
+                </div>
+                <?php elseif ($is_done): ?>
+                <a href="<?php echo esc_url($base_url); ?>?tab=<?php echo esc_attr($slug); ?>" class="bae-step bae-step-done">
+                    <div class="bae-step-node"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></div>
+                    <div class="bae-step-label"><?php echo esc_html($short); ?></div>
                 </a>
+                <?php elseif ($is_active): ?>
+                <div class="bae-step bae-step-active">
+                    <div class="bae-step-node"><span><?php echo $step_num; ?></span></div>
+                    <div class="bae-step-label"><?php echo esc_html($label); ?></div>
+                </div>
+                <?php else: ?>
+                <a href="<?php echo esc_url($base_url); ?>?tab=<?php echo esc_attr($slug); ?>" class="bae-step">
+                    <div class="bae-step-node"><span><?php echo $step_num; ?></span></div>
+                    <div class="bae-step-label"><?php echo esc_html($short); ?></div>
+                </a>
+                <?php endif; ?>
+                <?php if (!$is_last): ?>
+                <div class="bae-step-line <?php echo ($completed_steps[$slug] ?? false) ? 'bae-step-line-done' : ''; ?>"></div>
+                <?php endif; ?>
+            </div>
             <?php endforeach; ?>
         </div>
 
         <!-- Tab Content -->
         <div class="bae-tab-content">
             <?php
+            $profile_tabs = ['identity','assets','kit','startup'];
+            if (in_array($active_tab, $profile_tabs) && !$has_profile) $active_tab = 'overview';
             if     ( $active_tab === 'overview' ) echo bae_overview_tab( $user_id, $profile );
             elseif ( $active_tab === 'identity' ) echo bae_identity_tab( $user_id, $profile );
             elseif ( $active_tab === 'assets'   ) echo bae_assets_tab(   $user_id, $profile );
