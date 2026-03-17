@@ -13,13 +13,29 @@
 
 if (!defined('ABSPATH')) exit;
 
+// Load environment variables from .env file if not already loaded
+if ( file_exists( dirname(__FILE__) . '/.env' ) && ! getenv('BAE_PM_SECRET_KEY') ) {
+    $env_file = dirname(__FILE__) . '/.env';
+    $lines = file( $env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+    foreach ( $lines as $line ) {
+        if ( strpos( trim( $line ), '#' ) === 0 ) continue; // Skip comments
+        if ( strpos( $line, '=' ) === false ) continue; // Skip invalid lines
+        list( $key, $value ) = explode( '=', $line, 2 );
+        $key = trim( $key );
+        $value = trim( $value );
+        if ( ! empty( $key ) && ! getenv( $key ) ) {
+            putenv( $key . '=' . $value );
+        }
+    }
+}
+
 // ─────────────────────────────────────────────
-// CONFIG — Replace with your live keys from
+// CONFIG — PayMongo API Keys (from .env)
 // https://dashboard.paymongo.com → Developers → API Keys
 // ─────────────────────────────────────────────
-define('BAE_PM_SECRET_KEY',  ''); // your live secret key
-define('BAE_PM_PUBLIC_KEY',  ''); // your live public key
-define('BAE_PM_WEBHOOK_SECRET', ''); // set after creating webhook below
+define('BAE_PM_SECRET_KEY',     getenv('BAE_PM_SECRET_KEY')     ?: 'MISSING_SECRET_KEY');
+define('BAE_PM_PUBLIC_KEY',     getenv('BAE_PM_PUBLIC_KEY')     ?: 'MISSING_PUBLIC_KEY');
+define('BAE_PM_WEBHOOK_SECRET', getenv('BAE_PM_WEBHOOK_SECRET') ?: 'MISSING_WEBHOOK_SECRET');
 
 // Prices in centavos (PHP × 100)
 // Starter monthly: ₱49 → 4900

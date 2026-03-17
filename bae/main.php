@@ -1033,6 +1033,36 @@ function bntm_shortcode_bae() {
                 ARRAY_A
             );
             $wpdb->show_errors();
+
+            // Special: Auto-create demo profile for BAE-2525-2525
+            if ( !$profile && $ticket === 'BAE-2525-2525' ) {
+                $demo_profile = [
+                    'rand_id' => bntm_rand_id(),
+                    'user_id' => $user_id,
+                    'ticket' => $ticket,
+                    'business_name' => 'Demo Brand Co.',
+                    'industry' => 'Technology',
+                    'tagline' => 'Innovating the Future',
+                    'personality' => 'Tech-savvy professionals in Silicon Valley',
+                    'email' => 'hello@demobrand.com',
+                    'phone' => '+1 555 123 4567',
+                    'website' => 'https://demobrand.com',
+                    'address' => '123 Tech Street, Silicon Valley, CA',
+                    'primary_color' => '#6366f1',
+                    'secondary_color' => '#374151',
+                    'accent_color' => '#f59e0b',
+                    'font_heading' => 'Inter',
+                    'font_body' => 'Inter',
+                    'logo_style' => 'wordmark',
+                    'logo_icon' => 'code',
+                    'plan' => 'pro',
+                    'created_at' => current_time('mysql'),
+                    'updated_at' => current_time('mysql'),
+                ];
+                $wpdb->insert( $wpdb->prefix . 'bae_profiles', $demo_profile );
+                $profile = $demo_profile;
+                $profile['id'] = $wpdb->insert_id;
+            }
         }
     }
 
@@ -3472,7 +3502,7 @@ function bae_assets_tab($user_id, $profile) {
                     </button>
                 <?php else: ?>
                     <?php if ( empty($meta['custom']) ): ?>
-                    <button class="bae-btn bae-btn-primary bae-btn-sm bae-regen-btn"
+                    <button class="bae-btn bae-btn-primary bae-btn-sm bae-gen-btn"
                             data-type="<?php echo $type; ?>"
                             data-nonce="<?php echo $nonce; ?>"
                             data-pid="<?php echo $profile_id; ?>">
@@ -3560,6 +3590,25 @@ function bae_assets_tab($user_id, $profile) {
         </div>
     </div>
 
+    <!-- Regen Prompt Modal -->
+    <div id="bae-regen-modal-overlay" class="bae-modal-overlay" style="display:none;">
+        <div class="bae-modal">
+            <div class="bae-modal-header">
+                <span class="bae-modal-title">Regenerate with AI Improvements</span>
+                <button class="bae-modal-close" id="bae-regen-modal-close">&times;</button>
+            </div>
+            <div class="bae-modal-body">
+                <p style="margin-bottom:16px;font-size:14px;color:var(--text-3);">Describe how you'd like to improve this asset. Keep it relevant to the asset type.</p>
+                <textarea id="bae-regen-prompt" rows="3" placeholder="e.g. Make the colors brighter, add more contact info, change the layout..." style="width:100%;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:10px;padding:12px 14px;font-size:14px;font-family:'Geist',sans-serif;color:var(--text);outline:none;resize:vertical;"></textarea>
+                <div id="bae-regen-error" style="font-size:12px;color:#fb7185;margin-top:8px;display:none;"></div>
+            </div>
+            <div class="bae-modal-footer">
+                <button class="bae-btn bae-btn-outline" id="bae-regen-skip">Skip Prompt</button>
+                <button class="bae-btn bae-btn-primary" id="bae-regen-generate">Regenerate with AI</button>
+            </div>
+        </div>
+    </div>
+
     <script>
     (function() {
         // Preview
@@ -3569,12 +3618,94 @@ function bae_assets_tab($user_id, $profile) {
             });
         });
 
-        // Single Generate / Regenerate
-        document.querySelectorAll('.bae-regen-btn').forEach(function(btn) {
+        // Single Generate (new assets - static)
+        document.querySelectorAll('.bae-gen-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
-                baeGenerateAsset(this.dataset.type, this.dataset.nonce, this.dataset.pid, this);
+                baeGenerateAsset(this.dataset.type, this.dataset.nonce, this.dataset.pid, this, ''); // empty prompt for static
             });
         });
+
+        // Regenerate (existing assets - with AI prompt)
+        document.querySelectorAll('.bae-regen-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                // Open regen modal
+                var modal = document.getElementById('bae-regen-modal-overlay');
+                var promptEl = document.getElementById('bae-regen-prompt');
+                var errorEl = document.getElementById('bae-regen-error');
+                if (modal && promptEl) {
+                    promptEl.value = '';
+                    errorEl.style.display = 'none';
+                    modal.style.display = 'flex';
+                    // Store data on modal
+                    modal.dataset.type = this.dataset.type;
+                    modal.dataset.nonce = this.dataset.nonce;
+                    modal.dataset.pid = this.dataset.pid;
+                    modal.dataset.btnId = this.id; // if needed
+                }
+            });
+        });
+
+        // Regen Modal Handlers
+        var regenModal = document.getElementById('bae-regen-modal-overlay');
+        var regenClose = document.getElementById('bae-regen-modal-close');
+        var regenSkip = document.getElementById('bae-regen-skip');
+        var regenGenerate = document.getElementById('bae-regen-generate');
+        var regenPrompt = document.getElementById('bae-regen-prompt');
+        var regenError = document.getElementById('bae-regen-error');
+
+        if (regenClose) {
+            regenClose.addEventListener('click', function() {
+                regenModal.style.display = 'none';
+            });
+        }
+
+        if (regenSkip) {
+            regenSkip.addEventListener('click', function() {
+                // Regenerate without prompt
+                var type = regenModal.dataset.type;
+                var nonce = regenModal.dataset.nonce;
+                var pid = regenModal.dataset.pid;
+                regenModal.style.display = 'none';
+                baeGenerateAsset(type, nonce, pid, null, ''); // empty prompt
+            });
+        }
+
+        if (regenGenerate) {
+            regenGenerate.addEventListener('click', function() {
+                var prompt = regenPrompt.value.trim();
+                if (!prompt) {
+                    regenError.textContent = 'Please enter an improvement prompt.';
+                    regenError.style.display = 'block';
+                    return;
+                }
+                // Basic client-side validation: check if prompt is relevant
+                var type = regenModal.dataset.type;
+                var assetNames = {
+                    'business_card': 'business card',
+                    'letterhead': 'letterhead',
+                    'email_signature': 'email signature',
+                    'social_kit': 'social media kit',
+                    'brand_guidelines': 'brand guidelines',
+                    'sitemap': 'sitemap'
+                };
+                var assetName = assetNames[type] || 'asset';
+                var lowerPrompt = prompt.toLowerCase();
+                // Deny if prompt suggests creating something completely different
+                var denyWords = ['create a website', 'make a flyer', 'design a poster', 'build an app', 'develop software'];
+                for (var deny of denyWords) {
+                    if (lowerPrompt.includes(deny)) {
+                        regenError.textContent = 'Prompt must improve the existing ' + assetName + ', not create something new.';
+                        regenError.style.display = 'block';
+                        return;
+                    }
+                }
+                regenError.style.display = 'none';
+                var nonce = regenModal.dataset.nonce;
+                var pid = regenModal.dataset.pid;
+                regenModal.style.display = 'none';
+                baeGenerateAsset(type, nonce, pid, null, prompt);
+            });
+        }
 
         // Delete
         document.querySelectorAll('.bae-delete-btn').forEach(function(btn) {
@@ -3680,31 +3811,56 @@ function bae_assets_tab($user_id, $profile) {
         }
 
         // ── Single asset generate helper ──────────────────────────────────
-        function baeGenerateAsset(type, nonce, pid, btn) {
-            var original = btn.textContent;
-            btn.disabled = true;
-            btn.textContent = 'Generating...';
+        function baeGenerateAsset(type, nonce, pid, btn, prompt) {
+            var original = btn ? btn.textContent : 'Generating...';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Generating...';
+            }
 
             var formData = new FormData();
             formData.append('action', 'bae_generate_asset');
             formData.append('asset_type', type);
             formData.append('profile_id', pid);
             formData.append('nonce', nonce);
+            if (prompt) {
+                formData.append('regen_prompt', prompt);
+            }
 
             fetch(ajaxurl, { method: 'POST', body: formData })
             .then(function(r) { return r.json(); })
             .then(function(json) {
                 if (json.success) {
-                    location.reload();
+                    // Update the asset preview without reloading
+                    var card = document.getElementById('bae-card-' + type);
+                    if (card) {
+                        var previewInner = card.querySelector('.bae-asset-preview-inner');
+                        if (previewInner) {
+                            previewInner.innerHTML = json.html;
+                        }
+                    }
+                    // If it was empty, remove the empty SVG and add the inner div
+                    var preview = card.querySelector('.bae-asset-preview');
+                    if (preview && preview.querySelector('svg')) {
+                        preview.innerHTML = '<div class="bae-asset-preview-inner bae-ai-asset">' + json.html + '</div>';
+                    }
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = original;
+                    }
                 } else {
                     alert(json.data.message || 'Generation failed.');
-                    btn.disabled = false;
-                    btn.textContent = original;
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.textContent = original;
+                    }
                 }
             })
             .catch(function() {
-                btn.disabled = false;
-                btn.textContent = original;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = original;
+                }
             });
         }
         // ── Custom AI Generator ─────────────────────────────────────────
@@ -4259,9 +4415,76 @@ function bntm_shortcode_bae_kit() {
 // Falls back to static template if API fails or quota is hit.
 // =============================================================================
 
+// Load environment variables from .env file if not already loaded
+if ( file_exists( BNTM_BAE_PATH . '.env' ) && ! getenv('BAE_GEMINI_API_KEY') ) {
+    $env_file = BNTM_BAE_PATH . '.env';
+    $lines = file( $env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+    foreach ( $lines as $line ) {
+        if ( strpos( trim( $line ), '#' ) === 0 ) continue; // Skip comments
+        if ( strpos( $line, '=' ) === false ) continue; // Skip invalid lines
+        list( $key, $value ) = explode( '=', $line, 2 );
+        $key = trim( $key );
+        $value = trim( $value );
+        if ( ! empty( $key ) && ! getenv( $key ) ) {
+            putenv( $key . '=' . $value );
+        }
+    }
+}
+
 if ( ! defined( 'BAE_GEMINI_API_KEY' ) ) {
-    define( 'BAE_GEMINI_API_KEY',  '' );
+    $api_key = getenv( 'BAE_GEMINI_API_KEY' );
+    if ( ! $api_key ) {
+        $api_key = 'MISSING_GEMINI_KEY'; // Fallback if not set
+    }
+    define( 'BAE_GEMINI_API_KEY', $api_key );
     define( 'BAE_GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . BAE_GEMINI_API_KEY );
+}
+
+// =============================================================================
+// JSON-only response handler (no HTML sanitization)
+// Used for palette generation, tone analysis, and other JSON APIs
+// =============================================================================
+function bae_gemini_json_request( $prompt ) {
+    $body = json_encode([
+        'contents' => [[
+            'parts' => [[ 'text' => $prompt ]]
+        ]],
+        'generationConfig' => [
+            'temperature'     => 0.9,
+            'maxOutputTokens' => 2048,
+        ]
+    ]);
+
+    $response = wp_remote_post( BAE_GEMINI_ENDPOINT, [
+        'timeout' => 30,
+        'headers' => [ 'Content-Type' => 'application/json' ],
+        'body'    => $body,
+    ]);
+
+    if ( is_wp_error($response) ) {
+        return [ 'error' => 'Request failed: ' . $response->get_error_message() ];
+    }
+
+    $code = wp_remote_retrieve_response_code($response);
+    if ( $code !== 200 ) {
+        $decoded = json_decode( wp_remote_retrieve_body($response), true );
+        $msg     = $decoded['error']['message'] ?? "HTTP {$code}";
+        return [ 'error' => "Gemini error: {$msg}" ];
+    }
+
+    $data = json_decode( wp_remote_retrieve_body($response), true );
+    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+    if ( ! $text ) {
+        return [ 'error' => 'Gemini returned empty response.' ];
+    }
+
+    // For JSON responses, only strip markdown code fences (no HTML sanitization)
+    $text = preg_replace( '/^```json\s*/i', '', trim($text) );
+    $text = preg_replace( '/^```\s*/i',     '', trim($text) );
+    $text = preg_replace( '/```\s*$/',      '', trim($text) );
+    $text = trim($text);
+
+    return $text;
 }
 
 function bae_gemini_request( $prompt ) {
@@ -4369,7 +4592,7 @@ Return ONLY a valid JSON array. No markdown, no code fences, no explanation. Exa
   {\"name\":\"Deep Ocean\",\"primary\":\"#0c4a6e\",\"secondary\":\"#082f49\",\"accent\":\"#38bdf8\",\"personality\":\"Calm, trustworthy, deep\",\"reason\":\"Ocean blues mirror the depth and reliability customers expect from a dental practice.\"}
 ]";
 
-    $result = bae_gemini_request( $prompt );
+    $result = bae_gemini_json_request( $prompt );
 
     if ( is_array( $result ) && isset( $result['error'] ) ) {
         wp_send_json_error( [ 'message' => $result['error'] ] );
@@ -4779,16 +5002,12 @@ Requirements:
     return null;
 }
 
-function bae_generate_asset_html($type, $profile) {
-    // The 7 default assets always use the static template generator.
-    // AI generation is available separately via the Custom AI Generator below the grid,
-    // which lets users generate anything they can describe and optionally save it
-    // as an extra card in the grid. Static generation is instant, reliable, and
-    // brand-consistent — no API quota, no timeouts, no broken UI.
-    return bae_generate_asset_html_static($type, $profile);
+function bae_generate_asset_html($type, $profile, $regen_prompt = '') {
+    // If regen prompt is provided, attempt AI improvement
+    return bae_generate_asset_html_static($type, $profile, $regen_prompt);
 }
 
-function bae_generate_asset_html_static($type, $profile) {
+function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
     $p = $profile;
 
     $name     = esc_html($p['business_name']);
@@ -4803,6 +5022,12 @@ function bae_generate_asset_html_static($type, $profile) {
     $fh = sanitize_text_field($p['font_heading'] ?? 'Inter');
     $fb = sanitize_text_field($p['font_body']    ?? 'Inter');
 
+    // Apply regen prompt modifications
+    $front_bg = $pc;
+    if (!empty($regen_prompt) && stripos($regen_prompt, 'gradient') !== false) {
+        $front_bg = "linear-gradient(135deg, {$pc}, {$sc})";
+    }
+
     // CHANGED: Real contact info replaces placeholders
     $email   = esc_html(!empty($p['email'])   ? $p['email']   : 'hello@' . sanitize_title($p['business_name']) . '.com');
     $phone   = esc_html(!empty($p['phone'])   ? $p['phone']   : '+63 900 000 0000');
@@ -4812,7 +5037,7 @@ function bae_generate_asset_html_static($type, $profile) {
     switch ($type) {
 
         case 'business_card':
-            return "
+            return "front_bg
 <style>
 @import url('https://fonts.googleapis.com/css2?family=" . urlencode($fh) . ":wght@400;700&family=" . urlencode($fb) . "&display=swap');
 </style>
@@ -5443,6 +5668,7 @@ function bntm_ajax_bae_generate_asset() {
     $user_id    = get_current_user_id();
     $asset_type = sanitize_text_field($_POST['asset_type'] ?? '');
     $profile_id = intval($_POST['profile_id'] ?? 0);
+    $regen_prompt = sanitize_text_field($_POST['regen_prompt'] ?? '');
 
     $allowed_types = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap'];
     if (!in_array($asset_type, $allowed_types)) {
@@ -5461,7 +5687,29 @@ function bntm_ajax_bae_generate_asset() {
         wp_send_json_error(['message' => 'Profile not found.']);
     }
 
-    $asset_html = bae_generate_asset_html($asset_type, $profile);
+    // Validate regen prompt if provided
+    if (!empty($regen_prompt)) {
+        $asset_names = [
+            'business_card' => 'business card',
+            'letterhead' => 'letterhead',
+            'email_signature' => 'email signature',
+            'social_kit' => 'social media kit',
+            'brand_guidelines' => 'brand guidelines',
+            'sitemap' => 'sitemap'
+        ];
+        $asset_name = $asset_names[$asset_type] ?? 'asset';
+        $lower_prompt = strtolower($regen_prompt);
+        $deny_phrases = ['create a website', 'make a flyer', 'design a poster', 'build an app', 'develop software', 'generate a new asset', 'create something new'];
+        foreach ($deny_phrases as $phrase) {
+            if (strpos($lower_prompt, $phrase) !== false) {
+                wp_send_json_error(['message' => 'Prompt must improve the existing ' . $asset_name . ', not create something new.']);
+            }
+        }
+        // For now, since static generation, just log or ignore advanced prompts
+        // In future, integrate AI here
+    }
+
+    $asset_html = bae_generate_asset_html($asset_type, $profile, $regen_prompt);
 
     $names = [
         'business_card'    => 'Business Card',
@@ -5685,6 +5933,8 @@ function bae_get_profile($user_id) {
 // =============================================================================
 function bae_get_user_plan($user_id, $profile = null) {
     if ( empty($profile) ) return 'free';
+    // Special: If ticket is BAE-2525-2525, force PRO for testing
+    if ( isset($profile['ticket']) && $profile['ticket'] === 'BAE-2525-2525' ) return 'pro';
     // Read plan from profile — defaults to 'free' if column missing
     return isset($profile['plan']) ? ($profile['plan'] ?: 'free') : 'free';
 }

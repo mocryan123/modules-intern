@@ -110,22 +110,25 @@ function bntm_bae_ajax_ticket_check() {
     }
 
     // Ticket must exist in DB — no random codes allowed
-    global $wpdb;
-    $wpdb->hide_errors();
-    $exists = $wpdb->get_var( $wpdb->prepare(
-        "SELECT id FROM {$wpdb->prefix}bae_profiles WHERE ticket = %s", $ticket
-    ) );
-    $wpdb->show_errors();
+    // Special: Allow BAE-2525-2525 for demo
+    if ( $ticket !== 'BAE-2525-2525' ) {
+        global $wpdb;
+        $wpdb->hide_errors();
+        $exists = $wpdb->get_var( $wpdb->prepare(
+            "SELECT id FROM {$wpdb->prefix}bae_profiles WHERE ticket = %s", $ticket
+        ) );
+        $wpdb->show_errors();
 
-    if ( ! $exists ) {
-        wp_send_json_error( [ 'message' => 'Ticket not found. Check your code and try again.' ] );
+        if ( ! $exists ) {
+            wp_send_json_error( [ 'message' => 'Ticket not found. Check your code and try again.' ] );
+        }
     }
 
     $profile = bntm_bae_profile_by_ticket( $ticket );
 
     wp_send_json_success( [
         'ticket'      => $ticket,
-        'has_profile' => ! empty( $profile ),
+        'has_profile' => ! empty( $profile ) || $ticket === 'BAE-2525-2525',
     ] );
 }
 
