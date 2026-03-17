@@ -25,6 +25,9 @@ require_once BNTM_BAE_PATH . 'paymongo.php';
 // Load Admin Panel
 require_once BNTM_BAE_PATH . 'admin.php';
 
+// Load Brand Book templates/renderers
+require_once BNTM_BAE_PATH . 'brand-book.php';
+
 
 // =============================================================================
 // STEP-BY-STEP PROCESS THIS MODULE PERFORMS:
@@ -7530,16 +7533,17 @@ function bae_render_xml_sitemap($pages, $domain_sm) {
 // BRAND BOOK TAB — 50 templates, 12-page preview, save/print
 // =============================================================================
 
+if (!function_exists('bae_get_book_templates')) {
 function bae_get_book_templates() {
     return array(
         // FREE (5)
-        'modern_elegant'      => array('name'=>'Modern Elegant',      'cat'=>'Free',    'cb'=>'#1e1b4b','ct'=>'#e0e7ff','acc'=>'#818cf8','pb'=>'#ffffff','pt'=>'#1e1b4b','pm'=>'#6b7280'),
-        'fresh_basic'         => array('name'=>'Fresh Basic',         'cat'=>'Free',    'cb'=>'#f0fdf4','ct'=>'#166534','acc'=>'#22c55e','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
-        'pop_of_pink'         => array('name'=>'Pop of Pink',         'cat'=>'Free',    'cb'=>'#ec4899','ct'=>'#ffffff','acc'=>'#f9a8d4','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
-        'effervescent'        => array('name'=>'Effervescent',        'cat'=>'Free',    'cb'=>'#0f172a','ct'=>'#f8fafc','acc'=>'#38bdf8','pb'=>'#f8fafc','pt'=>'#0f172a','pm'=>'#64748b'),
-        'detailed_minimalist' => array('name'=>'Detailed Minimalist', 'cat'=>'Free',    'cb'=>'#fafafa','ct'=>'#111827','acc'=>'#111827','pb'=>'#ffffff','pt'=>'#111827','pm'=>'#9ca3af'),
+        'modern_elegant'      => array('name'=>'Modern Elegant',      'cat'=>'Free',    'layout'=>'classic',      'cb'=>'#1e1b4b','ct'=>'#e0e7ff','acc'=>'#818cf8','pb'=>'#ffffff','pt'=>'#1e1b4b','pm'=>'#6b7280'),
+        'fresh_basic'         => array('name'=>'Fresh Basic',         'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#f0fdf4','ct'=>'#166534','acc'=>'#22c55e','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
+        'pop_of_pink'         => array('name'=>'Pop of Pink',         'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#ec4899','ct'=>'#ffffff','acc'=>'#f9a8d4','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
+        'effervescent'        => array('name'=>'Effervescent',        'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#0f172a','ct'=>'#f8fafc','acc'=>'#38bdf8','pb'=>'#f8fafc','pt'=>'#0f172a','pm'=>'#64748b'),
+        'detailed_minimalist' => array('name'=>'Detailed Minimalist', 'cat'=>'Free',    'layout'=>'japanese_min', 'cb'=>'#fafafa','ct'=>'#111827','acc'=>'#111827','pb'=>'#ffffff','pt'=>'#111827','pm'=>'#9ca3af'),
         // MODERN (20)
-        'simply_chic'         => array('name'=>'Simply Chic',         'cat'=>'Modern',  'cb'=>'#0f766e','ct'=>'#ffffff','acc'=>'#5eead4','pb'=>'#ffffff','pt'=>'#134e4a','pm'=>'#6b7280'),
+        'simply_chic'         => array('name'=>'Simply Chic',         'cat'=>'Modern',  'layout'=>'editorial',    'cb'=>'#0f766e','ct'=>'#ffffff','acc'=>'#5eead4','pb'=>'#ffffff','pt'=>'#134e4a','pm'=>'#6b7280'),
         'white_blue'          => array('name'=>'White & Blue',        'cat'=>'Modern',  'cb'=>'#1d4ed8','ct'=>'#ffffff','acc'=>'#93c5fd','pb'=>'#ffffff','pt'=>'#1e3a8a','pm'=>'#6b7280'),
         'white_apricot'       => array('name'=>'White & Apricot',     'cat'=>'Modern',  'cb'=>'#fb923c','ct'=>'#ffffff','acc'=>'#fed7aa','pb'=>'#fffbf5','pt'=>'#9a3412','pm'=>'#9ca3af'),
         'structured'          => array('name'=>'The Structured',      'cat'=>'Modern',  'cb'=>'#4f46e5','ct'=>'#ffffff','acc'=>'#6ee7b7','pb'=>'#ffffff','pt'=>'#312e81','pm'=>'#6b7280'),
@@ -7550,20 +7554,20 @@ function bae_get_book_templates() {
         'simply_red'          => array('name'=>'Simply Red',          'cat'=>'Modern',  'cb'=>'#dc2626','ct'=>'#ffffff','acc'=>'#fca5a5','pb'=>'#ffffff','pt'=>'#7f1d1d','pm'=>'#6b7280'),
         'red_black_white'     => array('name'=>'Red Black White',     'cat'=>'Modern',  'cb'=>'#000000','ct'=>'#ffffff','acc'=>'#ef4444','pb'=>'#ffffff','pt'=>'#000000','pm'=>'#6b7280'),
         'touch_yellow'        => array('name'=>'Touch of Yellow',     'cat'=>'Modern',  'cb'=>'#854d0e','ct'=>'#fefce8','acc'=>'#fbbf24','pb'=>'#fffbeb','pt'=>'#78350f','pm'=>'#92400e'),
-        'green_minimalist'    => array('name'=>'Green Minimalist',    'cat'=>'Modern',  'cb'=>'#ecfdf5','ct'=>'#065f46','acc'=>'#059669','pb'=>'#ffffff','pt'=>'#064e3b','pm'=>'#6b7280'),
+        'green_minimalist'    => array('name'=>'Green Minimalist',    'cat'=>'Modern',  'layout'=>'japanese_min', 'cb'=>'#ecfdf5','ct'=>'#065f46','acc'=>'#059669','pb'=>'#ffffff','pt'=>'#064e3b','pm'=>'#6b7280'),
         'beige_boldness'      => array('name'=>'Beige Boldness',      'cat'=>'Modern',  'cb'=>'#d4a574','ct'=>'#ffffff','acc'=>'#92400e','pb'=>'#fdf8f0','pt'=>'#78350f','pm'=>'#a16207'),
         'gray_coral'          => array('name'=>'Gray & Coral',        'cat'=>'Modern',  'cb'=>'#374151','ct'=>'#f9fafb','acc'=>'#f87171','pb'=>'#f9fafb','pt'=>'#111827','pm'=>'#6b7280'),
         'earth_toned'         => array('name'=>'Earth Toned',         'cat'=>'Modern',  'cb'=>'#57301e','ct'=>'#fef9f5','acc'=>'#d4a574','pb'=>'#fef9f5','pt'=>'#3b1a0a','pm'=>'#92400e'),
-        'elite_portfolio'     => array('name'=>'Elite Portfolio',     'cat'=>'Modern',  'cb'=>'#022c22','ct'=>'#ecfdf5','acc'=>'#6ee7b7','pb'=>'#ffffff','pt'=>'#022c22','pm'=>'#6b7280'),
+        'elite_portfolio'     => array('name'=>'Elite Portfolio',     'cat'=>'Modern',  'layout'=>'editorial',    'cb'=>'#022c22','ct'=>'#ecfdf5','acc'=>'#6ee7b7','pb'=>'#ffffff','pt'=>'#022c22','pm'=>'#6b7280'),
         'black_yellow'        => array('name'=>'Black & Yellow',      'cat'=>'Modern',  'cb'=>'#111827','ct'=>'#fefce8','acc'=>'#facc15','pb'=>'#ffffff','pt'=>'#111827','pm'=>'#6b7280'),
         'bold_red'            => array('name'=>'Bold Red',            'cat'=>'Modern',  'cb'=>'#991b1b','ct'=>'#fff1f2','acc'=>'#fca5a5','pb'=>'#fff1f2','pt'=>'#7f1d1d','pm'=>'#6b7280'),
         'pale_peach'          => array('name'=>'Pale Peach',          'cat'=>'Modern',  'cb'=>'#fcd9bd','ct'=>'#7c3d2c','acc'=>'#ea580c','pb'=>'#fff7f0','pt'=>'#7c3d2c','pm'=>'#c2410c'),
         'blue_dominance'      => array('name'=>'Blue Dominance',      'cat'=>'Modern',  'cb'=>'#1e40af','ct'=>'#eff6ff','acc'=>'#60a5fa','pb'=>'#f0f7ff','pt'=>'#1e3a8a','pm'=>'#3b82f6'),
         // ONE PAGE (9)
         'light_dark'          => array('name'=>'Light & Dark',        'cat'=>'One Page','cb'=>'#18181b','ct'=>'#f4f4f5','acc'=>'#a78bfa','pb'=>'#18181b','pt'=>'#f4f4f5','pm'=>'#a1a1aa'),
-        'minimal_muted'       => array('name'=>'Minimal Muted',       'cat'=>'One Page','cb'=>'#f1f5f9','ct'=>'#334155','acc'=>'#94a3b8','pb'=>'#f8fafc','pt'=>'#334155','pm'=>'#94a3b8'),
+        'minimal_muted'       => array('name'=>'Minimal Muted',       'cat'=>'One Page','layout'=>'japanese_min', 'cb'=>'#f1f5f9','ct'=>'#334155','acc'=>'#94a3b8','pb'=>'#f8fafc','pt'=>'#334155','pm'=>'#94a3b8'),
         'blue_red_brand'      => array('name'=>'Blue & Red Brand',    'cat'=>'One Page','cb'=>'#1e40af','ct'=>'#ffffff','acc'=>'#ef4444','pb'=>'#ffffff','pt'=>'#1e3a8a','pm'=>'#6b7280'),
-        'tan_accent'          => array('name'=>'Tan Accent',          'cat'=>'One Page','cb'=>'#fafaf9','ct'=>'#292524','acc'=>'#d6b896','pb'=>'#fafaf9','pt'=>'#292524','pm'=>'#78716c'),
+        'tan_accent'          => array('name'=>'Tan Accent',          'cat'=>'One Page','layout'=>'japanese_min', 'cb'=>'#fafaf9','ct'=>'#292524','acc'=>'#d6b896','pb'=>'#fafaf9','pt'=>'#292524','pm'=>'#78716c'),
         'orange_accents'      => array('name'=>'Orange Accents',      'cat'=>'One Page','cb'=>'#fff7ed','ct'=>'#9a3412','acc'=>'#ea580c','pb'=>'#ffffff','pt'=>'#431407','pm'=>'#7c3d12'),
         'fair_square'         => array('name'=>'Fair & Square',       'cat'=>'One Page','cb'=>'#7c3aed','ct'=>'#f5f3ff','acc'=>'#c4b5fd','pb'=>'#f5f3ff','pt'=>'#4c1d95','pm'=>'#7c3aed'),
         'basic_corporate'     => array('name'=>'Basic Corporate',     'cat'=>'One Page','cb'=>'#1f2937','ct'=>'#f9fafb','acc'=>'#fbbf24','pb'=>'#ffffff','pt'=>'#111827','pm'=>'#6b7280'),
@@ -7573,7 +7577,7 @@ function bae_get_book_templates() {
         'pink_bw'             => array('name'=>'Pink on BW',          'cat'=>'Creative','cb'=>'#000000','ct'=>'#ffffff','acc'=>'#f9a8d4','pb'=>'#ffffff','pt'=>'#111827','pm'=>'#6b7280'),
         'red_bw'              => array('name'=>'Red on BW',           'cat'=>'Creative','cb'=>'#111827','ct'=>'#f9fafb','acc'=>'#ef4444','pb'=>'#ffffff','pt'=>'#111827','pm'=>'#6b7280'),
         'simply_creative'     => array('name'=>'Simply Creative',     'cat'=>'Creative','cb'=>'#065f46','ct'=>'#ecfdf5','acc'=>'#f87171','pb'=>'#ffffff','pt'=>'#064e3b','pm'=>'#6b7280'),
-        'classic_pro'         => array('name'=>'Classic Professional','cat'=>'Creative','cb'=>'#1a1a2e','ct'=>'#e0e7ff','acc'=>'#e94560','pb'=>'#ffffff','pt'=>'#1a1a2e','pm'=>'#6b7280'),
+        'classic_pro'         => array('name'=>'Classic Professional','cat'=>'Creative','layout'=>'editorial',    'cb'=>'#1a1a2e','ct'=>'#e0e7ff','acc'=>'#e94560','pb'=>'#ffffff','pt'=>'#1a1a2e','pm'=>'#6b7280'),
         'stylish_orange'      => array('name'=>'Stylish Orange',      'cat'=>'Creative','cb'=>'#c2410c','ct'=>'#fff7ed','acc'=>'#fb923c','pb'=>'#fff7ed','pt'=>'#7c2d12','pm'=>'#9a3412'),
         'black_pink'          => array('name'=>'Black & Pink',        'cat'=>'Creative','cb'=>'#18181b','ct'=>'#fdf4ff','acc'=>'#e879f9','pb'=>'#ffffff','pt'=>'#18181b','pm'=>'#71717a'),
         'vibrant_sunset'      => array('name'=>'Vibrant Sunset',      'cat'=>'Creative','cb'=>'#dc2626','ct'=>'#fff7ed','acc'=>'#fbbf24','pb'=>'#fff7ed','pt'=>'#78350f','pm'=>'#9a3412'),
@@ -7581,7 +7585,7 @@ function bae_get_book_templates() {
         'ocean_breeze'        => array('name'=>'Ocean Breeze',        'cat'=>'Creative','cb'=>'#0c4a6e','ct'=>'#f0f9ff','acc'=>'#38bdf8','pb'=>'#f0f9ff','pt'=>'#0c4a6e','pm'=>'#0284c7'),
         // MINIMAL (7)
         'swiss_grid'          => array('name'=>'Swiss Grid',          'cat'=>'Minimal', 'cb'=>'#ffffff','ct'=>'#000000','acc'=>'#ff0000','pb'=>'#ffffff','pt'=>'#000000','pm'=>'#737373'),
-        'paper_white'         => array('name'=>'Paper White',         'cat'=>'Minimal', 'cb'=>'#fafaf9','ct'=>'#1c1917','acc'=>'#78716c','pb'=>'#fafaf9','pt'=>'#1c1917','pm'=>'#a8a29e'),
+        'paper_white'         => array('name'=>'Paper White',         'cat'=>'Minimal', 'layout'=>'japanese_min', 'cb'=>'#fafaf9','ct'=>'#1c1917','acc'=>'#78716c','pb'=>'#fafaf9','pt'=>'#1c1917','pm'=>'#a8a29e'),
         'monochrome'          => array('name'=>'Monochrome',          'cat'=>'Minimal', 'cb'=>'#000000','ct'=>'#ffffff','acc'=>'#ffffff','pb'=>'#ffffff','pt'=>'#000000','pm'=>'#737373'),
         'sage_minimal'        => array('name'=>'Sage Minimal',        'cat'=>'Minimal', 'cb'=>'#86a390','ct'=>'#ffffff','acc'=>'#4a7c6b','pb'=>'#f9faf8','pt'=>'#2d3b35','pm'=>'#7a9187'),
         'slate_clean'         => array('name'=>'Slate Clean',         'cat'=>'Minimal', 'cb'=>'#475569','ct'=>'#f8fafc','acc'=>'#94a3b8','pb'=>'#f8fafc','pt'=>'#1e293b','pm'=>'#64748b'),
@@ -7589,7 +7593,9 @@ function bae_get_book_templates() {
         'lavender_soft'       => array('name'=>'Lavender Soft',       'cat'=>'Minimal', 'cb'=>'#7c3aed','ct'=>'#faf5ff','acc'=>'#c4b5fd','pb'=>'#faf5ff','pt'=>'#4c1d95','pm'=>'#7c3aed'),
     );
 }
+}
 
+if (!function_exists('bae_render_book_pages')) {
 function bae_render_book_pages($p, $tpl) {
     $name    = esc_html($p['business_name']  ?? 'Your Brand');
     $tagline = esc_html($p['tagline']        ?? '');
@@ -7610,6 +7616,26 @@ function bae_render_book_pages($p, $tpl) {
     $cs = 'background:'.$cb.';color:'.$ct.';font-family:\''.$fb.'\',sans-serif;';
     $ps = 'background:'.$pb.';color:'.$pt.';font-family:\''.$fb.'\',sans-serif;';
     $o  = '';
+
+    $layout = $tpl['layout'] ?? 'classic';
+    if ($layout === 'editorial') {
+        return bae_bb_render_editorial(array(
+            'name'=>$name,'tagline'=>$tagline,'industry'=>$industry,
+            'personality'=>($p['personality'] ?? ''),
+            'fh'=>$fh,'fb'=>$fb,'pc'=>$pc,'sc'=>$sc,'ac'=>$ac,
+            'email'=>$email,'website'=>$website,'phone'=>$phone,'ini'=>$ini,
+            'cb'=>$cb,'ct'=>$ct,'ta'=>$ta,'pb'=>$pb,'pt'=>$pt,'pm'=>$pm,
+        ));
+    }
+    if ($layout === 'japanese_min') {
+        return bae_bb_render_japanese_min(array(
+            'name'=>$name,'tagline'=>$tagline,'industry'=>$industry,
+            'personality'=>($p['personality'] ?? ''),
+            'fh'=>$fh,'fb'=>$fb,'pc'=>$pc,'sc'=>$sc,'ac'=>$ac,
+            'email'=>$email,'website'=>$website,'phone'=>$phone,'ini'=>$ini,
+            'cb'=>$cb,'ct'=>$ct,'ta'=>$ta,'pb'=>$pb,'pt'=>$pt,'pm'=>$pm,
+        ));
+    }
 
     // P1 Cover
     $o .= '<div class="bae-bp"><div class="bae-bpi" style="'.$cs.'display:flex;flex-direction:column;justify-content:space-between;">';
@@ -7757,6 +7783,419 @@ function bae_render_book_pages($p, $tpl) {
 
     return $o;
 }
+}
+
+if (!function_exists('bae_bb_page')) {
+function bae_bb_page($inner, $style) {
+    return '<div class="bae-bp"><div class="bae-bpi" style="'.$style.'">'.$inner.'</div></div>';
+}
+}
+
+if (!function_exists('bae_bb_badge_chip')) {
+function bae_bb_badge_chip($text, $bg, $fg) {
+    return '<span style="display:inline-flex;align-items:center;justify-content:center;padding:4px 10px;border-radius:999px;background:'.$bg.';color:'.$fg.';font-size:.62em;font-weight:800;letter-spacing:.14em;text-transform:uppercase;">'.esc_html($text).'</span>';
+}
+}
+
+if (!function_exists('bae_bb_render_editorial')) {
+function bae_bb_render_editorial($c) {
+    $name=$c['name']; $tagline=$c['tagline']; $industry=$c['industry'];
+    $personality=$c['personality'] ?? '';
+    $fh=$c['fh']; $fb=$c['fb'];
+    $pc=$c['pc']; $sc=$c['sc']; $ac=$c['ac'];
+    $email=$c['email']; $website=$c['website']; $phone=$c['phone']; $ini=$c['ini'];
+    $cb=$c['cb']; $ct=$c['ct']; $ta=$c['ta'];
+    $pb=$c['pb']; $pt=$c['pt']; $pm=$c['pm'];
+
+    $cs = 'background:'.$cb.';color:'.$ct.';font-family:\''.$fb.'\',sans-serif;';
+    $ps = 'background:'.$pb.';color:'.$pt.';font-family:\''.$fb.'\',sans-serif;';
+    $o = '';
+
+    // P1 Cover
+    $inner = '<div style="height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:14px;">'
+        . '<div style="display:flex;justify-content:space-between;align-items:center;">'
+        . bae_bb_badge_chip('Brand Book', 'rgba(255,255,255,.14)', $ct)
+        . '<div style="font-size:.62em;opacity:.55;letter-spacing:.18em;font-weight:900;text-transform:uppercase;">Edition '.date('Y').'</div>'
+        . '</div>'
+        . '<div style="display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:end;">'
+        . '<div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:2.65em;font-weight:900;line-height:1.0;margin-bottom:10px;">'.$name.'</div>'
+        . ($tagline ? '<div style="font-size:.86em;opacity:.78;max-width:95%;line-height:1.55;">'.$tagline.'</div>' : '')
+        . '</div>'
+        . '<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">'
+        . '<div style="width:100%;height:130px;border-radius:16px;background:linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.12);"></div>'
+        . '<div style="width:100%;height:34px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;padding:0 12px;box-sizing:border-box;">'
+        . '<div style="font-size:.62em;opacity:.78;letter-spacing:.14em;font-weight:900;text-transform:uppercase;">'.$industry.'</div>'
+        . '</div>'
+        . '</div>'
+        . '</div>'
+        . '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;">'
+        . '<div style="font-size:.62em;opacity:.5;">'.$website.'</div>'
+        . '<div style="display:flex;gap:6px;">'
+        . '<span style="width:10px;height:10px;border-radius:3px;background:'.$ta.'"></span>'
+        . '<span style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,.18)"></span>'
+        . '<span style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,.10)"></span>'
+        . '</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $cs);
+
+    // Section title helper
+    $sec = function($num, $title) use ($ta, $pm, $fh) {
+        return '<div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;">'
+            . '<div style="font-size:2.1em;font-weight:900;line-height:1;color:'.$ta.';">'.esc_html($num).'</div>'
+            . '<div>'
+            . '<div style="font-size:.62em;letter-spacing:.18em;text-transform:uppercase;font-weight:900;color:'.$pm.';">Section</div>'
+            . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.25em;font-weight:900;line-height:1.1;">'.esc_html($title).'</div>'
+            . '</div></div>';
+    };
+
+    // P2 Brand Story
+    $inner = $sec('01','Brand Story')
+        . '<div style="display:grid;grid-template-columns:1.1fr .9fr;gap:16px;">'
+        . '<div style="font-size:.72em;color:'.$pm.';line-height:1.75">'
+        . '<div style="font-weight:900;color:'.$pt.';margin-bottom:8px;">'.$name.'</div>'
+        . ($tagline ? '<div style="padding:10px 12px;border-radius:14px;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);margin-bottom:10px;"><span style="font-style:italic;">&ldquo;'.$tagline.'&rdquo;</span></div>' : '')
+        . '<div>Write your origin, mission, and what you believe. Keep it short, crisp, and repeatable.</div>'
+        . '</div>'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.7);">'
+        . '<div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;color:'.$pm.';font-weight:900;margin-bottom:8px;">Quick facts</div>'
+        . '<div style="display:grid;grid-template-columns:1fr;gap:8px;">'
+        . '<div style="display:flex;justify-content:space-between;gap:10px;"><span style="font-weight:900;font-size:.7em;">Industry</span><span style="font-size:.7em;color:'.$pm.';text-align:right;">'.$industry.'</span></div>'
+        . '<div style="display:flex;justify-content:space-between;gap:10px;"><span style="font-weight:900;font-size:.7em;">Primary</span><span style="font-family:monospace;font-size:.7em;color:'.$pm.'">'.esc_html($pc).'</span></div>'
+        . '<div style="display:flex;justify-content:space-between;gap:10px;"><span style="font-weight:900;font-size:.7em;">Accent</span><span style="font-family:monospace;font-size:.7em;color:'.$pm.'">'.esc_html($ac).'</span></div>'
+        . '</div></div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P3 Colors
+    $row = function($label, $hex) use ($pm) {
+        return '<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">'
+            . '<div style="width:50px;height:50px;border-radius:12px;background:'.$hex.';flex-shrink:0;box-shadow:0 6px 18px rgba(0,0,0,.12);"></div>'
+            . '<div style="min-width:0">'
+            . '<div style="font-size:.74em;font-weight:900;letter-spacing:.02em;">'.esc_html($label).'</div>'
+            . '<div style="font-family:monospace;font-size:.66em;color:'.$pm.'">'.esc_html(strtoupper($hex)).'</div>'
+            . '</div></div>';
+    };
+    $inner = $sec('02','Colors')
+        . $row('Primary', $pc)
+        . $row('Secondary', $sc)
+        . $row('Accent', $ac);
+    $o .= bae_bb_page($inner, $ps);
+
+    // P4 Typography
+    $inner = $sec('03','Typography')
+        . '<div style="display:grid;grid-template-columns:1fr;gap:10px;">'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);">'
+        . '<div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;color:'.$pm.';font-weight:900;margin-bottom:8px;">Heading</div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:2.1em;font-weight:900;color:'.$pt.';line-height:1.05">The quick brown fox</div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:.9em;font-weight:800;color:'.$ta.';margin-top:6px">'.$fh.'</div>'
+        . '</div>'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);">'
+        . '<div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;color:'.$pm.';font-weight:900;margin-bottom:8px;">Body</div>'
+        . '<div style="font-family:\''.$fb.'\',sans-serif;font-size:.82em;font-weight:600;color:'.$pm.';line-height:1.75">Use body type for clarity. Prioritize spacing and legibility across sizes.</div>'
+        . '<div style="font-family:\''.$fb.'\',sans-serif;font-size:.9em;font-weight:800;color:'.$ta.';margin-top:6px">'.$fb.'</div>'
+        . '</div></div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P5 Tone
+    $tone_tags = bae_derive_tone_tags($industry, $personality);
+    if (!is_array($tone_tags) || empty($tone_tags)) $tone_tags = array('Clear','Confident','Warm');
+    $chips = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">';
+    foreach ($tone_tags as $tag) $chips .= bae_bb_badge_chip($tag, 'rgba(0,0,0,.05)', $pt);
+    $chips .= '</div>';
+    $inner = $sec('04','Tone of Voice')
+        . $chips
+        . '<div style="font-size:.72em;color:'.$pm.';line-height:1.8">'.bae_get_voice_examples($tone_tags, true).'</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P6 Logo Usage
+    $rules = array('Use official colors or approved monochrome.','Keep clear space around the mark.','Do not distort, rotate, or add effects.','Avoid busy backgrounds or low contrast.');
+    $grid = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
+    foreach ($rules as $i => $rule) {
+        $grid .= '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);">'
+            . '<div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;color:'.$pm.';font-weight:900;margin-bottom:6px;">Rule '.($i+1).'</div>'
+            . '<div style="font-size:.74em;font-weight:900;line-height:1.45;">'.$rule.'</div>'
+            . '</div>';
+    }
+    $grid .= '</div>';
+    $inner = $sec('05','Logo Usage') . $grid;
+    $o .= bae_bb_page($inner, $ps);
+
+    // P7 Stationery
+    $inner = $sec('06','Applications')
+        . '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);">'
+        . '<div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;color:'.$pm.';font-weight:900;margin-bottom:8px;">Business card</div>'
+        . '<div style="height:70px;border-radius:14px;background:'.$pc.';padding:10px;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box;box-shadow:0 10px 28px rgba(0,0,0,.18);">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-weight:900;color:#fff;font-size:.72em;">'.$name.'</div>'
+        . '<div style="width:24px;height:4px;border-radius:99px;background:'.$ac.'"></div>'
+        . '</div>'
+        . '</div>'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);">'
+        . '<div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;color:'.$pm.';font-weight:900;margin-bottom:8px;">Email signature</div>'
+        . '<div style="display:flex;gap:10px;align-items:center;">'
+        . '<div style="width:38px;height:38px;border-radius:14px;background:'.$pc.';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;">'.esc_html($ini).'</div>'
+        . '<div style="min-width:0">'
+        . '<div style="font-size:.7em;font-weight:900;color:'.$pt.'">[Name] &middot; '.$name.'</div>'
+        . '<div style="font-size:.62em;color:'.$pm.'">'.esc_html($email).'</div>'
+        . '</div></div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P8 Social
+    $inner = $sec('07','Social')
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);display:flex;gap:10px;align-items:center;">'
+        . '<div style="width:56px;height:56px;border-radius:50%;background:'.$pc.';border:3px solid '.$ac.';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:\''.$fh.'\',sans-serif;">'.esc_html($ini).'</div>'
+        . '<div><div style="font-size:.72em;font-weight:900;">Avatar</div><div style="font-size:.62em;color:'.$pm.'">Initials, high contrast, consistent stroke</div></div>'
+        . '</div>'
+        . '<div style="margin-top:10px;padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);">'
+        . '<div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;color:'.$pm.';font-weight:900;margin-bottom:8px;">Cover</div>'
+        . '<div style="height:70px;border-radius:16px;background:'.$pc.';padding:10px;display:flex;flex-direction:column;justify-content:flex-end;box-sizing:border-box;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:.86em;font-weight:900;color:#fff;">'.$name.'</div>'
+        . '<div style="font-size:.62em;color:rgba(255,255,255,.72)">'.$tagline.'</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P9 Visual Style
+    $inner = $sec('08','Visual Style')
+        . '<div style="font-size:.72em;color:'.$pm.';line-height:1.8;margin-bottom:12px">Choose a limited set of design moves and repeat them: spacing scale, radius, and an editorial hierarchy.</div>'
+        . '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);"><div style="font-weight:900;margin-bottom:6px;">Hierarchy</div><div style="font-size:.66em;color:'.$pm.';line-height:1.6">One hero element per page.</div></div>'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);"><div style="font-weight:900;margin-bottom:6px;">Whitespace</div><div style="font-size:.66em;color:'.$pm.';line-height:1.6">Let content breathe.</div></div>'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);"><div style="font-weight:900;margin-bottom:6px;">Contrast</div><div style="font-size:.66em;color:'.$pm.';line-height:1.6">Legibility wins.</div></div>'
+        . '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);"><div style="font-weight:900;margin-bottom:6px;">Consistency</div><div style="font-size:.66em;color:'.$pm.';line-height:1.6">Repeat your moves.</div></div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P10 Rules
+    $inner = $sec('09','Do & Don\'t')
+        . '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+        . '<div style="padding:12px;border-radius:18px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.16)"><div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:#065f46;margin-bottom:8px;">Do</div>'
+        . '<div style="font-size:.7em;font-weight:800;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)">Use approved colors</div>'
+        . '<div style="font-size:.7em;font-weight:800;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)">Align to grid</div>'
+        . '<div style="font-size:.7em;font-weight:800;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)">Keep contrast strong</div>'
+        . '<div style="font-size:.7em;font-weight:800;padding:5px 0;">Repeat patterns</div></div>'
+        . '<div style="padding:12px;border-radius:18px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.16)"><div style="font-size:.62em;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:#991b1b;margin-bottom:8px;">Don\'t</div>'
+        . '<div style="font-size:.7em;font-weight:800;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)">Stretch the logo</div>'
+        . '<div style="font-size:.7em;font-weight:800;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)">Mix random fonts</div>'
+        . '<div style="font-size:.7em;font-weight:800;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)">Overdecorate</div>'
+        . '<div style="font-size:.7em;font-weight:800;padding:5px 0;">Use low-res assets</div></div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P11 Contact
+    $inner = $sec('10','Contact')
+        . '<div style="display:grid;grid-template-columns:1fr;gap:10px;">'
+        . ($email ? '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);font-size:.8em;font-weight:900;">'.esc_html($email).'</div>' : '')
+        . ($phone ? '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);font-size:.8em;font-weight:900;">'.esc_html($phone).'</div>' : '')
+        . ($website ? '<div style="padding:12px;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.75);font-size:.8em;font-weight:900;color:'.$ta.'">'.esc_html($website).'</div>' : '')
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P12 Back cover
+    $inner = '<div style="height:100%;display:flex;flex-direction:column;justify-content:space-between;">'
+        . '<div style="display:flex;justify-content:space-between;">'
+        . bae_bb_badge_chip('End', 'rgba(255,255,255,.14)', $ct)
+        . '<div style="font-size:.62em;opacity:.55;letter-spacing:.18em;font-weight:900;text-transform:uppercase;">'.$industry.'</div>'
+        . '</div>'
+        . '<div style="text-align:center;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.9em;font-weight:900;margin-bottom:8px;">'.$name.'</div>'
+        . ($tagline ? '<div style="opacity:.75;font-size:.78em;max-width:90%;margin:0 auto;line-height:1.6">'.$tagline.'</div>' : '')
+        . '</div>'
+        . '<div style="display:flex;justify-content:space-between;align-items:flex-end;">'
+        . '<div style="font-size:.58em;opacity:.35;">&copy; '.date('Y').'</div>'
+        . '<div style="display:flex;gap:6px;">'
+        . '<span style="width:10px;height:10px;border-radius:3px;background:'.$ta.'"></span>'
+        . '<span style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,.18)"></span>'
+        . '<span style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,.10)"></span>'
+        . '</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $cs);
+
+    return $o;
+}
+}
+
+if (!function_exists('bae_bb_render_japanese_min')) {
+function bae_bb_render_japanese_min($c) {
+    $name=$c['name']; $tagline=$c['tagline']; $industry=$c['industry'];
+    $personality=$c['personality'] ?? '';
+    $fh=$c['fh']; $fb=$c['fb'];
+    $pc=$c['pc']; $sc=$c['sc']; $ac=$c['ac'];
+    $email=$c['email']; $website=$c['website']; $phone=$c['phone']; $ini=$c['ini'];
+    $cb=$c['cb']; $ct=$c['ct']; $ta=$c['ta'];
+    $pb=$c['pb']; $pt=$c['pt']; $pm=$c['pm'];
+
+    $cs = 'background:'.$cb.';color:'.$ct.';font-family:\''.$fb.'\',sans-serif;';
+    $ps = 'background:'.$pb.';color:'.$pt.';font-family:\''.$fb.'\',sans-serif;';
+    $o = '';
+
+    $sec = function($num, $title) use ($ta, $pm, $fh) {
+        return '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;">'
+            . '<div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:'.$pm.';">'.esc_html($num).'</div>'
+            . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.35em;font-weight:900;letter-spacing:.01em;">'.esc_html($title).'</div>'
+            . '<div style="width:34px;height:1px;background:'.$ta.';opacity:.6"></div>'
+            . '</div>';
+    };
+
+    // P1 Cover (quiet)
+    $inner = '<div style="height:100%;display:grid;grid-template-rows:auto 1fr auto;">'
+        . '<div style="display:flex;justify-content:space-between;align-items:center;">'
+        . '<div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;opacity:.55;font-weight:900;">Brand Book</div>'
+        . '<div style="width:28px;height:2px;background:'.$ta.';opacity:.9;border-radius:99px"></div>'
+        . '</div>'
+        . '<div style="display:flex;flex-direction:column;justify-content:center;gap:14px;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:2.35em;font-weight:900;line-height:1.05;">'.$name.'</div>'
+        . ($tagline ? '<div style="font-size:.82em;opacity:.72;max-width:80%;line-height:1.7;">'.$tagline.'</div>' : '')
+        . '<div style="display:flex;gap:8px;align-items:center;opacity:.9;">'
+        . '<span style="width:8px;height:8px;border-radius:2px;background:'.$ta.'"></span>'
+        . '<span style="width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,.18)"></span>'
+        . '<span style="width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,.10)"></span>'
+        . '</div>'
+        . '</div>'
+        . '<div style="display:flex;justify-content:space-between;align-items:flex-end;">'
+        . '<div style="font-size:.58em;opacity:.45;letter-spacing:.12em;text-transform:uppercase;font-weight:900;">'.$industry.'</div>'
+        . '<div style="font-size:.58em;opacity:.35;">'.$website.'</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $cs);
+
+    // P2 Brand Story
+    $inner = $sec('01','Brand Story')
+        . '<div style="font-size:.74em;color:'.$pm.';line-height:1.95;">'
+        . '<div style="font-weight:900;color:'.$pt.';margin-bottom:10px;">'.$name.'</div>'
+        . ($tagline ? '<div style="padding:10px 12px;border-radius:14px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.7);margin-bottom:12px;"><span style="font-style:italic;">&ldquo;'.$tagline.'&rdquo;</span></div>' : '')
+        . '<div style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;">'
+        . '<div style="width:8px;height:8px;border-radius:2px;background:'.$ta.';margin-top:6px;flex-shrink:0"></div>'
+        . '<div>Keep the story calm, direct, and human. Minimal layout emphasizes meaning over decoration.</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P3 Colors (quiet list)
+    $inner = $sec('02','Colors');
+    foreach (array(array('Primary',$pc),array('Secondary',$sc),array('Accent',$ac)) as $col) {
+        $inner .= '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);">'
+            . '<div style="display:flex;gap:10px;align-items:center;min-width:0;">'
+            . '<div style="width:36px;height:36px;border-radius:10px;background:'.$col[1].';box-shadow:0 10px 24px rgba(0,0,0,.12);"></div>'
+            . '<div style="font-weight:900;font-size:.74em;letter-spacing:.02em;">'.esc_html($col[0]).'</div>'
+            . '</div>'
+            . '<div style="font-family:monospace;font-size:.7em;color:'.$pm.';">'.esc_html(strtoupper($col[1])).'</div>'
+            . '</div>';
+    }
+    $o .= bae_bb_page($inner, $ps);
+
+    // P4 Typography (simple)
+    $inner = $sec('03','Typography')
+        . '<div style="padding:12px 0;border-bottom:1px solid rgba(0,0,0,.06);">'
+        . '<div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:'.$pm.';margin-bottom:8px;">Heading</div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:2.15em;font-weight:900;line-height:1.05;color:'.$pt.'">A calm hierarchy</div>'
+        . '</div>'
+        . '<div style="padding:12px 0;">'
+        . '<div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:'.$pm.';margin-bottom:8px;">Body</div>'
+        . '<div style="font-family:\''.$fb.'\',sans-serif;font-size:.82em;line-height:1.9;color:'.$pm.'">Use body type for clarity. Prioritize spacing, rhythm, and legibility.</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P5 Tone
+    $tone_tags = bae_derive_tone_tags($industry, $personality);
+    if (!is_array($tone_tags) || empty($tone_tags)) $tone_tags = array('Calm','Clear','Honest');
+    $chips = '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">';
+    foreach ($tone_tags as $tag) $chips .= '<span style="padding:4px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.10);background:rgba(255,255,255,.7);font-size:.66em;font-weight:900;letter-spacing:.02em;">'.esc_html($tag).'</span>';
+    $chips .= '</div>';
+    $inner = $sec('04','Tone') . $chips . '<div style="font-size:.74em;color:'.$pm.';line-height:1.95">'.bae_get_voice_examples($tone_tags, true).'</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P6 Logo Usage (quiet list)
+    $inner = $sec('05','Logo Usage');
+    foreach (array('Use official colors or monochrome.','Keep clear space around the logo.','Never distort or rotate.','Avoid low contrast backgrounds.') as $i => $rule) {
+        $inner .= '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);">'
+            . '<div style="font-family:monospace;font-size:.74em;color:'.$ta.';font-weight:900;min-width:18px;">'.($i+1).'</div>'
+            . '<div style="font-size:.74em;color:'.$pm.';line-height:1.85;">'.$rule.'</div>'
+            . '</div>';
+    }
+    $o .= bae_bb_page($inner, $ps);
+
+    // P7 Applications
+    $inner = $sec('06','Applications')
+        . '<div style="display:grid;grid-template-columns:1fr;gap:12px;">'
+        . '<div style="padding:12px;border:1px solid rgba(0,0,0,.08);border-radius:16px;background:rgba(255,255,255,.75);">'
+        . '<div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:'.$pm.';margin-bottom:8px;">Business card</div>'
+        . '<div style="height:64px;border-radius:14px;background:'.$pc.';padding:10px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 24px rgba(0,0,0,.14);">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:.72em;font-weight:900;color:#fff;">'.$name.'</div>'
+        . '<div style="width:28px;height:2px;background:'.$ac.';border-radius:99px"></div>'
+        . '</div></div>'
+        . '<div style="padding:12px;border:1px solid rgba(0,0,0,.08);border-radius:16px;background:rgba(255,255,255,.75);">'
+        . '<div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:'.$pm.';margin-bottom:8px;">Email</div>'
+        . '<div style="font-size:.74em;font-weight:900;color:'.$pt.'">[Name] &middot; '.$name.'</div>'
+        . '<div style="font-size:.7em;color:'.$pm.';margin-top:3px">'.esc_html($email).'</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P8 Social
+    $inner = $sec('07','Social')
+        . '<div style="display:flex;gap:12px;align-items:center;padding:12px;border:1px solid rgba(0,0,0,.08);border-radius:16px;background:rgba(255,255,255,.75);">'
+        . '<div style="width:56px;height:56px;border-radius:50%;background:'.$pc.';border:3px solid '.$ac.';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:\''.$fh.'\',sans-serif;">'.esc_html($ini).'</div>'
+        . '<div><div style="font-size:.72em;font-weight:900;">Avatar</div><div style="font-size:.68em;color:'.$pm.';line-height:1.7">Keep it simple. One mark, one background.</div></div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P9 Visual Style
+    $inner = $sec('08','Visual Style')
+        . '<div style="font-size:.74em;color:'.$pm.';line-height:2.0;">'
+        . '<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;"><div style="width:8px;height:8px;border-radius:2px;background:'.$ta.';margin-top:7px;"></div><div>Use whitespace as a design element.</div></div>'
+        . '<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;"><div style="width:8px;height:8px;border-radius:2px;background:'.$ta.';margin-top:7px;"></div><div>Prefer clean borders and soft shadows.</div></div>'
+        . '<div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:8px;height:8px;border-radius:2px;background:'.$ta.';margin-top:7px;"></div><div>Keep a tight, consistent spacing scale.</div></div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P10 Rules
+    $inner = $sec('09','Rules')
+        . '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">'
+        . '<div><div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:#065f46;margin-bottom:8px;">Do</div>'
+        . '<div style="font-size:.72em;color:'.$pm.';padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">Use approved colors</div>'
+        . '<div style="font-size:.72em;color:'.$pm.';padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">Align to grid</div>'
+        . '<div style="font-size:.72em;color:'.$pm.';padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">Be consistent</div>'
+        . '<div style="font-size:.72em;color:'.$pm.';padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">Maintain contrast</div></div>'
+        . '<div><div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;font-weight:900;color:#991b1b;margin-bottom:8px;">Don\'t</div>'
+        . '<div style="font-size:.72em;color:'.$pm.';padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">Stretch logo</div>'
+        . '<div style="font-size:.72em;color:'.$pm.';padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">Mix random fonts</div>'
+        . '<div style="font-size:.72em;color:'.$pm.';padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">Overdecorate</div>'
+        . '<div style="font-size:.72em;color:'.$pm.';padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">Use noisy patterns</div></div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P11 Contact
+    $inner = $sec('10','Contact')
+        . '<div style="padding:12px;border:1px solid rgba(0,0,0,.08);border-radius:16px;background:rgba(255,255,255,.75);">'
+        . ($email ? '<div style="font-size:.74em;font-weight:900;margin-bottom:6px;">'.esc_html($email).'</div>' : '')
+        . ($phone ? '<div style="font-size:.74em;font-weight:900;margin-bottom:6px;">'.esc_html($phone).'</div>' : '')
+        . ($website ? '<div style="font-size:.74em;font-weight:900;color:'.$ta.'">'.esc_html($website).'</div>' : '')
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P12 Back cover
+    $inner = '<div style="height:100%;display:flex;flex-direction:column;justify-content:space-between;">'
+        . '<div style="font-size:.62em;letter-spacing:.22em;text-transform:uppercase;font-weight:900;opacity:.55;">End</div>'
+        . '<div style="text-align:center;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.7em;font-weight:900;margin-bottom:8px;">'.$name.'</div>'
+        . ($tagline ? '<div style="font-size:.76em;opacity:.72;line-height:1.7">'.$tagline.'</div>' : '')
+        . '</div>'
+        . '<div style="display:flex;justify-content:space-between;align-items:flex-end;">'
+        . '<div style="font-size:.58em;opacity:.35;">&copy; '.date('Y').'</div>'
+        . '<div style="width:38px;height:1px;background:'.$ta.';opacity:.6"></div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $cs);
+
+    return $o;
+}
+}
 
 function bae_brand_book_tab($user_id, $profile) {
     if (empty($profile)) {
@@ -7777,32 +8216,63 @@ function bae_brand_book_tab($user_id, $profile) {
 
     $out = '';
     $out .= '<style>
-.bae-bb-wrap{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start}
-.bae-bb-sb{position:sticky;top:20px;max-height:82vh;overflow-y:auto}
+.bae-bb-wrap{display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:stretch}
+.bae-bb-sb{position:sticky;top:20px;max-height:82vh;overflow:hidden;display:flex;flex-direction:column;gap:10px}
 .bae-bb-sb::-webkit-scrollbar{width:3px}.bae-bb-sb::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
-.bae-bb-cl{font-size:9px;font-weight:700;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.12em;margin:12px 0 5px}
-.bae-bb-tg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.bae-bb-tc{border:1.5px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .15s}
+.bae-bb-sb-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bae-bb-sb-body{overflow:auto;padding-right:4px;flex:1;min-height:0}
+.bae-bb-sb-body::-webkit-scrollbar{width:3px}.bae-bb-sb-body::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+.bae-bb-cl{font-size:9px;font-weight:800;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.12em;margin:12px 0 6px}
+.bae-bb-tg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.bae-bb-tc{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s;background:var(--surface)}
 .bae-bb-tc:hover{border-color:var(--border-2);transform:translateY(-1px)}
 .bae-bb-tc.active{border-color:#8b5cf6;box-shadow:0 0 0 2px rgba(139,92,246,.15)}
-.bae-bb-th{height:40px;display:flex;align-items:center;justify-content:center;padding:4px}
-.bae-bb-th span{font-size:7px;font-weight:700;text-align:center;line-height:1.3}
-.bae-bb-tn{font-size:8px;font-weight:600;color:var(--text);padding:3px 5px;background:var(--surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bae-bb-pages{padding:14px;display:flex;flex-direction:column;gap:3px;max-height:70vh;overflow-y:auto}
-.bae-bb-pages::-webkit-scrollbar{width:3px}.bae-bb-pages::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
-.bae-bp{width:100%;aspect-ratio:8.5/11;border-radius:3px;box-shadow:0 2px 10px rgba(0,0,0,.2);overflow:hidden;flex-shrink:0}
-.bae-bpi{width:100%;height:100%;padding:22px;box-sizing:border-box;font-size:13px}
+.bae-bb-th{height:44px;display:flex;align-items:center;justify-content:center;padding:4px}
+.bae-bb-th span{font-size:7px;font-weight:900;text-align:center;line-height:1.3}
+.bae-bb-tn{font-size:9px;font-weight:700;color:var(--text);padding:5px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.bae-bb-main{display:flex;flex-direction:column;gap:10px;min-width:0}
+.bae-bb-stage{display:flex;align-items:center;justify-content:center;padding:14px;background:linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.00));}
+.bae-bb-viewport{position:relative; width:100%; max-width:1100px; display:flex;align-items:center;justify-content:center;}
+.bae-bb-canvas{position:relative;width:100%;display:flex;align-items:center;justify-content:center;}
+.bae-bb-page{width:100%;max-width:1100px;aspect-ratio:11/8.5!important;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);overflow:hidden;background:transparent;transform-origin:top center}
+.bae-bb-page .bae-bp{width:100%!important;height:100%!important;aspect-ratio:auto!important;box-shadow:none!important;border-radius:0!important}
+/* Fill the canvas better (less tiny content + less dead space). */
+.bae-bb-page .bae-bpi{padding:26px!important;font-size:14px!important}
+
+.bae-bb-nav{position:absolute;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;left:-10px;right:-10px;pointer-events:none}
+.bae-bb-nav button{pointer-events:auto}
+.bae-bb-nav-btn{width:34px;height:34px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.92);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(0,0,0,.14);cursor:pointer}
+.bae-bb-nav-btn:disabled{opacity:.45;cursor:not-allowed}
+
+.bae-bb-film{display:flex;gap:8px;overflow-x:auto;padding:10px 10px 12px;border-top:1px solid var(--border);background:var(--surface);scrollbar-width:thin}
+.bae-bb-film::-webkit-scrollbar{height:6px}
+.bae-bb-film::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:6px}
+.bae-bb-thumb{flex:0 0 auto;width:86px}
+.bae-bb-thumb-btn{width:86px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;padding:6px;display:flex;flex-direction:column;gap:6px;transition:all .15s}
+.bae-bb-thumb-btn:hover{transform:translateY(-1px);border-color:var(--border-2)}
+.bae-bb-thumb-btn.active{border-color:#8b5cf6;box-shadow:0 0 0 2px rgba(139,92,246,.15)}
+.bae-bb-thumb-mini{width:100%;aspect-ratio:11/8.5;border-radius:6px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.12);background:transparent}
+.bae-bb-thumb-mini .bae-bp{width:100%;height:100%;box-shadow:none;border-radius:0}
+.bae-bb-thumb-mini .bae-bpi{padding:8px;font-size:7px}
+.bae-bb-thumb-lbl{font-size:10px;color:var(--text-3);text-align:center}
+
+.bae-bb-pages{display:none}
 #bae-bb-pt{display:none}
 @media print{body>*:not(#bae-bb-pt){display:none!important}#bae-bb-pt{display:block!important}.bae-bp{page-break-after:always;width:210mm;min-height:297mm;padding:18mm;box-sizing:border-box}}
-@media(max-width:840px){.bae-bb-wrap{grid-template-columns:1fr}.bae-bb-sb{position:static;max-height:none}}
+@media(max-width:980px){.bae-bb-wrap{grid-template-columns:1fr}.bae-bb-sb{position:static;max-height:none}}
 </style>';
 
     $out .= '<div class="bae-bb-wrap">';
 
-    // Sidebar
-    $out .= '<div class="bae-bb-sb"><div class="bae-card" style="padding:10px;">';
-    $out .= '<div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;">Choose Style</div>';
-    $out .= '<div style="font-size:10px;color:var(--text-3);margin-bottom:10px;">'.count($templates).' templates</div>';
+    // Sidebar (templates)
+    $out .= '<div class="bae-bb-sb" id="bae-bb-sb"><div class="bae-card" style="padding:10px;display:flex;flex-direction:column;gap:10px;">';
+    $out .= '<div class="bae-bb-sb-head">';
+    $out .= '<div><div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:2px;">Templates</div>';
+    $out .= '<div style="font-size:10px;color:var(--text-3);">'.count($templates).' styles</div></div>';
+    $out .= '<button class="bae-btn bae-btn-outline bae-btn-sm" type="button" onclick="baeBookToggleTpl()">Hide</button>';
+    $out .= '</div>';
+    $out .= '<div class="bae-bb-sb-body" id="bae-bb-sb-body">';
     foreach ($cats as $cat => $tpls) {
         $out .= '<div class="bae-bb-cl">'.esc_html($cat).'</div><div class="bae-bb-tg">';
         foreach ($tpls as $id => $t) {
@@ -7814,14 +8284,17 @@ function bae_brand_book_tab($user_id, $profile) {
         }
         $out .= '</div>';
     }
-    $out .= '</div></div>';
+    $out .= '</div></div></div>';
 
-    // Preview
-    $out .= '<div><div class="bae-card" style="padding:0;overflow:hidden;">';
+    // Preview (carousel + filmstrip)
+    $out .= '<div class="bae-bb-main"><div class="bae-card" style="padding:0;overflow:hidden;min-width:0;">';
     $out .= '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;">';
-    $out .= '<div><div style="font-size:13px;font-weight:600;color:var(--text);">Preview</div>';
-    $out .= '<div style="font-size:11px;color:var(--text-3);" id="bae-bb-lbl">'.esc_html($templates[$saved]['name']).' &mdash; 12 pages</div></div>';
-    $out .= '<div style="display:flex;gap:7px;">';
+    $out .= '<div><div style="font-size:13px;font-weight:800;color:var(--text);">Preview</div>';
+    $out .= '<div style="font-size:11px;color:var(--text-3);" id="bae-bb-lbl">'.esc_html($templates[$saved]['name']).'</div></div>';
+    $out .= '<div style="display:flex;gap:7px;align-items:center;">';
+    $out .= '<button class="bae-btn bae-btn-outline bae-btn-sm" type="button" onclick="baeBookPrev()">Prev</button>';
+    $out .= '<div style="font-size:11px;color:var(--text-3);min-width:70px;text-align:center;" id="bae-bb-pg">1 / 12</div>';
+    $out .= '<button class="bae-btn bae-btn-outline bae-btn-sm" type="button" onclick="baeBookNext()">Next</button>';
     if ($is_free) {
         $out .= '<button class="bae-btn bae-btn-outline bae-btn-sm" onclick="baePricingOpen(\'Export Brand Book\',\'Download as PDF on Starter plan.\')">Export PDF &mdash; Starter+</button>';
     } else {
@@ -7829,14 +8302,32 @@ function bae_brand_book_tab($user_id, $profile) {
     }
     $out .= '<button class="bae-btn bae-btn-primary bae-btn-sm" id="bae-bb-sbtn" onclick="baeBookSave()">Save Style</button>';
     $out .= '</div></div>';
-    $out .= '<div class="bae-bb-pages" id="bae-bb-pages">';
-    $out .= bae_render_book_pages($profile, $templates[$saved]);
-    $out .= '</div></div></div></div>';
+    $out .= '<div class="bae-bb-stage">';
+    $out .= '<div class="bae-bb-viewport">';
+    $out .= '<div class="bae-bb-nav"><button class="bae-bb-nav-btn" id="bae-bb-prev" type="button" onclick="baeBookPrev()">&larr;</button><button class="bae-bb-nav-btn" id="bae-bb-next" type="button" onclick="baeBookNext()">&rarr;</button></div>';
+    $out .= '<div class="bae-bb-canvas"><div class="bae-bb-page" id="bae-bb-page"></div></div>';
+    $out .= '</div></div>';
+    $out .= '<div class="bae-bb-film" id="bae-bb-film"></div>';
+    $out .= '<div class="bae-bb-pages" id="bae-bb-pages">'.bae_render_book_pages($profile, $templates[$saved]).'</div>';
+    $out .= '</div></div></div>';
 
     $out .= '<div id="bae-bb-pt"></div>';
 
     $out .= '<script>(function(){';
     $out .= 'var cur=\''.esc_js($saved).'\',nonce=\''.esc_js($nonce).'\';';
+    $out .= 'var idx=0,total=12;';
+    $out .= 'function q(id){return document.getElementById(id);}';
+    $out .= 'function listPages(){var wrap=q("bae-bb-pages");if(!wrap)return[];return Array.prototype.slice.call(wrap.querySelectorAll(".bae-bp"));}';
+    $out .= 'function setPage(i){var pages=listPages();total=pages.length||12;idx=Math.max(0,Math.min(i,total-1));var host=q("bae-bb-page");if(!host||!pages[idx])return;host.innerHTML=pages[idx].outerHTML;';
+    $out .= 'var pg=q("bae-bb-pg");if(pg)pg.textContent=(idx+1)+" / "+total;';
+    $out .= 'var pbtn=q("bae-bb-prev"),nbtn=q("bae-bb-next");if(pbtn)pbtn.disabled=(idx<=0);if(nbtn)nbtn.disabled=(idx>=total-1);';
+    $out .= 'var f=q("bae-bb-film");if(f){f.querySelectorAll(".bae-bb-thumb-btn").forEach(function(b){b.classList.remove("active");});var ab=f.querySelector("[data-i=\'"+idx+"\']");if(ab){ab.classList.add("active");ab.scrollIntoView({block:"nearest",inline:"nearest"});} }';
+    $out .= '}';
+    $out .= 'function buildFilm(){var film=q("bae-bb-film");var pages=listPages();if(!film)return;film.innerHTML="";pages.forEach(function(p,i){var d=document.createElement("div");d.className="bae-bb-thumb";var b=document.createElement("button");b.type="button";b.className="bae-bb-thumb-btn"+(i===idx?" active":"");b.setAttribute("data-i",i);b.onclick=function(){setPage(i);};';
+    $out .= 'var mini=document.createElement("div");mini.className="bae-bb-thumb-mini";mini.innerHTML=p.outerHTML;var lbl=document.createElement("div");lbl.className="bae-bb-thumb-lbl";lbl.textContent=(i+1);b.appendChild(mini);b.appendChild(lbl);d.appendChild(b);film.appendChild(d);});}';
+    $out .= 'window.baeBookPrev=function(){setPage(idx-1);};window.baeBookNext=function(){setPage(idx+1);};';
+    $out .= 'window.baeBookToggleTpl=function(){var sb=q("bae-bb-sb");if(!sb)return;sb.style.display="none";var wrap=document.querySelector(".bae-bb-wrap");if(wrap)wrap.style.gridTemplateColumns="1fr";';
+    $out .= 'var top=document.querySelector(".bae-bb-main .bae-card > div"); if(top){var btn=document.createElement("button");btn.className="bae-btn bae-btn-outline bae-btn-sm";btn.type="button";btn.textContent="Show Templates";btn.onclick=function(){sb.style.display="flex";wrap.style.gridTemplateColumns=\'260px 1fr\';btn.remove();}; top.appendChild(btn);} };';
     $out .= 'window.baeBookTpl=function(id,el){';
     $out .= 'document.querySelectorAll(\'.bae-bb-tc\').forEach(function(c){c.classList.remove(\'active\');});';
     $out .= 'el.classList.add(\'active\');cur=id;';
@@ -7844,7 +8335,7 @@ function bae_brand_book_tab($user_id, $profile) {
     $out .= 'pg.innerHTML=\'<div style="padding:40px;text-align:center;color:var(--text-3);">Loading...</div>\';';
     $out .= 'var fd=new FormData();fd.append(\'action\',\'bae_render_book\');fd.append(\'nonce\',nonce);fd.append(\'template\',id);';
     $out .= 'fetch(ajaxurl,{method:\'POST\',body:fd}).then(function(r){return r.json();}).then(function(j){';
-    $out .= 'if(j.success){pg.innerHTML=j.data.html;var lb=document.getElementById(\'bae-bb-lbl\');if(lb)lb.textContent=j.data.name+\' \u2014 12 pages\';}';
+    $out .= 'if(j.success){pg.innerHTML=j.data.html;var lb=document.getElementById(\'bae-bb-lbl\');if(lb)lb.textContent=j.data.name;idx=0;buildFilm();setPage(0);}';
     $out .= '});};';
     $out .= 'window.baeBookSave=function(){var b=document.getElementById(\'bae-bb-sbtn\');if(!b)return;';
     $out .= 'b.disabled=true;b.textContent=\'Saving...\';';
@@ -7854,6 +8345,7 @@ function bae_brand_book_tab($user_id, $profile) {
     $out .= 'setTimeout(function(){b.textContent=\'Save Style\';},2000);});};';
     $out .= 'window.baeBookPrint=function(){var pg=document.getElementById(\'bae-bb-pages\'),tgt=document.getElementById(\'bae-bb-pt\');';
     $out .= 'if(!pg||!tgt)return;tgt.innerHTML=pg.innerHTML;setTimeout(function(){window.print();setTimeout(function(){tgt.innerHTML=\'\';},500);},200);};';
+    $out .= 'buildFilm();setPage(0);';
     $out .= '})();</script>';
 
     return $out;
