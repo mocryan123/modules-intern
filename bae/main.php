@@ -164,6 +164,8 @@ add_action('wp_ajax_bae_suggest_colors',           'bntm_ajax_bae_suggest_colors
 add_action('wp_ajax_nopriv_bae_suggest_colors',    'bntm_ajax_bae_suggest_colors');
 add_action('wp_ajax_bae_suggest_tagline',          'bntm_ajax_bae_suggest_tagline');
 add_action('wp_ajax_nopriv_bae_suggest_tagline',   'bntm_ajax_bae_suggest_tagline');
+add_action('wp_ajax_bae_suggest_fonts',            'bntm_ajax_bae_suggest_fonts');
+add_action('wp_ajax_bae_consistency_scan',         'bntm_ajax_bae_consistency_scan');
 add_action('wp_ajax_bae_upload_logo',              'bntm_ajax_bae_upload_logo');
 add_action('wp_ajax_nopriv_bae_upload_logo',       'bntm_ajax_bae_upload_logo');
 add_action('wp_ajax_bae_export_zip',               'bntm_ajax_bae_export_zip');
@@ -2645,7 +2647,23 @@ function bae_overview_tab($user_id, $profile) {
 
             <!-- Section: Typography -->
             <div style="margin-bottom:28px;">
-                <div class="bae-section-label">Typography</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div class="bae-section-label" style="margin-bottom:0;">Typography</div>
+                    <button type="button" id="bae-ai-font-btn" class="bae-btn bae-btn-outline bae-btn-sm" style="display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                        Suggest with AI
+                    </button>
+                </div>
+                <!-- AI font pairing panel -->
+                <div id="bae-ai-font-panel" style="display:none;margin-bottom:16px;padding:16px;background:var(--bg-3);border-radius:14px;border:1px solid var(--border-2);">
+                    <div style="font-size:11px;font-weight:700;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                        AI Font Pairing Suggestions
+                    </div>
+                    <div id="bae-ai-font-results" style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="font-size:13px;color:var(--text-3);text-align:center;padding:16px;">Generating font pairings...</div>
+                    </div>
+                </div>
                 <div class="bae-form-grid">
                     <div class="bae-form-group">
                         <label>Heading Font</label>
@@ -2968,6 +2986,87 @@ function bae_overview_tab($user_id, $profile) {
                 })
                 .catch(function() {
                     taglineResult.innerHTML = '<div style="font-size:13px;color:#fb7185;padding:4px;">Connection error.</div>';
+                });
+            });
+        }
+
+        // ── AI Font Pairing Suggest (Typography) ─────────────────────────
+        var fontBtn   = document.getElementById('bae-ai-font-btn');
+        var fontPanel = document.getElementById('bae-ai-font-panel');
+        var fontResults = document.getElementById('bae-ai-font-results');
+
+        function baeEnsureSelectOption(sel, value) {
+            if (!sel || !value) return;
+            var exists = Array.prototype.some.call(sel.options, function(o) { return o.value === value; });
+            if (!exists) {
+                var opt = document.createElement('option');
+                opt.value = value;
+                opt.textContent = value;
+                sel.appendChild(opt);
+            }
+        }
+
+        if (fontBtn) {
+            fontBtn.addEventListener('click', function() {
+                var isOpen = fontPanel && fontPanel.style.display !== 'none';
+                if (fontPanel && isOpen) { fontPanel.style.display = 'none'; return; }
+                if (!fontPanel || !fontResults) return;
+
+                fontPanel.style.display = 'block';
+                fontResults.innerHTML = '<div style="font-size:13px;color:var(--text-3);text-align:center;padding:16px;">Generating font pairings...</div>';
+
+                var fd = new FormData();
+                fd.append('action', 'bae_suggest_fonts');
+                fd.append('nonce', overviewNonce);
+                fd.append('profile_id', <?php echo json_encode( (int) ($p['id'] ?? 0) ); ?>);
+
+                fetch(ajaxurl, { method:'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(j) {
+                    if (!j.success || !j.data || !j.data.pairs) {
+                        fontResults.innerHTML = '<div style="font-size:13px;color:#fb7185;padding:8px;">Could not generate suggestions. Try again.</div>';
+                        return;
+                    }
+                    var pairs = j.data.pairs || [];
+                    if (!pairs.length) {
+                        fontResults.innerHTML = '<div style="font-size:13px;color:#fb7185;padding:8px;">No suggestions returned.</div>';
+                        return;
+                    }
+
+                    fontResults.innerHTML = '';
+                    pairs.forEach(function(p) {
+                        var h = p.heading || '';
+                        var b = p.body || '';
+                        var reason = p.reason || '';
+
+                        var card = document.createElement('div');
+                        card.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border-radius:10px;border:1.5px solid var(--border);transition:all .2s;';
+                        card.innerHTML =
+                            '<div style="flex:1;min-width:0;">' +
+                                '<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + h + ' <span style="opacity:.6;">+</span> ' + b + '</div>' +
+                                (reason ? '<div style="font-size:11px;color:var(--text-3);margin-top:2px;line-height:1.35;">' + reason + '</div>' : '') +
+                            '</div>' +
+                            '<button style="background:var(--brand);color:white;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:\'Geist\',sans-serif;white-space:nowrap;">Apply</button>';
+
+                        card.querySelector('button').addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var hSel = document.querySelector('[name="font_heading"]');
+                            var bSel = document.querySelector('[name="font_body"]');
+                            baeEnsureSelectOption(hSel, h);
+                            baeEnsureSelectOption(bSel, b);
+                            if (hSel) hSel.value = h;
+                            if (bSel) bSel.value = b;
+                            card.style.borderColor = '#8b5cf6';
+                            card.style.background = 'rgba(139,92,246,.08)';
+                            fontPanel.style.display = 'none';
+                            if (window.gsap) gsap.fromTo(card, {scale:.97}, {scale:1, duration:.25, ease:'back.out(2)'});
+                        });
+
+                        fontResults.appendChild(card);
+                    });
+                })
+                .catch(function() {
+                    fontResults.innerHTML = '<div style="font-size:13px;color:#fb7185;padding:8px;">Connection error. Try again.</div>';
                 });
             });
         }
@@ -3590,6 +3689,38 @@ function bae_assets_tab($user_id, $profile) {
         </div>
     </div>
 
+    <!-- Brand Tools (Consistency) -->
+    <div class="bae-card" style="margin-top:24px;">
+        <div class="bae-card-title" style="display:flex;align-items:center;gap:8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-soft)"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+            Brand Tools
+        </div>
+        <div class="bae-card-desc" style="margin-top:4px;margin-bottom:14px;">Quick helpers to improve typography and keep assets consistent.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <button type="button" id="bae-consistency-btn" class="bae-btn bae-btn-outline" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>" style="display:inline-flex;align-items:center;gap:6px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                Scan consistency
+            </button>
+            <span id="bae-consistency-status" style="font-size:13px;color:var(--text-3);"></span>
+        </div>
+    </div>
+
+    <!-- Brand Tools Modal -->
+    <div id="bae-tools-modal-overlay" class="bae-modal-overlay" style="display:none;">
+        <div class="bae-modal" style="max-width:860px;">
+            <div class="bae-modal-header">
+                <span class="bae-modal-title" id="bae-tools-modal-title">Brand Tools</span>
+                <button type="button" class="bae-modal-close" id="bae-tools-modal-close">&times;</button>
+            </div>
+            <div class="bae-modal-body">
+                <div id="bae-tools-modal-body" style="font-size:14px;color:var(--text-2);"></div>
+            </div>
+            <div class="bae-modal-footer" style="display:flex;justify-content:flex-end;gap:10px;">
+                <button type="button" class="bae-btn bae-btn-outline" id="bae-tools-modal-ok">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Regen Prompt Modal -->
     <div id="bae-regen-modal-overlay" class="bae-modal-overlay" style="display:none;">
         <div class="bae-modal">
@@ -4049,6 +4180,104 @@ function bae_assets_tab($user_id, $profile) {
             });
         }
 
+        // ── Brand Tools: modal + actions (Overview) ─────────────────────
+        var toolsModal = document.getElementById('bae-tools-modal-overlay');
+        var toolsClose = document.getElementById('bae-tools-modal-close');
+        var toolsOk    = document.getElementById('bae-tools-modal-ok');
+        var toolsTitle = document.getElementById('bae-tools-modal-title');
+        var toolsBody  = document.getElementById('bae-tools-modal-body');
+
+        function baeToolsOpen(title, html) {
+            if (!toolsModal || !toolsTitle || !toolsBody) return;
+            toolsTitle.textContent = title;
+            toolsBody.innerHTML = html;
+            toolsModal.style.display = 'flex';
+        }
+        function baeToolsClose() {
+            if (!toolsModal) return;
+            toolsModal.style.display = 'none';
+        }
+        if (toolsClose) toolsClose.addEventListener('click', function(e){ if(e&&e.preventDefault) e.preventDefault(); baeToolsClose(); });
+        if (toolsOk)    toolsOk.addEventListener('click', function(e){ if(e&&e.preventDefault) e.preventDefault(); baeToolsClose(); });
+
+        // Consistency scan (Brand Tools card)
+        var consBtn = document.getElementById('bae-consistency-btn');
+        var consStatus = document.getElementById('bae-consistency-status');
+        if (consBtn) {
+            consBtn.addEventListener('click', function(e){
+                if (e && e.preventDefault) e.preventDefault();
+                var nonce = this.dataset.nonce;
+                var pid   = this.dataset.pid;
+
+                var originalText = consBtn.textContent;
+                consBtn.disabled = true;
+                consBtn.textContent = 'Scanning...';
+                if (consStatus) consStatus.textContent = 'Scanning saved assets...';
+
+                var fd = new FormData();
+                fd.append('action', 'bae_consistency_scan');
+                fd.append('nonce', nonce);
+                fd.append('profile_id', pid);
+
+                fetch(ajaxurl, { method:'POST', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(j){
+                    consBtn.disabled = false;
+                    consBtn.textContent = originalText;
+                    if (consStatus) consStatus.textContent = '';
+
+                    if (!j.success) { alert((j.data && j.data.message) ? j.data.message : 'Consistency scan failed.'); return; }
+                    var report = j.data && j.data.report ? j.data.report : null;
+                    if (!report) { alert('No report returned.'); return; }
+
+                    var score = report.score || 0;
+                    var issues = report.issues || [];
+                    var usedFonts = report.used_fonts || [];
+                    var usedColors = report.used_colors || [];
+                    var missing = report.missing_assets || [];
+
+                    var html = '';
+                    html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">' +
+                        '<div style="font-weight:800;color:var(--text);font-size:15px;">Consistency score: ' + score + '/100</div>' +
+                        '<div style="font-size:12px;color:var(--text-3);">Based on saved asset HTML (colors + fonts).</div>' +
+                    '</div>';
+
+                    if (issues.length) {
+                        html += '<div style="margin-bottom:12px;">' +
+                            '<div style="font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);margin-bottom:8px;">Issues</div>' +
+                            '<ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--text-2);">';
+                        issues.forEach(function(it){ html += '<li>' + it + '</li>'; });
+                        html += '</ul></div>';
+                    } else {
+                        html += '<div class="bae-notice bae-notice-success" style="margin-bottom:12px;">Looks consistent — nice work.</div>';
+                    }
+
+                    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start;">';
+                    html += '<div style="padding:12px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg-2);">' +
+                        '<div style="font-size:12px;font-weight:800;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Fonts seen</div>' +
+                        (usedFonts.length ? usedFonts.map(function(f){ return '<div style="font-size:13px;color:var(--text-2);">' + f + '</div>'; }).join('') : '<div style="font-size:13px;color:var(--text-3);">None detected</div>') +
+                    '</div>';
+                    html += '<div style="padding:12px;border:1px solid var(--border-2);border-radius:12px;background:var(--bg-2);">' +
+                        '<div style="font-size:12px;font-weight:800;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Colors seen</div>' +
+                        (usedColors.length ? usedColors.map(function(c){ return '<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2);"><span style="width:12px;height:12px;border-radius:4px;background:' + c + ';border:1px solid rgba(0,0,0,.12)"></span>' + c + '</div>'; }).join('') : '<div style="font-size:13px;color:var(--text-3);">None detected</div>') +
+                    '</div>';
+                    html += '</div>';
+
+                    if (missing.length) {
+                        html += '<div style="margin-top:12px;font-size:12px;color:var(--text-3);">Missing assets: ' + missing.join(', ') + '</div>';
+                    }
+
+                    baeToolsOpen('Brand consistency scan', html);
+                })
+                .catch(function(){
+                    consBtn.disabled = false;
+                    consBtn.textContent = originalText;
+                    if (consStatus) consStatus.textContent = '';
+                    alert('Consistency scan failed.');
+                });
+            });
+        }
+
     })();
     </script>
     <?php
@@ -4188,6 +4417,8 @@ function bae_kit_tab($user_id, $profile) {
                 });
             });
         }
+
+        // Brand Tools are wired in the Overview tab script.
     })();
     </script>
     <?php
@@ -4726,6 +4957,215 @@ function bntm_ajax_bae_suggest_tagline() {
     $_POST['industry']    = $industry;
     $_POST['personality'] = '';
     bntm_ajax_bae_wizard_taglines(); // exits via wp_send_json
+}
+
+// =============================================================================
+// AJAX: Brand Tools — Font Pairing Suggestions
+// =============================================================================
+function bntm_ajax_bae_suggest_fonts() {
+    check_ajax_referer( 'bae_save_profile', 'nonce', false );
+    if ( ! is_user_logged_in() ) wp_send_json_error( [ 'message' => 'Unauthorized' ] );
+
+    global $wpdb;
+    $user_id    = get_current_user_id();
+    $profile_id = intval( $_POST['profile_id'] ?? 0 );
+    if ( ! $profile_id ) wp_send_json_error( [ 'message' => 'Missing profile.' ] );
+
+    $profiles_table = $wpdb->prefix . 'bae_profiles';
+    $profile = $wpdb->get_row( $wpdb->prepare(
+        "SELECT business_name, industry, personality, font_heading, font_body FROM {$profiles_table} WHERE id = %d AND user_id = %d",
+        $profile_id, $user_id
+    ), ARRAY_A );
+
+    if ( ! $profile ) wp_send_json_error( [ 'message' => 'Profile not found.' ] );
+
+    $name     = sanitize_text_field( $profile['business_name'] ?? '' );
+    $industry = sanitize_text_field( $profile['industry'] ?? '' );
+    $persona  = sanitize_text_field( $profile['personality'] ?? '' );
+    $currentH = sanitize_text_field( $profile['font_heading'] ?? 'Inter' );
+    $currentB = sanitize_text_field( $profile['font_body']    ?? 'Inter' );
+
+    $fallback = [
+        [ 'heading' => 'Poppins',    'body' => 'Inter',        'reason' => 'Clean, friendly, and highly readable across brand assets.' ],
+        [ 'heading' => 'Montserrat', 'body' => 'Inter',        'reason' => 'Modern geometric headings with a neutral body for clarity.' ],
+        [ 'heading' => 'Playfair Display', 'body' => 'Inter',  'reason' => 'Premium editorial headings with a simple, readable body.' ],
+        [ 'heading' => 'DM Serif Display', 'body' => 'Inter',  'reason' => 'Distinct, confident headings balanced by a clean body.' ],
+        [ 'heading' => 'Space Grotesk', 'body' => 'Inter',     'reason' => 'Tech-forward feel with excellent legibility.' ],
+    ];
+
+    // If Gemini isn't configured, return fallback immediately.
+    if ( defined('BAE_GEMINI_API_KEY') && BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY' ) {
+        // Put current pair first if it isn't already.
+        array_unshift( $fallback, [ 'heading' => $currentH, 'body' => $currentB, 'reason' => 'Your current selection.' ] );
+        wp_send_json_success( [ 'pairs' => array_slice( $fallback, 0, 6 ) ] );
+    }
+
+    $industry_hint = $industry ? "Industry: {$industry}\n" : '';
+    $persona_hint  = $persona  ? "Target audience: {$persona}\n" : '';
+    $prompt = "You are a typography expert for brand identity.\n\nBusiness: \"{$name}\"\n{$industry_hint}{$persona_hint}\nCurrent fonts: Heading=\"{$currentH}\", Body=\"{$currentB}\"\n\nReturn exactly 6 font pairings suitable for Google Fonts.\nRules:\n- Provide pairs as objects: {\"heading\":\"Font Name\",\"body\":\"Font Name\",\"reason\":\"...\"}\n- Heading should have personality; body must be very readable\n- Avoid overly decorative fonts\n- Prefer widely available fonts (Google Fonts)\n- Keep reasons to 1 sentence\n\nReturn ONLY valid JSON array. No markdown, no code fences.";
+
+    $result = bae_gemini_json_request( $prompt );
+    if ( is_array( $result ) && isset( $result['error'] ) ) {
+        array_unshift( $fallback, [ 'heading' => $currentH, 'body' => $currentB, 'reason' => 'Your current selection.' ] );
+        wp_send_json_success( [ 'pairs' => array_slice( $fallback, 0, 6 ) ] );
+    }
+
+    $json_str = trim( (string) $result );
+    $json_str = preg_replace( '/^```json\s*/i', '', $json_str );
+    $json_str = preg_replace( '/^```\s*/i',     '', $json_str );
+    $json_str = preg_replace( '/```\s*$/',      '', $json_str );
+    $json_str = trim( $json_str );
+
+    $pairs = json_decode( $json_str, true );
+    if ( ! is_array( $pairs ) ) {
+        array_unshift( $fallback, [ 'heading' => $currentH, 'body' => $currentB, 'reason' => 'Your current selection.' ] );
+        wp_send_json_success( [ 'pairs' => array_slice( $fallback, 0, 6 ) ] );
+    }
+
+    $clean = [];
+    foreach ( $pairs as $p ) {
+        $h = sanitize_text_field( $p['heading'] ?? '' );
+        $b = sanitize_text_field( $p['body'] ?? '' );
+        $r = sanitize_text_field( $p['reason'] ?? '' );
+        if ( ! $h || ! $b ) continue;
+        $clean[] = [ 'heading' => $h, 'body' => $b, 'reason' => $r ];
+        if ( count( $clean ) >= 6 ) break;
+    }
+    if ( empty( $clean ) ) {
+        array_unshift( $fallback, [ 'heading' => $currentH, 'body' => $currentB, 'reason' => 'Your current selection.' ] );
+        wp_send_json_success( [ 'pairs' => array_slice( $fallback, 0, 6 ) ] );
+    }
+
+    // Ensure current fonts show up first.
+    array_unshift( $clean, [ 'heading' => $currentH, 'body' => $currentB, 'reason' => 'Your current selection.' ] );
+    wp_send_json_success( [ 'pairs' => array_slice( $clean, 0, 6 ) ] );
+}
+
+// =============================================================================
+// AJAX: Brand Tools — Consistency Scan (colors + fonts)
+// =============================================================================
+function bntm_ajax_bae_consistency_scan() {
+    check_ajax_referer( 'bae_generate_asset', 'nonce' );
+    if ( ! is_user_logged_in() ) wp_send_json_error( [ 'message' => 'Unauthorized' ] );
+
+    global $wpdb;
+    $user_id    = get_current_user_id();
+    $profile_id = intval( $_POST['profile_id'] ?? 0 );
+    if ( ! $profile_id ) wp_send_json_error( [ 'message' => 'Missing profile.' ] );
+
+    $profiles_table = $wpdb->prefix . 'bae_profiles';
+    $assets_table   = $wpdb->prefix . 'bae_assets';
+
+    $profile = $wpdb->get_row( $wpdb->prepare(
+        "SELECT id, primary_color, secondary_color, accent_color, font_heading, font_body FROM {$profiles_table} WHERE id = %d AND user_id = %d",
+        $profile_id, $user_id
+    ), ARRAY_A );
+
+    if ( ! $profile ) wp_send_json_error( [ 'message' => 'Profile not found.' ] );
+
+    $allowed = [ 'business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap' ];
+
+    $rows = $wpdb->get_results( $wpdb->prepare(
+        "SELECT asset_type, asset_html FROM {$assets_table} WHERE profile_id = %d AND user_id = %d AND is_generated = 1",
+        $profile_id, $user_id
+    ), ARRAY_A );
+
+    $byType = [];
+    foreach ( $rows as $r ) {
+        $t = $r['asset_type'] ?? '';
+        if ( $t ) $byType[ $t ] = (string) ( $r['asset_html'] ?? '' );
+    }
+
+    $missing = [];
+    foreach ( $allowed as $t ) {
+        if ( empty( $byType[ $t ] ) ) $missing[] = str_replace('_',' ', $t);
+    }
+
+    // Extract colors + fonts from HTML.
+    $allHtml = implode( "\n", array_values( $byType ) );
+    $allHtmlLower = strtolower( $allHtml );
+
+    // Colors: hex + rgb/rgba
+    preg_match_all( '/#[0-9a-fA-F]{3,6}\b/', $allHtml, $hexes );
+    preg_match_all( '/\brgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+(?:\s*,\s*[\d.]+)?\s*\)/i', $allHtml, $rgbs );
+    $colors = array_merge( $hexes[0] ?? [], $rgbs[0] ?? [] );
+
+    $norm = [];
+    foreach ( $colors as $c ) {
+        $c = trim( $c );
+        if ( strpos( $c, '#' ) === 0 ) {
+            $h = strtolower( $c );
+            if ( strlen( $h ) === 4 ) {
+                $h = '#' . $h[1] . $h[1] . $h[2] . $h[2] . $h[3] . $h[3];
+            }
+            $norm[] = $h;
+        } else {
+            $norm[] = strtolower( preg_replace( '/\s+/', '', $c ) );
+        }
+    }
+    $norm = array_values( array_unique( $norm ) );
+    sort( $norm );
+
+    // Fonts: attempt to pull names used in font-family declarations.
+    $fonts = [];
+    preg_match_all( '/font-family\s*:\s*([^;}{]+)[;}{]/i', $allHtml, $fm );
+    foreach ( $fm[1] ?? [] as $decl ) {
+        $decl = str_replace( ['"',"'"], '', $decl );
+        $parts = array_map( 'trim', explode( ',', $decl ) );
+        foreach ( $parts as $p ) {
+            if ( ! $p ) continue;
+            if ( in_array( strtolower( $p ), [ 'sans-serif', 'serif', 'monospace', 'system-ui' ], true ) ) continue;
+            $fonts[] = $p;
+        }
+    }
+    $fonts = array_values( array_unique( $fonts ) );
+    sort( $fonts );
+
+    $pc = strtolower( bae_safe_color( $profile['primary_color'] ?? '', '#1a1a2e' ) );
+    $sc = strtolower( bae_safe_color( $profile['secondary_color'] ?? '', '#16213e' ) );
+    $ac = strtolower( bae_safe_color( $profile['accent_color'] ?? '', '#e94560' ) );
+    $fh = sanitize_text_field( $profile['font_heading'] ?? 'Inter' );
+    $fb = sanitize_text_field( $profile['font_body']    ?? 'Inter' );
+
+    $issues = [];
+
+    // Color presence checks
+    if ( $pc && strpos( $allHtmlLower, $pc ) === false ) $issues[] = "Primary color ({$pc}) is rarely/never used in saved assets.";
+    if ( $sc && strpos( $allHtmlLower, $sc ) === false ) $issues[] = "Secondary color ({$sc}) is rarely/never used in saved assets.";
+    if ( $ac && strpos( $allHtmlLower, $ac ) === false ) $issues[] = "Accent color ({$ac}) is rarely/never used in saved assets.";
+
+    if ( count( $norm ) > 10 ) $issues[] = 'Many distinct colors detected — consider simplifying to your core palette.';
+
+    // Font checks
+    $fontLower = array_map( 'strtolower', $fonts );
+    if ( $fh && ! in_array( strtolower( $fh ), $fontLower, true ) ) $issues[] = "Heading font ({$fh}) not detected in saved asset HTML.";
+    if ( $fb && ! in_array( strtolower( $fb ), $fontLower, true ) ) $issues[] = "Body font ({$fb}) not detected in saved asset HTML.";
+
+    $nonBrandFonts = [];
+    foreach ( $fonts as $f ) {
+        $lf = strtolower( $f );
+        if ( $lf === strtolower( $fh ) || $lf === strtolower( $fb ) ) continue;
+        $nonBrandFonts[] = $f;
+    }
+    if ( ! empty( $nonBrandFonts ) ) {
+        $issues[] = 'Non-brand fonts detected: ' . implode( ', ', array_slice( $nonBrandFonts, 0, 6 ) ) . ( count($nonBrandFonts) > 6 ? '…' : '' );
+    }
+
+    // Score (simple heuristic)
+    $score = 100;
+    $score -= min( 45, count( $issues ) * 12 );
+    if ( ! empty( $missing ) ) $score -= min( 25, count( $missing ) * 4 );
+    $score = max( 0, min( 100, $score ) );
+
+    wp_send_json_success( [
+        'report' => [
+            'score'          => $score,
+            'issues'         => $issues,
+            'used_fonts'     => array_slice( $fonts, 0, 12 ),
+            'used_colors'    => array_slice( $norm, 0, 14 ),
+            'missing_assets' => $missing,
+        ]
+    ] );
 }
 
 // =============================================================================
