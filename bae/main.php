@@ -152,6 +152,7 @@ add_action('wp_ajax_bae_generate_asset',         'bntm_ajax_bae_generate_asset')
 add_action('wp_ajax_bae_delete_asset',           'bntm_ajax_bae_delete_asset');
 add_action('wp_ajax_bae_reset_profile',          'bntm_ajax_bae_reset_profile');
 add_action('wp_ajax_bae_save_kit_settings',      'bntm_ajax_bae_save_kit_settings');
+add_action('wp_ajax_nopriv_bae_save_kit_settings','bntm_ajax_bae_save_kit_settings');
 add_action('wp_ajax_bae_custom_generate',        'bntm_ajax_bae_custom_generate');
 add_action('wp_ajax_nopriv_bae_custom_generate', 'bntm_ajax_bae_custom_generate');
 add_action('wp_ajax_bae_save_custom_asset',        'bntm_ajax_bae_save_custom_asset');
@@ -166,6 +167,7 @@ add_action('wp_ajax_bae_suggest_tagline',          'bntm_ajax_bae_suggest_taglin
 add_action('wp_ajax_nopriv_bae_suggest_tagline',   'bntm_ajax_bae_suggest_tagline');
 add_action('wp_ajax_bae_suggest_fonts',            'bntm_ajax_bae_suggest_fonts');
 add_action('wp_ajax_bae_consistency_scan',         'bntm_ajax_bae_consistency_scan');
+add_action('wp_ajax_bae_toolkit_checklist_save',   'bntm_ajax_bae_toolkit_checklist_save');
 add_action('wp_ajax_bae_upload_logo',              'bntm_ajax_bae_upload_logo');
 add_action('wp_ajax_nopriv_bae_upload_logo',       'bntm_ajax_bae_upload_logo');
 add_action('wp_ajax_bae_export_zip',               'bntm_ajax_bae_export_zip');
@@ -4635,12 +4637,29 @@ function bntm_shortcode_bae_kit() {
     global $wpdb;
     $profiles_table = $wpdb->prefix . 'bae_profiles';
     $profile = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$profiles_table} WHERE kit_slug = %s AND kit_visibility = 'public'",
+        "SELECT * FROM {$profiles_table} WHERE kit_slug = %s",
         $slug
     ), ARRAY_A);
 
     if (!$profile) {
         return '<div style="text-align:center;padding:60px;color:var(--text-3);">This Brand Kit is private or does not exist.</div>';
+    }
+
+    // Visibility rules:
+    // - public: anyone with the link
+    // - private: only the owner (ticket cookie) or WP user owner (if applicable)
+    $is_public = isset($profile['kit_visibility']) && $profile['kit_visibility'] === 'public';
+    if ( ! $is_public ) {
+        $ticket = '';
+        if ( !empty($_COOKIE['bae_ticket']) ) {
+            $raw = strtoupper( sanitize_text_field( $_COOKIE['bae_ticket'] ) );
+            if ( preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw) ) $ticket = $raw;
+        }
+        $is_owner_by_ticket = $ticket && isset($profile['ticket']) && $profile['ticket'] === $ticket;
+        $is_owner_by_user   = is_user_logged_in() && !empty($profile['user_id']) && (int)$profile['user_id'] === (int)get_current_user_id();
+        if ( ! $is_owner_by_ticket && ! $is_owner_by_user ) {
+            return '<div style="text-align:center;padding:60px;color:var(--text-3);">This Brand Kit is private or does not exist.</div>';
+        }
     }
 
     // CHANGED: Inject OG tags into <head> for social sharing previews
@@ -5166,6 +5185,43 @@ function bntm_ajax_bae_consistency_scan() {
             'missing_assets' => $missing,
         ]
     ] );
+}
+
+// =============================================================================
+// AJAX: Launch Toolkit — Checklist persistence (diary)
+// =============================================================================
+function bntm_ajax_bae_toolkit_checklist_save() {
+    check_ajax_referer( 'bae_save_profile', 'nonce', false );
+    if ( ! is_user_logged_in() ) wp_send_json_error( [ 'message' => 'Unauthorized' ] );
+
+    $user_id    = get_current_user_id();
+    $profile_id = intval( $_POST['profile_id'] ?? 0 );
+    $key        = sanitize_key( $_POST['key'] ?? '' );
+    $checked    = isset($_POST['checked']) ? (int) $_POST['checked'] : 0;
+    $reset      = isset($_POST['reset']) ? (int) $_POST['reset'] : 0;
+
+    if ( ! $profile_id ) wp_send_json_error( [ 'message' => 'Missing profile.' ] );
+
+    $meta_key = 'bae_toolkit_checklist_' . $profile_id;
+
+    if ( $reset ) {
+        update_user_meta( $user_id, $meta_key, wp_json_encode( [] ) );
+        wp_send_json_success( [ 'message' => 'Checklist reset.' ] );
+    }
+
+    if ( ! $key ) wp_send_json_error( [ 'message' => 'Missing key.' ] );
+
+    $raw = get_user_meta( $user_id, $meta_key, true );
+    $state = [];
+    if ( is_string( $raw ) && $raw ) {
+        $decoded = json_decode( $raw, true );
+        if ( is_array( $decoded ) ) $state = $decoded;
+    }
+
+    $state[ $key ] = $checked ? 1 : 0;
+    update_user_meta( $user_id, $meta_key, wp_json_encode( $state ) );
+
+    wp_send_json_success( [ 'saved' => true ] );
 }
 
 // =============================================================================
@@ -6286,11 +6342,18 @@ function bntm_ajax_bae_delete_asset() {
 
 function bntm_ajax_bae_save_kit_settings() {
     check_ajax_referer('bae_save_kit_settings', 'nonce');
-    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
+    // Ticket-based identity (works for logged-in WP users too)
+    $ticket = '';
+    if ( !empty($_COOKIE['bae_ticket']) ) {
+        $raw = strtoupper( sanitize_text_field( $_COOKIE['bae_ticket'] ) );
+        if ( preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw) ) $ticket = $raw;
+    }
+    if ( empty($ticket) && !is_user_logged_in() ) {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
 
     global $wpdb;
     $table      = $wpdb->prefix . 'bae_profiles';
-    $user_id    = get_current_user_id();
     $visibility = sanitize_text_field($_POST['kit_visibility'] ?? 'private');
     $slug       = sanitize_title($_POST['kit_slug'] ?? '');
 
@@ -6301,19 +6364,43 @@ function bntm_ajax_bae_save_kit_settings() {
         wp_send_json_error(['message' => 'Kit slug cannot be empty.']);
     }
 
-    $conflict = $wpdb->get_var($wpdb->prepare(
-        "SELECT id FROM {$table} WHERE kit_slug = %s AND user_id != %d",
-        $slug, $user_id
-    ));
+    // Determine owner identity for conflict checking + update
+    $where = [];
+    if ( ! empty($ticket) ) {
+        $where = [ 'ticket' => $ticket ];
+    } else {
+        $where = [ 'user_id' => get_current_user_id() ];
+        // Also load ticket for conflict check if profile exists (optional)
+        $row = $wpdb->get_row($wpdb->prepare("SELECT ticket FROM {$table} WHERE user_id = %d", get_current_user_id()));
+        if ( $row && ! empty($row->ticket) ) $ticket = (string) $row->ticket;
+    }
+
+    // Ensure unique slug across all profiles (prefer ticket uniqueness when available)
+    if ( ! empty($ticket) ) {
+        $conflict = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$table} WHERE kit_slug = %s AND ticket != %s",
+            $slug, $ticket
+        ));
+    } else {
+        $conflict = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$table} WHERE kit_slug = %s AND user_id != %d",
+            $slug, get_current_user_id()
+        ));
+    }
 
     if ($conflict) {
         wp_send_json_error(['message' => 'That slug is already taken. Please choose another.']);
     }
 
+    // Update the owner's profile
     $result = $wpdb->update($table, [
         'kit_visibility' => $visibility,
         'kit_slug'       => $slug,
-    ], ['user_id' => $user_id]);
+    ], $where);
+
+    if ( $result === false ) {
+        wp_send_json_error(['message' => 'Failed to save kit settings.']);
+    }
 
     wp_send_json_success(['message' => 'Kit settings saved successfully!']);
 }
@@ -7091,6 +7178,16 @@ function bae_startup_tab($user_id, $profile) {
         ],
     ];
 
+    // Checklist diary state (per user + profile)
+    $toolkit_nonce = wp_create_nonce('bae_save_profile');
+    $meta_key = 'bae_toolkit_checklist_' . intval($p['id'] ?? 0);
+    $saved_raw = get_user_meta( $user_id, $meta_key, true );
+    $saved_state = [];
+    if ( is_string($saved_raw) && $saved_raw ) {
+        $decoded = json_decode( $saved_raw, true );
+        if ( is_array($decoded) ) $saved_state = $decoded;
+    }
+
     ob_start();
     ?>
     <div style="margin-bottom:24px;">
@@ -7236,6 +7333,7 @@ function bae_startup_tab($user_id, $profile) {
                 <div class="bae-card-title">Launch Checklist for <?php echo esc_html($biz_raw); ?></div>
                 <div class="bae-card-desc">Complete these steps to officially launch your business online and legally in the Philippines.</div>
             </div>
+            <button type="button" id="bae-toolkit-reset" class="bae-btn bae-btn-outline bae-btn-sm" style="white-space:nowrap;">Reset checklist</button>
         </div>
         <?php foreach ($checklist as $section => $tasks): ?>
         <div style="margin-bottom:24px;">
@@ -7244,9 +7342,14 @@ function bae_startup_tab($user_id, $profile) {
                 <?php foreach ($tasks as $task): ?>
                 <div class="bae-checklist-item" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);transition:background .2s;">
                     <div style="display:flex;align-items:flex-start;gap:10px;flex:1;">
+                        <?php
+                        $key = 'bae_chk_' . sanitize_title($task['task']);
+                        $is_checked = !empty($saved_state[$key]) && (int)$saved_state[$key] === 1;
+                        ?>
                         <input type="checkbox"
                                class="bae-checklist-cb"
-                               data-key="bae_chk_<?php echo esc_attr(sanitize_title($task['task'])); ?>"
+                               data-key="<?php echo esc_attr($key); ?>"
+                               <?php echo $is_checked ? 'checked' : ''; ?>
                                style="margin-top:3px;width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:var(--brand-soft);">
                         <div>
                             <div class="bae-checklist-label" style="font-size:13px;color:var(--text-2);font-weight:500;"><?php echo esc_html($task['task']); ?></div>
@@ -7262,30 +7365,73 @@ function bae_startup_tab($user_id, $profile) {
 
     <script>
     (function() {
-        // Restore checklist state from localStorage
+        var nonce = <?php echo json_encode($toolkit_nonce); ?>;
+        var profileId = <?php echo json_encode((int)($p['id'] ?? 0)); ?>;
+        var resetBtn = document.getElementById('bae-toolkit-reset');
+
+        function applyChecklistUI(cb) {
+            var item = cb.closest('.bae-checklist-item');
+            var label = item ? item.querySelector('.bae-checklist-label') : null;
+            if (item)  item.style.background       = cb.checked ? 'var(--bg-3)' : 'var(--surface)';
+            if (label) label.style.textDecoration  = cb.checked ? 'line-through' : 'none';
+            if (label) label.style.opacity         = cb.checked ? '0.5' : '1';
+        }
+
+        function saveChecklistKey(key, checked) {
+            var fd = new FormData();
+            fd.append('action', 'bae_toolkit_checklist_save');
+            fd.append('nonce', nonce);
+            fd.append('profile_id', profileId);
+            fd.append('key', key);
+            fd.append('checked', checked ? '1' : '0');
+            return fetch(ajaxurl, { method:'POST', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(j){ return j && j.success; })
+                .catch(function(){ return false; });
+        }
+
+        function resetChecklist() {
+            var fd = new FormData();
+            fd.append('action', 'bae_toolkit_checklist_save');
+            fd.append('nonce', nonce);
+            fd.append('profile_id', profileId);
+            fd.append('reset', '1');
+            return fetch(ajaxurl, { method:'POST', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(j){ return j && j.success; })
+                .catch(function(){ return false; });
+        }
+
         var cbs = document.querySelectorAll('.bae-checklist-cb');
         cbs.forEach(function(cb) {
             var key = cb.dataset.key;
             if (!key) return;
-            // Restore
-            if (localStorage.getItem(key) === '1') {
-                cb.checked = true;
-                var item = cb.closest('.bae-checklist-item');
-                var label = item ? item.querySelector('.bae-checklist-label') : null;
-                if (item)  item.style.background  = 'var(--bg-3)';
-                if (label) label.style.textDecoration = 'line-through';
-                if (label) label.style.opacity = '0.5';
-            }
-            // Save on change
+
+            // Initial UI (checkbox may already be checked from server)
+            applyChecklistUI(cb);
+
+            // Save on change (diary)
             cb.addEventListener('change', function() {
-                localStorage.setItem(key, cb.checked ? '1' : '0');
-                var item  = cb.closest('.bae-checklist-item');
-                var label = item ? item.querySelector('.bae-checklist-label') : null;
-                if (item)  item.style.background       = cb.checked ? 'var(--bg-3)' : 'var(--surface)';
-                if (label) label.style.textDecoration  = cb.checked ? 'line-through' : 'none';
-                if (label) label.style.opacity         = cb.checked ? '0.5' : '1';
+                applyChecklistUI(cb);
+                saveChecklistKey(key, cb.checked);
             });
         });
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                resetBtn.disabled = true;
+                var original = resetBtn.textContent;
+                resetBtn.textContent = 'Resetting...';
+                resetChecklist().then(function(ok){
+                    // Clear UI regardless (server is source of truth; refresh later if needed)
+                    cbs.forEach(function(cb){ cb.checked = false; applyChecklistUI(cb); });
+                    resetBtn.disabled = false;
+                    resetBtn.textContent = original;
+                    if (!ok) alert('Reset failed. Please try again.');
+                });
+            });
+        }
     })();
     </script>
 
