@@ -3473,7 +3473,7 @@ function bae_assets_tab($user_id, $profile) {
             </div>
             <div class="bae-asset-actions">
                 <?php if ($is_gen): ?>
-                    <button class="bae-btn bae-btn-outline bae-btn-sm bae-preview-btn"
+                    <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-preview-btn"
                             data-type="<?php echo $type; ?>"
                             data-name="<?php echo esc_attr($meta['name']); ?>"
                             data-html="<?php echo esc_attr($gen_data['asset_html']); ?>">
@@ -3481,12 +3481,12 @@ function bae_assets_tab($user_id, $profile) {
                     </button>
                     <?php if ( empty($meta['custom']) ): ?>
                     <?php if ($is_free): ?>
-                    <button class="bae-btn bae-btn-outline bae-btn-sm" onclick="baePricingOpen('Regenerate anytime', 'Free plan generates each asset once. Upgrade to regenerate whenever you update your brand.')">
+                    <button type="button" class="bae-btn bae-btn-outline bae-btn-sm" onclick="baePricingOpen('Regenerate anytime', 'Free plan generates each asset once. Upgrade to regenerate whenever you update your brand.')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
                         Regen
                     </button>
                     <?php else: ?>
-                    <button class="bae-btn bae-btn-primary bae-btn-sm bae-regen-btn"
+                    <button type="button" class="bae-btn bae-btn-primary bae-btn-sm bae-regen-btn"
                             data-type="<?php echo $type; ?>"
                             data-nonce="<?php echo $nonce; ?>"
                             data-pid="<?php echo $profile_id; ?>">
@@ -3494,7 +3494,7 @@ function bae_assets_tab($user_id, $profile) {
                     </button>
                     <?php endif; ?>
                     <?php endif; ?>
-                    <button class="bae-btn bae-btn-outline bae-btn-sm bae-delete-btn"
+                    <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-delete-btn"
                             data-type="<?php echo $type; ?>"
                             data-id="<?php echo $gen_data['id']; ?>"
                             data-nonce="<?php echo $nonce; ?>">
@@ -3502,7 +3502,7 @@ function bae_assets_tab($user_id, $profile) {
                     </button>
                 <?php else: ?>
                     <?php if ( empty($meta['custom']) ): ?>
-                    <button class="bae-btn bae-btn-primary bae-btn-sm bae-gen-btn"
+                    <button type="button" class="bae-btn bae-btn-primary bae-btn-sm bae-gen-btn"
                             data-type="<?php echo $type; ?>"
                             data-nonce="<?php echo $nonce; ?>"
                             data-pid="<?php echo $profile_id; ?>">
@@ -3552,7 +3552,7 @@ function bae_assets_tab($user_id, $profile) {
             placeholder="e.g. Create a grand opening flyer with 20% discount&#10;e.g. Design a WhatsApp business banner&#10;e.g. Make a cafe menu price list"
             style="width:100%;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:10px;padding:12px 14px;font-size:14px;font-family:'Geist',sans-serif;color:var(--text);outline:none;resize:vertical;transition:border-color .2s;box-sizing:border-box;"></textarea>
         <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
-            <button id="bae-ai-gen-btn" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
+            <button type="button" id="bae-ai-gen-btn" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
                 style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;font-family:'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(109,40,217,.3);transition:all .2s;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
                 Generate
@@ -3563,9 +3563,9 @@ function bae_assets_tab($user_id, $profile) {
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
                 <div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;">Result</div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                    <button id="bae-ai-copy" style="background:var(--surface);border:1px solid var(--border-2);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:'Geist',sans-serif;">Copy HTML</button>
-                    <button id="bae-ai-preview" style="background:var(--surface);border:1px solid var(--border-2);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:'Geist',sans-serif;">Preview</button>
-                    <button id="bae-ai-save-btn" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:white;border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:5px;">
+                    <button type="button" id="bae-ai-copy" style="background:var(--surface);border:1px solid var(--border-2);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:'Geist',sans-serif;">Copy HTML</button>
+                    <button type="button" id="bae-ai-preview" style="background:var(--surface);border:1px solid var(--border-2);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:'Geist',sans-serif;">Preview</button>
+                    <button type="button" id="bae-ai-save-btn" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:white;border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:5px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                         Save as Asset
                     </button>
@@ -3576,11 +3576,11 @@ function bae_assets_tab($user_id, $profile) {
                 <input type="text" id="bae-ai-save-name"
                     placeholder="Asset name e.g. Grand Opening Flyer"
                     style="flex:1;min-width:200px;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;">
-                <button id="bae-ai-save-confirm" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
+                <button type="button" id="bae-ai-save-confirm" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
                     style="background:linear-gradient(135deg,#059669,#10b981);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Geist',sans-serif;white-space:nowrap;">
                     Confirm Save
                 </button>
-                <button id="bae-ai-save-cancel"
+                <button type="button" id="bae-ai-save-cancel"
                     style="background:var(--surface);border:1px solid var(--border-2);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-3);cursor:pointer;font-family:'Geist',sans-serif;">
                     Cancel
                 </button>
@@ -3595,7 +3595,7 @@ function bae_assets_tab($user_id, $profile) {
         <div class="bae-modal">
             <div class="bae-modal-header">
                 <span class="bae-modal-title">Regenerate with AI Improvements</span>
-                <button class="bae-modal-close" id="bae-regen-modal-close">&times;</button>
+                <button type="button" class="bae-modal-close" id="bae-regen-modal-close">&times;</button>
             </div>
             <div class="bae-modal-body">
                 <p style="margin-bottom:16px;font-size:14px;color:var(--text-3);">Describe how you'd like to improve this asset. Keep it relevant to the asset type.</p>
@@ -3603,8 +3603,8 @@ function bae_assets_tab($user_id, $profile) {
                 <div id="bae-regen-error" style="font-size:12px;color:#fb7185;margin-top:8px;display:none;"></div>
             </div>
             <div class="bae-modal-footer">
-                <button class="bae-btn bae-btn-outline" id="bae-regen-skip">Skip Prompt</button>
-                <button class="bae-btn bae-btn-primary" id="bae-regen-generate">Regenerate with AI</button>
+                <button type="button" class="bae-btn bae-btn-outline" id="bae-regen-skip">Skip Prompt</button>
+                <button type="button" class="bae-btn bae-btn-primary" id="bae-regen-generate">Regenerate with AI</button>
             </div>
         </div>
     </div>
@@ -3613,21 +3613,24 @@ function bae_assets_tab($user_id, $profile) {
     (function() {
         // Preview
         document.querySelectorAll('.bae-preview-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                if (e && e.preventDefault) e.preventDefault();
                 baeOpenModal(this.dataset.name, this.dataset.html);
             });
         });
 
         // Single Generate (new assets - static)
         document.querySelectorAll('.bae-gen-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                if (e && e.preventDefault) e.preventDefault();
                 baeGenerateAsset(this.dataset.type, this.dataset.nonce, this.dataset.pid, this, ''); // empty prompt for static
             });
         });
 
         // Regenerate (existing assets - with AI prompt)
         document.querySelectorAll('.bae-regen-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                if (e && e.preventDefault) e.preventDefault();
                 // Open regen modal
                 var modal = document.getElementById('bae-regen-modal-overlay');
                 var promptEl = document.getElementById('bae-regen-prompt');
@@ -3640,7 +3643,7 @@ function bae_assets_tab($user_id, $profile) {
                     modal.dataset.type = this.dataset.type;
                     modal.dataset.nonce = this.dataset.nonce;
                     modal.dataset.pid = this.dataset.pid;
-                    modal.dataset.btnId = this.id; // if needed
+                    modal.dataset.triggerType = this.dataset.type; // used to locate the card button
                 }
             });
         });
@@ -3654,24 +3657,28 @@ function bae_assets_tab($user_id, $profile) {
         var regenError = document.getElementById('bae-regen-error');
 
         if (regenClose) {
-            regenClose.addEventListener('click', function() {
+            regenClose.addEventListener('click', function(e) {
+                if (e && e.preventDefault) e.preventDefault();
                 regenModal.style.display = 'none';
             });
         }
 
         if (regenSkip) {
-            regenSkip.addEventListener('click', function() {
+            regenSkip.addEventListener('click', function(e) {
+                if (e && e.preventDefault) e.preventDefault();
                 // Regenerate without prompt
                 var type = regenModal.dataset.type;
                 var nonce = regenModal.dataset.nonce;
                 var pid = regenModal.dataset.pid;
                 regenModal.style.display = 'none';
-                baeGenerateAsset(type, nonce, pid, null, ''); // empty prompt
+                var cardBtn = document.querySelector('.bae-regen-btn[data-type="' + type + '"]');
+                baeGenerateAsset(type, nonce, pid, cardBtn, ''); // empty prompt
             });
         }
 
         if (regenGenerate) {
-            regenGenerate.addEventListener('click', function() {
+            regenGenerate.addEventListener('click', function(e) {
+                if (e && e.preventDefault) e.preventDefault();
                 var prompt = regenPrompt.value.trim();
                 if (!prompt) {
                     regenError.textContent = 'Please enter an improvement prompt.';
@@ -3703,7 +3710,8 @@ function bae_assets_tab($user_id, $profile) {
                 var nonce = regenModal.dataset.nonce;
                 var pid = regenModal.dataset.pid;
                 regenModal.style.display = 'none';
-                baeGenerateAsset(type, nonce, pid, null, prompt);
+                var cardBtn = document.querySelector('.bae-regen-btn[data-type="' + type + '"]');
+                baeGenerateAsset(type, nonce, pid, cardBtn, prompt);
             });
         }
 
@@ -3813,9 +3821,10 @@ function bae_assets_tab($user_id, $profile) {
         // ── Single asset generate helper ──────────────────────────────────
         function baeGenerateAsset(type, nonce, pid, btn, prompt) {
             var original = btn ? btn.textContent : 'Generating...';
+            var isRegen = prompt && prompt.trim();
             if (btn) {
                 btn.disabled = true;
-                btn.textContent = 'Generating...';
+                btn.textContent = isRegen ? 'Regenerating...' : 'Generating...';
             }
 
             var formData = new FormData();
@@ -3830,25 +3839,43 @@ function bae_assets_tab($user_id, $profile) {
             fetch(ajaxurl, { method: 'POST', body: formData })
             .then(function(r) { return r.json(); })
             .then(function(json) {
+                console.log('[BAE Regen] Response received:', type, 'isRegen=', isRegen, json);
                 if (json.success) {
-                    // Update the asset preview without reloading
                     var card = document.getElementById('bae-card-' + type);
+                    var html = (typeof json.html === 'string' && json.html.trim()) ? json.html : '<div style="padding:18px 14px;color:#6b7280;">Asset generated. Refresh to view.</div>';
+                    var isFallback = !(typeof json.html === 'string' && json.html.trim());
+
+                    // Update preview in place (for both generate and regenerate)
                     if (card) {
                         var previewInner = card.querySelector('.bae-asset-preview-inner');
                         if (previewInner) {
-                            previewInner.innerHTML = json.html;
+                            previewInner.innerHTML = html;
                         }
                     }
                     // If it was empty, remove the empty SVG and add the inner div
-                    var preview = card.querySelector('.bae-asset-preview');
-                    if (preview && preview.querySelector('svg')) {
-                        preview.innerHTML = '<div class="bae-asset-preview-inner bae-ai-asset">' + json.html + '</div>';
+                    var preview = card ? card.querySelector('.bae-asset-preview') : null;
+                    var hasSvg = preview ? !!preview.querySelector('svg') : false;
+                    if (preview && hasSvg) {
+                        preview.innerHTML = '<div class="bae-asset-preview-inner bae-ai-asset">' + html + '</div>';
+                        // Force repaint to ensure the new HTML renders immediately
+                        preview.style.display = 'none';
+                        preview.offsetHeight; // Trigger reflow
+                        preview.style.display = '';
                     }
+
+                    // If it's the fallback message, reload to show the actual asset
+                    if (isFallback) {
+                        setTimeout(function() {
+                            location.reload();
+                        }, 500);
+                    }
+
                     if (btn) {
                         btn.disabled = false;
                         btn.textContent = original;
                     }
                 } else {
+                    console.log('[BAE Regen] Error:', json.data.message);
                     alert(json.data.message || 'Generation failed.');
                     if (btn) {
                         btn.disabled = false;
@@ -4999,11 +5026,28 @@ Requirements:
 {$rules}";
     }
 
-    return null;
+    return '';
 }
 
 function bae_generate_asset_html($type, $profile, $regen_prompt = '') {
-    // If regen prompt is provided, attempt AI improvement
+    if (!empty($regen_prompt)) {
+        // Use AI to regenerate based on prompt
+        $current_html = bae_generate_asset_html_static($type, $profile, '');
+        $asset_names = [
+            'business_card' => 'business card',
+            'letterhead' => 'letterhead',
+            'email_signature' => 'email signature',
+            'social_kit' => 'social media kit',
+            'brand_guidelines' => 'brand guidelines',
+            'sitemap' => 'site structure',
+        ];
+        $asset_name = $asset_names[$type] ?? 'asset';
+        $ai_prompt = "Improve this {$asset_name} HTML based on the user's request: '{$regen_prompt}'. Return only the improved HTML, no explanations or markdown.\n\nCurrent HTML:\n{$current_html}";
+        $improved_html = bae_gemini_request($ai_prompt);
+        if (is_string($improved_html) && !empty(trim($improved_html))) {
+            return $improved_html;
+        }
+    }
     return bae_generate_asset_html_static($type, $profile, $regen_prompt);
 }
 
@@ -5037,13 +5081,13 @@ function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
     switch ($type) {
 
         case 'business_card':
-            return "front_bg
+            return "
 <style>
 @import url('https://fonts.googleapis.com/css2?family=" . urlencode($fh) . ":wght@400;700&family=" . urlencode($fb) . "&display=swap');
 </style>
 <div style='display:flex;flex-direction:column;gap:16px;font-family:\"{$fb}\",sans-serif;'>
   <!-- Front -->
-  <div style='width:336px;height:192px;background:{$pc};border-radius:10px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;'>
+  <div style='width:336px;height:192px;background:{$front_bg};border-radius:10px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;'>
     <div style='position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:{$ac};opacity:0.15;border-radius:50%;'></div>
     <div style='position:absolute;bottom:-40px;left:-20px;width:160px;height:160px;background:{$sc};opacity:0.2;border-radius:50%;'></div>
     <div>
@@ -5705,11 +5749,44 @@ function bntm_ajax_bae_generate_asset() {
                 wp_send_json_error(['message' => 'Prompt must improve the existing ' . $asset_name . ', not create something new.']);
             }
         }
-        // For now, since static generation, just log or ignore advanced prompts
-        // In future, integrate AI here
+        // AI regen requires a configured key; do not silently fall back.
+        if ( defined('BAE_GEMINI_API_KEY') && BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY' ) {
+            wp_send_json_error(['message' => 'AI regeneration is not configured (missing Gemini API key).']);
+        }
     }
 
-    $asset_html = bae_generate_asset_html($asset_type, $profile, $regen_prompt);
+    // Regeneration path: use AI and error loudly if it fails (no silent static fallback).
+    if ( ! empty($regen_prompt) ) {
+        $current_html = bae_generate_asset_html_static($asset_type, $profile, '');
+        $asset_names = [
+            'business_card'    => 'business card',
+            'letterhead'       => 'letterhead',
+            'email_signature'  => 'email signature',
+            'social_kit'       => 'social media kit',
+            'brand_guidelines' => 'brand guidelines',
+            'sitemap'          => 'site structure',
+        ];
+        $asset_name = $asset_names[$asset_type] ?? 'asset';
+        $ai_prompt = "Improve this {$asset_name} HTML based on the user's request: '{$regen_prompt}'. Return only the improved HTML, no explanations or markdown. IMPORTANT: Do not include <style> tags, <link> tags, or external CSS — use inline styles only.\n\nCurrent HTML:\n{$current_html}";
+        $improved_html = bae_gemini_request($ai_prompt);
+
+        if ( is_array($improved_html) && ! empty($improved_html['error']) ) {
+            wp_send_json_error(['message' => $improved_html['error']]);
+        }
+        if ( ! is_string($improved_html) || ! trim($improved_html) ) {
+            wp_send_json_error(['message' => 'AI regeneration failed: empty response.']);
+        }
+
+        // Hard safety: prevent AI output from leaking CSS that breaks the BAE UI grid.
+        // Regenerated assets should be self-contained HTML with inline styles only.
+        $improved_html = preg_replace( '/<style\b[^>]*>.*?<\/style>/is', '', $improved_html );
+        $improved_html = preg_replace( '/<link\b[^>]*rel=[\'"]?stylesheet[\'"]?[^>]*>/is', '', $improved_html );
+
+        $asset_html = $improved_html;
+    } else {
+        // Normal generation path (static)
+        $asset_html = bae_generate_asset_html_static($asset_type, $profile, '');
+    }
 
     $names = [
         'business_card'    => 'Business Card',
