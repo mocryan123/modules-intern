@@ -8217,10 +8217,10 @@ function bae_brand_book_tab($user_id, $profile) {
     $out = '';
     $out .= '<style>
 .bae-bb-wrap{display:grid;grid-template-columns:260px 1fr;gap:14px;align-items:stretch}
-.bae-bb-sb{position:sticky;top:20px;max-height:82vh;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+.bae-bb-sb{position:sticky;top:20px;max-height:82vh;display:flex;flex-direction:column;gap:10px}
 .bae-bb-sb::-webkit-scrollbar{width:3px}.bae-bb-sb::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
 .bae-bb-sb-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.bae-bb-sb-body{overflow:auto;padding-right:4px;flex:1;min-height:0}
+.bae-bb-sb-body{overflow-y:auto;padding-right:4px;flex:1;min-height:0;max-height:70vh}
 .bae-bb-sb-body::-webkit-scrollbar{width:3px}.bae-bb-sb-body::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
 .bae-bb-cl{font-size:9px;font-weight:800;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.12em;margin:12px 0 6px}
 .bae-bb-tg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -8235,10 +8235,10 @@ function bae_brand_book_tab($user_id, $profile) {
 .bae-bb-stage{display:flex;align-items:center;justify-content:center;padding:14px;background:linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.00));}
 .bae-bb-viewport{position:relative; width:100%; max-width:1100px; display:flex;align-items:center;justify-content:center;}
 .bae-bb-canvas{position:relative;width:100%;display:flex;align-items:center;justify-content:center;}
-.bae-bb-page{width:100%;max-width:1100px;aspect-ratio:11/8.5!important;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);overflow:hidden;background:transparent;transform-origin:top center}
+.bae-bb-page{width:100%;max-width:1100px;aspect-ratio:11/8.5!important;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);overflow:hidden;background:transparent;transform-origin:top center;transform:scale(0.65);margin-bottom:-25%}
 .bae-bb-page .bae-bp{width:100%!important;height:100%!important;aspect-ratio:auto!important;box-shadow:none!important;border-radius:0!important}
 /* Fill the canvas better (less tiny content + less dead space). */
-.bae-bb-page .bae-bpi{padding:26px!important;font-size:14px!important}
+.bae-bb-page .bae-bpi{padding:26px!important;font-size:14px!important;height:100%!important;box-sizing:border-box!important}
 
 .bae-bb-nav{position:absolute;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;left:-10px;right:-10px;pointer-events:none}
 .bae-bb-nav button{pointer-events:auto}
@@ -8248,13 +8248,13 @@ function bae_brand_book_tab($user_id, $profile) {
 .bae-bb-film{display:flex;gap:8px;overflow-x:auto;padding:10px 10px 12px;border-top:1px solid var(--border);background:var(--surface);scrollbar-width:thin}
 .bae-bb-film::-webkit-scrollbar{height:6px}
 .bae-bb-film::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:6px}
-.bae-bb-thumb{flex:0 0 auto;width:86px}
-.bae-bb-thumb-btn{width:86px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;padding:6px;display:flex;flex-direction:column;gap:6px;transition:all .15s}
+.bae-bb-thumb{flex:0 0 auto;width:120px}
+.bae-bb-thumb-btn{width:120px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;padding:6px;display:flex;flex-direction:column;gap:6px;transition:all .15s}
 .bae-bb-thumb-btn:hover{transform:translateY(-1px);border-color:var(--border-2)}
 .bae-bb-thumb-btn.active{border-color:#8b5cf6;box-shadow:0 0 0 2px rgba(139,92,246,.15)}
-.bae-bb-thumb-mini{width:100%;aspect-ratio:11/8.5;border-radius:6px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.12);background:transparent}
-.bae-bb-thumb-mini .bae-bp{width:100%;height:100%;box-shadow:none;border-radius:0}
-.bae-bb-thumb-mini .bae-bpi{padding:8px;font-size:7px}
+.bae-bb-thumb-mini{position:relative;width:100%;aspect-ratio:11/8.5;border-radius:6px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.12);background:transparent}
+.bae-bb-thumb-mini .bae-bp{width:1100px!important;height:850px!important;box-shadow:none!important;border-radius:0!important;transform-origin:top left!important;transform:scale(0.098)!important}
+.bae-bb-thumb-mini .bae-bpi{padding:26px!important;font-size:14px!important;height:100%!important;box-sizing:border-box!important}
 .bae-bb-thumb-lbl{font-size:10px;color:var(--text-3);text-align:center}
 
 .bae-bb-pages{display:none}
@@ -8304,10 +8304,9 @@ function bae_brand_book_tab($user_id, $profile) {
     $out .= '</div></div>';
     $out .= '<div class="bae-bb-stage">';
     $out .= '<div class="bae-bb-viewport">';
-    $out .= '<div class="bae-bb-nav"><button class="bae-bb-nav-btn" id="bae-bb-prev" type="button" onclick="baeBookPrev()">&larr;</button><button class="bae-bb-nav-btn" id="bae-bb-next" type="button" onclick="baeBookNext()">&rarr;</button></div>';
     $out .= '<div class="bae-bb-canvas"><div class="bae-bb-page" id="bae-bb-page"></div></div>';
     $out .= '</div></div>';
-    $out .= '<div class="bae-bb-film" id="bae-bb-film"></div>';
+    $out .= '<div class="bae-bb-film" id="bae-bb-film" style="margin-top:-24%; position:relative; z-index:10;"></div>';
     $out .= '<div class="bae-bb-pages" id="bae-bb-pages">'.bae_render_book_pages($profile, $templates[$saved]).'</div>';
     $out .= '</div></div></div>';
 

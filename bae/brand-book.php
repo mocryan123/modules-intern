@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) exit;
 function bae_get_book_templates() {
     return array(
         // FREE (5)
-        'modern_elegant'      => array('name'=>'Modern Elegant',      'cat'=>'Free',    'layout'=>'classic',      'cb'=>'#1e1b4b','ct'=>'#e0e7ff','acc'=>'#818cf8','pb'=>'#ffffff','pt'=>'#1e1b4b','pm'=>'#6b7280'),
+        'modern_elegant'      => array('name'=>'Modern Elegant',      'cat'=>'Free',    'layout'=>'framer_guidy', 'cb'=>'#0f0f0f','ct'=>'#ffffff','acc'=>'#a3a3a3','pb'=>'#ffffff','pt'=>'#0f0f0f','pm'=>'#71717a'),
         'fresh_basic'         => array('name'=>'Fresh Basic',         'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#f0fdf4','ct'=>'#166534','acc'=>'#22c55e','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
         'pop_of_pink'         => array('name'=>'Pop of Pink',         'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#ec4899','ct'=>'#ffffff','acc'=>'#f9a8d4','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
         'effervescent'        => array('name'=>'Effervescent',        'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#0f172a','ct'=>'#f8fafc','acc'=>'#38bdf8','pb'=>'#f8fafc','pt'=>'#0f172a','pm'=>'#64748b'),
@@ -467,6 +467,198 @@ function bae_bb_render_japanese_min($c) {
     return $o;
 }
 
+function bae_bb_render_guidy($c) {
+    $name=$c['name']; $tagline=$c['tagline']; $industry=$c['industry'];
+    $personality=$c['personality'] ?? '';
+    $fh=$c['fh']; $fb=$c['fb'];
+    $pc=$c['pc']; $sc=$c['sc']; $ac=$c['ac'];
+    $email=$c['email']; $website=$c['website']; $ini=$c['ini'];
+    $cb=$c['cb']; $ct=$c['ct']; $ta=$c['ta'];
+    $pb=$c['pb']; $pt=$c['pt']; $pm=$c['pm'];
+
+    $cs = 'background:'.$cb.';color:'.$ct.';font-family:\''.$fb.'\',sans-serif;';
+    $ps = 'background:'.$pb.';color:'.$pt.';font-family:\''.$fb.'\',sans-serif;';
+    $o = '';
+
+    // Guidy section header style
+    $sec = function($num, $title) use ($ta, $pm, $fh, $pt) {
+        return '<div style="margin-bottom:30px; border-bottom:1px solid rgba(0,0,0,.1); padding-bottom:10px;">'
+            . '<div style="display:flex; justify-content:space-between; align-items:flex-end;">'
+            . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:4.5em; font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:-0.03em; line-height:0.9; color:'.$pt.';">'.esc_html($title).'</div>'
+            . '<div style="font-size:1.5em; font-weight:400; color:'.$pm.';">/'.esc_html($num).'</div>'
+            . '</div>'
+            . '</div>';
+    };
+
+    // P1 Cover
+    $inner = '<div style="height:100%;display:grid;grid-template-rows:auto 1fr auto;">'
+        . '<div style="display:flex;justify-content:space-between;align-items:center; border-bottom:1px solid rgba(255,255,255,.2); padding-bottom:12px;">'
+        . '<div style="font-size:1em; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:'.$ct.';">Brand Guidelines</div>'
+        . '<div style="font-size:1em; font-weight:600; opacity:0.6; color:'.$ct.';">Edition '.date('Y').'</div>'
+        . '</div>'
+        . '<div style="display:flex;flex-direction:column;justify-content:center;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:6.5em; font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:-0.04em; line-height:0.85; margin-bottom:20px; color:'.$ct.';">'.$name.'</div>'
+        . ($tagline ? '<div style="font-size:1.2em; opacity:0.8; max-width:80%; line-height:1.5; font-weight:500; color:'.$ct.';">'.$tagline.'</div>' : '')
+        . '</div>'
+        . '<div style="display:flex;justify-content:space-between;align-items:flex-end;">'
+        . '<div style="font-size:0.8em; text-transform:uppercase; font-weight:600; letter-spacing:1px; opacity:0.5; color:'.$ct.';">'.$industry.'</div>'
+        . '<div style="font-size:0.8em; font-weight:500; opacity:0.5; color:'.$ct.';">'.$website.'</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $cs);
+
+    // P2 Brand Story
+    $inner = $sec('01','Our Story')
+        . '<div style="font-size:1.1em; color:'.$pm.'; line-height:1.8; max-width:85%;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:2em; font-weight:800; color:'.$pt.'; margin-bottom:16px; line-height:1.1;">We believe in building things that matter.</div>'
+        . ($tagline ? '<div style="margin-bottom:24px; padding-left:20px; border-left:3px solid '.$ta.'; font-size:1.2em; font-style:italic; color:'.$pt.';">'.$tagline.'</div>' : '')
+        . '<div>This is the foundation of '.$name.'. Every decision, every design, every communication is rooted in this core belief. We push boundaries while staying true to our fundamental identity.</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P3 Colors
+    $inner = $sec('02','Colors')
+        . '<div style="display:grid; grid-template-columns:1fr; gap:16px;">';
+    foreach (array(array('Primary',$pc),array('Secondary',$sc),array('Accent',$ac)) as $col) {
+        $inner .= '<div style="display:flex; border:1px solid rgba(0,0,0,0.1); border-radius:12px; overflow:hidden;">'
+            . '<div style="width:120px; height:80px; background:'.$col[1].'; flex-shrink:0;"></div>'
+            . '<div style="padding:16px 24px; display:flex; flex-direction:column; justify-content:center;">'
+            . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:1.4em; font-weight:800; text-transform:uppercase; margin-bottom:4px; line-height:1; color:'.$pt.'">'.esc_html($col[0]).'</div>'
+            . '<div style="font-family:monospace; font-size:1em; color:'.$pm.';">'.esc_html(strtoupper($col[1])).'</div>'
+            . '</div>'
+            . '</div>';
+    }
+    $inner .= '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P4 Typography
+    $inner = $sec('03','Typography')
+        . '<div style="display:flex; flex-direction:column; gap:30px;">'
+        . '<div>'
+        . '<div style="font-size:0.8em; text-transform:uppercase; font-weight:700; color:'.$pm.'; letter-spacing:1px; margin-bottom:12px;">Headings / '.esc_html($fh).'</div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:3.5em; font-weight:900; line-height:1; color:'.$pt.'; text-transform:uppercase; font-style:italic;">Make it huge.</div>'
+        . '</div>'
+        . '<div>'
+        . '<div style="font-size:0.8em; text-transform:uppercase; font-weight:700; color:'.$pm.'; letter-spacing:1px; margin-bottom:12px;">Body / '.esc_html($fb).'</div>'
+        . '<div style="font-family:\''.$fb.'\',sans-serif; font-size:1.2em; line-height:1.6; color:'.$pm.'; max-width:90%;">Body text should be highly legible, clean, and well-spaced. Do not compromise on readability for the sake of aesthetics.</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P5 Tone
+    $tone_tags = bae_derive_tone_tags($industry, $personality);
+    if (!is_array($tone_tags) || empty($tone_tags)) $tone_tags = array('Clear','Confident','Warm');
+    $chips = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">';
+    foreach ($tone_tags as $tag) $chips .= '<span style="border:1px solid rgba(0,0,0,0.1); border-radius:999px; padding:6px 16px; font-weight:700; font-size:0.8em; text-transform:uppercase; letter-spacing:1px; color:'.$pt.';">'.esc_html($tag).'</span>';
+    $chips .= '</div>';
+    $inner = $sec('04','Tone of Voice')
+        . $chips
+        . '<div style="font-size:1.1em; color:'.$pm.'; line-height:1.8;">'.bae_get_voice_examples($tone_tags, true).'</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P6 Logo
+    $inner = $sec('05','Logomark')
+        . '<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">'
+        . '<div style="aspect-ratio:1; background:'.$pc.'; border-radius:16px; display:flex; align-items:center; justify-content:center;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:4em; font-weight:900; color:#fff;">'.$ini.'</div>'
+        . '</div>'
+        . '<div style="display:flex; flex-direction:column; justify-content:center;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:1.8em; font-weight:800; margin-bottom:12px; line-height:1.2; color:'.$pt.'">The Mark</div>'
+        . '<div style="font-size:1em; color:'.$pm.'; line-height:1.6;">Our logo is the anchor of our identity. Keep it clear, give it space to breathe, and never alter its proportions.</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P7 Social Media
+    $inner = $sec('06','Social')
+        . '<div style="display:flex;gap:12px;align-items:center;padding:24px;border:1px solid rgba(0,0,0,.1);border-radius:16px;background:rgba(0,0,0,.02);margin-bottom:16px;">'
+        . '<div style="width:80px;height:80px;border-radius:50%;background:'.$pc.';border:4px solid '.$ac.';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:\''.$fh.'\',sans-serif;font-size:1.6em;flex-shrink:0;">'.esc_html($ini).'</div>'
+        . '<div style="min-width:0"><div style="font-size:1.2em;font-weight:900;margin-bottom:4px;color:'.$pt.'">Avatar Profile</div><div style="font-size:0.9em;color:'.$pm.';line-height:1.7;">Keep it simple. One mark, one consistent background.</div></div>'
+        . '</div>'
+        . '<div style="padding:24px;border:1px solid rgba(0,0,0,.1);border-radius:16px;background:rgba(0,0,0,.02);">'
+        . '<div style="font-size:1.2em;font-weight:900;margin-bottom:12px;color:'.$pt.'">Cover Template</div>'
+        . '<div style="height:100px;border-radius:8px;background:'.$pc.';padding:16px;display:flex;flex-direction:column;justify-content:flex-end;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.2em;font-weight:900;color:#fff;">'.$name.'</div>'
+        . '<div style="font-size:0.8em;color:rgba(255,255,255,.7)">'.$tagline.'</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P8 Applications
+    $inner = $sec('07','Stationery')
+        . '<div style="display:flex; flex-direction:column; gap:16px;">'
+        . '<div style="padding:24px; border:1px solid rgba(0,0,0,0.1); border-radius:12px; background:rgba(0,0,0,0.02);">'
+        . '<div style="font-size:0.7em; text-transform:uppercase; font-weight:700; color:'.$pm.'; letter-spacing:1px; margin-bottom:16px;">Business Card</div>'
+        . '<div style="width:240px; height:135px; background:'.$pc.'; border-radius:8px; padding:20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:0 10px 30px rgba(0,0,0,0.15); margin:0 auto;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:1.5em; font-weight:900; color:#fff;">'.$name.'</div>'
+        . '<div style="font-size:0.8em; color:rgba(255,255,255,0.7);">'.$website.'</div>'
+        . '</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P9 Visual Style
+    $inner = $sec('08','Design Moves')
+        . '<div style="font-size:1.1em;color:'.$pm.';line-height:1.8;margin-bottom:20px;">Every great brand repeats a few signature moves carefully. Here is ours:</div>'
+        . '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">'
+        . '<div style="padding:20px;border-top:2px solid '.$ta.';background:rgba(0,0,0,.02);"><div style="font-weight:900;margin-bottom:8px;font-size:1.1em;color:'.$pt.'">Giant Type</div><div style="font-size:0.9em;color:'.$pm.';line-height:1.6">Headings aren\'t just text, they are the main graphic element.</div></div>'
+        . '<div style="padding:20px;border-top:2px solid '.$ta.';background:rgba(0,0,0,.02);"><div style="font-weight:900;margin-bottom:8px;font-size:1.1em;color:'.$pt.'">Harsh Contrast</div><div style="font-size:0.9em;color:'.$pm.';line-height:1.6">No pure grays. High contrast dominates the layout.</div></div>'
+        . '<div style="padding:20px;border-top:2px solid '.$ta.';background:rgba(0,0,0,.02);"><div style="font-weight:900;margin-bottom:8px;font-size:1.1em;color:'.$pt.'">Whitespace</div><div style="font-size:0.9em;color:'.$pm.';line-height:1.6">Give elements massive space to command attention.</div></div>'
+        . '<div style="padding:20px;border-top:2px solid '.$ta.';background:rgba(0,0,0,.02);"><div style="font-weight:900;margin-bottom:8px;font-size:1.1em;color:'.$pt.'">Rigid Grid</div><div style="font-size:0.9em;color:'.$pm.';line-height:1.6">Alignment is law. Snap everything to clear boundaries.</div></div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P10 Rules
+    $inner = $sec('09','Rules')
+        . '<div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">'
+        . '<div style="padding:24px; background:rgba(0,0,0,0.03); border-radius:12px;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:2em; font-weight:800; color:'.$pt.'; margin-bottom:16px;">Do</div>'
+        . '<div style="margin:0; padding-left:0; font-size:1em; color:'.$pm.'; line-height:1.6; display:flex; flex-direction:column; gap:12px;">'
+        . '<div>&bull; Embrace whitespace.</div>'
+        . '<div>&bull; Use extreme scale contrasts.</div>'
+        . '<div>&bull; Align to a strict grid.</div>'
+        . '<div>&bull; Keep it minimal.</div>'
+        . '</div>'
+        . '</div>'
+        . '<div style="padding:24px; background:rgba(0,0,0,0.03); border-radius:12px;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:2em; font-weight:800; color:'.$pt.'; margin-bottom:16px;">Don\'t</div>'
+        . '<div style="margin:0; padding-left:0; font-size:1em; color:'.$pm.'; line-height:1.6; display:flex; flex-direction:column; gap:12px;">'
+        . '<div>&bull; Clutter the layout.</div>'
+        . '<div>&bull; Use unapproved colors.</div>'
+        . '<div>&bull; Distort typography.</div>'
+        . '<div>&bull; Add unnecessary decoration.</div>'
+        . '</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P11 Contact
+    $inner = $sec('10','Contact')
+        . '<div style="display:grid;grid-template-columns:1fr;gap:12px;">'
+        . ($email ? '<div style="padding:24px;border-radius:12px;border:1px solid rgba(0,0,0,.1);background:rgba(0,0,0,.02);font-size:1.2em;font-weight:800;color:'.$pt.'">'.esc_html($email).'</div>' : '')
+        . ($website ? '<div style="padding:24px;border-radius:12px;border:1px solid rgba(0,0,0,.1);background:rgba(0,0,0,.02);font-size:1.2em;font-weight:800;color:'.$ta.'">'.esc_html($website).'</div>' : '')
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P12 End
+    $inner = '<div style="height:100%;display:grid;grid-template-rows:auto 1fr auto;">'
+        . '<div style="display:flex;justify-content:space-between;align-items:center; border-bottom:1px solid rgba(255,255,255,.2); padding-bottom:12px;">'
+        . '<div style="font-size:1em; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:'.$ct.'; opacity:0.5;">End of Guidelines</div>'
+        . '<div style="width:40px;height:2px;background:'.$ct.';opacity:0.3;"></div>'
+        . '</div>'
+        . '<div style="display:flex;flex-direction:column;justify-content:center;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif; font-size:6.5em; font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:-0.04em; line-height:0.85; margin-bottom:20px; color:'.$ct.';">Stay<br>True.</div>'
+        . '</div>'
+        . '<div style="display:flex;justify-content:space-between;align-items:flex-end;">'
+        . '<div style="font-size:0.8em; font-weight:500; opacity:0.5; color:'.$ct.';">'.$email.'</div>'
+        . '<div style="font-size:0.8em; font-weight:500; opacity:0.5; color:'.$ct.';">'.$website.'</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $cs);
+
+    return $o;
+}
+
 function bae_render_book_pages($p, $tpl) {
     $name    = esc_html($p['business_name']  ?? 'Your Brand');
     $tagline = esc_html($p['tagline']        ?? '');
@@ -499,6 +691,15 @@ function bae_render_book_pages($p, $tpl) {
     }
     if ($layout === 'japanese_min') {
         return bae_bb_render_japanese_min(array(
+            'name'=>$name,'tagline'=>$tagline,'industry'=>$industry,
+            'personality'=>($p['personality'] ?? ''),
+            'fh'=>$fh,'fb'=>$fb,'pc'=>$pc,'sc'=>$sc,'ac'=>$ac,
+            'email'=>$email,'website'=>$website,'phone'=>$phone,'ini'=>$ini,
+            'cb'=>$cb,'ct'=>$ct,'ta'=>$ta,'pb'=>$pb,'pt'=>$pt,'pm'=>$pm,
+        ));
+    }
+    if ($layout === 'framer_guidy') {
+        return bae_bb_render_guidy(array(
             'name'=>$name,'tagline'=>$tagline,'industry'=>$industry,
             'personality'=>($p['personality'] ?? ''),
             'fh'=>$fh,'fb'=>$fb,'pc'=>$pc,'sc'=>$sc,'ac'=>$ac,
