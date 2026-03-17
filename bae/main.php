@@ -8276,11 +8276,24 @@ function bae_brand_book_tab($user_id, $profile) {
     foreach ($cats as $cat => $tpls) {
         $out .= '<div class="bae-bb-cl">'.esc_html($cat).'</div><div class="bae-bb-tg">';
         foreach ($tpls as $id => $t) {
-            $active = $id === $saved ? ' active' : '';
-            $out .= '<div class="bae-bb-tc'.$active.'" onclick="baeBookTpl(\''.esc_js($id).'\',this)" title="'.esc_attr($t['name']).'">';
+            $is_soon = ($overall_count >= 28);
+            $active = ($id === $saved && !$is_soon) ? ' active' : '';
+            $onClick = $is_soon ? '' : ' onclick="baeBookTpl(\''.esc_js($id).'\',this)"';
+            $cursor = $is_soon ? 'default' : 'pointer';
+            
+            $out .= '<div class="bae-bb-tc'.$active.'" style="position:relative;cursor:'.$cursor.';"'.$onClick.' title="'.esc_attr($t['name']).'">';
             $out .= '<div class="bae-bb-th" style="background:'.esc_attr($t['cb']).';">';
             $out .= '<span style="color:'.esc_attr($t['ct']).';">'.esc_html($t['name']).'</span></div>';
-            $out .= '<div class="bae-bb-tn">'.esc_html($t['name']).'</div></div>';
+            $out .= '<div class="bae-bb-tn">'.esc_html($t['name']).'</div>';
+            
+            if ($is_soon) {
+                $out .= '<div style="position:absolute;inset:0;background:rgba(255,255,255,0.6);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:2;">';
+                $out .= '<span style="background:var(--surface);border:1px solid var(--border-2);padding:4px 8px;border-radius:6px;font-size:8px;font-weight:800;color:var(--text);letter-spacing:0.05em;box-shadow:0 4px 12px rgba(0,0,0,0.08);">Coming Soon</span>';
+                $out .= '</div>';
+            }
+            $out .= '</div>';
+            
+            $overall_count++;
         }
         $out .= '</div>';
     }
