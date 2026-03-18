@@ -73,13 +73,59 @@ function kbf_output_share_meta() {
 
 function bntm_kbf_get_pages() {
     return [
-        'KonekBayan Dashboard'   => '[kbf_dashboard]',
-        'Browse Funds'           => '[kbf_browse]',
-        'Fund Details'           => '[kbf_fund_details]',
-        'Organizer Profile'      => '[kbf_organizer_profile]',
-        'Sponsor Donation History'=> '[kbf_sponsor_history]',
-        'KonekBayan Admin Panel' => '[kbf_admin]',
+        'KonekBayan: Dashboard'           => '[kbf_dashboard]',
+        'KonekBayan: Browse Funds'        => '[kbf_browse]',
+        'KonekBayan: Fund Details'        => '[kbf_fund_details]',
+        'KonekBayan: Organizer Profile'   => '[kbf_organizer_profile]',
+        'KonekBayan: Sponsor History'     => '[kbf_sponsor_history]',
+        'KonekBayan: Admin Panel'         => '[kbf_admin]',
     ];
+}
+
+// Ensure required pages exist and have the correct shortcodes.
+add_action('admin_init', 'bntm_kbf_ensure_pages');
+function bntm_kbf_ensure_pages() {
+    if (!current_user_can('manage_options')) return;
+    $pages = bntm_kbf_get_pages();
+    foreach ($pages as $title => $shortcode) {
+        $shortcode_tag = trim($shortcode, '[]');
+
+        // 1) Prefer an existing page that already contains the shortcode.
+        $existing = get_posts([
+            'post_type'   => 'page',
+            'post_status' => ['publish','draft','private'],
+            'numberposts' => -1,
+            's'           => '[' . $shortcode_tag . ']',
+        ]);
+        $page = null;
+        foreach ($existing as $p) {
+            if (has_shortcode($p->post_content, $shortcode_tag)) { $page = $p; break; }
+        }
+        if ($page) {
+            if ($page->post_title !== $title) {
+                wp_update_post(['ID' => $page->ID, 'post_title' => $title]);
+            }
+            continue;
+        }
+
+        // 2) If a page with the desired title exists but is empty, inject the shortcode.
+        $title_page = get_page_by_title($title, OBJECT, 'page');
+        if ($title_page) {
+            $content = $title_page->post_content;
+            if (!has_shortcode($content, $shortcode_tag) && trim(wp_strip_all_tags($content)) === '') {
+                wp_update_post(['ID' => $title_page->ID, 'post_content' => $shortcode]);
+            }
+            continue;
+        }
+
+        // 3) Otherwise, create the page.
+        wp_insert_post([
+            'post_title'   => $title,
+            'post_content' => $shortcode,
+            'post_status'  => 'publish',
+            'post_type'    => 'page',
+        ]);
+    }
 }
 
 function bntm_kbf_get_tables() {
@@ -1646,10 +1692,13 @@ function kbf_dashboard_find_funds_tab() {
 
           <!-- Action buttons -->
           <?php if($is_own): ?>
-          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;">
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;">
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-secondary" style="font-size:12.5px;text-align:center;">View Details</a>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')" title="Share">
               <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            </button>
+            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbffOpenReport(<?php echo $f->id; ?>)" title="Report">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </button>
           </div>
           <?php else: ?>
@@ -2610,7 +2659,7 @@ function bntm_shortcode_kbf_fund_details() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#fbbf24;"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg> Rate
             </button>
             <?php else: ?>
-            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="window.history.back()">â† Back</button>
+            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="window.history.back()">Go Back</button>
             <?php endif; ?>
           </div>
 
@@ -3278,7 +3327,7 @@ function bntm_ajax_kbf_request_withdrawal() {
         }
     }
     if(!in_array($fund->status, ['active', 'completed'])) wp_send_json_error(['message'=>'Withdrawals are only available for active or completed fundraisers.']);
-    if($fund->escrow_status !== 'holding') wp_send_json_error(['message'=>'Funds must be in escrow before requesting withdrawal.']);
+    if($fund->escrow_status === 'refunded') wp_send_json_error(['message'=>'Funds have been refunded and are no longer available for withdrawal.']);
     if($amount<=0) wp_send_json_error(['message'=>'Please enter a valid amount.']);
     if($amount>$fund->raised_amount) wp_send_json_error(['message'=>'Amount exceeds total raised funds (PHP '.number_format($fund->raised_amount,2).' ).']);
     if(empty($_POST['method'])||empty($_POST['account_name'])||empty($_POST['account_number'])) wp_send_json_error(['message'=>'Please fill all required fields.']);
@@ -3308,7 +3357,7 @@ function bntm_ajax_kbf_request_withdrawal() {
         'account_details'=>sanitize_textarea_field($_POST['account_details']??''),
         'status'         =>'pending',
     ],['%s','%d','%s','%f','%s','%s','%s','%s','%s']);
-    if($res) wp_send_json_success(['message'=>'Withdrawal request submitted! Admin will review and process it within 2â€“3 business days.']);
+    if($res) wp_send_json_success(['message'=>'Withdrawal request submitted! Admin will review and process it within 2-3 business days.']);
     else wp_send_json_error(['message'=>'Failed to submit withdrawal request. Please try again.']);
 }
 
@@ -4214,6 +4263,18 @@ function kbf_get_page_url($page_key) {
     return home_url('/');
 }
 
+if (!function_exists('bntm_rand_id')) {
+    function bntm_rand_id($length = 10) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+}
+
 function kbf_refund_all_sponsors($fund_id) {
     global $wpdb;$t=$wpdb->prefix.'kbf_sponsorships';
     $wpdb->update($t,['payment_status'=>'refunded'],['fund_id'=>$fund_id,'payment_status'=>'completed'],['%s'],['%d','%s']);
@@ -4223,10 +4284,6 @@ function kbf_refund_all_sponsors($fund_id) {
     // do_action('kbf_refunds_triggered', $fund_id);
     // =====================================================
     error_log("[KonekBayan] Auto-refund triggered for fund #{$fund_id}");
-}
-
-
-
 
 
 
