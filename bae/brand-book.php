@@ -9,7 +9,7 @@ function bae_get_book_templates() {
     return array(
         // FREE (5)
         'modern_elegant'      => array('name'=>'Modern Elegant',      'cat'=>'Free',    'layout'=>'framer_guidy', 'cb'=>'#0f0f0f','ct'=>'#ffffff','acc'=>'#a3a3a3','pb'=>'#ffffff','pt'=>'#0f0f0f','pm'=>'#71717a'),
-        'fresh_basic'         => array('name'=>'Fresh Basic',         'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#f0fdf4','ct'=>'#166534','acc'=>'#22c55e','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
+        'fresh_basic'         => array('name'=>'Fresh Basic',         'cat'=>'Free',    'layout'=>'issey',        'cb'=>'#f9f6f6','ct'=>'#000000','acc'=>'#4a4a4a','pb'=>'#ffffff','pt'=>'#000000','pm'=>'#999999'),
         'pop_of_pink'         => array('name'=>'Pop of Pink',         'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#ec4899','ct'=>'#ffffff','acc'=>'#f9a8d4','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
         'effervescent'        => array('name'=>'Effervescent',        'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#0f172a','ct'=>'#f8fafc','acc'=>'#38bdf8','pb'=>'#f8fafc','pt'=>'#0f172a','pm'=>'#64748b'),
         'detailed_minimalist' => array('name'=>'Detailed Minimalist', 'cat'=>'Free',    'layout'=>'japanese_min', 'cb'=>'#fafafa','ct'=>'#111827','acc'=>'#111827','pb'=>'#ffffff','pt'=>'#111827','pm'=>'#9ca3af'),
@@ -858,3 +858,157 @@ function bae_render_book_pages($p, $tpl) {
     return $o;
 }
 
+function bae_bb_render_issey($c) {
+    $name=$c['name']; $tagline=$c['tagline']; $industry=$c['industry'];
+    $personality=$c['personality'] ?? '';
+    $fh=$c['fh']; $fb=$c['fb'];
+    $pc=$c['pc']; $sc=$c['sc']; $ac=$c['ac'];
+    $email=$c['email'] ?? ''; $website=$c['website'] ?? ''; $ini=$c['ini'];
+    $ta=$c['ta']; $pb=$c['pb']; $pt=$c['pt']; $pm=$c['pm'];
+    
+    // Stark, minimalist styling. Wide letter spacing on small text.
+    $ps = 'background:'.$pb.';color:'.$pt.';font-family:\''.$fb.'\',sans-serif;';
+    $cs = 'background:'.$cb.';color:'.$ct.';font-family:\''.$fh.'\',sans-serif;';
+    $o = '';
+
+    // P1 Cover: Small centered typography, huge whitespace
+    $inner = '<div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.8em;font-weight:400;letter-spacing:0.1em;margin-bottom:12px;">'.$name.'</div>'
+        . ($tagline ? '<div style="font-size:0.55em;letter-spacing:0.2em;text-transform:uppercase;color:'.$pm.';max-width:60%;line-height:1.8;">'.$tagline.'</div>' : '')
+        . '</div>'
+        . '<div style="position:absolute;bottom:30px;left:0;right:0;text-align:center;font-size:0.45em;letter-spacing:0.3em;text-transform:uppercase;color:'.$pm.';">Brand Guidelines &bull; '.date('Y').'</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // Helper for subtle tiny Section labels
+    $sec = function($title) use ($pm) {
+        return '<div style="font-size:0.45em;letter-spacing:0.25em;text-transform:uppercase;color:'.$pm.';margin-bottom:40px;">'.esc_html($title).'</div>';
+    };
+
+    // P2 Brand Story: Tiny text top-left, massive whitespace
+    $inner = $sec('01 / Overview')
+        . '<div style="max-width:55%;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.4em;line-height:1.3;margin-bottom:16px;color:'.$pt.';letter-spacing:0.02em;">We believe in the beauty of absolute simplicity and purpose.</div>'
+        . '<div style="font-size:0.65em;color:'.$pm.';line-height:2.0;letter-spacing:0.02em;">'.$name.' was founded on the principle that less is inherently more. By stripping away the unnecessary, we allow the essential to shine through. Every touchpoint is an opportunity for clarity.</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P3 Facts: Asymmetric right-aligned block
+    $inner = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">'
+        . '<div style="font-size:0.45em;letter-spacing:0.25em;text-transform:uppercase;color:'.$pm.';margin-bottom:20px;">Identity</div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.1em;line-height:1.6;color:'.$pt.';">Industry: '.$industry.'<br>Brand Focus: Minimalist<br>Tone: Refined & Subdued</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P4 Primary Color: Minimal presentation
+    $inner = $sec('02 / Primary Palette')
+        . '<div style="display:flex;height:65%;align-items:center;justify-content:center;">'
+        . '<div style="text-align:center;">'
+        . '<div style="width:140px;height:140px;background:'.$pc.';margin:0 auto 20px;border:1px solid rgba(0,0,0,0.05);"></div>'
+        . '<div style="font-size:0.6em;letter-spacing:0.1em;font-weight:600;margin-bottom:4px;">Primary Essence</div>'
+        . '<div style="font-family:monospace;font-size:0.55em;color:'.$pm.';letter-spacing:0.1em;">'.strtoupper($pc).'</div>'
+        . '</div></div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P5 Secondary Colors: Small swatches, asymmetrical
+    $inner = $sec('03 / Secondary Palette')
+        . '<div style="position:absolute;top:40%;left:10%;display:flex;gap:30px;">'
+        . '<div style="text-align:left;">'
+        . '<div style="width:80px;height:80px;background:'.$sc.';margin-bottom:12px;border:1px solid rgba(0,0,0,0.05);"></div>'
+        . '<div style="font-size:0.5em;letter-spacing:0.1em;font-weight:600;margin-bottom:4px;">Secondary</div>'
+        . '<div style="font-family:monospace;font-size:0.5em;color:'.$pm.';">'.strtoupper($sc).'</div>'
+        . '</div>'
+        . '<div style="text-align:left;position:relative;top:40px;">'
+        . '<div style="width:80px;height:80px;background:'.$ac.';margin-bottom:12px;border:1px solid rgba(0,0,0,0.05);"></div>'
+        . '<div style="font-size:0.5em;letter-spacing:0.1em;font-weight:600;margin-bottom:4px;">Accent</div>'
+        . '<div style="font-family:monospace;font-size:0.5em;color:'.$pm.';">'.strtoupper($ac).'</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P6 Typography Heading
+    $inner = $sec('04 / Typography')
+        . '<div style="position:absolute;top:30%;left:10%;">'
+        . '<div style="font-size:0.5em;letter-spacing:0.2em;text-transform:uppercase;color:'.$pm.';margin-bottom:12px;">Primary Typeface</div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:3.5em;line-height:1.0;color:'.$pt.';font-weight:400;margin-bottom:10px;">Aa</div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.0em;color:'.$pt.';letter-spacing:0.02em;">'.$fh.'</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P7 Typography Body
+    $inner = '<div style="position:absolute;bottom:20%;right:10%;width:50%;text-align:right;">'
+        . '<div style="font-size:0.5em;letter-spacing:0.2em;text-transform:uppercase;color:'.$pm.';margin-bottom:12px;">Secondary Typeface</div>'
+        . '<div style="font-family:\''.$fb.'\',sans-serif;font-size:2.5em;line-height:1.0;color:'.$pt.';font-weight:300;margin-bottom:10px;">Aa</div>'
+        . '<div style="font-family:\''.$fb.'\',sans-serif;font-size:0.8em;color:'.$pt.';letter-spacing:0.02em;">'.$fb.'</div>'
+        . '<div style="font-family:\''.$fb.'\',sans-serif;font-size:0.6em;color:'.$pm.';line-height:1.8;margin-top:20px;letter-spacing:0.02em;">Used for extensive body copy. It provides necessary clarity without detracting from the primary content. Maintain generous line height.</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P8 Tone
+    $tone_tags = bae_derive_tone_tags($industry, $personality);
+    if (!is_array($tone_tags) || empty($tone_tags)) $tone_tags = array('Quiet','Measured','Precise');
+    $inner = $sec('05 / Voice')
+        . '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:100%;text-align:center;">'
+        . '<div style="display:flex;justify-content:center;gap:40px;margin-bottom:30px;">';
+    foreach(array_slice($tone_tags,0,3) as $tag) {
+        $inner .= '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.1em;color:'.$pt.';letter-spacing:0.05em;">'.$tag.'</div>';
+    }
+    $inner .= '</div>'
+        . '<div style="font-size:0.6em;color:'.$pm.';letter-spacing:0.02em;line-height:2.0;max-width:60%;margin:0 auto;">Speak softly but with absolute clarity. Avoid jargon or hyperbolic claims. Fact should precede emotion.</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P9 Logo Usage
+    $inner = $sec('06 / Guidelines')
+        . '<div style="max-width:50%; margin-top:40px;">'
+        . '<div style="margin-bottom:24px;">'
+        . '<div style="font-size:0.55em;letter-spacing:0.15em;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Space</div>'
+        . '<div style="font-size:0.6em;color:'.$pm.';line-height:1.8;">Always maintain absolute clear space equal to half the logo height.</div>'
+        . '</div>'
+        . '<div style="margin-bottom:24px;">'
+        . '<div style="font-size:0.55em;letter-spacing:0.15em;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Contrast</div>'
+        . '<div style="font-size:0.6em;color:'.$pm.';line-height:1.8;">Never place onto complex imagery or backgrounds lacking strict contrast.</div>'
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P10 Application 1
+    $inner = $sec('07 / Context')
+        . '<div style="position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);">'
+        . '<div style="width:220px;height:120px;background:#fff;border:1px solid #eaeaea;box-shadow:0 2px 10px rgba(0,0,0,0.02);padding:24px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;">'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:0.8em;color:'.$pt.';">'.$name.'</div>'
+        . '<div style="display:flex;justify-content:space-between;align-items:flex-end;">'
+        . '<div style="width:10px;height:1px;background:'.$pt.';"></div>'
+        . '<div style="font-size:0.4em;letter-spacing:0.1em;color:'.$pm.';text-transform:uppercase;">'.$industry.'</div>'
+        . '</div>'
+        . '</div>'
+        . '<div style="text-align:center;font-size:0.45em;letter-spacing:0.2em;color:'.$pm.';text-transform:uppercase;margin-top:20px;">Corporate Card</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P11 Application 2
+    $inner = '<div style="position:absolute;bottom:20%;left:10%;max-width:60%;">'
+        . '<div style="display:flex;align-items:center;gap:16px;background:#fdfdfd;padding:12px 16px;border:1px solid #f0f0f0;">'
+        . '<div style="width:28px;height:28px;border-radius:50%;background:'.$pc.';display:flex;align-items:center;justify-content:center;color:#fff;font-family:\''.$fh.'\',sans-serif;font-size:0.5em;font-weight:600;">'.$ini.'</div>'
+        . '<div>'
+        . '<div style="font-size:0.55em;font-weight:600;">Brand Communications</div>'
+        . '<div style="font-size:0.5em;color:'.$pm.';">'.$email.'</div>'
+        . '</div>'
+        . '</div>'
+        . '<div style="font-size:0.45em;letter-spacing:0.2em;color:'.$pm.';text-transform:uppercase;margin-top:16px;text-align:left;">Digital Signature</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    // P12 Back Cover
+    $inner = '<div style="position:relative;height:100%;">'
+        . '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">'
+        . '<div style="width:20px;height:20px;background:'.$pc.';border-radius:50%;margin:0 auto 20px;"></div>'
+        . '<div style="font-family:\''.$fh.'\',sans-serif;font-size:1.0em;letter-spacing:0.1em;color:'.$pt.';">'.$name.'</div>'
+        . '</div>'
+        . '<div style="position:absolute;bottom:30px;left:0;right:0;text-align:center;font-size:0.45em;letter-spacing:0.2em;color:'.$pm.';text-transform:uppercase;">'
+        . ($website ? $website . ' &nbsp;&bull;&nbsp; ' : '') . '&copy; '.date('Y')
+        . '</div>'
+        . '</div>';
+    $o .= bae_bb_page($inner, $ps);
+
+    return $o;
+}

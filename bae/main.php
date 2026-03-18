@@ -1264,8 +1264,8 @@ function bntm_shortcode_bae() {
             $completed = [
                 'overview'   => $has_profile,
                 'identity'   => $has_profile && !empty($profile['primary_color']) && $profile['primary_color'] !== '#1a1a2e',
-                'assets'     => $has_profile && ($stats['asset_count'] ?? 0) > 0,
-                'kit'        => false,
+                'assets'     => $has_profile && ($stats['asset_count'] ?? 0) >= 3,
+                'kit'        => $has_profile && !empty($profile['kit_visibility']) && $profile['kit_visibility'] === 'public',
                 'startup'    => false,
                 'brand_book' => false,
                 'settings'   => false,
@@ -1273,13 +1273,12 @@ function bntm_shortcode_bae() {
 
             // Get asset count for this user
             global $wpdb;
-            $ticket_for_step = $GLOBALS['bae_current_ticket'] ?? '';
-            if ( $ticket_for_step ) {
+            if ( $has_profile && !empty($profile['id']) ) {
                 $asset_count_step = (int)$wpdb->get_var($wpdb->prepare(
-                    "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE ticket = %s AND is_generated = 1",
-                    $ticket_for_step
+                    "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
+                    $profile['id']
                 ));
-                $completed['assets'] = $has_profile && $asset_count_step > 0;
+                $completed['assets'] = $asset_count_step >= 3;
             }
 
             $needs_profile = ['identity','assets','kit','startup','brand_book'];
@@ -7538,7 +7537,7 @@ function bae_get_book_templates() {
     return array(
         // FREE (5)
         'modern_elegant'      => array('name'=>'Modern Elegant',      'cat'=>'Free',    'layout'=>'classic',      'cb'=>'#1e1b4b','ct'=>'#e0e7ff','acc'=>'#818cf8','pb'=>'#ffffff','pt'=>'#1e1b4b','pm'=>'#6b7280'),
-        'fresh_basic'         => array('name'=>'Fresh Basic',         'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#f0fdf4','ct'=>'#166534','acc'=>'#22c55e','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
+        'fresh_basic'         => array('name'=>'Fresh Basic',         'cat'=>'Free',    'layout'=>'issey',        'cb'=>'#f9f6f6','ct'=>'#000000','acc'=>'#4a4a4a','pb'=>'#ffffff','pt'=>'#000000','pm'=>'#999999'),
         'pop_of_pink'         => array('name'=>'Pop of Pink',         'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#ec4899','ct'=>'#ffffff','acc'=>'#f9a8d4','pb'=>'#ffffff','pt'=>'#1f2937','pm'=>'#6b7280'),
         'effervescent'        => array('name'=>'Effervescent',        'cat'=>'Free',    'layout'=>'editorial',    'cb'=>'#0f172a','ct'=>'#f8fafc','acc'=>'#38bdf8','pb'=>'#f8fafc','pt'=>'#0f172a','pm'=>'#64748b'),
         'detailed_minimalist' => array('name'=>'Detailed Minimalist', 'cat'=>'Free',    'layout'=>'japanese_min', 'cb'=>'#fafafa','ct'=>'#111827','acc'=>'#111827','pb'=>'#ffffff','pt'=>'#111827','pm'=>'#9ca3af'),
@@ -8273,10 +8272,11 @@ function bae_brand_book_tab($user_id, $profile) {
     $out .= '<button class="bae-btn bae-btn-outline bae-btn-sm" type="button" onclick="baeBookToggleTpl()">Hide</button>';
     $out .= '</div>';
     $out .= '<div class="bae-bb-sb-body" id="bae-bb-sb-body">';
+    $overall_count = 0;
     foreach ($cats as $cat => $tpls) {
         $out .= '<div class="bae-bb-cl">'.esc_html($cat).'</div><div class="bae-bb-tg">';
         foreach ($tpls as $id => $t) {
-            $is_soon = ($overall_count >= 28);
+            $is_soon = ($t['cat'] !== 'Free');
             $active = ($id === $saved && !$is_soon) ? ' active' : '';
             $onClick = $is_soon ? '' : ' onclick="baeBookTpl(\''.esc_js($id).'\',this)"';
             $cursor = $is_soon ? 'default' : 'pointer';
