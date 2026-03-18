@@ -222,6 +222,20 @@ function bntm_kbf_get_tables() {
             INDEX idx_status (status)
         ) {$charset};",
 
+        'kbf_appeals' => "CREATE TABLE {$prefix}kbf_appeals (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            rand_id VARCHAR(20) UNIQUE NOT NULL,
+            fund_id BIGINT UNSIGNED NOT NULL,
+            business_id BIGINT UNSIGNED NOT NULL,
+            message TEXT NOT NULL,
+            status ENUM('open','reviewed','approved','rejected') DEFAULT 'open',
+            admin_notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_fund (fund_id),
+            INDEX idx_business (business_id),
+            INDEX idx_status (status)
+        ) {$charset};",
+
         'kbf_organizer_profiles' => "CREATE TABLE {$prefix}kbf_organizer_profiles (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
             business_id BIGINT UNSIGNED NOT NULL UNIQUE,
@@ -296,6 +310,7 @@ add_action('wp_ajax_kbf_sponsor_fund',               'bntm_ajax_kbf_sponsor_fund
 add_action('wp_ajax_nopriv_kbf_sponsor_fund',        'bntm_ajax_kbf_sponsor_fund');
 add_action('wp_ajax_kbf_report_fund',                'bntm_ajax_kbf_report_fund');
 add_action('wp_ajax_nopriv_kbf_report_fund',         'bntm_ajax_kbf_report_fund');
+add_action('wp_ajax_kbf_submit_appeal',             'bntm_ajax_kbf_submit_appeal');
 add_action('wp_ajax_kbf_get_fund_details',           'bntm_ajax_kbf_get_fund_details');
 add_action('wp_ajax_nopriv_kbf_get_fund_details',    'bntm_ajax_kbf_get_fund_details');
 add_action('wp_ajax_kbf_get_organizer_profile',      'bntm_ajax_kbf_get_organizer_profile');
@@ -312,6 +327,7 @@ add_action('wp_ajax_kbf_admin_hold_escrow',          'bntm_ajax_kbf_admin_hold_e
 add_action('wp_ajax_kbf_admin_process_withdrawal',   'bntm_ajax_kbf_admin_process_withdrawal');
 add_action('wp_ajax_kbf_admin_dismiss_report',       'bntm_ajax_kbf_admin_dismiss_report');
 add_action('wp_ajax_kbf_admin_review_report',        'bntm_ajax_kbf_admin_review_report');
+add_action('wp_ajax_kbf_admin_review_appeal',        'bntm_ajax_kbf_admin_review_appeal');
 add_action('wp_ajax_kbf_admin_confirm_payment',      'bntm_ajax_kbf_admin_confirm_payment');
 add_action('wp_ajax_kbf_admin_verify_organizer',     'bntm_ajax_kbf_admin_verify_organizer');
 add_action('wp_ajax_kbf_save_setting',               'bntm_ajax_kbf_save_setting');
@@ -580,6 +596,17 @@ function kbf_global_assets() {
             }
         };
     }
+    if (typeof window.kbfFetchJson === 'undefined') {
+        window.kbfFetchJson = function(url, fd, onOk, onErr) {
+            fetch(url, {method:'POST', body:fd})
+            .then(r=>r.text())
+            .then(t=>{
+                try { onOk(JSON.parse(t)); }
+                catch(e){ onErr('Invalid server response. ' + (t ? t.slice(0,200) : '')); }
+            })
+            .catch(err=>onErr(err && err.message ? err.message : 'Request failed.'));
+        };
+    }
     </script>
 
     <!-- Global Share Modal -->
@@ -765,6 +792,23 @@ function bntm_shortcode_kbf_dashboard() {
     $nonce_cancel = wp_create_nonce('kbf_cancel_fund');
     $nonce_wd     = wp_create_nonce('kbf_withdrawal');
     $nonce_extend = wp_create_nonce('kbf_extend');
+    $nonce_appeal = wp_create_nonce('kbf_appeal');
+    $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
+
+    if ($payment_state === 'success') {
+        $find_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
+        ob_start();
+        ?>
+        <div class="kbf-wrap">
+          <div class="kbf-card" style="max-width:640px;margin:50px auto;padding:34px 30px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:var(--kbf-navy);margin-bottom:8px;">Thank You</div>
+            <div style="font-size:14px;color:var(--kbf-slate);margin-bottom:22px;">Thank you for your donation or support.</div>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($find_url); ?>">Find Funds</a>
+          </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
 
     ob_start();
     ?>
@@ -954,6 +998,30 @@ function bntm_shortcode_kbf_dashboard() {
       </div>
     </div>
 
+    <!-- ===== MODAL: Appeal Suspension ===== -->
+    <div id="kbf-modal-appeal" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal kbf-modal-sm">
+        <div class="kbf-modal-header">
+          <h3>Appeal Suspension</h3>
+          <button class="kbf-modal-close" onclick="kbfCloseModal('kbf-modal-appeal')">&times;</button>
+        </div>
+        <div class="kbf-modal-body">
+          <form id="kbf-appeal-form">
+            <input type="hidden" name="fund_id" id="kbf-appeal-fund-id">
+            <div class="kbf-form-group">
+              <label>Appeal Message *</label>
+              <textarea name="message" rows="4" placeholder="Explain why this fund should be reinstated..." required></textarea>
+            </div>
+            <div id="kbf-appeal-msg"></div>
+          </form>
+        </div>
+        <div class="kbf-modal-footer">
+          <button class="kbf-btn kbf-btn-secondary" onclick="kbfCloseModal('kbf-modal-appeal')">Cancel</button>
+          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitAppeal('<?php echo $nonce_appeal; ?>')">Submit Appeal</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Page header -->
     <div class="kbf-page-header">
       <h2>Welcome, <?php echo esc_html($user->display_name); ?></h2>
@@ -974,7 +1042,7 @@ function bntm_shortcode_kbf_dashboard() {
       </div>
     </div>
 
-    <div class="kbf-section-sub">Navigate your workspace</div>
+    <div class="kbf-section-sub" style="margin-bottom:20px;">Navigate your workspace</div>
     <div class="kbf-tabs">
       <a href="?kbf_tab=overview"      class="kbf-tab <?php echo $tab==='overview'?'active':''; ?>">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
@@ -1099,6 +1167,23 @@ function bntm_shortcode_kbf_dashboard() {
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
 
+    function kbfSubmitAppeal(nonce) {
+        const form = document.getElementById('kbf-appeal-form');
+        const btn  = document.querySelector('#kbf-modal-appeal .kbf-modal-footer .kbf-btn-primary');
+        const msg  = document.getElementById('kbf-appeal-msg');
+        kbfSetBtnLoading(btn, true, 'Submitting...');
+        kbfSetSkeleton(msg, true);
+        const fd = new FormData(form);
+        fd.append('action', 'kbf_submit_appeal');
+        fd.append('nonce', nonce);
+        fetch(ajaxurl, {method:'POST', body:fd})
+        .then(r=>r.json()).then(json=>{
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
+            if (json.success) setTimeout(()=>{ kbfCloseModal('kbf-modal-appeal'); }, 1600);
+            else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
+        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
+    }
+
     window.kbfOpenEdit = function(id, title, desc, loc) {
         document.getElementById('edit-fund-id').value = id;
         document.getElementById('edit-fund-title').value = title;
@@ -1117,6 +1202,12 @@ function bntm_shortcode_kbf_dashboard() {
         document.getElementById('kbf-wd-form').reset();
         document.getElementById('wd-fund-id').value = fundId; // re-set after reset
         kbfOpenModal('kbf-modal-wd');
+    };
+
+    window.kbfOpenAppeal = function(fundId, title) {
+        document.getElementById('kbf-appeal-fund-id').value = fundId;
+        document.getElementById('kbf-appeal-msg').innerHTML = '';
+        kbfOpenModal('kbf-modal-appeal');
     };
 
     window.kbfCancelFund = function(fundId) {
@@ -1302,6 +1393,9 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
             <div><strong>Fund Suspended</strong> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
           </div>
+          <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')" style="margin:-6px 0 12px;">
+            Appeal Suspension
+          </button>
           <?php elseif($f->status === 'cancelled' && $f->admin_notes): ?>
           <div style="background:#fee2e2;border-left:3px solid #ef4444;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#7f1d1d;display:flex;align-items:flex-start;gap:10px;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1620,7 +1714,7 @@ function kbf_dashboard_find_funds_tab() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ₱10" min="10" step="1" required>
+              <input type="number" name="amount" placeholder="Min. ₱1" min="1" step="1" required>
               <div id="kbff-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
             </div>
             <div class="kbf-form-group"><label>Encouraging Message (optional)</label><textarea name="message" rows="2" placeholder="Leave a message for the organizer..."></textarea></div>
@@ -1849,28 +1943,44 @@ function kbf_dashboard_find_funds_tab() {
         const form=document.getElementById('kbff-sponsor-form');
         const btn=document.getElementById('kbff-sponsor-submit');
         const msg=document.getElementById('kbff-sponsor-msg');
-        const demo=<?php echo $demo_mode?'true':'false'; ?>;
+        const methodEl = form.querySelector('select[name="payment_method"]');
+        if (methodEl && methodEl.value !== 'online_payment') {
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
+            return;
+        }
+        const amountEl = form.querySelector('input[name="amount"]');
+        const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
+        const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
+        if (maxVal && amt > maxVal) {
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ₱' + maxVal.toLocaleString() + ' for this fund.</div>';
+            return;
+        }
         kbfSetBtnLoading(btn,true,'Processing...');
         kbfSetSkeleton(msg,true);
         const fd=new FormData(form);
-        fd.append('action', demo ? 'kbf_sponsor_fund' : 'kbf_create_checkout');
+        fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
         fd.append('is_anonymous',document.getElementById('kbff-anon').checked?'1':'0');
-        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
+        kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
-                if(!demo && j.data.checkout_url){
+                if(j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';
-                    window.location.href=j.data.checkout_url;
+                    window.open(j.data.checkout_url, '_blank');
                 } else {
-                    msg.innerHTML='<div class="kbf-alert kbf-alert-success">'+j.data.message+'</div>';
-                    setTimeout(()=>location.reload(),2200);
+                    msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
+                    kbfSetBtnLoading(btn,false);
+                    kbfSetSkeleton(msg,false);
                 }
             } else {
                 msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+j.data.message+'</div>';
                 kbfSetBtnLoading(btn,false);
                 kbfSetSkeleton(msg,false);
             }
-        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
+        }, (err)=>{
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';
+            kbfSetBtnLoading(btn,false);
+            kbfSetSkeleton(msg,false);
+        });
     };
     window.kbffSubmitReport=function(nonce){
         const form=document.getElementById('kbff-report-form');
@@ -1924,6 +2034,7 @@ function kbf_dashboard_admin_embed() {
         window.kbfEscrow      = function(id,act){kbfAdmin('kbf_admin_'+act+'_escrow',{fund_id:id});};
         window.kbfDismissReport  = function(id){kbfAdmin('kbf_admin_dismiss_report',{report_id:id});};
         window.kbfReviewReport   = function(id){const n=prompt('Admin notes (optional):');if(n===null)return;kbfAdmin('kbf_admin_review_report',{report_id:id,notes:n});};
+        window.kbfReviewAppeal   = function(id,action){const n=prompt('Admin notes (optional):');if(n===null)return;kbfAdmin('kbf_admin_review_appeal',{appeal_id:id,action_type:action,notes:n});};
         window.kbfProcessWd      = function(id,type){if(type==='reject'){const r=prompt('Reason:');if(!r)return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'reject',notes:r});}else{if(!confirm('Approve & release?'))return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'approve'});}};
         window.kbfConfirmPayment = function(id){if(!confirm('Mark as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
         window.kbfVerifyOrg      = function(id,cur){kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:cur?'0':'1'});};
@@ -1938,7 +2049,7 @@ function kbf_dashboard_admin_embed() {
     $reports_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
     $wd_count      = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
     $counts = ['pending'=>$pending_count,'reports'=>$reports_count,'withdrawals'=>$wd_count];
-    $adm_tabs = ['pending'=>'Pending Funds','all_funds'=>'All Funds','transactions'=>'Transactions','withdrawals'=>'Withdrawals','reports'=>'Reports','organizers'=>'Organizers','settings'=>'Settings'];
+    $adm_tabs = ['pending'=>'Pending Funds','all_funds'=>'All Funds','transactions'=>'Transactions','withdrawals'=>'Withdrawals','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Organizers','settings'=>'Settings'];
     ?>
 
     <div style="margin:-28px -28px 0;background:var(--kbf-navy);border-radius:0;">
@@ -1964,6 +2075,7 @@ function kbf_dashboard_admin_embed() {
       elseif ($adm_tab==='transactions') echo kbf_admin_transactions_tab();
       elseif ($adm_tab==='withdrawals')  echo kbf_admin_withdrawals_tab();
       elseif ($adm_tab==='reports')      echo kbf_admin_reports_tab();
+      elseif ($adm_tab==='appeals')      echo kbf_admin_appeals_tab();
       elseif ($adm_tab==='organizers')   echo kbf_admin_organizers_tab();
       elseif ($adm_tab==='settings')     echo kbf_admin_settings_tab();
       ?>
@@ -2254,28 +2366,44 @@ function bntm_shortcode_kbf_browse() {
         const form=document.getElementById('kbf-sponsor-form');
         const btn=document.querySelector('#kbf-modal-sponsor .kbf-modal-footer .kbf-btn-primary');
         const msg=document.getElementById('kbf-sponsor-msg');
-        const demo=<?php echo $demo_mode?'true':'false'; ?>;
+        const methodEl = form.querySelector('select[name="payment_method"]');
+        if (methodEl && methodEl.value !== 'online_payment') {
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
+            return;
+        }
+        const amountEl = form.querySelector('input[name="amount"]');
+        const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
+        const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
+        if (maxVal && amt > maxVal) {
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ₱' + maxVal.toLocaleString() + ' for this fund.</div>';
+            return;
+        }
         kbfSetBtnLoading(btn,true,'Processing...');
         kbfSetSkeleton(msg,true);
         const fd=new FormData(form);
-        fd.append('action', demo ? 'kbf_sponsor_fund' : 'kbf_create_checkout');
+        fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
         fd.append('is_anonymous',document.getElementById('anon-check').checked?'1':'0');
-        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
+        kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
-                if(!demo && j.data.checkout_url){
+                if(j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';
-                    window.location.href=j.data.checkout_url;
+                    window.open(j.data.checkout_url, '_blank');
                 } else {
-                    msg.innerHTML='<div class="kbf-alert kbf-alert-success">'+j.data.message+'</div>';
-                    setTimeout(()=>location.reload(),2000);
+                    msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
+                    kbfSetBtnLoading(btn,false);
+                    kbfSetSkeleton(msg,false);
                 }
             } else {
                 msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+j.data.message+'</div>';
                 kbfSetBtnLoading(btn,false);
                 kbfSetSkeleton(msg,false);
             }
-        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
+        }, (err)=>{
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';
+            kbfSetBtnLoading(btn,false);
+            kbfSetSkeleton(msg,false);
+        });
     };
     window.kbfSubmitReport=function(nonce){
         const form=document.getElementById('kbf-report-form');
@@ -2394,6 +2522,7 @@ function bntm_shortcode_kbf_sponsor_history() {
           <button class="kbf-btn kbf-btn-primary" type="submit">View History</button>
         </form>
         <small style="color:var(--kbf-slate);display:block;margin-top:8px;">Enter the email you used when sponsoring a fund.</small>
+
       </div>
 
       <?php if(!$email): ?>
@@ -2526,7 +2655,7 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ₱10" min="10" step="1" max="<?php echo $fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''; ?>" required>
+              <input type="number" name="amount" placeholder="Min. ₱1" min="1" step="1" max="<?php echo $fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''; ?>" required>
               <?php if($fund->goal_amount>0): ?>
                 <div class="kbf-meta" style="margin-top:4px;">Max allowed: ₱<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
               <?php endif; ?>
@@ -2883,28 +3012,44 @@ function bntm_shortcode_kbf_fund_details() {
         const form=document.getElementById('kbf-sponsor-form');
         const btn=document.querySelector('#kbf-modal-sponsor .kbf-modal-footer .kbf-btn-primary');
         const msg=document.getElementById('kbf-spd-msg');
-        const demo=<?php echo $demo_mode?'true':'false'; ?>;
+        const methodEl = form.querySelector('select[name="payment_method"]');
+        if (methodEl && methodEl.value !== 'online_payment') {
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
+            return;
+        }
+        const amountEl = form.querySelector('input[name="amount"]');
+        const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
+        const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
+        if (maxVal && amt > maxVal) {
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ₱' + maxVal.toLocaleString() + ' for this fund.</div>';
+            return;
+        }
         kbfSetBtnLoading(btn,true,'Processing...');
         kbfSetSkeleton(msg,true);
         const fd=new FormData(form);
-        fd.append('action', demo ? 'kbf_sponsor_fund' : 'kbf_create_checkout');
+        fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
         fd.append('is_anonymous',document.getElementById('spd-anon').checked?'1':'0');
-        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
+        kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
-                if(!demo && j.data.checkout_url){
+                if(j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';
-                    window.location.href=j.data.checkout_url;
+                    window.open(j.data.checkout_url, '_blank');
                 } else {
-                    msg.innerHTML='<div class="kbf-alert kbf-alert-success">'+j.data.message+'</div>';
-                    setTimeout(()=>location.reload(),2000);
+                    msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
+                    kbfSetBtnLoading(btn,false);
+                    kbfSetSkeleton(msg,false);
                 }
             } else {
                 msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+j.data.message+'</div>';
                 kbfSetBtnLoading(btn,false);
                 kbfSetSkeleton(msg,false);
             }
-        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
+        }, (err)=>{
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';
+            kbfSetBtnLoading(btn,false);
+            kbfSetSkeleton(msg,false);
+        });
     };
     window.kbfSpdReport=function(nonce){
         const form=document.getElementById('kbf-report-form');
@@ -3070,8 +3215,9 @@ function bntm_shortcode_kbf_admin() {
     window.kbfSuspend=function(id){if(!confirm('Suspend this fund?'))return;kbfAdmin('kbf_admin_suspend_fund',{fund_id:id});};
     window.kbfVerifyBadge=function(id,cur){kbfAdmin('kbf_admin_verify_badge',{fund_id:id,verified:cur?'0':'1'});};
     window.kbfEscrow=function(id,act){kbfAdmin('kbf_admin_'+act+'_escrow',{fund_id:id});};
-    window.kbfDismissReport=function(id){kbfAdmin('kbf_admin_dismiss_report',{report_id:id});};
-    window.kbfReviewReport=function(id){const n=prompt('Admin notes (optional):');if(n===null)return;kbfAdmin('kbf_admin_review_report',{report_id:id,notes:n});};
+        window.kbfDismissReport=function(id){kbfAdmin('kbf_admin_dismiss_report',{report_id:id});};
+        window.kbfReviewReport=function(id){const n=prompt('Admin notes (optional):');if(n===null)return;kbfAdmin('kbf_admin_review_report',{report_id:id,notes:n});};
+        window.kbfReviewAppeal=function(id,action){const n=prompt('Admin notes (optional):');if(n===null)return;kbfAdmin('kbf_admin_review_appeal',{appeal_id:id,action_type:action,notes:n});};
     window.kbfProcessWd=function(id,type){
         if(type==='reject'){const r=prompt('Reason for rejection:');if(!r)return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'reject',notes:r});}
         else{if(!confirm('Approve & release this withdrawal?'))return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'approve'});}
@@ -3087,8 +3233,9 @@ function bntm_shortcode_kbf_admin() {
       $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
       $open_reports_count  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
       $pending_wd_count    = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
-      $tabs=['pending'=>'Pending','all_funds'=>'All Funds','transactions'=>'Transactions','withdrawals'=>'Withdrawals','reports'=>'Reports','organizers'=>'Organizers','settings'=>'Settings'];
-      $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count];
+      $open_appeals_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_appeals WHERE status='open'"); // phpcs:ignore
+      $tabs=['pending'=>'Pending','all_funds'=>'All Funds','transactions'=>'Transactions','withdrawals'=>'Withdrawals','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Organizers','settings'=>'Settings'];
+      $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
       foreach($tabs as $k=>$label): ?>
       <a href="?adm_tab=<?php echo $k; ?>" class="kbf-tab <?php echo $tab===$k?'active':''; ?>">
         <?php echo $label; ?>
@@ -3107,6 +3254,7 @@ function bntm_shortcode_kbf_admin() {
       elseif($tab==='transactions')  echo kbf_admin_transactions_tab();
       elseif($tab==='withdrawals')   echo kbf_admin_withdrawals_tab();
       elseif($tab==='reports')       echo kbf_admin_reports_tab();
+      elseif($tab==='appeals')       echo kbf_admin_appeals_tab();
       elseif($tab==='organizers')    echo kbf_admin_organizers_tab();
       elseif($tab==='settings')      echo kbf_admin_settings_tab();
       ?>
@@ -3310,6 +3458,38 @@ function kbf_admin_reports_tab() {
             <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfSuspend(<?php echo $r->fund_id; ?>)">Suspend Fund</button>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfReviewReport(<?php echo $r->id; ?>)">Mark Reviewed</button>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfDismissReport(<?php echo $r->id; ?>)">Dismiss</button>
+          </div>
+          <?php endif; ?>
+        </div>
+      <?php endforeach; endif; ?>
+    </div>
+    <?php return ob_get_clean();
+}
+
+function kbf_admin_appeals_tab() {
+    global $wpdb;
+    $at = $wpdb->prefix.'kbf_appeals';
+    $ft = $wpdb->prefix.'kbf_funds';
+    $rows = $wpdb->get_results("SELECT a.*,f.title as fund_title FROM {$at} a JOIN {$ft} f ON a.fund_id=f.id ORDER BY FIELD(a.status,'open','reviewed','approved','rejected'),a.created_at DESC"); // phpcs:ignore
+    ob_start(); ?>
+    <div class="kbf-section">
+      <h3 class="kbf-section-title" style="margin-bottom:16px;">Suspension Appeals</h3>
+      <?php if(empty($rows)): ?><div class="kbf-empty"><p>No appeals filed.</p></div>
+      <?php else: foreach($rows as $a): ?>
+        <div class="kbf-card" style="border-left:3px solid <?php echo $a->status==='open'?'var(--kbf-blue)':($a->status==='approved'?'var(--kbf-green)':'var(--kbf-border)'); ?>;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div>
+              <strong style="font-size:14px;">Fund: <?php echo esc_html($a->fund_title); ?></strong>
+              <p style="font-size:13px;color:var(--kbf-text-sm);margin:6px 0 0;"><?php echo esc_html($a->message); ?></p>
+              <div class="kbf-meta" style="margin-top:6px;">Appeal ID: <?php echo esc_html($a->rand_id); ?> &bull; <?php echo date('M d, Y H:i',strtotime($a->created_at)); ?></div>
+              <?php if($a->admin_notes): ?><div class="kbf-alert kbf-alert-info" style="margin-top:8px;font-size:12px;"><strong>Admin Note:</strong> <?php echo esc_html($a->admin_notes); ?></div><?php endif; ?>
+            </div>
+            <span class="kbf-badge kbf-badge-<?php echo $a->status; ?>"><?php echo ucfirst($a->status); ?></span>
+          </div>
+          <?php if($a->status==='open'): ?>
+          <div class="kbf-btn-group">
+            <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfReviewAppeal(<?php echo $a->id; ?>,'approve')">Approve & Reinstate</button>
+            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfReviewAppeal(<?php echo $a->id; ?>,'reject')">Reject</button>
           </div>
           <?php endif; ?>
         </div>
@@ -3610,15 +3790,18 @@ function kbf_maya_request($endpoint, $payload = null, $method = 'POST', $use_sec
     ];
     if ($payload !== null) $args['body'] = json_encode($payload);
 
-    $response = wp_remote_request(kbf_maya_base_url() . $endpoint, $args);
+    $url = kbf_maya_base_url() . $endpoint;
+    $response = wp_remote_request($url, $args);
     if (is_wp_error($response)) return ['error' => $response->get_error_message()];
 
     $body = json_decode(wp_remote_retrieve_body($response), true);
     $code = wp_remote_retrieve_response_code($response);
     if ($code >= 400) {
         $msg = $body['message'] ?? ($body['error']['message'] ?? 'Maya API error (HTTP ' . $code . ').');
+        error_log('[KBF][Maya] Error ' . $code . ' @ ' . $url . ' :: ' . $msg . ' :: ' . wp_remote_retrieve_body($response));
         return ['error' => $msg, 'code' => $code, 'raw' => $body];
     }
+    error_log('[KBF][Maya] OK ' . $code . ' @ ' . $url . ' :: ' . wp_remote_retrieve_body($response));
     return $body;
 }
 
@@ -3645,7 +3828,10 @@ function bntm_ajax_kbf_create_checkout() {
     $is_anon      = intval($_POST['is_anonymous'] ?? 0);
     $method       = sanitize_text_field($_POST['payment_method'] ?? 'online_payment');
 
-    if ($amount < 10) wp_send_json_error(['message' => 'Minimum sponsorship is ₱10.']);
+    if ($amount < 1) wp_send_json_error(['message' => 'Minimum sponsorship is ₱1.']);
+    if ($method !== 'online_payment') {
+        wp_send_json_error(['message' => 'Please select Online Payment to proceed to Maya Checkout.']);
+    }
 
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'", $fund_id));
     if (!$fund) wp_send_json_error(['message' => 'Fund not found or not accepting sponsorships.']);
@@ -3659,7 +3845,7 @@ function bntm_ajax_kbf_create_checkout() {
         }
     }
 
-    // Save a pending sponsorship -- confirmed via webhook after payment
+    // Save sponsorship
     $rand_id = bntm_rand_id();
     $wpdb->insert($st, [
         'rand_id'        => $rand_id,
@@ -3670,15 +3856,36 @@ function bntm_ajax_kbf_create_checkout() {
         'email'          => $email,
         'phone'          => $phone,
         'payment_method' => $method,
-        'payment_status' => 'pending',
+        'payment_status' => 'completed',
         'message'        => $message,
     ], ['%s','%d','%s','%d','%f','%s','%s','%s','%s','%s']);
     $sponsorship_id = $wpdb->insert_id;
 
+    // Auto-confirm immediately after online payment initiation (requested behavior)
+    if ($sponsorship_id) {
+        $wpdb->query($wpdb->prepare("UPDATE {$ft} SET raised_amount=raised_amount+%f WHERE id=%d", $amount, $fund_id));
+        $updated = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount FROM {$ft} WHERE id=%d", $fund_id));
+        if ($updated && $updated->goal_amount > 0 && $updated->raised_amount >= $updated->goal_amount) {
+            $wpdb->update($ft, ['status'=>'completed','escrow_status'=>'holding'], ['id'=>$fund_id], ['%s','%s'], ['%d']);
+        }
+        $pt = $wpdb->prefix . 'kbf_organizer_profiles';
+        $total = $wpdb->get_var($wpdb->prepare(
+            "SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            $fund->business_id
+        ));
+        $cnt = (int)$wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            $fund->business_id
+        ));
+        $wpdb->update($pt, ['total_raised'=>$total,'total_sponsors'=>$cnt], ['business_id'=>$fund->business_id], ['%f','%d'], ['%d']);
+    }
+
     // Redirect URLs -- Maya sends buyer back after payment
-    $success_url = add_query_arg(['kbf_payment' => 'success', 'sid' => $sponsorship_id, 'ref' => $rand_id], get_permalink());
-    $failure_url = add_query_arg(['kbf_payment' => 'failed',  'sid' => $sponsorship_id], get_permalink());
-    $cancel_url  = add_query_arg(['kbf_payment' => 'cancelled','sid' => $sponsorship_id], get_permalink());
+    // Use a stable absolute URL (home_url) to avoid invalid redirectUrl errors in AJAX context.
+    $base_return = kbf_get_page_url('dashboard');
+    $success_url = add_query_arg(['kbf_payment' => 'success', 'kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'ref' => $rand_id, 'fund_id' => $fund_id], $base_return);
+    $failure_url = add_query_arg(['kbf_payment' => 'failed',  'kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'fund_id' => $fund_id], $base_return);
+    $cancel_url  = add_query_arg(['kbf_payment' => 'cancelled','kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'fund_id' => $fund_id], $base_return);
 
     // Maya amounts are in PHP (not centavos), as decimal strings
     $amount_str = number_format($amount, 2, '.', '');
@@ -3851,7 +4058,7 @@ function bntm_ajax_kbf_sponsor_fund() {
     check_ajax_referer('kbf_sponsor','nonce');
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$st=$wpdb->prefix.'kbf_sponsorships';
     $id=intval($_POST['fund_id']);$amount=floatval($_POST['amount']);
-    if($amount<10) wp_send_json_error(['message'=>'Minimum sponsorship is ₱10.']);
+    if($amount<1) wp_send_json_error(['message'=>'Minimum sponsorship is ₱1.']);
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'",$id));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found or not accepting sponsorships.']);
     if ($fund->goal_amount > 0) {
@@ -3920,6 +4127,30 @@ function bntm_ajax_kbf_report_fund() {
     $res=$wpdb->insert($t,['rand_id'=>bntm_rand_id(),'fund_id'=>$id,'reporter_id'=>get_current_user_id(),'reporter_email'=>sanitize_email($_POST['reporter_email']??''),'reason'=>$reason,'details'=>$details,'status'=>'open'],['%s','%d','%d','%s','%s','%s','%s']);
     if($res) wp_send_json_success(['message'=>'Report submitted. Our team will review it shortly.']);
     else wp_send_json_error(['message'=>'Failed to submit report.']);
+}
+
+function bntm_ajax_kbf_submit_appeal() {
+    check_ajax_referer('kbf_appeal','nonce');
+    if (!is_user_logged_in()) wp_send_json_error(['message'=>'Please log in to submit an appeal.']);
+    global $wpdb;
+    $ft = $wpdb->prefix.'kbf_funds';
+    $at = $wpdb->prefix.'kbf_appeals';
+    $fund_id = intval($_POST['fund_id'] ?? 0);
+    $message = sanitize_textarea_field($_POST['message'] ?? '');
+    if (!$fund_id || !$message) wp_send_json_error(['message'=>'Please provide a valid appeal message.']);
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id,status FROM {$ft} WHERE id=%d", $fund_id));
+    if (!$fund || $fund->business_id != get_current_user_id()) wp_send_json_error(['message'=>'Unauthorized appeal request.']);
+    if ($fund->status !== 'suspended') wp_send_json_error(['message'=>'Only suspended funds can be appealed.']);
+    $exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$at} WHERE fund_id=%d AND status='open'", $fund_id));
+    if ($exists) wp_send_json_error(['message'=>'You already have an open appeal for this fund.']);
+    $wpdb->insert($at, [
+        'rand_id'     => bntm_rand_id(),
+        'fund_id'     => $fund_id,
+        'business_id' => get_current_user_id(),
+        'message'     => $message,
+        'status'      => 'open',
+    ], ['%s','%d','%d','%s','%s']);
+    wp_send_json_success(['message'=>'Appeal submitted. Our admin team will review it.']);
 }
 
 function bntm_ajax_kbf_get_fund_details() {
@@ -4251,6 +4482,28 @@ function bntm_ajax_kbf_admin_review_report() {
     $notes=sanitize_text_field($_POST['notes']??'');
     $wpdb->update($t,['status'=>'reviewed','admin_notes'=>$notes],['id'=>$id],['%s','%s'],['%d']);
     wp_send_json_success(['message'=>'Report marked as reviewed.']);
+}
+
+function bntm_ajax_kbf_admin_review_appeal() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;
+    $at = $wpdb->prefix.'kbf_appeals';
+    $ft = $wpdb->prefix.'kbf_funds';
+    $id = intval($_POST['appeal_id'] ?? 0);
+    $action = sanitize_text_field($_POST['action_type'] ?? '');
+    $notes = sanitize_text_field($_POST['notes'] ?? '');
+    $appeal = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$at} WHERE id=%d", $id));
+    if (!$appeal) wp_send_json_error(['message'=>'Appeal not found.']);
+
+    if ($action === 'approve') {
+        $wpdb->update($at, ['status'=>'approved','admin_notes'=>$notes], ['id'=>$id], ['%s','%s'], ['%d']);
+        $wpdb->update($ft, ['status'=>'active'], ['id'=>$appeal->fund_id], ['%s'], ['%d']);
+        wp_send_json_success(['message'=>'Appeal approved. Fund reinstated.']);
+    } else {
+        $wpdb->update($at, ['status'=>'rejected','admin_notes'=>$notes], ['id'=>$id], ['%s','%s'], ['%d']);
+        wp_send_json_success(['message'=>'Appeal rejected.']);
+    }
 }
 
 function bntm_ajax_kbf_admin_confirm_payment() {
