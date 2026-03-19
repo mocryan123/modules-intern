@@ -207,7 +207,7 @@ function bntm_bae_inject_settings_ticket( $html ) {
     $tk_js  = esc_js( $ticket );
 
     $card = '
-    <div class="bae-card" style="margin-bottom:0;">
+    <div class="bae-card" style="margin-bottom:20px;">
         <div class="bae-card-title">Your Session Ticket</div>
         <div class="bae-card-desc" style="margin-top:4px;margin-bottom:20px;">
             This is your permanent access code. Save it to open your workspace from any device.
@@ -1329,11 +1329,9 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
         $base_url = strtok( $_SERVER['REQUEST_URI'], '?' );
         $tabs = [
             'overview' => 'Brand Profile',
-            'identity' => 'Identity Board',
             'assets'   => 'Asset Generator',
             'kit'      => 'Brand Kit',
             'startup'  => 'Launch Toolkit',
-            'settings' => 'Settings',
         ];
         ?>
 
@@ -1342,6 +1340,15 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
             <div class="bae-logo-mark">B</div>
             <div class="bae-logo-text">Brand<span>Asset</span></div>
             <div class="bae-header-right">
+                <?php if ($onboarding_done_tk && $active_tab !== 'dashboard'): ?>
+                <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
+                   style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-2);text-decoration:none;padding:6px 12px;border:1px solid var(--border-2);border-radius:8px;transition:all .15s;font-family:'Geist',sans-serif;"
+                   onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--brand-s)'"
+                   onmouseout="this.style.color='var(--text-2)';this.style.borderColor='var(--border-2)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+                    Dashboard
+                </a>
+                <?php endif; ?>
                 <button class="bae-theme-btn" id="bae-theme-btn" onclick="baeToggleTheme()">
                     <span id="bae-theme-icon">
                         <svg id="bae-icon-sun" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -1386,39 +1393,44 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
             $tab_keys    = array_keys( $tabs );
             $total       = count( $tab_keys );
             $has_profile = !empty( $profile ) && !empty( $profile['business_name'] );
-            $needs_profile = ['identity','assets','kit','startup'];
+            $needs_profile = ['assets','kit','startup'];
             $user_plan   = $profile['plan'] ?? 'free';
             $is_free     = $user_plan === 'free';
-            $pro_tabs    = ['kit'];
+            $pro_tabs    = [];
+            global $wpdb;
+            $ac_tk = $has_profile ? (int)$wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE ticket = %s AND is_generated = 1", $ticket
+            )) : 0;
+            $assets_done_tk = $has_profile && $ac_tk >= 1;
             $completed_steps = [
                 'overview' => $has_profile,
-                'identity' => $has_profile && !empty($profile['primary_color']) && $profile['primary_color'] !== '#1a1a2e',
-                'assets'   => false,
-                'kit'      => false,
-                'startup'  => false,
-                'settings' => false,
+                'assets'   => $assets_done_tk,
+                'kit'      => $assets_done_tk,
+                'startup'  => $assets_done_tk,
             ];
-            if ( $has_profile ) {
-                global $wpdb;
-                $ac = (int)$wpdb->get_var($wpdb->prepare(
-                    "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE ticket = %s AND is_generated = 1", $ticket
-                ));
-                $completed_steps['assets'] = $ac > 0;
-            }
+            $locks_tk = [
+                'assets'  => !$has_profile,
+                'kit'     => !$assets_done_tk,
+                'startup' => !$assets_done_tk,
+            ];
             foreach ( $tab_keys as $i => $slug ):
                 $label          = $tabs[$slug];
                 $short          = explode(' ', $label)[0];
-                $is_active      = $active_tab === $slug;
-                $is_done        = ($completed_steps[$slug] ?? false) && !$is_active;
-                $locked_profile = in_array($slug, $needs_profile) && !$has_profile;
-                $locked_pro     = in_array($slug, $pro_tabs) && $is_free;
-                $is_locked      = $locked_profile || $locked_pro;
+                $is_active = $active_tab === $slug;
+                $is_done   = ($completed_steps[$slug] ?? false) && !$is_active;
+                $is_locked = $locks_tk[$slug] ?? false;
+                $lock_msg_tk = match($slug) {
+                    'assets'  => 'Complete Brand Profile first',
+                    'kit'     => 'Generate at least 1 asset first',
+                    'startup' => 'Complete Asset Generator first',
+                    default   => 'Complete previous step first',
+                };
                 $is_last        = $i === $total - 1;
                 $step_num       = $i + 1;
             ?>
             <div class="bae-step-wrap">
                 <?php if ($is_locked): ?>
-                <div class="bae-step bae-step-locked" title="<?php echo $locked_pro ? 'Upgrade to unlock' : 'Complete Brand Profile first'; ?>">
+                <div class="bae-step bae-step-locked" title="<?php echo esc_attr($lock_msg_tk); ?>">
                     <div class="bae-step-node"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg></div>
                     <div class="bae-step-label"><?php echo esc_html($short); ?></div>
                 </div>
@@ -1443,19 +1455,43 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
                 <?php endif; ?>
             </div>
             <?php endforeach; ?>
+            <?php if ($onboarding_done_tk): ?>
+            <div style="margin-left:auto;padding:0 8px 0 16px;flex-shrink:0;">
+                <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
+                   style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--brand-soft);text-decoration:none;padding:7px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:8px;white-space:nowrap;"
+                   onmouseover="this.style.background='rgba(139,92,246,.18)'"
+                   onmouseout="this.style.background='rgba(139,92,246,.1)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="15" rx="1"/></svg>
+                    Dashboard
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Tab Content -->
         <div class="bae-tab-content">
             <?php
-            $profile_tabs = ['identity','assets','kit','startup'];
+            $profile_tabs = ['assets','kit','startup','brand_book'];
             if (in_array($active_tab, $profile_tabs) && !$has_profile) $active_tab = 'overview';
-            if     ( $active_tab === 'overview' ) echo bae_overview_tab( $user_id, $profile );
-            elseif ( $active_tab === 'identity' ) echo bae_identity_tab( $user_id, $profile );
-            elseif ( $active_tab === 'assets'   ) echo bae_assets_tab(   $user_id, $profile );
-            elseif ( $active_tab === 'kit'      ) echo bae_kit_tab(      $user_id, $profile );
-            elseif ( $active_tab === 'startup'  ) echo bae_startup_tab(  $user_id, $profile );
-            elseif ( $active_tab === 'settings' ) echo bae_settings_tab( $user_id, $profile );
+
+            // Onboarding completion check
+            global $wpdb;
+            $asset_count_tk = $has_profile && !empty($profile['id'])
+                ? (int)$wpdb->get_var($wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
+                    $profile['id']
+                )) : 0;
+            $onboarding_done_tk = $has_profile && $asset_count_tk >= 1;
+            if ($onboarding_done_tk && !isset($_GET['tab'])) $active_tab = 'dashboard';
+
+            if     ( $active_tab === 'overview'   ) echo bae_overview_tab( $user_id, $profile );
+            elseif ( $active_tab === 'identity'   ) echo bae_overview_tab( $user_id, $profile ); // absorbed
+            elseif ( $active_tab === 'assets'     ) echo bae_assets_tab(   $user_id, $profile );
+            elseif ( $active_tab === 'kit'        ) echo bae_kit_tab(      $user_id, $profile );
+            elseif ( $active_tab === 'startup'    ) echo bae_startup_tab(  $user_id, $profile );
+            elseif ( $active_tab === 'settings'   ) echo bae_settings_tab( $user_id, $profile );
+            elseif ( $active_tab === 'brand_book' ) echo bae_brand_book_tab( $user_id, $profile );
+            elseif ( $active_tab === 'dashboard'  ) echo bae_home_dashboard( $user_id, $profile );
             ?>
         </div>
 

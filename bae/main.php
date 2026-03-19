@@ -19,8 +19,8 @@ define('BNTM_BAE_URL', plugin_dir_url(__FILE__));
 // Load ticketing system
 require_once BNTM_BAE_PATH . 'ticket.php';
 
-// Load PayMongo payment integration
-require_once BNTM_BAE_PATH . 'paymongo.php';
+// Load Stripe payment integration
+require_once BNTM_BAE_PATH . 'stripe.php';
 
 // Load Admin Panel
 require_once BNTM_BAE_PATH . 'admin.php';
@@ -117,6 +117,7 @@ function bntm_bae_get_tables() {
             asset_type VARCHAR(50) NOT NULL DEFAULT '',
             asset_name VARCHAR(255) NOT NULL DEFAULT '',
             asset_html LONGTEXT NOT NULL DEFAULT '',
+            asset_html_prev LONGTEXT NOT NULL DEFAULT '',
             is_generated TINYINT(1) NOT NULL DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -174,6 +175,12 @@ add_action('wp_ajax_bae_toolkit_checklist_save',   'bntm_ajax_bae_toolkit_checkl
 add_action('wp_ajax_bae_upload_logo',              'bntm_ajax_bae_upload_logo');
 add_action('wp_ajax_nopriv_bae_upload_logo',       'bntm_ajax_bae_upload_logo');
 add_action('wp_ajax_bae_export_zip',               'bntm_ajax_bae_export_zip');
+add_action('wp_ajax_bae_undo_asset',               'bntm_ajax_bae_undo_asset');
+add_action('wp_ajax_nopriv_bae_undo_asset',        'bntm_ajax_bae_undo_asset');
+add_action('wp_ajax_bae_preview_asset',            'bntm_ajax_bae_preview_asset');
+add_action('wp_ajax_nopriv_bae_preview_asset',     'bntm_ajax_bae_preview_asset');
+add_action('wp_ajax_bae_autofix_consistency',      'bntm_ajax_bae_autofix_consistency');
+add_action('wp_ajax_nopriv_bae_autofix_consistency','bntm_ajax_bae_autofix_consistency');
 
 add_action('init', 'bae_register_blocks');
 
@@ -623,31 +630,43 @@ function bae_wizard_shortcode($user_id) {
             palettesReady = false;
             palettesData  = null;
 
-            var fd = new FormData();
-            fd.append('action',   'bae_wizard_palettes');
-            fd.append('nonce',    nonce);
-            fd.append('name',     name);
-            fd.append('industry', industry || '');
+            function attemptFetch(attemptsLeft) {
+                var fd = new FormData();
+                fd.append('action',   'bae_wizard_palettes');
+                fd.append('nonce',    nonce);
+                fd.append('name',     name);
+                fd.append('industry', industry || '');
 
-            palettePromise = fetch(ajaxurl, { method:'POST', body:fd })
-                .then(function(r) { return r.json(); })
-                .then(function(j) {
-                    if (j.success && j.data && j.data.palettes && j.data.palettes.length) {
-                        palettesData  = j.data.palettes;
+                return fetch(ajaxurl, { method:'POST', body:fd })
+                    .then(function(r) { return r.json(); })
+                    .then(function(j) {
+                        if (j.success && j.data && j.data.palettes && j.data.palettes.length) {
+                            palettesData  = j.data.palettes;
+                            palettesReady = true;
+                            return j.data.palettes;
+                        }
+                        // AI failed — retry if attempts remain
+                        if (attemptsLeft > 1) {
+                            return new Promise(function(res) { setTimeout(res, 800); })
+                                .then(function() { return attemptFetch(attemptsLeft - 1); });
+                        }
+                        if (j.data && j.data.message) console.warn('[BAE Palettes]', j.data.message);
+                        palettesData  = staticPalettes;
                         palettesReady = true;
-                        return j.data.palettes;
-                    }
-                    // AI failed — log reason and fall back to static
-                    if (j.data && j.data.message) console.warn('[BAE Palettes]', j.data.message);
-                    palettesData  = staticPalettes;
-                    palettesReady = true;
-                    return staticPalettes;
-                })
-                .catch(function() {
-                    palettesData  = staticPalettes;
-                    palettesReady = true;
-                    return staticPalettes;
-                });
+                        return staticPalettes;
+                    })
+                    .catch(function() {
+                        if (attemptsLeft > 1) {
+                            return new Promise(function(res) { setTimeout(res, 800); })
+                                .then(function() { return attemptFetch(attemptsLeft - 1); });
+                        }
+                        palettesData  = staticPalettes;
+                        palettesReady = true;
+                        return staticPalettes;
+                    });
+            }
+
+            palettePromise = attemptFetch(3); // up to 3 attempts
         }
 
         // ── Render palette cards into Step 3 ──────────────────────────────
@@ -1112,6 +1131,15 @@ function bntm_shortcode_bae() {
             <div class="bae-logo-mark">B</div>
             <div class="bae-logo-text">Brand<span>Asset</span></div>
             <div class="bae-header-right">
+                <?php if ($onboarding_done && $active_tab !== 'dashboard'): ?>
+                <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
+                   style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-2);text-decoration:none;padding:6px 12px;border:1px solid var(--border-2);border-radius:8px;transition:all .15s;font-family:'Geist',sans-serif;"
+                   onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--brand-s)'"
+                   onmouseout="this.style.color='var(--text-2)';this.style.borderColor='var(--border-2)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+                    Dashboard
+                </a>
+                <?php endif; ?>
                 <button class="bae-theme-btn" id="bae-theme-btn" onclick="baeToggleTheme()">
                     <span id="bae-theme-icon">
                         <svg id="bae-icon-sun" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -1243,73 +1271,84 @@ function bntm_shortcode_bae() {
             </div>
         </div>
 
-        <!-- Tab Nav -->
+        <!-- Tab Nav — only shown during onboarding -->
+        <?php if (!$onboarding_done || in_array($active_tab, ['overview','assets','kit','startup'])): ?>
         <div class="bae-stepper">
             <?php
+            // Onboarding steps — only 4. Launch/Book/Settings are post-onboarding tools.
             $tabs = [
-                'overview'   => ['label' => 'Brand Profile',    'short' => 'Profile'],
-                'identity'   => ['label' => 'Identity Board',   'short' => 'Identity'],
-                'assets'     => ['label' => 'Asset Generator',  'short' => 'Assets'],
-                'kit'        => ['label' => 'Brand Kit',        'short' => 'Kit'],
-                'startup'    => ['label' => 'Launch Toolkit',   'short' => 'Launch'],
-                'brand_book' => ['label' => 'Brand Book',       'short' => 'Book'],
-                'settings'   => ['label' => 'Settings',         'short' => 'Settings'],
+                'overview'   => ['label' => 'Brand Profile',   'short' => 'Profile'],
+                'assets'     => ['label' => 'Asset Generator', 'short' => 'Assets'],
+                'kit'        => ['label' => 'Brand Kit',       'short' => 'Kit'],
+                'startup'    => ['label' => 'Launch Toolkit',  'short' => 'Launch'],
             ];
 
             $user_plan   = bae_get_user_plan($user_id, $profile);
             $is_free     = $user_plan === 'free';
             $has_profile = !empty($profile) && !empty($profile['business_name']);
 
-            // Determine completion per step
-            $completed = [
-                'overview'   => $has_profile,
-                'identity'   => $has_profile && !empty($profile['primary_color']) && $profile['primary_color'] !== '#1a1a2e',
-                'assets'     => $has_profile && ($stats['asset_count'] ?? 0) >= 3,
-                'kit'        => $has_profile && !empty($profile['kit_visibility']) && $profile['kit_visibility'] === 'public',
-                'startup'    => false,
-                'brand_book' => false,
-                'settings'   => false,
-            ];
-
-            // Get asset count for this user
+            // Asset count for completion checks
             global $wpdb;
-            if ( $has_profile && !empty($profile['id']) ) {
+            $asset_count_step = 0;
+            if ($has_profile && !empty($profile['id'])) {
                 $asset_count_step = (int)$wpdb->get_var($wpdb->prepare(
                     "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
                     $profile['id']
                 ));
-                $completed['assets'] = $asset_count_step >= 3;
             }
 
-            $needs_profile = ['identity','assets','kit','startup','brand_book'];
-            $pro_tabs      = [];
+            // Step completion — strictly sequential
+            $assets_done  = $has_profile && $asset_count_step >= 1;
+            $kit_done     = $assets_done; // Kit unlocks when assets exist
+            $startup_done = $kit_done;    // Launch unlocks when kit is accessible
+
+            $completed = [
+                'overview' => $has_profile,
+                'assets'   => $assets_done,
+                'kit'      => $kit_done,
+                'startup'  => $startup_done,
+            ];
+
+            // Locking rules — each step requires the previous
+            $locks = [
+                'assets'  => !$has_profile,
+                'kit'     => !$assets_done,
+                'startup' => !$assets_done,
+            ];
+
+            // Onboarding done = profile + at least 1 asset generated
+            $onboarding_done = $has_profile && $assets_done;
+            if ($onboarding_done && !isset($_GET['tab'])) {
+                $active_tab = 'dashboard';
+            }
+
+            $pro_tabs  = [];
             $base_url      = strtok($_SERVER['REQUEST_URI'], '?');
 
             $tab_keys = array_keys($tabs);
             $total    = count($tab_keys);
 
             foreach ($tab_keys as $i => $slug):
-                $info          = $tabs[$slug];
-                $is_active     = $active_tab === $slug;
-                $is_done       = $completed[$slug] ?? false;
-                $locked_profile= in_array($slug, $needs_profile) && !$has_profile;
-                $locked_pro    = in_array($slug, $pro_tabs) && $is_free;
-                $is_locked     = $locked_profile || $locked_pro;
-                $is_last       = $i === $total - 1;
-                $step_num      = $i + 1;
+                $info      = $tabs[$slug];
+                $is_active = $active_tab === $slug;
+                $is_done   = ($completed[$slug] ?? false) && !$is_active;
+                $is_locked = $locks[$slug] ?? false;
+                $is_last   = $i === $total - 1;
+                $step_num  = $i + 1;
+                $lock_msg  = match($slug) {
+                    'assets'  => 'Complete Brand Profile first',
+                    'kit'     => 'Generate at least 1 asset first',
+                    'startup' => 'Complete Asset Generator first',
+                    default   => 'Complete previous step first',
+                };
             ?>
                 <div class="bae-step-wrap <?php echo $is_last ? 'bae-step-last' : ''; ?>">
                     <?php if ($is_locked): ?>
-                    <div class="bae-step bae-step-locked" title="<?php echo $locked_pro ? 'Upgrade to unlock' : 'Complete Brand Profile first'; ?>">
+                    <div class="bae-step bae-step-locked" title="<?php echo esc_attr($lock_msg); ?>">
                         <div class="bae-step-node">
-                            <?php if ($locked_pro): ?>
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
-                            <?php else: ?>
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
-                            <?php endif; ?>
                         </div>
                         <div class="bae-step-label"><?php echo $info['short']; ?></div>
-                        <?php if ($locked_pro): ?><span class="bae-tab-pro-badge">PRO</span><?php endif; ?>
                     </div>
                     <?php elseif ($is_done && !$is_active): ?>
                     <a href="<?php echo $base_url; ?>?tab=<?php echo $slug; ?>" class="bae-step bae-step-done">
@@ -1339,21 +1378,57 @@ function bntm_shortcode_bae() {
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
+            <?php if ($onboarding_done): ?>
+            <div style="margin-left:auto;padding:0 8px 0 16px;flex-shrink:0;">
+                <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
+                   style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--brand-soft);text-decoration:none;padding:7px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:8px;white-space:nowrap;transition:all .15s;"
+                   onmouseover="this.style.background='rgba(139,92,246,.18)'"
+                   onmouseout="this.style.background='rgba(139,92,246,.1)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="15" rx="1"/></svg>
+                    Dashboard
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
+        <?php endif; ?>
+
+        <?php if ($onboarding_done && $active_tab !== 'overview' && $active_tab !== 'assets' && $active_tab !== 'kit' && $active_tab !== 'startup'): ?>
+        <!-- Post-onboarding tool nav -->
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg-2);overflow-x:auto;scrollbar-width:none;">
+            <a href="<?php echo esc_url($base_url . '?tab=dashboard'); ?>" style="font-size:12px;color:var(--text-3);text-decoration:none;white-space:nowrap;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="m15 18-6-6 6-6"/></svg>
+                Dashboard
+            </a>
+            <span style="color:var(--border-2);">·</span>
+            <?php
+            $tool_tabs = ['brand_book'=>'Brand Book','settings'=>'Settings'];
+            foreach ($tool_tabs as $ts => $tl):
+                $is_cur = $active_tab === $ts;
+            ?>
+            <a href="<?php echo esc_url($base_url . '?tab=' . $ts); ?>"
+               style="font-size:12px;font-weight:<?php echo $is_cur ? '700' : '500'; ?>;color:<?php echo $is_cur ? 'var(--text)' : 'var(--text-3)'; ?>;text-decoration:none;white-space:nowrap;">
+                <?php echo esc_html($tl); ?>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
 
         <!-- Tab Content -->
         <div class="bae-tab-content">
             <?php
-            $profile_tabs = ['identity', 'assets', 'kit', 'startup', 'brand_book'];
+            $profile_tabs = ['assets', 'kit', 'startup', 'brand_book'];
             if (in_array($active_tab, $profile_tabs) && !$has_profile) $active_tab = 'overview';
+            // Identity board removed as standalone tab — absorbed into brand profile
 
             if ($active_tab === 'overview')        echo bae_overview_tab($user_id, $profile);
-            elseif ($active_tab === 'identity')    echo bae_identity_tab($user_id, $profile);
+            elseif ($active_tab === 'identity')    { wp_redirect(strtok($_SERVER['REQUEST_URI'],'?').'?tab=overview'); exit; }
             elseif ($active_tab === 'assets')      echo bae_assets_tab($user_id, $profile);
             elseif ($active_tab === 'kit')         echo bae_kit_tab($user_id, $profile);
             elseif ($active_tab === 'startup')     echo bae_startup_tab($user_id, $profile);
             elseif ($active_tab === 'brand_book')  echo bae_brand_book_tab($user_id, $profile);
             elseif ($active_tab === 'settings')    echo bae_settings_tab($user_id, $profile);
+            // Post-onboarding dashboard
+            elseif ($active_tab === 'dashboard')   echo bae_home_dashboard($user_id, $profile);
             ?>
         </div>
 
@@ -1422,6 +1497,12 @@ function bntm_shortcode_bae() {
         overflow: hidden;
         transition: background 0.5s, color 0.5s;
         position: relative;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .bae-tab-content {
+        flex: 1;
     }
 
     /* Glow orb bg */
@@ -2085,6 +2166,90 @@ function bntm_shortcode_bae() {
     }
 
     /* ── SCROLLBAR ── */
+    /* ── PROFILE SPLIT LAYOUT ── */
+    .bae-profile-split {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+    }
+    .bae-profile-form-col { flex: 1; min-width: 0; }
+    .bae-preview-panel {
+        width: 340px;
+        min-width: 300px;
+        flex-shrink: 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        position: sticky;
+        top: 20px;
+    }
+    .bae-preview-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-2);
+    }
+    .bae-preview-panel-tabs {
+        display: flex;
+        gap: 2px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-2);
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .bae-preview-panel-tabs::-webkit-scrollbar { display: none; }
+    .bae-preview-tab-btn {
+        padding: 5px 10px;
+        border-radius: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: 'Geist', sans-serif;
+        border: none;
+        background: none;
+        color: var(--text-3);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all .15s;
+    }
+    .bae-preview-tab-btn:hover { color: var(--text-2); background: var(--bg-3); }
+    .bae-preview-tab-btn.active { color: var(--text); background: rgba(139,92,246,.12); }
+    .bae-preview-panel-content {
+        height: 340px;
+        overflow: hidden;
+        position: relative;
+        padding: 12px;
+        background: var(--bg-3);
+    }
+
+    /* Brand Intelligence */
+    .bae-brand-intel .bae-card-header { margin-bottom: 0; }
+    #bae-intel-body { padding-top: 16px; }
+
+    @media (max-width: 900px) {
+        .bae-profile-split { flex-direction: column; }
+        .bae-preview-panel { width: 100%; min-width: 0; position: static; }
+    }
+    /* Mobile: preview as bottom sheet */
+    @media (max-width: 680px) {
+        .bae-preview-panel {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            width: 100%;
+            border-radius: 20px 20px 0 0;
+            z-index: 9990;
+            max-height: 70vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform .3s cubic-bezier(.16,1,.3,1);
+            box-shadow: 0 -8px 40px rgba(0,0,0,.4);
+        }
+        .bae-preview-panel.open { transform: translateY(0); }
+    }
+
     /* ── COMPLETENESS INDICATOR ── */
     .bae-completeness-bar {
         background: var(--surface); border: 1px solid var(--border);
@@ -2248,7 +2413,7 @@ function bntm_shortcode_bae() {
                 });
         };
 
-        // After PayMongo redirect back — refresh plan badge without full reload
+        // After Stripe redirect back — refresh plan badge without full reload
         (function() {
             var params = new URLSearchParams(window.location.search);
             if (params.get('bae_pm') === 'success') {
@@ -2395,13 +2560,13 @@ function bae_overview_tab($user_id, $profile) {
     $p      = $profile ?: [];
     $is_new = empty($profile);
 
-    // CHANGED: Use cached asset count only — no repeated DB hits on re-render
-    $assets_count = bae_count_assets($user_id);
+    // Count assets scoped to this specific profile (not all users with user_id=0)
+    $assets_count = bae_count_assets($user_id, $p['id'] ?? 0);
     $kit_status   = !empty($p['kit_visibility']) ? $p['kit_visibility'] : 'private';
 
     ob_start();
 
-    // PayMongo payment success flash banner
+    // Stripe payment success flash banner
     $pm_success = get_transient('bae_pm_success_' . $user_id);
     if ($pm_success) {
         delete_transient('bae_pm_success_' . $user_id);
@@ -2505,13 +2670,21 @@ function bae_overview_tab($user_id, $profile) {
         </div>
     </div>
 
+    <!-- Live Preview Split Layout -->
+    <div class="bae-profile-split" id="bae-profile-split">
     <!-- Profile Form -->
-    <div class="bae-card">
+    <div class="bae-card bae-profile-form-col">
         <div class="bae-card-header">
             <div>
                 <div class="bae-card-title">Brand Profile</div>
                 <div class="bae-card-desc">Define your business identity — this drives every asset generated.</div>
             </div>
+            <?php if (!$is_new): ?>
+            <button type="button" class="bae-btn bae-btn-outline bae-btn-sm" id="bae-preview-toggle-btn" onclick="baeTogglePreview()" style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Live Preview
+            </button>
+            <?php endif; ?>
         </div>
 
         <form id="bae-profile-form">
@@ -2817,16 +2990,172 @@ function bae_overview_tab($user_id, $profile) {
 
             <div style="display:flex;align-items:center;gap:12px;">
                 <button type="submit" class="bae-btn bae-btn-primary">Save Brand Profile</button>
-                <?php if (!$is_new): ?>
-                    <a href="?tab=identity" class="bae-btn bae-btn-outline">View Identity Board &rarr;</a>
-                <?php endif; ?>
+
             </div>
             <div id="bae-profile-msg"></div>
         </form>
+    </div><!-- /bae-profile-form-col -->
+
+    <!-- Live Preview Panel -->
+    <div class="bae-preview-panel" id="bae-preview-panel" style="display:none;">
+        <div class="bae-preview-panel-header">
+            <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Live Preview</div>
+                <div style="font-size:11px;color:var(--text-3);">Updates as you edit</div>
+            </div>
+            <button id="bae-preview-panel-close" type="button" aria-label="Close preview" style="background:none;border:none;cursor:pointer;color:var(--text-3);padding:4px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;" onmouseover="this.style.background='var(--bg-3)';this.style.color='var(--text)';" onmouseout="this.style.background='none';this.style.color='var(--text-3)';"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <?php
+        // Only show tabs for assets that have been generated
+        global $wpdb;
+        $preview_generated = [];
+        if (!$is_new && !empty($p['id'])) {
+            $gen_rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT asset_type FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
+                $p['id']
+            ), ARRAY_A) ?: [];
+            foreach ($gen_rows as $gr) $preview_generated[] = $gr['asset_type'];
+        }
+        $all_preview_types = ['business_card'=>'Card','letterhead'=>'Letterhead','email_signature'=>'Email Sig','social_kit'=>'Social','brand_guidelines'=>'Guidelines'];
+        // Filter to only generated ones — fallback to all if none generated yet
+        $show_preview_types = array_intersect_key($all_preview_types, array_flip($preview_generated));
+        if (empty($show_preview_types)) $show_preview_types = []; // show empty state
+        $first_preview_type = !empty($show_preview_types) ? array_key_first($show_preview_types) : 'business_card';
+        ?>
+        <div class="bae-preview-panel-tabs">
+            <?php if (!empty($show_preview_types)): ?>
+            <?php foreach ($show_preview_types as $pt => $pl): ?>
+            <button class="bae-preview-tab-btn <?php echo $pt === $first_preview_type ? 'active' : ''; ?>"
+                    data-ptype="<?php echo $pt; ?>"
+                    onclick="baeSetPreviewType('<?php echo $pt; ?>', this)">
+                <?php echo $pl; ?>
+            </button>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+        <div class="bae-preview-panel-content">
+            <?php if (empty($show_preview_types)): ?>
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--text-3);text-align:center;padding:20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"><rect width="8" height="8" x="3" y="3" rx="1"/><rect width="8" height="5" x="13" y="3" rx="1"/><rect width="8" height="8" x="13" y="12" rx="1"/><rect width="8" height="5" x="3" y="15" rx="1"/></svg>
+                <div style="font-size:12px;font-weight:600;">No assets generated yet</div>
+                <div style="font-size:11px;">Generate assets in the Asset Generator step — they'll appear here as live previews.</div>
+                <a href="?tab=assets" style="font-size:11px;color:var(--brand-soft);text-decoration:none;font-weight:600;">Go to Asset Generator →</a>
+            </div>
+            <?php else: ?>
+            <div id="bae-live-preview-frame" style="transform:scale(0.55);transform-origin:top left;width:182%;pointer-events:none;">
+                <?php echo bae_generate_asset_html_static($first_preview_type, $p, ''); ?>
+            </div>
+            <?php endif; ?>
+            <div id="bae-live-preview-loading" style="display:none;position:absolute;inset:0;background:var(--bg-2);display:flex;align-items:center;justify-content:center;border-radius:12px;">
+                <div style="width:24px;height:24px;border:2px solid rgba(139,92,246,0.2);border-top-color:#8b5cf6;border-radius:50%;animation:bae-spin 0.8s linear infinite;"></div>
+            </div>
+        </div>
     </div>
 
+    </div><!-- /bae-profile-split -->
+
     <?php if (!$is_new): ?>
+    <!-- Brand Intelligence (absorbed from Identity Board) -->
+    <div class="bae-card bae-brand-intel" id="bae-brand-intel">
+        <div class="bae-card-header" style="cursor:pointer;" onclick="baeToggleIntel()">
+            <div>
+                <div class="bae-card-title" style="display:flex;align-items:center;gap:8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-soft)"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                    Brand Intelligence
+                </div>
+                <div class="bae-card-desc">Your logo concept, color palette, typography, and tone analysis.</div>
+            </div>
+            <svg id="bae-intel-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform .2s;flex-shrink:0;"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div id="bae-intel-body" style="display:none;">
+            <?php
+            $initials_bi  = bae_get_initials($p['business_name']);
+            $tone_tags_bi = bae_derive_tone_tags($p['industry'], $p['personality'] ?? '');
+            $pc_bi = bae_safe_color($p['primary_color'], '#1a1a2e');
+            $sc_bi = bae_safe_color($p['secondary_color'], '#16213e');
+            $ac_bi = bae_safe_color($p['accent_color'], '#e94560');
+            ?>
+            <link href="https://fonts.googleapis.com/css2?family=<?php echo urlencode($p['font_heading']); ?>:wght@400;700&family=<?php echo urlencode($p['font_body']); ?>&display=swap" rel="stylesheet">
+
+            <!-- Logo Concept -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:10px;">Logo Concept</div>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:#ffffff;border-radius:10px;flex:1;min-width:200px;">
+                        <?php if (!empty($p['logo_url'])): ?>
+                        <img src="<?php echo esc_url($p['logo_url']); ?>" style="max-height:40px;max-width:120px;object-fit:contain;" alt="">
+                        <?php elseif ($p['logo_style'] !== 'wordmark'): ?>
+                        <div style="width:36px;height:36px;border-radius:8px;background:<?php echo $pc_bi; ?>;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;">
+                            <?php echo $p['logo_style'] === 'lettermark' ? $initials_bi : bae_render_icon($p['logo_icon'], '#fff'); ?>
+                        </div>
+                        <?php endif; ?>
+                        <div style="font-family:'<?php echo esc_attr($p['font_heading']); ?>',sans-serif;font-weight:700;color:<?php echo $pc_bi; ?>;font-size:16px;">
+                            <?php echo esc_html($p['business_name']); ?>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:<?php echo $pc_bi; ?>;border-radius:10px;flex:1;min-width:200px;">
+                        <?php if (!empty($p['logo_url'])): ?>
+                        <img src="<?php echo esc_url($p['logo_url']); ?>" style="max-height:40px;max-width:120px;object-fit:contain;filter:brightness(0) invert(1);" alt="">
+                        <?php elseif ($p['logo_style'] !== 'wordmark'): ?>
+                        <div style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;">
+                            <?php echo $p['logo_style'] === 'lettermark' ? $initials_bi : bae_render_icon($p['logo_icon'], '#fff'); ?>
+                        </div>
+                        <?php endif; ?>
+                        <div style="font-family:'<?php echo esc_attr($p['font_heading']); ?>',sans-serif;font-weight:700;color:#ffffff;font-size:16px;">
+                            <?php echo esc_html($p['business_name']); ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Palette -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:10px;">Color Palette</div>
+                <div class="bae-color-swatches">
+                    <?php foreach (['Primary'=>$pc_bi,'Secondary'=>$sc_bi,'Accent'=>$ac_bi] as $lbl=>$hex): ?>
+                    <div class="bae-swatch" onclick="navigator.clipboard.writeText('<?php echo strtoupper($hex); ?>');this.querySelector('.bae-swatch-copy-btn').textContent='Copied!';setTimeout(()=>this.querySelector('.bae-swatch-copy-btn').textContent='Copy',1600);">
+                        <div class="bae-swatch-block" style="background:<?php echo $hex; ?>;"></div>
+                        <div class="bae-swatch-label"><?php echo $lbl; ?></div>
+                        <div class="bae-swatch-hex"><?php echo strtoupper($hex); ?></div>
+                        <button class="bae-swatch-copy-btn">Copy</button>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- Typography -->
+            <div style="margin-bottom:20px;">
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:10px;">Typography</div>
+                <div class="bae-font-sample">
+                    <div class="bae-font-heading-sample" style="font-family:'<?php echo esc_attr($p['font_heading']); ?>',sans-serif;color:<?php echo $pc_bi; ?>;">
+                        <?php echo esc_html($p['business_name']); ?>
+                    </div>
+                    <div class="bae-font-body-sample" style="font-family:'<?php echo esc_attr($p['font_body']); ?>',sans-serif;">
+                        <?php echo !empty($p['tagline']) ? esc_html($p['tagline']) : 'Quality crafted with care for every customer.'; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tone of Voice -->
+            <div>
+                <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:10px;">Tone of Voice</div>
+                <div class="bae-tone-tags" style="margin-bottom:10px;">
+                    <?php foreach ($tone_tags_bi as $tag): ?>
+                    <span class="bae-tone-tag"><?php echo esc_html($tag); ?></span>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (!empty($p['personality'])): ?>
+                <div style="padding:12px 16px;background:var(--bg-3);border-radius:8px;font-size:13px;color:var(--text-2);line-height:1.6;">
+                    <strong>Target Audience:</strong> <?php echo esc_html($p['personality']); ?>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Launch Toolkit shortcut card -->
+    <?php if (!$is_new): ?>
     <div class="bae-card" style="margin-top:0;">
         <div class="bae-card-header" style="margin-bottom:0;">
             <div>
@@ -2862,10 +3191,21 @@ function bae_overview_tab($user_id, $profile) {
                 fetch(ajaxurl, { method: 'POST', body: formData })
                 .then(function(r) { return r.json(); })
                 .then(function(json) {
-                    msg.innerHTML = '<div class="bae-notice bae-notice-' + (json.success ? 'success' : 'error') + '">' + json.data.message + '</div>';
                     btn.disabled = false;
                     btn.textContent = 'Save Brand Profile';
-                    if (json.success) setTimeout(function() { location.reload(); }, 1200);
+                    if (json.success) {
+                        // Show save success + resync option
+                        msg.innerHTML = '<div class="bae-notice bae-notice-success" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">' +
+                            '<span>' + json.data.message + '</span>' +
+                            '<button type="button" id="bae-resync-btn" style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--brand-soft);cursor:pointer;font-family:\'Geist\',sans-serif;white-space:nowrap;flex-shrink:0;" onclick="baeResyncAllAssets()">' +
+                            'Re-sync assets with new profile</button></div>';
+                        // Refresh live preview if open
+                        if (typeof baeFirePreview === 'function') baeFirePreview();
+                        baeRefreshAssetPreviews(new FormData(form));
+                        setTimeout(function() { location.reload(); }, 2500);
+                    } else {
+                        msg.innerHTML = '<div class="bae-notice bae-notice-error">' + json.data.message + '</div>';
+                    }
                 })
                 .catch(function() {
                     msg.innerHTML = '<div class="bae-notice bae-notice-error">An error occurred. Please try again.</div>';
@@ -2874,6 +3214,158 @@ function bae_overview_tab($user_id, $profile) {
                 });
             });
         }
+
+        // ── Live Preview ─────────────────────────────────────────────────
+        var _previewType   = 'business_card';
+        var _previewTimer  = null;
+        var _previewOpen   = false;
+        var previewPanel   = document.getElementById('bae-preview-panel');
+        var previewFrame   = document.getElementById('bae-live-preview-frame');
+        var previewLoading = document.getElementById('bae-live-preview-loading');
+        var previewCloseBtn = document.getElementById('bae-preview-panel-close');
+        if (previewCloseBtn) {
+            previewCloseBtn.addEventListener('click', function() {
+                if (previewPanel) {
+                    previewPanel.classList.remove('open');
+                    setTimeout(function(){ previewPanel.style.display = 'none'; }, 300);
+                }
+                _previewOpen = false;
+            });
+        }
+
+        function baeGetFormProfile() {
+            if (!form) return {};
+            var fd = new FormData(form);
+            var obj = {};
+            fd.forEach(function(v,k){ obj[k] = v; });
+            return obj;
+        }
+
+        function baeFirePreview() {
+            if (!_previewOpen || !previewFrame) return;
+            if (previewLoading) previewLoading.style.display = 'flex';
+            var data = baeGetFormProfile();
+            data.action = 'bae_preview_asset';
+            data.asset_type = _previewType;
+            var fd = new FormData();
+            Object.keys(data).forEach(function(k){ fd.append(k, data[k]); });
+            fetch(ajaxurl, { method:'POST', body:fd })
+            .then(function(r){ return r.json(); })
+            .then(function(j) {
+                if (j.success && previewFrame) {
+                    previewFrame.innerHTML = j.data.html;
+                }
+                if (previewLoading) previewLoading.style.display = 'none';
+            })
+            .catch(function(){ if (previewLoading) previewLoading.style.display = 'none'; });
+        }
+
+        function baeDebouncePreview() {
+            clearTimeout(_previewTimer);
+            _previewTimer = setTimeout(baeFirePreview, 600);
+        }
+
+        // Re-sync all generated assets with current profile data (full regenerate)
+        window.baeResyncAllAssets = function() {
+            var btn = document.getElementById('bae-resync-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Re-syncing...'; }
+            var nonce = '<?php echo esc_js(wp_create_nonce("bae_generate_asset")); ?>';
+            var pid   = '<?php echo esc_js($p["id"] ?? ""); ?>';
+            if (!pid) { if (btn) btn.textContent = 'No profile ID'; return; }
+            var types = ['business_card','letterhead','email_signature','social_kit','brand_guidelines'];
+            var done  = 0;
+            types.forEach(function(type) {
+                var card = document.getElementById('bae-card-' + type);
+                if (!card || !card.querySelector('.bae-asset-preview-inner')) return; // not generated, skip
+                var fd = new FormData();
+                fd.append('action', 'bae_generate_asset');
+                fd.append('asset_type', type);
+                fd.append('profile_id', pid);
+                fd.append('nonce', nonce);
+                fetch(ajaxurl, { method:'POST', body:fd })
+                .then(function(r){ return r.json(); })
+                .then(function(j) {
+                    done++;
+                    if (j.success) {
+                        var inner = card.querySelector('.bae-asset-preview-inner');
+                        if (inner) inner.innerHTML = j.data.html;
+                    }
+                    if (done === types.length && btn) {
+                        btn.textContent = 'Re-synced!';
+                        btn.style.color = '#34d399';
+                        setTimeout(function(){ location.reload(); }, 1000);
+                    }
+                });
+            });
+        };
+
+        // Refresh all visible asset card previews with latest form data
+        window.baeRefreshAssetPreviews = function(formData) {
+            var assetTypes = ['business_card','letterhead','email_signature','social_kit','brand_guidelines'];
+            assetTypes.forEach(function(type) {
+                var card = document.getElementById('bae-card-' + type);
+                if (!card) return;
+                var inner = card.querySelector('.bae-asset-preview-inner');
+                if (!inner) return; // not yet generated, skip
+                var fd = new FormData();
+                if (formData) { formData.forEach(function(v,k){ fd.append(k,v); }); }
+                fd.set('action', 'bae_preview_asset');
+                fd.set('asset_type', type);
+                fetch(ajaxurl, { method:'POST', body:fd })
+                .then(function(r){ return r.json(); })
+                .then(function(j) {
+                    if (j.success && inner) inner.innerHTML = j.data.html;
+                });
+            });
+        };
+
+        window.baeTogglePreview = function() {
+            _previewOpen = !_previewOpen;
+            var isMobile = window.innerWidth < 680;
+            if (previewPanel) {
+                if (_previewOpen) {
+                    previewPanel.style.display = 'block';
+                    if (isMobile) {
+                        setTimeout(function(){ previewPanel.classList.add('open'); }, 10);
+                    }
+                    baeFirePreview();
+                } else {
+                    if (isMobile) {
+                        previewPanel.classList.remove('open');
+                        setTimeout(function(){ previewPanel.style.display = 'none'; }, 300);
+                    } else {
+                        previewPanel.style.display = 'none';
+                    }
+                }
+            }
+            var toggleBtn = document.getElementById('bae-preview-toggle-btn');
+            if (toggleBtn) toggleBtn.style.borderColor = _previewOpen ? 'var(--brand)' : '';
+        };
+
+        window.baeSetPreviewType = function(type, btn) {
+            _previewType = type;
+            document.querySelectorAll('.bae-preview-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+            if (btn) btn.classList.add('active');
+            baeFirePreview();
+        };
+
+        // Attach debounced listeners to form inputs
+        if (form) {
+            form.querySelectorAll('input, select, textarea').forEach(function(el) {
+                el.addEventListener('input', baeDebouncePreview);
+                el.addEventListener('change', baeDebouncePreview);
+            });
+        }
+
+        // Brand Intelligence toggle
+        window.baeToggleIntel = function() {
+            var body    = document.getElementById('bae-intel-body');
+            var chevron = document.getElementById('bae-intel-chevron');
+            if (!body) return;
+            var isOpen = body.style.display !== 'none';
+            body.style.display = isOpen ? 'none' : 'block';
+            if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+        };
 
         // ── AI Color Suggest ──────────────────────────────────────────────
         var colorBtn   = document.getElementById('bae-ai-color-btn');
@@ -3475,8 +3967,8 @@ function bae_assets_tab($user_id, $profile) {
     $is_free      = $user_plan === 'free';
 
     $generated = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM {$assets_table} WHERE profile_id = %d AND user_id = %d",
-        $profile_id, $user_id
+        "SELECT * FROM {$assets_table} WHERE profile_id = %d",
+        $profile_id
     ), ARRAY_A);
 
     $gen_map = [];
@@ -3596,6 +4088,34 @@ function bae_assets_tab($user_id, $profile) {
                         Regenerate
                     </button>
                     <?php endif; ?>
+                    <?php endif; ?>
+                    <?php if (!empty($gen_data['asset_html_prev'])): ?>
+                    <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-undo-btn"
+                            data-type="<?php echo $type; ?>"
+                            data-nonce="<?php echo $nonce; ?>"
+                            data-pid="<?php echo $profile_id; ?>"
+                            title="Undo last generation">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+                    </button>
+                    <?php endif; ?>
+                    <?php if ($type === 'social_kit'): ?>
+                    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                        <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-regen-btn"
+                                data-type="social_kit" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
+                                data-prompt="Make this a square 1:1 format (1080x1080px) for Instagram feed">
+                            1:1
+                        </button>
+                        <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-regen-btn"
+                                data-type="social_kit" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
+                                data-prompt="Make this a vertical 9:16 story format (1080x1920px) for Instagram/TikTok stories">
+                            9:16
+                        </button>
+                        <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-regen-btn"
+                                data-type="social_kit" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
+                                data-prompt="Make this a horizontal 16:9 banner format (1920x1080px) for YouTube/Facebook cover">
+                            16:9
+                        </button>
+                    </div>
                     <?php endif; ?>
                     <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-delete-btn"
                             data-type="<?php echo $type; ?>"
@@ -3766,6 +4286,15 @@ function bae_assets_tab($user_id, $profile) {
         document.querySelectorAll('.bae-regen-btn').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 if (e && e.preventDefault) e.preventDefault();
+                var presetPrompt = this.dataset.prompt || '';
+                // If button has a preset prompt (size variants), skip modal and regenerate directly
+                if (presetPrompt) {
+                    var type  = this.dataset.type;
+                    var nonce = this.dataset.nonce;
+                    var pid   = this.dataset.pid;
+                    baeGenerateAsset(type, nonce, pid, this, presetPrompt);
+                    return;
+                }
                 // Open regen modal
                 var modal = document.getElementById('bae-regen-modal-overlay');
                 var promptEl = document.getElementById('bae-regen-prompt');
@@ -3774,11 +4303,10 @@ function bae_assets_tab($user_id, $profile) {
                     promptEl.value = '';
                     errorEl.style.display = 'none';
                     modal.style.display = 'flex';
-                    // Store data on modal
                     modal.dataset.type = this.dataset.type;
                     modal.dataset.nonce = this.dataset.nonce;
                     modal.dataset.pid = this.dataset.pid;
-                    modal.dataset.triggerType = this.dataset.type; // used to locate the card button
+                    modal.dataset.triggerType = this.dataset.type;
                 }
             });
         });
@@ -3849,6 +4377,37 @@ function bae_assets_tab($user_id, $profile) {
                 baeGenerateAsset(type, nonce, pid, cardBtn, prompt);
             });
         }
+
+        // Undo
+        document.querySelectorAll('.bae-undo-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var type  = this.dataset.type;
+                var nonce = this.dataset.nonce;
+                var pid   = this.dataset.pid;
+                var self  = this;
+                self.disabled = true;
+                var fd = new FormData();
+                fd.append('action', 'bae_undo_asset');
+                fd.append('asset_type', type);
+                fd.append('profile_id', pid);
+                fd.append('nonce', nonce);
+                fetch(ajaxurl, { method:'POST', body:fd })
+                .then(function(r){ return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        var card = document.getElementById('bae-card-' + type);
+                        if (card) {
+                            var inner = card.querySelector('.bae-asset-preview-inner');
+                            if (inner) inner.innerHTML = json.data.html;
+                        }
+                        self.style.display = 'none'; // hide undo after use
+                    } else {
+                        alert((json.data && json.data.message) ? json.data.message : 'Undo failed.');
+                        self.disabled = false;
+                    }
+                });
+            });
+        });
 
         // Delete
         document.querySelectorAll('.bae-delete-btn').forEach(function(btn) {
@@ -3987,14 +4546,13 @@ function bae_assets_tab($user_id, $profile) {
                             previewInner.innerHTML = html;
                         }
                     }
-                    // If it was empty, remove the empty SVG and add the inner div
+                    // If it was empty (svg placeholder), replace with div
                     var preview = card ? card.querySelector('.bae-asset-preview') : null;
                     var hasSvg = preview ? !!preview.querySelector('svg') : false;
                     if (preview && hasSvg) {
                         preview.innerHTML = '<div class="bae-asset-preview-inner bae-ai-asset">' + html + '</div>';
-                        // Force repaint to ensure the new HTML renders immediately
                         preview.style.display = 'none';
-                        preview.offsetHeight; // Trigger reflow
+                        preview.offsetHeight;
                         preview.style.display = '';
                     }
 
@@ -4271,7 +4829,58 @@ function bae_assets_tab($user_id, $profile) {
                         html += '<div style="margin-top:12px;font-size:12px;color:var(--text-3);">Missing assets: ' + missing.join(', ') + '</div>';
                     }
 
+                    if (issues.length) {
+                        html += '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+                            '<button id="bae-autofix-btn" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;font-family:\'Geist\',sans-serif;cursor:pointer;">' +
+                            '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>' +
+                            'Auto-fix All Issues</button>' +
+                            '<span id="bae-autofix-status" style="font-size:12px;color:var(--text-3);"></span>' +
+                            '</div>';
+                    }
+
                     baeToolsOpen('Brand consistency scan', html);
+                    // Wire auto-fix button after modal renders
+                    setTimeout(function() {
+                        var fixBtn = document.getElementById('bae-autofix-btn');
+                        if (!fixBtn) return;
+                        fixBtn.addEventListener('click', function() {
+                            var statusEl = document.getElementById('bae-autofix-status');
+                            fixBtn.disabled = true;
+                            fixBtn.textContent = 'Fixing...';
+                            if (statusEl) statusEl.textContent = 'Sending assets to Gemini...';
+                            var fd = new FormData();
+                            fd.append('action', 'bae_autofix_consistency');
+                            fd.append('nonce', nonce);
+                            fd.append('profile_id', pid);
+                            fd.append('issues', issues.join('||'));
+                            fetch(ajaxurl, { method:'POST', body:fd })
+                            .then(function(r){ return r.json(); })
+                            .then(function(j) {
+                                if (j.success) {
+                                    if (statusEl) statusEl.textContent = j.data.message;
+                                    fixBtn.style.background = '#059669';
+                                    fixBtn.textContent = 'Fixed!';
+                                    // Update each card's preview inner directly — no reload
+                                    var fixed = j.data.fixed_assets || {};
+                                    Object.keys(fixed).forEach(function(type) {
+                                        var card = document.getElementById('bae-card-' + type);
+                                        if (!card) return;
+                                        var inner = card.querySelector('.bae-asset-preview-inner');
+                                        if (inner) inner.innerHTML = fixed[type];
+                                    });
+                                    // Close modal after a moment
+                                    setTimeout(function() {
+                                        var overlay = document.getElementById('bae-tools-modal-overlay');
+                                        if (overlay) overlay.style.display = 'none';
+                                    }, 1200);
+                                } else {
+                                    fixBtn.disabled = false;
+                                    fixBtn.textContent = 'Auto-fix All Issues';
+                                    if (statusEl) statusEl.textContent = (j.data && j.data.message) ? j.data.message : 'Fix failed.';
+                                }
+                            });
+                        });
+                    }, 100);
                 })
                 .catch(function(){
                     consBtn.disabled = false;
@@ -4294,14 +4903,32 @@ function bae_assets_tab($user_id, $profile) {
 
 function bae_kit_tab($user_id, $profile) {
     if (empty($profile)) {
-        ob_start();
-        ?>
+        ob_start(); ?>
         <div class="bae-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/>
-            </svg>
-            <strong>No brand profile yet.</strong>
-            <p>Complete your <a href="?tab=overview">Brand Profile</a> to generate your Brand Kit page.</p>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>
+            <strong>Complete your Brand Profile first.</strong>
+            <p><a href="?tab=overview" class="bae-btn bae-btn-primary" style="margin-top:12px;display:inline-flex;">Go to Brand Profile &rarr;</a></p>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    // Gate: need at least 1 generated asset
+    global $wpdb;
+    $kit_asset_count = (int)$wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
+        $profile['id']
+    ));
+    if ($kit_asset_count < 1) {
+        ob_start(); ?>
+        <div class="bae-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            <strong>Generate at least 1 asset first.</strong>
+            <p style="color:var(--text-3);margin-bottom:16px;">Your Brand Kit is built from your generated assets. Head to Asset Generator and generate at least one.</p>
+            <a href="?tab=assets" class="bae-btn bae-btn-primary" style="display:inline-flex;align-items:center;gap:8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                Go to Asset Generator
+            </a>
         </div>
         <?php
         return ob_get_clean();
@@ -4558,13 +5185,13 @@ function bae_settings_tab($user_id, $profile) {
     </div>
 
     <div class="bae-card">
-        <div class="bae-card-title">Module Information</div>
+        <div class="bae-card-title">System Information</div>
         <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <?php
             $info = [
-                'Module'      => 'Brand Asset Engine',
+                'System'      => 'Brand Asset Engine',
                 'Version'     => '1.1.0',
-                'Module Slug' => 'bae',
+                'Slug'        => 'bae',
                 'Status'      => !empty($profile) ? 'Profile Active' : 'No Profile',
             ];
             foreach ($info as $k => $v):
@@ -4729,14 +5356,14 @@ function bae_gemini_json_request( $prompt ) {
             'parts' => [[ 'text' => $prompt ]]
         ]],
         'generationConfig' => [
-            'temperature'     => 0.9,
-            'maxOutputTokens' => 2048,
+            'temperature'      => 0.9,
+            'maxOutputTokens'  => 2048,
+            'responseMimeType' => 'application/json',
         ]
     ]);
 
     $response = wp_remote_post( BAE_GEMINI_ENDPOINT, [
-        'timeout' => 30,
-        'headers' => [ 'Content-Type' => 'application/json' ],
+        'timeout' => 45,
         'body'    => $body,
     ]);
 
@@ -4763,7 +5390,57 @@ function bae_gemini_json_request( $prompt ) {
     $text = preg_replace( '/```\s*$/',      '', trim($text) );
     $text = trim($text);
 
+    // Robustly extract the first JSON array or object in case Gemini added surrounding text
+    if ( preg_match( '/(\[[\s\S]*\]|\{[\s\S]*\})/s', $text, $m ) ) {
+        $text = $m[1];
+    }
+
     return $text;
+}
+
+/**
+ * Sanitize asset HTML so it can be safely echoed inline without breaking the page.
+ * Wraps any bare <style> blocks so their selectors are scoped to .bae-ai-asset,
+ * and strips tags that would break the surrounding DOM.
+ */
+function bae_sanitize_asset_html( $html ) {
+    if ( empty( $html ) ) return $html;
+
+    // Strip <html>, <head>, <body> wrappers
+    $html = preg_replace( '/<html[^>]*>/i',           '', $html );
+    $html = preg_replace( '/<\/html>/i',              '', $html );
+    $html = preg_replace( '/<head[^>]*>.*?<\/head>/is','', $html );
+    $html = preg_replace( '/<body[^>]*>/i',           '', $html );
+    $html = preg_replace( '/<\/body>/i',              '', $html );
+
+    // Strip <script> tags entirely
+    $html = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', $html );
+
+    // Strip <link stylesheet> tags
+    $html = preg_replace( '/<link\b[^>]*rel=[\'"]?stylesheet[\'"]?[^>]*>/is', '', $html );
+
+    // Scope <style> blocks — prefix every rule with .bae-ai-asset
+    // but leave @import and @font-face untouched so fonts still load
+    $html = preg_replace_callback(
+        '/<style([^>]*)>(.*?)<\/style>/is',
+        function ( $m ) {
+            $css = $m[2];
+            // Scope regular selectors but skip @-rules
+            $css = preg_replace_callback(
+                '/([^@{}][^{}]*)\{/m',
+                function ( $sel ) {
+                    $s = trim( $sel[1] );
+                    if ( empty( $s ) ) return $sel[0];
+                    return '.bae-ai-asset ' . $s . '{';
+                },
+                $css
+            );
+            return '<style' . $m[1] . '>' . $css . '</style>';
+        },
+        $html
+    );
+
+    return trim( $html );
 }
 
 function bae_gemini_request( $prompt ) {
@@ -4773,12 +5450,12 @@ function bae_gemini_request( $prompt ) {
         ]],
         'generationConfig' => [
             'temperature'     => 0.9,
-            'maxOutputTokens' => 2048,
+            'maxOutputTokens' => 8192,
         ]
     ]);
 
     $response = wp_remote_post( BAE_GEMINI_ENDPOINT, [
-        'timeout' => 30,
+        'timeout' => 60,
         'headers' => [ 'Content-Type' => 'application/json' ],
         'body'    => $body,
     ]);
@@ -4794,10 +5471,18 @@ function bae_gemini_request( $prompt ) {
         return [ 'error' => "Gemini error: {$msg}" ];
     }
 
-    $data = json_decode( wp_remote_retrieve_body($response), true );
-    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+    $data      = json_decode( wp_remote_retrieve_body($response), true );
+    $candidate = $data['candidates'][0] ?? null;
+    $finish    = $candidate['finishReason'] ?? '';
+    $text      = $candidate['content']['parts'][0]['text'] ?? null;
+
     if ( ! $text ) {
         return [ 'error' => 'Gemini returned empty response.' ];
+    }
+
+    // Reject truncated responses — unclosed tags cause the page to blob
+    if ( $finish === 'MAX_TOKENS' ) {
+        return [ 'error' => 'The generated asset was too large and got cut off. Try a simpler or shorter request.' ];
     }
 
     // Strip markdown code fences
@@ -4806,26 +5491,31 @@ function bae_gemini_request( $prompt ) {
     $text = preg_replace( '/```\s*$/',      '', trim($text) );
     $text = trim($text);
 
-    // SANITIZE: remove tags that would break the page when injected inline
-    // Strip <html>, <head>, <body> wrappers — keep only inner content
-    $text = preg_replace( '/<html[^>]*>/i',  '', $text );
-    $text = preg_replace( '/<\/html>/i',     '', $text );
-    $text = preg_replace( '/<head[^>]*>.*?<\/head>/is', '', $text );
-    $text = preg_replace( '/<body[^>]*>/i',  '', $text );
-    $text = preg_replace( '/<\/body>/i',     '', $text );
+    // Strip <html>, <head>, <body> wrappers
+    $text = preg_replace( '/<html[^>]*>/i',            '', $text );
+    $text = preg_replace( '/<\/html>/i',              '', $text );
+    $text = preg_replace( '/<head[^>]*>.*?<\/head>/is','', $text );
+    $text = preg_replace( '/<body[^>]*>/i',            '', $text );
+    $text = preg_replace( '/<\/body>/i',              '', $text );
 
-    // Neutralise any <script> tags — convert to data attributes so they can't execute or break JS
-    $text = preg_replace( '/<script\b[^>]*>(.*?)<\/script>/is', '<!-- script removed for safety -->', $text );
+    // Remove <script> tags
+    $text = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', $text );
 
-    // Scope any bare <style> blocks so they don't leak into the parent page
-    // Wrap them in a shadow-safe container that won't affect BAE UI
+    // Scope <style> blocks — skip @-rules so fonts still load
     $text = preg_replace_callback(
-        '/<style[^>]*>(.*?)<\/style>/is',
-        function($matches) {
-            // Prefix every selector with .bae-ai-asset so styles are scoped
-            $css = $matches[1];
-            $css = preg_replace( '/([^{}]+)\{/m', '.bae-ai-asset $1 {', $css );
-            return '<style>' . $css . '</style>';
+        '/<style([^>]*)>(.*?)<\/style>/is',
+        function ( $matches ) {
+            $css = $matches[2];
+            $css = preg_replace_callback(
+                '/([^@{}][^{}]*)\{/m',
+                function ( $sel ) {
+                    $s = trim( $sel[1] );
+                    if ( empty( $s ) ) return $sel[0];
+                    return '.bae-ai-asset ' . $s . '{';
+                },
+                $css
+            );
+            return '<style' . $matches[1] . '>' . $css . '</style>';
         },
         $text
     );
@@ -5087,8 +5777,8 @@ function bntm_ajax_bae_consistency_scan() {
     $allowed = [ 'business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap' ];
 
     $rows = $wpdb->get_results( $wpdb->prepare(
-        "SELECT asset_type, asset_html FROM {$assets_table} WHERE profile_id = %d AND user_id = %d AND is_generated = 1",
-        $profile_id, $user_id
+        "SELECT asset_type, asset_html FROM {$assets_table} WHERE profile_id = %d AND is_generated = 1",
+        $profile_id
     ), ARRAY_A );
 
     $byType = [];
@@ -6296,14 +6986,18 @@ function bntm_ajax_bae_generate_asset() {
     ];
 
     $existing = $wpdb->get_row($wpdb->prepare(
-        "SELECT id FROM {$assets_table} WHERE profile_id = %d AND user_id = %d AND asset_type = %s",
-        $profile_id, $user_id, $asset_type
+        "SELECT id, asset_html FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
+        $profile_id, $asset_type
     ));
+
+    // Sanitize before saving so echoed HTML can never break the page
+    $asset_html = bae_sanitize_asset_html( $asset_html );
 
     if ($existing) {
         $result = $wpdb->update($assets_table, [
-            'asset_html'   => $asset_html,
-            'is_generated' => 1,
+            'asset_html_prev' => $existing->asset_html ?? '',
+            'asset_html'      => $asset_html,
+            'is_generated'    => 1,
         ], ['id' => $existing->id]);
     } else {
         $result = $wpdb->insert($assets_table, [
@@ -6545,13 +7239,31 @@ function bae_get_user_plan($user_id, $profile = null) {
     return isset($profile['plan']) ? ($profile['plan'] ?: 'free') : 'free';
 }
 
-function bae_count_assets($user_id) {
+function bae_count_assets($user_id, $profile_id = 0) {
     global $wpdb;
     $table = $wpdb->prefix . 'bae_assets';
-    return (int) $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$table} WHERE user_id = %d AND is_generated = 1",
-        $user_id
-    ));
+    // Always prefer profile_id — this scopes to the specific brand, not all of a user's assets
+    if ($profile_id) {
+        return (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$table} WHERE profile_id = %d AND is_generated = 1",
+            $profile_id
+        ));
+    }
+    // Only fall back to user_id if profile_id is genuinely missing AND user is logged in
+    if ($user_id > 0) {
+        // Get the user's active profile id first, then count by profile
+        $pid = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$wpdb->prefix}bae_profiles WHERE user_id = %d AND business_name != '' ORDER BY updated_at DESC LIMIT 1",
+            $user_id
+        ));
+        if ($pid) {
+            return (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table} WHERE profile_id = %d AND is_generated = 1",
+                $pid
+            ));
+        }
+    }
+    return 0;
 }
 
 function bae_get_initials($name) {
@@ -7089,14 +7801,32 @@ function bae_get_industry_sitemap($industry, $biz_name) {
 
 function bae_startup_tab($user_id, $profile) {
     if (empty($profile)) {
-        ob_start();
-        ?>
+        ob_start(); ?>
         <div class="bae-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7a6 6 0 11-5.398-5.398"/>
-            </svg>
-            <strong>No brand profile yet.</strong>
-            <p>Complete your <a href="?tab=overview">Brand Profile</a> first to access the Startup Toolkit.</p>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7a6 6 0 11-5.398-5.398"/></svg>
+            <strong>Complete your Brand Profile first.</strong>
+            <p><a href="?tab=overview" class="bae-btn bae-btn-primary" style="margin-top:12px;display:inline-flex;">Go to Brand Profile &rarr;</a></p>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    // Gate: need at least 1 generated asset
+    global $wpdb;
+    $launch_asset_count = (int)$wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
+        $profile['id']
+    ));
+    if ($launch_asset_count < 1) {
+        ob_start(); ?>
+        <div class="bae-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7a6 6 0 11-5.398-5.398"/></svg>
+            <strong>Complete Asset Generator first.</strong>
+            <p style="color:var(--text-3);margin-bottom:16px;">Generate at least 1 asset to unlock the Launch Toolkit.</p>
+            <a href="?tab=assets" class="bae-btn bae-btn-primary" style="display:inline-flex;align-items:center;gap:8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                Go to Asset Generator
+            </a>
         </div>
         <?php
         return ob_get_clean();
@@ -8405,4 +9135,261 @@ function bntm_ajax_bae_save_book_template() {
     if (!$key && is_user_logged_in()) $key = 'bae_bb_' . md5(get_current_user_id());
     if ($key) set_transient($key, $tpl, YEAR_IN_SECONDS);
     wp_send_json_success(array('saved' => true));
+}
+// =============================================================================
+// DB MIGRATION: add asset_html_prev column if missing
+// =============================================================================
+add_action('admin_init', 'bae_migrate_asset_prev_column');
+function bae_migrate_asset_prev_column() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_assets';
+    $col = $wpdb->get_results("SHOW COLUMNS FROM {$table} LIKE 'asset_html_prev'");
+    if (empty($col)) {
+        $wpdb->query("ALTER TABLE {$table} ADD COLUMN asset_html_prev LONGTEXT NOT NULL DEFAULT '' AFTER asset_html");
+    }
+}
+
+// =============================================================================
+// AJAX: Undo asset — swap asset_html ↔ asset_html_prev
+// =============================================================================
+add_action('wp_ajax_bae_undo_asset',        'bntm_ajax_bae_undo_asset');
+add_action('wp_ajax_nopriv_bae_undo_asset', 'bntm_ajax_bae_undo_asset');
+function bntm_ajax_bae_undo_asset() {
+    check_ajax_referer('bae_generate_asset', 'nonce');
+    global $wpdb;
+    $table      = $wpdb->prefix . 'bae_assets';
+    $asset_type = sanitize_text_field($_POST['asset_type'] ?? '');
+    $profile_id = intval($_POST['profile_id'] ?? 0);
+
+    $ticket = '';
+    if (!empty($_COOKIE['bae_ticket'])) {
+        $raw = strtoupper(sanitize_text_field($_COOKIE['bae_ticket']));
+        if (preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw)) $ticket = $raw;
+    }
+
+    $where = $ticket
+        ? $wpdb->prepare("asset_type = %s AND profile_id = %d AND ticket = %s", $asset_type, $profile_id, $ticket)
+        : $wpdb->prepare("asset_type = %s AND profile_id = %d AND user_id = %d", $asset_type, $profile_id, is_user_logged_in() ? get_current_user_id() : 0);
+
+    $row = $wpdb->get_row("SELECT id, asset_html, asset_html_prev FROM {$table} WHERE {$where} LIMIT 1", ARRAY_A);
+
+    if (!$row || empty($row['asset_html_prev'])) {
+        wp_send_json_error(['message' => 'No previous version to restore.']);
+    }
+
+    // Swap current ↔ prev
+    $wpdb->update($table, [
+        'asset_html'      => $row['asset_html_prev'],
+        'asset_html_prev' => $row['asset_html'],
+    ], ['id' => $row['id']]);
+
+    wp_send_json_success(['html' => $row['asset_html_prev'], 'message' => 'Restored previous version.']);
+}
+
+// =============================================================================
+// AJAX: Live preview — render asset from raw form values without saving
+// =============================================================================
+add_action('wp_ajax_bae_preview_asset',        'bntm_ajax_bae_preview_asset');
+add_action('wp_ajax_nopriv_bae_preview_asset', 'bntm_ajax_bae_preview_asset');
+function bntm_ajax_bae_preview_asset() {
+    // No nonce needed — read-only, no DB writes, no sensitive data
+    $type = sanitize_text_field($_POST['asset_type'] ?? 'business_card');
+    $allowed = ['business_card','letterhead','email_signature','social_kit','brand_guidelines'];
+    if (!in_array($type, $allowed)) wp_send_json_error(['message' => 'Invalid type.']);
+
+    // Build a temporary profile from POST values — never saved to DB
+    $profile = [
+        'business_name'  => sanitize_text_field($_POST['business_name']  ?? 'Your Brand'),
+        'tagline'        => sanitize_text_field($_POST['tagline']         ?? ''),
+        'industry'       => sanitize_text_field($_POST['industry']        ?? ''),
+        'personality'    => sanitize_text_field($_POST['personality']     ?? ''),
+        'email'          => sanitize_email($_POST['email']                ?? ''),
+        'phone'          => sanitize_text_field($_POST['phone']           ?? ''),
+        'website'        => esc_url_raw($_POST['website']                 ?? ''),
+        'address'        => sanitize_text_field($_POST['address']         ?? ''),
+        'primary_color'  => bae_safe_color($_POST['primary_color']   ?? '', '#1a1a2e'),
+        'secondary_color'=> bae_safe_color($_POST['secondary_color'] ?? '', '#16213e'),
+        'accent_color'   => bae_safe_color($_POST['accent_color']    ?? '', '#e94560'),
+        'font_heading'   => sanitize_text_field($_POST['font_heading']    ?? 'Inter'),
+        'font_body'      => sanitize_text_field($_POST['font_body']       ?? 'Inter'),
+        'logo_style'     => sanitize_text_field($_POST['logo_style']      ?? 'wordmark'),
+        'logo_icon'      => sanitize_text_field($_POST['logo_icon']       ?? ''),
+        'logo_url'       => esc_url_raw($_POST['logo_url']                ?? ''),
+        'tone_statement' => '',
+    ];
+
+    $html = bae_generate_asset_html_static($type, $profile, '');
+    wp_send_json_success(['html' => $html]);
+}
+
+// =============================================================================
+// AJAX: Auto-fix all consistency issues using Gemini
+// =============================================================================
+add_action('wp_ajax_bae_autofix_consistency',       'bntm_ajax_bae_autofix_consistency');
+add_action('wp_ajax_nopriv_bae_autofix_consistency','bntm_ajax_bae_autofix_consistency');
+function bntm_ajax_bae_autofix_consistency() {
+    check_ajax_referer('bae_generate_asset', 'nonce');
+    if (!defined('BAE_GEMINI_API_KEY') || BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY') {
+        wp_send_json_error(['message' => 'Gemini API key not configured.']);
+    }
+
+    global $wpdb;
+    $profile_id = intval($_POST['profile_id'] ?? 0);
+    $issues_raw = sanitize_textarea_field($_POST['issues'] ?? '');
+    $issues     = array_filter(explode('||', $issues_raw));
+
+    if (!$profile_id || empty($issues)) {
+        wp_send_json_error(['message' => 'Nothing to fix.']);
+    }
+
+    $pt = $wpdb->prefix . 'bae_profiles';
+    $at = $wpdb->prefix . 'bae_assets';
+
+    $ticket = '';
+    if (!empty($_COOKIE['bae_ticket'])) {
+        $raw = strtoupper(sanitize_text_field($_COOKIE['bae_ticket']));
+        if (preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw)) $ticket = $raw;
+    }
+
+    $profile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE id = %d", $profile_id), ARRAY_A);
+    if (!$profile) wp_send_json_error(['message' => 'Profile not found.']);
+
+    $assets = $wpdb->get_results($wpdb->prepare(
+        "SELECT id, asset_type, asset_html FROM {$at} WHERE profile_id = %d AND is_generated = 1",
+        $profile_id
+    ), ARRAY_A);
+
+    if (empty($assets)) wp_send_json_error(['message' => 'No generated assets found.']);
+
+    $issues_text = implode("\n- ", $issues);
+    $fixed_count      = 0;
+    $errors           = [];
+    $fixed_assets_map = [];
+
+    foreach ($assets as $asset) {
+        if (empty($asset['asset_html'])) continue;
+
+        // Use fresh static HTML as base (same as regen) — avoids feeding Gemini a potentially corrupted stored blob
+        $base_html = bae_generate_asset_html_static($asset['asset_type'], $profile, '');
+        if (empty($base_html)) $base_html = $asset['asset_html'];
+
+        $asset_type_label = str_replace('_', ' ', $asset['asset_type']);
+        $prompt = "Improve this {$asset_type_label} HTML to fix these brand consistency issues:\n- {$issues_text}\n\nBrand colors: primary={$profile['primary_color']}, secondary={$profile['secondary_color']}, accent={$profile['accent_color']}\nBrand fonts: heading={$profile['font_heading']}, body={$profile['font_body']}\n\nReturn ONLY the fixed HTML for this single asset. No markdown, no explanations, no <style> tags, no <link> tags, no <html>/<head>/<body> wrappers. Inline styles only.\n\nCurrent HTML:\n{$base_html}";
+
+        $result = bae_gemini_request($prompt);
+
+        if (is_array($result) && !empty($result['error'])) {
+            $errors[] = $asset['asset_type'] . ': ' . $result['error'];
+            continue;
+        }
+        if (!is_string($result) || !trim($result)) continue;
+
+        // Strip markdown fences
+        $fixed_html = preg_replace('/^```[a-zA-Z]*\s*/m', '', $result);
+        $fixed_html = preg_replace('/```\s*$/m', '', $fixed_html);
+        $fixed_html = trim($fixed_html);
+        // Bail if result doesn't look like HTML
+        if (!preg_match('/<[a-zA-Z]/', $fixed_html)) continue;
+
+        // Sanitize so echoed HTML can never break the page
+        $fixed_html = bae_sanitize_asset_html( $fixed_html );
+
+        // Save prev before overwriting
+        $wpdb->update($at, [
+            'asset_html_prev' => $asset['asset_html'],
+            'asset_html'      => $fixed_html,
+        ], ['id' => $asset['id']]);
+
+        $fixed_assets_map[$asset['asset_type']] = $fixed_html;
+        $fixed_count++;
+    }
+
+    if ($fixed_count === 0) {
+        wp_send_json_error(['message' => 'Could not fix any assets.' . (!empty($errors) ? ' Errors: ' . implode(', ', $errors) : '')]);
+    }
+
+    wp_send_json_success([
+        'message'      => "Fixed {$fixed_count} asset" . ($fixed_count !== 1 ? 's' : '') . " successfully.",
+        'fixed'        => $fixed_count,
+        'fixed_assets' => $fixed_assets_map,
+    ]);
+}
+
+// =============================================================================
+// POST-ONBOARDING HOME DASHBOARD
+// Shown after all 4 stepper steps are complete
+// =============================================================================
+function bae_home_dashboard($user_id, $profile) {
+    if (empty($profile)) { return bae_overview_tab($user_id, $profile); }
+    $p         = $profile;
+    $base      = strtok($_SERVER['REQUEST_URI'], '?');
+    $plan      = bae_get_user_plan($user_id, $profile);
+    $is_free   = $plan === 'free';
+    global $wpdb;
+    $asset_count = (int)$wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
+        $p['id']
+    ));
+
+    $tools = [
+        ['slug'=>'overview',   'icon'=>'<path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 2H8l-2 5h12z"/>',     'label'=>'Brand Profile',   'desc'=>'Edit your brand details and colors', 'color'=>'var(--brand)'],
+        ['slug'=>'assets',     'icon'=>'<rect width="8" height="8" x="3" y="3" rx="1"/><rect width="8" height="5" x="13" y="3" rx="1"/><rect width="8" height="8" x="13" y="12" rx="1"/><rect width="8" height="5" x="3" y="15" rx="1"/>', 'label'=>'Asset Generator', 'desc'=>$asset_count.' assets generated',    'color'=>'#ec4899'],
+        ['slug'=>'kit',        'icon'=>'<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',                                                'label'=>'Brand Kit',       'desc'=>'Your shareable brand page',          'color'=>'#34d399'],
+        ['slug'=>'startup',    'icon'=>'<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>',  'label'=>'Launch Toolkit',  'desc'=>'Domains, handles, checklist',        'color'=>'#fbbf24'],
+        ['slug'=>'brand_book', 'icon'=>'<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h6M8 11h8"/>',                     'label'=>'Brand Book',      'desc'=>'50 professional templates',          'color'=>'#a78bfa'],
+        ['slug'=>'settings',   'icon'=>'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', 'label'=>'Settings',        'desc'=>'Plan, export, and account',          'color'=>'var(--text-3)'],
+    ];
+
+    ob_start(); ?>
+    <div style="margin-bottom:28px;">
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;font-style:italic;color:var(--text);margin-bottom:6px;">
+            <?php echo esc_html($p['business_name']); ?>
+        </div>
+        <div style="font-size:14px;color:var(--text-3);">
+            <?php echo esc_html($p['tagline'] ?? ''); ?>
+            <span style="display:inline-flex;align-items:center;gap:5px;margin-left:10px;font-size:12px;font-weight:700;color:var(--brand-soft);background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);border-radius:999px;padding:2px 10px;">
+                <?php echo ucfirst($plan); ?> Plan
+            </span>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:28px;">
+        <?php foreach ($tools as $t): ?>
+        <a href="<?php echo esc_url($base . '?tab=' . $t['slug']); ?>"
+           style="display:flex;flex-direction:column;gap:12px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:16px;text-decoration:none;transition:all .2s;position:relative;overflow:hidden;"
+           onmouseover="this.style.borderColor='<?php echo esc_js($t['color']); ?>';this.style.transform='translateY(-2px)';"
+           onmouseout="this.style.borderColor='';this.style.transform='';">
+            <div style="width:38px;height:38px;border-radius:10px;background:<?php echo esc_attr($t['color']); ?>;opacity:.12;position:absolute;top:16px;left:16px;"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="<?php echo esc_attr($t['color']); ?>" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;"><?php echo $t['icon']; ?></svg>
+            <div style="position:relative;z-index:1;">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;"><?php echo esc_html($t['label']); ?></div>
+                <div style="font-size:11px;color:var(--text-3);"><?php echo esc_html($t['desc']); ?></div>
+            </div>
+        </a>
+        <?php endforeach; ?>
+    </div>
+
+    <?php
+    // Mini brand identity strip
+    $pc = bae_safe_color($p['primary_color'], '#1a1a2e');
+    $sc = bae_safe_color($p['secondary_color'], '#16213e');
+    $ac = bae_safe_color($p['accent_color'], '#e94560');
+    ?>
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;flex-wrap:wrap;">
+        <div style="display:flex;gap:6px;">
+            <?php foreach([$pc,$sc,$ac] as $c): ?>
+            <div style="width:24px;height:24px;border-radius:6px;background:<?php echo $c; ?>;border:1px solid rgba(0,0,0,.1);" title="<?php echo strtoupper($c); ?>"></div>
+            <?php endforeach; ?>
+        </div>
+        <div style="font-size:13px;color:var(--text-2);">
+            <span style="font-family:'<?php echo esc_attr($p['font_heading']); ?>',sans-serif;font-weight:700;"><?php echo esc_html($p['font_heading']); ?></span>
+            <span style="color:var(--text-3);margin:0 6px;">+</span>
+            <span style="font-family:'<?php echo esc_attr($p['font_body']); ?>',sans-serif;"><?php echo esc_html($p['font_body']); ?></span>
+        </div>
+        <div style="margin-left:auto;">
+            <a href="<?php echo esc_url($base . '?tab=overview'); ?>" style="font-size:12px;color:var(--text-3);text-decoration:none;">Edit profile →</a>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
 }
