@@ -4074,6 +4074,7 @@ function bae_assets_tab($user_id, $profile) {
                             data-html="<?php echo esc_attr($gen_data['asset_html']); ?>">
                         Preview
                     </button>
+                    <?php if ( empty($meta['custom']) ): ?>
                     <?php if ($is_free): ?>
                     <button type="button" class="bae-btn bae-btn-outline bae-btn-sm" onclick="baePricingOpen('Regenerate anytime', 'Free plan generates each asset once. Upgrade to regenerate whenever you update your brand.')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
@@ -4086,6 +4087,7 @@ function bae_assets_tab($user_id, $profile) {
                             data-pid="<?php echo $profile_id; ?>">
                         Regenerate
                     </button>
+                    <?php endif; ?>
                     <?php endif; ?>
                     <?php if (!empty($gen_data['asset_html_prev'])): ?>
                     <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-undo-btn"
@@ -5312,11 +5314,214 @@ function bntm_shortcode_bae_kit() {
 // CHANGED: Contact fields (email, phone, website, address) used throughout
 // CHANGED: Colors run through bae_safe_color() before injection into HTML
 // =============================================================================
-// AI PROVIDER — Gemini with Groq fallback
-// bae_gemini_json_request() and bae_gemini_request() are defined in ai-provider.php
-// =============================================================================
-require_once __DIR__ . '/ai-provider.php';
 
+// =============================================================================
+// GEMINI AI ASSET GENERATION
+// Calls Gemini to generate unique, brand-specific HTML for each asset type.
+// Falls back to static template if API fails or quota is hit.
+// =============================================================================
+
+// Load environment variables from .env file if not already loaded
+if ( file_exists( BNTM_BAE_PATH . '.env' ) && ! getenv('BAE_GEMINI_API_KEY') ) {
+    $env_file = BNTM_BAE_PATH . '.env';
+    $lines = file( $env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+    foreach ( $lines as $line ) {
+        if ( strpos( trim( $line ), '#' ) === 0 ) continue; // Skip comments
+        if ( strpos( $line, '=' ) === false ) continue; // Skip invalid lines
+        list( $key, $value ) = explode( '=', $line, 2 );
+        $key = trim( $key );
+        $value = trim( $value );
+        if ( ! empty( $key ) && ! getenv( $key ) ) {
+            putenv( $key . '=' . $value );
+        }
+    }
+}
+
+if ( ! defined( 'BAE_GEMINI_API_KEY' ) ) {
+    $api_key = getenv( 'BAE_GEMINI_API_KEY' );
+    if ( ! $api_key ) {
+        $api_key = 'MISSING_GEMINI_KEY'; // Fallback if not set
+    }
+    define( 'BAE_GEMINI_API_KEY', $api_key );
+    define( 'BAE_GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . BAE_GEMINI_API_KEY );
+}
+
+// =============================================================================
+// JSON-only response handler (no HTML sanitization)
+// Used for palette generation, tone analysis, and other JSON APIs
+// =============================================================================
+function bae_gemini_json_request( $prompt ) {
+    $body = json_encode([
+        'contents' => [[
+            'parts' => [[ 'text' => $prompt ]]
+        ]],
+        'generationConfig' => [
+            'temperature'      => 0.9,
+            'maxOutputTokens'  => 2048,
+            'responseMimeType' => 'application/json',
+        ]
+    ]);
+
+    $response = wp_remote_post( BAE_GEMINI_ENDPOINT, [
+        'timeout' => 45,
+        'body'    => $body,
+    ]);
+
+    if ( is_wp_error($response) ) {
+        return [ 'error' => 'Request failed: ' . $response->get_error_message() ];
+    }
+
+    $code = wp_remote_retrieve_response_code($response);
+    if ( $code !== 200 ) {
+        $decoded = json_decode( wp_remote_retrieve_body($response), true );
+        $msg     = $decoded['error']['message'] ?? "HTTP {$code}";
+        return [ 'error' => "Gemini error: {$msg}" ];
+    }
+
+    $data = json_decode( wp_remote_retrieve_body($response), true );
+    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+    if ( ! $text ) {
+        return [ 'error' => 'Gemini returned empty response.' ];
+    }
+
+    // For JSON responses, only strip markdown code fences (no HTML sanitization)
+    $text = preg_replace( '/^```json\s*/i', '', trim($text) );
+    $text = preg_replace( '/^```\s*/i',     '', trim($text) );
+    $text = preg_replace( '/```\s*$/',      '', trim($text) );
+    $text = trim($text);
+
+    // Robustly extract the first JSON array or object in case Gemini added surrounding text
+    if ( preg_match( '/(\[[\s\S]*\]|\{[\s\S]*\})/s', $text, $m ) ) {
+        $text = $m[1];
+    }
+
+    return $text;
+}
+
+/**
+ * Sanitize asset HTML so it can be safely echoed inline without breaking the page.
+ * Wraps any bare <style> blocks so their selectors are scoped to .bae-ai-asset,
+ * and strips tags that would break the surrounding DOM.
+ */
+function bae_sanitize_asset_html( $html ) {
+    if ( empty( $html ) ) return $html;
+
+    // Strip <html>, <head>, <body> wrappers
+    $html = preg_replace( '/<html[^>]*>/i',           '', $html );
+    $html = preg_replace( '/<\/html>/i',              '', $html );
+    $html = preg_replace( '/<head[^>]*>.*?<\/head>/is','', $html );
+    $html = preg_replace( '/<body[^>]*>/i',           '', $html );
+    $html = preg_replace( '/<\/body>/i',              '', $html );
+
+    // Strip <script> tags entirely
+    $html = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', $html );
+
+    // Strip <link stylesheet> tags
+    $html = preg_replace( '/<link\b[^>]*rel=[\'"]?stylesheet[\'"]?[^>]*>/is', '', $html );
+
+    // Scope <style> blocks — prefix every rule with .bae-ai-asset
+    // but leave @import and @font-face untouched so fonts still load
+    $html = preg_replace_callback(
+        '/<style([^>]*)>(.*?)<\/style>/is',
+        function ( $m ) {
+            $css = $m[2];
+            // Scope regular selectors but skip @-rules
+            $css = preg_replace_callback(
+                '/([^@{}][^{}]*)\{/m',
+                function ( $sel ) {
+                    $s = trim( $sel[1] );
+                    if ( empty( $s ) ) return $sel[0];
+                    return '.bae-ai-asset ' . $s . '{';
+                },
+                $css
+            );
+            return '<style' . $m[1] . '>' . $css . '</style>';
+        },
+        $html
+    );
+
+    return trim( $html );
+}
+
+function bae_gemini_request( $prompt ) {
+    $body = json_encode([
+        'contents' => [[
+            'parts' => [[ 'text' => $prompt ]]
+        ]],
+        'generationConfig' => [
+            'temperature'     => 0.9,
+            'maxOutputTokens' => 8192,
+        ]
+    ]);
+
+    $response = wp_remote_post( BAE_GEMINI_ENDPOINT, [
+        'timeout' => 60,
+        'headers' => [ 'Content-Type' => 'application/json' ],
+        'body'    => $body,
+    ]);
+
+    if ( is_wp_error($response) ) {
+        return [ 'error' => 'Request failed: ' . $response->get_error_message() ];
+    }
+
+    $code = wp_remote_retrieve_response_code($response);
+    if ( $code !== 200 ) {
+        $decoded = json_decode( wp_remote_retrieve_body($response), true );
+        $msg     = $decoded['error']['message'] ?? "HTTP {$code}";
+        return [ 'error' => "Gemini error: {$msg}" ];
+    }
+
+    $data      = json_decode( wp_remote_retrieve_body($response), true );
+    $candidate = $data['candidates'][0] ?? null;
+    $finish    = $candidate['finishReason'] ?? '';
+    $text      = $candidate['content']['parts'][0]['text'] ?? null;
+
+    if ( ! $text ) {
+        return [ 'error' => 'Gemini returned empty response.' ];
+    }
+
+    // Reject truncated responses — unclosed tags cause the page to blob
+    if ( $finish === 'MAX_TOKENS' ) {
+        return [ 'error' => 'The generated asset was too large and got cut off. Try a simpler or shorter request.' ];
+    }
+
+    // Strip markdown code fences
+    $text = preg_replace( '/^```html\s*/i', '', trim($text) );
+    $text = preg_replace( '/^```\s*/i',     '', trim($text) );
+    $text = preg_replace( '/```\s*$/',      '', trim($text) );
+    $text = trim($text);
+
+    // Strip <html>, <head>, <body> wrappers
+    $text = preg_replace( '/<html[^>]*>/i',            '', $text );
+    $text = preg_replace( '/<\/html>/i',              '', $text );
+    $text = preg_replace( '/<head[^>]*>.*?<\/head>/is','', $text );
+    $text = preg_replace( '/<body[^>]*>/i',            '', $text );
+    $text = preg_replace( '/<\/body>/i',              '', $text );
+
+    // Remove <script> tags
+    $text = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', $text );
+
+    // Scope <style> blocks — skip @-rules so fonts still load
+    $text = preg_replace_callback(
+        '/<style([^>]*)>(.*?)<\/style>/is',
+        function ( $matches ) {
+            $css = $matches[2];
+            $css = preg_replace_callback(
+                '/([^@{}][^{}]*)\{/m',
+                function ( $sel ) {
+                    $s = trim( $sel[1] );
+                    if ( empty( $s ) ) return $sel[0];
+                    return '.bae-ai-asset ' . $s . '{';
+                },
+                $css
+            );
+            return '<style' . $matches[1] . '>' . $css . '</style>';
+        },
+        $text
+    );
+
+    return trim($text);
+}
 
 
 // =============================================================================
@@ -5499,8 +5704,8 @@ function bntm_ajax_bae_suggest_fonts() {
         [ 'heading' => 'Space Grotesk', 'body' => 'Inter',     'reason' => 'Tech-forward feel with excellent legibility.' ],
     ];
 
-    // If no AI keys are configured, return fallback immediately.
-    if ( empty( bae_gemini_key_pool() ) && empty( bae_groq_key_pool() ) ) {
+    // If Gemini isn't configured, return fallback immediately.
+    if ( defined('BAE_GEMINI_API_KEY') && BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY' ) {
         // Put current pair first if it isn't already.
         array_unshift( $fallback, [ 'heading' => $currentH, 'body' => $currentB, 'reason' => 'Your current selection.' ] );
         wp_send_json_success( [ 'pairs' => array_slice( $fallback, 0, 6 ) ] );
@@ -6698,8 +6903,7 @@ function bntm_ajax_bae_generate_asset() {
     $regen_prompt = sanitize_text_field($_POST['regen_prompt'] ?? '');
 
     $allowed_types = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap'];
-    $is_custom_asset = strpos($asset_type, 'custom_') === 0;
-    if (!$is_custom_asset && !in_array($asset_type, $allowed_types)) {
+    if (!in_array($asset_type, $allowed_types)) {
         wp_send_json_error(['message' => 'Invalid asset type.']);
     }
 
@@ -6734,23 +6938,14 @@ function bntm_ajax_bae_generate_asset() {
             }
         }
         // AI regen requires a configured key; do not silently fall back.
-        if ( empty( bae_gemini_key_pool() ) && empty( bae_groq_key_pool() ) ) {
-            wp_send_json_error(['message' => 'AI regeneration is not configured (no API keys found).']);
+        if ( defined('BAE_GEMINI_API_KEY') && BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY' ) {
+            wp_send_json_error(['message' => 'AI regeneration is not configured (missing Gemini API key).']);
         }
     }
 
     // Regeneration path: use AI and error loudly if it fails (no silent static fallback).
     if ( ! empty($regen_prompt) ) {
-        // Custom assets: fetch saved HTML from DB. Standard assets: use static generator.
-        if ( $is_custom_asset ) {
-            $existing_row = $wpdb->get_row($wpdb->prepare(
-                "SELECT asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
-                $profile_id, $asset_type
-            ));
-            $current_html = $existing_row->asset_html ?? '';
-        } else {
-            $current_html = bae_generate_asset_html_static($asset_type, $profile, '');
-        }
+        $current_html = bae_generate_asset_html_static($asset_type, $profile, '');
         $asset_names = [
             'business_card'    => 'business card',
             'letterhead'       => 'letterhead',
@@ -6759,9 +6954,7 @@ function bntm_ajax_bae_generate_asset() {
             'brand_guidelines' => 'brand guidelines',
             'sitemap'          => 'site structure',
         ];
-        $asset_name = $is_custom_asset
-            ? ( $existing_row->asset_name ?? 'custom asset' )
-            : ( $asset_names[$asset_type] ?? 'asset' );
+        $asset_name = $asset_names[$asset_type] ?? 'asset';
         $ai_prompt = "Improve this {$asset_name} HTML based on the user's request: '{$regen_prompt}'. Return only the improved HTML, no explanations or markdown. IMPORTANT: Do not include <style> tags, <link> tags, or external CSS — use inline styles only.\n\nCurrent HTML:\n{$current_html}";
         $improved_html = bae_gemini_request($ai_prompt);
 
@@ -6793,7 +6986,7 @@ function bntm_ajax_bae_generate_asset() {
     ];
 
     $existing = $wpdb->get_row($wpdb->prepare(
-        "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
+        "SELECT id, asset_html FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
         $profile_id, $asset_type
     ));
 
@@ -6812,7 +7005,7 @@ function bntm_ajax_bae_generate_asset() {
             'profile_id'   => $profile_id,
             'user_id'      => $user_id,
             'asset_type'   => $asset_type,
-            'asset_name'   => $is_custom_asset ? ( $existing->asset_name ?? 'Custom Asset' ) : ( $names[$asset_type] ?? 'Asset' ),
+            'asset_name'   => $names[$asset_type],
             'asset_html'   => $asset_html,
             'is_generated' => 1,
         ]);
@@ -9036,8 +9229,8 @@ add_action('wp_ajax_bae_autofix_consistency',       'bntm_ajax_bae_autofix_consi
 add_action('wp_ajax_nopriv_bae_autofix_consistency','bntm_ajax_bae_autofix_consistency');
 function bntm_ajax_bae_autofix_consistency() {
     check_ajax_referer('bae_generate_asset', 'nonce');
-    if ( empty( bae_gemini_key_pool() ) && empty( bae_groq_key_pool() ) ) {
-        wp_send_json_error(['message' => 'No AI API keys configured.']);
+    if (!defined('BAE_GEMINI_API_KEY') || BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY') {
+        wp_send_json_error(['message' => 'Gemini API key not configured.']);
     }
 
     global $wpdb;
