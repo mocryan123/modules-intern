@@ -73,6 +73,7 @@ function kbf_output_share_meta() {
 
 function bntm_kbf_get_pages() {
     return [
+        'KonekBayan: Landing' => '[kbf_landing]',
         'KonekBayan: User'  => '[kbf_dashboard]',
         'KonekBayan: Admin' => '[kbf_admin]',
     ];
@@ -268,6 +269,7 @@ function bntm_kbf_get_tables() {
 
 function bntm_kbf_get_shortcodes() {
     return [
+        'kbf_landing'            => 'bntm_shortcode_kbf_landing',
         'kbf_dashboard'          => 'bntm_shortcode_kbf_dashboard',
         'kbf_browse'             => 'bntm_shortcode_kbf_browse',
         'kbf_fund_details'       => 'bntm_shortcode_kbf_fund_details',
@@ -275,6 +277,13 @@ function bntm_kbf_get_shortcodes() {
         'kbf_sponsor_history'    => 'bntm_shortcode_kbf_sponsor_history',
         'kbf_admin'              => 'bntm_shortcode_kbf_admin',
     ];
+}
+
+if (file_exists(BNTM_KBF_PATH . 'landing.php')) {
+    require_once(BNTM_KBF_PATH . 'landing.php');
+}
+function bntm_shortcode_kbf_landing() {
+    return function_exists('bntm_kbf_render_landing') ? bntm_kbf_render_landing() : '';
 }
 
 function bntm_kbf_create_tables() {
@@ -330,7 +339,6 @@ add_action('wp_ajax_kbf_admin_review_report',        'bntm_ajax_kbf_admin_review
 add_action('wp_ajax_kbf_admin_review_appeal',        'bntm_ajax_kbf_admin_review_appeal');
 add_action('wp_ajax_kbf_admin_confirm_payment',      'bntm_ajax_kbf_admin_confirm_payment');
 add_action('wp_ajax_kbf_admin_verify_organizer',     'bntm_ajax_kbf_admin_verify_organizer');
-add_action('wp_ajax_kbf_admin_toggle_organizer',      'bntm_ajax_kbf_admin_toggle_organizer');
 add_action('wp_ajax_kbf_save_setting',               'bntm_ajax_kbf_save_setting');
 add_action('wp_ajax_kbf_create_checkout',            'bntm_ajax_kbf_create_checkout');
 add_action('wp_ajax_nopriv_kbf_create_checkout',     'bntm_ajax_kbf_create_checkout');
@@ -386,33 +394,33 @@ function kbf_global_assets() {
     $printed = true;
     ?>
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap');
-    /* === KBF DESIGN SYSTEM -- Minimal Modern === */
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&display=swap');
+    /* === KBF DESIGN SYSTEM -- Landing-aligned (Blue/White) === */
     :root {
-        --kbf-navy:       #0f172a;
-        --kbf-navy-mid:   #111827;
-        --kbf-navy-light: #1f2937;
-        --kbf-accent:     #10b981;
-        --kbf-accent-lt:  #d1fae5;
-        --kbf-green:      #10b981;
-        --kbf-green-lt:   #d1fae5;
+        --kbf-navy:       #0f1115;
+        --kbf-navy-mid:   #1a2333;
+        --kbf-navy-light: #22324a;
+        --kbf-accent:     #6fb6ff;
+        --kbf-accent-lt:  #e7f1ff;
+        --kbf-green:      #6fb6ff;
+        --kbf-green-lt:   #e7f1ff;
         --kbf-red:        #ef4444;
         --kbf-red-lt:     #fee2e2;
         --kbf-blue:       #3b82f6;
         --kbf-blue-lt:    #dbeafe;
-        --kbf-slate:      #6b7280;
-        --kbf-slate-lt:   #f3f4f6;
-        --kbf-border:     #e5e7eb;
-        --kbf-text:       #0f172a;
-        --kbf-text-sm:    #6b7280;
-        --kbf-bg:         #f7f7f5;
+        --kbf-slate:      #6f7785;
+        --kbf-slate-lt:   #f3f5f8;
+        --kbf-border:     #edf0f4;
+        --kbf-text:       #0f1115;
+        --kbf-text-sm:    #6f7785;
+        --kbf-bg:         #ffffff;
         --kbf-surface:    #ffffff;
-        --kbf-radius:     10px;
-        --kbf-shadow:     0 8px 24px rgba(15,23,42,.06);
-        --kbf-shadow-lg:  0 16px 40px rgba(15,23,42,.10);
+        --kbf-radius:     14px;
+        --kbf-shadow:     0 12px 30px rgba(15,23,42,.06);
+        --kbf-shadow-lg:  0 18px 40px rgba(15,23,42,.10);
     }
     .kbf-wrap * { box-sizing: border-box; }
-    .kbf-wrap { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); border-radius: 16px; padding: 18px; }
+    .kbf-wrap { font-family: 'Manrope', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); border-radius: 18px; padding: 18px; }
     .kbf-eyebrow { font-size: 11.5px; text-transform: uppercase; letter-spacing: .16em; color: var(--kbf-slate); font-weight: 700; }
 
     /* Tabs */
@@ -420,7 +428,7 @@ function kbf_global_assets() {
     .kbf-tab { display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; color: var(--kbf-slate); font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 999px; white-space: nowrap; transition: all .18s; }
     .kbf-tab svg { opacity: .75; }
     .kbf-tab:hover { color: var(--kbf-text); background: var(--kbf-slate-lt); }
-    .kbf-tab.active { color: var(--kbf-text); background: var(--kbf-accent-lt); border: 1px solid rgba(16,185,129,.25); }
+    .kbf-tab.active { color: var(--kbf-text); background: var(--kbf-accent-lt); border: 1px solid rgba(111,182,255,.25); }
     .kbf-tab-content { background: var(--kbf-surface); border: 1px solid var(--kbf-border); border-radius: 16px; padding: 24px; margin-top: 14px; box-shadow: var(--kbf-shadow); }
 
     /* Cards & Sections */
@@ -479,16 +487,6 @@ function kbf_global_assets() {
     .kbf-action-card strong { font-size: 14px; }
     .kbf-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--kbf-slate-lt); color: var(--kbf-text-sm); }
     .kbf-section-sub { font-size: 13px; color: var(--kbf-text-sm); margin-top: 6px; }
-    /* Skeletons */
-    .kbf-skeleton { position: relative; overflow: hidden; background: #eceff3; border-radius: 10px; }
-    .kbf-skeleton::after { content:""; position:absolute; inset:-40% 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent); animation: kbf-shimmer 1.2s infinite; }
-    .kbf-skel-line { height: 12px; margin: 8px 0; }
-    .kbf-skel-line.sm { width: 45%; }
-    .kbf-skel-line.md { width: 70%; }
-    .kbf-skel-line.lg { width: 100%; }
-    .kbf-skel-box { height: 70px; }
-    @keyframes kbf-shimmer { 100% { transform: translateX(100%); } }
-
     /* Forms */
     .kbf-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .kbf-form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
@@ -547,8 +545,8 @@ function kbf_global_assets() {
     .kbf-star-empty { color: #d1d5db; }
 
     /* Page header */
-    .kbf-page-header { background: radial-gradient(1200px 200px at 0% 0%, #eef2ff 0%, #f7f7f5 45%, #ffffff 100%); border: 1px solid var(--kbf-border); border-radius: 18px; padding: 26px 28px; margin-bottom: 18px; color: var(--kbf-text); box-shadow: var(--kbf-shadow); }
-    .kbf-page-header h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; font-family: 'Fraunces', serif; }
+    .kbf-page-header { background: radial-gradient(1200px 200px at 0% 0%, #eef5ff 0%, #ffffff 55%, #ffffff 100%); border: 1px solid var(--kbf-border); border-radius: 20px; padding: 26px 28px; margin-bottom: 18px; color: var(--kbf-text); box-shadow: var(--kbf-shadow); }
+    .kbf-page-header h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; font-family: 'Manrope', system-ui, -apple-system, sans-serif; }
     .kbf-page-header p  { margin: 0; color: var(--kbf-text-sm); font-size: 14px; }
 
     @media(max-width:640px) {
@@ -582,20 +580,8 @@ function kbf_global_assets() {
         };
     }
     if (typeof window.kbfSetSkeleton === 'undefined') {
-        window.kbfSetSkeleton = function(el, on) {
-            if (!el) return;
-            if (on) {
-                el.dataset.kbfPrev = el.innerHTML;
-                el.innerHTML =
-                    '<div class="kbf-skeleton kbf-skel-line lg"></div>' +
-                    '<div class="kbf-skeleton kbf-skel-line md"></div>' +
-                    '<div class="kbf-skeleton kbf-skel-line sm"></div>' +
-                    '<div class="kbf-skeleton kbf-skel-box"></div>';
-            } else if (el.dataset.kbfPrev !== undefined) {
-                el.innerHTML = el.dataset.kbfPrev;
-                delete el.dataset.kbfPrev;
-            }
-        };
+        // Skeletons removed: keep a no-op to avoid breaking callers.
+        window.kbfSetSkeleton = function(el, on) { return; };
     }
     if (typeof window.kbfFetchJson === 'undefined') {
         window.kbfFetchJson = function(url, fd, onOk, onErr) {
@@ -795,67 +781,26 @@ function bntm_shortcode_kbf_dashboard() {
     $nonce_extend = wp_create_nonce('kbf_extend');
     $nonce_appeal = wp_create_nonce('kbf_appeal');
     $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
+
+    if ($payment_state === 'success') {
+        $find_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
+        ob_start();
+        ?>
+        <div class="kbf-wrap">
+          <div class="kbf-card" style="max-width:640px;margin:50px auto;padding:34px 30px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:var(--kbf-navy);margin-bottom:8px;">Thank You</div>
+            <div style="font-size:14px;color:var(--kbf-slate);margin-bottom:22px;">Thank you for your donation or support.</div>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($find_url); ?>">Find Funds</a>
+          </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
     ob_start();
     ?>
-    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>'; window.kbfPsgcUrl = '<?php echo esc_js(BNTM_KBF_URL . 'data/psgc_2016.json'); ?>';</script>
-    <script>
-      (function(){
-        var paymentState = '<?php echo esc_js($payment_state ?? ''); ?>';
-        try {
-          if (!paymentState) {
-            var params = new URLSearchParams(window.location.search || '');
-            paymentState = params.get('kbf_payment') || '';
-          }
-        } catch(e) {}
-        if (paymentState === 'success') {
-          if (typeof kbfOpenModal === 'function') { kbfOpenModal('kbf-thankyou-modal'); }
-          else { var m = document.getElementById('kbf-thankyou-modal'); if (m) m.style.display='flex'; }
-          var seconds = 10;
-          var total = 10;
-          var countEl = document.getElementById('kbf-ty-count');
-          var barEl = document.getElementById('kbf-ty-bar');
-          var tick = function(){
-            seconds -= 1;
-            if (countEl) countEl.textContent = String(seconds);
-            if (barEl) barEl.style.width = String(((total-seconds)/total)*100) + '%';
-            if (seconds <= 0) { window.location.href = '<?php echo esc_url(add_query_arg('kbf_tab','find_funds',kbf_get_page_url('dashboard'))); ?>'; return; }
-            setTimeout(tick, 1000);
-          };
-          if (barEl) barEl.style.width = '0%';
-          setTimeout(tick, 1000);
-        }
-      })();
-    </script>
+    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <div class="kbf-wrap">
-
-    <!-- Thank You Modal (after Maya payment) -->
-    <div id="kbf-thankyou-modal" class="kbf-modal-overlay" style="display:none;">
-      <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header">
-          <h3>Thank You</h3>
-          <button class="kbf-modal-close" onclick="kbfCloseModal('kbf-thankyou-modal')">&times;</button>
-        </div>
-        <div class="kbf-modal-body">
-          <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
-            <div style="width:42px;height:42px;border-radius:12px;background:rgba(22,163,74,.12);color:#16a34a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 6L9 17l-5-5"/></svg>
-            </div>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">Thank you for your donation or support</div>
-              <div style="font-size:12.5px;color:var(--kbf-slate);">You?ll be redirected to Find Funds in <strong id="kbf-ty-count">10</strong> seconds.</div>
-            </div>
-          </div>
-          <div style="height:8px;border-radius:999px;background:var(--kbf-border);overflow:hidden;">
-            <div id="kbf-ty-bar" style="height:100%;width:0%;background:var(--kbf-green);transition:width .3s ease;"></div>
-          </div>
-        </div>
-        <div class="kbf-modal-footer">
-          <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url(kbf_get_page_url('dashboard')); ?>">Go to Dashboard</a>
-          <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url(add_query_arg('kbf_tab','find_funds',kbf_get_page_url('dashboard'))); ?>">Find Funds</a>
-        </div>
-      </div>
-    </div>
-
 
     <!-- ===== MODAL: Create Fund ===== -->
     <div id="kbf-modal-create" class="kbf-modal-overlay" style="display:none;">
@@ -898,8 +843,8 @@ function bntm_shortcode_kbf_dashboard() {
                 <input type="number" name="goal_amount" placeholder="0.00" min="100" step="0.01" required>
               </div>
               <div class="kbf-form-group">
-                <label>Deadline *</label>
-                <input type="date" name="deadline" required min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>">
+                <label>Deadline</label>
+                <input type="date" name="deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>">
               </div>
             </div>
             <div class="kbf-form-row">
@@ -914,34 +859,22 @@ function bntm_shortcode_kbf_dashboard() {
             </div>
             <div class="kbf-form-group">
               <label>Province *</label>
-              <select name="province" id="kbf-province" required>
+              <select name="location" required>
                 <option value="">Select Province</option>
                 <?php foreach (kbf_get_provinces() as $p): ?>
                   <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
                 <?php endforeach; ?>
               </select>
+              <small>Province only for now (municipality/barangay coming soon).</small>
             </div>
-            <div class="kbf-form-group">
-              <label>Municipality / City *</label>
-              <select name="municipality" id="kbf-municipality" required disabled>
-                <option value="">Select Municipality</option>
-              </select>
-              <small>Select a province first.</small>
-            </div>
-             <div class="kbf-form-group">
-              <label>Address *</label>
-              <input type="text" name="address" placeholder="Street Name, Building, House No." required>
-            </div>
-        
             <div class="kbf-form-group">
               <label>Valid Government / Company ID *</label>
               <input type="file" name="valid_id" accept="image/*,.pdf" required>
               <small>Required for identity verification before fund approval.</small>
             </div>
             <div class="kbf-form-group">
-              <label>Add Photos (up to 5) *</label>
-              <input type="file" name="photos[]" accept="image/*" multiple required>
-              
+              <label>Fund Photos (up to 5)</label>
+              <input type="file" name="photos[]" accept="image/*" multiple>
             </div>
             <div class="kbf-form-group">
               <label class="kbf-checkbox-row">
@@ -1167,156 +1100,10 @@ function bntm_shortcode_kbf_dashboard() {
         }
     }
 
-    function kbfClearFieldErrors(form) {
-        if (!form) return;
-        form.querySelectorAll('.kbf-input-error').forEach(el=>el.classList.remove('kbf-input-error'));
-        form.querySelectorAll('.kbf-field-error').forEach(el=>el.remove());
-    }
-
-    function kbfSetFieldError(input, message) {
-        if (!input) return;
-        input.classList.add('kbf-input-error');
-        const error = document.createElement('div');
-        error.className = 'kbf-field-error';
-        error.style.color = '#dc2626';
-        error.style.fontSize = '12px';
-        error.style.marginTop = '4px';
-        error.textContent = message;
-        input.parentNode.appendChild(error);
-    }
-
-    function kbfValidateEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
-    function kbfShowFormMessage(container, type, text) {
-        if (!container) return;
-        container.innerHTML = '<div class="kbf-alert kbf-alert-'+type+'">'+text+'</div>';
-    }
-
-
-    let kbfPsgcCache = null;
-
-    async function kbfLoadPsgc() {
-        if (kbfPsgcCache) return kbfPsgcCache;
-        const url = window.kbfPsgcUrl;
-        if (!url) return null;
-        const res = await fetch(url, {cache:'force-cache'});
-        if (!res.ok) return null;
-        kbfPsgcCache = await res.json();
-        return kbfPsgcCache;
-    }
-
-    function kbfNormalizeName(name) {
-        return String(name || '').toUpperCase().replace(/\s+/g,' ').trim();
-    }
-
-    function kbfGetMunicipalitiesFromPsgc(data, provinceName) {
-        if (!data || !provinceName) return [];
-        const target = kbfNormalizeName(provinceName);
-        for (const regionKey in data) {
-            if (!Object.prototype.hasOwnProperty.call(data, regionKey)) continue;
-            const region = data[regionKey];
-            if (!region || !region.province_list) continue;
-            const provinces = region.province_list;
-            for (const provName in provinces) {
-                if (!Object.prototype.hasOwnProperty.call(provinces, provName)) continue;
-                const provNorm = kbfNormalizeName(provName);
-                if (provNorm !== target) continue;
-                const muniList = provinces[provName].municipality_list;
-                const names = [];
-                if (Array.isArray(muniList)) {
-                    muniList.forEach(item => {
-                        if (item && typeof item === 'object') {
-                            Object.keys(item).forEach(k => names.push(k));
-                        }
-                    });
-                } else if (muniList && typeof muniList === 'object') {
-                    Object.keys(muniList).forEach(k => names.push(k));
-                }
-                return names.sort((a,b)=>a.localeCompare(b));
-            }
-        }
-        return [];
-    }
-
-    async function kbfPopulateMunicipalities() {
-        const province = document.getElementById('kbf-province');
-        const municipality = document.getElementById('kbf-municipality');
-        if (!province || !municipality) return;
-        const provVal = province.value || '';
-        municipality.innerHTML = '<option value="">Loading municipalities...</option>';
-        municipality.disabled = true;
-        if (!provVal) { municipality.innerHTML = '<option value="">Select Municipality</option>'; return; }
-        try {
-            const data = await kbfLoadPsgc();
-            const munis = kbfGetMunicipalitiesFromPsgc(data, provVal);
-            municipality.innerHTML = '<option value="">Select Municipality</option>';
-            munis.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = m;
-                municipality.appendChild(opt);
-            });
-            municipality.disabled = munis.length === 0;
-            if (munis.length === 0) {
-                municipality.innerHTML = '<option value="">No municipalities found</option>';
-                municipality.disabled = true;
-            }
-        } catch (e) {
-            municipality.innerHTML = '<option value="">Unable to load municipalities</option>';
-            municipality.disabled = true;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function(){
-        const province = document.getElementById('kbf-province');
-        if (province) {
-            province.addEventListener('change', kbfPopulateMunicipalities);
-            if (province.value) kbfPopulateMunicipalities();
-        }
-    });
-
     function kbfSubmitCreate() {
         const form = document.getElementById('kbf-create-fund-form');
         const btn  = document.querySelector('#kbf-modal-create .kbf-modal-footer .kbf-btn-primary');
         const msg  = document.getElementById('kbf-create-msg');
-        kbfClearFieldErrors(form);
-
-        const title      = form.querySelector('input[name="title"]');
-        const desc       = form.querySelector('textarea[name="description"]');
-        const goal       = form.querySelector('input[name="goal_amount"]');
-        const deadline   = form.querySelector('input[name="deadline"]');
-        const email      = form.querySelector('input[name="email"]');
-        const phone      = form.querySelector('input[name="phone"]');
-        const province   = form.querySelector('select[name="province"]');
-        const municipality = form.querySelector('select[name="municipality"]');
-        const address    = form.querySelector('input[name="address"]');
-        const location   = form.querySelector('input[name="location"]');
-        const validId    = form.querySelector('input[name="valid_id"]');
-        const photos     = form.querySelector('input[name="photos[]"]');
-
-        if (!title.value.trim()) { kbfSetFieldError(title, 'Fund title is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!desc.value.trim()) { kbfSetFieldError(desc, 'Description is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!goal.value || Number(goal.value) < 100) { kbfSetFieldError(goal, 'Goal must be at least PHP 100.'); kbfShowFormMessage(msg,'error','Please enter a valid goal amount.'); return; }
-        if (!deadline.value) { kbfSetFieldError(deadline, 'Deadline is required.'); kbfShowFormMessage(msg,'error','Please set a deadline.'); return; }
-        const deadlineDate = new Date(deadline.value);
-        const minDate = new Date();
-        minDate.setDate(minDate.getDate() + 7);
-        if (isNaN(deadlineDate.getTime()) || deadlineDate < minDate) {
-            kbfSetFieldError(deadline, 'Deadline must be at least 7 days from today.');
-            kbfShowFormMessage(msg, 'error', 'Deadline must be at least 7 days from today.');
-            return;
-        }
-        if (!email.value.trim() || !kbfValidateEmail(email.value.trim())) { kbfSetFieldError(email, 'Valid email is required.'); kbfShowFormMessage(msg,'error','Please provide a valid email address.'); return; }
-        if (!phone.value.trim()) { kbfSetFieldError(phone, 'Phone is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!province.value.trim()) { kbfSetFieldError(province, 'Province is required.'); kbfShowFormMessage(msg,'error','Please select a province.'); return; }
-        if (!municipality.value.trim()) { kbfSetFieldError(municipality, 'Municipality is required.'); kbfShowFormMessage(msg,'error','Please select a municipality.'); return; }
-        const addrVal = address && address.value.trim() ? address.value.trim() : '';
-        location.value = province.value + ', ' + municipality.value + (addrVal ? ', ' + addrVal : '');
-        if (!validId.files || validId.files.length === 0) { kbfSetFieldError(validId, 'Please upload a valid ID.'); kbfShowFormMessage(msg,'error','Please attach your ID.'); return; }
-        if (!photos.files || photos.files.length === 0) { kbfSetFieldError(photos, 'At least one photo is required.'); kbfShowFormMessage(msg,'error','Please attach photos for your fundraiser.'); return; }
-
         kbfSetBtnLoading(btn, true, 'Submitting...');
         kbfSetSkeleton(msg, true);
         const fd = new FormData(form);
@@ -1326,36 +1113,15 @@ function bntm_shortcode_kbf_dashboard() {
         .then(r=>r.json()).then(json=>{
             const m = document.getElementById('kbf-create-msg');
             m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
-            if(json.success) {
-                kbfSetBtnLoading(btn,false);
-                kbfSetSkeleton(msg,false);
-                kbfCloseModal('kbf-modal-create');
-                setTimeout(()=>location.reload(), 1200);
-            } else {
-                kbfSetBtnLoading(btn,false);
-                kbfSetSkeleton(msg,false);
-            }
-        }).catch(() => {
-            kbfSetBtnLoading(btn,false);
-            kbfSetSkeleton(msg,false);
-            kbfShowFormMessage(msg, 'error', 'Network error. Please try again.');
-        });
+            if(json.success) setTimeout(()=>location.reload(), 1800);
+            else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
+        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
 
     function kbfSubmitEdit() {
         const form = document.getElementById('kbf-edit-fund-form');
         const btn  = document.querySelector('#kbf-modal-edit .kbf-modal-footer .kbf-btn-primary');
         const msg  = document.getElementById('kbf-edit-msg');
-        kbfClearFieldErrors(form);
-
-        const title = form.querySelector('input[name="title"]');
-        const desc  = form.querySelector('textarea[name="description"]');
-        const loc   = form.querySelector('input[name="location"]');
-
-        if (!title.value.trim()) { kbfSetFieldError(title, 'Title is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!desc.value.trim()) { kbfSetFieldError(desc, 'Description is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!loc.value.trim()) { kbfSetFieldError(loc, 'Location is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-
         kbfSetBtnLoading(btn, true, 'Saving...');
         kbfSetSkeleton(msg, true);
         const fd = new FormData(form);
@@ -1374,19 +1140,6 @@ function bntm_shortcode_kbf_dashboard() {
         const form = document.getElementById('kbf-wd-form');
         const btn  = document.querySelector('#kbf-modal-wd .kbf-modal-footer .kbf-btn-primary');
         const msg  = document.getElementById('kbf-wd-msg');
-        kbfClearFieldErrors(form);
-
-        const amountEl = form.querySelector('input[name="amount"]');
-        const methodEl = form.querySelector('input[name="method"]');
-        const accountNameEl = form.querySelector('input[name="account_name"]');
-        const accountNumberEl = form.querySelector('input[name="account_number"]');
-
-        const amount = amountEl ? parseFloat(amountEl.value||'0') : 0;
-        if (!amount || amount <= 0) { kbfSetFieldError(amountEl,'Enter a valid withdrawal amount.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!methodEl.value.trim()) { kbfSetFieldError(methodEl,'Withdrawal method is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!accountNameEl.value.trim()) { kbfSetFieldError(accountNameEl,'Account name is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!accountNumberEl.value.trim()) { kbfSetFieldError(accountNumberEl,'Account number is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-
         kbfSetBtnLoading(btn, true, 'Submitting...');
         kbfSetSkeleton(msg, true);
         const fd = new FormData(form);
@@ -1413,12 +1166,8 @@ function bntm_shortcode_kbf_dashboard() {
         fetch(ajaxurl, {method:'POST', body:fd})
         .then(r=>r.json()).then(json=>{
             msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
-            if (json.success) {
-                setTimeout(()=>{
-                    kbfCloseModal('kbf-modal-appeal');
-                    location.reload();
-                }, 1600);
-            } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
+            if (json.success) setTimeout(()=>{ kbfCloseModal('kbf-modal-appeal'); }, 1600);
+            else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
 
@@ -1475,7 +1224,7 @@ function bntm_shortcode_kbf_dashboard() {
     </script>
     <?php
     $content = ob_get_clean();
-    return bntm_universal_container('KonekBayan -- Finding Platform', $content);
+    return bntm_universal_container('KonekBayan -- Finding Platform', $content, ['show_topbar'=>false,'show_header'=>false]);
 }
 
 
@@ -1664,8 +1413,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
             <?php if(in_array($f->status,['active','pending'])): ?>
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>')">Edit</button>
             <?php endif; ?>
-            <?php $goal_met = $f->goal_amount <= 0 || $f->raised_amount >= $f->goal_amount; ?>
-            <?php if(in_array($f->status,['active','completed']) && $goal_met && $f->escrow_status==='released'): ?>
+            <?php if(in_array($f->status,['active','completed']) && $f->raised_amount>0): ?>
               <button class="kbf-btn kbf-btn-primary kbf-btn-sm" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Request Withdrawal
@@ -1917,12 +1665,12 @@ function kbf_dashboard_find_funds_tab() {
     $loc  = isset($_GET['ff_loc']) ? sanitize_text_field($_GET['ff_loc']) : '';
     $sort = isset($_GET['ff_sort'])? sanitize_text_field($_GET['ff_sort']): 'newest';
 
-    $where = "WHERE f.status='active' AND COALESCE(um.meta_value,'0')!='1'"; $params = [];
+    $where = "WHERE f.status='active'"; $params = [];
     if($q)  { $where .= " AND (f.title LIKE %s OR f.description LIKE %s)"; $params[] = "%".$wpdb->esc_like($q)."%"; $params[] = "%".$wpdb->esc_like($q)."%"; }
     if($cat){ $where .= " AND f.category=%s"; $params[] = $cat; }
     if($loc){ $where .= " AND f.location LIKE %s"; $params[] = "%".$wpdb->esc_like($loc)."%"; }
     $order = $sort === 'most_funded' ? 'f.raised_amount DESC' : ($sort === 'ending_soon' ? 'f.deadline ASC' : 'f.created_at DESC');
-    $sql = "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID LEFT JOIN {$wpdb->usermeta} um ON um.user_id=f.business_id AND um.meta_key='kbf_organizer_suspended' {$where} ORDER BY {$order}";
+    $sql = "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY {$order}";
     $funds = !empty($params) ? $wpdb->get_results($wpdb->prepare($sql,...$params)) : $wpdb->get_results($sql); // phpcs:ignore
     $cats  = kbf_get_categories();
     $nonce_sponsor = wp_create_nonce('kbf_sponsor');
@@ -1960,6 +1708,13 @@ function kbf_dashboard_find_funds_tab() {
             <div class="kbf-form-row">
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
               <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
+            </div>
+            <div class="kbf-form-group"><label>Payment Method *</label>
+              <select name="payment_method" required>
+                <option value="">Select Method</option>
+                <option value="online_payment">Online Payment (GCash / PayMaya / E-Wallet)</option>
+                <option value="bank_payment">Bank Payment (Bank Transfer / Over-the-Counter)</option>
+              </select>
             </div>
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:6px;">
@@ -2175,12 +1930,6 @@ function kbf_dashboard_find_funds_tab() {
         const form=document.getElementById('kbff-sponsor-form');
         const btn=document.getElementById('kbff-sponsor-submit');
         const msg=document.getElementById('kbff-sponsor-msg');
-        const showFormError = (text) => {
-            if (typeof kbfShowFormMessage === 'function') { showFormError(text); }
-            else if (msg) { msg.innerHTML = '<div class="kbf-alert kbf-alert-error">'+text+'</div>'; }
-        };
-        const setFieldError = (el, text) => { if (typeof kbfSetFieldError === 'function') { setFieldError(el, text); } };
-        const clearErrors = () => { if (typeof kbfClearFieldErrors === 'function') { kbfClearFieldErrors(form); } };
         const methodEl = form.querySelector('select[name="payment_method"]');
         if (methodEl && methodEl.value !== 'online_payment') {
             msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
@@ -2198,7 +1947,6 @@ function kbf_dashboard_find_funds_tab() {
         const fd=new FormData(form);
         fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
-        fd.append('payment_method','online_payment');
         fd.append('is_anonymous',document.getElementById('kbff-anon').checked?'1':'0');
         kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
@@ -2268,11 +2016,7 @@ function kbf_dashboard_admin_embed() {
         };
         window.kbfApprove     = function(id){if(!confirm('Approve this fund?'))return;kbfAdmin('kbf_admin_approve_fund',{fund_id:id});};
         window.kbfReject      = function(id){const r=prompt('Reason for rejection (optional):');if(r===null)return;kbfAdmin('kbf_admin_reject_fund',{fund_id:id,reason:r});};
-        window.kbfSuspend     = function(id,cur){
-            const actionText = (cur && cur==='suspended') ? 'Unsuspend this fund?' : 'Suspend this fund?';
-            if(!confirm(actionText)) return;
-            kbfAdmin('kbf_admin_suspend_fund',{fund_id:id});
-        };
+        window.kbfSuspend     = function(id){if(!confirm('Suspend this fund?'))return;kbfAdmin('kbf_admin_suspend_fund',{fund_id:id});};
         window.kbfVerifyBadge = function(id,cur){kbfAdmin('kbf_admin_verify_badge',{fund_id:id,verified:cur?'0':'1'});};
         window.kbfEscrow      = function(id,act){kbfAdmin('kbf_admin_'+act+'_escrow',{fund_id:id});};
         window.kbfDismissReport  = function(id){kbfAdmin('kbf_admin_dismiss_report',{report_id:id});};
@@ -2281,11 +2025,6 @@ function kbf_dashboard_admin_embed() {
         window.kbfProcessWd      = function(id,type){if(type==='reject'){const r=prompt('Reason:');if(!r)return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'reject',notes:r});}else{if(!confirm('Approve & release?'))return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'approve'});}};
         window.kbfConfirmPayment = function(id){if(!confirm('Mark as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
         window.kbfVerifyOrg      = function(id,cur){kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:cur?'0':'1'});};
-        window.kbfToggleOrganizer = function(id,cur){
-            const msg = (cur==='1') ? 'Unsuspend this organizer account?' : 'Suspend this organizer account?';
-            if(!confirm(msg)) return;
-            kbfAdmin('kbf_admin_toggle_organizer',{business_id:id,suspended:(cur==='1'?'0':'1')});
-        };
     } else {
         // Already defined -- just refresh the nonce value
         _kbfAdminNonce = '<?php echo $nonce; ?>';
@@ -2404,6 +2143,9 @@ function bntm_shortcode_kbf_browse() {
             <div class="kbf-form-row">
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
               <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
+            </div>
+            <div class="kbf-form-group"><label>Payment Method *</label>
+              <select name="payment_method" id="sponsor-payment-method" required><option value="">Select Payment Method</option><option value="online_payment">Online Payment (GCash / PayMaya / E-Wallet)</option><option value="bank_payment">Bank Payment (Bank Transfer / Over-the-Counter)</option></select>
             </div>
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
@@ -2611,43 +2353,24 @@ function bntm_shortcode_kbf_browse() {
         const form=document.getElementById('kbf-sponsor-form');
         const btn=document.querySelector('#kbf-modal-sponsor .kbf-modal-footer .kbf-btn-primary');
         const msg=document.getElementById('kbf-sponsor-msg');
-        const showFormError = (text) => {
-            if (typeof kbfShowFormMessage === 'function') { showFormError(text); }
-            else if (msg) { msg.innerHTML = '<div class="kbf-alert kbf-alert-error">'+text+'</div>'; }
-        };
-        const setFieldError = (el, text) => { if (typeof kbfSetFieldError === 'function') { setFieldError(el, text); } };
-        const clearErrors = () => { if (typeof kbfClearFieldErrors === 'function') { kbfClearFieldErrors(form); } };
-        clearErrors();
-
-        const nameEl   = form.querySelector('input[name="sponsor_name"]');
-        const amountEl = form.querySelector('input[name="amount"]');
-        const emailEl  = form.querySelector('input[name="email"]');
-        const phoneEl  = form.querySelector('input[name="phone"]');
-
-        const isAnonymous = document.getElementById('anon-check').checked;
-        const nameValue = nameEl ? nameEl.value.trim() : '';
-        const amount = amountEl ? parseFloat(amountEl.value||'0') : 0;
-        const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
-
-        if (!isAnonymous && !nameValue) { setFieldError(nameEl,'Name is required for non-anonymous sponsorship.'); showFormError('Please fix field errors before continuing.'); return; }
-        if (!amount || amount <= 0) { setFieldError(amountEl,'Amount must be greater than 0.'); showFormError('Please enter a valid amount.'); return; }
-        if (maxVal && amount > maxVal) { setFieldError(amountEl,'Amount cannot exceed remaining goal (₱'+maxVal.toLocaleString()+').'); showFormError('Please enter an allowable amount.'); return; }
-        if (!emailEl || !emailEl.value.trim()) { setFieldError(emailEl,'Email is required.'); showFormError('Please enter your email.'); return; }
-        if (!kbfValidateEmail(emailEl.value.trim())) { setFieldError(emailEl,'Please enter a valid email.'); showFormError('Please enter a valid email.'); return; }
-        if (!phoneEl || !phoneEl.value.trim()) { setFieldError(phoneEl,'Phone is required.'); showFormError('Please enter your phone number.'); return; }
-
         const methodEl = form.querySelector('select[name="payment_method"]');
         if (methodEl && methodEl.value !== 'online_payment') {
-            showFormError('Online Payment is required to proceed to Maya Checkout.');
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
             return;
         }
-
+        const amountEl = form.querySelector('input[name="amount"]');
+        const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
+        const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
+        if (maxVal && amt > maxVal) {
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ₱' + maxVal.toLocaleString() + ' for this fund.</div>';
+            return;
+        }
         kbfSetBtnLoading(btn,true,'Processing...');
         kbfSetSkeleton(msg,true);
         const fd=new FormData(form);
         fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
-        fd.append('is_anonymous',isAnonymous?'1':'0');
+        fd.append('is_anonymous',document.getElementById('anon-check').checked?'1':'0');
         kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
                 if(j.data.checkout_url){
@@ -2749,7 +2472,7 @@ function bntm_shortcode_kbf_browse() {
     </script>
     <?php
     $c=ob_get_clean();
-    return bntm_universal_container('Browse Funds -- KonekBayan',$c);
+    return bntm_universal_container('Browse Funds -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
 
 // ============================================================
@@ -2848,7 +2571,7 @@ function bntm_shortcode_kbf_fund_details() {
         ));
     }
     $is_owner = $fund && $current_user_id && $fund->business_id == $current_user_id;
-    if(!$fund) return bntm_universal_container('Fund Details', '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Fund not found or no longer active.</div></div>');
+    if(!$fund) return bntm_universal_container('Fund Details', '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Fund not found or no longer active.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
 
     $st = $wpdb->prefix.'kbf_sponsorships';
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
@@ -2928,6 +2651,13 @@ function bntm_shortcode_kbf_fund_details() {
             <div class="kbf-form-row">
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
               <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
+            </div>
+            <div class="kbf-form-group"><label>Payment Method *</label>
+              <select name="payment_method" required>
+                <option value="">Select Method</option>
+                <option value="online_payment">Online Payment (GCash / PayMaya / E-Wallet)</option>
+                <option value="bank_payment">Bank Payment (Bank Transfer / Over-the-Counter)</option>
+              </select>
             </div>
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
@@ -3338,18 +3068,18 @@ function bntm_shortcode_kbf_fund_details() {
     if (!empty($_GET['kbf_tab']) && $_GET['kbf_tab'] === 'fund_details') {
         return $c;
     }
-    return bntm_universal_container('Fund Details -- KonekBayan',$c);
+    return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
 
 function bntm_shortcode_kbf_organizer_profile() {
     kbf_global_assets();
     global $wpdb;
     $biz_id = isset($_GET['organizer_id'])?intval($_GET['organizer_id']):0;
-    if(!$biz_id) return bntm_universal_container('Organizer Profile','<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Organizer not found.</div></div>');
+    if(!$biz_id) return bntm_universal_container('Organizer Profile','<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Organizer not found.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
     $pt=$wpdb->prefix.'kbf_organizer_profiles';$ft=$wpdb->prefix.'kbf_funds';$rt=$wpdb->prefix.'kbf_ratings';
     $profile=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$biz_id));
     $user=get_userdata($biz_id);
-    if(!$user) return bntm_universal_container('Organizer Profile','<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Organizer not found.</div></div>');
+    if(!$user) return bntm_universal_container('Organizer Profile','<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Organizer not found.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
     $funds=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d AND status IN ('active','completed') ORDER BY created_at DESC LIMIT 10",$biz_id));
     $reviews=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$rt} WHERE organizer_id=%d ORDER BY created_at DESC LIMIT 10",$biz_id));
     $socials=$profile&&$profile->social_links?json_decode($profile->social_links,true):[];
@@ -3441,7 +3171,7 @@ function bntm_shortcode_kbf_organizer_profile() {
     if (!empty($_GET['kbf_tab']) && $_GET['kbf_tab'] === 'organizer_profile') {
         return $c;
     }
-    return bntm_universal_container('Organizer Profile -- KonekBayan',$c);
+    return bntm_universal_container('Organizer Profile -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
 
 
@@ -3469,11 +3199,7 @@ function bntm_shortcode_kbf_admin() {
     };
     window.kbfApprove=function(id){if(!confirm('Approve this fund?'))return;kbfAdmin('kbf_admin_approve_fund',{fund_id:id});};
     window.kbfReject=function(id){const r=prompt('Reason for rejection (optional):');if(r===null)return;kbfAdmin('kbf_admin_reject_fund',{fund_id:id,reason:r});};
-    window.kbfSuspend=function(id,cur){
-        const actionText = (cur && cur==='suspended') ? 'Unsuspend this fund?' : 'Suspend this fund?';
-        if(!confirm(actionText)) return;
-        kbfAdmin('kbf_admin_suspend_fund',{fund_id:id});
-    };
+    window.kbfSuspend=function(id){if(!confirm('Suspend this fund?'))return;kbfAdmin('kbf_admin_suspend_fund',{fund_id:id});};
     window.kbfVerifyBadge=function(id,cur){kbfAdmin('kbf_admin_verify_badge',{fund_id:id,verified:cur?'0':'1'});};
     window.kbfEscrow=function(id,act){kbfAdmin('kbf_admin_'+act+'_escrow',{fund_id:id});};
         window.kbfDismissReport=function(id){kbfAdmin('kbf_admin_dismiss_report',{report_id:id});};
@@ -3523,7 +3249,7 @@ function bntm_shortcode_kbf_admin() {
     </div>
     <?php
     $c=ob_get_clean();
-    return bntm_universal_container('KonekBayan Admin Panel',$c);
+    return bntm_universal_container('KonekBayan Admin Panel',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
 
 function kbf_admin_pending_tab() {
@@ -3599,9 +3325,7 @@ function kbf_admin_all_funds_tab() {
                   <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfVerifyBadge(<?php echo $f->id; ?>,<?php echo $f->verified_badge; ?>)"><?php echo $f->verified_badge?'Remove Badge':'Verify'; ?></button>
                   <?php if($f->status==='active'): ?>
                     <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfEscrow(<?php echo $f->id; ?>,'<?php echo $f->escrow_status==='holding'?'release':'hold'; ?>')"><?php echo $f->escrow_status==='holding'?'Release Escrow':'Hold Escrow'; ?></button>
-                    <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfSuspend(<?php echo $f->id; ?>,'active')">Suspend</button>
-                  <?php elseif($f->status==='suspended'): ?>
-                    <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfSuspend(<?php echo $f->id; ?>,'suspended')">Unsuspend</button>
+                    <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfSuspend(<?php echo $f->id; ?>)">Suspend</button>
                   <?php elseif($f->status==='pending'): ?>
                     <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfApprove(<?php echo $f->id; ?>)">Approve</button>
                     <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfReject(<?php echo $f->id; ?>)">Reject</button>
@@ -3699,7 +3423,7 @@ function kbf_admin_withdrawals_tab() {
 
 function kbf_admin_reports_tab() {
     global $wpdb;$rt=$wpdb->prefix.'kbf_reports';$ft=$wpdb->prefix.'kbf_funds';
-    $rows=$wpdb->get_results("SELECT r.*,f.title as fund_title,f.status as fund_status FROM {$rt} r JOIN {$ft} f ON r.fund_id=f.id ORDER BY FIELD(r.status,'open','reviewed','dismissed'),r.created_at DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $rows=$wpdb->get_results("SELECT r.*,f.title as fund_title FROM {$rt} r JOIN {$ft} f ON r.fund_id=f.id ORDER BY FIELD(r.status,'open','reviewed','dismissed'),r.created_at DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     ob_start(); ?>
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">Fund Reports</h3>
@@ -3718,11 +3442,7 @@ function kbf_admin_reports_tab() {
           </div>
           <?php if($r->status==='open'): ?>
           <div class="kbf-btn-group">
-            <?php if($r->fund_status==='suspended'): ?>
-              <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfSuspend(<?php echo $r->fund_id; ?>,'suspended')">Unsuspend Fund</button>
-            <?php else: ?>
-              <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfSuspend(<?php echo $r->fund_id; ?>,'active')">Suspend Fund</button>
-            <?php endif; ?>
+            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfSuspend(<?php echo $r->fund_id; ?>)">Suspend Fund</button>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfReviewReport(<?php echo $r->id; ?>)">Mark Reviewed</button>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfDismissReport(<?php echo $r->id; ?>)">Dismiss</button>
           </div>
@@ -3767,16 +3487,16 @@ function kbf_admin_appeals_tab() {
 
 function kbf_admin_organizers_tab() {
     global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';
-    $rows=$wpdb->get_results("SELECT p.*,u.display_name,u.user_email,COALESCE(um.meta_value,'0') as is_suspended FROM {$pt} p JOIN {$wpdb->users} u ON p.business_id=u.ID LEFT JOIN {$wpdb->usermeta} um ON um.user_id=u.ID AND um.meta_key='kbf_organizer_suspended' ORDER BY p.total_raised DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $rows=$wpdb->get_results("SELECT p.*,u.display_name,u.user_email FROM {$pt} p JOIN {$wpdb->users} u ON p.business_id=u.ID ORDER BY p.total_raised DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     ob_start(); ?>
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">Organizer Management</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Total Raised</th><th>Sponsors</th><th>Rating</th><th>Verified</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Total Raised</th><th>Sponsors</th><th>Rating</th><th>Verified</th><th>Actions</th></tr></thead>
           <tbody>
           <?php if(empty($rows)): ?>
-            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--kbf-slate);">No organizer profiles yet.</td></tr>
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--kbf-slate);">No organizer profiles yet.</td></tr>
           <?php else: foreach($rows as $p): ?>
             <tr>
               <td><strong><?php echo esc_html($p->display_name); ?></strong></td>
@@ -3785,13 +3505,7 @@ function kbf_admin_organizers_tab() {
               <td><?php echo number_format($p->total_sponsors); ?></td>
               <td><?php echo number_format($p->rating,1); ?>/5 (<?php echo $p->rating_count; ?>)</td>
               <td><?php echo $p->is_verified?'<span style="color:var(--kbf-green);font-weight:700;">Verified</span>':'--'; ?></td>
-              <td><?php echo $p->is_suspended==='1'?'<span style="color:#dc2626;font-weight:700;">Suspended</span>':'<span style="color:#0f766e;font-weight:700;">Active</span>'; ?></td>
-              <td>
-                <div class="kbf-btn-group">
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfVerifyOrg(<?php echo $p->business_id; ?>,<?php echo $p->is_verified; ?>)"><?php echo $p->is_verified?'Revoke Verification':'Verify Organizer'; ?></button>
-                  <button class="kbf-btn <?php echo $p->is_suspended==='1'?'kbf-btn-success':'kbf-btn-danger'; ?> kbf-btn-sm" onclick="kbfToggleOrganizer(<?php echo $p->business_id; ?>,'<?php echo $p->is_suspended; ?>')"><?php echo $p->is_suspended==='1'?'Unsuspend Account':'Suspend Account'; ?></button>
-                </div>
-              </td>
+              <td><button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfVerifyOrg(<?php echo $p->business_id; ?>,<?php echo $p->is_verified; ?>)"><?php echo $p->is_verified?'Revoke Verification':'Verify Organizer'; ?></button></td>
             </tr>
           <?php endforeach; endif; ?>
           </tbody>
@@ -3811,15 +3525,9 @@ function bntm_ajax_kbf_create_fund() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$table=$wpdb->prefix.'kbf_funds';
     $biz=get_current_user_id();
-    foreach(['title','description','goal_amount','email','phone','location','category','funder_type','deadline'] as $f) {
+    foreach(['title','description','goal_amount','email','phone','location','category','funder_type'] as $f) {
         if(empty($_POST[$f])) wp_send_json_error(['message'=>'Please fill all required fields.']);
     }
-    $deadline = sanitize_text_field($_POST['deadline']);
-    if(!strtotime($deadline)) wp_send_json_error(['message'=>'Please provide a valid deadline date.']);
-    if(strtotime($deadline) < strtotime('+7 days')) wp_send_json_error(['message'=>'Deadline must be at least 7 days from today.']);
-    if(empty($_FILES['valid_id']['name'])) wp_send_json_error(['message'=>'Valid ID is required.']);
-    if(empty($_FILES['photos']['name'][0])) wp_send_json_error(['message'=>'Please upload at least one photo for your fund.']);
-
     $goal=floatval($_POST['goal_amount']);
     if($goal<100) wp_send_json_error(['message'=>'Minimum goal is ₱100.']);
     $valid_id='';
@@ -3932,8 +3640,6 @@ function bntm_ajax_kbf_request_withdrawal() {
         }
     }
     if(!in_array($fund->status, ['active', 'completed'])) wp_send_json_error(['message'=>'Withdrawals are only available for active or completed fundraisers.']);
-    if($fund->raised_amount < $fund->goal_amount) wp_send_json_error(['message'=>'Withdrawal is only allowed after the fundraising goal is met.']);
-    if($fund->escrow_status !== 'released') wp_send_json_error(['message'=>'Funds are still held in escrow. Please wait for admin release.']);
     if($fund->escrow_status === 'refunded') wp_send_json_error(['message'=>'Funds have been refunded and are no longer available for withdrawal.']);
     if($amount<=0) wp_send_json_error(['message'=>'Please enter a valid amount.']);
     if($amount>$fund->raised_amount) wp_send_json_error(['message'=>'Amount exceeds total raised funds (PHP '.number_format($fund->raised_amount,2).' ).']);
@@ -4701,21 +4407,9 @@ function bntm_ajax_kbf_admin_reject_fund() {
 function bntm_ajax_kbf_admin_suspend_fund() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
-    global $wpdb;
-    $t = $wpdb->prefix.'kbf_funds';
-    $id = intval($_POST['fund_id']);
-
-    $fund = $wpdb->get_row($wpdb->prepare("SELECT status FROM {$t} WHERE id=%d", $id));
-    if(!$fund) {
-        wp_send_json_error(['message'=>'Fund not found.']);
-    }
-
-    $new_status = ($fund->status === 'suspended') ? 'active' : 'suspended';
-    $message = ($new_status === 'suspended') ? 'Fund suspended.' : 'Fund unsuspended.';
-
-    $wpdb->update($t,['status'=>$new_status],['id'=>$id],['%s'],['%d']);
-
-    wp_send_json_success(['message'=>$message]);
+    global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
+    $wpdb->update($t,['status'=>'suspended'],['id'=>$id],['%s'],['%d']);
+    wp_send_json_success(['message'=>'Fund suspended.']);
 }
 
 function bntm_ajax_kbf_admin_verify_badge() {
@@ -4834,21 +4528,6 @@ function bntm_ajax_kbf_admin_verify_organizer() {
     if($exists) $wpdb->update($pt,['is_verified'=>$v],['business_id'=>$biz],['%d'],['%d']);
     else $wpdb->insert($pt,['business_id'=>$biz,'is_verified'=>$v],['%d','%d']);
     wp_send_json_success(['message'=>$v?'Organizer verified!':'Verification revoked.']);
-}
-
-function bntm_ajax_kbf_admin_toggle_organizer() {
-    check_ajax_referer('kbf_admin_action');
-    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
-    $biz = intval($_POST['business_id']);
-    $suspended = intval($_POST['suspended']) ? '1' : '0';
-
-    if(!$biz) wp_send_json_error(['message'=>'Invalid organizer ID.']);
-
-    $meta_key = 'kbf_organizer_suspended';
-    if(update_user_meta($biz, $meta_key, $suspended)) {
-        wp_send_json_success(['message'=>$suspended=='1'?'Organizer account suspended.':'Organizer account unsuspended.']);
-    }
-    wp_send_json_error(['message'=>'Failed to update organizer status.']);
 }
 
 function bntm_ajax_kbf_save_setting() {
@@ -5032,3 +4711,5 @@ function kbf_refund_all_sponsors($fund_id) {
     // =====================================================
     error_log("[KonekBayan] Auto-refund triggered for fund #{$fund_id}");
 }
+
+
