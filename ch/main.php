@@ -17,6 +17,35 @@ define('BNTM_CH_URL', plugin_dir_url(__FILE__));
 // CORE MODULE FUNCTIONS
 // ============================================================
 
+function ch_get_guidelines_html() {
+    $saved = get_option('ch_community_guidelines', '');
+    if ($saved) return wp_kses_post($saved);
+    // Default guidelines
+    return '<h4>Our Community Standards</h4>
+<p>Welcome to our community forum! To ensure a positive and respectful environment for all members, please follow these guidelines:</p>
+<h5>Be Respectful</h5>
+<ul>
+<li>Treat others with kindness and respect</li>
+<li>No harassment, bullying, or hate speech</li>
+<li>Respect differing opinions and backgrounds</li>
+</ul>
+<h5>Content Guidelines</h5>
+<ul>
+<li>Post relevant and meaningful content</li>
+<li>No spam, misleading information, or inappropriate content</li>
+<li>Use appropriate language and avoid offensive material</li>
+</ul>
+<h5>Reporting</h5>
+<ul>
+<li>Report violations using the report buttons</li>
+<li>Provide details when reporting to help moderators</li>
+<li>False reports may result in account restrictions</li>
+</ul>
+<h5>Consequences</h5>
+<p>Violations may result in content removal, temporary suspension, or permanent bans. We reserve the right to moderate content at our discretion.</p>
+<p><strong>Thank you for helping keep our community safe and welcoming!</strong></p>';
+}
+
 function bntm_ch_get_pages() {
     return [
         'CivicHub Dashboard' => '[ch_dashboard]',
@@ -45,10 +74,12 @@ function bntm_ch_get_tables() {
             follower_count INT UNSIGNED DEFAULT 0,
             sort_order INT DEFAULT 0,
             status ENUM('active','archived') DEFAULT 'active',
+            is_private TINYINT(1) DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_business (business_id),
-            INDEX idx_slug (slug)
+            INDEX idx_slug (slug),
+            INDEX idx_private (is_private)
         ) {$charset};",
 
         'ch_posts' => "CREATE TABLE {$prefix}ch_posts (
@@ -62,6 +93,7 @@ function bntm_ch_get_tables() {
             media_urls TEXT,
             tags VARCHAR(500),
             is_anonymous TINYINT(1) DEFAULT 0,
+            guest_name VARCHAR(100) DEFAULT NULL,
             is_pinned TINYINT(1) DEFAULT 0,
             status ENUM('active','removed','pending','hidden') DEFAULT 'active',
             vote_count INT DEFAULT 0,
@@ -87,6 +119,7 @@ function bntm_ch_get_tables() {
             parent_id BIGINT UNSIGNED DEFAULT 0,
             content TEXT NOT NULL,
             is_anonymous TINYINT(1) DEFAULT 0,
+            guest_name VARCHAR(100) DEFAULT NULL,
             vote_count INT DEFAULT 0,
             status ENUM('active','removed','hidden') DEFAULT 'active',
             report_count INT UNSIGNED DEFAULT 0,
@@ -210,344 +243,26 @@ function bntm_ch_get_shortcodes() {
 }
 
 function bntm_ch_create_tables() {
+    global $wpdb;
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     $tables = bntm_ch_get_tables();
     foreach ($tables as $sql) {
         dbDelta($sql);
     }
+    // Ensure new columns exist on existing installs
+    $cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories LIKE 'is_private'");
+    if (empty($cols)) {
+        $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_categories ADD COLUMN is_private TINYINT(1) DEFAULT 0 AFTER status");
+    }
+    $post_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_posts LIKE 'guest_name'");
+    if (empty($post_cols)) {
+        $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_posts ADD COLUMN guest_name VARCHAR(100) DEFAULT NULL AFTER is_anonymous");
+    }
+    $cm_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_comments LIKE 'guest_name'");
+    if (empty($cm_cols)) {
+        $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_comments ADD COLUMN guest_name VARCHAR(100) DEFAULT NULL AFTER is_anonymous");
+    }
     return count($tables);
-}
-
-// ============================================================
-// SEED DATA
-// ============================================================
-
-function bntm_ch_seed_data() {
-    global $wpdb;
-    $p = $wpdb->prefix;
-
-    // ---- Categories ----
-    $categories = [
-        ['name'=>'Road & Infrastructure',  'slug'=>'road-infrastructure',  'color'=>'#ef4444', 'icon'=>'road',        'desc'=>'Report road damage, potholes, broken streetlights, and other infrastructure issues.'],
-        ['name'=>'Public Safety',          'slug'=>'public-safety',        'color'=>'#f59e0b', 'icon'=>'shield',      'desc'=>'Concerns about crime, illegal activities, and community safety.'],
-        ['name'=>'Environment',            'slug'=>'environment',          'color'=>'#10b981', 'icon'=>'leaf',        'desc'=>'Flooding, garbage disposal, illegal dumping, and environmental hazards.'],
-        ['name'=>'Water & Utilities',      'slug'=>'water-utilities',      'color'=>'#3b82f6', 'icon'=>'droplet',     'desc'=>'Water supply issues, power outages, sewage problems.'],
-        ['name'=>'Health & Sanitation',    'slug'=>'health-sanitation',    'color'=>'#8b5cf6', 'icon'=>'heart',       'desc'=>'Community health concerns, sanitation, and medical access.'],
-        ['name'=>'Education',              'slug'=>'education',            'color'=>'#06b6d4', 'icon'=>'book',        'desc'=>'Schools, literacy programs, and youth development.'],
-        ['name'=>'General Discussion',     'slug'=>'general-discussion',   'color'=>'#6b7280', 'icon'=>'forum',       'desc'=>'Open forum for general community conversations and announcements.'],
-    ];
-
-    $cat_ids = [];
-    foreach ($categories as $i => $cat) {
-        $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$p}ch_categories WHERE slug=%s", $cat['slug']));
-        if (!$exists) {
-            $wpdb->insert("{$p}ch_categories", [
-                'rand_id'     => bntm_rand_id(),
-                'business_id' => 1,
-                'name'        => $cat['name'],
-                'slug'        => $cat['slug'],
-                'description' => $cat['desc'],
-                'color'       => $cat['color'],
-                'icon'        => $cat['icon'],
-                'sort_order'  => $i + 1,
-                'status'      => 'active',
-            ], ['%s','%d','%s','%s','%s','%s','%s','%d','%s']);
-            $cat_ids[$cat['slug']] = $wpdb->insert_id;
-        } else {
-            $cat_ids[$cat['slug']] = $exists;
-        }
-    }
-
-    // ---- Sample WP users (if they don't exist) ----
-    $sample_users = [
-        ['login'=>'maria_santos',   'email'=>'maria@example.com',   'display'=>'Maria Santos',   'location'=>'Barangay Lapasan, CDO'],
-        ['login'=>'jose_reyes',     'email'=>'jose@example.com',     'display'=>'Jose Reyes',     'location'=>'Barangay Carmen, CDO'],
-        ['login'=>'ana_villanueva', 'email'=>'ana@example.com',      'display'=>'Ana Villanueva', 'location'=>'Barangay Bulua, CDO'],
-        ['login'=>'pedro_lim',      'email'=>'pedro@example.com',    'display'=>'Pedro Lim',      'location'=>'Barangay Macabalan, CDO'],
-        ['login'=>'rosa_garcia',    'email'=>'rosa@example.com',     'display'=>'Rosa Garcia',    'location'=>'Barangay Nazareth, CDO'],
-    ];
-
-    $user_ids = [];
-    foreach ($sample_users as $u) {
-        $uid = username_exists($u['login']);
-        if (!$uid) {
-            $uid = wp_create_user($u['login'], wp_generate_password(16), $u['email']);
-            if (!is_wp_error($uid)) {
-                wp_update_user(['ID'=>$uid, 'display_name'=>$u['display']]);
-            }
-        }
-        if (!is_wp_error($uid) && $uid) {
-            $profile_exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$p}ch_user_profiles WHERE user_id=%d", $uid));
-            if (!$profile_exists) {
-                $wpdb->insert("{$p}ch_user_profiles", [
-                    'user_id'      => $uid,
-                    'display_name' => $u['display'],
-                    'location'     => $u['location'],
-                    'karma_points' => rand(10, 150),
-                    'post_count'   => 0,
-                    'comment_count'=> 0,
-                    'status'       => 'active',
-                ], ['%d','%s','%s','%d','%d','%d','%s']);
-            }
-            $user_ids[] = $uid;
-        }
-    }
-    if (empty($user_ids)) $user_ids[] = 1;
-
-    // ---- Sample posts ----
-    $posts = [
-        ['cat'=>'road-infrastructure', 'title'=>'Large pothole on Kauswagan Highway near Gaisano',
-         'content'=>"There is a massive pothole near the Gaisano Mall entrance on Kauswagan Highway that has been there for over 3 months. Several motorcycles have already had accidents because of this. The pothole is approximately 1 meter wide and 20cm deep.\n\nI have reported this to the barangay office twice but no action has been taken. Can anyone else who passes this area help escalate this to the city engineering office?",
-         'tags'=>'road,pothole,kauswagan,urgent', 'anon'=>0, 'pinned'=>1],
-
-        ['cat'=>'environment', 'title'=>'Illegal dumping of garbage near Cagayan River bank in Macabalan',
-         'content'=>"Residents near the Cagayan River bank in Macabalan have been noticing an increase in illegal garbage dumping. Piles of household waste, construction debris, and even medical waste have been seen.\n\nThis is not only an eyesore but also a serious flood risk during rainy season as the garbage blocks water flow. We need proper signage, regular monitoring, and strict enforcement of anti-littering ordinances in this area.",
-         'tags'=>'environment,garbage,river,flooding', 'anon'=>0, 'pinned'=>0],
-
-        ['cat'=>'water-utilities', 'title'=>'No water supply for 5 days in Barangay Nazareth',
-         'content'=>"Our entire street in Barangay Nazareth has had no water supply for 5 consecutive days. MCWD says they are doing maintenance but there has been no update since Monday.\n\nFamilies with young children and elderly are severely affected. We are spending money buying water daily. Please, MCWD, give us a clear timeline on when service will be restored.",
-         'tags'=>'water,mcwd,nazareth,utilities', 'anon'=>0, 'pinned'=>0],
-
-        ['cat'=>'public-safety', 'title'=>'Broken streetlights in Barangay Carmen — area is dangerously dark at night',
-         'content'=>"At least 8 streetlights along the main road in Barangay Carmen have been broken for over 2 months. The area is completely dark at night, making it dangerous for pedestrians and motorists.\n\nThere have already been 2 reported snatching incidents in this area after dark. The barangay captain has been informed but no repairs have been made. Who can we contact at the city level to get this fixed faster?",
-         'tags'=>'streetlight,safety,carmen,crime', 'anon'=>0, 'pinned'=>0],
-
-        ['cat'=>'health-sanitation', 'title'=>'Foul smell from drainage canal in Lapasan — health hazard',
-         'content'=>"The drainage canal running along the main road in Lapasan has not been cleaned in months. The smell is unbearable, especially in the afternoon heat. Residents worry about leptospirosis and other waterborne diseases especially with kids playing nearby.\n\nWe need the city sanitation team to schedule a proper cleaning and desilting of this canal before the rainy season begins.",
-         'tags'=>'drainage,sanitation,health,lapasan', 'anon'=>0, 'pinned'=>0],
-
-        ['cat'=>'education', 'title'=>'Requesting covered walkway for students at Bulua Elementary School',
-         'content'=>"Students at Bulua Elementary School have to walk across an open area to reach their classrooms during recess and dismissal. During heavy rain, students get completely soaked and classes get disrupted.\n\nThe PTA has been requesting a covered walkway from the division office for 2 school years now with no progress. Parents are willing to contribute labor if the materials can be provided. Please help us amplify this request.",
-         'tags'=>'school,education,bulua,students', 'anon'=>0, 'pinned'=>0],
-
-        ['cat'=>'general-discussion', 'title'=>'Welcome to CivicHub CDO — let\'s build our community together!',
-         'content'=>"Hello neighbors! Welcome to CivicHub, our community platform for sharing concerns, discussing local issues, and working together to improve our barangays and city.\n\nThis is a safe space to voice your concerns constructively. Remember:\n\n✅ Be respectful and factual\n✅ Provide specific locations when reporting issues\n✅ Tag your posts for better visibility\n✅ Upvote important issues to help them get attention\n\nLet's make Cagayan de Oro better, one concern at a time! 🏙️",
-         'tags'=>'welcome,community,civichub', 'anon'=>0, 'pinned'=>1],
-    ];
-
-    $post_ids = [];
-    foreach ($posts as $i => $p_data) {
-        $cat_id  = $cat_ids[$p_data['cat']] ?? $cat_ids['general-discussion'];
-        $user_id = $user_ids[$i % count($user_ids)];
-        $rand_id = bntm_rand_id();
-        $date    = date('Y-m-d H:i:s', strtotime("-" . (count($posts) - $i) . " days"));
-
-        $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$p}ch_posts WHERE title=%s", $p_data['title']));
-        if ($exists) { $post_ids[] = $exists; continue; }
-
-        $wpdb->insert("{$p}ch_posts", [
-            'rand_id'      => $rand_id,
-            'business_id'  => $user_id,
-            'user_id'      => $user_id,
-            'category_id'  => $cat_id,
-            'title'        => $p_data['title'],
-            'content'      => $p_data['content'],
-            'tags'         => $p_data['tags'],
-            'media_urls'   => '',
-            'is_anonymous' => $p_data['anon'],
-            'is_pinned'    => $p_data['pinned'],
-            'status'       => 'active',
-            'vote_count'   => rand(3, 24),
-            'view_count'   => rand(20, 200),
-            'created_at'   => $date,
-            'updated_at'   => $date,
-        ], ['%s','%d','%d','%d','%s','%s','%s','%s','%d','%d','%s','%d','%d','%s','%s']);
-
-        $post_id = $wpdb->insert_id;
-        $post_ids[] = $post_id;
-
-        // Update category post count
-        $wpdb->query($wpdb->prepare("UPDATE {$p}ch_categories SET post_count = post_count + 1 WHERE id = %d", $cat_id));
-        // Update user post count
-        $wpdb->query($wpdb->prepare("UPDATE {$p}ch_user_profiles SET post_count = post_count + 1 WHERE user_id = %d", $user_id));
-    }
-
-    // ---- Sample comments ----
-    $comment_data = [
-        [0, "I pass this road every day and it's terrible! My tire got damaged last week because of this pothole. Fully support this report.",       0],
-        [0, "I've seen at least 3 motorcycle accidents near that spot. This needs to be fixed immediately before someone gets seriously hurt.",       0],
-        [0, "I already filed a complaint at the City Engineering Office. They said it's in the queue. Let's keep pushing!",                          0],
-        [1, "This is a huge environmental problem. The last major flood we had was partly because of clogged waterways from illegal dumping.",        0],
-        [1, "I saw a dump truck unloading waste there at midnight last week. We need CCTV cameras in that area.",                                    0],
-        [2, "Same problem in our street! No water for days and MCWD just says 'ongoing maintenance' with no ETA.",                                  0],
-        [2, "Water tankers are available from the barangay but only in small quantities. Please coordinate with your barangay captain.",             0],
-        [3, "These broken lights are a serious safety issue. I'll bring this up in the next barangay assembly.",                                     0],
-        [4, "The smell has gotten worse recently. City health officials need to inspect this area for public health violations.",                     0],
-        [5, "We have the same issue at our school. Covered walkways should be standard infrastructure, not an optional upgrade.",                    0],
-        [6, "Great initiative! CDO residents have been needing a platform like this. Let's make our voices heard!",                                  0],
-        [6, "Welcome everyone! Let's keep this community respectful and focused on solutions. 👍",                                                   0],
-    ];
-
-    foreach ($comment_data as $cd) {
-        list($post_idx, $content, $is_anon) = $cd;
-        $post_id = $post_ids[$post_idx] ?? ($post_ids[0] ?? 0);
-        if (!$post_id) continue;
-        $user_id = $user_ids[array_rand($user_ids)];
-        $rand_id = bntm_rand_id();
-        $date    = date('Y-m-d H:i:s', strtotime('-' . rand(1, 10) . ' hours'));
-
-        $already = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$p}ch_comments WHERE post_id=%d AND content=%s", $post_id, $content));
-        if ($already) continue;
-
-        $wpdb->insert("{$p}ch_comments", [
-            'rand_id'      => $rand_id,
-            'business_id'  => $user_id,
-            'post_id'      => $post_id,
-            'user_id'      => $user_id,
-            'parent_id'    => 0,
-            'content'      => $content,
-            'is_anonymous' => $is_anon,
-            'vote_count'   => rand(0, 8),
-            'status'       => 'active',
-            'created_at'   => $date,
-        ], ['%s','%d','%d','%d','%d','%s','%d','%d','%s','%s']);
-
-        $wpdb->query($wpdb->prepare("UPDATE {$p}ch_posts SET comment_count = comment_count + 1 WHERE id = %d", $post_id));
-        $wpdb->query($wpdb->prepare("UPDATE {$p}ch_user_profiles SET comment_count = comment_count + 1 WHERE user_id = %d", $user_id));
-    }
-
-    // ---- Sample announcement ----
-    $ann_exists = $wpdb->get_var("SELECT id FROM {$p}ch_announcements LIMIT 1");
-    if (!$ann_exists) {
-        $wpdb->insert("{$p}ch_announcements", [
-            'rand_id'   => bntm_rand_id(),
-            'admin_id'  => 1,
-            'title'     => '📣 Welcome to CivicHub — Your Community Voice Platform',
-            'content'   => '<p>We are thrilled to launch <strong>CivicHub</strong>, your official community forum for Cagayan de Oro residents!</p><p>Use this platform to report local issues, share concerns with your neighbors, and work together toward a better community. All posts are monitored to ensure respectful and constructive discussions.</p><p><strong>Remember:</strong> Be specific, be respectful, and be constructive. Together we can make CDO a better place for everyone.</p>',
-            'is_active' => 1,
-        ], ['%s','%d','%s','%s','%d']);
-    }
-
-    // ---- Sample reports ----
-    $reports_seeded = 0;
-    $rep_exists = $wpdb->get_var("SELECT COUNT(*) FROM {$p}ch_reports");
-    if (!$rep_exists) {
-        $report_data = [
-            // [reporter_idx, target_type, post_idx, reason, details, status, reviewed_by]
-            [0, 'post',    1, 'spam',           'This post looks like it was copy-pasted from another site with no original content.',                                          'dismissed',  1],
-            [1, 'post',    3, 'misinformation',  'The claim about MCWD is inaccurate. I contacted them and the outage was only 2 days, not 5.',                                 'reviewed',   1],
-            [2, 'comment', 0, 'harassment',      'This comment is directed personally at me and is insulting.',                                                                 'resolved',   1],
-            [3, 'post',    4, 'off_topic',        'This post belongs in health and sanitation, not public safety.',                                                              'dismissed',  1],
-            [4, 'comment', 2, 'spam',            'The commenter is promoting a private water delivery business in the replies.',                                                 'pending',    0],
-            [0, 'post',    5, 'misinformation',  'The school mentioned hasn\'t made any formal PTA request. This is false.',                                                    'pending',    0],
-            [1, 'user',    0, 'harassment',      'This user has been sending threatening messages to other community members outside the platform.', 'pending',    0],
-            [2, 'comment', 3, 'off_topic',        'Completely unrelated comment just to farm upvotes.',                                                                         'reviewed',   1],
-        ];
-
-        foreach ($report_data as $rd) {
-            [$rep_idx, $target_type, $target_idx, $reason, $details, $status, $reviewed_by] = $rd;
-
-            $reporter_id = $user_ids[$rep_idx % count($user_ids)];
-            $date        = date('Y-m-d H:i:s', strtotime('-' . rand(1, 14) . ' days'));
-
-            if ($target_type === 'post') {
-                $target_id = $post_ids[$target_idx] ?? ($post_ids[0] ?? 0);
-            } elseif ($target_type === 'comment') {
-                $target_id = $wpdb->get_var($wpdb->prepare(
-                    "SELECT id FROM {$p}ch_comments ORDER BY id LIMIT 1 OFFSET %d", $target_idx
-                )) ?? 0;
-            } else {
-                // user report — target a different user than the reporter
-                $other_users = array_values(array_filter($user_ids, fn($id) => $id !== $reporter_id));
-                $target_id   = $other_users[$target_idx % max(1, count($other_users))] ?? ($user_ids[0] ?? 0);
-            }
-
-            if (!$target_id) continue;
-
-            $wpdb->insert("{$p}ch_reports", [
-                'rand_id'     => bntm_rand_id(),
-                'reporter_id' => $reporter_id,
-                'target_type' => $target_type,
-                'target_id'   => $target_id,
-                'reason'      => $reason,
-                'details'     => $details,
-                'status'      => $status,
-                'reviewed_by' => $reviewed_by,
-                'created_at'  => $date,
-                'updated_at'  => $date,
-            ], ['%s','%d','%s','%d','%s','%s','%s','%d','%s','%s']);
-
-            $reports_seeded++;
-
-            // Increment report_count on the target post/comment
-            if ($target_type === 'post') {
-                $wpdb->query($wpdb->prepare(
-                    "UPDATE {$p}ch_posts SET report_count = report_count + 1 WHERE id = %d", $target_id
-                ));
-            } elseif ($target_type === 'comment') {
-                $wpdb->query($wpdb->prepare(
-                    "UPDATE {$p}ch_comments SET report_count = report_count + 1 WHERE id = %d", $target_id
-                ));
-            }
-        }
-    }
-
-    // ---- Sample notifications ----
-    $notifs_seeded = 0;
-    $notif_exists = $wpdb->get_var("SELECT COUNT(*) FROM {$p}ch_notifications");
-    if (!$notif_exists) {
-        $notif_data = [
-            // [recipient_idx, type, actor_idx, post_idx, comment_idx_or_null, message, is_read]
-            [0, 'reply',            1, 0, 0,    'Jose Reyes replied to your post "Large pothole on Kauswagan Highway near Gaisano".',        1],
-            [0, 'reply',            2, 0, 1,    'Ana Villanueva also replied to your post about the Kauswagan pothole.',                      1],
-            [0, 'vote',             1, 0, null, 'Your post received 5 new upvotes.',                                                          1],
-            [1, 'reply',            3, 1, 3,    'Pedro Lim commented on your post about illegal dumping near Cagayan River.',                 0],
-            [1, 'mention',          0, 1, 3,    'Maria Santos mentioned you in a comment on the garbage dumping post.',                       0],
-            [2, 'vote',             4, 2, null, 'Your post about the water supply in Barangay Nazareth received 8 upvotes.',                  1],
-            [2, 'reply',            0, 2, 5,    'Maria Santos replied to your water supply post with a helpful tip.',                         0],
-            [3, 'reply',            1, 3, 6,    'Jose Reyes commented on your broken streetlights post.',                                     1],
-            [3, 'vote',             2, 3, null, 'Your post about streetlights in Barangay Carmen is gaining traction — 12 upvotes!',          0],
-            [4, 'reply',            2, 4, 7,    'Ana Villanueva replied to your drainage canal post.',                                        0],
-            [4, 'mention',          3, 4, 7,    'Pedro Lim mentioned you in the sanitation discussion.',                                      0],
-            [0, 'report_resolved',  1, 0, 2,    'A report you submitted has been reviewed and resolved by a moderator.',                      1],
-            [2, 'report_resolved',  1, 3, 6,    'A report on content in the streetlights post has been dismissed.',                          0],
-            [0, 'announcement',     1, 0, null, 'New announcement: Welcome to CivicHub — Your Community Voice Platform.',                     1],
-            [1, 'announcement',     1, 0, null, 'New announcement: Welcome to CivicHub — Your Community Voice Platform.',                     1],
-            [2, 'announcement',     1, 0, null, 'New announcement: Welcome to CivicHub — Your Community Voice Platform.',                     0],
-            [3, 'announcement',     1, 0, null, 'New announcement: Welcome to CivicHub — Your Community Voice Platform.',                     0],
-            [4, 'announcement',     1, 0, null, 'New announcement: Welcome to CivicHub — Your Community Voice Platform.',                     0],
-        ];
-
-        foreach ($notif_data as $nd) {
-            [$recip_idx, $type, $actor_idx, $post_idx, $comment_idx, $message, $is_read] = $nd;
-
-            $recipient_id = $user_ids[$recip_idx % count($user_ids)];
-            $actor_id     = $user_ids[$actor_idx  % count($user_ids)];
-            $post_id      = $post_ids[$post_idx]  ?? ($post_ids[0] ?? 0);
-            $comment_id   = 0;
-
-            if ($comment_idx !== null) {
-                $comment_id = $wpdb->get_var($wpdb->prepare(
-                    "SELECT id FROM {$p}ch_comments ORDER BY id LIMIT 1 OFFSET %d", $comment_idx
-                )) ?? 0;
-            }
-
-            $date = date('Y-m-d H:i:s', strtotime('-' . rand(1, 72) . ' hours'));
-
-            $wpdb->insert("{$p}ch_notifications", [
-                'rand_id'    => bntm_rand_id(),
-                'user_id'    => $recipient_id,
-                'type'       => $type,
-                'actor_id'   => $actor_id,
-                'post_id'    => $post_id,
-                'comment_id' => $comment_id,
-                'message'    => $message,
-                'is_read'    => $is_read,
-                'created_at' => $date,
-            ], ['%s','%d','%s','%d','%d','%d','%s','%d','%s']);
-
-            $notifs_seeded++;
-        }
-    }
-
-    return [
-        'categories'    => count($categories),
-        'posts'         => count($post_ids),
-        'comments'      => count($comment_data),
-        'users'         => count($user_ids),
-        'reports'       => $reports_seeded,
-        'notifications' => $notifs_seeded,
-    ];
 }
 
 // ============================================================
@@ -909,6 +624,42 @@ function bntm_shortcode_ch_auth() {
         });
     })();
     </script>
+
+    <!-- Community Guidelines Modal (for registration page) -->
+    <div id="ch-modal-guidelines" class="ch-modal-overlay"
+         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center;">
+        <div class="ch-modal" style="background:#fff;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+            <div class="ch-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f3f4f6;">
+                <h3 style="margin:0;font-size:18px;font-weight:700;color:#111827;">Community Guidelines</h3>
+                <button onclick="document.getElementById('ch-modal-guidelines').style.display='none';document.body.style.overflow='';"
+                        style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button>
+            </div>
+            <div style="padding:24px;font-size:14px;color:#374151;line-height:1.7;">
+                <?php echo ch_get_guidelines_html(); ?>
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;">
+                <button onclick="document.getElementById('ch-modal-guidelines').style.display='none';document.body.style.overflow='';"
+                        class="ch-btn ch-btn-primary">I Understand</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    window.chOpenModal = window.chOpenModal || function(id) {
+        var el = document.getElementById(id);
+        if (el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+    };
+    window.chCloseModal = window.chCloseModal || function(id) {
+        var el = document.getElementById(id);
+        if (el) { el.style.display = 'none'; document.body.style.overflow = ''; }
+    };
+    // Close on overlay click
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'ch-modal-guidelines') {
+            e.target.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -1101,7 +852,6 @@ $ajax_actions = [
     'ch_toggle_announcement' => ['bntm_ajax_ch_toggle_announcement', true],
     'ch_get_announcements'   => ['bntm_ajax_ch_get_announcements', true],
     'ch_get_announcement'    => ['bntm_ajax_ch_get_announcement', true],
-    'ch_seed_data'           => ['bntm_ajax_ch_seed_data', true],
 ];
 
 foreach ($ajax_actions as $action => [$callback, $admin_only]) {
@@ -1266,19 +1016,7 @@ function ch_admin_overview_tab($user_id, $is_admin) {
             <h1>Dashboard Overview</h1>
             <p>Community activity and platform statistics</p>
         </div>
-        <?php if ($is_admin): ?>
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div id="ch-seed-result" style="font-size:13px;color:#059669;display:none;"></div>
-            <button class="ch-btn ch-btn-secondary" id="ch-seed-btn"
-                    onclick="chSeedData('<?php echo wp_create_nonce('ch_seed_nonce'); ?>')">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path d="M12 2a9 9 0 0 1 9 9c0 4.97-4.03 9-9 9S3 15.97 3 11a9 9 0 0 1 9-9z"/>
-                    <path d="M12 8v4l3 3"/>
-                </svg>
-                Load Sample Data
-            </button>
-        </div>
-        <?php endif; ?>
+
     </div>
 
     <div class="ch-stats-grid">
@@ -1559,7 +1297,7 @@ function ch_categories_tab($user_id, $is_admin) {
                     <h4><?php echo esc_html($cat->name); ?></h4>
                     <?php if ($is_admin): ?>
                     <div class="ch-actions-row">
-                        <button class="ch-icon-btn" title="Edit" onclick="chEditCategory(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', '<?php echo esc_js($cat->description); ?>', '<?php echo esc_attr($cat->color); ?>', '<?php echo esc_js($cat->icon); ?>')">
+                        <button class="ch-icon-btn" title="Edit" onclick="chEditCategory(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', '<?php echo esc_js($cat->description); ?>', '<?php echo esc_attr($cat->color); ?>', '<?php echo esc_js($cat->icon); ?>', <?php echo (int)$cat->is_private; ?>)">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
                         <button class="ch-icon-btn" title="Toggle visibility" onclick="chToggleCategoryStatus(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->status); ?>', this)">
@@ -1576,6 +1314,14 @@ function ch_categories_tab($user_id, $is_admin) {
                     <span><?php echo number_format($cat->post_count); ?> posts</span>
                     <span><?php echo number_format($cat->follower_count); ?> followers</span>
                     <span class="ch-status-badge ch-status-<?php echo $cat->status; ?>"><?php echo ucfirst($cat->status); ?></span>
+                    <?php if ($cat->is_private): ?>
+                    <span class="ch-status-badge" style="background:#fef3c7;color:#92400e;">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Private
+                    </span>
+                    <?php else: ?>
+                    <span class="ch-status-badge" style="background:#d1fae5;color:#065f46;">Public</span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -1606,6 +1352,27 @@ function ch_categories_tab($user_id, $is_admin) {
                     <div class="ch-field-group ch-field-half">
                         <label class="ch-label">Sort Order</label>
                         <input type="number" id="ch-cat-order" class="ch-input" value="0" min="0">
+                    </div>
+                </div>
+                <div class="ch-field-group">
+                    <label class="ch-label">Visibility</label>
+                    <div class="ch-visibility-toggle">
+                        <label class="ch-vis-option">
+                            <input type="radio" name="ch-cat-visibility" id="ch-cat-vis-public" value="0" checked>
+                            <span class="ch-vis-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                Public
+                            </span>
+                            <span class="ch-vis-desc">Anyone can view, guests can post</span>
+                        </label>
+                        <label class="ch-vis-option">
+                            <input type="radio" name="ch-cat-visibility" id="ch-cat-vis-private" value="1">
+                            <span class="ch-vis-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Private
+                            </span>
+                            <span class="ch-vis-desc">Only followers can view and post</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -1640,6 +1407,25 @@ function ch_categories_tab($user_id, $is_admin) {
                         <input type="color" id="ch-edit-cat-color" class="ch-input ch-color-input">
                     </div>
                 </div>
+                <div class="ch-field-group">
+                    <label class="ch-label">Visibility</label>
+                    <div class="ch-visibility-toggle">
+                        <label class="ch-vis-option">
+                            <input type="radio" name="ch-edit-cat-visibility" id="ch-edit-cat-vis-public" value="0">
+                            <span class="ch-vis-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                Public
+                            </span>
+                        </label>
+                        <label class="ch-vis-option">
+                            <input type="radio" name="ch-edit-cat-visibility" id="ch-edit-cat-vis-private" value="1">
+                            <span class="ch-vis-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Private
+                            </span>
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="ch-modal-footer">
                 <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-edit-cat')">Cancel</button>
@@ -1651,11 +1437,17 @@ function ch_categories_tab($user_id, $is_admin) {
 
     <script>
     (function() {
-        window.chEditCategory = function(id, name, desc, color, icon) {
+        window.chEditCategory = function(id, name, desc, color, icon, isPrivate) {
             document.getElementById('ch-edit-cat-id').value = id;
             document.getElementById('ch-edit-cat-name').value = name;
             document.getElementById('ch-edit-cat-desc').value = desc;
             document.getElementById('ch-edit-cat-color').value = color;
+            const privRadio = document.getElementById('ch-edit-cat-vis-private');
+            const pubRadio  = document.getElementById('ch-edit-cat-vis-public');
+            if (privRadio && pubRadio) {
+                privRadio.checked = !!isPrivate;
+                pubRadio.checked  = !isPrivate;
+            }
             chOpenModal('ch-modal-edit-cat');
         };
 
@@ -1672,6 +1464,7 @@ function ch_categories_tab($user_id, $is_admin) {
             fd.append('description', document.getElementById('ch-cat-desc').value);
             fd.append('color', document.getElementById('ch-cat-color').value);
             fd.append('sort_order', document.getElementById('ch-cat-order').value || 0);
+            fd.append('is_private', document.getElementById('ch-cat-vis-private')?.checked ? 1 : 0);
             fd.append('nonce', nonce);
 
             fetch(ajaxurl, {method:'POST', body:fd})
@@ -1698,6 +1491,7 @@ function ch_categories_tab($user_id, $is_admin) {
             fd.append('name', name);
             fd.append('description', document.getElementById('ch-edit-cat-desc').value);
             fd.append('color', document.getElementById('ch-edit-cat-color').value);
+            fd.append('is_private', document.getElementById('ch-edit-cat-vis-private')?.checked ? 1 : 0);
             fd.append('nonce', nonce);
 
             fetch(ajaxurl, {method:'POST', body:fd})
@@ -2359,6 +2153,10 @@ function ch_moderation_tab($user_id) {
         update_option('ch_category_creation_karma', $cat_karma);
         $cat_creation_enabled = isset($_POST['ch_user_category_creation']) ? 1 : 0;
         update_option('ch_user_category_creation', $cat_creation_enabled);
+        $guidelines = wp_kses_post($_POST['ch_community_guidelines'] ?? '');
+        if ($guidelines !== '') {
+            update_option('ch_community_guidelines', $guidelines);
+        }
         echo '<div class="bntm-notice bntm-notice-success">Moderation settings saved successfully!</div>';
     }
 
@@ -2515,6 +2313,42 @@ function ch_moderation_tab($user_id) {
                     <button type="submit" name="ch_save_moderation_settings" class="ch-btn ch-btn-primary">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                         Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="ch-card" style="margin-bottom:20px;">
+        <div class="ch-card-header">
+            <h3>
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="margin-right:6px;vertical-align:-2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Community Guidelines
+            </h3>
+            <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Displayed to all users in the guidelines modal and on the registration page. Supports basic HTML tags.</p>
+        </div>
+        <div class="ch-card-body" style="padding:24px;">
+            <form method="post">
+                <?php wp_nonce_field('ch_moderation_settings_nonce', 'ch_moderation_settings_nonce'); ?>
+                <div class="ch-field-group">
+                    <label class="ch-label">Guidelines Content</label>
+                    <textarea name="ch_community_guidelines"
+                              class="ch-input ch-textarea"
+                              rows="12"
+                              style="font-family:monospace;font-size:13px;"
+                              placeholder="Enter your community guidelines here. Supports HTML tags like &lt;h4&gt;, &lt;h5&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;."><?php echo esc_textarea(get_option('ch_community_guidelines', '')); ?></textarea>
+                    <div style="margin-top:8px;font-size:12px;color:#9ca3af;">
+                        Leave blank to use the default guidelines. Supported tags: h4, h5, p, ul, ol, li, strong, em, a.
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <button type="button" class="ch-btn ch-btn-secondary ch-btn-sm"
+                            onclick="document.querySelector('[name=ch_community_guidelines]').value='';this.textContent='Cleared — save to reset to default';">
+                        Reset to Default
+                    </button>
+                    <button type="submit" name="ch_save_moderation_settings" class="ch-btn ch-btn-primary">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Save Guidelines
                     </button>
                 </div>
             </form>
@@ -3279,7 +3113,19 @@ function bntm_shortcode_ch_feed() {
         default    => "p.created_at DESC",
     };
 
-    $base_where = "WHERE p.status = 'active' $cat_filter $location_filter $bookmark_filter $search_filter";
+    // Privacy filter: exclude private category posts for guests/non-followers
+    $privacy_filter = '';
+    if (!$user_id) {
+        $privacy_filter = " AND (c.is_private = 0 OR c.is_private IS NULL)";
+    } elseif (!current_user_can('manage_options')) {
+        $followed_ids = empty($followed) ? [0] : array_keys($followed);
+        $placeholders = implode(',', array_fill(0, count($followed_ids), '%d'));
+        $privacy_filter = $wpdb->prepare(
+            " AND (c.is_private = 0 OR c.is_private IS NULL OR p.category_id IN ($placeholders))",
+            ...$followed_ids
+        );
+    }
+    $base_where = "WHERE p.status = 'active' $cat_filter $location_filter $bookmark_filter $search_filter$privacy_filter";
     $total      = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts p LEFT JOIN {$wpdb->prefix}ch_user_profiles up ON p.user_id = up.user_id $base_where");
 
     $posts = $wpdb->get_results(
@@ -3458,11 +3304,19 @@ function bntm_shortcode_ch_feed() {
                 <a href="<?php echo get_permalink(); ?>" class="ch-cat-link <?php echo !$cat_slug ? 'active' : ''; ?>">
                     All Topics
                 </a>
-                <?php foreach ($categories as $cat): ?>
+                <?php foreach ($categories as $cat):
+                    if ($cat->is_private) {
+                        if (!$user_id) continue;
+                        if (!current_user_can('manage_options') && !isset($followed[$cat->id])) continue;
+                    }
+                ?>
                     <div class="ch-cat-item" style="display:flex; align-items:center; justify-content:space-between; gap:4px;">
                         <a href="?cat=<?php echo esc_attr($cat->slug); ?>" class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>" style="flex:1;min-width:0;">
                             <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
                             <?php echo esc_html($cat->name); ?>
+                            <?php if ($cat->is_private): ?>
+                            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="opacity:.5;margin-left:2px;flex-shrink:0" title="Private"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <?php endif; ?>
                             <span class="ch-cat-count"><?php echo $cat->post_count; ?></span>
                         </a>
                         <?php if ($user_id && ($cat->business_id == $user_id || current_user_can('manage_options'))): ?>
@@ -3496,7 +3350,7 @@ function bntm_shortcode_ch_feed() {
                 <?php if ($can_create_cat): ?>
                 <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f3f4f6;">
                     <button class="ch-btn ch-btn-secondary ch-btn-full ch-btn-sm"
-                            onclick="chOpenModal('ch-modal-feed-create-cat')"
+                            onclick="document.getElementById('ch-feed-cat-vis-public').checked=true; chOpenModal('ch-modal-feed-create-cat');"
                             style="font-size:13px;">
                         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         New Category
@@ -3520,15 +3374,20 @@ function bntm_shortcode_ch_feed() {
                 <?php endif; ?>
             </div>
 
-            <?php if ($user_id): ?>
             <div class="ch-sidebar-widget">
                 <h4>Quick Post</h4>
+                <?php if ($cat_obj && $cat_obj->is_private && !$user_id): ?>
+                <p style="font-size:12px;color:#9ca3af;display:flex;align-items:center;gap:6px;">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Sign in and follow to post here.
+                </p>
+                <?php else: ?>
                 <button class="ch-btn ch-btn-primary ch-btn-full" onclick="chOpenModal('ch-modal-create-post')">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    New Post
+                    <?php echo $user_id ? 'New Post' : 'Post as Guest'; ?>
                 </button>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
         </aside>
 
         <!-- Main Feed -->
@@ -3759,7 +3618,6 @@ function bntm_shortcode_ch_feed() {
     </div>
 
     <!-- Create Post Modal -->
-    <?php if ($user_id): ?>
     <div id="ch-modal-create-post" class="ch-modal-overlay" style="display:none">
         <div class="ch-modal ch-modal-lg">
             <div class="ch-modal-header">
@@ -3792,16 +3650,23 @@ function bntm_shortcode_ch_feed() {
                     <label class="ch-label">Attach Media (optional)</label>
                     <input type="file" id="ch-post-media" class="ch-input" multiple accept="image/*,video/*,audio/*">
                 </div>
+                <?php if (!$user_id): ?>
+                <div class="ch-field-group">
+                    <label class="ch-label">Your Name <span style="font-size:11px;color:#9ca3af;">(optional — leave blank to post anonymously)</span></label>
+                    <input type="text" id="ch-post-guest-name" class="ch-input" placeholder="Display name or leave blank for Anonymous" maxlength="100">
+                </div>
+                <?php else: ?>
                 <div class="ch-field-group">
                     <label class="ch-checkbox-label">
                         <input type="checkbox" id="ch-post-anon">
                         Post Anonymously
                     </label>
                 </div>
+                <?php endif; ?>
             </div>
             <div class="ch-modal-footer">
                 <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-create-post')">Cancel</button>
-                <button class="ch-btn ch-btn-primary" id="ch-submit-post-btn" onclick="chSubmitPost('<?php echo esc_attr($nonce); ?>')">Post to Community</button>
+                <button class="ch-btn ch-btn-primary" id="ch-submit-post-btn" onclick="chSubmitPost('<?php echo $user_id ? esc_attr(wp_create_nonce('ch_feed_nonce')) : ''; ?>')">Post to Community</button>
             </div>
             <div id="ch-post-msg"></div>
         </div>
@@ -3902,34 +3767,7 @@ function bntm_shortcode_ch_feed() {
             </div>
             <div class="ch-modal-body">
                 <div class="ch-guidelines-content">
-                    <h4>Our Community Standards</h4>
-                    <p>Welcome to our community forum! To ensure a positive and respectful environment for all members, please follow these guidelines:</p>
-
-                    <h5>Be Respectful</h5>
-                    <ul>
-                        <li>Treat others with kindness and respect</li>
-                        <li>No harassment, bullying, or hate speech</li>
-                        <li>Respect differing opinions and backgrounds</li>
-                    </ul>
-
-                    <h5>Content Guidelines</h5>
-                    <ul>
-                        <li>Post relevant and meaningful content</li>
-                        <li>No spam, misleading information, or inappropriate content</li>
-                        <li>Use appropriate language and avoid offensive material</li>
-                    </ul>
-
-                    <h5>Reporting</h5>
-                    <ul>
-                        <li>Report violations using the report buttons</li>
-                        <li>Provide details when reporting to help moderators</li>
-                        <li>False reports may result in account restrictions</li>
-                    </ul>
-
-                    <h5>Consequences</h5>
-                    <p>Violations may result in content removal, temporary suspension, or permanent bans. We reserve the right to moderate content at our discretion.</p>
-
-                    <p><strong>Thank you for helping keep our community safe and welcoming!</strong></p>
+                    <?php echo ch_get_guidelines_html(); ?>
                 </div>
             </div>
             <div class="ch-modal-footer">
@@ -3937,7 +3775,6 @@ function bntm_shortcode_ch_feed() {
             </div>
         </div>
     </div>
-    <?php endif; ?>
 
     <?php endif; ?>
 
@@ -3996,6 +3833,27 @@ function bntm_shortcode_ch_feed() {
                     <label class="ch-label">Color</label>
                     <input type="color" id="ch-feed-cat-color" class="ch-input ch-color-input" value="#6366f1">
                 </div>
+                <div class="ch-field-group">
+                    <label class="ch-label">Visibility</label>
+                    <div class="ch-visibility-toggle">
+                        <label class="ch-vis-option">
+                            <input type="radio" name="ch-feed-cat-visibility" id="ch-feed-cat-vis-public" value="0" checked>
+                            <span class="ch-vis-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                Public
+                            </span>
+                            <span class="ch-vis-desc">Anyone can view and guests can post</span>
+                        </label>
+                        <label class="ch-vis-option">
+                            <input type="radio" name="ch-feed-cat-visibility" id="ch-feed-cat-vis-private" value="1">
+                            <span class="ch-vis-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Private
+                            </span>
+                            <span class="ch-vis-desc">Only followers can view and post</span>
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="ch-modal-footer">
                 <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-feed-create-cat')">Cancel</button>
@@ -4026,6 +3884,7 @@ function bntm_shortcode_ch_feed() {
             fd.append('description', desc);
             fd.append('color',       color);
             fd.append('sort_order',  0);
+            fd.append('is_private',  document.getElementById('ch-feed-cat-vis-private')?.checked ? 1 : 0);
             fd.append('nonce',       nonce);
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
@@ -4163,6 +4022,36 @@ function bntm_shortcode_ch_post_view() {
 
     if (!$post) return '<p class="ch-empty">Post not found or has been removed.</p>';
 
+    // Private category access check
+    if ($post->cat_slug) {
+        $cat_privacy = $wpdb->get_var($wpdb->prepare(
+            "SELECT is_private FROM {$wpdb->prefix}ch_categories WHERE id = %d", $post->category_id
+        ));
+        if ($cat_privacy) {
+            $viewer = get_current_user_id();
+            if (!$viewer) {
+                $auth_url = get_page_by_path('login-register') ? get_permalink(get_page_by_path('login-register')) : wp_login_url(get_permalink());
+                return '<div style="padding:60px 20px;text-align:center;font-family:-apple-system,sans-serif;">
+                    <svg width="48" height="48" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" style="display:block;margin:0 auto 16px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <h3 style="color:#374151;margin:0 0 8px">Private Category</h3>
+                    <p style="color:#9ca3af;margin:0 0 16px">Please sign in and follow this category to view this post.</p>
+                    <a href="' . esc_url($auth_url) . '" style="background:#6366f1;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Sign In</a>
+                </div>';
+            }
+            $is_following = $wpdb->get_var($wpdb->prepare(
+                "SELECT id FROM {$wpdb->prefix}ch_follows WHERE user_id = %d AND category_id = %d",
+                $viewer, $post->category_id
+            ));
+            if (!$is_following && !current_user_can('manage_options')) {
+                return '<div style="padding:60px 20px;text-align:center;font-family:-apple-system,sans-serif;">
+                    <svg width="48" height="48" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" style="display:block;margin:0 auto 16px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <h3 style="color:#374151;margin:0 0 8px">Private Category</h3>
+                    <p style="color:#9ca3af;margin:0 0 4px">Follow <strong>' . esc_html($post->cat_name) . '</strong> to access this post.</p>
+                </div>';
+            }
+        }
+    }
+
     // Increment view count
     $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_posts SET view_count = view_count + 1 WHERE rand_id = %s", $rand_id));
 
@@ -4213,7 +4102,15 @@ function bntm_shortcode_ch_post_view() {
                             <?php echo esc_html($post->cat_name ?? 'General'); ?>
                         </span>
                         <span class="ch-post-author">
-                            <?php echo $post->is_anonymous ? 'Anonymous' : esc_html($post->author_name ?? 'Community Member'); ?>
+                            <?php
+                            if ($post->user_id == 0 && !empty($post->guest_name)) {
+                                echo esc_html($post->guest_name) . ' <span style="font-size:11px;color:#9ca3af;">(guest)</span>';
+                            } elseif ($post->is_anonymous) {
+                                echo 'Anonymous';
+                            } else {
+                                echo esc_html($post->author_name ?? 'Community Member');
+                            }
+                            ?>
                         </span>
                         <span class="ch-post-time"><?php echo human_time_diff(strtotime($post->created_at), current_time('timestamp')); ?> ago</span>
                         <span class="ch-post-views"><?php echo number_format($post->view_count); ?> views</span>
@@ -4322,8 +4219,24 @@ function bntm_shortcode_ch_post_view() {
                             </div>
                         </div>
                     </div>
+                    <?php elseif (!$post->is_private): ?>
+                    <!-- Guest comment form for public categories -->
+                    <div class="ch-comment-form" id="ch-comment-form-main">
+                        <div class="ch-avatar-sm">?</div>
+                        <div class="ch-comment-input-wrap">
+                            <input type="text" id="ch-guest-comment-name" class="ch-input" placeholder="Your name (optional — leave blank for Anonymous)" maxlength="100" style="margin-bottom:8px;">
+                            <textarea id="ch-comment-content" class="ch-input ch-textarea" rows="3" placeholder="Share your thoughts..."></textarea>
+                            <div class="ch-comment-form-footer">
+                                <span style="font-size:12px;color:#9ca3af;">Posting as guest &bull; <a href="<?php echo wp_login_url(get_permalink()); ?>" style="color:#6366f1;">Sign in</a> for full access</span>
+                                <button class="ch-btn ch-btn-primary" onclick="chSubmitGuestComment(<?php echo (int)$post->id; ?>, 0, '<?php echo esc_attr($nonce); ?>')">Post Comment</button>
+                            </div>
+                        </div>
+                    </div>
                     <?php else: ?>
-                    <p class="ch-login-prompt">Please <a href="<?php echo wp_login_url(get_permalink()); ?>">log in</a> to comment.</p>
+                    <p class="ch-login-prompt">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        This is a private category. Please <a href="<?php echo wp_login_url(get_permalink()); ?>">log in</a> and follow to comment.
+                    </p>
                     <?php endif; ?>
 
                     <div class="ch-comments-list" id="ch-comments-list">
@@ -4336,7 +4249,15 @@ function bntm_shortcode_ch_post_view() {
                             </div>
                             <div class="ch-comment-body">
                                 <div class="ch-comment-header">
-                                    <strong><?php echo $cm->is_anonymous ? 'Anonymous' : esc_html($cm->author_name ?? 'Member'); ?></strong>
+                                    <strong><?php
+                                    if ($cm->user_id == 0 && !empty($cm->guest_name)) {
+                                        echo esc_html($cm->guest_name) . ' <span style="font-size:11px;font-weight:400;color:#9ca3af;">(guest)</span>';
+                                    } elseif ($cm->is_anonymous) {
+                                        echo 'Anonymous';
+                                    } else {
+                                        echo esc_html($cm->author_name ?? 'Member');
+                                    }
+                                    ?></strong>
                                     <span class="ch-comment-time"><?php echo human_time_diff(strtotime($cm->created_at), current_time('timestamp')); ?> ago</span>
                                 </div>
                                 <p><?php echo ch_highlight_mentions(nl2br(esc_html($cm->content))); ?></p>
@@ -4459,16 +4380,23 @@ function bntm_shortcode_ch_post_view() {
                     <label class="ch-label">Attach Media (optional)</label>
                     <input type="file" id="ch-post-media" class="ch-input" multiple accept="image/*,video/*,audio/*">
                 </div>
+                <?php if (!$user_id): ?>
+                <div class="ch-field-group">
+                    <label class="ch-label">Your Name <span class="ch-optional">(optional — leave blank to post anonymously)</span></label>
+                    <input type="text" id="ch-post-guest-name" class="ch-input" placeholder="Display name or leave blank for Anonymous" maxlength="100">
+                </div>
+                <?php else: ?>
                 <div class="ch-field-group">
                     <label class="ch-checkbox-label">
                         <input type="checkbox" id="ch-post-anon">
                         Post Anonymously
                     </label>
                 </div>
+                <?php endif; ?>
             </div>
             <div class="ch-modal-footer">
                 <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-create-post')">Cancel</button>
-                <button class="ch-btn ch-btn-primary" id="ch-submit-post-btn" onclick="chSubmitPost('<?php echo wp_create_nonce('ch_feed_nonce'); ?>')">Post to Community</button>
+                <button class="ch-btn ch-btn-primary" id="ch-submit-post-btn" onclick="chSubmitPost('<?php echo $user_id ? wp_create_nonce('ch_feed_nonce') : ''; ?>')">Post to Community</button>
             </div>
             <div id="ch-post-msg"></div>
         </div>
@@ -4573,27 +4501,10 @@ function bntm_shortcode_ch_post_view() {
 
     <?php echo ch_global_styles(); ?>
     <?php echo ch_global_scripts(); ?>
+    <?php echo ch_feed_scripts(); ?>
     <?php echo ch_post_view_scripts(); ?>
     <?php
     return ob_get_clean();
-}
-
-// ============================================================
-// AJAX: SEED DATA
-// ============================================================
-
-function bntm_ajax_ch_seed_data() {
-    if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => 'Unauthorized']);
-    }
-    check_ajax_referer('ch_seed_nonce', 'nonce');
-    $result = bntm_ch_seed_data();
-    wp_send_json_success([
-        'message' => sprintf(
-            'Seed complete: %d categories, %d posts, %d comments, %d users created.',
-            $result['categories'], $result['posts'], $result['comments'], $result['users']
-        ),
-    ]);
 }
 
 // ============================================================
@@ -4618,10 +4529,11 @@ function bntm_ajax_ch_create_category() {
         }
     }
 
-    $name  = sanitize_text_field($_POST['name'] ?? '');
-    $desc  = sanitize_textarea_field($_POST['description'] ?? '');
-    $color = sanitize_hex_color($_POST['color'] ?? '#6366f1') ?: '#6366f1';
-    $order = (int)($_POST['sort_order'] ?? 0);
+    $name       = sanitize_text_field($_POST['name'] ?? '');
+    $desc       = sanitize_textarea_field($_POST['description'] ?? '');
+    $color      = sanitize_hex_color($_POST['color'] ?? '#6366f1') ?: '#6366f1';
+    $order      = (int)($_POST['sort_order'] ?? 0);
+    $is_private = (int)(!empty($_POST['is_private']));
 
     if (!$name) wp_send_json_error(['message' => 'Category name is required']);
 
@@ -4637,7 +4549,8 @@ function bntm_ajax_ch_create_category() {
         'description' => $desc,
         'color'       => $color,
         'sort_order'  => $order,
-    ], ['%s','%d','%s','%s','%s','%s','%d']);
+        'is_private'  => $is_private,
+    ], ['%s','%d','%s','%s','%s','%s','%d','%d']);
 
     if ($result) {
         $new_cat_id = $wpdb->insert_id;
@@ -4678,9 +4591,10 @@ function bntm_ajax_ch_edit_category() {
         wp_send_json_error(['message' => 'Unauthorized']);
     }
 
+    $is_private = (int)(!empty($_POST['is_private']));
     $result = $wpdb->update("{$wpdb->prefix}ch_categories",
-        ['name' => $name, 'description' => $desc, 'color' => $color, 'slug' => sanitize_title($name)],
-        ['id' => $id], ['%s','%s','%s','%s'], ['%d']
+        ['name' => $name, 'description' => $desc, 'color' => $color, 'slug' => sanitize_title($name), 'is_private' => $is_private],
+        ['id' => $id], ['%s','%s','%s','%s','%d'], ['%d']
     );
 
     if ($result !== false) {
@@ -4741,29 +4655,46 @@ function bntm_ajax_ch_toggle_category_status() {
 }
 
 function bntm_ajax_ch_create_post() {
-    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Please log in to post']);
-    check_ajax_referer('ch_feed_nonce', 'nonce');
-
     global $wpdb;
-    $user_id  = get_current_user_id();
-    $title    = sanitize_text_field($_POST['title'] ?? '');
-    $content  = sanitize_textarea_field($_POST['content'] ?? '');
-    $cat_id   = (int)($_POST['category_id'] ?? 0);
-    $tags     = sanitize_text_field($_POST['tags'] ?? '');
-    $is_anon  = (int)(!empty($_POST['is_anonymous']));
+    $user_id   = get_current_user_id();
+    $title     = sanitize_text_field($_POST['title'] ?? '');
+    $content   = sanitize_textarea_field($_POST['content'] ?? '');
+    $cat_id    = (int)($_POST['category_id'] ?? 0);
+    $tags      = sanitize_text_field($_POST['tags'] ?? '');
+    $is_anon   = (int)(!empty($_POST['is_anonymous']));
+    $guest_name = sanitize_text_field($_POST['guest_name'] ?? '');
 
     if (!$title || !$content || !$cat_id) wp_send_json_error(['message' => 'Title, content, and category are required']);
 
-    $profile = ch_ensure_profile($user_id);
+    // Check category privacy
+    $cat = $wpdb->get_row($wpdb->prepare("SELECT is_private FROM {$wpdb->prefix}ch_categories WHERE id = %d", $cat_id));
+    if (!$cat) wp_send_json_error(['message' => 'Category not found']);
 
-    // Check if user is banned/suspended
-    $profile_row = $wpdb->get_row($wpdb->prepare("SELECT status FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id));
-    if ($profile_row && in_array($profile_row->status, ['banned','suspended'])) {
-        wp_send_json_error(['message' => 'Your account is restricted from posting']);
+    if ($cat->is_private) {
+        // Private category: must be logged in AND following
+        if (!$user_id) wp_send_json_error(['message' => 'You must be logged in to post in this category']);
+        $is_following = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$wpdb->prefix}ch_follows WHERE user_id = %d AND category_id = %d",
+            $user_id, $cat_id
+        ));
+        if (!$is_following && !current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'You must follow this category to post in it']);
+        }
+    } else {
+        // Public category: guests allowed, registered users must not be banned
+        if ($user_id) {
+            check_ajax_referer('ch_feed_nonce', 'nonce');
+            $profile_row = $wpdb->get_row($wpdb->prepare("SELECT status FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id));
+            if ($profile_row && in_array($profile_row->status, ['banned','suspended'])) {
+                wp_send_json_error(['message' => 'Your account is restricted from posting']);
+            }
+            ch_ensure_profile($user_id);
+        }
+        // Guests: no nonce needed, guest_name used as display name
     }
 
     $rand_id = bntm_rand_id();
-    $status = get_option('ch_post_approval_enabled', 0) ? 'pending' : 'active';
+    $status  = get_option('ch_post_approval_enabled', 0) ? 'pending' : 'active';
     $result  = $wpdb->insert("{$wpdb->prefix}ch_posts", [
         'rand_id'      => $rand_id,
         'business_id'  => $user_id,
@@ -4773,9 +4704,10 @@ function bntm_ajax_ch_create_post() {
         'content'      => $content,
         'tags'         => $tags,
         'media_urls'   => '',
-        'is_anonymous' => $is_anon,
+        'is_anonymous' => $user_id ? $is_anon : 1,
+        'guest_name'   => (!$user_id && $guest_name) ? $guest_name : null,
         'status'       => $status,
-    ], ['%s','%d','%d','%d','%s','%s','%s','%s','%d','%s']);
+    ], ['%s','%d','%d','%d','%s','%s','%s','%s','%d','%s','%s']);
 
     if ($result) {
         $post_id = $wpdb->insert_id;
@@ -4806,7 +4738,9 @@ function bntm_ajax_ch_create_post() {
         }
 
         // Update post count and category post count
-        $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_user_profiles SET post_count = post_count + 1, karma_points = karma_points + 2 WHERE user_id = %d", $user_id));
+        if ($user_id) {
+            $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_user_profiles SET post_count = post_count + 1, karma_points = karma_points + 2 WHERE user_id = %d", $user_id));
+        }
         $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_categories SET post_count = post_count + 1 WHERE id = %d", $cat_id));
         wp_send_json_success(['message' => 'Post created!', 'rand_id' => $rand_id]);
     } else {
@@ -4911,39 +4845,76 @@ function bntm_ajax_ch_get_post_detail() {
     $post_id = (int)($_POST['post_id'] ?? 0);
     $rand_id = sanitize_text_field($_POST['rand_id'] ?? '');
 
-    $where = $post_id ? "id = $post_id" : "rand_id = '$rand_id'";
-    $post = $wpdb->get_row("SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
-                                   u.display_name as author_name, u.karma_points as author_karma, u.location as author_location
-                            FROM {$wpdb->prefix}ch_posts p
-                            LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
-                            LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
-                            WHERE p.status IN ('active','hidden') AND $where");
+    if ($post_id) {
+        $post = $wpdb->get_row($wpdb->prepare(
+            "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
+                    u.display_name as author_name, u.karma_points as author_karma, u.location as author_location
+             FROM {$wpdb->prefix}ch_posts p
+             LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+             LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
+             WHERE p.status IN ('active','hidden') AND p.id = %d",
+            $post_id
+        ));
+    } elseif ($rand_id) {
+        $post = $wpdb->get_row($wpdb->prepare(
+            "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
+                    u.display_name as author_name, u.karma_points as author_karma, u.location as author_location
+             FROM {$wpdb->prefix}ch_posts p
+             LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+             LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
+             WHERE p.status IN ('active','hidden') AND p.rand_id = %s",
+            $rand_id
+        ));
+    } else {
+        wp_send_json_error(['message' => 'No post identifier provided']);
+    }
 
     if (!$post) wp_send_json_error(['message' => 'Post not found']);
-
-    // Increment view count
-    $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_posts SET view_count = view_count + 1 WHERE id = %d", $post->id));
 
     wp_send_json_success(['post' => $post]);
 }
 
 function bntm_ajax_ch_add_comment() {
-    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Please log in to comment']);
-    check_ajax_referer('ch_post_view_nonce', 'nonce');
-
     global $wpdb;
-    $user_id   = get_current_user_id();
-    $post_id   = (int)($_POST['post_id'] ?? 0);
-    $parent_id = (int)($_POST['parent_id'] ?? 0);
-    $content   = sanitize_textarea_field($_POST['content'] ?? '');
-    $is_anon   = (int)(!empty($_POST['is_anonymous']));
+    $user_id    = get_current_user_id();
+    $post_id    = (int)($_POST['post_id'] ?? 0);
+    $parent_id  = (int)($_POST['parent_id'] ?? 0);
+    $content    = sanitize_textarea_field($_POST['content'] ?? '');
+    $is_anon    = (int)(!empty($_POST['is_anonymous']));
+    $guest_name = sanitize_text_field($_POST['guest_name'] ?? '');
 
     if (!$post_id || !$content) wp_send_json_error(['message' => 'Content is required']);
 
-    // Check user status
-    $profile = $wpdb->get_row($wpdb->prepare("SELECT status FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id));
-    if ($profile && in_array($profile->status, ['banned','suspended'])) {
-        wp_send_json_error(['message' => 'Your account is restricted']);
+    // Determine category privacy from the post
+    $post_row = $wpdb->get_row($wpdb->prepare(
+        "SELECT p.user_id, p.category_id, c.is_private
+         FROM {$wpdb->prefix}ch_posts p
+         LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+         WHERE p.id = %d AND p.status = 'active'",
+        $post_id
+    ));
+    if (!$post_row) wp_send_json_error(['message' => 'Post not found']);
+
+    if ($post_row->is_private) {
+        // Private: must be logged in and following
+        if (!$user_id) wp_send_json_error(['message' => 'You must be logged in to comment in this category']);
+        check_ajax_referer('ch_post_view_nonce', 'nonce');
+        $is_following = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$wpdb->prefix}ch_follows WHERE user_id = %d AND category_id = %d",
+            $user_id, $post_row->category_id
+        ));
+        if (!$is_following && !current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'You must follow this category to comment']);
+        }
+    } else {
+        // Public: logged-in users need nonce + status check; guests are welcome
+        if ($user_id) {
+            check_ajax_referer('ch_post_view_nonce', 'nonce');
+            $profile = $wpdb->get_row($wpdb->prepare("SELECT status FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id));
+            if ($profile && in_array($profile->status, ['banned','suspended'])) {
+                wp_send_json_error(['message' => 'Your account is restricted']);
+            }
+        }
     }
 
     $result = $wpdb->insert("{$wpdb->prefix}ch_comments", [
@@ -4953,13 +4924,16 @@ function bntm_ajax_ch_add_comment() {
         'user_id'      => $user_id,
         'parent_id'    => $parent_id,
         'content'      => $content,
-        'is_anonymous' => $is_anon,
-    ], ['%s','%d','%d','%d','%d','%s','%d']);
+        'is_anonymous' => $user_id ? $is_anon : 1,
+        'guest_name'   => (!$user_id && $guest_name) ? $guest_name : null,
+    ], ['%s','%d','%d','%d','%d','%s','%d','%s']);
 
     if ($result) {
         $comment_id = $wpdb->insert_id;
         $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_posts SET comment_count = comment_count + 1 WHERE id = %d", $post_id));
-        $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_user_profiles SET comment_count = comment_count + 1, karma_points = karma_points + 1 WHERE user_id = %d", $user_id));
+        if ($user_id) {
+            $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_user_profiles SET comment_count = comment_count + 1, karma_points = karma_points + 1 WHERE user_id = %d", $user_id));
+        }
 
         // Process mentions
         $mentioned_users = ch_extract_mentions($content);
@@ -6267,6 +6241,15 @@ function ch_global_styles() {
         .ch-categories-grid { grid-template-columns: 1fr; }
     }
 
+    /* ---- VISIBILITY TOGGLE ---- */
+    .ch-visibility-toggle { display: flex; gap: 10px; }
+    .ch-vis-option { flex: 1; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 12px 14px;
+        cursor: pointer; transition: all .15s; display: flex; flex-direction: column; gap: 4px; }
+    .ch-vis-option:has(input:checked) { border-color: #6366f1; background: #f5f3ff; }
+    .ch-vis-option input { display: none; }
+    .ch-vis-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #374151; }
+    .ch-vis-desc { font-size: 11px; color: #9ca3af; }
+
     /* ---- ANNOUNCEMENTS ---- */
     .ch-announcement-card {
         background: linear-gradient(135deg, #fef3c7, #fde68a);
@@ -6605,35 +6588,6 @@ function ch_global_scripts() {
                 btn.textContent = 'Save Profile';
             });
         };
-
-        window.chSeedData = function(nonce) {
-            const btn    = document.getElementById('ch-seed-btn');
-            const result = document.getElementById('ch-seed-result');
-            if (!btn) return;
-            if (!confirm('This will insert sample categories, posts, comments, and users. Existing data will NOT be deleted. Continue?')) return;
-            btn.disabled = true;
-            btn.textContent = 'Loading…';
-            const fd = new FormData();
-            fd.append('action', 'ch_seed_data');
-            fd.append('nonce',  nonce);
-            fetch(ajaxurl, {method:'POST', body:fd})
-            .then(r => r.json())
-            .then(json => {
-                btn.disabled = false;
-                btn.textContent = 'Load Sample Data';
-                if (result) {
-                    result.textContent = json.success ? ('✓ ' + json.data.message) : ('✗ ' + (json.data?.message || 'Failed'));
-                    result.style.color   = json.success ? '#059669' : '#dc2626';
-                    result.style.display = 'block';
-                }
-                if (json.success) setTimeout(() => location.reload(), 1500);
-            })
-            .catch(() => {
-                btn.disabled = false;
-                btn.textContent = 'Load Sample Data';
-                if (result) { result.textContent = '✗ Network error'; result.style.color = '#dc2626'; result.style.display = 'block'; }
-            });
-        };
     })();
     </script>
     <?php
@@ -6791,13 +6745,24 @@ function ch_feed_scripts() {
         }
 
         window.chSubmitPost = function(nonce) {
-            const title   = document.getElementById('ch-post-title').value.trim();
-            const content = document.getElementById('ch-post-content').value.trim();
-            const catId   = document.getElementById('ch-post-cat').value;
-            const tags    = document.getElementById('ch-post-tags').value;
-            const isAnon  = document.getElementById('ch-post-anon').checked ? 1 : 0;
+            const title     = document.getElementById('ch-post-title').value.trim();
+            const content   = document.getElementById('ch-post-content').value.trim();
+            const catId     = document.getElementById('ch-post-cat').value;
+            const tags      = document.getElementById('ch-post-tags').value;
+            const anonEl    = document.getElementById('ch-post-anon');
+            const isAnon    = anonEl ? (anonEl.checked ? 1 : 0) : 1;
+            const guestEl   = document.getElementById('ch-post-guest-name');
+            const guestName = guestEl ? guestEl.value.trim() : '';
 
             if (!title || !content || !catId) { alert('Please fill in all required fields'); return; }
+
+            // Block guest from posting to private categories (client-side hint)
+            const catSelect = document.getElementById('ch-post-cat');
+            const selOpt = catSelect?.options[catSelect.selectedIndex];
+            if (selOpt && selOpt.dataset.private === '1' && !nonce) {
+                alert('This is a private category. Please sign in and follow it to post.');
+                return;
+            }
 
             const btn = document.getElementById('ch-submit-post-btn');
             btn.disabled = true; btn.textContent = 'Posting...';
@@ -6809,7 +6774,8 @@ function ch_feed_scripts() {
             fd.append('category_id', catId);
             fd.append('tags', tags);
             fd.append('is_anonymous', isAnon);
-            fd.append('nonce', nonce);
+            if (guestName) fd.append('guest_name', guestName);
+            if (nonce) fd.append('nonce', nonce);
 
             const media = document.getElementById('ch-post-media').files;
             for (let file of media) {
