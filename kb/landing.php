@@ -19,7 +19,7 @@ function bntm_kbf_render_landing() {
     ob_start();
     ?>
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
     :root {
         --kbf-ink: #0f1115;
@@ -34,7 +34,7 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-landing {
-        font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
         color: var(--kbf-ink);
         background: var(--kbf-surface);
         width: 100%;
@@ -171,6 +171,12 @@ function bntm_kbf_render_landing() {
         color: #2a5a9e;
         font-weight: 700;
         font-size: 13px;
+    }
+    .kbf-card .kbf-chip svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        display: block;
     }
     .kbf-card h4 { margin: 12px 0 6px; font-size: 14px; }
     .kbf-card p { font-size: 12.5px; }
@@ -356,17 +362,23 @@ function bntm_kbf_render_landing() {
           <p>Fundraise at the speed of thought! Elevate your cause in just a minute with our lightning-fast fundraising platform.</p>
           <div class="kbf-feature-grid">
             <div class="kbf-card">
-              <div class="kbf-chip">⚡</div>
+              <div class="kbf-chip" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+              </div>
               <h4>Ignite Impact</h4>
               <p>Spark joy by sharing your cause and the positive impact it brings. Clearly express how contributions will make a meaningful difference.</p>
             </div>
             <div class="kbf-card">
-              <div class="kbf-chip">🌿</div>
+              <div class="kbf-chip" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 2C8 2 4 5 4 10c0 5 4 8 8 12 4-4 8-7 8-12 0-5-4-8-8-8zm0 3c3 0 5 2 5 5 0 4-3 6-5 8-2-2-5-4-5-8 0-3 2-5 5-5z"/></svg>
+              </div>
               <h4>Spread The Word</h4>
               <p>Leverage the speed of social media and online networks. Share your fundraising campaign swiftly across various platforms.</p>
             </div>
             <div class="kbf-card">
-              <div class="kbf-chip">🌍</div>
+              <div class="kbf-chip" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm7.7 9H15a15 15 0 00-1.5-6 8 8 0 016.2 6zM12 4c1.4 2 2.3 4.3 2.7 7H9.3C9.7 8.3 10.6 6 12 4zM4.3 11a8 8 0 016.2-6A15 15 0 009 11H4.3zM4.3 13H9a15 15 0 001.5 6 8 8 0 01-6.2-6zm7.7 7c-1.4-2-2.3-4.3-2.7-7h5.4c-.4 2.7-1.3 5-2.7 7zm3.5-.9A15 15 0 0015 13h4.7a8 8 0 01-6.2 6.1z"/></svg>
+              </div>
               <h4>Connect Globally</h4>
               <p>Build a strong social network around your cause. Encourage supporters to share the campaign within their local communities.</p>
             </div>

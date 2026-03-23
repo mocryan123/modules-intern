@@ -394,7 +394,7 @@ function kbf_global_assets() {
     $printed = true;
     ?>
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
     /* === KBF DESIGN SYSTEM -- Landing-aligned (Blue/White) === */
     :root {
         --kbf-navy:       #0f1115;
@@ -420,7 +420,7 @@ function kbf_global_assets() {
         --kbf-shadow-lg:  0 18px 40px rgba(15,23,42,.10);
     }
     .kbf-wrap * { box-sizing: border-box; }
-    .kbf-wrap { font-family: 'Manrope', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); border-radius: 18px; padding: 18px; }
+    .kbf-wrap { font-family: 'Poppins', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); border-radius: 18px; padding: 18px; }
     .kbf-eyebrow { font-size: 11.5px; text-transform: uppercase; letter-spacing: .16em; color: var(--kbf-slate); font-weight: 700; }
 
     /* Tabs */
@@ -546,7 +546,7 @@ function kbf_global_assets() {
 
     /* Page header */
     .kbf-page-header { background: radial-gradient(1200px 200px at 0% 0%, #eef5ff 0%, #ffffff 55%, #ffffff 100%); border: 1px solid var(--kbf-border); border-radius: 20px; padding: 26px 28px; margin-bottom: 18px; color: var(--kbf-text); box-shadow: var(--kbf-shadow); }
-    .kbf-page-header h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; font-family: 'Manrope', system-ui, -apple-system, sans-serif; }
+    .kbf-page-header h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; font-family: 'Poppins', system-ui, -apple-system, sans-serif; }
     .kbf-page-header p  { margin: 0; color: var(--kbf-text-sm); font-size: 14px; }
 
     @media(max-width:640px) {
