@@ -3319,20 +3319,7 @@ function bntm_shortcode_ch_feed() {
                             <?php endif; ?>
                             <span class="ch-cat-count"><?php echo $cat->post_count; ?></span>
                         </a>
-                        <?php if ($user_id && ($cat->business_id == $user_id || current_user_can('manage_options'))): ?>
-                        <div class="ch-cat-owner-actions">
-                            <button class="ch-cat-action-btn"
-                                    title="Edit category"
-                                    onclick="chFeedOpenEditCat(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', '<?php echo esc_js($cat->description ?? ''); ?>', '<?php echo esc_attr($cat->color); ?>')">
-                                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                            </button>
-                            <button class="ch-cat-action-btn ch-cat-action-delete"
-                                    title="Delete category"
-                                    onclick="chFeedDeleteCat(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', '<?php echo esc_attr(wp_create_nonce('ch_category_nonce')); ?>')">
-                                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                        <?php endif; ?>
+
                     </div>
                 <?php endforeach; ?>
 
@@ -3420,6 +3407,21 @@ function bntm_shortcode_ch_feed() {
                                 onclick="chOpenPostInCategory(<?php echo (int)$cat_obj->id; ?>)">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             New Post
+                        </button>
+                        <?php endif; ?>
+                        <?php if ($user_id && ($cat_obj->business_id == $user_id || current_user_can('manage_options'))): ?>
+                        <button class="ch-btn ch-btn-sm ch-btn-outline"
+                                title="Edit category"
+                                onclick="chFeedOpenEditCat(<?php echo (int)$cat_obj->id; ?>, '<?php echo esc_js($cat_obj->name); ?>', '<?php echo esc_js($cat_obj->description ?? ''); ?>', '<?php echo esc_attr($cat_obj->color); ?>')">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Edit
+                        </button>
+                        <button class="ch-btn ch-btn-sm"
+                                style="color:#ef4444;border-color:#fca5a5;"
+                                title="Delete category"
+                                onclick="chFeedDeleteCat(<?php echo (int)$cat_obj->id; ?>, '<?php echo esc_js($cat_obj->name); ?>', '<?php echo esc_attr(wp_create_nonce('ch_category_nonce')); ?>')">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            Delete
                         </button>
                         <?php endif; ?>
                     </div>
