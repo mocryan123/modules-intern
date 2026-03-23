@@ -797,7 +797,7 @@ function bntm_shortcode_kbf_dashboard() {
     $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
     ob_start();
     ?>
-    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
+    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>'; window.kbfPsgcUrl = '<?php echo esc_js(BNTM_KBF_URL . 'data/psgc_2016.json'); ?>';</script>
     <script>
       (function(){
         var paymentState = '<?php echo esc_js($payment_state ?? ''); ?>';
@@ -914,22 +914,34 @@ function bntm_shortcode_kbf_dashboard() {
             </div>
             <div class="kbf-form-group">
               <label>Province *</label>
-              <select name="location" required>
+              <select name="province" id="kbf-province" required>
                 <option value="">Select Province</option>
                 <?php foreach (kbf_get_provinces() as $p): ?>
                   <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
                 <?php endforeach; ?>
               </select>
-              <small>Province only for now (municipality/barangay coming soon).</small>
             </div>
+            <div class="kbf-form-group">
+              <label>Municipality / City *</label>
+              <select name="municipality" id="kbf-municipality" required disabled>
+                <option value="">Select Municipality</option>
+              </select>
+              <small>Select a province first.</small>
+            </div>
+             <div class="kbf-form-group">
+              <label>Address *</label>
+              <input type="text" name="address" placeholder="Street Name, Building, House No." required>
+            </div>
+        
             <div class="kbf-form-group">
               <label>Valid Government / Company ID *</label>
               <input type="file" name="valid_id" accept="image/*,.pdf" required>
               <small>Required for identity verification before fund approval.</small>
             </div>
             <div class="kbf-form-group">
-              <label>Fund Photos (up to 5) *</label>
+              <label>Add Photos (up to 5) *</label>
               <input type="file" name="photos[]" accept="image/*" multiple required>
+              
             </div>
             <div class="kbf-form-group">
               <label class="kbf-checkbox-row">
@@ -1182,6 +1194,89 @@ function bntm_shortcode_kbf_dashboard() {
         container.innerHTML = '<div class="kbf-alert kbf-alert-'+type+'">'+text+'</div>';
     }
 
+
+    let kbfPsgcCache = null;
+
+    async function kbfLoadPsgc() {
+        if (kbfPsgcCache) return kbfPsgcCache;
+        const url = window.kbfPsgcUrl;
+        if (!url) return null;
+        const res = await fetch(url, {cache:'force-cache'});
+        if (!res.ok) return null;
+        kbfPsgcCache = await res.json();
+        return kbfPsgcCache;
+    }
+
+    function kbfNormalizeName(name) {
+        return String(name || '').toUpperCase().replace(/\s+/g,' ').trim();
+    }
+
+    function kbfGetMunicipalitiesFromPsgc(data, provinceName) {
+        if (!data || !provinceName) return [];
+        const target = kbfNormalizeName(provinceName);
+        for (const regionKey in data) {
+            if (!Object.prototype.hasOwnProperty.call(data, regionKey)) continue;
+            const region = data[regionKey];
+            if (!region || !region.province_list) continue;
+            const provinces = region.province_list;
+            for (const provName in provinces) {
+                if (!Object.prototype.hasOwnProperty.call(provinces, provName)) continue;
+                const provNorm = kbfNormalizeName(provName);
+                if (provNorm !== target) continue;
+                const muniList = provinces[provName].municipality_list;
+                const names = [];
+                if (Array.isArray(muniList)) {
+                    muniList.forEach(item => {
+                        if (item && typeof item === 'object') {
+                            Object.keys(item).forEach(k => names.push(k));
+                        }
+                    });
+                } else if (muniList && typeof muniList === 'object') {
+                    Object.keys(muniList).forEach(k => names.push(k));
+                }
+                return names.sort((a,b)=>a.localeCompare(b));
+            }
+        }
+        return [];
+    }
+
+    async function kbfPopulateMunicipalities() {
+        const province = document.getElementById('kbf-province');
+        const municipality = document.getElementById('kbf-municipality');
+        if (!province || !municipality) return;
+        const provVal = province.value || '';
+        municipality.innerHTML = '<option value="">Loading municipalities...</option>';
+        municipality.disabled = true;
+        if (!provVal) { municipality.innerHTML = '<option value="">Select Municipality</option>'; return; }
+        try {
+            const data = await kbfLoadPsgc();
+            const munis = kbfGetMunicipalitiesFromPsgc(data, provVal);
+            municipality.innerHTML = '<option value="">Select Municipality</option>';
+            munis.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                municipality.appendChild(opt);
+            });
+            municipality.disabled = munis.length === 0;
+            if (munis.length === 0) {
+                municipality.innerHTML = '<option value="">No municipalities found</option>';
+                municipality.disabled = true;
+            }
+        } catch (e) {
+            municipality.innerHTML = '<option value="">Unable to load municipalities</option>';
+            municipality.disabled = true;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        const province = document.getElementById('kbf-province');
+        if (province) {
+            province.addEventListener('change', kbfPopulateMunicipalities);
+            if (province.value) kbfPopulateMunicipalities();
+        }
+    });
+
     function kbfSubmitCreate() {
         const form = document.getElementById('kbf-create-fund-form');
         const btn  = document.querySelector('#kbf-modal-create .kbf-modal-footer .kbf-btn-primary');
@@ -1194,7 +1289,10 @@ function bntm_shortcode_kbf_dashboard() {
         const deadline   = form.querySelector('input[name="deadline"]');
         const email      = form.querySelector('input[name="email"]');
         const phone      = form.querySelector('input[name="phone"]');
-        const location   = form.querySelector('select[name="location"]');
+        const province   = form.querySelector('select[name="province"]');
+        const municipality = form.querySelector('select[name="municipality"]');
+        const address    = form.querySelector('input[name="address"]');
+        const location   = form.querySelector('input[name="location"]');
         const validId    = form.querySelector('input[name="valid_id"]');
         const photos     = form.querySelector('input[name="photos[]"]');
 
@@ -1212,7 +1310,10 @@ function bntm_shortcode_kbf_dashboard() {
         }
         if (!email.value.trim() || !kbfValidateEmail(email.value.trim())) { kbfSetFieldError(email, 'Valid email is required.'); kbfShowFormMessage(msg,'error','Please provide a valid email address.'); return; }
         if (!phone.value.trim()) { kbfSetFieldError(phone, 'Phone is required.'); kbfShowFormMessage(msg,'error','Please fill all required fields.'); return; }
-        if (!location.value.trim()) { kbfSetFieldError(location, 'Location is required.'); kbfShowFormMessage(msg,'error','Please select a location.'); return; }
+        if (!province.value.trim()) { kbfSetFieldError(province, 'Province is required.'); kbfShowFormMessage(msg,'error','Please select a province.'); return; }
+        if (!municipality.value.trim()) { kbfSetFieldError(municipality, 'Municipality is required.'); kbfShowFormMessage(msg,'error','Please select a municipality.'); return; }
+        const addrVal = address && address.value.trim() ? address.value.trim() : '';
+        location.value = province.value + ', ' + municipality.value + (addrVal ? ', ' + addrVal : '');
         if (!validId.files || validId.files.length === 0) { kbfSetFieldError(validId, 'Please upload a valid ID.'); kbfShowFormMessage(msg,'error','Please attach your ID.'); return; }
         if (!photos.files || photos.files.length === 0) { kbfSetFieldError(photos, 'At least one photo is required.'); kbfShowFormMessage(msg,'error','Please attach photos for your fundraiser.'); return; }
 
@@ -2074,6 +2175,12 @@ function kbf_dashboard_find_funds_tab() {
         const form=document.getElementById('kbff-sponsor-form');
         const btn=document.getElementById('kbff-sponsor-submit');
         const msg=document.getElementById('kbff-sponsor-msg');
+        const showFormError = (text) => {
+            if (typeof kbfShowFormMessage === 'function') { showFormError(text); }
+            else if (msg) { msg.innerHTML = '<div class="kbf-alert kbf-alert-error">'+text+'</div>'; }
+        };
+        const setFieldError = (el, text) => { if (typeof kbfSetFieldError === 'function') { setFieldError(el, text); } };
+        const clearErrors = () => { if (typeof kbfClearFieldErrors === 'function') { kbfClearFieldErrors(form); } };
         const methodEl = form.querySelector('select[name="payment_method"]');
         if (methodEl && methodEl.value !== 'online_payment') {
             msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
@@ -2504,7 +2611,13 @@ function bntm_shortcode_kbf_browse() {
         const form=document.getElementById('kbf-sponsor-form');
         const btn=document.querySelector('#kbf-modal-sponsor .kbf-modal-footer .kbf-btn-primary');
         const msg=document.getElementById('kbf-sponsor-msg');
-        kbfClearFieldErrors(form);
+        const showFormError = (text) => {
+            if (typeof kbfShowFormMessage === 'function') { showFormError(text); }
+            else if (msg) { msg.innerHTML = '<div class="kbf-alert kbf-alert-error">'+text+'</div>'; }
+        };
+        const setFieldError = (el, text) => { if (typeof kbfSetFieldError === 'function') { setFieldError(el, text); } };
+        const clearErrors = () => { if (typeof kbfClearFieldErrors === 'function') { kbfClearFieldErrors(form); } };
+        clearErrors();
 
         const nameEl   = form.querySelector('input[name="sponsor_name"]');
         const amountEl = form.querySelector('input[name="amount"]');
@@ -2516,15 +2629,16 @@ function bntm_shortcode_kbf_browse() {
         const amount = amountEl ? parseFloat(amountEl.value||'0') : 0;
         const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
 
-        if (!isAnonymous && !nameValue) { kbfSetFieldError(nameEl,'Name is required for non-anonymous sponsorship.'); kbfShowFormMessage(msg,'error','Please fix field errors before continuing.'); return; }
-        if (!amount || amount <= 0) { kbfSetFieldError(amountEl,'Amount must be greater than 0.'); kbfShowFormMessage(msg,'error','Please enter a valid amount.'); return; }
-        if (maxVal && amount > maxVal) { kbfSetFieldError(amountEl,'Amount cannot exceed remaining goal (₱'+maxVal.toLocaleString()+').'); kbfShowFormMessage(msg,'error','Please enter an allowable amount.'); return; }
-        if (emailEl && emailEl.value.trim() && !kbfValidateEmail(emailEl.value.trim())) { kbfSetFieldError(emailEl,'Please enter a valid email.'); kbfShowFormMessage(msg,'error','Please enter a valid email.'); return; }
-        if (phoneEl && !phoneEl.value.trim()) { kbfSetFieldError(phoneEl,'Phone is recommended.'); }
+        if (!isAnonymous && !nameValue) { setFieldError(nameEl,'Name is required for non-anonymous sponsorship.'); showFormError('Please fix field errors before continuing.'); return; }
+        if (!amount || amount <= 0) { setFieldError(amountEl,'Amount must be greater than 0.'); showFormError('Please enter a valid amount.'); return; }
+        if (maxVal && amount > maxVal) { setFieldError(amountEl,'Amount cannot exceed remaining goal (₱'+maxVal.toLocaleString()+').'); showFormError('Please enter an allowable amount.'); return; }
+        if (!emailEl || !emailEl.value.trim()) { setFieldError(emailEl,'Email is required.'); showFormError('Please enter your email.'); return; }
+        if (!kbfValidateEmail(emailEl.value.trim())) { setFieldError(emailEl,'Please enter a valid email.'); showFormError('Please enter a valid email.'); return; }
+        if (!phoneEl || !phoneEl.value.trim()) { setFieldError(phoneEl,'Phone is required.'); showFormError('Please enter your phone number.'); return; }
 
         const methodEl = form.querySelector('select[name="payment_method"]');
         if (methodEl && methodEl.value !== 'online_payment') {
-            kbfShowFormMessage(msg,'error','Online Payment is required to proceed to Maya Checkout.');
+            showFormError('Online Payment is required to proceed to Maya Checkout.');
             return;
         }
 
