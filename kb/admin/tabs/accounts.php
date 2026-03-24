@@ -11,7 +11,7 @@ function kbf_admin_organizers_tab() {
       <h3 class="kbf-section-title" style="margin-bottom:16px;">Organizer Management</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Total Raised</th><th>Sponsors</th><th>Rating</th><th>Verified</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Rating</th><th>Verified</th><th>Actions</th></tr></thead>
           <tbody>
           <?php if(empty($rows)): ?>
             <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--kbf-slate);">No organizer profiles yet.</td></tr>

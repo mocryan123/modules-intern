@@ -11,7 +11,7 @@ function kbf_admin_transactions_tab() {
       <h3 class="kbf-section-title" style="margin-bottom:16px;">All Transactions</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
-          <thead><tr><th>Fund</th><th>Sponsor</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+          <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>Date</th></tr></thead>
           <tbody>
           <?php if(empty($rows)): ?>
             <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--kbf-slate);">No transactions found.</td></tr>

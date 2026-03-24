@@ -40,7 +40,7 @@ function kbf_dashboard_find_funds_tab() {
         </div>
         <div class="kbf-modal-body">
           <div id="kbff-fund-preview" style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:18px;"></div>
-          <form id="kbff-sponsor-form">
+          <form id="kbff-sponsor-form" onsubmit="return false;">
             <input type="hidden" name="fund_id" id="kbff-fund-id">
             <div class="kbf-form-row">
               <div class="kbf-form-group"><label>Name / Company / Organization</label><input type="text" name="sponsor_name" id="kbff-name" placeholder="Your name, company, or org"></div>
@@ -53,7 +53,11 @@ function kbf_dashboard_find_funds_tab() {
               <input type="number" name="amount" placeholder="Min. ₱1" min="1" step="1" required>
               <div id="kbff-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
             </div>
-            <div class="kbf-form-group"><label>Encouraging Message (optional)</label><textarea name="message" rows="2" placeholder="Leave a message for the organizer..."></textarea></div>
+            <div class="kbf-form-group">
+              <label>Encouraging Message (optional)</label>
+              <textarea name="message" id="kbff-message" rows="2" maxlength="300" placeholder="Leave a message for the organizer..."></textarea>
+              <div class="kbf-char-count" id="kbff-message-count">0/300</div>
+            </div>
             <div class="kbf-form-row">
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
               <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
@@ -70,7 +74,7 @@ function kbf_dashboard_find_funds_tab() {
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbff-modal-sponsor').style.display='none'">Cancel</button>
-          <button class="kbf-btn kbf-btn-primary" id="kbff-sponsor-submit" onclick="kbffSubmitSponsor('<?php echo $nonce_sponsor; ?>')">
+          <button type="button" class="kbf-btn kbf-btn-primary" id="kbff-sponsor-submit" onclick="kbffSubmitSponsor('<?php echo $nonce_sponsor; ?>')">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
             Confirm Sponsorship
           </button>
@@ -101,19 +105,40 @@ function kbf_dashboard_find_funds_tab() {
     </div>
 
     <!-- Header -->
-    <div style="background:#fff;border:1px solid var(--kbf-border);border-radius:16px;padding:20px 22px;margin-bottom:18px;box-shadow:var(--kbf-shadow);">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
-        <div style="min-width:200px;">
-          <div class="kbf-eyebrow">Discover</div>
-          <h3 style="font-size:18px;font-weight:800;margin:4px 0 6px;color:var(--kbf-text);">Find Funds to Support</h3>
-          <p style="margin:0;color:var(--kbf-text-sm);font-size:13.5px;"><?php echo count($funds); ?> active fund<?php echo count($funds)!==1?'s':''; ?> are looking for sponsors right now.</p>
-        </div>
-        <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;max-width:760px;flex:1;" id="kbff-search-form">
+    <div style="background:#fff;border:none;border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:none;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;align-items:center;" id="kbff-search-form">
           <input type="hidden" name="kbf_tab" value="find_funds">
           <?php if($cat): ?><input type="hidden" name="ff_cat" value="<?php echo esc_attr($cat); ?>"><?php endif; ?>
           <?php if($sort && $sort!=='newest'): ?><input type="hidden" name="ff_sort" value="<?php echo esc_attr($sort); ?>"><?php endif; ?>
-          <input type="text" name="ff_q" value="<?php echo esc_attr($q); ?>" placeholder="Search by title or description..." style="flex:2;min-width:180px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
-          <input type="text" name="ff_loc" id="kbff-loc-input" value="<?php echo esc_attr($loc); ?>" placeholder="Location (city, province)..." style="flex:1;min-width:160px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tags.svg" alt="" width="14" height="14">
+              </span>
+              <select id="kbff-cat-select" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
+                <option value="">All Categories</option>
+                <?php foreach($cats as $c): ?>
+                  <option value="<?php echo esc_attr($c); ?>" <?php echo $cat===$c?'selected':''; ?>><?php echo $c; ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/filter.svg" alt="" width="14" height="14">
+              </span>
+              <select id="kbff-sort-select" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:140px;">
+                <option value="newest" <?php echo ($sort==='newest'||!$sort)?'selected':''; ?>>Newest</option>
+                <option value="most_funded" <?php echo $sort==='most_funded'?'selected':''; ?>>Most Funded</option>
+                <option value="ending_soon" <?php echo $sort==='ending_soon'?'selected':''; ?>>Ending Soon</option>
+              </select>
+            </div>
+          </div>
+
+          <input type="text" name="ff_q" value="<?php echo esc_attr($q); ?>" placeholder="Search by title or description..." style="flex:2;min-width:220px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
+          <input type="text" name="ff_loc" id="kbff-loc-input" value="<?php echo esc_attr($loc); ?>" placeholder="Location (city, province)..." style="flex:1;min-width:180px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
+
           <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             Near Me
@@ -121,50 +146,13 @@ function kbf_dashboard_find_funds_tab() {
           <button type="submit" class="kbf-btn kbf-btn-primary">Search</button>
           <?php if($q||$cat||$loc): ?><a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-secondary" style="padding:9px 14px;">Clear</a><?php endif; ?>
         </form>
-        <?php if($loc): ?>
-        <div style="margin-top:10px;font-size:12.5px;color:var(--kbf-text-sm);display:flex;align-items:center;gap:6px;">
-          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          Showing funds near: <strong><?php echo esc_html($loc); ?></strong>
-        </div>
-        <?php endif; ?>
       </div>
-    </div>
-
-    <!-- Filter + Sort bar (Dropdowns) -->
-    <div style="background:#fff;border:1px solid var(--kbf-border);border-radius:var(--kbf-radius);padding:14px 18px;margin-bottom:22px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tags.svg" alt="" width="14" height="14">
-            </span>
-            <div>
-              <div style="font-size:11.5px;font-weight:700;color:var(--kbf-slate);text-transform:uppercase;letter-spacing:.5px;">Category</div>
-              <select id="kbff-cat-select" style="margin-top:4px;padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:180px;">
-                <option value="">All</option>
-                <?php foreach($cats as $c): ?>
-                  <option value="<?php echo esc_attr($c); ?>" <?php echo $cat===$c?'selected':''; ?>><?php echo $c; ?></option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/filter.svg" alt="" width="14" height="14">
-            </span>
-            <div>
-              <div style="font-size:11.5px;font-weight:700;color:var(--kbf-slate);text-transform:uppercase;letter-spacing:.5px;">Sort</div>
-              <select id="kbff-sort-select" style="margin-top:4px;padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
-                <option value="newest" <?php echo ($sort==='newest'||!$sort)?'selected':''; ?>>Newest</option>
-                <option value="most_funded" <?php echo $sort==='most_funded'?'selected':''; ?>>Most Funded</option>
-                <option value="ending_soon" <?php echo $sort==='ending_soon'?'selected':''; ?>>Ending Soon</option>
-              </select>
-            </div>
-          </div>
-        </div>
+      <?php if($loc): ?>
+      <div style="margin-top:10px;font-size:12.5px;color:var(--kbf-text-sm);display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Showing funds near: <strong><?php echo esc_html($loc); ?></strong>
       </div>
+      <?php endif; ?>
     </div>
 
     <!-- Fund grid -->
@@ -267,7 +255,17 @@ function kbf_dashboard_find_funds_tab() {
     (function(){
         var catSel = document.getElementById('kbff-cat-select');
         var sortSel = document.getElementById('kbff-sort-select');
+        var msg = document.getElementById('kbff-message');
+        var msgCount = document.getElementById('kbff-message-count');
         if (!catSel || !sortSel) return;
+        function updateMsgCount(){
+            if(!msg || !msgCount) return;
+            msgCount.textContent = (msg.value ? msg.value.length : 0) + '/300';
+        }
+        if (msg && msgCount){
+            updateMsgCount();
+            msg.addEventListener('input', updateMsgCount);
+        }
         function buildUrl(){
             var url = '<?php echo esc_url($base_url); ?>';
             var params = [];
@@ -309,6 +307,21 @@ function kbf_dashboard_find_funds_tab() {
         const form=document.getElementById('kbff-sponsor-form');
         const btn=document.getElementById('kbff-sponsor-submit');
         const msg=document.getElementById('kbff-sponsor-msg');
+        form.querySelectorAll('.kbf-field-error').forEach(function(el){ el.remove(); });
+        var first=null;
+        form.querySelectorAll('[required]').forEach(function(el){
+            if(!el.value || !el.value.trim()){
+                var group = el.closest('.kbf-form-group');
+                if(group){
+                    var err = document.createElement('div');
+                    err.className = 'kbf-field-error';
+                    err.textContent = 'This field is required.';
+                    group.appendChild(err);
+                }
+                if(!first) first = el;
+            }
+        });
+        if(first){ first.focus(); return; }
         const amountEl = form.querySelector('input[name="amount"]');
         const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;

@@ -11,28 +11,39 @@ function kbf_admin_withdrawals_tab() {
       <h3 class="kbf-section-title" style="margin-bottom:16px;">Withdrawal Requests</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
-          <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Method</th><th>Account</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Account</th><th>Status</th><th>Requested</th><th>Released</th><th>Actions</th></tr></thead>
           <tbody>
           <?php if(empty($rows)): ?>
             <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--kbf-slate);">No withdrawal requests.</td></tr>
           <?php else: foreach($rows as $w): ?>
             <tr>
-              <td><strong><?php echo esc_html(wp_trim_words($w->fund_title,5)); ?></strong></td>
-              <td class="kbf-meta"><?php echo esc_html($w->funder_name ?: ($w->funder_display ?: '-')); ?></td>
+              <td>
+                <div class="kbf-cell-center">
+                  <strong><?php echo esc_html(wp_trim_words($w->fund_title,5)); ?></strong>
+                  <div class="kbf-cell-spacer"></div>
+                  <div class="kbf-cell-spacer"></div>
+                </div>
+              </td>
+              <td class="kbf-meta">
+                <div class="kbf-cell-center">
+                  <?php echo esc_html($w->funder_name ?: ($w->funder_display ?: '-')); ?>
+                  <div class="kbf-cell-spacer"></div>
+                  <div class="kbf-cell-spacer"></div>
+                </div>
+              </td>
               <td><strong>PHP <?php echo number_format($w->amount,2); ?></strong></td>
-              <td><?php echo esc_html($w->method); ?></td>
               <td class="kbf-meta"><?php echo esc_html($w->account_name); ?><br><?php echo esc_html($w->account_number); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
               <td class="kbf-meta"><?php echo date('M d, Y',strtotime($w->requested_at)); ?></td>
+              <td class="kbf-meta"><?php echo $w->processed_at ? date('M d, Y',strtotime($w->processed_at)) : '—'; ?></td>
               <td>
                 <?php if($w->status==='pending'): ?>
-                <div class="kbf-btn-group">
-                  <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfProcessWd(<?php echo $w->id; ?>,'approve')">Approve & Release</button>
+                <div class="kbf-btn-group" style="justify-content:center;">
+                  <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfProcessWd(<?php echo $w->id; ?>,'approve')">Release</button>
                   <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfProcessWd(<?php echo $w->id; ?>,'reject')">Reject</button>
                 </div>
                 <?php else: ?>
-                  <span class="kbf-meta"><?php echo $w->processed_at?date('M d, Y',strtotime($w->processed_at)):'-'; ?></span>
-                  <?php if($w->admin_notes): ?><div class="kbf-meta" style="font-style:italic;"><?php echo esc_html($w->admin_notes); ?></div><?php endif; ?>
+                  <span class="kbf-meta">—</span>
                 <?php endif; ?>
               </td>
             </tr>
@@ -43,4 +54,3 @@ function kbf_admin_withdrawals_tab() {
     </div>
     <?php return ob_get_clean();
 }
-

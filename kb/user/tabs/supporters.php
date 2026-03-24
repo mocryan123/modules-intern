@@ -29,17 +29,22 @@ function kbf_dashboard_sponsorships_tab($business_id) {
       <?php endif; ?>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
-          <thead><tr><th>Fund</th><th>Sponsor</th><th>Amount</th><th>Status</th><th>Message</th><th>Date</th></tr></thead>
+          <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>Note</th><th>Date</th></tr></thead>
           <tbody>
           <?php if(empty($rows)): ?>
             <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--kbf-slate);">No sponsorships yet.</td></tr>
           <?php else: foreach($rows as $s): ?>
             <tr>
-              <td><strong><?php echo esc_html($s->fund_title); ?></strong></td>
+              <td>
+                <strong style="display:block;margin-bottom:4px;"><?php echo esc_html($s->fund_title); ?></strong>
+                <div style="height:14px;"></div>
+              </td>
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?><?php if($s->email): ?><div class="kbf-meta"><?php echo esc_html($s->email); ?></div><?php endif; ?></td>
               <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($s->amount,2); ?></strong></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
-              <td style="font-size:12.5px;color:var(--kbf-text-sm);font-style:italic;max-width:180px;"><?php echo esc_html($s->message?:' -- '); ?></td>
+              <td style="font-size:12.5px;color:var(--kbf-text-sm);font-style:italic;max-width:200px;">
+                <span class="kbf-clamp-2"><?php echo esc_html($s->message?:' -- '); ?></span>
+              </td>
               <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>
             </tr>
           <?php endforeach; endif; ?>

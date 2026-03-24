@@ -58,27 +58,32 @@ function bntm_shortcode_kbf_admin() {
     window.kbfVerifyOrg=function(id,cur){kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:cur?'0':'1'});};
     </script>
     <div class="kbf-wrap">
-    <div class="kbf-page-header"><h2>KonekBayan Admin Panel</h2><p>Moderate funds, manage escrow, review reports, and process withdrawals.</p></div>
-
-    <div class="kbf-tabs">
-      <?php
-      $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
-      $open_reports_count  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
-      $pending_wd_count    = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
-      $open_appeals_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_appeals WHERE status='open'"); // phpcs:ignore
-      $tabs=['pending'=>'Pending','all_funds'=>'All Funds','transactions'=>'Transactions','withdrawals'=>'Withdrawals','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Organizers','settings'=>'Settings'];
-      $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
-      foreach($tabs as $k=>$label): ?>
-      <a href="?adm_tab=<?php echo $k; ?>" class="kbf-tab <?php echo $tab===$k?'active':''; ?>">
-        <?php echo $label; ?>
-        <?php if(!empty($counts[$k]) && $counts[$k]>0): ?>
-          <span style="background:var(--kbf-red);color:#fff;border-radius:99px;padding:1px 7px;font-size:10px;font-weight:800;line-height:1.5;"><?php echo $counts[$k]; ?></span>
-        <?php endif; ?>
-      </a>
-      <?php endforeach; ?>
+    <?php
+    $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
+    $open_reports_count  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
+    $pending_wd_count    = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
+    $open_appeals_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_appeals WHERE status='open'"); // phpcs:ignore
+    $tabs=['pending'=>'For Review','all_funds'=>'Fundraisers','transactions'=>'Payments','withdrawals'=>'Cashouts','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Accounts','settings'=>'Settings'];
+    $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
+    ?>
+    <div class="kbf-dashboard-topbar">
+      <div class="kbf-dashboard-brand">
+        <span class="kbf-logo-dot">KB</span>
+        KonekBayan
+      </div>
+      <div class="kbf-dashboard-nav">
+        <?php foreach($tabs as $k=>$label): ?>
+        <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>">
+          <?php echo $label; ?>
+          <?php if(!empty($counts[$k]) && $counts[$k]>0): ?>
+            <span class="kbf-nav-count"><?php echo $counts[$k]; ?></span>
+          <?php endif; ?>
+        </a>
+        <?php endforeach; ?>
+      </div>
     </div>
 
-    <?php echo kbf_role_nav('admin'); ?>
+    <div class="kbf-page-header"><h2>KonekBayan Admin Panel</h2><p>Moderate funds, manage escrow, review reports, and process withdrawals.</p></div>
     <div class="kbf-tab-content">
       <?php
       if($tab==='pending')      echo kbf_admin_pending_tab();

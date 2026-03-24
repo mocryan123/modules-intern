@@ -39,9 +39,6 @@ function kbf_admin_pending_tab() {
             <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfReject(<?php echo $f->id; ?>)">
               <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> Reject
             </button>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfVerifyBadge(<?php echo $f->id; ?>,<?php echo $f->verified_badge; ?>)">
-              <?php echo $f->verified_badge?'Remove Badge':'Grant Verified Badge'; ?>
-            </button>
           </div>
         </div>
       <?php endforeach; endif; ?>
