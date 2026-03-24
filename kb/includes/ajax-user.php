@@ -10,9 +10,11 @@ function bntm_ajax_kbf_create_fund() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$table=$wpdb->prefix.'kbf_funds';
     $biz=get_current_user_id();
-    foreach(['title','description','goal_amount','email','phone','location','category','funder_type'] as $f) {
+    $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? $_POST['location_full'] : (isset($_POST['location']) ? $_POST['location'] : '');
+    foreach(['title','description','goal_amount','email','phone','category','funder_type'] as $f) {
         if(empty($_POST[$f])) wp_send_json_error(['message'=>'Please fill all required fields.']);
     }
+    if (empty($location_full)) wp_send_json_error(['message'=>'Please fill all required fields.']);
     $goal=floatval($_POST['goal_amount']);
     if($goal<100) wp_send_json_error(['message'=>'Minimum goal is ₱100.']);
     $valid_id='';
@@ -44,7 +46,7 @@ function bntm_ajax_kbf_create_fund() {
         'category'      =>sanitize_text_field($_POST['category']),
         'email'         =>sanitize_email($_POST['email']),
         'phone'         =>sanitize_text_field($_POST['phone']),
-        'location'      =>sanitize_text_field($_POST['location']),
+        'location'      =>sanitize_text_field($location_full),
         'valid_id_path' =>$valid_id,
         'auto_return'   =>isset($_POST['auto_return'])?1:0,
         'deadline'      =>!empty($_POST['deadline'])?sanitize_text_field($_POST['deadline']):null,
@@ -67,7 +69,14 @@ function bntm_ajax_kbf_update_fund() {
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
-    $data=['title'=>sanitize_text_field($_POST['title']),'description'=>sanitize_textarea_field($_POST['description']),'location'=>sanitize_text_field($_POST['location'])];
+    $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? $_POST['location_full'] : (isset($_POST['location']) ? $_POST['location'] : '');
+    $data=[
+        'title'=>sanitize_text_field($_POST['title']),
+        'description'=>sanitize_textarea_field($_POST['description']),
+        'location'=>sanitize_text_field($location_full),
+        'deadline'=>!empty($_POST['deadline']) ? sanitize_text_field($_POST['deadline']) : null,
+        'auto_return'=>isset($_POST['auto_return']) ? 1 : 0
+    ];
     // New photos
     if(!empty($_FILES['photos']['name'][0])) {
         if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');

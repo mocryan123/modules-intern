@@ -22,7 +22,7 @@ function bntm_ajax_kbf_admin_reject_fund() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
-    $notes=sanitize_text_field($_POST['reason']??'');
+    $notes=sanitize_text_field(isset($_POST['reason']) ? $_POST['reason'] : '');
     $wpdb->update($t,['status'=>'cancelled','admin_notes'=>$notes],['id'=>$id],['%s','%s'],['%d']);
     wp_send_json_success(['message'=>'Fund rejected.']);
 }
@@ -63,7 +63,7 @@ function bntm_ajax_kbf_admin_process_withdrawal() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$wt=$wpdb->prefix.'kbf_withdrawals';$ft=$wpdb->prefix.'kbf_funds';
-    $id=intval($_POST['withdrawal_id']);$type=sanitize_text_field($_POST['action_type']);$notes=sanitize_text_field($_POST['notes']??'');
+    $id=intval($_POST['withdrawal_id']);$type=sanitize_text_field($_POST['action_type']);$notes=sanitize_text_field(isset($_POST['notes']) ? $_POST['notes'] : '');
     $wd=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$wt} WHERE id=%d",$id));
     if(!$wd) wp_send_json_error(['message'=>'Withdrawal not found.']);
     if($type==='approve') {
@@ -89,7 +89,7 @@ function bntm_ajax_kbf_admin_review_report() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_reports';$id=intval($_POST['report_id']);
-    $notes=sanitize_text_field($_POST['notes']??'');
+    $notes=sanitize_text_field(isset($_POST['notes']) ? $_POST['notes'] : '');
     $wpdb->update($t,['status'=>'reviewed','admin_notes'=>$notes],['id'=>$id],['%s','%s'],['%d']);
     wp_send_json_success(['message'=>'Report marked as reviewed.']);
 }
@@ -100,9 +100,9 @@ function bntm_ajax_kbf_admin_review_appeal() {
     global $wpdb;
     $at = $wpdb->prefix.'kbf_appeals';
     $ft = $wpdb->prefix.'kbf_funds';
-    $id = intval($_POST['appeal_id'] ?? 0);
-    $action = sanitize_text_field($_POST['action_type'] ?? '');
-    $notes = sanitize_text_field($_POST['notes'] ?? '');
+    $id = intval(isset($_POST['appeal_id']) ? $_POST['appeal_id'] : 0);
+    $action = sanitize_text_field(isset($_POST['action_type']) ? $_POST['action_type'] : '');
+    $notes = sanitize_text_field(isset($_POST['notes']) ? $_POST['notes'] : '');
     $appeal = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$at} WHERE id=%d", $id));
     if (!$appeal) wp_send_json_error(['message'=>'Appeal not found.']);
 
@@ -156,12 +156,12 @@ function bntm_ajax_kbf_admin_verify_organizer() {
 function bntm_ajax_kbf_save_setting() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
-    $key = sanitize_key($_POST['setting_key']??'');
-    $val = sanitize_text_field($_POST['setting_val']??'');
+    $key = sanitize_key(isset($_POST['setting_key']) ? $_POST['setting_key'] : '');
+    $val = sanitize_text_field(isset($_POST['setting_val']) ? $_POST['setting_val'] : '');
     if(empty($key)) wp_send_json_error(['message'=>'Invalid setting key.']);
     kbf_set_setting($key, $val);
     $labels = ['kbf_demo_mode' => ['0'=>'Live Mode activated. Sponsorships now require payment confirmation.','1'=>'Demo Mode activated. Sponsorships will be auto-confirmed.']];
-    $msg = $labels[$key][$val] ?? 'Setting saved!';
+    $msg = (isset($labels[$key]) && isset($labels[$key][$val])) ? $labels[$key][$val] : 'Setting saved!';
     wp_send_json_success(['message'=>$msg]);
 }
 
