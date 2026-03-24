@@ -204,6 +204,8 @@ function bntm_ajax_kbf_save_organizer_profile() {
     $socials=json_encode(['facebook'=>esc_url_raw($_POST['social_facebook']??''),'instagram'=>esc_url_raw($_POST['social_instagram']??''),'twitter'=>esc_url_raw($_POST['social_twitter']??'')]);
     $data=['bio'=>sanitize_textarea_field($_POST['bio']??''),'social_links'=>$socials,'business_id'=>$biz];
     if($avatar) $data['avatar_url']=$avatar;
+    if(isset($_POST['phone'])) update_user_meta($biz,'kbf_phone',sanitize_text_field($_POST['phone']));
+    if(isset($_POST['address'])) update_user_meta($biz,'kbf_address',sanitize_text_field($_POST['address']));
     $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz));
     if($exists) {
         unset($data['business_id']);

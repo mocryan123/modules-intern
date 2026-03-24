@@ -11,6 +11,9 @@ function bntm_shortcode_kbf_dashboard() {
     }
     kbf_global_assets();
     $user        = wp_get_current_user();
+    global $wpdb;
+    $pt = $wpdb->prefix.'kbf_organizer_profiles';
+    $nav_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url FROM {$pt} WHERE business_id=%d", $user->ID));
     $business_id = $user->ID;
     $tab         = isset($_GET['kbf_tab']) ? sanitize_text_field($_GET['kbf_tab']) : 'find_funds';
     $nonce_create = wp_create_nonce('kbf_create_fund');
@@ -50,12 +53,11 @@ function bntm_shortcode_kbf_dashboard() {
     .kbf-user-ui{
         font-family:'Poppins',system-ui,-apple-system,sans-serif;
         color:#0f1115;
-        background:
-            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),
-            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),
-            #ffffff;
+        background:#ffffff;
         border-radius:18px;
         padding:22px 18px 28px;
+        border:none;
+        box-shadow:none;
     }
     .kbf-user-ui .kbf-btn{font-weight:400;}
     .kbf-user-ui .kbf-card,
@@ -93,6 +95,147 @@ function bntm_shortcode_kbf_dashboard() {
     .kbf-user-ui .kbf-browse-tab,
     .kbf-user-ui .kbf-browse-search input{
         color:#4f5a6b;
+    }
+    .kbf-dashboard-topbar{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:16px;
+        padding:8px 4px 14px;
+        background:transparent;
+        border:none;
+        border-radius:0;
+        box-shadow:none;
+        margin-bottom:10px;
+    }
+    .kbf-dashboard-brand{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        font-weight:800;
+        color:#0f172a;
+        font-size:15px;
+    }
+    .kbf-dashboard-brand .kbf-logo-dot{
+        width:26px;height:26px;border-radius:10px;
+        background:linear-gradient(135deg,#79c0ff 0%,#4a98ff 100%);
+        display:inline-flex;align-items:center;justify-content:center;
+        color:#fff;font-weight:800;font-size:12px;
+        box-shadow:0 8px 18px rgba(79,147,255,0.35);
+    }
+    .kbf-dashboard-nav{
+        display:flex;
+        gap:18px;
+        font-size:12.5px;
+        color:var(--kbf-muted);
+        align-items:center;
+        flex-wrap:wrap;
+    }
+    .kbf-dashboard-nav a{
+        position:relative;
+        text-decoration:none;
+        color:#64748b;
+        font-weight:600;
+    }
+    .kbf-dashboard-nav a::after{
+        content:'';
+        position:absolute;
+        left:0;
+        bottom:-8px;
+        width:0;
+        height:2px;
+        border-radius:999px;
+        background:#4a98ff;
+        transition:width .2s ease;
+    }
+    .kbf-dashboard-nav a:hover::after,
+    .kbf-dashboard-nav a.active::after{ width:100%; }
+    .kbf-dashboard-nav a.active{ color:#1f2a44; }
+    .kbf-dashboard-actions{
+        display:flex;align-items:center;gap:10px;
+    }
+    .kbf-dashboard-avatar{
+        width:34px;height:34px;border-radius:50%;
+        border:2px solid #e5efff;object-fit:cover;
+        box-shadow:0 8px 18px rgba(16,24,40,0.12);
+    }
+    .kbf-hero-wrap{
+        padding:10px 6px 0;
+    }
+    .kbf-hero-banner{
+        background:#ffffff;
+        border:1px solid #edf0f4;
+        border-radius:22px;
+        padding:22px 24px;
+        box-shadow:0 18px 40px rgba(16,24,40,0.08);
+        margin-bottom:18px;
+    }
+    .kbf-user-ui,
+    .kbf-hero-banner{
+        background-image:none !important;
+    }
+    .kbf-user-ui{
+        border:none !important;
+        box-shadow:none !important;
+    }
+    .kbf-hero-title{
+        font-size:28px;
+        font-weight:800;
+        color:#0f172a;
+        margin:0 0 6px;
+    }
+    .kbf-hero-sub{
+        color:#4b5563;
+        font-size:13.5px;
+        margin:0 0 18px;
+        max-width:520px;
+    }
+    .kbf-hero-grid{
+        display:grid;
+        grid-template-columns:1.2fr 1fr;
+        gap:18px;
+        margin-bottom:20px;
+    }
+    .kbf-hero-card{
+        background:#ffffff;
+        border:1px solid #edf0f4;
+        border-radius:20px;
+        padding:18px 20px;
+        box-shadow:0 18px 40px rgba(16,24,40,0.08);
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        min-height:150px;
+        position:relative;
+        overflow:hidden;
+    }
+    .kbf-hero-card.kbf-hero-primary{
+        background:linear-gradient(135deg,#2f7bdc 0%,#4a98ff 100%);
+        color:#fff;
+    }
+    .kbf-hero-card h4{
+        margin:0;
+        font-size:16px;
+        font-weight:700;
+    }
+    .kbf-hero-card p{
+        margin:0;
+        font-size:12.5px;
+        color:inherit;
+        opacity:.9;
+    }
+    .kbf-hero-card .kbf-hero-icon{
+        width:34px;height:34px;border-radius:12px;
+        display:inline-flex;align-items:center;justify-content:center;
+        background:#eef4ff;color:#1f2a44;
+    }
+    .kbf-hero-card.kbf-hero-primary .kbf-hero-icon{
+        background:rgba(255,255,255,.2);
+        color:#fff;
+    }
+    @media (max-width: 900px){
+        .kbf-hero-grid{ grid-template-columns:1fr; }
+        .kbf-dashboard-topbar{ flex-wrap:wrap; }
     }
     .kbf-user-ui .kbf-modal-overlay{
         position:fixed;
@@ -216,16 +359,19 @@ function bntm_shortcode_kbf_dashboard() {
         font-size:11.5px;
         color:#4f5a6b;
     }
+    .kbf-user-ui .kbf-title-counter{
+        display:block;
+        margin-top:6px;
+        font-size:11.5px;
+        color:#4f5a6b;
+    }
     html.kbf-modal-lock, body.kbf-modal-lock { overflow: hidden; }
     </style>
     <style>
     .kbf-user-ui{
         font-family:'Poppins',system-ui,-apple-system,sans-serif;
         color:#0f1115;
-        background:
-            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),
-            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),
-            #ffffff;
+        background:#ffffff;
         border-radius:18px;
         padding:22px 18px 28px;
     }
@@ -296,7 +442,8 @@ function bntm_shortcode_kbf_dashboard() {
             </div>
             <div class="kbf-form-group">
               <label>Fund Title *</label>
-              <input type="text" name="title" placeholder="Clear, compelling title" required>
+              <input type="text" name="title" id="kbf-create-title" placeholder="Clear, compelling title" maxlength="80" required>
+              <small class="kbf-title-counter">0 / 80</small>
             </div>
             <div class="kbf-form-group">
               <label>Description *</label>
@@ -395,7 +542,8 @@ function bntm_shortcode_kbf_dashboard() {
             <input type="hidden" name="fund_id" id="edit-fund-id">
             <div class="kbf-form-group">
               <label>Title</label>
-              <input type="text" name="title" id="edit-fund-title" required>
+              <input type="text" name="title" id="edit-fund-title" maxlength="80" required>
+              <small class="kbf-title-counter">0 / 80</small>
               <div class="kbf-field-error"></div>
             </div>
             <div class="kbf-form-group">
@@ -533,52 +681,54 @@ function bntm_shortcode_kbf_dashboard() {
       </div>
     </div>
 
-    <!-- Page header -->
-    <div class="kbf-page-header">
-      <h2>Welcome, <?php echo esc_html($user->display_name); ?></h2>
-      <p>Choose a path: sponsor a cause or create your own fundraiser.</p>
+    <!-- Topbar (Landing-style) -->
+    <div class="kbf-dashboard-topbar">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div class="kbf-dashboard-brand">
+          <span class="kbf-logo-dot">KB</span>
+          KonekBayan
+        </div>
+        <nav class="kbf-dashboard-nav">
+          <a href="?kbf_tab=overview" class="<?php echo $tab==='overview'?'active':''; ?>">Overview</a>
+          <a href="?kbf_tab=my_funds" class="<?php echo $tab==='my_funds'?'active':''; ?>">My Funds</a>
+          <a href="?kbf_tab=sponsorships" class="<?php echo $tab==='sponsorships'?'active':''; ?>">Sponsorships</a>
+          <a href="?kbf_tab=withdrawals" class="<?php echo $tab==='withdrawals'?'active':''; ?>">Withdrawals</a>
+          <a href="?kbf_tab=find_funds" class="<?php echo $tab==='find_funds'?'active':''; ?>">Find Funds</a>
+        </nav>
+      </div>
+      <div class="kbf-dashboard-actions">
+        <?php
+          $avatar_url = ($nav_profile && $nav_profile->avatar_url) ? $nav_profile->avatar_url : get_avatar_url($user->ID, ['size'=>64]);
+        ?>
+        <a href="?kbf_tab=profile" title="Profile">
+          <img class="kbf-dashboard-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="User avatar" id="kbf-navbar-avatar">
+        </a>
+      </div>
     </div>
 
-    <!-- Primary user actions -->
-    <div class="kbf-action-bar">
-      <div class="kbf-action-card">
-        <span class="kbf-chip">Default View</span>
-        <strong>Find Funds</strong>
-        <a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-primary">Sponsor Funds</a>
+    <div class="kbf-hero-wrap">
+      <div class="kbf-hero-banner">
+        <h2 class="kbf-hero-title">Welcome, <?php echo esc_html($user->display_name); ?></h2>
+        <p class="kbf-hero-sub">Empower change today. Oversee and manage your community-driven impact initiatives.</p>
       </div>
-      <div class="kbf-action-card">
-        <span class="kbf-chip">Need Support?</span>
-        <strong>Start a Fund</strong>
-        <button class="kbf-btn kbf-btn-secondary" onclick="kbfOpenModal('kbf-modal-create')">Create Fund</button>
+      <div class="kbf-hero-grid">
+        <div class="kbf-hero-card">
+          <span class="kbf-hero-icon">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/search.svg" alt="" width="16" height="16">
+          </span>
+          <h4>Find Funds</h4>
+          <p>Discover verified local causes needing urgent resources and support.</p>
+          <a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-secondary" style="align-self:flex-start;">Browse Initiatives</a>
+        </div>
+        <div class="kbf-hero-card kbf-hero-primary">
+          <span class="kbf-hero-icon">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus.svg" alt="" width="16" height="16">
+          </span>
+          <h4>Start a Fund</h4>
+          <p>Launch a fundraising campaign for a verified social good project.</p>
+          <button class="kbf-btn kbf-btn-primary" style="background:#ffffff;color:#1f2a44;align-self:flex-start;" onclick="kbfOpenModal('kbf-modal-create')">Get Started</button>
+        </div>
       </div>
-    </div>
-
-    <div class="kbf-section-sub" style="margin-bottom:20px;">Navigate your workspace</div>
-    <div class="kbf-tabs">
-      <a href="?kbf_tab=overview"      class="kbf-tab <?php echo $tab==='overview'?'active':''; ?>">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-        Overview
-      </a>
-      <a href="?kbf_tab=my_funds"      class="kbf-tab <?php echo $tab==='my_funds'?'active':''; ?>">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-        My Funds
-      </a>
-      <a href="?kbf_tab=sponsorships"  class="kbf-tab <?php echo $tab==='sponsorships'?'active':''; ?>">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
-        Sponsorships
-      </a>
-      <a href="?kbf_tab=withdrawals"   class="kbf-tab <?php echo $tab==='withdrawals'?'active':''; ?>">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        Withdrawals
-      </a>
-      <a href="?kbf_tab=find_funds"    class="kbf-tab <?php echo $tab==='find_funds'?'active':''; ?>">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        Find Funds
-      </a>
-      <a href="?kbf_tab=profile"       class="kbf-tab <?php echo $tab==='profile'?'active':''; ?>">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-        Profile
-      </a>
     </div>
     <div class="kbf-tab-content">
       <?php
@@ -767,6 +917,31 @@ function bntm_shortcode_kbf_dashboard() {
             document.getElementById('kbf-edit-municipality'),
             document.getElementById('kbf-edit-barangay')
         );
+        kbfInitLocationPicker(
+            document.getElementById('kbf-profile-province'),
+            document.getElementById('kbf-profile-municipality'),
+            document.getElementById('kbf-profile-barangay')
+        );
+        var profProv = document.getElementById('kbf-profile-province');
+        var profMuni = document.getElementById('kbf-profile-municipality');
+        var profBrgy = document.getElementById('kbf-profile-barangay');
+        var profHidden = document.getElementById('kbf-profile-address');
+        if (profProv && profMuni && profBrgy) {
+            if (profHidden) {
+                kbfApplyLocationSelection(profProv, profMuni, profBrgy, profHidden.value || '');
+            }
+            var updateProfileAddress = function(){
+                if (!profHidden) return;
+                var parts = [];
+                if (profBrgy.value) parts.push(profBrgy.value);
+                if (profMuni.value) parts.push(profMuni.value);
+                if (profProv.value) parts.push(profProv.value);
+                profHidden.value = parts.join(', ');
+            };
+            profProv.addEventListener('change', updateProfileAddress);
+            profMuni.addEventListener('change', updateProfileAddress);
+            profBrgy.addEventListener('change', updateProfileAddress);
+        }
     })();
     function kbfSetBtnLoading(btn, on, label) {
         if (!btn) return;
@@ -878,9 +1053,37 @@ function bntm_shortcode_kbf_dashboard() {
         textarea.addEventListener('input', update);
         update();
     }
+    function kbfInitTitleCounter(input){
+        if (!input) return;
+        var counter = input.parentNode.querySelector('.kbf-title-counter');
+        function update(){
+            if (!counter) return;
+            var len = (input.value || '').length;
+            counter.textContent = len + ' / 80';
+        }
+        input.addEventListener('input', update);
+        update();
+    }
     (function(){
         kbfInitDescCounter(document.querySelector('#kbf-create-fund-form textarea[name="description"]'));
         kbfInitDescCounter(document.getElementById('edit-fund-desc'));
+        kbfInitTitleCounter(document.querySelector('#kbf-create-fund-form input[name="title"]'));
+        kbfInitTitleCounter(document.getElementById('edit-fund-title'));
+        var funderSelect = document.querySelector('#kbf-create-fund-form select[name="funder_type"]');
+        var titleInput = document.getElementById('kbf-create-title');
+        if (funderSelect && titleInput) {
+            var placeholders = {
+                yourself: 'e.g., Help with my medical bills',
+                someone_else: 'e.g., Support Maria’s recovery',
+                charity_event: 'e.g., Barangay relief drive 2026'
+            };
+            var updatePlaceholder = function(){
+                var key = funderSelect.value || 'yourself';
+                titleInput.placeholder = placeholders[key] || 'Clear, compelling title';
+            };
+            funderSelect.addEventListener('change', updatePlaceholder);
+            updatePlaceholder();
+        }
     })();
 
     function kbfSubmitCreate() {
@@ -1000,6 +1203,8 @@ function bntm_shortcode_kbf_dashboard() {
         document.getElementById('edit-fund-desc').value = desc;
         var hiddenLoc = document.getElementById('edit-fund-location-hidden');
         if (hiddenLoc) hiddenLoc.value = loc || '';
+        var titleCounter = document.getElementById('edit-fund-title').parentNode.querySelector('.kbf-title-counter');
+        if (titleCounter) titleCounter.textContent = (title || '').length + ' / 80';
         var deadlineEl = document.getElementById('edit-fund-deadline');
         if (deadlineEl) deadlineEl.value = deadline || '';
         var autoEl = document.getElementById('edit-fund-auto-return');
@@ -1091,7 +1296,8 @@ function kbf_dashboard_admin_embed() {
                 try {
                     const cleaned = String(text || '').trim();
                     const start = cleaned.indexOf('{');
-                    const payload = start > 0 ? cleaned.slice(start) : cleaned;
+                    const end = cleaned.lastIndexOf('}');
+                    const payload = (start !== -1 && end !== -1 && end > start) ? cleaned.slice(start, end + 1) : cleaned;
                     j = JSON.parse(payload);
                 } catch(e) {}
                 if(!j){
@@ -1197,10 +1403,7 @@ function bntm_shortcode_kbf_browse() {
     .kbf-user-ui{
         font-family:'Poppins',system-ui,-apple-system,sans-serif;
         color:#0f1115;
-        background:
-            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),
-            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),
-            #ffffff;
+        background:#ffffff;
         border-radius:18px;
         padding:22px 18px 28px;
     }
@@ -1290,13 +1493,11 @@ function bntm_shortcode_kbf_browse() {
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
               <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
             </div>
-            <div class="kbf-form-group"><label>Payment Method *</label>
-              <select name="payment_method" id="sponsor-payment-method" required><option value="">Select Payment Method</option><option value="online_payment">Online Payment (GCash / PayMaya / E-Wallet)</option><option value="bank_payment">Bank Payment (Bank Transfer / Over-the-Counter)</option></select>
-            </div>
+            <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-              <div><strong>Demo Mode:</strong> No real payment processed. Sponsorship is instantly confirmed and progress updates immediately.</div>
+              <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
             </div>
             <?php else: ?>
             <div id="kbf-payment-placeholder" class="kbf-payment-placeholder" style="display:none;"><strong>Payment API Integration Point</strong><span id="kbf-payment-label"></span><br><small>Hook: <code>do_action('kbf_process_payment', $method, $amount, $fund_id)</code></small></div>
@@ -1515,11 +1716,6 @@ function bntm_shortcode_kbf_browse() {
         const form=document.getElementById('kbf-sponsor-form');
         const btn=document.querySelector('#kbf-modal-sponsor .kbf-modal-footer .kbf-btn-primary');
         const msg=document.getElementById('kbf-sponsor-msg');
-        const methodEl = form.querySelector('select[name="payment_method"]');
-        if (methodEl && methodEl.value !== 'online_payment') {
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
-            return;
-        }
         const amountEl = form.querySelector('input[name="amount"]');
         const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
@@ -1535,7 +1731,8 @@ function bntm_shortcode_kbf_browse() {
         fd.append('is_anonymous',document.getElementById('anon-check').checked?'1':'0');
         kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
-                if(j.data.checkout_url){
+                console.log('KBF checkout response:', j);
+                if(j.data && j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';
                     window.open(j.data.checkout_url, '_blank');
                 } else {
@@ -1549,6 +1746,7 @@ function bntm_shortcode_kbf_browse() {
                 kbfSetSkeleton(msg,false);
             }
         }, (err)=>{
+            console.error('KBF checkout error:', err);
             msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';
             kbfSetBtnLoading(btn,false);
             kbfSetSkeleton(msg,false);
@@ -1814,17 +2012,11 @@ function bntm_shortcode_kbf_fund_details() {
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
               <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
             </div>
-            <div class="kbf-form-group"><label>Payment Method *</label>
-              <select name="payment_method" required>
-                <option value="">Select Method</option>
-                <option value="online_payment">Online Payment (GCash / PayMaya / E-Wallet)</option>
-                <option value="bank_payment">Bank Payment (Bank Transfer / Over-the-Counter)</option>
-              </select>
-            </div>
+            <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-              <div><strong>Demo Mode:</strong> No real payment is processed. Your sponsorship will be instantly confirmed and the fund's progress updates immediately.</div>
+              <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
             </div>
             <?php endif; ?>
             <div id="kbf-spd-msg" style="margin-top:10px;"></div>
@@ -2161,11 +2353,6 @@ function bntm_shortcode_kbf_fund_details() {
         const form=document.getElementById('kbf-sponsor-form');
         const btn=document.querySelector('#kbf-modal-sponsor .kbf-modal-footer .kbf-btn-primary');
         const msg=document.getElementById('kbf-spd-msg');
-        const methodEl = form.querySelector('select[name="payment_method"]');
-        if (methodEl && methodEl.value !== 'online_payment') {
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
-            return;
-        }
         const amountEl = form.querySelector('input[name="amount"]');
         const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
@@ -2181,7 +2368,8 @@ function bntm_shortcode_kbf_fund_details() {
         fd.append('is_anonymous',document.getElementById('spd-anon').checked?'1':'0');
         kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
-                if(j.data.checkout_url){
+                console.log('KBF checkout response:', j);
+                if(j.data && j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';
                     window.open(j.data.checkout_url, '_blank');
                 } else {
@@ -2195,6 +2383,7 @@ function bntm_shortcode_kbf_fund_details() {
                 kbfSetSkeleton(msg,false);
             }
         }, (err)=>{
+            console.error('KBF checkout error:', err);
             msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';
             kbfSetBtnLoading(btn,false);
             kbfSetSkeleton(msg,false);

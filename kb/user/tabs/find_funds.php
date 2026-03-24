@@ -58,17 +58,11 @@ function kbf_dashboard_find_funds_tab() {
               <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
               <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
             </div>
-            <div class="kbf-form-group"><label>Payment Method *</label>
-              <select name="payment_method" required>
-                <option value="">Select Method</option>
-                <option value="online_payment">Online Payment (GCash / PayMaya / E-Wallet)</option>
-                <option value="bank_payment">Bank Payment (Bank Transfer / Over-the-Counter)</option>
-              </select>
-            </div>
+            <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:6px;">
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-              <div><strong>Demo Mode:</strong> No real payment is processed. Your sponsorship is instantly confirmed and the fund's progress updates immediately.</div>
+              <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
             </div>
             <?php endif; ?>
             <div id="kbff-sponsor-msg" style="margin-top:10px;"></div>
@@ -136,21 +130,39 @@ function kbf_dashboard_find_funds_tab() {
       </div>
     </div>
 
-    <!-- Filter + Sort bar -->
+    <!-- Filter + Sort bar (Dropdowns) -->
     <div style="background:#fff;border:1px solid var(--kbf-border);border-radius:var(--kbf-radius);padding:14px 18px;margin-bottom:22px;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <span style="font-size:11.5px;font-weight:700;color:var(--kbf-slate);text-transform:uppercase;letter-spacing:.5px;">Category:</span>
-          <a href="<?php echo esc_url($base_url.($q?'&ff_q='.urlencode($q):'')); ?>" style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;text-decoration:none;border:1.5px solid <?php echo !$cat?'var(--kbf-navy)':'var(--kbf-border)'; ?>;background:<?php echo !$cat?'var(--kbf-navy)':'transparent'; ?>;color:<?php echo !$cat?'#fff':'var(--kbf-slate)'; ?>;">All</a>
-          <?php foreach($cats as $c): ?>
-          <a href="<?php echo esc_url($base_url.'&ff_cat='.urlencode($c).($q?'&ff_q='.urlencode($q):'')); ?>" style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;text-decoration:none;border:1.5px solid <?php echo $cat===$c?'var(--kbf-navy)':'var(--kbf-border)'; ?>;background:<?php echo $cat===$c?'var(--kbf-navy)':'transparent'; ?>;color:<?php echo $cat===$c?'#fff':'var(--kbf-slate)'; ?>;"><?php echo $c; ?></a>
-          <?php endforeach; ?>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tags.svg" alt="" width="14" height="14">
+            </span>
+            <div>
+              <div style="font-size:11.5px;font-weight:700;color:var(--kbf-slate);text-transform:uppercase;letter-spacing:.5px;">Category</div>
+              <select id="kbff-cat-select" style="margin-top:4px;padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:180px;">
+                <option value="">All</option>
+                <?php foreach($cats as $c): ?>
+                  <option value="<?php echo esc_attr($c); ?>" <?php echo $cat===$c?'selected':''; ?>><?php echo $c; ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-          <span style="font-size:11.5px;font-weight:700;color:var(--kbf-slate);text-transform:uppercase;letter-spacing:.5px;">Sort:</span>
-          <a href="<?php echo esc_url($base_url.($cat?'&ff_cat='.urlencode($cat):'').($q?'&ff_q='.urlencode($q):'').'&ff_sort=newest'); ?>" style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;text-decoration:none;border:1.5px solid <?php echo $sort==='newest'||!$sort?'var(--kbf-navy)':'var(--kbf-border)'; ?>;background:<?php echo $sort==='newest'||!$sort?'var(--kbf-navy)':'transparent'; ?>;color:<?php echo $sort==='newest'||!$sort?'#fff':'var(--kbf-slate)'; ?>;">Newest</a>
-          <a href="<?php echo esc_url($base_url.($cat?'&ff_cat='.urlencode($cat):'').($q?'&ff_q='.urlencode($q):'').'&ff_sort=most_funded'); ?>" style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;text-decoration:none;border:1.5px solid <?php echo $sort==='most_funded'?'var(--kbf-navy)':'var(--kbf-border)'; ?>;background:<?php echo $sort==='most_funded'?'var(--kbf-navy)':'transparent'; ?>;color:<?php echo $sort==='most_funded'?'#fff':'var(--kbf-slate)'; ?>;">Most Funded</a>
-          <a href="<?php echo esc_url($base_url.($cat?'&ff_cat='.urlencode($cat):'').($q?'&ff_q='.urlencode($q):'').'&ff_sort=ending_soon'); ?>" style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;text-decoration:none;border:1.5px solid <?php echo $sort==='ending_soon'?'var(--kbf-navy)':'var(--kbf-border)'; ?>;background:<?php echo $sort==='ending_soon'?'var(--kbf-navy)':'transparent'; ?>;color:<?php echo $sort==='ending_soon'?'#fff':'var(--kbf-slate)'; ?>;">Ending Soon</a>
+        <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/filter.svg" alt="" width="14" height="14">
+            </span>
+            <div>
+              <div style="font-size:11.5px;font-weight:700;color:var(--kbf-slate);text-transform:uppercase;letter-spacing:.5px;">Sort</div>
+              <select id="kbff-sort-select" style="margin-top:4px;padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
+                <option value="newest" <?php echo ($sort==='newest'||!$sort)?'selected':''; ?>>Newest</option>
+                <option value="most_funded" <?php echo $sort==='most_funded'?'selected':''; ?>>Most Funded</option>
+                <option value="ending_soon" <?php echo $sort==='ending_soon'?'selected':''; ?>>Ending Soon</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -252,6 +264,24 @@ function kbf_dashboard_find_funds_tab() {
     <?php endif; ?>
 
     <script>
+    (function(){
+        var catSel = document.getElementById('kbff-cat-select');
+        var sortSel = document.getElementById('kbff-sort-select');
+        if (!catSel || !sortSel) return;
+        function buildUrl(){
+            var url = '<?php echo esc_url($base_url); ?>';
+            var params = [];
+            <?php if($q): ?>params.push('ff_q=<?php echo urlencode($q); ?>');<?php endif; ?>
+            <?php if($loc): ?>params.push('ff_loc=<?php echo urlencode($loc); ?>');<?php endif; ?>
+            if (catSel.value) params.push('ff_cat=' + encodeURIComponent(catSel.value));
+            if (sortSel.value) params.push('ff_sort=' + encodeURIComponent(sortSel.value));
+            if (params.length) url += '&' + params.join('&');
+            return url;
+        }
+        catSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
+        sortSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
+    })();
+
     window.kbffOpenReport=function(id){document.getElementById('kbff-report-fund-id').value=id;document.getElementById('kbff-modal-report').style.display='flex';};
     window.kbffOpenSponsor=function(id,title,goal,raised,img){
         document.getElementById('kbff-fund-id').value=id;
@@ -279,11 +309,6 @@ function kbf_dashboard_find_funds_tab() {
         const form=document.getElementById('kbff-sponsor-form');
         const btn=document.getElementById('kbff-sponsor-submit');
         const msg=document.getElementById('kbff-sponsor-msg');
-        const methodEl = form.querySelector('select[name="payment_method"]');
-        if (methodEl && methodEl.value !== 'online_payment') {
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Online Payment is required to proceed to Maya Checkout.</div>';
-            return;
-        }
         const amountEl = form.querySelector('input[name="amount"]');
         const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
@@ -299,7 +324,8 @@ function kbf_dashboard_find_funds_tab() {
         fd.append('is_anonymous',document.getElementById('kbff-anon').checked?'1':'0');
         kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
-                if(j.data.checkout_url){
+                console.log('KBF checkout response:', j);
+                if(j.data && j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';
                     window.open(j.data.checkout_url, '_blank');
                 } else {
@@ -313,6 +339,7 @@ function kbf_dashboard_find_funds_tab() {
                 kbfSetSkeleton(msg,false);
             }
         }, (err)=>{
+            console.error('KBF checkout error:', err);
             msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';
             kbfSetBtnLoading(btn,false);
             kbfSetSkeleton(msg,false);

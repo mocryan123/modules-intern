@@ -21,7 +21,13 @@ function bntm_shortcode_kbf_admin() {
         return fetch(ajaxurl,{method:'POST',body:fd}).then(async r=>{
             const text = await r.text();
             let j = null;
-            try { j = JSON.parse(text); } catch(e) {}
+            try {
+                const cleaned = String(text || '').trim();
+                const start = cleaned.indexOf('{');
+                const end = cleaned.lastIndexOf('}');
+                const payload = (start !== -1 && end !== -1 && end > start) ? cleaned.slice(start, end + 1) : cleaned;
+                j = JSON.parse(payload);
+            } catch(e) {}
             if(!j){
                 console.error('kbfAdmin raw response:', text);
                 throw new Error('Server returned non-JSON response.');

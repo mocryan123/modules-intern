@@ -68,7 +68,6 @@ function bntm_ajax_kbf_admin_process_withdrawal() {
     if(!$wd) wp_send_json_error(['message'=>'Withdrawal not found.']);
     if($type==='approve') {
         $wpdb->update($wt,['status'=>'released','processed_at'=>current_time('mysql'),'admin_notes'=>$notes],['id'=>$id],['%s','%s','%s'],['%d']);
-        $wpdb->query($wpdb->prepare("UPDATE {$ft} SET raised_amount=raised_amount-%f WHERE id=%d",$wd->amount,$wd->fund_id));
         $wpdb->update($ft,['escrow_status'=>'released'],['id'=>$wd->fund_id],['%s'],['%d']);
         wp_send_json_success(['message'=>'Withdrawal approved and released!']);
     } else {
