@@ -7,6 +7,10 @@
  * Author: KonekBayan
  * Icon: finding-platform
  */
+/*
+ * KBF module bootstrap: defines constants, shared helpers, DB/cron setup,
+ * global assets, and loads user/admin components.
+ */
 
 if (!defined('ABSPATH')) exit;
 
@@ -68,7 +72,11 @@ function kbf_output_share_meta() {
     <meta name="twitter:title" content="<?php echo esc_attr($title); ?>">
     <meta name="twitter:description" content="<?php echo esc_attr($desc); ?>">
     <?php if ($img): ?><meta name="twitter:image" content="<?php echo esc_url($img); ?>"><?php endif; ?>
-    <?php
+<?php
+/*
+ * KBF module bootstrap: defines constants, shared helpers, DB/cron setup,
+ * global assets, and loads user/admin components.
+ */
 }
 
 // ============================================================
