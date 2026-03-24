@@ -501,8 +501,8 @@ function bae_admin_dashboard() {
         'security'  => 'Security',
     ];
 
-    $stripe_secret = get_option('bae_stripe_secret', '');
-    $stripe_public = get_option('bae_stripe_public', '');
+    $paymaya_secret = getenv('BAE_PM_SECRET_KEY') ?: get_option('bae_paymaya_secret', '');
+    $paymaya_public = getenv('BAE_PM_PUBLIC_KEY') ?: get_option('bae_paymaya_public', '');
 
     ob_start();
     ?>
@@ -1409,7 +1409,7 @@ function bae_admin_dashboard() {
                             <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
                         </svg>
                         <div style="font-size:14px;color:var(--text);font-weight:600;margin-bottom:8px;">No transactions yet</div>
-                        <div>Transactions will appear here once Stripe is integrated and users start upgrading.</div>
+                        <div>Transactions will appear here once PayMaya is integrated and users start upgrading.</div>
                     </div>
                     <?php else: ?>
                     <div class="bae-adm-table-wrap">
@@ -1705,23 +1705,23 @@ function bae_admin_dashboard() {
                         </div>
                         <div class="bae-adm-sysinfo-item">
                             <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" width="16" height="16"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                            <strong>Stripe Gateway</strong>
-                            <span><?php echo !empty($stripe_secret) ? 'Configured' : 'Not Set'; ?></span>
-                            <div class="bae-adm-sysinfo-dot <?php echo !empty($stripe_secret) ? 'ok' : 'err'; ?>"></div>
+                            <strong>PayMaya Gateway</strong>
+                            <span><?php echo !empty($paymaya_secret) ? 'Configured' : 'Not Set'; ?></span>
+                            <div class="bae-adm-sysinfo-dot <?php echo !empty($paymaya_secret) ? 'ok' : 'err'; ?>"></div>
                         </div>
                     </div>
 
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
                         <div class="bae-adm-form-section" style="margin:0;">
-                            <h3>Stripe API Keys</h3>
+                            <h3>PayMaya API Keys</h3>
                             <p>Required for Starter and Pro plan upgrades.</p>
                             <div class="bae-adm-field">
                                 <label>Public Key</label>
-                                <input type="text" id="bae-pm-public" value="<?php echo esc_attr($stripe_public); ?>" placeholder="pk_live_...">
+                                <input type="text" id="bae-pm-public" value="<?php echo esc_attr($paymaya_public); ?>" placeholder="pk-...">
                             </div>
                             <div class="bae-adm-field">
                                 <label>Secret Key</label>
-                                <input type="password" id="bae-pm-secret" value="<?php echo esc_attr($stripe_secret); ?>" placeholder="sk_live_...">
+                                <input type="password" id="bae-pm-secret" value="<?php echo esc_attr($paymaya_secret); ?>" placeholder="sk-...">
                             </div>
                             <button class="bae-adm-save-btn" id="bae-pm-save" onclick="baeAdmSavePaymongo()">Save Keys</button>
                         </div>
@@ -1892,18 +1892,18 @@ function bae_admin_dashboard() {
         });
     }
 
-    // ── Save Stripe
+    // ── Save PayMaya
     function baeAdmSavePaymongo() {
         var pub = document.getElementById('bae-pm-public').value.trim();
         var sec = document.getElementById('bae-pm-secret').value.trim();
         var btn = document.getElementById('bae-pm-save');
         btn.disabled = true; btn.textContent = 'Saving...';
         var fd = new FormData();
-        fd.append('action','bae_admin_save_stripe'); fd.append('nonce',_baeAdmNonce);
+        fd.append('action','bae_admin_save_paymaya'); fd.append('nonce',_baeAdmNonce);
         fd.append('public_key', pub); fd.append('secret_key', sec);
         fetch(_baeAdmAj,{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(j) {
             btn.disabled = false; btn.textContent = 'Save Keys';
-            baeAdmToast(j.success ? 'Stripe keys saved.' : 'Failed to save.', j.success ? 'success' : 'error');
+            baeAdmToast(j.success ? 'PayMaya keys saved.' : 'Failed to save.', j.success ? 'success' : 'error');
         });
     }
 
@@ -1983,18 +1983,48 @@ function bae_admin_dashboard() {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// AJAX: Save Stripe keys
+// AJAX: Save PayMaya keys
 // ─────────────────────────────────────────────────────────────────
-add_action('wp_ajax_bae_admin_save_stripe',        'bae_ajax_admin_save_stripe');
-add_action('wp_ajax_nopriv_bae_admin_save_stripe', 'bae_ajax_admin_save_stripe');
-function bae_ajax_admin_save_stripe() {
+add_action('wp_ajax_bae_admin_save_paymaya',        'bae_ajax_admin_save_paymaya');
+add_action('wp_ajax_nopriv_bae_admin_save_paymaya', 'bae_ajax_admin_save_paymaya');
+function bae_ajax_admin_save_paymaya() {
     bae_admin_auth_check();
     check_ajax_referer(BAE_ADMIN_NONCE, 'nonce');
     $public = sanitize_text_field($_POST['public_key'] ?? '');
     $secret = sanitize_text_field($_POST['secret_key'] ?? '');
-    update_option('bae_stripe_public', $public);
-    update_option('bae_stripe_secret', $secret);
-    wp_send_json_success(['message' => 'Stripe keys saved.']);
+    update_option('bae_paymaya_public', $public);
+    update_option('bae_paymaya_secret', $secret);
+
+    $env_path = dirname(__FILE__) . '/.env';
+    $env_lines = file_exists($env_path)
+        ? file($env_path, FILE_IGNORE_NEW_LINES)
+        : [];
+
+    $updates = [
+        'BAE_PM_PUBLIC_KEY' => $public,
+        'BAE_PM_SECRET_KEY' => $secret,
+    ];
+
+    foreach ($updates as $key => $value) {
+        $found = false;
+        foreach ($env_lines as $index => $line) {
+            if (strpos($line, $key . '=') === 0) {
+                $env_lines[$index] = $key . '=' . $value;
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            $env_lines[] = $key . '=' . $value;
+        }
+
+        putenv($key . '=' . $value);
+    }
+
+    file_put_contents($env_path, implode(PHP_EOL, $env_lines) . PHP_EOL, LOCK_EX);
+
+    wp_send_json_success(['message' => 'PayMaya keys saved.']);
 }
 
 // ─────────────────────────────────────────────────────────────────

@@ -19,8 +19,8 @@ define('BNTM_BAE_URL', plugin_dir_url(__FILE__));
 // Load ticketing system
 require_once BNTM_BAE_PATH . 'ticket.php';
 
-// Load Stripe payment integration
-require_once BNTM_BAE_PATH . 'stripe.php';
+// Load PayMaya payment integration
+require_once BNTM_BAE_PATH . 'paymaya.php';
 
 // Load Admin Panel
 require_once BNTM_BAE_PATH . 'admin.php';
@@ -2413,7 +2413,7 @@ function bntm_shortcode_bae() {
                 });
         };
 
-        // After Stripe redirect back — refresh plan badge without full reload
+        // After PayMaya redirect back — refresh plan badge without full reload
         (function() {
             var params = new URLSearchParams(window.location.search);
             if (params.get('bae_pm') === 'success') {
@@ -2566,7 +2566,7 @@ function bae_overview_tab($user_id, $profile) {
 
     ob_start();
 
-    // Stripe payment success flash banner
+    // Payment success flash banner
     $pm_success = get_transient('bae_pm_success_' . $user_id);
     if ($pm_success) {
         delete_transient('bae_pm_success_' . $user_id);
@@ -4092,6 +4092,7 @@ function bae_assets_tab($user_id, $profile) {
                             data-type="<?php echo $type; ?>"
                             data-nonce="<?php echo $nonce; ?>"
                             data-pid="<?php echo $profile_id; ?>"
+                            data-mode="undo"
                             title="Undo last generation">
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
                     </button>
@@ -4376,13 +4377,65 @@ function bae_assets_tab($user_id, $profile) {
             });
         }
 
-        // Undo
-        document.querySelectorAll('.bae-undo-btn').forEach(function(btn) {
+        function baeUndoButtonMarkup(mode) {
+            if (mode === 'redo') {
+                return '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg><span>Redo</span>';
+            }
+            return '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg><span>Undo</span>';
+        }
+
+        function baeSetUndoButtonState(btn, mode) {
+            if (!btn) return;
+            btn.dataset.mode = mode;
+            btn.title = mode === 'redo' ? 'Redo last undo' : 'Undo last generation';
+            btn.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = baeUndoButtonMarkup(mode);
+        }
+
+        function baeFindUndoInsertTarget(actions) {
+            return actions.querySelector('.bae-delete-btn')
+                || actions.querySelector('.bae-download-btn')
+                || null;
+        }
+
+        function baeEnsureUndoButton(card, type, nonce, pid) {
+            if (!card) return null;
+            var btn = card.querySelector('.bae-undo-btn');
+            if (!btn) {
+                var actions = card.querySelector('.bae-asset-actions');
+                if (!actions) return null;
+                btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'bae-btn bae-btn-outline bae-btn-sm bae-undo-btn';
+                btn.dataset.type = type;
+                btn.dataset.nonce = nonce;
+                btn.dataset.pid = pid;
+                var insertBefore = baeFindUndoInsertTarget(actions);
+                if (insertBefore) actions.insertBefore(btn, insertBefore);
+                else actions.appendChild(btn);
+            }
+            btn.dataset.type = type;
+            btn.dataset.nonce = nonce;
+            btn.dataset.pid = pid;
+            baeSetUndoButtonState(btn, 'undo');
+            baeBindUndoButton(btn);
+            return btn;
+        }
+
+        function baeBindUndoButton(btn) {
+            if (!btn || btn.dataset.undoBound === '1') return;
+            btn.dataset.undoBound = '1';
+            if (!btn.dataset.mode) {
+                btn.dataset.mode = 'undo';
+            }
+            baeSetUndoButtonState(btn, btn.dataset.mode);
             btn.addEventListener('click', function() {
                 var type  = this.dataset.type;
                 var nonce = this.dataset.nonce;
                 var pid   = this.dataset.pid;
                 var self  = this;
+                var currentMode = self.dataset.mode || 'undo';
                 self.disabled = true;
                 var fd = new FormData();
                 fd.append('action', 'bae_undo_asset');
@@ -4398,13 +4451,21 @@ function bae_assets_tab($user_id, $profile) {
                             var inner = card.querySelector('.bae-asset-preview-inner');
                             if (inner) inner.innerHTML = json.data.html;
                         }
-                        self.style.display = 'none'; // hide undo after use
+                        baeSetUndoButtonState(self, currentMode === 'undo' ? 'redo' : 'undo');
                     } else {
                         alert((json.data && json.data.message) ? json.data.message : 'Undo failed.');
                         self.disabled = false;
                     }
+                })
+                .catch(function() {
+                    alert('Undo failed.');
+                    self.disabled = false;
                 });
             });
+        }
+
+        document.querySelectorAll('.bae-undo-btn').forEach(function(btn) {
+            baeBindUndoButton(btn);
         });
 
         // Delete
@@ -4552,6 +4613,13 @@ function bae_assets_tab($user_id, $profile) {
                         preview.style.display = 'none';
                         preview.offsetHeight;
                         preview.style.display = '';
+                    }
+
+                    if (card) {
+                        var existingUndoBtn = card.querySelector('.bae-undo-btn');
+                        if (existingUndoBtn || isRegen) {
+                            baeEnsureUndoButton(card, type, nonce, pid);
+                        }
                     }
 
                     // If it's the fallback message, reload to show the actual asset
@@ -6793,9 +6861,16 @@ function bntm_ajax_bae_generate_asset() {
     ];
 
     $existing = $wpdb->get_row($wpdb->prepare(
-        "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
-        $profile_id, $asset_type
+        "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND user_id = %d AND asset_type = %s",
+        $profile_id, $user_id, $asset_type
     ));
+
+    if (!$existing) {
+        $existing = $wpdb->get_row($wpdb->prepare(
+            "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
+            $profile_id, $asset_type
+        ));
+    }
 
     // Sanitize before saving so echoed HTML can never break the page
     $asset_html = bae_sanitize_asset_html( $asset_html );
@@ -8968,17 +9043,19 @@ function bntm_ajax_bae_undo_asset() {
     $asset_type = sanitize_text_field($_POST['asset_type'] ?? '');
     $profile_id = intval($_POST['profile_id'] ?? 0);
 
-    $ticket = '';
-    if (!empty($_COOKIE['bae_ticket'])) {
-        $raw = strtoupper(sanitize_text_field($_COOKIE['bae_ticket']));
-        if (preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw)) $ticket = $raw;
+    $user_id = is_user_logged_in() ? get_current_user_id() : 0;
+
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, asset_html, asset_html_prev FROM {$table} WHERE asset_type = %s AND profile_id = %d AND user_id = %d LIMIT 1",
+        $asset_type, $profile_id, $user_id
+    ), ARRAY_A);
+
+    if (!$row) {
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT id, asset_html, asset_html_prev FROM {$table} WHERE asset_type = %s AND profile_id = %d LIMIT 1",
+            $asset_type, $profile_id
+        ), ARRAY_A);
     }
-
-    $where = $ticket
-        ? $wpdb->prepare("asset_type = %s AND profile_id = %d AND ticket = %s", $asset_type, $profile_id, $ticket)
-        : $wpdb->prepare("asset_type = %s AND profile_id = %d AND user_id = %d", $asset_type, $profile_id, is_user_logged_in() ? get_current_user_id() : 0);
-
-    $row = $wpdb->get_row("SELECT id, asset_html, asset_html_prev FROM {$table} WHERE {$where} LIMIT 1", ARRAY_A);
 
     if (!$row || empty($row['asset_html_prev'])) {
         wp_send_json_error(['message' => 'No previous version to restore.']);
