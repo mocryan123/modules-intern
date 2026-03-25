@@ -743,8 +743,10 @@ function kbf_global_assets() {
         display: inline-block;
         background-repeat: no-repeat;
         background-position: center;
-        background-size: 12px 12px;
+        background-size: 14px 14px;
         margin-top: 1px;
+        background-color: transparent;
+        color: inherit;
     }
     .kbf-alert-noicon::before{
         display:none;
@@ -786,23 +788,19 @@ function kbf_global_assets() {
     @keyframes kbfspin{to{transform:rotate(360deg);}}
     .kbf-alert-success { background: #ecfdf3; color: #166534; border-color: #bbf7d0; }
     .kbf-alert-success::before{
-        background-color:#22c55e;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM12.03 5.97a.75.75 0 0 0-1.08-1.04L7.477 8.417 5.384 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647a.75.75 0 0 0 1.08-.02l3.98-4.04z'/%3E%3C/svg%3E");
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='%23166534'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM12.03 5.97a.75.75 0 0 0-1.08-1.04L7.477 8.417 5.384 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647a.75.75 0 0 0 1.08-.02l3.98-4.04z'/%3E%3C/svg%3E");
     }
     .kbf-alert-error   { background: #fff1f2; color: #9f1239; border-color: #fecdd3; }
     .kbf-alert-error::before{
-        background-color:#f43f5e;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 5.354a.75.75 0 1 0-1.06 1.06L6.94 9.06l-2.646 2.646a.75.75 0 1 0 1.06 1.06L8 10.12l2.646 2.646a.75.75 0 0 0 1.06-1.06L9.06 9.06l2.646-2.646a.75.75 0 1 0-1.06-1.06L8 8 5.354 5.354z'/%3E%3C/svg%3E");
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='%239f1239'%3E%3Cpath d='M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z'/%3E%3C/svg%3E");
     }
     .kbf-alert-info    { background: #eff6ff; color: #1e3a8a; border-color: #bfdbfe; }
     .kbf-alert-info::before{
-        background-color:#3b82f6;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM6.75 7.5a.75.75 0 0 0 0 1.5h.5V12a.75.75 0 0 0 1.5 0V9.75h.5a.75.75 0 0 0 0-1.5h-2z'/%3E%3C/svg%3E");
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='%231e3a8a'%3E%3Cpath d='M8 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 1 .5-.5zm0 6.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z'/%3E%3C/svg%3E");
     }
     .kbf-alert-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
     .kbf-alert-warning::before{
-        background-color:#f59e0b;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z'/%3E%3C/svg%3E");
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='%2392400e'%3E%3Cpath d='M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z'/%3E%3C/svg%3E");
     }
 
     /* Notices & helpers */

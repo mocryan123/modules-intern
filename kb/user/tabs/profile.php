@@ -644,3 +644,4 @@ function kbf_dashboard_profile_tab($business_id) {
 // ============================================================
 // DASHBOARD TAB: Find Funds (sponsor view -- browse & support)
 // ============================================================
+

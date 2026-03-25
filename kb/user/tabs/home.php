@@ -32,8 +32,8 @@ function kbf_dashboard_overview_tab($business_id) {
           </svg>
         </span>
         <div>
-          <strong>You have <?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> awaiting admin review.</strong>
-          Pending funds are not visible to sponsors until approved. You will be notified once approved.
+          <strong><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</strong>
+          Not visible to sponsors yet. You’ll be notified after approval.
           <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
         </div>
       </div>

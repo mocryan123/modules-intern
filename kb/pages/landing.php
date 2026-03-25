@@ -332,6 +332,7 @@ function bntm_kbf_render_landing() {
     }
     .kbf-card:hover::after { opacity: 1; transform: translate(10px, -10px); }
     .kbf-card .kbf-chip {
+        transition: 0.3s ease;
         width: 30px; height: 30px; border-radius: 12px;
         background: #e7f1ff; display: inline-flex; align-items: center;
         justify-content: center; color: #2a5a9e; font-weight: 700; font-size: 13px;
