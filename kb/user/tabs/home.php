@@ -7,6 +7,7 @@ function kbf_dashboard_overview_tab($business_id) {
     global $wpdb;
     $ft = $wpdb->prefix.'kbf_funds';
     $st = $wpdb->prefix.'kbf_sponsorships';
+    $wt = $wpdb->prefix.'kbf_withdrawals';
 
     $total_funds    = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d",$business_id));
     $active_funds   = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d AND status='active'",$business_id));
@@ -107,8 +108,26 @@ function kbf_dashboard_overview_tab($business_id) {
         $pct = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
         $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
         $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
+        $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status, admin_notes FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1",$f->id));
         ?>
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
+          <?php if($last_wd && $last_wd->status === 'rejected'): ?>
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+            <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+              </svg>
+            </span>
+            <div>
+              <strong>Withdrawal Rejected:</strong>
+              <?php if(!empty($last_wd->admin_notes)): ?>
+                <?php echo esc_html($last_wd->admin_notes); ?>
+              <?php else: ?>
+                <span>No rejection note was provided.</span>
+              <?php endif; ?>
+            </div>
+          </div>
+          <?php endif; ?>
           <?php if($f->status === 'pending'): ?>
           <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;">
             <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
@@ -167,7 +186,10 @@ function kbf_dashboard_overview_tab($business_id) {
             <?php if(in_array($f->status,['active','pending'])): ?>
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>)">Edit</button>
             <?php endif; ?>
-            <?php if(in_array($f->status,['active','completed']) && $f->raised_amount>0): ?>
+            <?php
+              $wd_block = $last_wd && in_array($last_wd->status, ['pending','approved','released']);
+            ?>
+            <?php if(in_array($f->status,['active','completed']) && $f->raised_amount>0 && !$wd_block): ?>
               <button class="kbf-btn kbf-btn-primary kbf-btn-sm" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Request Withdrawal
