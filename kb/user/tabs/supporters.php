@@ -17,8 +17,8 @@ function kbf_dashboard_sponsorships_tab($business_id) {
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">All Sponsorships Received</h3>
       <?php if($demo_mode): ?>
-      <div class="kbf-alert kbf-alert-info kbf-alert-noicon" style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/info-circle-fill.svg" alt="" width="16" height="16" style="flex-shrink:0;filter:invert(16%) sepia(36%) saturate(2661%) hue-rotate(210deg) brightness(91%) contrast(92%);">
+      <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/></svg></span>
         <div><strong>Demo Mode is ON.</strong> Sponsorships are auto-confirmed instantly. When you integrate a real payment API, toggle Demo Mode off in the Admin &gt; Settings tab.</div>
       </div>
       <?php elseif($pending_count > 0): ?>
@@ -58,4 +58,6 @@ function kbf_dashboard_sponsorships_tab($business_id) {
 // ============================================================
 // DASHBOARD TAB: Withdrawals
 // ============================================================
+
+
 
