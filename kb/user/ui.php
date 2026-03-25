@@ -439,7 +439,8 @@ function bntm_shortcode_kbf_dashboard() {
                 <select name="funder_type" required>
                   <option value="yourself">Yourself</option>
                   <option value="someone_else">Someone Else</option>
-                  <option value="charity_event">Animal Care</option>
+                  <option value="animal_care">Animal Care</option>
+                  <option value="charity_event">Charity or Event</option>
                 </select>
               </div>
               <div class="kbf-form-group">
@@ -453,8 +454,8 @@ function bntm_shortcode_kbf_dashboard() {
             </div>
             <div class="kbf-form-group">
               <label>Fund Title *</label>
-              <input type="text" name="title" id="kbf-create-title" placeholder="Clear, compelling title" maxlength="80" required>
-              <small class="kbf-title-counter">0 / 80</small>
+              <input type="text" name="title" id="kbf-create-title" placeholder="Clear, compelling title" maxlength="50" required>
+              <small class="kbf-title-counter">0 / 40</small>
             </div>
             <div class="kbf-form-group">
               <label>Description *</label>

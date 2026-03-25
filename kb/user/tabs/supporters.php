@@ -17,14 +17,14 @@ function kbf_dashboard_sponsorships_tab($business_id) {
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">All Sponsorships Received</h3>
       <?php if($demo_mode): ?>
-      <div class="kbf-alert kbf-alert-info" style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <div><strong>Demo Mode is ON.</strong> Sponsorships are auto-confirmed instantly. When you integrate a real payment API, toggle Demo Mode off in the Admin â†’ Settings tab.</div>
+      <div class="kbf-alert kbf-alert-info kbf-alert-noicon" style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/info-circle-fill.svg" alt="" width="16" height="16" style="flex-shrink:0;filter:invert(16%) sepia(36%) saturate(2661%) hue-rotate(210deg) brightness(91%) contrast(92%);">
+        <div><strong>Demo Mode is ON.</strong> Sponsorships are auto-confirmed instantly. When you integrate a real payment API, toggle Demo Mode off in the Admin &gt; Settings tab.</div>
       </div>
       <?php elseif($pending_count > 0): ?>
       <div class="kbf-alert kbf-alert-warning" style="margin-bottom:16px;">
         <strong><?php echo $pending_count; ?> sponsorship<?php echo $pending_count>1?'s':''; ?> pending payment confirmation.</strong>
-        Go to Admin â†’ Transactions tab to manually confirm payments.
+          Go to Admin &gt; Payments tab to manually confirm payments.
       </div>
       <?php endif; ?>
       <div class="kbf-table-wrap">

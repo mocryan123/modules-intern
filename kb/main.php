@@ -438,9 +438,7 @@ function kbf_global_assets() {
         --kbf-shadow-lg:  0 18px 40px rgba(15,23,42,.10);
     }
     .kbf-wrap * { box-sizing: border-box; }
-    .kbf-wrap { font-family: 'Poppins', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); border-radius: 18px; padding: 18px; }
-    .kbf-eyebrow { font-size: 11.5px; text-transform: uppercase; letter-spacing: .16em; color: var(--kbf-slate); font-weight: 700; }
-
+    .kbf-wrap { font-family: 'Poppins', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); padding: 18px; }    .kbf-eyebrow { font-size: 11.5px; text-transform: uppercase; letter-spacing: .16em; color: var(--kbf-slate); font-weight: 700; }
     /* Tabs */
     .kbf-tabs { display: flex; gap: 18px; background: transparent; border: none; border-radius: 0; padding: 0; overflow-x: auto; box-shadow: none; margin-bottom: 10px; }
     .kbf-tab { position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 6px 0; color: #64748b; font-size: 12.5px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: all .18s; }
@@ -460,9 +458,11 @@ function kbf_global_assets() {
     .kbf-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
 
     /* Stats Row */
-    .kbf-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 28px; }
-    .kbf-stat { background: var(--kbf-surface); border: 1px solid var(--kbf-border); border-radius: 14px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; }
-    .kbf-stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .kbf-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .kbf-stat { background: var(--kbf-surface); border: 1px solid var(--kbf-border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+    .kbf-stat-icon--plain{background:transparent;}
+.kbf-stat-icon-img{filter:invert(36%) sepia(88%) saturate(2029%) hue-rotate(198deg) brightness(95%) contrast(95%);}
+    .kbf-stat-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .kbf-stat-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--kbf-slate); }
     .kbf-stat-value { font-size: 22px; font-weight: 800; color: var(--kbf-navy); line-height: 1.2; }
     .kbf-stat-sub { font-size: 12px; color: var(--kbf-slate); margin-top: 2px; }
@@ -481,12 +481,27 @@ function kbf_global_assets() {
         font-size:10px;
         font-weight:700;
         letter-spacing:.25px;
-        text-transform:none;
-        border:1px solid rgba(15,23,42,0.06);
         line-height:1.1;
     }
+    .kbf-badge svg, .kbf-badge i, .kbf-badge img { display: none !important; }
     .kbf-badge::before{
         content:'';
+        width:12px;
+        height:12px;
+        background-color:currentColor;
+        -webkit-mask-repeat:no-repeat;
+        mask-repeat:no-repeat;
+        -webkit-mask-position:center;
+        mask-position:center;
+        -webkit-mask-size:12px 12px;
+        mask-size:12px 12px;
+        border-radius:50%;
+        opacity:.9;
+        display:none !important;
+    }
+    
+    .kbf-badge::before{
+        display:none; content:'';
         width:12px;
         height:12px;
         display:inline-block;
@@ -731,25 +746,63 @@ function kbf_global_assets() {
         background-size: 12px 12px;
         margin-top: 1px;
     }
+    .kbf-alert-noicon::before{
+        display:none;
+    }
+    .kbf-alert-noicon{
+        padding-left:14px;
+    }
+    .kbf-loading-overlay{
+        position:fixed;
+        inset:0;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        background:rgba(11,20,38,0.55);
+        z-index:10000;
+    }
+    .kbf-loading-card{
+        background:#ffffff;
+        border:1px solid #dfe7f3;
+        border-radius:22px;
+        padding:24px 28px;
+        box-shadow:0 30px 80px rgba(15,40,80,0.22);
+        text-align:center;
+        min-width:220px;
+    }
+    .kbf-loading-logo{
+        width:42px;height:42px;border-radius:14px;background:#e7f0ff;color:#1d4ed8;
+        display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.5px;margin-bottom:10px;
+    }
+    .kbf-loading-spinner{
+        width:34px;
+        height:34px;
+        border-radius:50%;
+        border:4px solid rgba(111,182,255,0.25);
+        border-top-color:#6fb6ff;
+        margin:0 auto 12px;
+        animation:kbfspin .8s linear infinite;
+    }
+    @keyframes kbfspin{to{transform:rotate(360deg);}}
     .kbf-alert-success { background: #ecfdf3; color: #166534; border-color: #bbf7d0; }
     .kbf-alert-success::before{
         background-color:#22c55e;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M6.173 12.414L2.05 8.293l1.414-1.414 2.708 2.707 6.364-6.364 1.414 1.414-7.777 7.778z'/%3E%3C/svg%3E");
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM12.03 5.97a.75.75 0 0 0-1.08-1.04L7.477 8.417 5.384 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647a.75.75 0 0 0 1.08-.02l3.98-4.04z'/%3E%3C/svg%3E");
     }
     .kbf-alert-error   { background: #fff1f2; color: #9f1239; border-color: #fecdd3; }
     .kbf-alert-error::before{
         background-color:#f43f5e;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M4.646 4.646a.5.5 0 01.708 0L8 7.293l2.646-2.647a.5.5 0 01.708.708L8.707 8l2.647 2.646a.5.5 0 01-.708.708L8 8.707l-2.646 2.647a.5.5 0 01-.708-.708L7.293 8 4.646 5.354a.5.5 0 010-.708z'/%3E%3C/svg%3E");
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 5.354a.75.75 0 1 0-1.06 1.06L6.94 9.06l-2.646 2.646a.75.75 0 1 0 1.06 1.06L8 10.12l2.646 2.646a.75.75 0 0 0 1.06-1.06L9.06 9.06l2.646-2.646a.75.75 0 1 0-1.06-1.06L8 8 5.354 5.354z'/%3E%3C/svg%3E");
     }
     .kbf-alert-info    { background: #eff6ff; color: #1e3a8a; border-color: #bfdbfe; }
     .kbf-alert-info::before{
         background-color:#3b82f6;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm1 9H7V7h2v5z'/%3E%3C/svg%3E");
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM6.75 7.5a.75.75 0 0 0 0 1.5h.5V12a.75.75 0 0 0 1.5 0V9.75h.5a.75.75 0 0 0 0-1.5h-2z'/%3E%3C/svg%3E");
     }
     .kbf-alert-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
     .kbf-alert-warning::before{
         background-color:#f59e0b;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M7.938 2.016a.13.13 0 0 1 .125 0l6.857 11.856c.04.07-.01.158-.09.158H1.171c-.08 0-.13-.087-.09-.158L7.938 2.016zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z'/%3E%3C/svg%3E");
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z'/%3E%3C/svg%3E");
     }
 
     /* Notices & helpers */
@@ -1161,5 +1214,7 @@ function kbf_refund_all_sponsors($fund_id) {
     // =====================================================
     error_log("[KonekBayan] Auto-refund triggered for fund #{$fund_id}");
 }
+
+
 
 

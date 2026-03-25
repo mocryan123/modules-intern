@@ -27,8 +27,6 @@ function kbf_admin_transactions_tab() {
           </tbody>
         </table>
       </div>
-      <div class="kbf-notif-placeholder" style="margin-top:14px;">
-      </div>
     </div>
     <?php return ob_get_clean();
 }

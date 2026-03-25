@@ -15,6 +15,11 @@ function bntm_shortcode_kbf_admin() {
     <script>
     var ajaxurl = window.ajaxurl || '<?php echo admin_url('admin-ajax.php'); ?>';
     var _kbfAdminNonce='<?php echo $nonce; ?>';
+    window.kbfSetLoadingPage = function(on){
+        var el = document.getElementById('kbf-loading-overlay');
+        if(!el) return;
+        el.style.display = on ? 'flex' : 'none';
+    };
     window.kbfAdmin=function(action,params){
         const fd=new FormData();fd.append('action',action);fd.append('_ajax_nonce',_kbfAdminNonce);
         Object.keys(params).forEach(k=>fd.append(k,params[k]));
@@ -57,6 +62,13 @@ function bntm_shortcode_kbf_admin() {
     window.kbfConfirmPayment=function(id){if(!confirm('Mark this sponsorship as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
     window.kbfVerifyOrg=function(id,cur){kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:cur?'0':'1'});};
     </script>
+    <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
+      <div class="kbf-loading-card">
+        <div class="kbf-loading-logo">KB</div>
+        <div class="kbf-loading-spinner"></div>
+        <div style="font-size:13px;color:#4f5a6b;">Loading...</div>
+      </div>
+    </div>
     <div class="kbf-wrap">
     <?php
     $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
