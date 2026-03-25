@@ -398,103 +398,8 @@ function bntm_shortcode_ch_auth() {
     </div>
 
     <style>
-    .ch-auth-wrap {
-        min-height: 100vh; display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        padding: 40px 16px;
-        background: linear-gradient(135deg, #f0f0ff 0%, #faf5ff 50%, #f0f9ff 100%);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-    .ch-auth-card {
-        background: #fff; border-radius: 20px;
-        box-shadow: 0 8px 40px rgba(99,102,241,0.12), 0 2px 8px rgba(0,0,0,0.06);
-        padding: 36px 40px; width: 100%; max-width: 460px;
-    }
-    .ch-auth-brand {
-        display: flex; align-items: center; gap: 14px;
-        margin-bottom: 28px; padding-bottom: 24px;
-        border-bottom: 1px solid #f3f4f6;
-    }
-    .ch-auth-logo {
-        width: 52px; height: 52px; border-radius: 14px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-    }
-    .ch-auth-brand-name    { font-size: 20px; font-weight: 800; color: #111827; }
-    .ch-auth-brand-tagline { font-size: 13px; color: #9ca3af; margin-top: 1px; }
-
-    .ch-auth-tabs {
-        display: flex; gap: 0; background: #f3f4f6;
-        border-radius: 10px; padding: 4px; margin-bottom: 24px;
-    }
-    .ch-auth-tab {
-        flex: 1; text-align: center; padding: 8px 0;
-        border-radius: 8px; font-size: 14px; font-weight: 600;
-        text-decoration: none; color: #6b7280; transition: all 0.2s;
-    }
-    .ch-auth-tab.active { background: #fff; color: #6366f1; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-
-    .ch-auth-form .ch-field-group { margin-bottom: 18px; }
-    .ch-auth-form .ch-label       { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
-    .ch-auth-form .ch-input       {
-        width: 100%; padding: 10px 14px; font-size: 14px;
-        border: 1.5px solid #e5e7eb; border-radius: 10px;
-        outline: none; transition: border 0.15s, box-shadow 0.15s;
-        box-sizing: border-box; background: #fff; color: #111827;
-    }
-    .ch-auth-form .ch-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
-
-    .ch-password-wrap    { position: relative; }
-    .ch-password-toggle  {
-        position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-        background: none; border: none; cursor: pointer; color: #9ca3af;
-        display: flex; align-items: center; padding: 4px;
-        transition: color 0.15s;
-    }
-    .ch-password-toggle:hover { color: #6366f1; }
-
-    .ch-password-strength {
-        height: 4px; border-radius: 2px; margin-top: 8px;
-        background: #e5e7eb; overflow: hidden; transition: all 0.3s;
-    }
-    .ch-password-strength::after {
-        content: ''; display: block; height: 100%; border-radius: 2px;
-        transition: width 0.3s, background 0.3s;
-    }
-    .ch-password-strength[data-strength="0"]::after { width: 0%; }
-    .ch-password-strength[data-strength="1"]::after { width: 25%; background: #ef4444; }
-    .ch-password-strength[data-strength="2"]::after { width: 50%; background: #f59e0b; }
-    .ch-password-strength[data-strength="3"]::after { width: 75%; background: #3b82f6; }
-    .ch-password-strength[data-strength="4"]::after { width: 100%; background: #10b981; }
-
-    .ch-auth-row {
-        display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 20px; flex-wrap: wrap; gap: 8px;
-    }
-    .ch-auth-submit {
-        height: 46px; font-size: 15px; border-radius: 10px; margin-top: 4px;
-    }
-    .ch-auth-submit:disabled { opacity: 0.7; cursor: not-allowed; }
-
-    .ch-auth-switch { text-align: center; font-size: 13px; color: #6b7280; margin: 16px 0 0; }
-    .ch-auth-link   { color: #6366f1; text-decoration: none; font-weight: 600; }
-    .ch-auth-link:hover { text-decoration: underline; }
-    .ch-required { color: #ef4444; }
-    .ch-optional { color: #9ca3af; font-weight: 400; }
-
-    .ch-auth-footer {
-        text-align: center; font-size: 12px; color: #9ca3af;
-        margin-top: 20px; max-width: 400px;
-    }
-
-    #ch-auth-msg .bntm-notice-success { background:#d1fae5; color:#065f46; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px; }
-    #ch-auth-msg .bntm-notice-error   { background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:16px; }
-
-    @media (max-width: 500px) {
-        .ch-auth-card { padding: 28px 20px; }
-        .ch-auth-brand { margin-bottom: 20px; padding-bottom: 16px; }
-    }
+    /* Auth page inherits ch_global_styles tokens */
+    @media (max-width: 500px) { .ch-auth-card { padding: 22px 16px; } }
     </style>
 
     <script>
@@ -661,6 +566,8 @@ function bntm_shortcode_ch_auth() {
     });
     </script>
     <?php
+    echo ch_global_styles();
+    echo ch_global_scripts();
     return ob_get_clean();
 }
 
@@ -852,6 +759,7 @@ $ajax_actions = [
     'ch_toggle_announcement' => ['bntm_ajax_ch_toggle_announcement', true],
     'ch_get_announcements'   => ['bntm_ajax_ch_get_announcements', true],
     'ch_get_announcement'    => ['bntm_ajax_ch_get_announcement', true],
+    'ch_mention_search'      => ['bntm_ajax_ch_mention_search', false],
 ];
 
 foreach ($ajax_actions as $action => [$callback, $admin_only]) {
@@ -875,9 +783,213 @@ foreach ($ajax_actions as $action => [$callback, $admin_only]) {
 // MAIN DASHBOARD SHORTCODE
 // ============================================================
 
+function ch_guest_landing_page() {
+    global $wpdb;
+
+    $feed_page = get_page_by_path('forum-feed');
+    $feed_url  = $feed_page ? get_permalink($feed_page) : home_url('/');
+
+    $auth_page = get_page_by_path('login-register');
+    $auth_perm = $auth_page ? get_permalink($auth_page) : get_permalink();
+    $login_url = $auth_page ? add_query_arg('tab', 'login', $auth_perm) : wp_login_url($auth_perm);
+    $reg_url   = $auth_page ? add_query_arg('tab', 'register', $auth_perm) : wp_registration_url();
+
+    // Preview data for guests
+    $categories = $wpdb->get_results(
+        "SELECT * FROM {$wpdb->prefix}ch_categories
+         WHERE status='active'
+         ORDER BY sort_order ASC, post_count DESC
+         LIMIT 8"
+    );
+
+    $trending_posts = $wpdb->get_results(
+        "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug
+         FROM {$wpdb->prefix}ch_posts p
+         LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+         WHERE p.status = 'active'
+           AND (c.is_private = 0 OR c.is_private IS NULL)
+         ORDER BY (p.vote_count + p.comment_count * 2) DESC, p.created_at DESC
+         LIMIT 4"
+    );
+
+    $members = $wpdb->get_results(
+        "SELECT user_id, display_name, karma_points, location, avatar_url
+         FROM {$wpdb->prefix}ch_user_profiles
+         WHERE status='active'
+         ORDER BY karma_points DESC, created_at DESC
+         LIMIT 8"
+    );
+
+    ob_start();
+    ?>
+    <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
+
+    <nav class="ch-top-nav">
+        <div class="ch-nav-links">
+            <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link active">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Home
+            </a>
+            <a href="<?php echo esc_url($feed_url . '?sort=trending'); ?>" class="ch-nav-link">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                Trending
+            </a>
+        </div>
+
+        <div class="ch-user-bar">
+            <a href="<?php echo esc_url($login_url); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+            <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+        </div>
+    </nav>
+
+    <div class="ch-guest-landing-wrap">
+        <aside class="ch-guest-sidebar">
+            <div class="ch-sidebar-widget">
+                <h4>Categories</h4>
+                <p class="ch-guest-helper">Follow topics to unlock posting on private categories.</p>
+
+                <div class="ch-guest-cat-list">
+                    <?php foreach ($categories as $cat): ?>
+                        <a href="<?php echo esc_url($feed_url . '?cat=' . rawurlencode($cat->slug)); ?>" class="ch-cat-link">
+                            <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
+                            <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                <?php echo esc_html($cat->name); ?>
+                            </span>
+                            <?php if (!empty($cat->is_private)): ?>
+                                <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="opacity:.5;flex-shrink:0" title="Private">
+                                    <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            <?php endif; ?>
+                            <span class="ch-cat-count"><?php echo (int)$cat->post_count; ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="ch-guest-cta">
+                    <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary ch-btn-full">
+                        Join to post
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="ch-guest-main">
+            <div class="ch-page-header">
+                <div>
+                    <h1>Community Forum</h1>
+                    <p>Browse discussions and join when you are ready to share.</p>
+                </div>
+                <div class="ch-page-header-actions">
+                    <a href="<?php echo esc_url($feed_url); ?>" class="ch-btn ch-btn-secondary">View forum feed</a>
+                </div>
+            </div>
+
+            <div class="ch-card">
+                <div class="ch-card-header">
+                    <h3>Popular discussions</h3>
+                    <a href="<?php echo esc_url($feed_url . '?sort=trending'); ?>" class="ch-link-btn">See more</a>
+                </div>
+
+                <div class="ch-card-body">
+                    <?php if (!empty($trending_posts)): ?>
+                        <div class="ch-info-list">
+                            <?php foreach ($trending_posts as $post): ?>
+                                <div class="ch-info-item">
+                                    <div style="display:flex; flex-direction:column; min-width:0; gap:3px;">
+                                        <a href="<?php echo esc_url($feed_url . '?view_post=' . rawurlencode($post->rand_id)); ?>" style="text-decoration:none; color:inherit;">
+                                            <span class="ch-list-title" style="white-space:nowrap;">
+                                                <?php echo esc_html($post->title); ?>
+                                            </span>
+                                        </a>
+                                        <span class="ch-info-label" style="font-size:12px; color:#6b7280;">
+                                            <?php echo esc_html($post->cat_name ?? 'General'); ?>
+                                        </span>
+                                    </div>
+                                    <span class="ch-date">
+                                        <?php
+                                        $ts = !empty($post->created_at) ? strtotime($post->created_at) : 0;
+                                        echo $ts ? esc_html(human_time_diff($ts, current_time('timestamp')) . ' ago') : '';
+                                        ?>
+                                    </span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else: ?>
+                        <div class="ch-empty-state">
+                            <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="1.5">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <p>No discussions yet. Be the first to start one.</p>
+                            <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary" style="margin-top:14px;">
+                                Join the community
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </main>
+
+        <aside class="ch-guest-right">
+            <div class="ch-sidebar-widget">
+                <h4>Members</h4>
+                <div class="ch-list-scroll" style="max-height: 320px;">
+                    <?php foreach ($members as $m): ?>
+                        <?php
+                        $name = $m->display_name ?: 'User';
+                        $initial = strtoupper(substr($name, 0, 1));
+                        ?>
+                        <div class="ch-list-item">
+                            <div class="ch-user-cell">
+                                <div class="ch-avatar-sm"><?php echo esc_html($initial); ?></div>
+                                <div style="display:flex; flex-direction:column; min-width:0;">
+                                    <div class="ch-list-title"><?php echo esc_html($name); ?></div>
+                                    <?php if (!empty($m->location)): ?>
+                                        <div class="ch-list-meta"><?php echo esc_html($m->location); ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="ch-list-item-stats">
+                                <span class="ch-mini-stat">+<?php echo (int)$m->karma_points; ?></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <div class="ch-sidebar-widget">
+                <h4>Get started</h4>
+                <p style="font-size:13px; color:#6b7280; margin:0 0 14px;">
+                    Create an account to follow categories and post.
+                </p>
+                <a href="<?php echo esc_url($login_url); ?>" class="ch-btn ch-btn-secondary ch-btn-full" style="margin-bottom:10px;">
+                    Sign In
+                </a>
+                <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary ch-btn-full">
+                    Join
+                </a>
+            </div>
+        </aside>
+    </div>
+
+    <?php /* Guest layout uses ch_global_styles */ ?>
+
+    <?php
+    echo ch_global_styles();
+    echo ch_global_scripts();
+
+    $content = ob_get_clean();
+    return bntm_universal_container('CivicHub', $content);
+}
+
 function bntm_shortcode_ch() {
     if (!is_user_logged_in()) {
-        return '<div class="bntm-notice">Please log in to access CivicHub.</div>';
+        return ch_guest_landing_page();
     }
 
     // Handle settings save
@@ -1344,15 +1456,23 @@ function ch_categories_tab($user_id, $is_admin) {
                     <label class="ch-label">Description</label>
                     <textarea id="ch-cat-desc" class="ch-input ch-textarea" rows="3" placeholder="Brief description of this category"></textarea>
                 </div>
-                <div class="ch-field-row">
-                    <div class="ch-field-group ch-field-half">
-                        <label class="ch-label">Color</label>
-                        <input type="color" id="ch-cat-color" class="ch-input ch-color-input" value="#6366f1">
+                <div class="ch-field-group">
+                    <label class="ch-label">Color</label>
+                    <div class="ch-color-picker-wrap">
+                    <div class="ch-color-row">
+                        <input type="color" id="ch-cat-color-wheel" class="ch-color-wheel" value="#6366f1"
+                               oninput="chSyncColorWheel('ch-cat-color-wheel','ch-cat-color','ch-cat-color-preview')">
+                        <span class="ch-color-hex-preview" id="ch-cat-color-preview" style="background:#6366f1;"></span>
+                        <input type="text" id="ch-cat-color" class="ch-input ch-color-hex-input" value="#6366f1" placeholder="#6366f1" maxlength="7"
+                               oninput="chSyncColorHex('ch-cat-color-wheel','ch-cat-color','ch-cat-color-preview')">
                     </div>
-                    <div class="ch-field-group ch-field-half">
-                        <label class="ch-label">Sort Order</label>
-                        <input type="number" id="ch-cat-order" class="ch-input" value="0" min="0">
+                    <div class="ch-color-swatches">
+                        <?php foreach (['#6366f1','#4f46e5','#ef4444','#f59e0b','#10b981','#06b6d4','#8b5cf6','#ec4899','#f97316','#84cc16'] as $sw): ?>
+                        <button type="button" class="ch-swatch" style="background:<?php echo $sw; ?>;" title="<?php echo $sw; ?>"
+                                onclick="chPickSwatch('ch-cat-color-wheel','ch-cat-color','ch-cat-color-preview','<?php echo $sw; ?>')"></button>
+                        <?php endforeach; ?>
                     </div>
+                </div>
                 </div>
                 <div class="ch-field-group">
                     <label class="ch-label">Visibility</label>
@@ -1401,11 +1521,23 @@ function ch_categories_tab($user_id, $is_admin) {
                     <label class="ch-label">Description</label>
                     <textarea id="ch-edit-cat-desc" class="ch-input ch-textarea" rows="3"></textarea>
                 </div>
-                <div class="ch-field-row">
-                    <div class="ch-field-group ch-field-half">
-                        <label class="ch-label">Color</label>
-                        <input type="color" id="ch-edit-cat-color" class="ch-input ch-color-input">
+                <div class="ch-field-group">
+                    <label class="ch-label">Color</label>
+                    <div class="ch-color-picker-wrap">
+                    <div class="ch-color-row">
+                        <input type="color" id="ch-edit-cat-color-wheel" class="ch-color-wheel" value="#6366f1"
+                               oninput="chSyncColorWheel('ch-edit-cat-color-wheel','ch-edit-cat-color','ch-edit-cat-color-preview')">
+                        <span class="ch-color-hex-preview" id="ch-edit-cat-color-preview" style="background:#6366f1;"></span>
+                        <input type="text" id="ch-edit-cat-color" class="ch-input ch-color-hex-input" value="#6366f1" placeholder="#6366f1" maxlength="7"
+                               oninput="chSyncColorHex('ch-edit-cat-color-wheel','ch-edit-cat-color','ch-edit-cat-color-preview')">
                     </div>
+                    <div class="ch-color-swatches">
+                        <?php foreach (['#6366f1','#4f46e5','#ef4444','#f59e0b','#10b981','#06b6d4','#8b5cf6','#ec4899','#f97316','#84cc16'] as $sw): ?>
+                        <button type="button" class="ch-swatch" style="background:<?php echo $sw; ?>;" title="<?php echo $sw; ?>"
+                                onclick="chPickSwatch('ch-edit-cat-color-wheel','ch-edit-cat-color','ch-edit-cat-color-preview','<?php echo $sw; ?>')"></button>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
                 </div>
                 <div class="ch-field-group">
                     <label class="ch-label">Visibility</label>
@@ -1441,7 +1573,11 @@ function ch_categories_tab($user_id, $is_admin) {
             document.getElementById('ch-edit-cat-id').value = id;
             document.getElementById('ch-edit-cat-name').value = name;
             document.getElementById('ch-edit-cat-desc').value = desc;
-            document.getElementById('ch-edit-cat-color').value = color;
+            document.getElementById('ch-edit-cat-color').value = color.toUpperCase();
+            const wheel = document.getElementById('ch-edit-cat-color-wheel');
+            if (wheel) wheel.value = color;
+            const prev = document.getElementById('ch-edit-cat-color-preview');
+            if (prev) { prev.style.background = color; prev.style.opacity = '1'; }
             const privRadio = document.getElementById('ch-edit-cat-vis-private');
             const pubRadio  = document.getElementById('ch-edit-cat-vis-public');
             if (privRadio && pubRadio) {
@@ -1463,7 +1599,7 @@ function ch_categories_tab($user_id, $is_admin) {
             fd.append('name', name);
             fd.append('description', document.getElementById('ch-cat-desc').value);
             fd.append('color', document.getElementById('ch-cat-color').value);
-            fd.append('sort_order', document.getElementById('ch-cat-order').value || 0);
+            fd.append('sort_order', 0);
             fd.append('is_private', document.getElementById('ch-cat-vis-private')?.checked ? 1 : 0);
             fd.append('nonce', nonce);
 
@@ -2610,6 +2746,12 @@ function bntm_shortcode_ch_my_feed() {
 
     ob_start(); ?>
     <div class="ch-my-feed-wrap">
+        <div style="margin-bottom:18px;">
+            <a href="<?php echo esc_url($feed_url); ?>" class="ch-back-link">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to Forum
+            </a>
+        </div>
 
         <div class="ch-mf-profile-card">
             <div class="ch-mf-avatar-wrap">
@@ -2841,45 +2983,6 @@ function bntm_shortcode_ch_my_feed() {
         </div>
 
     </div><!-- .ch-my-feed-wrap -->
-
-    <style>
-    .ch-my-feed-wrap{max-width:860px;margin:0 auto;padding:28px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#111827}
-    .ch-mf-profile-card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:28px;display:flex;gap:22px;align-items:flex-start;margin-bottom:16px;box-shadow:0 2px 12px rgba(99,102,241,.06)}
-    .ch-mf-avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
-    .ch-mf-avatar-img{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid #e5e7eb}
-    .ch-mf-avatar-initials{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:34px;font-weight:800;display:flex;align-items:center;justify-content:center}
-    .ch-mf-profile-info{flex:1;min-width:0}
-    .ch-mf-name-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
-    .ch-mf-name{font-size:24px;font-weight:800;color:#111827;margin:0}
-    .ch-mf-bio{font-size:14px;color:#374151;margin:6px 0 10px;line-height:1.6}
-    .ch-mf-meta-row{display:flex;flex-wrap:wrap;gap:14px}
-    .ch-mf-meta-item{display:flex;align-items:center;gap:5px;font-size:13px;color:#6b7280}
-    .ch-mf-stats-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-    .ch-mf-stat{flex:1;min-width:100px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 12px;text-align:center}
-    .ch-mf-stat-num{display:block;font-size:22px;font-weight:800;color:#6366f1}
-    .ch-mf-stat-label{display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;color:#9ca3af;margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
-    .ch-mf-subnav{display:flex;gap:4px;background:#f3f4f6;border-radius:10px;padding:4px;margin-bottom:20px}
-    .ch-mf-subnav-item{flex:1;text-align:center;padding:8px 0;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;color:#6b7280;transition:all .18s}
-    .ch-mf-subnav-item.active{background:#fff;color:#6366f1;box-shadow:0 1px 4px rgba(0,0,0,.1)}
-    .ch-mf-content{display:flex;flex-direction:column;gap:12px}
-    .ch-mf-post-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px 20px;transition:border-color .15s,box-shadow .15s}
-    .ch-mf-post-card:hover{border-color:#c7d2fe;box-shadow:0 2px 12px rgba(99,102,241,.08)}
-    .ch-mf-post-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-    .ch-mf-time{font-size:12px;color:#9ca3af;margin-left:auto}
-    .ch-mf-pinned-badge{font-size:11px;color:#6366f1;font-weight:600}
-    .ch-mf-post-actions{display:flex;gap:6px;margin-left:8px}
-    .ch-mf-post-title{font-size:16px;font-weight:700;color:#111827;text-decoration:none;display:block;margin-bottom:6px;line-height:1.4}
-    .ch-mf-post-title:hover{color:#6366f1}
-    .ch-mf-post-excerpt{font-size:13px;color:#6b7280;margin:0 0 12px;line-height:1.55}
-    .ch-mf-post-footer{display:flex;gap:16px;font-size:12px;color:#9ca3af}
-    .ch-mf-comment-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 20px}
-    .ch-mf-comment-post-ref{display:flex;align-items:center;gap:6px;font-size:12px;color:#9ca3af;margin-bottom:8px}
-    .ch-mf-ref-link{color:#6366f1;text-decoration:none;font-weight:600}
-    .ch-mf-comment-content{font-size:14px;color:#374151;margin:0 0 10px;line-height:1.55}
-    .ch-mf-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 20px;text-align:center;background:#fff;border:1px dashed #e5e7eb;border-radius:14px}
-    .ch-mf-empty p{font-size:15px;color:#9ca3af;margin:0}
-    @media(max-width:600px){.ch-mf-profile-card{flex-direction:column;align-items:center;text-align:center}.ch-mf-meta-row{justify-content:center}.ch-mf-stats-bar{gap:8px}.ch-mf-stat{min-width:80px}}
-    </style>
     <?php
     return ob_get_clean();
 }
@@ -2996,28 +3099,6 @@ function ch_public_user_profile($view_uid) {
         </div>
 
     </div>
-    <style>
-    .ch-public-profile-wrap { max-width: 800px; margin: 0 auto; padding: 28px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    .ch-public-profile-header { margin-bottom: 20px; }
-    .ch-public-profile-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 28px; display: flex; gap: 24px; align-items: flex-start; margin-bottom: 20px; }
-    .ch-public-profile-avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
-    .ch-avatar-lg { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#8b5cf6); color: #fff; font-size: 32px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .ch-public-profile-name { font-size: 22px; font-weight: 800; color: #111827; margin: 0 0 8px; }
-    .ch-public-profile-meta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #6b7280; margin-bottom: 4px; }
-    .ch-public-profile-bio { font-size: 14px; color: #374151; margin: 10px 0; }
-    .ch-public-profile-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px; }
-    .ch-public-stat-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; text-align: center; }
-    .ch-public-stat-card .ch-stat-num { display: block; font-size: 28px; font-weight: 700; color: #6366f1; }
-    .ch-public-stat-card .ch-stat-label { display: block; font-size: 12px; color: #9ca3af; margin-top: 4px; }
-    .ch-section-title { font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 16px; }
-    .ch-public-post-card { display: block; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; margin-bottom: 12px; text-decoration: none; color: inherit; transition: border-color 0.15s, box-shadow 0.15s; }
-    .ch-public-post-card:hover { border-color: #6366f1; box-shadow: 0 2px 12px rgba(99,102,241,0.1); }
-    .ch-public-post-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .ch-public-post-time { font-size: 12px; color: #9ca3af; margin-left: auto; }
-    .ch-public-post-title { font-size: 15px; font-weight: 700; color: #111827; margin: 0 0 6px; }
-    .ch-public-post-excerpt { font-size: 13px; color: #6b7280; margin: 0 0 10px; }
-    .ch-public-post-footer { display: flex; gap: 14px; font-size: 12px; color: #9ca3af; }
-    </style>
     <?php
     return ob_get_clean();
 }
@@ -3056,22 +3137,70 @@ function bntm_shortcode_ch_feed() {
             wp_redirect(add_query_arg('redirect_to', urlencode(get_permalink() . '?tab=profile'), $auth_url));
             exit;
         }
+        // Inject dark mode class BEFORE the theme renders — eliminates flash of white
+        add_action('wp_head', function() {
+            echo '<script>try{if(localStorage.getItem("ch_dark_mode")==="1"){document.documentElement.classList.add("ch-dark");document.documentElement.style.background="var(--ch-bg,#0f0f1a)";document.body&&(document.body.style.background="var(--ch-bg,#0f0f1a)");}}catch(e){}</script>';
+        }, 1);
         ob_start();
         echo ch_global_styles();
-        echo ch_feed_scripts();
-        echo '<div class="ch-profile-page-wrap">';
-        echo ch_profile_tab($user_id);
-        echo '</div>';
-        echo '<style>
-            .ch-profile-page-wrap { max-width: 900px; margin: 0 auto; padding: 28px 20px;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        echo ch_global_scripts();
+        $feed_pg_back  = get_page_by_path('forum-feed');
+        $feed_url_back = $feed_pg_back ? get_permalink($feed_pg_back) : home_url('/forum-feed/');
+        $current_display_p = wp_get_current_user()->display_name ?: 'U';
+        ?>
+        <style>
+            html, body { background: var(--ch-bg) !important; color: var(--ch-text); margin: 0; }
+            .ch-dark html, .ch-dark body { background: #0f0f1a !important; }
+            .ch-profile-standalone { font-family: var(--ch-font); background: var(--ch-bg); min-height: 100vh; color: var(--ch-text); }
+            .ch-profile-standalone .ch-top-nav { background: var(--ch-surface); border-bottom: 1px solid var(--ch-border); padding: 0 24px; height: 56px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 200; box-shadow: var(--ch-shadow-sm); }
+            .ch-profile-standalone .ch-nav-links { display: flex; gap: 2px; height: 100%; align-items: center; }
+            .ch-profile-page-wrap { max-width: 880px; margin: 0 auto; padding: 26px 20px; }
             .ch-profile-page-wrap .ch-card-body { padding: 20px; }
-            .ch-stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
-            .ch-stat-item { text-align: center; padding: 16px; background: #f9fafb;
-                border-radius: 10px; }
-            .ch-stat-item .ch-stat-num   { display: block; font-size: 24px; font-weight: 700; color: #6366f1; }
-            .ch-stat-item .ch-stat-label { display: block; font-size: 12px; color: #9ca3af; margin-top: 4px; }
-        </style>';
+            .ch-stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+            .ch-stat-item { text-align: center; padding: 16px; background: var(--ch-bg); border-radius: var(--ch-radius); border: 1px solid var(--ch-border); }
+            .ch-stat-item .ch-stat-num   { display: block; font-size: 22px; font-weight: 700; color: var(--ch-accent); letter-spacing: -0.3px; }
+            .ch-stat-item .ch-stat-label { display: block; font-size: 11.5px; color: var(--ch-text-subtle); margin-top: 3px; font-weight: 500; }
+        </style>
+        <div class="ch-profile-standalone">
+            <nav class="ch-top-nav">
+                <div class="ch-nav-links">
+                    <a href="<?php echo esc_url($feed_url_back); ?>" class="ch-nav-link">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                        Back to Forum
+                    </a>
+                </div>
+                <div class="ch-user-bar">
+                    <button class="ch-avatar-btn" id="ch-profile-btn" onclick="chToggleProfileMenu(event)" aria-label="Profile">
+                        <?php echo esc_html(strtoupper(substr($current_display_p, 0, 1))); ?>
+                    </button>
+                    <div class="ch-dropdown-panel ch-dropdown-panel-sm" id="ch-profile-menu" style="display:none;">
+                        <div class="ch-dropdown-user-info">
+                            <div class="ch-avatar-btn ch-avatar-btn-lg"><?php echo esc_html(strtoupper(substr($current_display_p, 0, 1))); ?></div>
+                            <div>
+                                <div class="ch-dropdown-username"><?php echo esc_html($current_display_p); ?></div>
+                                <div class="ch-dropdown-usermeta">Community Member</div>
+                            </div>
+                        </div>
+                        <div class="ch-dropdown-divider"></div>
+                        <a href="javascript:void(0)" class="ch-dropdown-item" onclick="chOpenSettingsModal(); chCloseProfileMenu();">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Settings
+                        </a>
+                        <div class="ch-dropdown-divider"></div>
+                        <a href="<?php echo wp_logout_url(esc_url($feed_url_back)); ?>" class="ch-dropdown-item ch-dropdown-item-danger">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Sign Out
+                        </a>
+                    </div>
+                </div>
+            </nav>
+            <div class="ch-profile-page-wrap">
+                <?php echo ch_profile_tab($user_id); ?>
+            </div>
+        </div>
+        <?php
+        // Settings modal (needed for dark mode toggle)
+        echo ch_settings_modal_html();
         return ob_get_clean();
     }
 
@@ -3183,20 +3312,39 @@ function bntm_shortcode_ch_feed() {
         $user_bookmarks = array_flip($bms);
     }
 
+    // Fetch current user's votes on the visible posts for active-up/active-down state
+    $user_post_votes = [];
+    if ($user_id && !empty($posts)) {
+        $post_ids     = array_map(fn($p) => (int)$p->id, $posts);
+        $placeholders = implode(',', array_fill(0, count($post_ids), '%d'));
+        $vote_rows    = $wpdb->get_results($wpdb->prepare(
+            "SELECT target_id, value FROM {$wpdb->prefix}ch_votes
+             WHERE user_id = %d AND target_type = 'post' AND target_id IN ($placeholders)",
+            array_merge([$user_id], $post_ids)
+        ));
+        foreach ($vote_rows as $vr) {
+            $user_post_votes[(int)$vr->target_id] = (int)$vr->value;
+        }
+    }
+
     $nonce = wp_create_nonce('ch_feed_nonce');
 
     ob_start();
     ?>
-    <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
-
-    <!-- Top Navigation -->
+    <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>'; var chFeedUrl = '<?php echo esc_js($feed_url); ?>';</script>
     <nav class="ch-top-nav">
         <div class="ch-nav-links">
+            <?php if ($user_id): ?>
+            <a href="?tab=my_feed" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                My Feed
+            </a>
+            <?php endif; ?>
             <a href="<?php echo get_permalink(); ?>" class="ch-nav-link <?php echo !$bookmarks && $sort === 'new' && $tab === '' && !$cat_slug && !$search ? 'active' : ''; ?>">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 Home
             </a>
-            <a href="?sort=trending" class="ch-nav-link <?php echo $sort === 'trending' && $tab === '' ? 'active' : ''; ?>">
+            <a href="?sort=trending" class="ch-nav-link <?php echo $sort === 'trending' && $tab === '' && !$bookmarks ? 'active' : ''; ?>">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 Trending
             </a>
@@ -3204,10 +3352,6 @@ function bntm_shortcode_ch_feed() {
             <a href="?bookmarks=1" class="ch-nav-link <?php echo $bookmarks && $tab === '' ? 'active' : ''; ?>">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
                 Bookmarks
-            </a>
-            <a href="?tab=my_feed" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                My Feed
             </a>
             <?php endif; ?>
         </div>
@@ -3247,13 +3391,9 @@ function bntm_shortcode_ch_feed() {
                         </div>
                     </div>
                     <div class="ch-dropdown-divider"></div>
-                    <a href="?tab=profile" class="ch-dropdown-item">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        My Profile
-                    </a>
-                    <a href="?bookmarks=1" class="ch-dropdown-item">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                        My Bookmarks
+                    <a href="javascript:void(0)" class="ch-dropdown-item" onclick="chOpenSettingsModal(); chCloseProfileMenu();">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        Settings
                     </a>
                     <div class="ch-dropdown-divider"></div>
                     <a href="<?php echo wp_logout_url(get_permalink()); ?>" class="ch-dropdown-item ch-dropdown-item-danger">
@@ -3280,6 +3420,220 @@ function bntm_shortcode_ch_feed() {
     <div class="ch-mf-page-wrap">
         <?php echo bntm_shortcode_ch_my_feed(); ?>
     </div>
+    <?php elseif ($sort === 'trending' && !$bookmarks && $tab === ''): ?>
+    <!-- ════════════════════════════════════════════════════ -->
+    <!--  TRENDING PAGE                                       -->
+    <!-- ════════════════════════════════════════════════════ -->
+    <?php
+    $trending_posts = $wpdb->get_results(
+        "SELECT p.*, c.name as cat_name, c.color as cat_color,
+                COALESCE(u.display_name, 'Community Member') as author_name
+         FROM {$wpdb->prefix}ch_posts p
+         LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+         LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
+         WHERE p.status = 'active'
+         ORDER BY (p.vote_count * 2 + p.comment_count * 3 + p.view_count) DESC, p.created_at DESC
+         LIMIT 30"
+    );
+    $trending_cats = $wpdb->get_results(
+        "SELECT * FROM {$wpdb->prefix}ch_categories WHERE status='active' AND (is_private=0 OR is_private IS NULL)
+         ORDER BY (post_count + follower_count) DESC LIMIT 8"
+    );
+    ?>
+    <div class="ch-special-page-wrap">
+        <div class="ch-special-hero ch-trending-hero">
+            <div class="ch-special-hero-icon">
+                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div>
+                <h1 class="ch-special-hero-title">Trending</h1>
+                <p class="ch-special-hero-sub">The hottest discussions in your community right now</p>
+            </div>
+        </div>
+
+        <div class="ch-special-layout">
+            <!-- Main trending posts -->
+            <main class="ch-special-main">
+                <?php if (empty($trending_posts)): ?>
+                <div class="ch-empty-state">
+                    <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <p>No trending posts yet. Be the first to spark a discussion!</p>
+                </div>
+                <?php else: ?>
+                <?php foreach ($trending_posts as $i => $post): ?>
+                <article class="ch-trending-post-card">
+                    <div class="ch-trending-rank"><?php echo $i + 1; ?></div>
+                    <div class="ch-trending-body">
+                        <div class="ch-post-meta-row" style="margin-bottom:6px;">
+                            <span class="ch-cat-badge" style="background:<?php echo esc_attr($post->cat_color ?? '#6366f1'); ?>20;color:<?php echo esc_attr($post->cat_color ?? '#6366f1'); ?>">
+                                <?php echo esc_html($post->cat_name ?? 'General'); ?>
+                            </span>
+                            <span class="ch-post-author"><?php echo $post->is_anonymous ? 'Anonymous' : esc_html($post->author_name); ?></span>
+                            <span class="ch-post-time"><?php echo human_time_diff(strtotime($post->created_at), current_time('timestamp')); ?> ago</span>
+                        </div>
+                        <a href="?view_post=<?php echo esc_attr($post->rand_id); ?>" class="ch-trending-post-title">
+                            <?php echo esc_html($post->title); ?>
+                        </a>
+                        <p class="ch-trending-post-excerpt"><?php echo esc_html(wp_trim_words(strip_tags($post->content), 20)); ?></p>
+                        <div class="ch-trending-stats">
+                            <span class="ch-trending-stat">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+                                <?php echo (int)$post->vote_count; ?> votes
+                            </span>
+                            <span class="ch-trending-stat">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <?php echo (int)$post->comment_count; ?> comments
+                            </span>
+                            <span class="ch-trending-stat">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <?php echo (int)$post->view_count; ?> views
+                            </span>
+                        </div>
+                    </div>
+                </article>
+                <?php endforeach; ?>
+                <?php endif; ?>
+            </main>
+
+            <!-- Trending sidebar -->
+            <aside class="ch-special-sidebar">
+                <div class="ch-sidebar-widget">
+                    <h4>🔥 Hot Categories</h4>
+                    <?php foreach ($trending_cats as $tcat): ?>
+                    <a href="?cat=<?php echo esc_attr($tcat->slug); ?>" class="ch-cat-link" style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <span class="ch-cat-dot" style="background:<?php echo esc_attr($tcat->color); ?>"></span>
+                            <?php echo esc_html($tcat->name); ?>
+                        </span>
+                        <span class="ch-cat-count"><?php echo (int)$tcat->post_count; ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php if ($user_id): ?>
+                <div class="ch-sidebar-widget">
+                    <h4>Quick Post</h4>
+                    <button class="ch-btn ch-btn-primary ch-btn-full" onclick="chOpenModal('ch-modal-create-post')">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New Post
+                    </button>
+                </div>
+                <?php endif; ?>
+            </aside>
+        </div>
+    </div>
+
+    <?php elseif ($bookmarks && $user_id && $tab === ''): ?>
+    <!-- ════════════════════════════════════════════════════ -->
+    <!--  BOOKMARKS PAGE                                      -->
+    <!-- ════════════════════════════════════════════════════ -->
+    <?php
+    $bookmarked_posts = $wpdb->get_results($wpdb->prepare(
+        "SELECT p.*, c.name as cat_name, c.color as cat_color,
+                COALESCE(u.display_name, 'Community Member') as author_name,
+                bm.created_at as bookmarked_at
+         FROM {$wpdb->prefix}ch_bookmarks bm
+         JOIN {$wpdb->prefix}ch_posts p ON bm.post_id = p.id
+         LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+         LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
+         WHERE bm.user_id = %d AND p.status = 'active'
+         ORDER BY bm.created_at DESC",
+        $user_id
+    ));
+    $bm_cats = [];
+    foreach ($bookmarked_posts as $bp) {
+        if ($bp->cat_name && !isset($bm_cats[$bp->cat_name])) $bm_cats[$bp->cat_name] = ['color' => $bp->cat_color, 'slug' => $bp->cat_name, 'count' => 0];
+        if ($bp->cat_name) $bm_cats[$bp->cat_name]['count']++;
+    }
+    ?>
+    <div class="ch-special-page-wrap">
+        <div class="ch-special-hero ch-bookmarks-hero">
+            <div class="ch-special-hero-icon">
+                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+                <h1 class="ch-special-hero-title">My Bookmarks</h1>
+                <p class="ch-special-hero-sub"><?php echo count($bookmarked_posts); ?> saved post<?php echo count($bookmarked_posts) !== 1 ? 's' : ''; ?></p>
+            </div>
+        </div>
+
+        <div class="ch-special-layout">
+            <main class="ch-special-main">
+                <?php if (empty($bookmarked_posts)): ?>
+                <div class="ch-empty-state">
+                    <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 0-2 2h10a2 2 0 0 1 2 2z"/></svg>
+                    <p>No bookmarks yet. Save posts you want to come back to!</p>
+                </div>
+                <?php else: ?>
+                <?php foreach ($bookmarked_posts as $post): ?>
+                <article class="ch-post-card" data-id="<?php echo (int)$post->id; ?>" data-category="<?php echo $post->category_id; ?>" data-anonymous="<?php echo $post->is_anonymous; ?>">
+                    <div class="ch-post-vote-col">
+                        <?php $uv = $user_post_votes[$post->id] ?? 0; ?>
+                        <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                        </button>
+                        <span class="ch-vote-count"><?php echo (int)$post->vote_count; ?></span>
+                        <button class="ch-vote-btn ch-vote-down <?php echo $uv === -1 ? 'active-down' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="-1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                    </div>
+                    <div class="ch-post-body">
+                        <div class="ch-post-meta-row">
+                            <span class="ch-cat-badge" style="background:<?php echo esc_attr($post->cat_color ?? '#6366f1'); ?>20;color:<?php echo esc_attr($post->cat_color ?? '#6366f1'); ?>">
+                                <?php echo esc_html($post->cat_name ?? 'General'); ?>
+                            </span>
+                            <span class="ch-post-author"><?php echo $post->is_anonymous ? 'Anonymous' : esc_html($post->author_name); ?></span>
+                            <span class="ch-post-time"><?php echo human_time_diff(strtotime($post->created_at), current_time('timestamp')); ?> ago</span>
+                            <span style="font-size:11px;color:var(--ch-text-subtle);margin-left:4px;">
+                                <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="vertical-align:-1px"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                Saved <?php echo human_time_diff(strtotime($post->bookmarked_at), current_time('timestamp')); ?> ago
+                            </span>
+                        </div>
+                        <a href="?view_post=<?php echo esc_attr($post->rand_id); ?>" class="ch-post-title-link">
+                            <h3 class="ch-post-title"><?php echo esc_html($post->title); ?></h3>
+                        </a>
+                        <p class="ch-post-excerpt"><?php echo esc_html(wp_trim_words(strip_tags($post->content), 25)); ?></p>
+                        <div class="ch-post-actions-row">
+                            <span class="ch-post-stat">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <?php echo (int)$post->comment_count; ?>
+                            </span>
+                            <button class="ch-post-action ch-bookmark-btn <?php echo isset($user_bookmarks[$post->id]) ? 'ch-bookmarked' : ''; ?>"
+                                    data-post-id="<?php echo (int)$post->id; ?>"
+                                    onclick="chToggleBookmark(this, '<?php echo esc_attr($nonce); ?>')">
+                                <svg width="14" height="14" fill="<?php echo isset($user_bookmarks[$post->id]) ? 'currentColor' : 'none'; ?>" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                <?php echo isset($user_bookmarks[$post->id]) ? 'Saved' : 'Save'; ?>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+                <?php endforeach; endif; ?>
+            </main>
+
+            <aside class="ch-special-sidebar">
+                <?php if (!empty($bm_cats)): ?>
+                <div class="ch-sidebar-widget">
+                    <h4>Saved by Category</h4>
+                    <?php foreach ($bm_cats as $cname => $cdata): ?>
+                    <div class="ch-cat-link" style="display:flex;align-items:center;justify-content:space-between;cursor:default;">
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <span class="ch-cat-dot" style="background:<?php echo esc_attr($cdata['color'] ?? '#6366f1'); ?>"></span>
+                            <?php echo esc_html($cname); ?>
+                        </span>
+                        <span class="ch-cat-count"><?php echo (int)$cdata['count']; ?></span>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
+                <div class="ch-sidebar-widget">
+                    <h4>Browse Forum</h4>
+                    <a href="<?php echo esc_url(get_permalink()); ?>" class="ch-btn ch-btn-secondary ch-btn-full ch-btn-sm" style="text-align:center;text-decoration:none;">
+                        ← Back to Home Feed
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </div>
+
     <?php else: ?>
     <div class="ch-feed-wrap">
         <!-- Sidebar -->
@@ -3346,8 +3700,8 @@ function bntm_shortcode_ch_feed() {
                 <?php endif; ?>
 
                 <?php if ($user_id && !empty($followed)): ?>
-                <div class="ch-followed-categories" style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-                    <h5 style="margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase;">Following</h5>
+                <div class="ch-followed-categories" style="margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--ch-border);">
+                    <h5 style="margin: 0 0 8px; font-size: 10.5px; font-weight: 700; color: var(--ch-text-subtle); text-transform: uppercase; letter-spacing: 0.8px;">Following</h5>
                     <?php foreach ($followed as $cat_id => $dummy): ?>
                         <?php $cat = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ch_categories WHERE id = %d", $cat_id)); ?>
                         <?php if ($cat): ?>
@@ -3463,6 +3817,31 @@ function bntm_shortcode_ch_feed() {
                 </div>
             </div>
 
+            <!-- Popular Categories Card (visible to all) -->
+            <?php
+            $popular_cats = $wpdb->get_results(
+                "SELECT * FROM {$wpdb->prefix}ch_categories
+                 WHERE status='active' AND (is_private = 0 OR is_private IS NULL)
+                 ORDER BY post_count DESC LIMIT 6"
+            );
+            if (!empty($popular_cats) && !$cat_slug && !$search && $page === 1): ?>
+            <div class="ch-popular-cats-card">
+                <div class="ch-popular-cats-header">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Popular Categories
+                </div>
+                <div class="ch-popular-cats-grid">
+                    <?php foreach ($popular_cats as $pcat): ?>
+                    <a href="?cat=<?php echo esc_attr($pcat->slug); ?>" class="ch-pop-cat-chip">
+                        <span class="ch-pop-cat-dot" style="background:<?php echo esc_attr($pcat->color); ?>"></span>
+                        <span class="ch-pop-cat-name"><?php echo esc_html($pcat->name); ?></span>
+                        <span class="ch-pop-cat-count"><?php echo (int)$pcat->post_count; ?></span>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <div class="ch-posts-list" id="ch-posts-list">
                 <?php if (!empty($announcements)): ?>
                 <?php foreach ($announcements as $announcement): ?>
@@ -3482,7 +3861,7 @@ function bntm_shortcode_ch_feed() {
                     </div>
                     <div class="ch-announcement-body">
                         <h4 class="ch-announcement-title"><?php echo esc_html($announcement->title); ?></h4>
-                        <div class="ch-announcement-content"><?php echo wp_kses_post($announcement->content); ?></div>
+                        <div class="ch-announcement-content"><?php echo wp_kses_post(wpautop($announcement->content)); ?></div>
                     </div>
                 </article>
                 <?php endforeach; ?>
@@ -3502,14 +3881,15 @@ function bntm_shortcode_ch_feed() {
                     </div>
                     <?php endif; ?>
                     <div class="ch-post-vote-col">
-                        <?php if ($user_id): ?>
-                        <button class="ch-vote-btn ch-vote-up" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                        <?php if ($user_id):
+                            $uv = $user_post_votes[$post->id] ?? 0; ?>
+                        <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
                         </button>
                         <?php endif; ?>
                         <span class="ch-vote-count"><?php echo (int)$post->vote_count; ?></span>
                         <?php if ($user_id): ?>
-                        <button class="ch-vote-btn ch-vote-down" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="-1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                        <button class="ch-vote-btn ch-vote-down <?php echo $uv === -1 ? 'active-down' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="-1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                         </button>
                         <?php endif; ?>
@@ -3563,7 +3943,7 @@ function bntm_shortcode_ch_feed() {
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
                                 Report
                             </button>
-                            <?php if ($user_id && ($post->user_id == $user_id || current_user_can('manage_options'))): ?>
+                            <?php if ($user_id && ($post->user_id !== 0 && $post->user_id == $user_id || current_user_can('manage_options'))): ?>
                             <button class="ch-post-action ch-post-action-edit"
                                     onclick="chOpenEditPostModal(<?php echo (int)$post->id; ?>)">
                                 <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -3800,7 +4180,21 @@ function bntm_shortcode_ch_feed() {
                 </div>
                 <div class="ch-field-group">
                     <label class="ch-label">Color</label>
-                    <input type="color" id="ch-feed-edit-cat-color" class="ch-input ch-color-input">
+                    <div class="ch-color-picker-wrap">
+                    <div class="ch-color-row">
+                        <input type="color" id="ch-feed-edit-cat-color-wheel" class="ch-color-wheel" value="#6366f1"
+                               oninput="chSyncColorWheel('ch-feed-edit-cat-color-wheel','ch-feed-edit-cat-color','ch-feed-edit-cat-color-preview')">
+                        <span class="ch-color-hex-preview" id="ch-feed-edit-cat-color-preview" style="background:#6366f1;"></span>
+                        <input type="text" id="ch-feed-edit-cat-color" class="ch-input ch-color-hex-input" value="#6366f1" placeholder="#6366f1" maxlength="7"
+                               oninput="chSyncColorHex('ch-feed-edit-cat-color-wheel','ch-feed-edit-cat-color','ch-feed-edit-cat-color-preview')">
+                    </div>
+                    <div class="ch-color-swatches">
+                        <?php foreach (['#6366f1','#4f46e5','#ef4444','#f59e0b','#10b981','#06b6d4','#8b5cf6','#ec4899','#f97316','#84cc16'] as $sw): ?>
+                        <button type="button" class="ch-swatch" style="background:<?php echo $sw; ?>;" title="<?php echo $sw; ?>"
+                                onclick="chPickSwatch('ch-feed-edit-cat-color-wheel','ch-feed-edit-cat-color','ch-feed-edit-cat-color-preview','<?php echo $sw; ?>')"></button>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
                 </div>
             </div>
             <div class="ch-modal-footer">
@@ -3833,7 +4227,21 @@ function bntm_shortcode_ch_feed() {
                 </div>
                 <div class="ch-field-group">
                     <label class="ch-label">Color</label>
-                    <input type="color" id="ch-feed-cat-color" class="ch-input ch-color-input" value="#6366f1">
+                    <div class="ch-color-picker-wrap">
+                    <div class="ch-color-row">
+                        <input type="color" id="ch-feed-cat-color-wheel" class="ch-color-wheel" value="#6366f1"
+                               oninput="chSyncColorWheel('ch-feed-cat-color-wheel','ch-feed-cat-color','ch-feed-cat-color-preview')">
+                        <span class="ch-color-hex-preview" id="ch-feed-cat-color-preview" style="background:#6366f1;"></span>
+                        <input type="text" id="ch-feed-cat-color" class="ch-input ch-color-hex-input" value="#6366f1" placeholder="#6366f1" maxlength="7"
+                               oninput="chSyncColorHex('ch-feed-cat-color-wheel','ch-feed-cat-color','ch-feed-cat-color-preview')">
+                    </div>
+                    <div class="ch-color-swatches">
+                        <?php foreach (['#6366f1','#4f46e5','#ef4444','#f59e0b','#10b981','#06b6d4','#8b5cf6','#ec4899','#f97316','#84cc16'] as $sw): ?>
+                        <button type="button" class="ch-swatch" style="background:<?php echo $sw; ?>;" title="<?php echo $sw; ?>"
+                                onclick="chPickSwatch('ch-feed-cat-color-wheel','ch-feed-cat-color','ch-feed-cat-color-preview','<?php echo $sw; ?>')"></button>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
                 </div>
                 <div class="ch-field-group">
                     <label class="ch-label">Visibility</label>
@@ -3921,7 +4329,11 @@ function bntm_shortcode_ch_feed() {
             document.getElementById('ch-feed-edit-cat-id').value    = id;
             document.getElementById('ch-feed-edit-cat-name').value  = name;
             document.getElementById('ch-feed-edit-cat-desc').value  = desc;
-            document.getElementById('ch-feed-edit-cat-color').value = color;
+            document.getElementById('ch-feed-edit-cat-color').value = color.toUpperCase();
+            const wheel = document.getElementById('ch-feed-edit-cat-color-wheel');
+            if (wheel) wheel.value = color;
+            const prev = document.getElementById('ch-feed-edit-cat-color-preview');
+            if (prev) { prev.style.background = color; prev.style.opacity = '1'; }
             document.getElementById('ch-feed-edit-cat-msg').innerHTML = '';
             chOpenModal('ch-modal-feed-edit-cat');
         };
@@ -3992,6 +4404,204 @@ function bntm_shortcode_ch_feed() {
             if (sel) sel.value = catId;
             chOpenModal('ch-modal-create-post');
         };
+    })();
+    </script>
+
+    <!-- ===== WELCOME POPUP (new visitors only) ===== -->
+    <?php if (!$user_id): ?>
+    <div id="ch-welcome-popup" class="ch-welcome-overlay" style="display:none;">
+        <div class="ch-welcome-card">
+            <div class="ch-welcome-glow"></div>
+            <button class="ch-welcome-close" onclick="chCloseWelcome()">&times;</button>
+            <div class="ch-welcome-icon">
+                <svg width="36" height="36" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="1.8">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+            </div>
+            <h2 class="ch-welcome-title">Welcome to CivicHub!</h2>
+            <p class="ch-welcome-subtitle">Your community's space to discuss, share, and connect with neighbors.</p>
+            <div class="ch-welcome-features">
+                <div class="ch-welcome-feature">
+                    <span class="ch-welcome-feat-icon">💬</span>
+                    <span>Join discussions on local issues</span>
+                </div>
+                <div class="ch-welcome-feature">
+                    <span class="ch-welcome-feat-icon">📌</span>
+                    <span>Follow topics that matter to you</span>
+                </div>
+                <div class="ch-welcome-feature">
+                    <span class="ch-welcome-feat-icon">🗳️</span>
+                    <span>Vote and share your opinions</span>
+                </div>
+            </div>
+            <div class="ch-welcome-actions">
+                <?php
+                $auth_pg = get_page_by_path('login-register');
+                $reg_link = $auth_pg ? add_query_arg('tab','register', get_permalink($auth_pg)) : wp_registration_url();
+                $login_link = $auth_pg ? get_permalink($auth_pg) : wp_login_url(get_permalink());
+                ?>
+                <a href="<?php echo esc_url($reg_link); ?>" class="ch-btn ch-btn-primary" style="flex:1;justify-content:center;">Join Free</a>
+                <a href="<?php echo esc_url($login_link); ?>" class="ch-btn ch-btn-secondary" style="flex:1;justify-content:center;">Sign In</a>
+            </div>
+            <button class="ch-welcome-skip" onclick="chCloseWelcome()">Browse as guest</button>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- ===== SETTINGS MODAL (logged-in users) ===== -->
+    <?php if ($user_id): ?>
+    <div id="ch-modal-settings" class="ch-modal-overlay" style="display:none;">
+        <div class="ch-modal" style="max-width:420px;">
+            <div class="ch-modal-header">
+                <h3>Settings</h3>
+                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-settings')">&times;</button>
+            </div>
+            <div class="ch-modal-body" style="padding:0;">
+
+                <!-- Appearance -->
+                <div class="ch-settings-section">
+                    <div class="ch-settings-section-title">Appearance</div>
+                    <div class="ch-settings-row">
+                        <div class="ch-settings-row-info">
+                            <div class="ch-settings-row-label">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                                Dark Mode
+                            </div>
+                            <div class="ch-settings-row-desc">Switch to a darker interface</div>
+                        </div>
+                        <label class="ch-toggle">
+                            <input type="checkbox" id="ch-dark-mode-toggle" onchange="chToggleDarkMode(this.checked)">
+                            <span class="ch-toggle-track"><span class="ch-toggle-thumb"></span></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Account -->
+                <div class="ch-settings-section">
+                    <div class="ch-settings-section-title">Account</div>
+                    <a href="?tab=profile" class="ch-settings-row ch-settings-row-link">
+                        <div class="ch-settings-row-info">
+                            <div class="ch-settings-row-label">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                Edit Profile
+                            </div>
+                            <div class="ch-settings-row-desc">Change name, bio, location, avatar</div>
+                        </div>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="?bookmarks=1" class="ch-settings-row ch-settings-row-link">
+                        <div class="ch-settings-row-info">
+                            <div class="ch-settings-row-label">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                My Bookmarks
+                            </div>
+                            <div class="ch-settings-row-desc">View your saved posts</div>
+                        </div>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                </div>
+
+                <!-- Community -->
+                <div class="ch-settings-section">
+                    <div class="ch-settings-section-title">Community</div>
+                    <div class="ch-settings-row">
+                        <div class="ch-settings-row-info">
+                            <div class="ch-settings-row-label">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Community Guidelines
+                            </div>
+                            <div class="ch-settings-row-desc">Review the rules of the forum</div>
+                        </div>
+                        <button onclick="chCloseModal('ch-modal-settings'); chShowGuidelines();" style="background:none;border:none;cursor:pointer;color:var(--ch-accent);font-size:12px;font-weight:600;font-family:var(--ch-font);">View</button>
+                    </div>
+                </div>
+
+                <!-- Danger zone -->
+                <div class="ch-settings-section" style="border-bottom:none;">
+                    <div class="ch-settings-section-title" style="color:#ef4444;">Account Actions</div>
+                    <a href="<?php echo wp_logout_url(get_permalink()); ?>" class="ch-settings-row ch-settings-row-link" style="color:#ef4444;">
+                        <div class="ch-settings-row-info">
+                            <div class="ch-settings-row-label" style="color:#ef4444;">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                Sign Out
+                            </div>
+                            <div class="ch-settings-row-desc">Log out of your account</div>
+                        </div>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <script>
+    (function() {
+        // ---- Welcome popup ----
+        window.chCloseWelcome = function() {
+            const el = document.getElementById('ch-welcome-popup');
+            if (el) {
+                el.style.opacity = '0';
+                el.style.transform = 'scale(0.96)';
+                setTimeout(() => { el.style.display = 'none'; }, 250);
+            }
+            try { sessionStorage.setItem('ch_welcomed', '1'); } catch(e) {}
+        };
+        // Show welcome after short delay, only once per session
+        const popup = document.getElementById('ch-welcome-popup');
+        if (popup) {
+            try {
+                if (!sessionStorage.getItem('ch_welcomed')) {
+                    setTimeout(() => {
+                        popup.style.display = 'flex';
+                        popup.style.opacity = '0';
+                        popup.style.transform = 'scale(0.94)';
+                        requestAnimationFrame(() => {
+                            popup.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            popup.style.opacity = '1';
+                            popup.style.transform = 'scale(1)';
+                        });
+                    }, 900);
+                }
+            } catch(e) {}
+        }
+        // Close welcome on overlay click
+        if (popup) {
+            popup.addEventListener('click', function(e) {
+                if (e.target === popup) chCloseWelcome();
+            });
+        }
+
+        // ---- Settings modal ----
+        window.chOpenSettingsModal = function() {
+            // Sync dark mode toggle state
+            const isDark = document.documentElement.classList.contains('ch-dark');
+            const tog = document.getElementById('ch-dark-mode-toggle');
+            if (tog) tog.checked = isDark;
+            chOpenModal('ch-modal-settings');
+        };
+        window.chCloseProfileMenu = function() {
+            const m = document.getElementById('ch-profile-menu');
+            if (m) m.style.display = 'none';
+        };
+
+        // ---- Dark mode ----
+        window.chToggleDarkMode = function(enabled) {
+            if (enabled) {
+                document.documentElement.classList.add('ch-dark');
+                try { localStorage.setItem('ch_dark_mode', '1'); } catch(e) {}
+            } else {
+                document.documentElement.classList.remove('ch-dark');
+                try { localStorage.removeItem('ch_dark_mode'); } catch(e) {}
+            }
+        };
+        // Apply dark mode on load
+        try {
+            if (localStorage.getItem('ch_dark_mode') === '1') {
+                document.documentElement.classList.add('ch-dark');
+            }
+        } catch(e) {}
     })();
     </script>
 
@@ -4082,6 +4692,34 @@ function bntm_shortcode_ch_post_view() {
     $user_id = get_current_user_id();
     $nonce   = wp_create_nonce('ch_post_view_nonce');
 
+    // Fetch current user's vote on this post and all comments
+    $user_vote_on_post    = 0;
+    $user_comment_votes   = [];
+    if ($user_id) {
+        $all_comment_ids = array_map(fn($c) => (int)$c->id, $comments);
+        foreach ($replies_map as $rlist) {
+            foreach ($rlist as $r) { $all_comment_ids[] = (int)$r->id; }
+        }
+
+        $pv = $wpdb->get_var($wpdb->prepare(
+            "SELECT value FROM {$wpdb->prefix}ch_votes WHERE user_id=%d AND target_type='post' AND target_id=%d",
+            $user_id, $post->id
+        ));
+        $user_vote_on_post = (int)($pv ?? 0);
+
+        if (!empty($all_comment_ids)) {
+            $ph   = implode(',', array_fill(0, count($all_comment_ids), '%d'));
+            $cvs  = $wpdb->get_results($wpdb->prepare(
+                "SELECT target_id, value FROM {$wpdb->prefix}ch_votes
+                 WHERE user_id = %d AND target_type = 'comment' AND target_id IN ($ph)",
+                array_merge([$user_id], $all_comment_ids)
+            ));
+            foreach ($cvs as $cv) {
+                $user_comment_votes[(int)$cv->target_id] = (int)$cv->value;
+            }
+        }
+    }
+
     // Get categories for modals
     $categories = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}ch_categories WHERE status='active' ORDER BY name ASC");
 
@@ -4155,14 +4793,14 @@ function bntm_shortcode_ch_post_view() {
 
                     <div class="ch-post-vote-bar">
                         <?php if ($user_id): ?>
-                        <button class="ch-vote-btn-lg ch-vote-up" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                        <button class="ch-vote-btn-lg ch-vote-up <?php echo $user_vote_on_post === 1 ? 'active-up' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
                             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
                             Upvote
                         </button>
                         <?php endif; ?>
                         <span class="ch-vote-score" id="ch-post-score"><?php echo (int)$post->vote_count; ?> points</span>
                         <?php if ($user_id): ?>
-                        <button class="ch-vote-btn-lg ch-vote-down" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="-1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                        <button class="ch-vote-btn-lg ch-vote-down <?php echo $user_vote_on_post === -1 ? 'active-down' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="-1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
                             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                             Downvote
                         </button>
@@ -4191,7 +4829,13 @@ function bntm_shortcode_ch_post_view() {
                                 </button>
                             </div>
                         </div>
-                        <?php if ($post->user_id == $user_id || current_user_can('manage_options')): ?>
+                        <?php if ($user_id && $post->user_id != $user_id && !current_user_can('manage_options')): ?>
+                        <button class="ch-vote-btn-lg" onclick="chReportPost(<?php echo (int)$post->id; ?>, '<?php echo esc_attr($nonce); ?>')">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                            Report
+                        </button>
+                        <?php endif; ?>
+                        <?php if ($user_id && ($post->user_id !== 0 && $post->user_id == $user_id || current_user_can('manage_options'))): ?>
                         <button class="ch-vote-btn-lg" onclick="chOpenEditPostModal(<?php echo (int)$post->id; ?>)">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                             Edit
@@ -4264,13 +4908,17 @@ function bntm_shortcode_ch_post_view() {
                                 </div>
                                 <p><?php echo ch_highlight_mentions(nl2br(esc_html($cm->content))); ?></p>
                                 <div class="ch-comment-actions">
-                                    <?php if ($user_id): ?>
-                                    <button class="ch-comment-action ch-vote-up" data-id="<?php echo (int)$cm->id; ?>" data-type="comment" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                                    <?php if ($user_id):
+                                        $ucv = $user_comment_votes[$cm->id] ?? 0; ?>
+                                    <button class="ch-comment-action ch-vote-up <?php echo $ucv === 1 ? 'active-up' : ''; ?>" data-id="<?php echo (int)$cm->id; ?>" data-type="comment" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
                                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
                                         <?php echo $cm->vote_count; ?>
                                     </button>
                                     <button class="ch-comment-action" onclick="chToggleReplyForm(<?php echo (int)$cm->id; ?>)">Reply</button>
-                                    <?php if ($cm->user_id == $user_id || current_user_can('manage_options')): ?>
+                                    <?php if ($user_id && ($cm->user_id === 0 || $cm->user_id != $user_id) && !current_user_can('manage_options')): ?>
+                                    <button class="ch-comment-action" onclick="chReportComment(<?php echo (int)$cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Report</button>
+                                    <?php endif; ?>
+                                    <?php if ($user_id && ($cm->user_id !== 0 && $cm->user_id == $user_id || current_user_can('manage_options'))): ?>
                                     <button class="ch-comment-action" onclick="chEditComment(<?php echo (int)$cm->id; ?>)">Edit</button>
                                     <button class="ch-comment-action ch-danger-action" onclick="chDeleteComment(<?php echo (int)$cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Delete</button>
                                     <?php endif; ?>
@@ -4301,10 +4949,15 @@ function bntm_shortcode_ch_post_view() {
                                                 <span class="ch-comment-time"><?php echo human_time_diff(strtotime($reply->created_at), current_time('timestamp')); ?> ago</span>
                                             </div>
                                             <p><?php echo ch_highlight_mentions(nl2br(esc_html($reply->content))); ?></p>
-                                            <?php if ($user_id && ($reply->user_id == $user_id || current_user_can('manage_options'))): ?>
+                                            <?php if ($user_id): ?>
                                             <div class="ch-comment-actions">
+                                                <?php if (($reply->user_id === 0 || $reply->user_id != $user_id) && !current_user_can('manage_options')): ?>
+                                                <button class="ch-comment-action" onclick="chReportComment(<?php echo (int)$reply->id; ?>, '<?php echo esc_attr($nonce); ?>')">Report</button>
+                                                <?php endif; ?>
+                                                <?php if ($reply->user_id !== 0 && $reply->user_id == $user_id || current_user_can('manage_options')): ?>
                                                 <button class="ch-comment-action" onclick="chEditComment(<?php echo $reply->id; ?>)">Edit</button>
                                                 <button class="ch-comment-action ch-danger-action" onclick="chDeleteComment(<?php echo $reply->id; ?>, '<?php echo esc_attr($nonce); ?>')">Delete</button>
+                                                <?php endif; ?>
                                             </div>
                                             <?php endif; ?>
                                         </div>
@@ -5275,7 +5928,7 @@ function bntm_ajax_ch_get_notifications() {
     $offset = ($page - 1) * $per_page;
 
     $notifications = $wpdb->get_results($wpdb->prepare(
-        "SELECT n.*, p.title as post_title, c.content as comment_content
+        "SELECT n.*, p.title as post_title, p.rand_id as post_rand_id, c.content as comment_content
          FROM {$wpdb->prefix}ch_notifications n
          LEFT JOIN {$wpdb->prefix}ch_posts p ON n.post_id = p.id
          LEFT JOIN {$wpdb->prefix}ch_comments c ON n.comment_id = c.id
@@ -5314,13 +5967,14 @@ function bntm_ajax_ch_get_notifications() {
         }
 
         $formatted[] = [
-            'id' => $n->id,
-            'type' => $n->type,
-            'message' => $message,
-            'is_read' => $n->is_read,
-            'created_at' => human_time_diff(strtotime($n->created_at), current_time('timestamp')) . ' ago',
-            'post_id' => $n->post_id,
-            'comment_id' => $n->comment_id
+            'id'           => $n->id,
+            'type'         => $n->type,
+            'message'      => $message,
+            'is_read'      => $n->is_read,
+            'created_at'   => human_time_diff(strtotime($n->created_at), current_time('timestamp')) . ' ago',
+            'post_id'      => $n->post_id,
+            'post_rand_id' => $n->post_rand_id ?? '',
+            'comment_id'   => $n->comment_id
         ];
     }
 
@@ -5490,6 +6144,30 @@ function ch_highlight_mentions($content) {
     return preg_replace('/(@[a-zA-Z0-9_]+)/', '<span class="ch-mention">$1</span>', $content);
 }
 
+function bntm_ajax_ch_mention_search() {
+    global $wpdb;
+    $query = sanitize_text_field($_POST['query'] ?? '');
+    if (strlen($query) < 1) {
+        wp_send_json_success(['users' => []]);
+        return;
+    }
+    $like = '%' . $wpdb->esc_like($query) . '%';
+    $users = $wpdb->get_results($wpdb->prepare(
+        "SELECT u.user_login, p.display_name
+         FROM {$wpdb->users} u
+         LEFT JOIN {$wpdb->prefix}ch_user_profiles p ON u.ID = p.user_id
+         WHERE u.user_login LIKE %s OR p.display_name LIKE %s
+         ORDER BY u.user_login ASC
+         LIMIT 8",
+        $like, $like
+    ));
+    $result = array_map(fn($u) => [
+        'username'     => $u->user_login,
+        'display_name' => $u->display_name ?: $u->user_login,
+    ], $users);
+    wp_send_json_success(['users' => $result]);
+}
+
 function ch_log_activity($action, $target_type = null, $target_id = 0, $details = '') {
     global $wpdb;
     $wpdb->insert("{$wpdb->prefix}ch_activity_logs", [
@@ -5509,822 +6187,1079 @@ function ch_log_activity($action, $target_type = null, $target_id = 0, $details 
 function ch_global_styles() {
     ob_start(); ?>
     <style>
-    /* ---- RESET & BASE ---- */
-    .ch-dashboard-wrap, .ch-feed-wrap, .ch-post-view-wrap {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        color: var(--bntm-text, #111827);
-        line-height: 1.5;
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+    :root {
+        --ch-accent:       #6366f1;
+        --ch-accent-dark:  #4f46e5;
+        --ch-accent-light: #ede9fe;
+        --ch-accent-mid:   #c7d2fe;
+        --ch-bg:           #f5f5fb;
+        --ch-surface:      #ffffff;
+        --ch-border:       #e8e8f0;
+        --ch-border-soft:  #f0f0f8;
+        --ch-text:         #1a1a2e;
+        --ch-text-muted:   #6b7280;
+        --ch-text-subtle:  #9ca3af;
+        --ch-radius-sm:    6px;
+        --ch-radius:       10px;
+        --ch-radius-lg:    14px;
+        --ch-radius-xl:    18px;
+        --ch-shadow-sm:    0 1px 4px rgba(99,102,241,0.06);
+        --ch-shadow:       0 2px 12px rgba(99,102,241,0.09);
+        --ch-shadow-md:    0 4px 20px rgba(99,102,241,0.12);
+        --ch-font:         'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    /* ---- TOP NAV ---- */
-    .ch-top-nav {
-        background: var(--bntm-surface, #fff);
-        border-bottom: 1px solid var(--bntm-border, #e5e7eb);
-        padding: 10px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        position: sticky;
-        top: 0;
-        z-index: 200;
+    .ch-dashboard-wrap,.ch-feed-wrap,.ch-post-view-wrap,
+    .ch-auth-wrap,.ch-my-feed-wrap,.ch-public-profile-wrap,
+    .ch-guest-landing-wrap,.ch-mf-page-wrap {
+        font-family: var(--ch-font); color: var(--ch-text);
+        line-height: 1.55; background: var(--ch-bg);
     }
-    .ch-nav-links { display: flex; gap: 4px; }
+
+    /* TOP NAV */
+    .ch-top-nav {
+        background: var(--ch-surface); border-bottom: 1px solid var(--ch-border);
+        padding: 0 24px; height: 56px;
+        display: flex; justify-content: space-between; align-items: center;
+        position: sticky; top: 0; z-index: 200; box-shadow: var(--ch-shadow-sm);
+    }
+    .ch-nav-links { display: flex; gap: 2px; height: 100%; align-items: center; }
     .ch-nav-link {
         display: inline-flex; align-items: center; gap: 7px;
-        padding: 7px 14px; border-radius: 8px;
-        text-decoration: none; font-size: 13px; font-weight: 500;
-        color: #6b7280; transition: all 0.15s;
+        padding: 6px 14px; border-radius: var(--ch-radius-sm);
+        text-decoration: none; font-size: 13.5px; font-weight: 500;
+        color: var(--ch-text-muted); transition: all 0.15s; height: 36px;
     }
-    .ch-nav-link:hover  { background: #f3f4f6; color: #111827; }
-    .ch-nav-link.active { background: #ede9fe; color: #6366f1; }
-
+    .ch-nav-link:hover  { background: var(--ch-accent-light); color: var(--ch-accent); }
+    .ch-nav-link.active { color: var(--ch-accent); font-weight: 600; position: relative; }
+    .ch-nav-link.active::after {
+        content: ''; position: absolute; bottom: -10px; left: 0; right: 0;
+        height: 2px; background: var(--ch-accent); border-radius: 2px 2px 0 0;
+    }
     .ch-user-bar { display: flex; align-items: center; gap: 8px; }
-
-    /* Icon action button (bell) */
     .ch-icon-action-btn {
-        width: 36px; height: 36px; border-radius: 10px;
-        border: 1px solid #e5e7eb; background: #fff;
+        width: 34px; height: 34px; border-radius: var(--ch-radius-sm);
+        border: 1px solid var(--ch-border); background: var(--ch-surface);
         cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-        position: relative; color: #6b7280; transition: all 0.15s;
-        overflow: visible;
+        position: relative; color: var(--ch-text-muted); transition: all 0.15s;
     }
-    .ch-icon-action-btn:hover { background: #f3f4f6; border-color: #d1d5db; color: #374151; }
-
-    /* Avatar button */
+    .ch-icon-action-btn:hover { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); color: var(--ch-accent); }
     .ch-avatar-btn {
-        width: 36px; height: 36px; border-radius: 50%;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white; font-size: 14px; font-weight: 700;
-        border: none; cursor: pointer;
+        width: 34px; height: 34px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark));
+        color: white; font-size: 13px; font-weight: 700; border: none; cursor: pointer;
         display: inline-flex; align-items: center; justify-content: center;
         transition: transform 0.15s, box-shadow 0.15s;
     }
-    .ch-avatar-btn:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(99,102,241,0.35); }
-    .ch-avatar-btn-lg { width: 42px; height: 42px; font-size: 16px; flex-shrink: 0; }
-
-    /* Badge on bell */
+    .ch-avatar-btn:hover { transform: scale(1.05); box-shadow: 0 2px 10px rgba(99,102,241,0.4); }
+    .ch-avatar-btn-lg { width: 40px; height: 40px; font-size: 15px; flex-shrink: 0; }
     .ch-notification-badge {
-        position: absolute; top: -5px; right: -5px;
+        position: absolute; top: -4px; right: -4px;
         background: #ef4444; color: #fff; border-radius: 999px;
-        font-size: 10px; font-weight: 700; line-height: 1;
-        min-width: 18px; height: 18px;
+        font-size: 9px; font-weight: 700; min-width: 16px; height: 16px;
         display: flex; align-items: center; justify-content: center;
-        padding: 0 4px;
-        border: 2px solid #fff;
-        pointer-events: none;
-        z-index: 1;
+        padding: 0 3px; border: 2px solid var(--ch-surface); pointer-events: none; z-index: 1;
     }
 
-    /* Shared dropdown panel */
+    /* DROPDOWNS */
     .ch-dropdown-panel {
-        position: fixed;
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
-        min-width: 320px; max-width: 380px;
-        z-index: 9999;
-        overflow: hidden;
+        position: fixed; background: var(--ch-surface); border: 1px solid var(--ch-border);
+        border-radius: var(--ch-radius-lg); box-shadow: var(--ch-shadow-md);
+        min-width: 300px; max-width: 360px; z-index: 9999; overflow: hidden;
     }
-    .ch-dropdown-panel-sm { min-width: 220px; max-width: 260px; }
+    .ch-dropdown-panel-sm { min-width: 210px; max-width: 240px; }
     .ch-dropdown-header {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 12px 16px; border-bottom: 1px solid #f3f4f6;
-        font-size: 14px; font-weight: 600;
+        padding: 12px 16px; border-bottom: 1px solid var(--ch-border-soft);
+        font-size: 13px; font-weight: 600; color: var(--ch-text);
     }
     .ch-dropdown-action {
-        background: none; border: none; color: #6366f1; font-size: 12px;
-        cursor: pointer; padding: 3px 8px; border-radius: 6px; transition: background 0.1s;
+        background: none; border: none; color: var(--ch-accent); font-size: 12px;
+        cursor: pointer; padding: 3px 8px; border-radius: var(--ch-radius-sm); font-weight: 500;
     }
-    .ch-dropdown-action:hover { background: #ede9fe; }
-    .ch-dropdown-footer {
-        padding: 10px 16px; border-top: 1px solid #f3f4f6; text-align: center;
-    }
-    .ch-dropdown-footer a { color: #6366f1; text-decoration: none; font-size: 13px; font-weight: 500; }
-    .ch-dropdown-footer a:hover { text-decoration: underline; }
-    .ch-dropdown-user-info {
-        display: flex; align-items: center; gap: 12px;
-        padding: 14px 16px;
-    }
-    .ch-dropdown-username { font-size: 14px; font-weight: 600; }
-    .ch-dropdown-usermeta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
-    .ch-dropdown-divider { height: 1px; background: #f3f4f6; margin: 4px 0; }
+    .ch-dropdown-action:hover { background: var(--ch-accent-light); }
+    .ch-dropdown-footer { padding: 10px 16px; border-top: 1px solid var(--ch-border-soft); text-align: center; }
+    .ch-dropdown-footer a { color: var(--ch-accent); text-decoration: none; font-size: 12.5px; font-weight: 500; }
+    .ch-dropdown-user-info { display: flex; align-items: center; gap: 10px; padding: 14px 16px; }
+    .ch-dropdown-username { font-size: 13.5px; font-weight: 600; color: var(--ch-text); }
+    .ch-dropdown-usermeta { font-size: 11.5px; color: var(--ch-text-subtle); margin-top: 1px; }
+    .ch-dropdown-divider { height: 1px; background: var(--ch-border-soft); margin: 3px 0; }
     .ch-dropdown-item {
         display: flex; align-items: center; gap: 10px;
-        padding: 9px 16px; font-size: 13px; color: #374151;
+        padding: 9px 16px; font-size: 13px; color: var(--ch-text-muted);
         text-decoration: none; transition: background 0.1s;
     }
-    .ch-dropdown-item:hover { background: #f9fafb; }
+    .ch-dropdown-item:hover { background: var(--ch-bg); color: var(--ch-text); }
     .ch-dropdown-item-danger { color: #ef4444; }
-    .ch-dropdown-item-danger:hover { background: #fff5f5; }
-
-    /* Notifications list */
-    .ch-notifications-list { max-height: 320px; overflow-y: auto; }
+    .ch-dropdown-item-danger:hover { background: #fff5f5; color: #dc2626; }
+    .ch-notifications-list { max-height: 360px; overflow-y: auto; }
     .ch-notification-item {
-        display: flex; align-items: flex-start; gap: 12px;
-        padding: 12px 16px; border-bottom: 1px solid #f9fafb;
-        cursor: pointer; transition: background 0.1s;
+        display: flex; align-items: flex-start; gap: 11px;
+        padding: 12px 16px; border-bottom: 1px solid var(--ch-border-soft);
+        cursor: pointer; transition: background 0.12s; position: relative;
+        border-left: 3px solid transparent;
     }
-    .ch-notification-item:hover { background: #f9fafb; }
-    .ch-notification-item.unread { background: #fef9ee; }
+    .ch-notification-item:last-child { border-bottom: none; }
+    .ch-notification-item:hover { background: var(--ch-bg); }
+    /* ── Unread state ── */
+    .ch-notification-item.unread {
+        background: color-mix(in srgb, var(--ch-accent) 5%, var(--ch-surface));
+        border-left-color: var(--ch-accent);
+    }
+    .ch-notification-item.unread:hover {
+        background: color-mix(in srgb, var(--ch-accent) 9%, var(--ch-surface));
+    }
+    .ch-notification-item.unread .ch-notification-message { font-weight: 600; color: var(--ch-text); }
+    .ch-notification-item.unread .ch-notification-time   { color: var(--ch-accent); }
+    /* ── Unread dot ── */
+    .ch-notification-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--ch-accent); flex-shrink: 0; margin-top: 5px;
+        transition: opacity 0.2s;
+    }
+    .ch-notification-item:not(.unread) .ch-notification-dot { opacity: 0; }
+    /* ── Icon ── */
     .ch-notification-icon {
-        width: 32px; height: 32px; border-radius: 50%;
-        background: #ede9fe; color: #6366f1;
+        width: 34px; height: 34px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        transition: background 0.2s;
     }
+    .ch-notification-icon.type-reply        { background: #ede9fe; color: #7c3aed; }
+    .ch-notification-icon.type-mention      { background: #fef3c7; color: #d97706; }
+    .ch-notification-icon.type-vote         { background: #dcfce7; color: #16a34a; }
+    .ch-notification-icon.type-announcement { background: #dbeafe; color: #2563eb; }
+    .ch-notification-icon.type-report_resolved { background: #fce7f3; color: #db2777; }
+    .ch-notification-icon.type-default      { background: var(--ch-accent-light); color: var(--ch-accent); }
+    .ch-notification-item:not(.unread) .ch-notification-icon { opacity: 0.55; }
+    /* ── Content ── */
     .ch-notification-content { flex: 1; min-width: 0; }
-    .ch-notification-message { font-size: 13px; line-height: 1.4; margin: 0 0 3px; }
-    .ch-notification-time { font-size: 11px; color: #9ca3af; }
-    .ch-no-notifications { padding: 32px 16px; text-align: center; color: #9ca3af; font-size: 14px; }
+    .ch-notification-message { font-size: 13px; line-height: 1.45; margin: 0 0 3px; color: var(--ch-text-muted); }
+    .ch-notification-time { font-size: 11px; color: var(--ch-text-subtle); }
+    .ch-no-notifications { padding: 32px 16px; text-align: center; color: var(--ch-text-subtle); font-size: 13px; }
 
-    /* ---- DASHBOARD LAYOUT ---- */
-    .ch-dashboard-wrap {
-        display: flex;
-        min-height: 600px;
-        gap: 0;
-    }
+    /* DASHBOARD LAYOUT */
+    .ch-dashboard-wrap { display: flex; min-height: 600px; }
     .ch-sidebar {
-        width: 220px;
-        flex-shrink: 0;
-        background: var(--bntm-surface, #fff);
-        border-right: 1px solid var(--bntm-border, #e5e7eb);
-        padding: 20px 0;
+        width: 210px; flex-shrink: 0; background: var(--ch-surface);
+        border-right: 1px solid var(--ch-border); padding: 20px 0;
     }
     .ch-sidebar-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 0 20px 20px;
-        font-weight: 700;
-        font-size: 16px;
-        color: #6366f1;
-        border-bottom: 1px solid var(--bntm-border, #e5e7eb);
-        margin-bottom: 12px;
+        display: flex; align-items: center; gap: 9px;
+        padding: 0 18px 18px; font-weight: 700; font-size: 15px; color: var(--ch-accent);
+        border-bottom: 1px solid var(--ch-border-soft); margin-bottom: 10px; letter-spacing: -0.2px;
     }
-    .ch-main-content {
-        flex: 1;
-        min-width: 0;
-        padding: 28px 28px 40px;
-        background: var(--bntm-bg, #f9fafb);
-    }
-
-    /* ---- NAV ---- */
-    .ch-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
+    .ch-main-content { flex: 1; min-width: 0; padding: 28px 32px 48px; background: var(--ch-bg); }
+    .ch-nav { display: flex; flex-direction: column; gap: 1px; padding: 0 10px; }
     .ch-nav-item {
-        display: flex; align-items: center; gap: 10px;
-        padding: 9px 12px; border-radius: 8px;
-        text-decoration: none; font-size: 14px; font-weight: 500;
-        color: var(--bntm-text-muted, #6b7280);
-        transition: all 0.15s;
+        display: flex; align-items: center; gap: 9px;
+        padding: 8px 12px; border-radius: var(--ch-radius-sm);
+        text-decoration: none; font-size: 13.5px; font-weight: 500;
+        color: var(--ch-text-muted); transition: all 0.15s;
     }
-    .ch-nav-item:hover { background: #f3f4f6; color: #111827; }
-    .ch-nav-item.active { background: #ede9fe; color: #6366f1; }
+    .ch-nav-item svg { opacity: 0.7; flex-shrink: 0; }
+    .ch-nav-item:hover { background: var(--ch-accent-light); color: var(--ch-accent); }
+    .ch-nav-item:hover svg { opacity: 1; }
+    .ch-nav-item.active {
+        background: var(--ch-accent-light); color: var(--ch-accent); font-weight: 600;
+        border-left: 3px solid var(--ch-accent); padding-left: 9px;
+    }
+    .ch-nav-item.active svg { opacity: 1; }
 
-    /* ---- PAGE HEADER ---- */
-    .ch-page-header {
-        display: flex; justify-content: space-between; align-items: flex-start;
-        margin-bottom: 24px;
-    }
-    .ch-page-header h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; }
-    .ch-page-header p  { font-size: 13px; color: #6b7280; margin: 0; }
+    /* PAGE HEADER */
+    .ch-page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
+    .ch-page-header h1 { font-size: 20px; font-weight: 700; margin: 0 0 3px; color: var(--ch-text); letter-spacing: -0.3px; }
+    .ch-page-header p  { font-size: 13px; color: var(--ch-text-muted); margin: 0; }
 
-    /* ---- STATS ---- */
-    .ch-stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
-    }
+    /* STATS GRID */
+    .ch-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px,1fr)); gap: 14px; margin-bottom: 22px; }
     .ch-stat-card {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 12px;
-        padding: 18px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
+        background: var(--ch-surface); border: 1px solid var(--ch-border);
+        border-radius: var(--ch-radius-lg); padding: 16px 18px;
+        display: flex; align-items: center; gap: 12px;
+        box-shadow: var(--ch-shadow-sm); transition: box-shadow 0.15s;
     }
-    .ch-stat-card.ch-stat-alert { border-color: #fca5a5; background: #fff5f5; }
-    .ch-stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ch-stat-card:hover { box-shadow: var(--ch-shadow); }
+    .ch-stat-card.ch-stat-alert { border-color: #fca5a5; background: #fffbfb; }
+    .ch-stat-icon { width: 40px; height: 40px; border-radius: var(--ch-radius); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .ch-stat-body { display: flex; flex-direction: column; }
-    .ch-stat-num  { font-size: 24px; font-weight: 700; line-height: 1.1; }
-    .ch-stat-label{ font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .ch-stat-num   { font-size: 22px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; }
+    .ch-stat-label { font-size: 11.5px; color: var(--ch-text-muted); margin-top: 2px; font-weight: 500; }
 
-    /* ---- CARDS ---- */
+    /* CARDS */
     .ch-card {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 20px;
+        background: var(--ch-surface); border: 1px solid var(--ch-border);
+        border-radius: var(--ch-radius-lg); overflow: hidden; margin-bottom: 18px;
+        box-shadow: var(--ch-shadow-sm);
     }
     .ch-card-header {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--bntm-border, #e5e7eb);
+        padding: 14px 20px; border-bottom: 1px solid var(--ch-border-soft);
     }
-    .ch-card-header h3 { margin: 0; font-size: 15px; font-weight: 600; }
+    .ch-card-header h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--ch-text); }
     .ch-card-body { padding: 0; }
-    .ch-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .ch-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 
-    /* ---- LISTS ---- */
-    .ch-list-scroll { max-height: 380px; overflow-y: auto; }
+    /* LISTS */
+    .ch-list-scroll { max-height: 360px; overflow-y: auto; }
     .ch-list-item {
         display: flex; justify-content: space-between; align-items: center;
-        padding: 14px 20px;
-        border-bottom: 1px solid #f3f4f6;
+        padding: 12px 20px; border-bottom: 1px solid var(--ch-border-soft); transition: background 0.1s;
     }
+    .ch-list-item:hover { background: var(--ch-bg); }
     .ch-list-item:last-child { border-bottom: none; }
     .ch-list-item-main { flex: 1; min-width: 0; }
-    .ch-list-title { font-size: 14px; font-weight: 600; margin: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ch-list-meta  { font-size: 12px; color: #6b7280; }
-    .ch-list-item-stats { display: flex; gap: 12px; font-size: 12px; color: #6b7280; flex-shrink: 0; margin-left: 12px; }
-
-    /* ---- TRENDING ---- */
+    .ch-list-title { font-size: 13.5px; font-weight: 600; margin: 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ch-text); }
+    .ch-list-meta  { font-size: 11.5px; color: var(--ch-text-muted); }
+    .ch-list-item-stats { display: flex; gap: 10px; font-size: 11.5px; color: var(--ch-text-subtle); flex-shrink: 0; margin-left: 12px; }
     .ch-trending-item {
-        display: flex; align-items: center; gap: 14px;
-        padding: 14px 20px;
-        border-bottom: 1px solid #f3f4f6;
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 20px; border-bottom: 1px solid var(--ch-border-soft); transition: background 0.1s;
     }
+    .ch-trending-item:hover { background: var(--ch-bg); }
     .ch-trending-item:last-child { border-bottom: none; }
-    .ch-trending-rank { font-size: 20px; font-weight: 800; color: #e5e7eb; min-width: 28px; text-align: center; }
+    .ch-trending-rank { font-size: 18px; font-weight: 800; color: var(--ch-accent-mid); min-width: 26px; text-align: center; }
     .ch-trending-content { flex: 1; min-width: 0; }
-    .ch-trending-score { font-size: 12px; font-weight: 600; color: #6366f1; }
+    .ch-trending-score { font-size: 11.5px; font-weight: 600; color: var(--ch-accent); background: var(--ch-accent-light); padding: 2px 8px; border-radius: 20px; }
 
-    /* ---- BADGES ---- */
-    .ch-cat-badge {
-        display: inline-block; padding: 2px 8px; border-radius: 20px;
-        font-size: 11px; font-weight: 600; white-space: nowrap;
-    }
-    .ch-status-badge {
-        display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;
-    }
+    /* BADGES */
+    .ch-cat-badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .ch-status-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
     .ch-status-active    { background: #d1fae5; color: #065f46; }
-    .ch-status-archived  { background: #f3f4f6; color: #6b7280; }
+    .ch-status-archived  { background: var(--ch-bg); color: var(--ch-text-muted); }
     .ch-status-removed   { background: #fee2e2; color: #991b1b; }
     .ch-status-pending   { background: #fef3c7; color: #92400e; }
     .ch-status-suspended { background: #fed7aa; color: #9a3412; }
     .ch-status-banned    { background: #fee2e2; color: #991b1b; }
     .ch-status-reviewed  { background: #dbeafe; color: #1e40af; }
     .ch-status-resolved  { background: #d1fae5; color: #065f46; }
-    .ch-status-dismissed { background: #f3f4f6; color: #6b7280; }
-    .ch-pin-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: #6366f1; background: #ede9fe; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; }
-    .ch-anon-badge { font-size: 10px; background: #f3f4f6; color: #6b7280; padding: 1px 6px; border-radius: 10px; margin-left: 6px; }
-    .ch-type-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #f3f4f6; color: #374151; }
+    .ch-status-dismissed { background: var(--ch-bg); color: var(--ch-text-muted); }
+    .ch-pin-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; color: var(--ch-accent); background: var(--ch-accent-light); padding: 2px 6px; border-radius: var(--ch-radius-sm); margin-bottom: 3px; }
+    .ch-anon-badge { font-size: 10px; background: var(--ch-bg); color: var(--ch-text-subtle); padding: 1px 6px; border-radius: 10px; margin-left: 5px; }
+    .ch-type-badge { padding: 2px 8px; border-radius: var(--ch-radius-sm); font-size: 11px; font-weight: 600; background: var(--ch-bg); color: var(--ch-text-muted); }
 
-    /* ---- TABLE ---- */
-    .ch-table th { background: #f9fafb; }
-    .ch-table-empty { text-align: center; padding: 40px; color: #9ca3af; }
-    .ch-post-cell { max-width: 300px; }
-    .ch-post-excerpt { font-size: 12px; color: #6b7280; margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .ch-mini-stat { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; color: #6b7280; margin-right: 8px; }
-    .ch-date { font-size: 12px; color: #9ca3af; }
-    .ch-action-code { font-size: 11px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-    .ch-info-list { display: flex; flex-direction: column; gap: 12px; padding: 16px 0; }
+    /* TABLE */
+    .bntm-table-wrapper { overflow-x: auto; }
+    .bntm-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .bntm-table th { background: var(--ch-bg); padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--ch-text-subtle); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--ch-border); }
+    .bntm-table td { padding: 11px 16px; border-bottom: 1px solid var(--ch-border-soft); vertical-align: middle; }
+    .bntm-table tr:hover td { background: var(--ch-bg); }
+    .bntm-table tr:last-child td { border-bottom: none; }
+    .ch-table th { background: var(--ch-bg); }
+    .ch-table-empty { text-align: center; padding: 40px; color: var(--ch-text-subtle); font-size: 13px; }
+    .ch-post-cell { max-width: 280px; }
+    .ch-ann-title   { color: var(--ch-text); }
+    .ch-ann-excerpt { color: var(--ch-text-subtle); }
+    .ch-post-excerpt { font-size: 12px; color: var(--ch-text-muted); margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ch-mini-stat { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; color: var(--ch-text-muted); margin-right: 8px; }
+    .ch-date { font-size: 11.5px; color: var(--ch-text-subtle); }
+    .ch-action-code { font-size: 11px; background: var(--ch-bg); padding: 2px 6px; border-radius: var(--ch-radius-sm); font-family: monospace; color: var(--ch-accent); }
+    .ch-info-list { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; }
     .ch-info-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 0 20px; }
-    .ch-info-label { color: #6b7280; }
+    .ch-info-label { color: var(--ch-text-muted); font-size: 12.5px; }
     .ch-user-cell { display: flex; align-items: center; gap: 8px; }
 
-    /* ---- AVATAR ---- */
-    .ch-avatar-sm {
-        width: 32px; height: 32px; border-radius: 50%;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white; font-size: 13px; font-weight: 700;
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
-    }
-    .ch-avatar-xs { width: 26px; height: 26px; font-size: 11px; }
+    /* AVATAR */
+    .ch-avatar-sm { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark)); color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ch-avatar-xs { width: 24px; height: 24px; font-size: 10px; }
 
-    /* ---- BUTTONS ---- */
-    .ch-btn {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
-        border: none; cursor: pointer; transition: all 0.15s; text-decoration: none;
-        white-space: nowrap;
-    }
-    .ch-btn-primary   { background: #6366f1; color: white; }
-    .ch-btn-primary:hover { background: #4f46e5; }
-    .ch-btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
-    .ch-btn-secondary:hover { background: #e5e7eb; }
+    /* BUTTONS */
+    .ch-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: var(--ch-radius); font-size: 13px; font-weight: 600; font-family: var(--ch-font); border: none; cursor: pointer; transition: all 0.15s; text-decoration: none; white-space: nowrap; letter-spacing: -0.1px; }
+    .ch-btn-primary   { background: var(--ch-accent); color: white; }
+    .ch-btn-primary:hover { background: var(--ch-accent-dark); box-shadow: 0 2px 10px rgba(99,102,241,0.35); }
+    .ch-btn-secondary { background: var(--ch-bg); color: var(--ch-text); border: 1px solid var(--ch-border); }
+    .ch-btn-secondary:hover { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); color: var(--ch-accent); }
+    .ch-btn-outline   { background: transparent; color: var(--ch-accent); border: 1px solid var(--ch-accent-mid); }
+    .ch-btn-outline:hover { background: var(--ch-accent-light); }
     .ch-btn-danger    { background: #ef4444; color: white; }
     .ch-btn-danger:hover { background: #dc2626; }
     .ch-btn-full { width: 100%; justify-content: center; }
     .ch-btn-sm   { padding: 5px 12px; font-size: 12px; }
-    .ch-btn-xs   { padding: 3px 10px; font-size: 11px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; }
+    .ch-btn-xs   { padding: 3px 10px; font-size: 11px; font-weight: 600; border-radius: var(--ch-radius-sm); border: none; cursor: pointer; transition: all 0.12s; }
     .ch-btn-warning { background: #fef3c7; color: #92400e; }
     .ch-btn-warning:hover { background: #fde68a; }
     .ch-btn-success { background: #d1fae5; color: #065f46; }
     .ch-btn-success:hover { background: #a7f3d0; }
-    .ch-icon-btn {
-        width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e5e7eb;
-        background: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-        transition: all 0.15s;
-    }
-    .ch-icon-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .ch-icon-btn { width: 28px; height: 28px; border-radius: var(--ch-radius-sm); border: 1px solid var(--ch-border); background: var(--ch-surface); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s; color: var(--ch-text-muted); }
+    .ch-icon-btn:hover { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); color: var(--ch-accent); }
     .ch-icon-btn-danger:hover { background: #fee2e2; border-color: #fca5a5; color: #ef4444; }
-    .ch-link-btn { font-size: 12px; color: #6366f1; text-decoration: none; font-weight: 600; }
+    .ch-link-btn { font-size: 12px; color: var(--ch-accent); text-decoration: none; font-weight: 600; }
     .ch-link-btn:hover { text-decoration: underline; }
-    .ch-actions-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
-    .bntm-table-wrapper { overflow-x: auto; }
+    .ch-actions-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
 
-    /* ---- FORM ---- */
-    .ch-input {
-        width: 100%; padding: 9px 12px; border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 8px; font-size: 14px; background: var(--bntm-surface, #fff);
-        color: var(--bntm-text, #111827); box-sizing: border-box; outline: none;
-        transition: border-color 0.15s;
-    }
-    .ch-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px #ede9fe; }
-    .ch-textarea { resize: vertical; min-height: 80px; }
+    /* FORM */
+    .ch-input { width: 100%; padding: 8px 12px; border: 1px solid var(--ch-border); border-radius: var(--ch-radius); font-size: 13.5px; font-family: var(--ch-font); background: var(--ch-surface); color: var(--ch-text); box-sizing: border-box; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+    .ch-input:focus { border-color: var(--ch-accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .ch-input::placeholder { color: var(--ch-text-subtle); }
+    .ch-textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
     .ch-textarea-lg { min-height: 130px; }
-    .ch-color-input { height: 42px; padding: 3px 6px; cursor: pointer; }
-    .ch-select-sm { padding: 6px 10px; font-size: 13px; border-radius: 6px; }
-    .ch-field-group { margin-bottom: 16px; }
-    .ch-field-row { display: flex; gap: 16px; }
+    .ch-color-input { height: 40px; padding: 3px 6px; cursor: pointer; }
+    .ch-select-sm { padding: 6px 10px; font-size: 13px; border-radius: var(--ch-radius-sm); }
+    .ch-field-group { margin-bottom: 14px; }
+    .ch-field-row { display: flex; gap: 14px; }
     .ch-field-half { flex: 1; }
-    .ch-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
-    .ch-checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+    .ch-label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ch-text); margin-bottom: 5px; }
+    .ch-checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: var(--ch-text-muted); }
 
-    /* ---- TOOLBAR ---- */
-    .ch-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-    .ch-toolbar-left { display: flex; align-items: center; gap: 12px; }
-    .ch-toolbar-filters { display: flex; gap: 6px; }
+    /* TOOLBAR */
+    .ch-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+    .ch-toolbar-left { display: flex; align-items: center; gap: 10px; }
+    .ch-toolbar-filters { display: flex; gap: 4px; }
     .ch-toolbar-right { display: flex; gap: 8px; align-items: center; }
-    .ch-filter-btn {
-        padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
-        text-decoration: none; color: #6b7280; background: #f3f4f6;
-        transition: all 0.15s;
-    }
-    .ch-filter-btn:hover { background: #e5e7eb; color: #111827; }
-    .ch-filter-btn.active { background: #ede9fe; color: #6366f1; font-weight: 600; }
-    .ch-guidelines-link {
-        display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500;
-        color: #6b7280; text-decoration: none; padding: 6px 12px; border-radius: 6px;
-        transition: all 0.15s;
-    }
-    .ch-guidelines-link:hover { background: #f3f4f6; color: #111827; }
-    .ch-guidelines-link svg { width: 14px; height: 14px; }
+    .ch-filter-btn { padding: 5px 13px; border-radius: 20px; font-size: 12.5px; font-weight: 500; text-decoration: none; color: var(--ch-text-muted); background: var(--ch-surface); border: 1px solid var(--ch-border); transition: all 0.15s; }
+    .ch-filter-btn:hover { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); color: var(--ch-accent); }
+    .ch-filter-btn.active { background: var(--ch-accent-light); color: var(--ch-accent); font-weight: 600; border-color: var(--ch-accent-mid); }
+    .ch-guidelines-link { display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 500; color: var(--ch-text-muted); text-decoration: none; padding: 5px 10px; border-radius: var(--ch-radius-sm); transition: all 0.15s; }
+    .ch-guidelines-link:hover { background: var(--ch-accent-light); color: var(--ch-accent); }
     .ch-search-form { display: flex; gap: 6px; align-items: center; }
-    .ch-search-input { min-width: 200px; }
+    .ch-search-input { min-width: 180px; }
 
-    /* ---- MODAL ---- */
-    .ch-modal-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-        display: flex; align-items: center; justify-content: center;
-        z-index: 99999; padding: 20px;
-    }
-    .ch-modal {
-        background: var(--bntm-surface, #fff);
-        border-radius: 14px; width: 100%; max-width: 500px;
-        max-height: 90vh; overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    }
-    .ch-modal-lg { max-width: 640px; }
-    .ch-modal-header {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 18px 22px; border-bottom: 1px solid var(--bntm-border, #e5e7eb);
-    }
-    .ch-modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; }
-    .ch-modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #9ca3af; line-height: 1; padding: 0; }
-    .ch-modal-close:hover { color: #374151; }
-    .ch-modal-body { padding: 22px; }
-    .ch-modal-footer {
-        display: flex; justify-content: flex-end; gap: 10px;
-        padding: 14px 22px; border-top: 1px solid var(--bntm-border, #e5e7eb);
-    }
+    /* MODAL */
+    .ch-modal-overlay { position: fixed; inset: 0; background: rgba(26,26,46,0.45); display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px; backdrop-filter: blur(2px); }
+    .ch-modal { background: var(--ch-surface); border-radius: var(--ch-radius-xl); width: 100%; max-width: 490px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(26,26,46,0.2); }
+    .ch-modal-lg { max-width: 620px; }
+    .ch-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 22px; border-bottom: 1px solid var(--ch-border-soft); }
+    .ch-modal-header h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--ch-text); }
+    .ch-modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--ch-text-subtle); line-height: 1; padding: 2px 4px; border-radius: var(--ch-radius-sm); transition: background 0.1s; }
+    .ch-modal-close:hover { background: var(--ch-bg); color: var(--ch-text); }
+    .ch-modal-body { padding: 20px 22px; }
+    .ch-modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 22px; border-top: 1px solid var(--ch-border-soft); }
 
-    /* ---- GUIDELINES ---- */
-    .ch-guidelines-content h4 { margin: 0 0 16px; font-size: 16px; font-weight: 700; }
-    .ch-guidelines-content h5 { margin: 20px 0 8px; font-size: 14px; font-weight: 600; color: #374151; }
-    .ch-guidelines-content ul { margin: 8px 0 16px; padding-left: 20px; }
-    .ch-guidelines-content li { margin-bottom: 4px; }
-    .ch-guidelines-content p { margin: 12px 0; }
-    .ch-guidelines-content strong { font-weight: 600; }
+    /* GUIDELINES */
+    .ch-guidelines-content h4 { margin: 0 0 14px; font-size: 15px; font-weight: 700; color: var(--ch-text); }
+    .ch-guidelines-content h5 { margin: 18px 0 7px; font-size: 13px; font-weight: 600; color: var(--ch-accent); }
+    .ch-guidelines-content ul { margin: 6px 0 14px; padding-left: 18px; }
+    .ch-guidelines-content li { margin-bottom: 4px; font-size: 13.5px; color: var(--ch-text-muted); line-height: 1.55; }
+    .ch-guidelines-content p { margin: 10px 0; font-size: 13.5px; color: var(--ch-text-muted); line-height: 1.6; }
+    .ch-guidelines-content strong { font-weight: 600; color: var(--ch-text); }
 
-    /* ---- CATEGORIES GRID ---- */
-    .ch-page-header-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        align-items: flex-end;
-        justify-content: flex-end;
-    }
-    .ch-page-header-actions > .ch-btn { height: 38px; }
-
-    .ch-cat-hero-title { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
-    .ch-cat-hero-icon {
-        width: 56px; height: 56px; border-radius: 14px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 24px; flex-shrink: 0;
-    }
-    .ch-cat-hero-text { flex: 1; }
-    .ch-cat-hero-text h2 { margin: 0 0 4px; font-size: 22px; }
-    .ch-cat-hero-text p { margin: 0; color: #6b7280; font-size: 13px; }
-
-    .ch-cat-hero-meta {
-        display: flex; align-items: center; justify-content: space-between;
-        gap: 14px; margin-top: 18px;
-        flex-wrap: wrap;
-    }
-    .ch-cat-meta-item { display: flex; flex-direction: column; text-align: center; }
-    .ch-cat-meta-num { font-size: 18px; font-weight: 700; }
-    .ch-cat-meta-label { font-size: 12px; color: #6b7280; }
-    .ch-btn-sm { height: 34px; padding: 6px 14px; }
-
-    .ch-categories-filter-form {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-        margin: 0;
-    }
-    .ch-categories-filter-form .ch-field-group { flex: 1; min-width: 170px; }
-    .ch-categories-filter-form button { height: 38px; }
-
-    .ch-categories-filter-sidebar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .ch-categories-filter-sidebar .ch-field-group { width: 100%; margin-bottom: 8px; }
+    /* CATEGORIES */
+    .ch-page-header-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: flex-end; }
+    .ch-page-header-actions > .ch-btn { height: 36px; }
+    .ch-categories-filter-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 0; }
+    .ch-categories-filter-form .ch-field-group { flex: 1; min-width: 160px; margin: 0; }
+    .ch-categories-filter-sidebar { flex-direction: column; align-items: stretch; }
+    .ch-categories-filter-sidebar .ch-field-group { width: 100%; margin-bottom: 6px; }
     .ch-categories-filter-sidebar button { width: 100%; }
+    .ch-filter-actions { display: flex; gap: 6px; align-items: flex-end; }
+    .ch-categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 14px; }
+    .ch-cat-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); overflow: hidden; transition: box-shadow 0.15s, transform 0.15s; box-shadow: var(--ch-shadow-sm); }
+    .ch-cat-card:hover { box-shadow: var(--ch-shadow); transform: translateY(-1px); }
+    .ch-cat-card-color { height: 3px; }
+    .ch-cat-card-body { padding: 14px 16px; }
+    .ch-cat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 7px; }
+    .ch-cat-card-header h4 { margin: 0; font-size: 14px; font-weight: 600; color: var(--ch-text); }
+    .ch-cat-desc { font-size: 12.5px; color: var(--ch-text-muted); margin: 0 0 10px; line-height: 1.5; }
+    .ch-cat-stats { display: flex; gap: 10px; align-items: center; font-size: 11.5px; color: var(--ch-text-subtle); flex-wrap: wrap; }
 
-    .ch-categories-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 16px;
-    }
-    .ch-cat-card {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 12px;
-        overflow: hidden;
-        transition: box-shadow 0.15s;
-    }
-    .ch-cat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-    .ch-cat-card-color { height: 4px; }
-    .ch-cat-card-body { padding: 16px; }
-    .ch-cat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-    .ch-cat-card-header h4 { margin: 0; font-size: 15px; font-weight: 600; }
-    .ch-cat-desc { font-size: 13px; color: #6b7280; margin: 0 0 12px; line-height: 1.5; }
-    .ch-cat-stats { display: flex; gap: 12px; align-items: center; font-size: 12px; color: #9ca3af; }
+    /* PAGINATION */
+    .ch-pagination { display: flex; gap: 4px; padding: 14px 20px; justify-content: center; }
+    .ch-page-btn { width: 32px; height: 32px; border-radius: var(--ch-radius-sm); display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 500; text-decoration: none; color: var(--ch-text-muted); background: var(--ch-surface); border: 1px solid var(--ch-border); transition: all 0.15s; }
+    .ch-page-btn:hover { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); color: var(--ch-accent); }
+    .ch-page-btn.active { background: var(--ch-accent); color: white; border-color: var(--ch-accent); }
 
-    /* ---- PAGINATION ---- */
-    .ch-pagination { display: flex; gap: 4px; padding: 16px 20px; justify-content: center; }
-    .ch-page-btn {
-        width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center;
-        justify-content: center; font-size: 13px; font-weight: 500; text-decoration: none;
-        color: #374151; background: #f3f4f6; transition: all 0.15s;
-    }
-    .ch-page-btn:hover { background: #e5e7eb; }
-    .ch-page-btn.active { background: #6366f1; color: white; }
+    /* EMPTY STATE */
+    .ch-empty { text-align: center; padding: 28px; color: var(--ch-text-subtle); font-size: 13px; }
+    .ch-empty-state { text-align: center; padding: 56px 20px; color: var(--ch-text-subtle); }
+    .ch-empty-state p { margin-top: 12px; font-size: 13.5px; }
 
-    /* ---- EMPTY STATE ---- */
-    .ch-empty { text-align: center; padding: 30px; color: #9ca3af; font-size: 14px; }
-    .ch-empty-state { text-align: center; padding: 60px 20px; color: #9ca3af; }
-    .ch-empty-state p { margin-top: 12px; font-size: 14px; }
+    /* NOTICES */
+    .bntm-notice { padding: 10px 14px; border-radius: var(--ch-radius); font-size: 13px; margin-bottom: 14px; font-weight: 500; }
+    .bntm-notice-success { background: #d1fae5; color: #065f46; border-left: 3px solid #10b981; }
+    .bntm-notice-error   { background: #fee2e2; color: #991b1b; border-left: 3px solid #ef4444; }
+    .bntm-notice-warning { background: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b; }
 
-    /* ---- FEED LAYOUT ---- */
-    .ch-feed-wrap { display: flex; gap: 28px; max-width: 1140px; margin: 0 auto; padding: 28px 20px; }
-    .ch-feed-sidebar { width: 230px; flex-shrink: 0; }
+    /* FEED LAYOUT */
+    .ch-feed-wrap { display: flex; gap: 24px; max-width: 1120px; margin: 0 auto; padding: 24px 20px; }
+    .ch-feed-sidebar { width: 220px; flex-shrink: 0; }
     .ch-feed-main { flex: 1; min-width: 0; }
-
-    .ch-sidebar-widget {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 14px; padding: 16px; margin-bottom: 16px;
-    }
-    .ch-sidebar-widget h4 {
-        margin: 0 0 14px;
-        font-size: 11px; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.8px; color: #9ca3af;
-    }
-    .ch-cat-link {
-        display: flex; align-items: center; gap: 8px; padding: 7px 10px;
-        border-radius: 8px; text-decoration: none; font-size: 13px;
-        color: #374151; transition: all 0.15s; justify-content: space-between;
-    }
-    .ch-cat-link:hover { background: #f3f4f6; }
-    .ch-cat-link.active { background: #ede9fe; color: #6366f1; font-weight: 600; }
-    .ch-cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .ch-cat-count { font-size: 11px; background: #f3f4f6; color: #9ca3af; padding: 1px 7px; border-radius: 10px; }
+    .ch-sidebar-widget { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 14px; margin-bottom: 14px; box-shadow: var(--ch-shadow-sm); }
+    .ch-sidebar-widget h4 { margin: 0 0 10px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.9px; color: var(--ch-text-subtle); }
+    .ch-cat-link { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: var(--ch-radius-sm); text-decoration: none; font-size: 13px; color: var(--ch-text-muted); transition: all 0.15s; justify-content: space-between; }
+    .ch-cat-link:hover { background: var(--ch-bg); color: var(--ch-text); }
+    .ch-cat-link.active { background: var(--ch-accent-light); color: var(--ch-accent); font-weight: 600; }
+    .ch-cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .ch-cat-count { font-size: 11px; background: var(--ch-bg); color: var(--ch-text-subtle); padding: 1px 6px; border-radius: 10px; }
+    .ch-cat-item { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
     .ch-cat-owner-actions { display: none; align-items: center; gap: 2px; flex-shrink: 0; }
     .ch-cat-item:hover .ch-cat-owner-actions { display: flex; }
-    .ch-cat-action-btn {
-        width: 22px; height: 22px; border-radius: 5px; border: none; background: transparent;
-        cursor: pointer; display: flex; align-items: center; justify-content: center;
-        color: #9ca3af; transition: background 0.15s, color 0.15s; padding: 0;
-    }
-    .ch-cat-action-btn:hover { background: #f3f4f6; color: #374151; }
+    .ch-cat-action-btn { width: 20px; height: 20px; border-radius: 4px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ch-text-subtle); transition: background 0.15s, color 0.15s; padding: 0; }
+    .ch-cat-action-btn:hover { background: var(--ch-bg); color: var(--ch-text); }
     .ch-cat-action-delete:hover { background: #fee2e2; color: #ef4444; }
 
-    .ch-cat-hero {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 14px; padding: 20px; margin-bottom: 18px;
-    }
-    .ch-cat-hero h2 { margin: 0 0 4px; font-size: 18px; }
-    .ch-cat-hero p  { margin: 0; font-size: 13px; color: #6b7280; }
+    /* CAT HERO */
+    .ch-cat-hero { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 18px 20px; margin-bottom: 16px; box-shadow: var(--ch-shadow-sm); }
+    .ch-cat-hero h1,.ch-cat-hero h2 { margin: 0 0 4px; font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
+    .ch-cat-hero p  { margin: 0; font-size: 12.5px; color: var(--ch-text-muted); }
+    .ch-cat-hero-main { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .ch-cat-hero-text { flex: 1; }
+    .ch-cat-hero-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .ch-cat-meta-item { display: flex; flex-direction: column; text-align: center; }
+    .ch-cat-meta-num { font-size: 16px; font-weight: 700; color: var(--ch-text); }
+    .ch-cat-meta-label { font-size: 11px; color: var(--ch-text-subtle); font-weight: 500; }
+    .ch-btn-sm { height: 32px; padding: 5px 12px; font-size: 12.5px; }
 
-    /* ---- FEED HEADER & TOOLBAR ---- */
-    .ch-feed-header { margin-bottom: 18px; }
-    .ch-feed-header h2 { font-size: 20px; font-weight: 700; margin: 0 0 14px; }
-    .ch-feed-toolbar-card {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 14px; padding: 14px 16px; margin-bottom: 18px;
-    }
-    .ch-search-form { display: flex; gap: 8px; margin-bottom: 12px; width: 100%; }
-    .ch-search-input { flex: 1; }
-    .ch-filter-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    /* FEED TOOLBAR */
+    .ch-feed-header { margin-bottom: 16px; }
+    .ch-feed-header h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.2px; }
+    .ch-feed-toolbar-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--ch-shadow-sm); }
+    .ch-filter-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     .ch-location-form { flex-shrink: 0; }
-    .ch-location-select { width: 160px; padding: 6px 10px; border-radius: 8px; font-size: 13px; border: 1px solid #e5e7eb; background: #fff; }
-    .ch-sort-tabs { display: flex; gap: 4px; }
-    .ch-sort-tab {
-        padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
-        text-decoration: none; color: #6b7280; background: #f3f4f6; transition: all 0.15s;
-    }
-    .ch-sort-tab:hover  { background: #e5e7eb; }
-    .ch-sort-tab.active { background: #6366f1; color: #fff; font-weight: 600; }
+    .ch-location-select { width: 150px; padding: 5px 9px; border-radius: var(--ch-radius-sm); font-size: 12.5px; border: 1px solid var(--ch-border); background: var(--ch-surface); font-family: var(--ch-font); color: var(--ch-text-muted); }
+    .ch-sort-tabs { display: flex; gap: 3px; }
+    .ch-sort-tab { padding: 4px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 500; text-decoration: none; color: var(--ch-text-muted); background: var(--ch-bg); transition: all 0.15s; border: 1px solid var(--ch-border); }
+    .ch-sort-tab:hover  { background: var(--ch-accent-light); color: var(--ch-accent); border-color: var(--ch-accent-mid); }
+    .ch-sort-tab.active { background: var(--ch-accent); color: #fff; border-color: var(--ch-accent); font-weight: 600; }
 
-    /* ---- POST CARDS ---- */
-    .ch-posts-list { display: flex; flex-direction: column; gap: 10px; }
-    .ch-post-card {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 14px; padding: 18px 18px 14px;
-        display: flex; gap: 14px;
-        transition: box-shadow 0.15s, border-color 0.15s;
-        position: relative;
-    }
-    .ch-post-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); border-color: #d1d5db; }
-    .ch-post-pinned-ribbon {
-        position: absolute; top: -1px; right: 18px;
-        background: #6366f1; color: white; font-size: 10px; font-weight: 700;
-        padding: 3px 10px 5px; border-radius: 0 0 8px 8px;
-        display: inline-flex; align-items: center; gap: 4px;
-    }
-
-    /* Vote column */
-    .ch-post-vote-col {
-        display: flex; flex-direction: column; align-items: center; gap: 4px;
-        flex-shrink: 0; padding-top: 2px;
-    }
-    .ch-vote-btn {
-        width: 30px; height: 30px; border-radius: 8px; border: 1px solid #e5e7eb;
-        background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        color: #9ca3af; transition: all 0.15s;
-    }
-    .ch-vote-btn:hover { border-color: #6366f1; color: #6366f1; background: #ede9fe; }
-    .ch-vote-btn.active-up { background: #ede9fe; border-color: #6366f1; color: #6366f1; }
+    /* POST CARDS */
+    .ch-posts-list { display: flex; flex-direction: column; gap: 8px; }
+    .ch-post-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 16px 16px 12px; display: flex; gap: 12px; transition: box-shadow 0.15s, border-color 0.15s; position: relative; box-shadow: var(--ch-shadow-sm); }
+    .ch-post-card:hover { box-shadow: var(--ch-shadow); border-color: var(--ch-accent-mid); }
+    .ch-post-pinned-ribbon { position: absolute; top: -1px; right: 16px; background: var(--ch-accent); color: white; font-size: 10px; font-weight: 700; padding: 2px 9px 4px; border-radius: 0 0 7px 7px; display: inline-flex; align-items: center; gap: 4px; }
+    .ch-post-vote-col { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; padding-top: 2px; min-width: 28px; }
+    .ch-vote-btn { width: 28px; height: 28px; border-radius: var(--ch-radius-sm); border: 1px solid var(--ch-border); background: var(--ch-surface); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ch-text-subtle); transition: all 0.15s; }
+    .ch-vote-btn:hover { border-color: var(--ch-accent-mid); color: var(--ch-accent); background: var(--ch-accent-light); }
+    .ch-vote-btn.active-up { background: var(--ch-accent-light); border-color: var(--ch-accent); color: var(--ch-accent); }
     .ch-vote-btn.active-down { background: #fee2e2; border-color: #fca5a5; color: #ef4444; }
-    .ch-vote-count { font-size: 13px; font-weight: 700; color: #374151; min-width: 20px; text-align: center; }
-
-    /* Post body */
+    .ch-vote-btn-lg.active-up { background: var(--ch-accent-light); border-color: var(--ch-accent); color: var(--ch-accent); }
+    .ch-vote-btn-lg.active-down { background: #fee2e2; border-color: #fca5a5; color: #ef4444; }
+    .ch-comment-action.active-up { color: var(--ch-accent); font-weight: 700; }
+    .ch-comment-action.active-down { color: #ef4444; font-weight: 700; }
+    .ch-vote-count { font-size: 12px; font-weight: 700; color: var(--ch-text); min-width: 20px; text-align: center; }
     .ch-post-body { flex: 1; min-width: 0; }
-    .ch-post-meta-row {
-        display: flex; align-items: center; gap: 8px;
-        flex-wrap: wrap; margin-bottom: 8px;
-    }
-    .ch-post-author { font-size: 12px; font-weight: 600; color: #374151; }
-    .ch-post-location { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; color: #9ca3af; }
-    .ch-post-time   { font-size: 12px; color: #9ca3af; margin-left: auto; }
-    .ch-post-title  { margin: 0 0 8px; font-size: 15px; font-weight: 600; line-height: 1.4; }
-    .ch-post-title a { text-decoration: none; color: inherit; }
-    .ch-post-title a:hover { color: #6366f1; }
-    .ch-post-preview { font-size: 13px; color: #6b7280; margin: 0 0 10px; line-height: 1.6; }
-    .ch-post-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-    .ch-tag { font-size: 11px; background: #f3f4f6; color: #6b7280; padding: 2px 8px; border-radius: 20px; cursor: pointer; transition: background 0.1s; }
-    .ch-tag:hover { background: #ede9fe; color: #6366f1; }
-
-    /* Action row */
-    .ch-post-actions-row {
-        display: flex; gap: 4px; align-items: center;
-        padding-top: 10px; border-top: 1px solid #f3f4f6;
-        flex-wrap: wrap;
-    }
-    .ch-post-action {
-        display: inline-flex; align-items: center; gap: 5px;
-        font-size: 12px; color: #9ca3af; background: none; border: none;
-        cursor: pointer; padding: 5px 10px; border-radius: 8px;
-        text-decoration: none; transition: all 0.15s; font-weight: 500;
-    }
-    .ch-post-action:hover { color: #374151; background: #f3f4f6; }
-    .ch-post-action.ch-bookmarked { color: #6366f1; }
-    .ch-post-action.ch-bookmarked:hover { background: #ede9fe; }
+    .ch-post-meta-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 7px; }
+    .ch-post-author { font-size: 12px; font-weight: 600; color: var(--ch-text-muted); }
+    .ch-post-location { display: inline-flex; align-items: center; gap: 3px; font-size: 11.5px; color: var(--ch-text-subtle); }
+    .ch-post-time   { font-size: 11.5px; color: var(--ch-text-subtle); margin-left: auto; }
+    .ch-post-views  { font-size: 11.5px; color: var(--ch-text-subtle); }
+    .ch-post-title  { margin: 0 0 6px; font-size: 14.5px; font-weight: 700; line-height: 1.4; letter-spacing: -0.2px; }
+    .ch-post-title a { text-decoration: none; color: var(--ch-text); }
+    .ch-post-title a:hover { color: var(--ch-accent); }
+    .ch-post-preview { font-size: 13px; color: var(--ch-text-muted); margin: 0 0 9px; line-height: 1.6; }
+    .ch-post-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+    .ch-tag { font-size: 11px; background: var(--ch-bg); color: var(--ch-text-subtle); padding: 2px 7px; border-radius: 20px; cursor: pointer; transition: all 0.1s; border: 1px solid var(--ch-border); }
+    .ch-tag:hover { background: var(--ch-accent-light); color: var(--ch-accent); border-color: var(--ch-accent-mid); }
+    .ch-post-actions-row { display: flex; gap: 2px; align-items: center; padding-top: 8px; border-top: 1px solid var(--ch-border-soft); flex-wrap: wrap; }
+    .ch-post-action { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ch-text-subtle); background: none; border: none; cursor: pointer; padding: 4px 9px; border-radius: var(--ch-radius-sm); text-decoration: none; transition: all 0.15s; font-weight: 500; font-family: var(--ch-font); }
+    .ch-post-action:hover { color: var(--ch-accent); background: var(--ch-accent-light); }
+    .ch-post-action.ch-bookmarked { color: var(--ch-accent); }
     .ch-share-dropdown { position: relative; margin-left: auto; }
-    .ch-share-menu {
-        position: fixed;
-        background: var(--bntm-surface, #fff); border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 160px;
-        display: none; z-index: 10000; overflow: hidden;
-    }
+    .ch-share-menu { position: fixed; background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); box-shadow: var(--ch-shadow-md); min-width: 155px; display: none; z-index: 10000; overflow: hidden; }
     .ch-share-menu.show { display: block; }
-    .ch-share-option {
-        display: flex; align-items: center; gap: 9px; width: 100%;
-        padding: 10px 14px; font-size: 13px; color: #374151; background: none; border: none;
-        cursor: pointer; text-align: left; transition: background 0.1s;
-    }
-    .ch-share-option:hover { background: #f9fafb; }
+    .ch-share-option { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 13px; font-size: 12.5px; color: var(--ch-text-muted); background: none; border: none; cursor: pointer; text-align: left; transition: background 0.1s; font-family: var(--ch-font); }
+    .ch-share-option:hover { background: var(--ch-bg); color: var(--ch-accent); }
 
-    /* ---- MODERATION SETTINGS ---- */
+    /* MODERATION SETTINGS */
     .ch-settings-grid { display: flex; flex-direction: column; gap: 0; }
-    .ch-setting-row {
-        display: flex; justify-content: space-between; align-items: center;
-        gap: 24px; padding: 18px 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
+    .ch-setting-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--ch-border-soft); }
     .ch-setting-row:last-child { border-bottom: none; }
     .ch-setting-info { flex: 1; min-width: 0; }
-    .ch-setting-label { font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 4px; }
-    .ch-setting-desc  { font-size: 13px; color: #6b7280; line-height: 1.5; }
+    .ch-setting-label { font-size: 13.5px; font-weight: 600; color: var(--ch-text); margin-bottom: 3px; }
+    .ch-setting-desc  { font-size: 12.5px; color: var(--ch-text-muted); line-height: 1.5; }
     .ch-setting-control { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .ch-setting-number { width: 80px; text-align: center; }
-    .ch-setting-unit { font-size: 13px; color: #9ca3af; white-space: nowrap; }
-
-    /* Toggle switch */
+    .ch-setting-number { width: 76px; text-align: center; }
+    .ch-setting-unit { font-size: 12.5px; color: var(--ch-text-subtle); white-space: nowrap; }
     .ch-toggle { position: relative; display: inline-block; cursor: pointer; }
     .ch-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
-    .ch-toggle-track {
-        display: block; width: 44px; height: 24px; border-radius: 12px;
-        background: #e5e7eb; transition: background 0.2s;
-        position: relative;
-    }
-    .ch-toggle input:checked + .ch-toggle-track { background: #6366f1; }
-    .ch-toggle-thumb {
-        position: absolute; top: 3px; left: 3px;
-        width: 18px; height: 18px; border-radius: 50%;
-        background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-        transition: transform 0.2s;
-    }
+    .ch-toggle-track { display: block; width: 42px; height: 22px; border-radius: 11px; background: var(--ch-border); transition: background 0.2s; position: relative; }
+    .ch-toggle input:checked + .ch-toggle-track { background: var(--ch-accent); }
+    .ch-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.18); transition: transform 0.2s; }
     .ch-toggle input:checked + .ch-toggle-track .ch-toggle-thumb { transform: translateX(20px); }
 
-    /* ---- POST VIEW ---- */
-    .ch-post-view-wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
-    .ch-post-view-header { margin-bottom: 20px; }
-    .ch-back-link {
-        display: inline-flex; align-items: center; gap: 6px;
-        text-decoration: none; color: #6366f1; font-size: 14px; font-weight: 600;
-    }
-    .ch-post-view-grid { display: grid; grid-template-columns: 1fr 260px; gap: 24px; }
-    .ch-post-full {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 14px; padding: 28px; margin-bottom: 20px;
-    }
-    .ch-post-full-title { font-size: 24px; font-weight: 700; margin: 0 0 16px; line-height: 1.3; }
-    .ch-post-full-content { font-size: 15px; line-height: 1.7; color: #374151; margin-bottom: 16px; }
-    .ch-post-media { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-    .ch-media-item { border-radius: 8px; overflow: hidden; }
+    /* POST VIEW */
+    .ch-post-view-wrap { max-width: 980px; margin: 0 auto; padding: 22px 16px; }
+    .ch-post-view-header { margin-bottom: 18px; }
+    .ch-back-link { display: inline-flex; align-items: center; gap: 5px; text-decoration: none; color: var(--ch-accent); font-size: 13.5px; font-weight: 600; padding: 5px 10px; border-radius: var(--ch-radius-sm); border: 1px solid var(--ch-accent-mid); background: var(--ch-accent-light); transition: all 0.15s; }
+    .ch-back-link:hover { background: var(--ch-accent); color: white; }
+    .ch-post-view-grid { display: grid; grid-template-columns: 1fr 250px; gap: 22px; }
+    .ch-post-full { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-xl); padding: 26px; margin-bottom: 18px; box-shadow: var(--ch-shadow-sm); }
+    .ch-post-full-title { font-size: 22px; font-weight: 700; margin: 0 0 14px; line-height: 1.3; letter-spacing: -0.4px; color: var(--ch-text); }
+    .ch-post-full-content { font-size: 14.5px; line-height: 1.72; color: var(--ch-text-muted); margin-bottom: 16px; }
+    .ch-post-media { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .ch-media-item { border-radius: var(--ch-radius); overflow: hidden; }
     .ch-media-image { width: 100%; height: auto; display: block; }
     .ch-media-video { width: 100%; height: auto; display: block; }
     .ch-media-audio { width: 100%; display: block; }
-    .ch-post-vote-bar { display: flex; align-items: center; gap: 14px; padding-top: 16px; border-top: 1px solid #f3f4f6; }
-    .ch-vote-btn-lg {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 7px 14px; border-radius: 8px; border: 1px solid #e5e7eb;
-        background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; color: #374151;
-        transition: all 0.15s;
-    }
-    .ch-vote-btn-lg:hover { background: #f3f4f6; }
-    .ch-vote-btn-lg.ch-vote-up:hover  { background: #ede9fe; border-color: #6366f1; color: #6366f1; }
+    .ch-post-vote-bar { display: flex; align-items: center; gap: 10px; padding-top: 14px; border-top: 1px solid var(--ch-border-soft); flex-wrap: wrap; }
+    .ch-vote-btn-lg { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--ch-radius); border: 1px solid var(--ch-border); background: var(--ch-surface); cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ch-text-muted); transition: all 0.15s; font-family: var(--ch-font); }
+    .ch-vote-btn-lg:hover { background: var(--ch-bg); }
+    .ch-vote-btn-lg.ch-vote-up:hover  { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); color: var(--ch-accent); }
     .ch-vote-btn-lg.ch-vote-down:hover{ background: #fee2e2; border-color: #fca5a5; color: #ef4444; }
     .ch-vote-btn-lg.ch-danger         { color: #ef4444; border-color: #fca5a5; }
     .ch-vote-btn-lg.ch-danger:hover   { background: #fee2e2; border-color: #ef4444; }
-    .ch-vote-score { font-size: 16px; font-weight: 700; color: #6366f1; }
+    .ch-vote-score { font-size: 15px; font-weight: 700; color: var(--ch-accent); }
 
-    /* ---- COMMENTS ---- */
-    .ch-comments-section {
-        background: var(--bntm-surface, #fff);
-        border: 1px solid var(--bntm-border, #e5e7eb);
-        border-radius: 14px; padding: 24px;
-    }
-    .ch-comments-title { font-size: 16px; font-weight: 700; margin: 0 0 20px; }
-    .ch-comment-form { display: flex; gap: 12px; margin-bottom: 24px; }
+    /* COMMENTS */
+    .ch-comments-section { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-xl); padding: 22px; box-shadow: var(--ch-shadow-sm); }
+    .ch-comments-title { font-size: 15px; font-weight: 700; margin: 0 0 18px; color: var(--ch-text); }
+    .ch-comment-form { display: flex; gap: 10px; margin-bottom: 20px; }
     .ch-comment-input-wrap { flex: 1; }
-    .ch-comment-form-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
-    .ch-comments-list { display: flex; flex-direction: column; gap: 4px; }
-    .ch-comment { display: flex; gap: 12px; padding: 14px 0; border-top: 1px solid #f3f4f6; }
+    .ch-comment-form-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 7px; }
+    .ch-comments-list { display: flex; flex-direction: column; gap: 2px; }
+    .ch-comment { display: flex; gap: 10px; padding: 12px 0; border-top: 1px solid var(--ch-border-soft); }
     .ch-comment:first-child { border-top: none; }
-    .ch-comment-reply { padding-left: 12px; }
+    .ch-comment-reply { padding-left: 10px; }
     .ch-comment-body { flex: 1; }
-    .ch-comment-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-    .ch-comment-header strong { font-size: 13px; }
-    .ch-comment-time { font-size: 11px; color: #9ca3af; }
-    .ch-comment-body p { font-size: 14px; color: #374151; margin: 0 0 8px; }
-    .ch-comment-actions { display: flex; gap: 12px; }
-    .ch-comment-action {
-        font-size: 12px; color: #6b7280; background: none; border: none;
-        cursor: pointer; padding: 0; transition: color 0.15s;
-    }
-    .ch-comment-action:hover { color: #374151; }
+    .ch-comment-header { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+    .ch-comment-header strong { font-size: 13px; color: var(--ch-text); }
+    .ch-comment-time { font-size: 11px; color: var(--ch-text-subtle); }
+    .ch-comment-body p { font-size: 13.5px; color: var(--ch-text-muted); margin: 0 0 7px; line-height: 1.6; }
+    .ch-comment-actions { display: flex; gap: 10px; }
+    .ch-comment-action { font-size: 12px; color: var(--ch-text-subtle); background: none; border: none; cursor: pointer; padding: 0; transition: color 0.15s; font-family: var(--ch-font); }
+    .ch-comment-action:hover { color: var(--ch-accent); }
     .ch-danger-action:hover  { color: #ef4444; }
-    .ch-mention {
-        background-color: #dbeafe;
-        color: #1d4ed8;
-        padding: 2px 4px;
-        border-radius: 4px;
-        font-weight: 500;
-    }
-    .ch-replies { margin-top: 4px; padding-left: 16px; border-left: 2px solid #f3f4f6; }
-    .ch-reply-form { margin-top: 10px; padding: 10px; background: #f9fafb; border-radius: 8px; }
-    .ch-login-prompt { font-size: 14px; color: #6b7280; }
-    .ch-login-prompt a { color: #6366f1; }
-    .ch-post-view-sidebar > .ch-sidebar-widget { margin-bottom: 16px; }
+    .ch-mention { background-color: var(--ch-accent-light); color: var(--ch-accent-dark); padding: 1px 5px; border-radius: var(--ch-radius-sm); font-weight: 500; font-size: 0.95em; }
+    .ch-mention-dropdown { position: absolute; z-index: 9999; background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius); box-shadow: 0 6px 20px rgba(0,0,0,0.12); min-width: 200px; max-width: 280px; overflow: hidden; }
+    .ch-mention-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; font-size: 13.5px; transition: background 0.1s; }
+    .ch-mention-item:hover, .ch-mention-item.active { background: var(--ch-accent-light); }
+    .ch-mention-item-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--ch-accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .ch-mention-item-name { font-weight: 600; color: var(--ch-text); line-height: 1.2; }
+    .ch-mention-item-handle { font-size: 11.5px; color: var(--ch-text-subtle); }
+    .ch-mention-no-results { padding: 10px 14px; font-size: 13px; color: var(--ch-text-subtle); }
+    .ch-replies { margin-top: 2px; padding-left: 14px; border-left: 2px solid var(--ch-border-soft); }
+    .ch-reply-form { margin-top: 8px; padding: 10px; background: var(--ch-bg); border-radius: var(--ch-radius); }
+    .ch-login-prompt { font-size: 13.5px; color: var(--ch-text-muted); }
+    .ch-login-prompt a { color: var(--ch-accent); }
+    .ch-post-view-sidebar > .ch-sidebar-widget { margin-bottom: 14px; }
 
-    /* ---- RESPONSIVE ---- */
-    @media (max-width: 768px) {
+    /* AUTH PAGE */
+    .ch-auth-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; background: var(--ch-bg); font-family: var(--ch-font); }
+    .ch-auth-card { background: var(--ch-surface); border-radius: var(--ch-radius-xl); box-shadow: var(--ch-shadow-md); border: 1px solid var(--ch-border); padding: 32px 36px; width: 100%; max-width: 440px; }
+    .ch-auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--ch-border-soft); }
+    .ch-auth-logo { width: 46px; height: 46px; border-radius: var(--ch-radius-lg); background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ch-auth-brand-name    { font-size: 18px; font-weight: 800; color: var(--ch-text); letter-spacing: -0.3px; }
+    .ch-auth-brand-tagline { font-size: 12px; color: var(--ch-text-subtle); margin-top: 1px; }
+    .ch-auth-tabs { display: flex; background: var(--ch-bg); border-radius: var(--ch-radius); padding: 3px; margin-bottom: 20px; border: 1px solid var(--ch-border); }
+    .ch-auth-tab { flex: 1; text-align: center; padding: 7px 0; border-radius: var(--ch-radius-sm); font-size: 13.5px; font-weight: 600; text-decoration: none; color: var(--ch-text-muted); transition: all 0.2s; }
+    .ch-auth-tab.active { background: var(--ch-surface); color: var(--ch-accent); box-shadow: var(--ch-shadow-sm); }
+    .ch-auth-form .ch-field-group { margin-bottom: 16px; }
+    .ch-auth-form .ch-label { font-size: 12.5px; font-weight: 600; color: var(--ch-text); margin-bottom: 5px; display: block; }
+    .ch-auth-form .ch-input { width: 100%; padding: 9px 13px; font-size: 13.5px; border: 1px solid var(--ch-border); border-radius: var(--ch-radius); outline: none; transition: border 0.15s, box-shadow 0.15s; box-sizing: border-box; background: var(--ch-surface); color: var(--ch-text); }
+    .ch-auth-form .ch-input:focus { border-color: var(--ch-accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .ch-password-wrap    { position: relative; }
+    .ch-password-toggle  { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--ch-text-subtle); display: flex; align-items: center; padding: 4px; transition: color 0.15s; }
+    .ch-password-toggle:hover { color: var(--ch-accent); }
+    .ch-password-strength { height: 3px; border-radius: 2px; margin-top: 7px; background: var(--ch-border); overflow: hidden; }
+    .ch-password-strength::after { content: ''; display: block; height: 100%; border-radius: 2px; transition: width 0.3s, background 0.3s; }
+    .ch-password-strength[data-strength="0"]::after { width: 0%; }
+    .ch-password-strength[data-strength="1"]::after { width: 25%; background: #ef4444; }
+    .ch-password-strength[data-strength="2"]::after { width: 50%; background: #f59e0b; }
+    .ch-password-strength[data-strength="3"]::after { width: 75%; background: #3b82f6; }
+    .ch-password-strength[data-strength="4"]::after { width: 100%; background: #10b981; }
+    .ch-auth-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 7px; }
+    .ch-auth-submit { height: 42px; font-size: 14px; border-radius: var(--ch-radius); margin-top: 2px; }
+    .ch-auth-submit:disabled { opacity: 0.65; cursor: not-allowed; }
+    .ch-auth-switch { text-align: center; font-size: 12.5px; color: var(--ch-text-muted); margin: 14px 0 0; }
+    .ch-auth-link   { color: var(--ch-accent); text-decoration: none; font-weight: 600; }
+    .ch-auth-link:hover { text-decoration: underline; }
+    .ch-required { color: #ef4444; }
+    .ch-optional { color: var(--ch-text-subtle); font-weight: 400; }
+    .ch-auth-footer { text-align: center; font-size: 11.5px; color: var(--ch-text-subtle); margin-top: 18px; max-width: 380px; line-height: 1.5; }
+    #ch-auth-msg .bntm-notice-success { background:#d1fae5; color:#065f46; padding:9px 13px; border-radius:var(--ch-radius); font-size:12.5px; margin-bottom:14px; }
+    #ch-auth-msg .bntm-notice-error   { background:#fee2e2; color:#991b1b; padding:9px 13px; border-radius:var(--ch-radius); font-size:12.5px; margin-bottom:14px; }
+
+    /* GUEST LANDING */
+    .ch-guest-landing-wrap { display: flex; gap: 24px; max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+    .ch-guest-sidebar { width: 220px; flex-shrink: 0; }
+    .ch-guest-main { flex: 1; min-width: 0; }
+    .ch-guest-right { width: 250px; flex-shrink: 0; }
+    .ch-guest-helper { margin: -4px 0 12px; font-size: 12.5px; color: var(--ch-text-subtle); line-height: 1.5; }
+    .ch-guest-cta { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--ch-border-soft); }
+
+    /* MY FEED */
+    .ch-my-feed-wrap { max-width: 840px; margin: 0 auto; padding: 26px 20px; }
+    .ch-mf-profile-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-xl); padding: 24px; display: flex; gap: 20px; align-items: flex-start; margin-bottom: 14px; box-shadow: var(--ch-shadow-sm); }
+    .ch-mf-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 7px; flex-shrink: 0; }
+    .ch-mf-avatar-img { width: 82px; height: 82px; border-radius: 50%; object-fit: cover; border: 3px solid var(--ch-border); }
+    .ch-mf-avatar-initials { width: 82px; height: 82px; border-radius: 50%; background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark)); color: #fff; font-size: 30px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+    .ch-mf-profile-info { flex: 1; min-width: 0; }
+    .ch-mf-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; }
+    .ch-mf-name { font-size: 21px; font-weight: 800; color: var(--ch-text); margin: 0; letter-spacing: -0.3px; }
+    .ch-mf-bio { font-size: 13.5px; color: var(--ch-text-muted); margin: 5px 0 8px; line-height: 1.6; }
+    .ch-mf-meta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .ch-mf-meta-item { display: flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--ch-text-subtle); }
+    .ch-mf-stats-bar { display: flex; gap: 9px; margin-bottom: 14px; flex-wrap: wrap; }
+    .ch-mf-stat { flex: 1; min-width: 95px; background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 14px 10px; text-align: center; box-shadow: var(--ch-shadow-sm); }
+    .ch-mf-stat-num { display: block; font-size: 20px; font-weight: 800; color: var(--ch-accent); letter-spacing: -0.3px; }
+    .ch-mf-stat-label { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; color: var(--ch-text-subtle); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
+    .ch-mf-subnav { display: flex; gap: 3px; background: var(--ch-bg); border-radius: var(--ch-radius); padding: 3px; margin-bottom: 18px; border: 1px solid var(--ch-border); }
+    .ch-mf-subnav-item { flex: 1; text-align: center; padding: 7px 0; border-radius: var(--ch-radius-sm); font-size: 13px; font-weight: 600; text-decoration: none; color: var(--ch-text-muted); transition: all .18s; }
+    .ch-mf-subnav-item.active { background: var(--ch-surface); color: var(--ch-accent); box-shadow: var(--ch-shadow-sm); }
+    .ch-mf-content { display: flex; flex-direction: column; gap: 10px; }
+    .ch-mf-post-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 16px 18px; transition: border-color 0.15s, box-shadow 0.15s; box-shadow: var(--ch-shadow-sm); }
+    .ch-mf-post-card:hover { border-color: var(--ch-accent-mid); box-shadow: var(--ch-shadow); }
+    .ch-mf-post-top { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; flex-wrap: wrap; }
+    .ch-mf-time { font-size: 11.5px; color: var(--ch-text-subtle); margin-left: auto; }
+    .ch-mf-pinned-badge { font-size: 11px; color: var(--ch-accent); font-weight: 600; }
+    .ch-mf-post-actions { display: flex; gap: 5px; margin-left: 6px; }
+    .ch-mf-post-title { font-size: 15px; font-weight: 700; color: var(--ch-text); text-decoration: none; display: block; margin-bottom: 5px; line-height: 1.4; letter-spacing: -0.2px; }
+    .ch-mf-post-title:hover { color: var(--ch-accent); }
+    .ch-mf-post-excerpt { font-size: 13px; color: var(--ch-text-muted); margin: 0 0 10px; line-height: 1.55; }
+    .ch-mf-post-footer { display: flex; gap: 14px; font-size: 12px; color: var(--ch-text-subtle); }
+    .ch-mf-comment-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 14px 18px; box-shadow: var(--ch-shadow-sm); }
+    .ch-mf-comment-post-ref { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ch-text-subtle); margin-bottom: 7px; }
+    .ch-mf-ref-link { color: var(--ch-accent); text-decoration: none; font-weight: 600; }
+    .ch-mf-comment-content { font-size: 13.5px; color: var(--ch-text-muted); margin: 0 0 8px; line-height: 1.55; }
+    .ch-mf-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 52px 20px; text-align: center; background: var(--ch-surface); border: 1px dashed var(--ch-border); border-radius: var(--ch-radius-lg); }
+    .ch-mf-empty p { font-size: 14px; color: var(--ch-text-subtle); margin: 0; }
+
+    /* PUBLIC PROFILE */
+    .ch-public-profile-wrap { max-width: 780px; margin: 0 auto; padding: 24px 20px; }
+    .ch-public-profile-header { margin-bottom: 18px; }
+    .ch-public-profile-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-xl); padding: 24px; display: flex; gap: 22px; align-items: flex-start; margin-bottom: 16px; box-shadow: var(--ch-shadow-sm); }
+    .ch-public-profile-avatar img { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 2px solid var(--ch-border); }
+    .ch-avatar-lg { width: 76px; height: 76px; border-radius: 50%; background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark)); color: #fff; font-size: 28px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ch-public-profile-name { font-size: 20px; font-weight: 800; color: var(--ch-text); margin: 0 0 6px; letter-spacing: -0.3px; }
+    .ch-public-profile-meta { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--ch-text-muted); margin-bottom: 3px; }
+    .ch-public-profile-bio { font-size: 13.5px; color: var(--ch-text-muted); margin: 8px 0; }
+    .ch-public-profile-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 22px; }
+    .ch-public-stat-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 18px; text-align: center; box-shadow: var(--ch-shadow-sm); }
+    .ch-public-stat-card .ch-stat-num { display: block; font-size: 24px; font-weight: 700; color: var(--ch-accent); letter-spacing: -0.4px; }
+    .ch-public-stat-card .ch-stat-label { display: block; font-size: 11.5px; color: var(--ch-text-subtle); margin-top: 3px; font-weight: 500; }
+    .ch-section-title { font-size: 16px; font-weight: 700; color: var(--ch-text); margin: 0 0 14px; }
+    .ch-public-post-card { display: block; background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 16px; margin-bottom: 10px; text-decoration: none; color: inherit; transition: border-color 0.15s, box-shadow 0.15s; box-shadow: var(--ch-shadow-sm); }
+    .ch-public-post-card:hover { border-color: var(--ch-accent-mid); box-shadow: var(--ch-shadow); }
+    .ch-public-post-top { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
+    .ch-public-post-time { font-size: 11.5px; color: var(--ch-text-subtle); margin-left: auto; }
+    .ch-public-post-title { font-size: 14.5px; font-weight: 700; color: var(--ch-text); margin: 0 0 5px; letter-spacing: -0.2px; }
+    .ch-public-post-excerpt { font-size: 13px; color: var(--ch-text-muted); margin: 0 0 9px; line-height: 1.55; }
+    .ch-public-post-footer { display: flex; gap: 12px; font-size: 12px; color: var(--ch-text-subtle); }
+
+    /* VISIBILITY TOGGLE */
+    .ch-visibility-toggle { display: flex; gap: 8px; }
+    .ch-vis-option { flex: 1; border: 1.5px solid var(--ch-border); border-radius: var(--ch-radius); padding: 10px 12px; cursor: pointer; transition: all .15s; display: flex; flex-direction: column; gap: 3px; }
+    .ch-vis-option:has(input:checked) { border-color: var(--ch-accent); background: var(--ch-accent-light); }
+    .ch-vis-option input { display: none; }
+    .ch-vis-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ch-text); }
+    .ch-vis-desc { font-size: 11px; color: var(--ch-text-subtle); }
+
+    /* ANNOUNCEMENTS */
+    .ch-announcement-card { background: linear-gradient(135deg, #fefce8, #fef9c3); border: 1px solid #fde68a; border-radius: var(--ch-radius-lg); padding: 18px 20px; margin-bottom: 14px; position: relative; overflow: hidden; }
+    .ch-announcement-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .ch-announcement-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .ch-announcement-icon { color: #d97706; flex-shrink: 0; }
+    .ch-announcement-meta { display: flex; flex-direction: column; gap: 2px; }
+    .ch-announcement-label { font-weight: 700; font-size: 11px; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; }
+    .ch-announcement-author { font-size: 12.5px; color: #a16207; }
+    .ch-announcement-time   { font-size: 11.5px; color: #a16207; opacity: 0.8; }
+    .ch-announcement-body { margin-left: 30px; }
+    .ch-announcement-title { font-size: 16px; font-weight: 700; color: #92400e; margin: 0 0 7px; }
+    .ch-announcement-content { color: #78350f; line-height: 1.6; font-size: 13.5px; }
+    .ch-announcement-content p { margin: 0 0 6px 0; }
+    .ch-announcement-content p:last-child { margin-bottom: 0; }
+
+    /* ── SPECIAL PAGES (Trending / Bookmarks) ───────────────────── */
+    .ch-special-page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px 48px; }
+    .ch-special-hero { display: flex; align-items: center; gap: 16px; padding: 32px 0 24px; border-bottom: 1px solid var(--ch-border); margin-bottom: 28px; }
+    .ch-special-hero-icon { width: 56px; height: 56px; border-radius: var(--ch-radius-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ch-trending-hero .ch-special-hero-icon { background: linear-gradient(135deg,#fef3c7,#fde68a); color: #d97706; }
+    .ch-dark .ch-trending-hero .ch-special-hero-icon { background: #451a03; color: #fbbf24; }
+    .ch-bookmarks-hero .ch-special-hero-icon { background: linear-gradient(135deg,#ede9fe,#ddd6fe); color: #7c3aed; }
+    .ch-dark .ch-bookmarks-hero .ch-special-hero-icon { background: #1e1b4b; color: #a78bfa; }
+    .ch-special-hero-title { font-size: 26px; font-weight: 800; color: var(--ch-text); margin: 0 0 4px; letter-spacing: -0.4px; }
+    .ch-special-hero-sub { font-size: 14px; color: var(--ch-text-muted); margin: 0; }
+    .ch-special-layout { display: flex; gap: 24px; align-items: flex-start; }
+    .ch-special-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+    .ch-special-sidebar { width: 220px; flex-shrink: 0; }
+
+    /* Trending post card */
+    .ch-trending-post-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start; box-shadow: var(--ch-shadow-sm); transition: border-color 0.15s, box-shadow 0.15s; }
+    .ch-trending-post-card:hover { border-color: var(--ch-accent-mid); box-shadow: var(--ch-shadow); }
+    .ch-trending-rank { font-size: 22px; font-weight: 900; color: var(--ch-accent); min-width: 32px; line-height: 1; padding-top: 2px; opacity: 0.7; }
+    .ch-trending-body { flex: 1; min-width: 0; }
+    .ch-trending-post-title { font-size: 15px; font-weight: 700; color: var(--ch-text); text-decoration: none; line-height: 1.4; display: block; margin-bottom: 5px; }
+    .ch-trending-post-title:hover { color: var(--ch-accent); }
+    .ch-trending-post-excerpt { font-size: 13px; color: var(--ch-text-muted); margin: 0 0 10px; line-height: 1.5; }
+    .ch-trending-stats { display: flex; gap: 14px; }
+    .ch-trending-stat { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ch-text-subtle); }
+
+    /* Profile standalone nav */
+    .ch-profile-standalone { font-family: var(--ch-font); background: var(--ch-bg); min-height: 100vh; color: var(--ch-text); }
+
+    /* ── DARK MODE: special pages sidebar ────────────────────────── */
+    .ch-dark .ch-trending-post-card { background: var(--ch-surface); border-color: var(--ch-border); }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────────── */
+    @media (max-width: 680px) {
+        .ch-special-layout { flex-direction: column; }
+        .ch-special-sidebar { width: 100%; }
+        .ch-trending-rank { font-size: 18px; min-width: 24px; }
+    }
+    @media (max-width: 780px) {
         .ch-dashboard-wrap { flex-direction: column; }
-        .ch-sidebar { width: 100%; border-right: none; border-bottom: 1px solid #e5e7eb; }
-        .ch-nav { flex-direction: row; flex-wrap: wrap; }
+        .ch-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--ch-border); padding: 12px 0; }
+        .ch-nav { flex-direction: row; flex-wrap: wrap; padding: 0 8px; gap: 2px; }
+        .ch-nav-item { font-size: 12px; padding: 6px 10px; }
+        .ch-nav-item.active { border-left: none; border-bottom: 2px solid var(--ch-accent); padding-left: 10px; }
+        .ch-main-content { padding: 18px 16px 32px; }
         .ch-two-col { grid-template-columns: 1fr; }
         .ch-feed-wrap { flex-direction: column; }
         .ch-feed-sidebar { width: 100%; }
         .ch-post-view-grid { grid-template-columns: 1fr; }
         .ch-categories-grid { grid-template-columns: 1fr; }
+        .ch-stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .ch-mf-profile-card { flex-direction: column; align-items: center; text-align: center; }
+        .ch-mf-meta-row { justify-content: center; }
+        .ch-mf-stats-bar { gap: 7px; }
+        .ch-mf-stat { min-width: 78px; }
+        .ch-auth-card { padding: 24px 18px; }
+        .ch-guest-landing-wrap { flex-direction: column; }
+        .ch-guest-sidebar, .ch-guest-right { width: 100%; }
+        .ch-popular-cats-grid { grid-template-columns: repeat(2, 1fr); }
+        .ch-welcome-card { padding: 28px 20px; }
     }
 
-    /* ---- VISIBILITY TOGGLE ---- */
-    .ch-visibility-toggle { display: flex; gap: 10px; }
-    .ch-vis-option { flex: 1; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 12px 14px;
-        cursor: pointer; transition: all .15s; display: flex; flex-direction: column; gap: 4px; }
-    .ch-vis-option:has(input:checked) { border-color: #6366f1; background: #f5f3ff; }
-    .ch-vis-option input { display: none; }
-    .ch-vis-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #374151; }
-    .ch-vis-desc { font-size: 11px; color: #9ca3af; }
+    /* ============================================================
+       POPULAR CATEGORIES CARD
+       ============================================================ */
+    .ch-popular-cats-card {
+        background: var(--ch-surface);
+        border: 1px solid var(--ch-border);
+        border-radius: var(--ch-radius-lg);
+        padding: 14px 16px 16px;
+        margin-bottom: 14px;
+        box-shadow: var(--ch-shadow-sm);
+    }
+    .ch-popular-cats-header {
+        display: flex; align-items: center; gap: 6px;
+        font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.9px; color: var(--ch-text-subtle);
+        margin-bottom: 12px;
+    }
+    .ch-popular-cats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    .ch-pop-cat-chip {
+        display: flex; align-items: center; gap: 6px;
+        padding: 7px 10px; border-radius: var(--ch-radius);
+        background: var(--ch-bg); border: 1px solid var(--ch-border);
+        text-decoration: none; color: var(--ch-text-muted);
+        font-size: 12.5px; font-weight: 500;
+        transition: all 0.15s; overflow: hidden;
+    }
+    .ch-pop-cat-chip:hover {
+        background: var(--ch-accent-light);
+        border-color: var(--ch-accent-mid);
+        color: var(--ch-accent);
+    }
+    .ch-pop-cat-dot {
+        width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .ch-pop-cat-name {
+        flex: 1; min-width: 0;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ch-pop-cat-count {
+        font-size: 10.5px; background: var(--ch-surface);
+        color: var(--ch-text-subtle); padding: 1px 5px;
+        border-radius: 10px; border: 1px solid var(--ch-border);
+        flex-shrink: 0; line-height: 1.6;
+    }
 
-    /* ---- ANNOUNCEMENTS ---- */
-    .ch-announcement-card {
-        background: linear-gradient(135deg, #fef3c7, #fde68a);
-        border: 1px solid #f59e0b;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 16px;
-        position: relative;
+    /* ============================================================
+       WELCOME POPUP
+       ============================================================ */
+    .ch-welcome-overlay {
+        position: fixed; inset: 0;
+        background: rgba(26,26,46,0.55);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 999999; padding: 20px;
+        backdrop-filter: blur(4px);
+    }
+    .ch-welcome-card {
+        background: var(--ch-surface);
+        border-radius: 22px;
+        padding: 36px 32px 28px;
+        width: 100%; max-width: 400px;
+        box-shadow: 0 24px 64px rgba(99,102,241,0.22), 0 4px 16px rgba(0,0,0,0.1);
+        border: 1px solid var(--ch-border);
+        position: relative; overflow: hidden;
+        text-align: center;
+    }
+    .ch-welcome-glow {
+        position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+        width: 200px; height: 200px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .ch-welcome-close {
+        position: absolute; top: 14px; right: 16px;
+        background: var(--ch-bg); border: 1px solid var(--ch-border);
+        border-radius: 50%; width: 28px; height: 28px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: 16px; color: var(--ch-text-subtle);
+        line-height: 1; transition: all 0.15s;
+    }
+    .ch-welcome-close:hover { background: var(--ch-accent-light); color: var(--ch-accent); border-color: var(--ch-accent-mid); }
+    .ch-welcome-icon {
+        width: 64px; height: 64px; border-radius: 18px;
+        background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark));
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 18px;
+        box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+    }
+    .ch-welcome-title {
+        font-size: 22px; font-weight: 800; color: var(--ch-text);
+        margin: 0 0 8px; letter-spacing: -0.4px;
+    }
+    .ch-welcome-subtitle {
+        font-size: 13.5px; color: var(--ch-text-muted);
+        margin: 0 0 22px; line-height: 1.6;
+    }
+    .ch-welcome-features {
+        display: flex; flex-direction: column; gap: 10px;
+        margin-bottom: 24px; text-align: left;
+    }
+    .ch-welcome-feature {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px; border-radius: var(--ch-radius);
+        background: var(--ch-bg); border: 1px solid var(--ch-border);
+        font-size: 13px; color: var(--ch-text-muted);
+    }
+    .ch-welcome-feat-icon { font-size: 16px; flex-shrink: 0; }
+    .ch-welcome-actions {
+        display: flex; gap: 8px; margin-bottom: 12px;
+    }
+    .ch-welcome-skip {
+        background: none; border: none; cursor: pointer;
+        font-size: 12px; color: var(--ch-text-subtle);
+        font-family: var(--ch-font); transition: color 0.15s;
+        text-decoration: underline; text-underline-offset: 2px;
+    }
+    .ch-welcome-skip:hover { color: var(--ch-text-muted); }
+
+    /* ============================================================
+       SETTINGS MODAL
+       ============================================================ */
+    .ch-settings-section {
+        padding: 6px 0;
+        border-bottom: 1px solid var(--ch-border-soft);
+    }
+    .ch-settings-section-title {
+        font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.8px; color: var(--ch-text-subtle);
+        padding: 12px 22px 6px;
+    }
+    .ch-settings-row {
+        display: flex; align-items: center; gap: 14px;
+        padding: 11px 22px; transition: background 0.1s;
+    }
+    .ch-settings-row-link {
+        text-decoration: none; color: inherit; cursor: pointer;
+    }
+    .ch-settings-row-link:hover { background: var(--ch-bg); }
+    .ch-settings-row-info { flex: 1; min-width: 0; }
+    .ch-settings-row-label {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 13.5px; font-weight: 600; color: var(--ch-text);
+        margin-bottom: 2px;
+    }
+    .ch-settings-row-desc { font-size: 12px; color: var(--ch-text-subtle); }
+
+    /* ============================================================
+       DARK MODE
+       ============================================================ */
+    .ch-dark {
+        --ch-accent:       #818cf8;
+        --ch-accent-dark:  #6366f1;
+        --ch-accent-light: #1e1b4b;
+        --ch-accent-mid:   #3730a3;
+        --ch-bg:           #0f0f1a;
+        --ch-surface:      #1a1a2e;
+        --ch-border:       #2d2d44;
+        --ch-border-soft:  #23233a;
+        --ch-text:         #e8e8f8;
+        --ch-text-muted:   #9ca3af;
+        --ch-text-subtle:  #6b7280;
+        --ch-shadow-sm:    0 1px 4px rgba(0,0,0,0.3);
+        --ch-shadow:       0 2px 12px rgba(0,0,0,0.4);
+        --ch-shadow-md:    0 4px 20px rgba(0,0,0,0.5);
+    }
+    .ch-dark .ch-top-nav { background: #1a1a2e; }
+    .ch-dark .ch-post-card:hover { border-color: var(--ch-accent-mid); }
+    .ch-dark .ch-welcome-card { background: #1a1a2e; }
+    .ch-dark .ch-pop-cat-count { background: var(--ch-bg); border-color: var(--ch-border); }
+    .ch-dark .bntm-notice-success { background: #064e3b; color: #6ee7b7; }
+    .ch-dark .bntm-notice-error   { background: #7f1d1d; color: #fca5a5; }
+    .ch-dark .ch-announcement-card { background: linear-gradient(135deg, #1f1a08, #2a2210); border-color: #5c3d0a; }
+    .ch-dark .ch-announcement-card::before { background: linear-gradient(90deg, #b45309, #92400e); }
+    .ch-dark .ch-announcement-label { color: #fbbf24; }
+    .ch-dark .ch-announcement-author,
+    .ch-dark .ch-announcement-time { color: #d97706; }
+    .ch-dark .ch-announcement-icon { color: #f59e0b; }
+    .ch-dark .ch-announcement-title { color: #fcd34d; }
+    .ch-dark .ch-announcement-content { color: #e5c97a; }
+
+    /* TABLE — dark mode fix: td has no background set so it bleeds white from the card */
+    .ch-dark .bntm-table tr td { background: var(--ch-surface); color: var(--ch-text); }
+    .ch-dark .bntm-table tr:hover td { background: var(--ch-bg); }
+    .ch-dark .bntm-table th { background: var(--ch-bg); color: var(--ch-text-subtle); border-bottom-color: var(--ch-border); }
+    .ch-dark .bntm-table td { border-bottom-color: var(--ch-border-soft); }
+
+    /* Status badges — dark mode */
+    .ch-dark .ch-status-active    { background: #064e3b; color: #6ee7b7; }
+    .ch-dark .ch-status-removed   { background: #7f1d1d; color: #fca5a5; }
+    .ch-dark .ch-status-pending   { background: #451a03; color: #fcd34d; }
+    .ch-dark .ch-status-suspended { background: #431407; color: #fdba74; }
+    .ch-dark .ch-status-banned    { background: #7f1d1d; color: #fca5a5; }
+    .ch-dark .ch-status-reviewed  { background: #1e3a5f; color: #93c5fd; }
+    .ch-dark .ch-status-resolved  { background: #064e3b; color: #6ee7b7; }
+    .ch-dark .ch-status-archived  { background: var(--ch-bg); color: var(--ch-text-muted); }
+    .ch-dark .ch-status-dismissed { background: var(--ch-bg); color: var(--ch-text-muted); }
+
+    /* Announcement admin table — JS-rendered rows use hardcoded colors */
+    .ch-dark #ch-ann-tbody td { background: var(--ch-surface); color: var(--ch-text); }
+    .ch-dark #ch-ann-tbody tr:hover td { background: var(--ch-bg); }
+    .ch-dark #ch-ann-tbody [style*="color:#111827"] { color: var(--ch-text) !important; }
+    .ch-dark #ch-ann-tbody [style*="color:#9ca3af"] { color: var(--ch-text-subtle) !important; }
+
+    /* Button variants — dark mode */
+    .ch-dark .ch-btn-secondary { background: var(--ch-bg); color: var(--ch-text); border-color: var(--ch-border); }
+    .ch-dark .ch-btn-secondary:hover { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); color: var(--ch-accent); }
+    .ch-dark .ch-btn-warning { background: #451a03; color: #fcd34d; }
+    .ch-dark .ch-btn-warning:hover { background: #78350f; }
+    .ch-dark .ch-btn-success { background: #064e3b; color: #6ee7b7; }
+    .ch-dark .ch-btn-success:hover { background: #065f46; }
+
+    /* Filter buttons — dark mode */
+    .ch-dark .ch-filter-btn { background: var(--ch-surface); color: var(--ch-text-muted); border-color: var(--ch-border); }
+    .ch-dark .ch-filter-btn:hover { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); color: var(--ch-accent); }
+    .ch-dark .ch-filter-btn.active { background: var(--ch-accent-light); color: var(--ch-accent); border-color: var(--ch-accent-mid); }
+
+    /* Notification unread item — dark mode */
+    .ch-dark .ch-notification-item.unread { background: color-mix(in srgb, var(--ch-accent) 10%, var(--ch-surface)); }
+    .ch-dark .ch-notification-item.unread:hover { background: color-mix(in srgb, var(--ch-accent) 15%, var(--ch-surface)); }
+    .ch-dark .ch-notification-icon.type-reply        { background: #2e1065; color: #a78bfa; }
+    .ch-dark .ch-notification-icon.type-mention      { background: #451a03; color: #fbbf24; }
+    .ch-dark .ch-notification-icon.type-vote         { background: #052e16; color: #4ade80; }
+    .ch-dark .ch-notification-icon.type-announcement { background: #1e3a5f; color: #60a5fa; }
+    .ch-dark .ch-notification-icon.type-report_resolved { background: #4a044e; color: #f472b6; }
+
+    /* Dropdown danger hover — dark mode */
+    .ch-dark .ch-dropdown-item-danger:hover { background: #3b0a0a; color: #f87171; }
+
+    /* Stat alert card — dark mode */
+    .ch-dark .ch-stat-card.ch-stat-alert { border-color: #7f1d1d; background: #1a0a0a; }
+
+    /* ── DARK MODE: PAGE & BODY BACKGROUND ──────────────────────── */
+    /* WordPress body/page background bleeds through without this */
+    .ch-dark body,
+    html.ch-dark body { background: #0f0f1a !important; }
+
+    /* ── DARK MODE: FEED PAGE ELEMENTS ──────────────────────────── */
+    /* Feed search bar area */
+    .ch-dark .ch-feed-header { background: transparent; }
+    .ch-dark .ch-location-select {
+        background: var(--ch-surface); color: var(--ch-text);
+        border-color: var(--ch-border);
+    }
+    .ch-dark .ch-location-select option { background: var(--ch-surface); color: var(--ch-text); }
+    .ch-dark select, .ch-dark .ch-select-sm {
+        background: var(--ch-surface); color: var(--ch-text);
+        border-color: var(--ch-border);
+    }
+    .ch-dark select option { background: var(--ch-surface); color: var(--ch-text); }
+
+    /* Sidebar widgets on feed */
+    .ch-dark .ch-sidebar-widget { background: var(--ch-surface); border-color: var(--ch-border); }
+
+    /* ── DARK MODE: POST CARDS ───────────────────────────────────── */
+    .ch-dark .ch-vote-btn.active-down { background: #3b0a0a; border-color: #7f1d1d; color: #f87171; }
+    .ch-dark .ch-vote-btn-lg.active-up { background: var(--ch-accent-light); border-color: var(--ch-accent); color: var(--ch-accent); }
+    .ch-dark .ch-vote-btn-lg.active-down { background: #3b0a0a; border-color: #7f1d1d; color: #f87171; }
+    .ch-dark .ch-vote-btn-lg.ch-vote-down:hover { background: #3b0a0a; border-color: #7f1d1d; color: #f87171; }
+    .ch-dark .ch-vote-btn-lg.ch-danger:hover { background: #3b0a0a; border-color: #ef4444; }
+    .ch-dark .ch-icon-btn-danger:hover { background: #3b0a0a; border-color: #7f1d1d; color: #f87171; }
+
+    /* ── DARK MODE: NOTICES ──────────────────────────────────────── */
+    .ch-dark .bntm-notice-warning { background: #451a03; color: #fcd34d; border-left-color: #f59e0b; }
+
+    /* ── DARK MODE: PROFILE (MY FEED) ───────────────────────────── */
+    .ch-dark .ch-mf-profile-card { background: var(--ch-surface); border-color: var(--ch-border); }
+    .ch-dark .ch-mf-stat { background: var(--ch-surface); border-color: var(--ch-border); }
+    .ch-dark .ch-mf-subnav { background: var(--ch-bg); border-color: var(--ch-border); }
+    .ch-dark .ch-mf-subnav-item.active { background: var(--ch-surface); }
+    .ch-dark .ch-mf-post-card { background: var(--ch-surface); border-color: var(--ch-border); }
+    .ch-dark .ch-mf-post-card:hover { border-color: var(--ch-accent-mid); }
+    /* Profile avatar image border */
+    .ch-dark .ch-mf-avatar-img { border-color: var(--ch-border); }
+
+    /* ── DARK MODE: PROFILE EDIT FORM (inline style overrides) ─── */
+    .ch-dark .ch-profile-page-wrap { background: var(--ch-bg); color: var(--ch-text); }
+    .ch-dark .ch-profile-page-wrap .ch-card { background: var(--ch-surface); border-color: var(--ch-border); }
+    .ch-dark .ch-profile-page-wrap .ch-card-body { background: var(--ch-surface); }
+    .ch-dark .ch-stat-item { background: var(--ch-bg); border-color: var(--ch-border); color: var(--ch-text); }
+
+    /* ── DARK MODE: MODAL ────────────────────────────────────────── */
+    .ch-dark .ch-modal { background: var(--ch-surface); }
+    .ch-dark .ch-modal-header { border-bottom-color: var(--ch-border-soft); }
+    .ch-dark .ch-modal-footer { border-top-color: var(--ch-border-soft); }
+
+    /* ── DARK MODE: GUEST LANDING / AUTH ─────────────────────────── */
+    .ch-dark .ch-auth-wrap { background: var(--ch-bg); }
+    .ch-dark .ch-auth-card { background: var(--ch-surface); border-color: var(--ch-border); }
+    .ch-dark .ch-auth-tab { color: var(--ch-text-muted); }
+    .ch-dark .ch-auth-tab.active { color: var(--ch-accent); border-bottom-color: var(--ch-accent); }
+
+    /* ── DARK MODE: POPULAR CATEGORY CHIPS ──────────────────────── */
+    .ch-dark .ch-pop-cat-chip { background: var(--ch-surface); border-color: var(--ch-border); }
+    .ch-dark .ch-pop-cat-chip:hover { background: var(--ch-accent-light); border-color: var(--ch-accent-mid); }
+    .ch-dark .ch-pop-cat-name { color: var(--ch-text); }
+
+    /* ── DARK MODE: TOP NAV ELEMENTS ─────────────────────────────── */
+    .ch-dark .ch-nav-link { color: var(--ch-text-muted); }
+    .ch-dark .ch-icon-action-btn { background: var(--ch-surface); border-color: var(--ch-border); color: var(--ch-text-muted); }
+    /* Notification badge border matches dark nav */
+    .ch-dark .ch-notification-badge { border-color: var(--ch-surface); }
+
+    /* ============================================================
+       COLOR PICKER — wheel + hex input + swatches
+       ============================================================ */
+    .ch-color-picker-wrap { display: flex; flex-direction: column; gap: 10px; }
+    .ch-color-row {
+        display: flex; align-items: center; gap: 8px;
+    }
+    .ch-color-wheel {
+        width: 38px; height: 38px; border-radius: var(--ch-radius);
+        border: 1px solid var(--ch-border); cursor: pointer;
+        padding: 2px; background: var(--ch-surface);
+        flex-shrink: 0; appearance: none; -webkit-appearance: none;
         overflow: hidden;
     }
-    .ch-announcement-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #f59e0b, #d97706);
+    .ch-color-wheel::-webkit-color-swatch-wrapper { padding: 0; border-radius: 6px; }
+    .ch-color-wheel::-webkit-color-swatch { border: none; border-radius: 6px; }
+    .ch-color-wheel::-moz-color-swatch { border: none; border-radius: 6px; }
+    .ch-color-hex-preview {
+        width: 36px; height: 36px; border-radius: var(--ch-radius);
+        border: 1px solid var(--ch-border); flex-shrink: 0;
+        transition: background 0.12s, opacity 0.12s; display: block;
     }
-    .ch-announcement-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
+    .ch-color-hex-input {
+        flex: 1; font-family: monospace; font-size: 13px;
+        letter-spacing: 0.5px; text-transform: uppercase;
     }
-    .ch-announcement-icon {
-        color: #d97706;
-        flex-shrink: 0;
+    .ch-color-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ch-swatch {
+        width: 26px; height: 26px; border-radius: 6px;
+        border: 2px solid transparent; cursor: pointer;
+        transition: transform 0.12s, box-shadow 0.12s;
+        padding: 0;
     }
-    .ch-announcement-meta {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
+    .ch-swatch:hover {
+        transform: scale(1.18);
+        box-shadow: 0 0 0 2px var(--ch-surface), 0 0 0 4px var(--ch-accent);
     }
-    .ch-announcement-label {
-        font-weight: 600;
-        font-size: 12px;
-        color: #92400e;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .ch-announcement-author {
-        font-size: 13px;
-        color: #a16207;
-    }
-    .ch-announcement-time {
-        font-size: 12px;
-        color: #a16207;
-        opacity: 0.8;
-    }
-    .ch-announcement-body {
-        margin-left: 32px;
-    }
-    .ch-announcement-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #92400e;
-        margin: 0 0 8px 0;
-    }
-    .ch-announcement-content {
-        color: #78350f;
-        line-height: 1.6;
-    }
-    .ch-announcement-content p {
-        margin: 0 0 8px 0;
-    }
-    .ch-announcement-content p:last-child {
-        margin-bottom: 0;
-    }
+    .ch-dark .ch-color-wheel { background: var(--ch-surface); border-color: var(--ch-border); }
+    .ch-dark .ch-color-hex-preview { border-color: var(--ch-border); }
+    .ch-dark .ch-swatch:hover { box-shadow: 0 0 0 2px var(--ch-bg), 0 0 0 4px var(--ch-accent); }
     </style>
     <?php
     return ob_get_clean();
 }
+
 
 // ============================================================
 // GLOBAL SCRIPTS (shared modals & utilities)
@@ -6334,6 +7269,45 @@ function ch_global_scripts() {
     ob_start(); ?>
     <script>
     (function() {
+        // Dark mode persistence — apply on every page load
+        try {
+            if (localStorage.getItem('ch_dark_mode') === '1') {
+                document.documentElement.classList.add('ch-dark');
+            }
+        } catch(e) {}
+
+        // ---- Color picker helpers (wheel + hex text + preview, all synced) ----
+        window.chSyncColorWheel = function(wheelId, hexId, previewId) {
+            const wheel = document.getElementById(wheelId);
+            const hex   = document.getElementById(hexId);
+            const prev  = document.getElementById(previewId);
+            if (!wheel) return;
+            const val = wheel.value;
+            if (hex)  hex.value = val.toUpperCase();
+            if (prev) { prev.style.background = val; prev.style.opacity = '1'; }
+        };
+        window.chSyncColorHex = function(wheelId, hexId, previewId) {
+            const wheel = document.getElementById(wheelId);
+            const hex   = document.getElementById(hexId);
+            const prev  = document.getElementById(previewId);
+            if (!hex) return;
+            const val = hex.value.trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+                if (wheel) wheel.value = val;
+                if (prev)  { prev.style.background = val; prev.style.opacity = '1'; }
+            } else {
+                if (prev) prev.style.opacity = '0.4';
+            }
+        };
+        window.chPickSwatch = function(wheelId, hexId, previewId, color) {
+            const wheel = document.getElementById(wheelId);
+            const hex   = document.getElementById(hexId);
+            const prev  = document.getElementById(previewId);
+            if (wheel) wheel.value = color;
+            if (hex)   { hex.value = color.toUpperCase(); }
+            if (prev)  { prev.style.background = color; prev.style.opacity = '1'; }
+        };
+
         window.chOpenModal = function(id) {
             const el = document.getElementById(id);
             if (el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
@@ -6465,62 +7439,99 @@ function ch_global_scripts() {
             fetch(ajaxurl + '?action=ch_get_notifications')
             .then(r => r.json())
             .then(json => {
-                if (json.success) {
-                    const list = document.getElementById('ch-notifications-list');
+                if (!json.success) return;
+                const list = document.getElementById('ch-notifications-list');
 
-                    if (json.data.notifications.length === 0) {
-                        list.innerHTML = '<div class="ch-no-notifications">No notifications yet</div>';
-                    } else {
-                        list.innerHTML = json.data.notifications.map(n => `
-                            <div class="ch-notification-item ${n.is_read ? '' : 'unread'}" onclick="chMarkNotificationRead(${n.id})">
-                                <div class="ch-notification-icon">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                                    </svg>
-                                </div>
-                                <div class="ch-notification-content">
-                                    <div class="ch-notification-message">${n.message}</div>
-                                    <div class="ch-notification-time">${n.created_at}</div>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
+                if (json.data.notifications.length === 0) {
+                    list.innerHTML = '<div class="ch-no-notifications">You\'re all caught up!</div>';
+                    return;
                 }
+
+                const typeIcons = {
+                    reply: {
+                        cls: 'type-reply',
+                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+                    },
+                    mention: {
+                        cls: 'type-mention',
+                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>'
+                    },
+                    vote: {
+                        cls: 'type-vote',
+                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>'
+                    },
+                    announcement: {
+                        cls: 'type-announcement',
+                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
+                    },
+                    report_resolved: {
+                        cls: 'type-report_resolved',
+                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+                    },
+                };
+
+                list.innerHTML = json.data.notifications.map(n => {
+                    const postUrl   = n.post_rand_id
+                        ? (chFeedUrl + '?view_post=' + encodeURIComponent(n.post_rand_id))
+                        : null;
+                    const clickAttr = postUrl
+                        ? `onclick="chMarkNotificationRead(${n.id}, '${postUrl}', this)"`
+                        : `onclick="chMarkNotificationRead(${n.id}, null, this)"`;
+                    const icon = typeIcons[n.type] || { cls: 'type-default', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' };
+                    return `
+                    <div class="ch-notification-item ${n.is_read ? '' : 'unread'}" ${clickAttr} data-id="${n.id}">
+                        <div class="ch-notification-dot"></div>
+                        <div class="ch-notification-icon ${icon.cls}">${icon.svg}</div>
+                        <div class="ch-notification-content">
+                            <div class="ch-notification-message">${n.message}</div>
+                            <div class="ch-notification-time">${n.created_at}</div>
+                        </div>
+                    </div>`;
+                }).join('');
             })
             .catch(error => {
                 console.error('Failed to load notifications:', error);
             });
         };
 
-        window.chMarkNotificationRead = function(notificationId) {
+        window.chMarkNotificationRead = function(notificationId, postUrl, el) {
+            // Instantly update UI — remove unread state and decrement badge
+            const item = el?.closest('.ch-notification-item') || document.querySelector(`.ch-notification-item[data-id="${notificationId}"]`);
+            if (item && item.classList.contains('unread')) {
+                item.classList.remove('unread');
+                const countEl = document.getElementById('ch-notification-count');
+                if (countEl && countEl.style.display !== 'none') {
+                    const current = parseInt(countEl.textContent) || 0;
+                    const next    = current - 1;
+                    if (next <= 0) {
+                        countEl.style.display = 'none';
+                    } else {
+                        countEl.textContent = next > 99 ? '99+' : next;
+                    }
+                }
+            }
+
+            // Fire mark-read in background — don't block navigation
             const fd = new FormData();
             fd.append('action', 'ch_mark_notifications');
             fd.append('notification_ids[]', notificationId);
+            fetch(ajaxurl, {method:'POST', body:fd}).catch(() => {});
 
-            fetch(ajaxurl, {method:'POST', body:fd})
-            .then(r => r.json())
-            .then(json => {
-                if (json.success) {
-                    // Reload notifications
-                    chLoadNotifications();
-                    chLoadNotificationCount();
-                }
-            });
+            // Navigate if there's a destination
+            if (postUrl) {
+                window.location.href = postUrl;
+            }
         };
 
         window.chMarkAllNotificationsRead = function() {
+            // Instantly clear all unread states in UI
+            document.querySelectorAll('.ch-notification-item.unread').forEach(el => el.classList.remove('unread'));
+            const countEl = document.getElementById('ch-notification-count');
+            if (countEl) countEl.style.display = 'none';
+
             const fd = new FormData();
             fd.append('action', 'ch_mark_notifications');
-
-            fetch(ajaxurl, {method:'POST', body:fd})
-            .then(r => r.json())
-            .then(json => {
-                if (json.success) {
-                    chLoadNotifications();
-                    chLoadNotificationCount();
-                }
-            });
+            fetch(ajaxurl, {method:'POST', body:fd}).catch(() => {});
         };
 
         window.chLoadNotificationCount = function() {
@@ -6596,6 +7607,86 @@ function ch_global_scripts() {
     return ob_get_clean();
 }
 
+// Reusable settings modal (dark mode toggle + sign out) for standalone pages
+function ch_settings_modal_html($logout_url = '') {
+    if (!$logout_url) $logout_url = wp_logout_url(home_url('/forum-feed/'));
+    ob_start(); ?>
+    <div id="ch-modal-settings" class="ch-modal-overlay" style="display:none;">
+        <div class="ch-modal" style="max-width:380px;">
+            <div class="ch-modal-header">
+                <h3>Settings</h3>
+                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-settings')">&times;</button>
+            </div>
+            <div class="ch-modal-body" style="padding:0;">
+                <div class="ch-settings-section">
+                    <div class="ch-settings-section-title">Appearance</div>
+                    <div class="ch-settings-row">
+                        <div class="ch-settings-row-info">
+                            <div class="ch-settings-row-label">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                                Dark Mode
+                            </div>
+                            <div class="ch-settings-row-desc">Switch to a darker interface</div>
+                        </div>
+                        <label class="ch-toggle">
+                            <input type="checkbox" id="ch-dark-mode-toggle" onchange="chToggleDarkMode(this.checked)">
+                            <span class="ch-toggle-track"><span class="ch-toggle-thumb"></span></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="ch-settings-section" style="border-bottom:none;">
+                    <div class="ch-settings-section-title" style="color:#ef4444;">Account Actions</div>
+                    <a href="<?php echo esc_url($logout_url); ?>" class="ch-settings-row ch-settings-row-link" style="color:#ef4444;">
+                        <div class="ch-settings-row-info">
+                            <div class="ch-settings-row-label" style="color:#ef4444;">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                Sign Out
+                            </div>
+                        </div>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function(){
+        window.chOpenSettingsModal = function() {
+            const tog = document.getElementById('ch-dark-mode-toggle');
+            if (tog) tog.checked = document.documentElement.classList.contains('ch-dark');
+            if (typeof chOpenModal === 'function') chOpenModal('ch-modal-settings');
+        };
+        window.chCloseProfileMenu = window.chCloseProfileMenu || function() {
+            const m = document.getElementById('ch-profile-menu');
+            if (m) m.style.display = 'none';
+        };
+        window.chToggleProfileMenu = window.chToggleProfileMenu || function(e) {
+            e.stopPropagation();
+            const m = document.getElementById('ch-profile-menu');
+            if (!m) return;
+            const isShown = m.style.display !== 'none';
+            m.style.display = isShown ? 'none' : 'block';
+            if (!isShown) {
+                const btn = document.getElementById('ch-profile-btn');
+                const rect = btn.getBoundingClientRect();
+                m.style.position = 'fixed';
+                m.style.top = (rect.bottom + 6) + 'px';
+                m.style.right = (window.innerWidth - rect.right) + 'px';
+            }
+        };
+        document.addEventListener('click', function(e) {
+            const m = document.getElementById('ch-profile-menu');
+            const btn = document.getElementById('ch-profile-btn');
+            if (m && btn && !btn.contains(e.target) && !m.contains(e.target)) {
+                m.style.display = 'none';
+            }
+        });
+    })();
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
 function ch_feed_scripts() {
     ob_start(); ?>
     <script>
@@ -6621,15 +7712,37 @@ function ch_feed_scripts() {
             .then(r => r.json())
             .then(json => {
                 if (json.success) {
-                    const card = btn.closest('[data-id]') || btn.closest('.ch-post-card');
-                    const counters = document.querySelectorAll('.ch-vote-count, .ch-vote-score');
-                    counters.forEach(el => {
-                        if (el.closest('[data-id="'+targetId+'"]') || (el.id === 'ch-post-score' && targetType === 'post')) {
-                            el.textContent = json.data.vote_count + (el.id === 'ch-post-score' ? ' points' : '');
+                    // Update vote count displays
+                    document.querySelectorAll('.ch-vote-count, .ch-vote-score').forEach(el => {
+                        const inCard = el.closest('[data-id="'+targetId+'"]');
+                        const isScore = el.id === 'ch-post-score' && targetType === 'post';
+                        if (inCard || isScore) {
+                            el.textContent = json.data.vote_count + (isScore ? ' points' : '');
                         }
                     });
-                    // Simple toggle highlight
-                    if (value > 0) { btn.style.color = json.data.action === 'voted' ? '#6366f1' : '#9ca3af'; }
+                    // Also update inline comment vote count (text node inside ch-vote-up button)
+                    if (targetType === 'comment') {
+                        const upBtn = document.querySelector('.ch-vote-up[data-id="'+targetId+'"]');
+                        if (upBtn) {
+                            const textNode = [...upBtn.childNodes].find(n => n.nodeType === 3);
+                            if (textNode) textNode.textContent = ' ' + json.data.vote_count;
+                        }
+                    }
+
+                    // Find the sibling up/down buttons for this target
+                    const upBtn   = document.querySelector('.ch-vote-up[data-id="'+targetId+'"]');
+                    const downBtn = document.querySelector('.ch-vote-down[data-id="'+targetId+'"]');
+
+                    // Clear both active states first
+                    upBtn?.classList.remove('active-up');
+                    downBtn?.classList.remove('active-down');
+
+                    // Apply the correct active state based on what the server says
+                    if (json.data.action === 'voted' || json.data.action === 'changed') {
+                        if (value === 1)  upBtn?.classList.add('active-up');
+                        if (value === -1) downBtn?.classList.add('active-down');
+                    }
+                    // action === 'removed' → both stay cleared (already done above)
                 } else {
                     alert(json.data?.message || 'Vote failed');
                 }
@@ -6685,9 +7798,178 @@ function ch_feed_scripts() {
             });
         };
 
+        // ---- @mention autocomplete ----
+        (function() {
+            let _mentionDropdown = null;
+            let _mentionTextarea = null;
+            let _mentionStart    = -1;
+            let _mentionActive   = -1;
+            let _debounceTimer   = null;
+
+            function createDropdown() {
+                if (_mentionDropdown) return;
+                _mentionDropdown = document.createElement('div');
+                _mentionDropdown.className = 'ch-mention-dropdown';
+                _mentionDropdown.style.display = 'none';
+                document.body.appendChild(_mentionDropdown);
+            }
+
+            function positionDropdown(textarea) {
+                // Approximate caret position using a mirror div
+                const style = window.getComputedStyle(textarea);
+                const mirror = document.createElement('div');
+                mirror.style.cssText = [
+                    'position:absolute','visibility:hidden','overflow:auto',
+                    'white-space:pre-wrap','word-wrap:break-word',
+                    `width:${textarea.clientWidth}px`,
+                    `font:${style.font}`,
+                    `padding:${style.padding}`,
+                    `border:${style.border}`,
+                    `line-height:${style.lineHeight}`,
+                ].join(';');
+                const text = textarea.value.substring(0, _mentionStart);
+                mirror.textContent = text;
+                const cursor = document.createElement('span');
+                cursor.textContent = '|';
+                mirror.appendChild(cursor);
+                document.body.appendChild(mirror);
+
+                const taRect   = textarea.getBoundingClientRect();
+                const mirrorRect = mirror.getBoundingClientRect();
+                const cursorRect = cursor.getBoundingClientRect();
+                document.body.removeChild(mirror);
+
+                const top  = taRect.top  + window.scrollY + (cursorRect.top - mirrorRect.top) + parseInt(style.lineHeight || 20);
+                const left = taRect.left + window.scrollX + (cursorRect.left - mirrorRect.left);
+
+                _mentionDropdown.style.top  = Math.min(top,  window.scrollY + window.innerHeight - 200) + 'px';
+                _mentionDropdown.style.left = Math.min(left, window.scrollX + window.innerWidth  - 290) + 'px';
+            }
+
+            function showResults(users, query) {
+                _mentionActive = -1;
+                if (!users.length) {
+                    _mentionDropdown.innerHTML = `<div class="ch-mention-no-results">No users found for "@${query}"</div>`;
+                } else {
+                    _mentionDropdown.innerHTML = users.map((u, i) => `
+                        <div class="ch-mention-item" data-username="${u.username}" data-index="${i}">
+                            <div class="ch-mention-item-avatar">${u.display_name.charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div class="ch-mention-item-name">${u.display_name}</div>
+                                <div class="ch-mention-item-handle">@${u.username}</div>
+                            </div>
+                        </div>`).join('');
+                    _mentionDropdown.querySelectorAll('.ch-mention-item').forEach(item => {
+                        item.addEventListener('mousedown', e => {
+                            e.preventDefault();
+                            insertMention(item.dataset.username);
+                        });
+                    });
+                }
+                _mentionDropdown.style.display = 'block';
+            }
+
+            function hideDropdown() {
+                if (_mentionDropdown) _mentionDropdown.style.display = 'none';
+                _mentionStart  = -1;
+                _mentionActive = -1;
+            }
+
+            function insertMention(username) {
+                if (!_mentionTextarea || _mentionStart < 0) return;
+                const val    = _mentionTextarea.value;
+                const before = val.substring(0, _mentionStart);
+                const after  = val.substring(_mentionTextarea.selectionStart);
+                _mentionTextarea.value = before + '@' + username + ' ' + after;
+                const pos = _mentionStart + username.length + 2;
+                _mentionTextarea.setSelectionRange(pos, pos);
+                _mentionTextarea.focus();
+                hideDropdown();
+            }
+
+            function fetchUsers(query) {
+                const fd = new FormData();
+                fd.append('action', 'ch_mention_search');
+                fd.append('query', query);
+                fetch(ajaxurl, {method:'POST', body:fd})
+                .then(r => r.json())
+                .then(json => {
+                    if (json.success && _mentionStart >= 0) {
+                        showResults(json.data.users, query);
+                    }
+                })
+                .catch(() => hideDropdown());
+            }
+
+            function onKeydown(e) {
+                if (_mentionDropdown?.style.display !== 'block') return;
+                const items = _mentionDropdown.querySelectorAll('.ch-mention-item');
+                if (!items.length) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    _mentionActive = Math.min(_mentionActive + 1, items.length - 1);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    _mentionActive = Math.max(_mentionActive - 1, 0);
+                } else if (e.key === 'Enter' || e.key === 'Tab') {
+                    if (_mentionActive >= 0 && items[_mentionActive]) {
+                        e.preventDefault();
+                        insertMention(items[_mentionActive].dataset.username);
+                        return;
+                    }
+                } else if (e.key === 'Escape') {
+                    hideDropdown();
+                    return;
+                } else {
+                    return;
+                }
+                items.forEach((item, i) => item.classList.toggle('active', i === _mentionActive));
+            }
+
+            function onInput(e) {
+                const ta  = e.target;
+                const val = ta.value;
+                const pos = ta.selectionStart;
+
+                // Find the @ that starts the current mention token
+                let start = -1;
+                for (let i = pos - 1; i >= 0; i--) {
+                    if (val[i] === '@') { start = i; break; }
+                    if (/\s/.test(val[i])) break;
+                }
+
+                if (start < 0) { hideDropdown(); return; }
+
+                const query = val.substring(start + 1, pos);
+                if (query.length === 0) { hideDropdown(); return; }
+
+                _mentionTextarea = ta;
+                _mentionStart    = start;
+                _mentionDropdown.style.display = 'block';
+                positionDropdown(ta);
+
+                clearTimeout(_debounceTimer);
+                _debounceTimer = setTimeout(() => fetchUsers(query), 180);
+            }
+
+            // Attach to existing and future textareas via delegation
+            createDropdown();
+            document.addEventListener('input',   e => { if (e.target.matches('textarea')) onInput(e); });
+            document.addEventListener('keydown',  e => { if (e.target.matches('textarea')) onKeydown(e); });
+            document.addEventListener('click',    e => { if (!e.target.closest('.ch-mention-dropdown') && !e.target.matches('textarea')) hideDropdown(); });
+            document.addEventListener('focusout', e => { if (e.target.matches('textarea')) setTimeout(hideDropdown, 150); });
+        })();
+
         window.chReportPost = function(postId, nonce) {
             document.getElementById('ch-report-target-id').value   = postId;
             document.getElementById('ch-report-target-type').value = 'post';
+            chOpenModal('ch-modal-report');
+        };
+
+        window.chReportComment = function(commentId, nonce) {
+            document.getElementById('ch-report-target-id').value   = commentId;
+            document.getElementById('ch-report-target-type').value = 'comment';
             chOpenModal('ch-modal-report');
         };
 
@@ -6972,6 +8254,32 @@ function ch_post_view_scripts() {
             });
         };
 
+        window.chSubmitGuestComment = function(postId, parentId, nonce) {
+            const nameEl    = document.getElementById('ch-guest-comment-name');
+            const contentEl = document.getElementById('ch-comment-content');
+            const content   = contentEl ? contentEl.value.trim() : '';
+            const guestName = nameEl ? nameEl.value.trim() : '';
+            if (!content) { alert('Please enter your comment'); return; }
+
+            const fd = new FormData();
+            fd.append('action',     'ch_add_comment');
+            fd.append('post_id',    postId);
+            fd.append('parent_id',  parentId);
+            fd.append('content',    content);
+            fd.append('guest_name', guestName);
+            fd.append('nonce',      nonce);
+
+            fetch(ajaxurl, {method:'POST', body:fd})
+            .then(r => r.json())
+            .then(json => {
+                if (json.success) {
+                    location.reload();
+                } else {
+                    alert(json.data?.message || 'Failed to post comment');
+                }
+            });
+        };
+
         window.chDeleteComment = function(commentId, nonce) {
             if (!confirm('Delete this comment?')) return;
             const fd = new FormData();
@@ -7197,8 +8505,8 @@ function ch_announcements_tab() {
                     const date = new Date(a.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
                     return `<tr id="ch-ann-row-${a.id}">
                         <td>
-                            <div style="font-weight:600;font-size:14px;color:#111827">${a.title}</div>
-                            <div style="font-size:12px;color:#9ca3af;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px">${a.content.replace(/<[^>]+>/g,'').substring(0,80)}…</div>
+                            <div class="ch-ann-title" style="font-weight:600;font-size:14px;">${a.title}</div>
+                            <div class="ch-ann-excerpt" style="font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;">${a.content.replace(/<[^>]+>/g,'').substring(0,80)}…</div>
                         </td>
                         <td><span class="ch-status-badge ch-status-${statusClass}">${statusLabel}</span></td>
                         <td><span class="ch-date">${date}</span></td>
@@ -7295,7 +8603,7 @@ function bntm_ajax_ch_create_announcement() {
 
     $title = sanitize_text_field($_POST['title']);
     $content = wp_kses_post($_POST['content']);
-    $status = isset($_POST['status']) ? 1 : 0;
+    $status = (int)($_POST['status'] ?? 0) === 1 ? 1 : 0;
 
     if (empty($title) || empty($content)) {
         wp_send_json_error(['message' => 'Title and content are required']);
@@ -7343,7 +8651,7 @@ function bntm_ajax_ch_edit_announcement() {
     $announcement_id = intval($_POST['announcement_id']);
     $title = sanitize_text_field($_POST['title']);
     $content = wp_kses_post($_POST['content']);
-    $status = isset($_POST['status']) ? 1 : 0;
+    $status = (int)($_POST['status'] ?? 0) === 1 ? 1 : 0;
 
     if (empty($title) || empty($content) || !$announcement_id) {
         wp_send_json_error(['message' => 'Title, content, and announcement ID are required']);
