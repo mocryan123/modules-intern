@@ -4,7 +4,6 @@
  */
 
 if (!defined('ABSPATH')) exit;
-require_once(BNTM_KBF_PATH . 'includes/loading.php');
 
 function bntm_shortcode_kbf_admin() {
     if(!current_user_can('manage_options')) return '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Access denied.</div></div>';
@@ -63,7 +62,12 @@ function bntm_shortcode_kbf_admin() {
     window.kbfConfirmPayment=function(id){if(!confirm('Mark this sponsorship as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
     window.kbfVerifyOrg=function(id,cur){kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:cur?'0':'1'});};
     </script>
-    <?php echo kbf_render_loading_overlay('Loading...', 'KB'); ?>
+    <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
+      <div class="kbf-loading-card">
+        <div class="kbf-loading-logo">KB</div>
+        <div class="kbf-loading-spinner"></div>
+        <div style="font-size:13px;color:#4f5a6b;">Loading...</div>
+      </div>
     </div>
     <div class="kbf-wrap">
     <?php
@@ -115,6 +119,4 @@ function bntm_shortcode_kbf_admin() {
 // ============================================================
 // AJAX HANDLERS -- ADMIN
 // ============================================================
-
-
 
