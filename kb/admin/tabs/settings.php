@@ -42,7 +42,7 @@ function kbf_admin_settings_tab() {
           </div>
         </div>
         <?php if($demo_mode): ?>
-        <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="font-size:12.5px;display:flex;align-items:center;gap:8px;width:100%;margin-top:12px;">
+        <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="font-size:12.5px;display:flex;align-items:center;gap:8px;width:100%;margin-top:12px;">
           <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
               <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/>
@@ -51,14 +51,13 @@ function kbf_admin_settings_tab() {
           <div><strong>Demo Mode is active.</strong> Configure your Maya API keys below, then switch to Live.</div>
         </div>
         <?php else: ?>
-        <div class="kbf-alert kbf-alert-success" style="font-size:12.5px;margin-top:12px;"><strong>Live Mode active.</strong> Maya Checkout processes all payments. Sandbox keys used for testing.</div>
+        <div class="kbf-alert kbf-alert-success kbf-alert-noicon" style="font-size:12.5px;margin-top:12px;display:flex;align-items:center;gap:8px;"><span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM12.03 5.97a.75.75 0 0 0-1.06-1.06L7.5 8.44 5.53 6.47a.75.75 0 1 0-1.06 1.06L6.97 10a.75.75 0 0 0 1.06 0l4-4z"/></svg></span><div><strong>Live Mode active.</strong> Maya Checkout processes all payments. Sandbox keys used for testing.</div></div>
         <?php endif; ?>
       </div>
 
       <!-- Maya API Keys -->
       <div class="kbf-card" style="margin-bottom:20px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--kbf-navy)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
           <strong style="font-size:15px;color:var(--kbf-navy);">Maya API Keys</strong>
           <a href="https://sandbox-manager.paymaya.com" target="_blank" style="font-size:12px;color:var(--kbf-blue);margin-left:auto;">Open Maya Business Manager</a>
         </div>
@@ -158,4 +157,6 @@ function kbf_admin_settings_tab() {
     </script>
     <?php return ob_get_clean();
 }
+
+
 
