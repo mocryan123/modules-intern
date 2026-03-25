@@ -29,7 +29,14 @@ function kbf_dashboard_withdrawals_tab($business_id) {
               <td class="kbf-meta"><?php echo $w->processed_at?date('M d, Y',strtotime($w->processed_at)):'—'; ?></td>
             </tr>
             <?php if(!empty($w->admin_notes)): ?>
-            <tr><td colspan="6" style="background:var(--kbf-slate-lt);font-size:12px;padding:8px 14px;"><strong>Admin Note:</strong> <?php echo esc_html($w->admin_notes); ?></td></tr>
+            <tr>
+              <td style="background:var(--kbf-slate-lt);font-size:12px;padding:6px 14px;border-top:1px solid var(--kbf-border);">
+                <strong>Admin Note for:</strong> <?php echo esc_html($w->fund_title); ?>
+              </td>
+              <td colspan="5" style="background:var(--kbf-slate-lt);font-size:12px;padding:6px 14px;border-top:1px solid var(--kbf-border);">
+                <span style="display:inline-block;padding-left:4px;"><?php echo esc_html($w->admin_notes); ?></span>
+              </td>
+            </tr>
             <?php endif; ?>
           <?php endforeach; endif; ?>
           </tbody>

@@ -19,15 +19,15 @@ function kbf_admin_withdrawals_tab() {
             <tr>
               <td>
                 <div class="kbf-cell-center">
-                  <strong><?php echo esc_html(wp_trim_words($w->fund_title,5)); ?></strong>
                   <div class="kbf-cell-spacer"></div>
+                  <strong><?php echo esc_html(wp_trim_words($w->fund_title,5)); ?></strong>
                   <div class="kbf-cell-spacer"></div>
                 </div>
               </td>
               <td class="kbf-meta">
                 <div class="kbf-cell-center">
-                  <?php echo esc_html($w->funder_name ?: ($w->funder_display ?: '-')); ?>
                   <div class="kbf-cell-spacer"></div>
+                  <?php echo esc_html($w->funder_name ?: ($w->funder_display ?: '-')); ?>
                   <div class="kbf-cell-spacer"></div>
                 </div>
               </td>

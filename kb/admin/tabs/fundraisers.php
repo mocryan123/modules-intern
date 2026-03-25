@@ -20,15 +20,15 @@ function kbf_admin_all_funds_tab() {
             <tr>
               <td>
                 <div class="kbf-cell-center">
+                   <div class="kbf-cell-spacer"></div>
                   <strong><?php echo esc_html(wp_trim_words($f->title,6)); ?></strong>
-                  <div class="kbf-cell-spacer"></div>
                   <div class="kbf-cell-spacer"></div>
                 </div>
               </td>
               <td>
                 <div class="kbf-cell-center">
-                  <?php echo esc_html($f->organizer); ?>
                   <div class="kbf-cell-spacer"></div>
+                  <?php echo esc_html($f->organizer); ?>
                   <div class="kbf-cell-spacer"></div>
                 </div>
               </td>

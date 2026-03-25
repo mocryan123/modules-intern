@@ -138,10 +138,7 @@ function kbf_dashboard_find_funds_tab() {
           <input type="text" name="ff_loc" id="kbff-loc-input" value="<?php echo esc_attr($loc); ?>" placeholder="Location (city, province)..." style="flex:1;min-width:0;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
 
           <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="margin-right:6px;">
-              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
-              <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/>
-            </svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt.svg" alt="" width="14" height="14" style="margin-right:6px;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             Near Me
           </button>
           <button type="submit" class="kbf-btn kbf-btn-primary">
@@ -153,7 +150,7 @@ function kbf_dashboard_find_funds_tab() {
       </div>
       <?php if($loc): ?>
       <div style="margin-top:10px;font-size:12.5px;color:var(--kbf-text-sm);display:flex;align-items:center;gap:6px;">
-        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
         Showing funds near: <strong><?php echo esc_html($loc); ?></strong>
       </div>
       <?php endif; ?>
@@ -162,7 +159,7 @@ function kbf_dashboard_find_funds_tab() {
     <!-- Fund grid -->
     <?php if(empty($funds)): ?>
     <div class="kbf-empty" style="padding:60px 20px;">
-      <svg width="44" height="44" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin:0 auto 14px;display:block;opacity:.3;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/search.svg" alt="" width="44" height="44" style="margin:0 auto 14px;display:block;opacity:.35;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
       <p style="font-size:15px;font-weight:600;color:var(--kbf-navy);margin-bottom:4px;">No funds found</p>
       <p style="color:var(--kbf-slate);font-size:13px;">Try adjusting your search or category filter.</p>
       <?php if($q||$cat): ?><a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-primary" style="margin-top:14px;">Clear Filters</a><?php endif; ?>
@@ -185,7 +182,7 @@ function kbf_dashboard_find_funds_tab() {
             <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($f->title); ?>" style="width:100%;height:180px;object-fit:cover;display:block;">
           <?php else: ?>
             <div style="width:100%;height:180px;background:linear-gradient(135deg,var(--kbf-navy) 0%,#243b78 100%);display:flex;align-items:center;justify-content:center;">
-              <svg width="40" height="40" fill="none" stroke="rgba(255,255,255,.2)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="40" height="40" style="opacity:.25;filter:invert(100%);">
             </div>
           <?php endif; ?>
           <!-- Overlays -->
@@ -208,7 +205,7 @@ function kbf_dashboard_find_funds_tab() {
           <!-- Location + Organizer -->
           <div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:10px;display:flex;flex-direction:column;gap:4px;">
             <span style="display:flex;align-items:center;gap:3px;">
-              <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt.svg" alt="" width="10" height="10" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
               <?php echo esc_html($f->location); ?>
             </span>
             <span style="color:var(--kbf-blue);font-weight:600;">by <a href="<?php echo esc_url(add_query_arg('organizer_id',$f->business_id,kbf_get_page_url('organizer_profile'))); ?>" style="color:inherit;text-decoration:none;font-weight:700;"><?php echo esc_html($f->organizer_name?:'Organizer'); ?></a></span>
@@ -226,30 +223,26 @@ function kbf_dashboard_find_funds_tab() {
           <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;">
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-secondary" style="font-size:12.5px;text-align:center;">View Details</a>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')" title="Share">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </button>
             <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbffOpenReport(<?php echo $f->id; ?>)" title="Report">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="color:#ef4444;">
-                <path d="M14.778 4.83A1.5 1.5 0 0 1 13.5 7h-6l-1.5-1.5V14a.5.5 0 0 1-1 0V1a.5.5 0 0 1 .8-.4L7.5 2h6a1.5 1.5 0 0 1 1.278 2.33z"/>
-              </svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="13" height="13" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
             </button>
           </div>
           <?php else: ?>
           <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:7px;align-items:center;">
             <button class="kbf-btn kbf-btn-primary" style="font-size:12.5px;" onclick="kbffOpenSponsor(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>',<?php echo $f->goal_amount; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js(isset($cover) ? $cover : ''); ?>')">
-              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="12" height="12" style="filter:invert(100%);">
               Sponsor
             </button>
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-secondary kbf-btn-sm" title="View full details">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </a>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')" title="Share">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </button>
             <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbffOpenReport(<?php echo $f->id; ?>)" title="Report">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="color:#ef4444;">
-                <path d="M14.778 4.83A1.5 1.5 0 0 1 13.5 7h-6l-1.5-1.5V14a.5.5 0 0 1-1 0V1a.5.5 0 0 1 .8-.4L7.5 2h6a1.5 1.5 0 0 1 1.278 2.33z"/>
-              </svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="13" height="13" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
             </button>
           </div>
           <?php endif; ?>

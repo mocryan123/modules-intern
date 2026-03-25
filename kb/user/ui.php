@@ -1506,7 +1506,7 @@ function bntm_shortcode_kbf_browse() {
             <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="16" height="16" style="flex-shrink:0;margin-top:1px;filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%);">
               <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
             </div>
             <?php else: ?>
@@ -1831,7 +1831,13 @@ function bntm_shortcode_kbf_browse() {
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
             if(j.success){
                 const d=j.data;
-                const starSvg=(filled)=>'<svg width="14" height="14" viewBox="0 0 24 24" fill="'+(filled?'#fbbf24':'#d1d5db')+'"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
+                const starSvg=(filled)=>{
+                    const src = filled ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg' : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg';
+                    const filter = filled
+                        ? 'invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%)'
+                        : 'invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%)';
+                    return '<img src="'+src+'" width="14" height="14" style="filter:'+filter+';">';
+                };
                 const stars=Array.from({length:5},(_,i)=>starSvg(i<Math.round(parseFloat(d.rating)))).join('');
                 const statusColor={'active':'var(--kbf-green)','completed':'var(--kbf-blue)'};
                 const statusBg={'active':'var(--kbf-green-lt)','completed':'#dbeafe'};
@@ -1868,7 +1874,7 @@ function bntm_shortcode_kbf_browse() {
                 document.getElementById('kbf-organizer-body').innerHTML=
                 // Header
                 '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;">'
-                +(d.avatar_url?'<img src="'+d.avatar_url+'" style="width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);flex-shrink:0;">':'<div style="width:62px;height:62px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="28" height="28" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>')
+                +(d.avatar_url?'<img src="'+d.avatar_url+'" style="width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);flex-shrink:0;">':'<div style="width:62px;height:62px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src=\"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg\" width=\"28\" height=\"28\" style=\"filter:invert(100%);\"></div>')
                 +'<div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong style="font-size:16px;color:var(--kbf-navy);">'+d.display_name+'</strong>'
                 +(d.is_verified?'<span class="kbf-badge kbf-badge-verified" style="font-size:10px;">Verified</span>':'')
                 +'</div>'
@@ -2079,7 +2085,7 @@ function bntm_shortcode_kbf_fund_details() {
             <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="16" height="16" style="flex-shrink:0;margin-top:1px;filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%);">
               <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
             </div>
             <?php endif; ?>
@@ -2089,7 +2095,7 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbf-modal-sponsor').style.display='none'">Cancel</button>
           <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSpdSponsor('<?php echo $nonce_sponsor; ?>')">
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="14" height="14" style="filter:invert(100%);">
             Confirm Sponsorship
           </button>
         </div>
@@ -2127,7 +2133,7 @@ function bntm_shortcode_kbf_fund_details() {
             <div class="kbf-form-group"><label>Rating</label>
               <div id="kbf-star-picker" style="display:flex;gap:8px;margin-top:6px;">
                 <?php for($i=1;$i<=5;$i++): ?>
-                  <svg class="kbf-star-btn" data-val="<?php echo $i; ?>" width="32" height="32" viewBox="0 0 24 24" fill="#d1d5db" style="cursor:pointer;transition:fill .1s;" onclick="kbfSetRating(<?php echo $i; ?>)"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                  <img class="kbf-star-btn" data-val="<?php echo $i; ?>" data-filled="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg" data-empty="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg" alt="" width="32" height="32" style="cursor:pointer;filter:invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%);" onclick="kbfSetRating(<?php echo $i; ?>)">
                 <?php endfor; ?>
               </div>
               <input type="hidden" name="rating" id="kbf-rating-val" value="5">
@@ -2147,7 +2153,7 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- Breadcrumb -->
     <div class="kbf-breadcrumb">
       <a href="<?php echo esc_url($browse_url); ?>">Browse Funds</a>
-      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chevron-right.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
       <span><?php echo esc_html(wp_trim_words($fund->title,6)); ?></span>
     </div>
 
@@ -2170,7 +2176,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
         <?php else: ?>
         <div style="width:100%;height:280px;background:linear-gradient(135deg,var(--kbf-navy) 0%,var(--kbf-navy-light) 100%);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
-          <svg width="64" height="64" fill="none" stroke="rgba(255,255,255,.2)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="64" height="64" style="opacity:.25;filter:invert(100%);">
         </div>
         <?php endif; ?>
 
@@ -2183,21 +2189,21 @@ function bntm_shortcode_kbf_fund_details() {
           <h1 style="font-size:24px;font-weight:800;color:var(--kbf-navy);margin:0 0 10px;line-height:1.3;"><?php echo esc_html($fund->title); ?></h1>
           <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--kbf-slate);">
             <span style="display:flex;align-items:center;gap:5px;">
-              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
               <?php echo esc_html($fund->location); ?>
             </span>
             <span style="display:flex;align-items:center;gap:5px;">
-              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
               by <strong style="color:var(--kbf-text);"><a href="<?php echo esc_url($profile_url); ?>" style="color:inherit;text-decoration:none;"><?php echo esc_html($fund->organizer_name?:'Organizer'); ?></a></strong>
             </span>
             <?php if($days!==null): ?>
             <span style="display:flex;align-items:center;gap:5px;color:<?php echo $days<7?'var(--kbf-red)':'var(--kbf-slate)'; ?>;font-weight:<?php echo $days<7?'700':'400'; ?>;">
-              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="" width="14" height="14" style="filter:<?php echo $days<7?'invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%)':'invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)'; ?>;">
               <?php echo $days; ?> day<?php echo $days!==1?'s':''; ?> left <?php echo $fund->deadline?'(ends '.date('M d, Y',strtotime($fund->deadline)).')':''; ?>
             </span>
             <?php endif; ?>
             <span style="display:flex;align-items:center;gap:5px;">
-              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
               <?php echo $sponsor_count; ?> sponsor<?php echo $sponsor_count!==1?'s':''; ?>
             </span>
           </div>
@@ -2215,7 +2221,7 @@ function bntm_shortcode_kbf_fund_details() {
           <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
             <h3 style="font-size:15px;font-weight:700;color:var(--kbf-navy);margin:0;">About the Organizer</h3>
             <a href="<?php echo esc_url($profile_url); ?>" style="background:none;border:none;color:var(--kbf-blue);cursor:pointer;font-size:12.5px;font-weight:600;padding:0;display:flex;align-items:center;gap:4px;text-decoration:none;">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="13" height="13" style="filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
               View Full Profile & History
             </a>
           </div>
@@ -2223,21 +2229,23 @@ function bntm_shortcode_kbf_fund_details() {
             <?php if($organizer&&$organizer->avatar_url): ?>
               <img src="<?php echo esc_url($organizer->avatar_url); ?>" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);flex-shrink:0;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--kbf-blue)'" onmouseout="this.style.borderColor='var(--kbf-border)'">
             <?php else: ?>
-              <div style="width:52px;height:52px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;"><svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
+              <div style="width:52px;height:52px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="24" height="24" style="filter:invert(100%);"></div>
             <?php endif; ?>
             <div style="flex:1;">
               <div style="font-weight:700;font-size:15px;color:var(--kbf-navy);"><?php echo esc_html($fund->organizer_name); ?><?php if($organizer&&$organizer->is_verified): ?><span class="kbf-badge kbf-badge-verified" style="margin-left:8px;font-size:10px;">Verified</span><?php endif; ?></div>
               <?php if($organizer&&$organizer->bio): ?><p style="font-size:13px;color:var(--kbf-text-sm);margin:4px 0 0;line-height:1.55;"><?php echo esc_html(wp_trim_words($organizer->bio,30)); ?></p><?php endif; ?>
               <?php if($organizer&&$organizer->rating_count>0): ?>
               <div style="display:flex;align-items:center;gap:4px;margin-top:5px;">
-                <?php for($i=1;$i<=5;$i++): ?><svg width="12" height="12" viewBox="0 0 24 24" fill="<?php echo $i<=round($organizer->rating)?'#fbbf24':'#d1d5db'; ?>"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg><?php endfor; ?>
+                <?php for($i=1;$i<=5;$i++): ?>
+                  <img src="<?php echo $i<=round($organizer->rating)?'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg':'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg'; ?>" width="12" height="12" alt="" style="filter:<?php echo $i<=round($organizer->rating)?'invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%)':'invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%)'; ?>;">
+                <?php endfor; ?>
                 <span style="font-size:11.5px;color:var(--kbf-slate);margin-left:2px;"><?php echo number_format($organizer->rating,1); ?>/5 &bull; ₱<?php echo number_format($organizer->total_raised,0); ?> raised</span>
               </div>
               <?php else: ?>
               <div style="font-size:12px;color:var(--kbf-slate);margin-top:4px;">Click to view fund history &amp; reviews</div>
               <?php endif; ?>
             </div>
-            <svg width="16" height="16" fill="none" stroke="var(--kbf-blue)" viewBox="0 0 24 24" style="flex-shrink:0;opacity:.7;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chevron-right.svg" alt="" width="16" height="16" style="flex-shrink:0;opacity:.7;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
           </a>
         </div>
         <?php endif; ?>
@@ -2298,12 +2306,12 @@ function bntm_shortcode_kbf_fund_details() {
           <?php if($fund->status==='active' && !$is_owner): ?>
           <?php if($demo_mode): ?>
           <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#92400e;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="14" height="14" style="filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%);">
             <span><strong>Demo Mode</strong> -- no real payment processed</span>
           </div>
           <?php endif; ?>
           <button class="kbf-btn kbf-btn-primary" style="width:100%;padding:13px;font-size:15px;font-weight:700;margin-bottom:10px;" onclick="document.getElementById('kbf-modal-sponsor').style.display='flex'">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="16" height="16" style="filter:invert(100%);">
             Sponsor This Fund
           </button>
           <?php elseif($fund->status==='completed'): ?>
@@ -2315,7 +2323,7 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
           <?php if($demo_mode): ?>
           <button class="kbf-btn kbf-btn-secondary" style="width:100%;padding:11px;font-size:13px;font-weight:600;margin-bottom:10px;border-style:dashed;" onclick="document.getElementById('kbf-modal-sponsor').style.display='flex'">
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             Test Demo Sponsorship
           </button>
           <?php endif; ?>
@@ -2323,18 +2331,18 @@ function bntm_shortcode_kbf_fund_details() {
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
             <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">
-              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg> Share
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);"> Share
             </button>
             <?php if(!$is_owner): ?>
             <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#fbbf24;"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg> Rate
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg" alt="" width="13" height="13" style="filter:invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%);"> Rate
             </button>
             <?php else: ?>
             <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="window.history.back()">Go Back</button>
             <?php endif; ?>
           </div>
           <button class="kbf-btn kbf-btn-danger" style="width:100%;font-size:13px;" onclick="document.getElementById('kbf-modal-report').style.display='flex'">
-            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="13" height="13" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
             Report this fund
           </button>
         </div>
@@ -2343,20 +2351,20 @@ function bntm_shortcode_kbf_fund_details() {
         <div style="background:var(--kbf-slate-lt);border-radius:10px;padding:14px 16px;margin-top:14px;font-size:13px;color:var(--kbf-text-sm);">
           <div style="font-weight:700;color:var(--kbf-navy);margin-bottom:4px;">Fund Type</div>
           <div><?php echo ucwords(str_replace('_',' ',$fund->funder_type)); ?></div>
-          <?php if($fund->auto_return): ?><div style="margin-top:6px;display:flex;align-items:center;gap:6px;color:var(--kbf-green);font-size:12px;"><svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Auto-refund if goal not met</div><?php endif; ?>
+          <?php if($fund->auto_return): ?><div style="margin-top:6px;display:flex;align-items:center;gap:6px;color:var(--kbf-green);font-size:12px;"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(41%) sepia(98%) saturate(342%) hue-rotate(83deg) brightness(93%) contrast(89%);">Auto-refund if goal not met</div><?php endif; ?>
         </div>
 
         <!-- Top Sponsors Leaderboard -->
         <div style="background:#fff;border:1px solid var(--kbf-border);border-radius:12px;padding:18px;margin-top:14px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="color:var(--kbf-accent);flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bar-chart-fill.svg" alt="" width="16" height="16" style="filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);flex-shrink:0;">
             <span style="font-size:14px;font-weight:800;color:var(--kbf-navy);">Top Sponsors</span>
             <?php if(!empty($leaderboard)): ?><span style="background:var(--kbf-accent);color:#fff;border-radius:99px;padding:1px 8px;font-size:10px;font-weight:800;margin-left:auto;"><?php echo count($leaderboard); ?></span><?php endif; ?>
           </div>
 
           <?php if(empty($leaderboard)): ?>
           <div style="text-align:center;padding:20px 10px;">
-            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin:0 auto 10px;display:block;opacity:.25;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="32" height="32" style="margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No sponsors yet</p>
             <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to support!</p>
           </div>
@@ -2526,7 +2534,19 @@ function bntm_shortcode_kbf_fund_details() {
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     };
     var _kbfRating=5;
-    window.kbfSetRating=function(v){_kbfRating=v;document.getElementById('kbf-rating-val').value=v;document.querySelectorAll('.kbf-star-btn').forEach((s,i)=>{s.setAttribute('fill',i<v?'#fbbf24':'#d1d5db');});};kbfSetRating(5);
+    window.kbfSetRating=function(v){
+        _kbfRating=v;
+        document.getElementById('kbf-rating-val').value=v;
+        document.querySelectorAll('.kbf-star-btn').forEach((s,i)=>{
+            const filled = i < v;
+            const src = filled ? s.getAttribute('data-filled') : s.getAttribute('data-empty');
+            s.src = src;
+            s.style.filter = filled
+                ? 'invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%)'
+                : 'invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%)';
+        });
+    };
+    kbfSetRating(5);
     window.kbfSubmitRating=function(nonce){
         const form=document.getElementById('kbf-rating-form');
         const btn=document.querySelector('#kbf-modal-rating .kbf-modal-footer .kbf-btn-primary');

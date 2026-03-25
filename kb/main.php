@@ -469,7 +469,7 @@ function kbf_global_assets() {
 
     /* Progress */
     .kbf-progress-wrap { background: #eef2f7; border-radius: 999px; height: 8px; overflow: hidden; }
-    .kbf-progress-bar { height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--kbf-accent), #34d399); transition: width .6s ease; }
+    .kbf-progress-bar { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #60a5fa, #3b82f6); transition: width .6s ease; }
 
     /* Badges / Status */
     .kbf-badge{
