@@ -13,264 +13,267 @@ function kbf_dashboard_profile_tab($business_id) {
     $address = get_user_meta($business_id, 'kbf_address', true);
     $nonce = wp_create_nonce('kbf_organizer_profile');
 
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== CSS ================== -->
+    <style>
+      .kbf-section {
+        width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      .kbf-section form {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .kbf-profile-title { margin-bottom: 6px; }
+      .kbf-profile-subtitle { margin: 0 0 18px; color: var(--kbf-slate); font-size: 13px; }
+
+      /* ── Main two-column grid ── */
+      .kbf-profile-grid {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .kbf-profile-grid > * {
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      .kbf-profile-card-left,
+      .kbf-profile-stack {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      .kbf-profile-stack { display: flex; flex-direction: column; gap: 18px; }
+
+      /* ── Cards ── */
+      .kbf-profile-card { padding: 18px; border-radius: 18px; width: 100%; box-sizing: border-box; }
+      .kbf-profile-card-left {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        text-align: left;
+      }
+
+      /* ── Card header ── */
+      .kbf-profile-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+      .kbf-profile-card-title { font-weight: 700; margin-bottom: 8px; }
+
+      /* ── Avatar ── */
+      .kbf-profile-photo {
+        width: 190px;
+        height: 190px;
+        border-radius: 28px;
+        object-fit: cover;
+        border: 1px solid var(--kbf-border);
+        background: #fff;
+      }
+      .kbf-photo-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .kbf-photo-overlay {
+        position: absolute;
+        inset: 0;
+        border-radius: 28px;
+        background: rgba(15,23,42,.45);
+        opacity: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity .2s ease;
+        pointer-events: none;
+      }
+      .kbf-photo-wrap:hover .kbf-photo-overlay { opacity: 1; }
+      .kbf-photo-edit {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg,#60a5fa,#3b82f6);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 18px rgba(59,130,246,.35);
+      }
+      .kbf-photo-edit img { filter: invert(100%); }
+
+      /* ── Meta / misc ── */
+      .kbf-profile-meta { font-size: 13px; color: var(--kbf-slate); }
+      .kbf-profile-note { margin-top: 4px; }
+      .kbf-profile-divider { height: 1px; background: var(--kbf-border); margin: 10px 0; }
+      .kbf-profile-actions { display: flex; gap: 10px; align-items: center; width: 100%; }
+      .kbf-profile-actions .kbf-btn { width: 100%; justify-content: center; }
+
+      /* ── Password toggle ── */
+      .kbf-input-with-toggle { position: relative; }
+      .kbf-input-with-toggle input { padding-right: 42px; }
+      .kbf-toggle-visibility {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: var(--kbf-slate);
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .kbf-toggle-visibility:hover { color: var(--kbf-primary); }
+
+      /* ── Bio ── */
+      .kbf-profile-bio { margin-top: 8px; width: 100%; }
+      .kbf-profile-bio textarea { width: 100%; box-sizing: border-box; }
+      .kbf-profile-card-left .kbf-form-group { width: 100%; }
+      .kbf-profile-card-left .kbf-form-group input,
+      .kbf-profile-card-left .kbf-form-group textarea { width: 100%; box-sizing: border-box; }
+
+      /* ── 3-col form row ── */
+      .kbf-form-row-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* ── File input ── */
+      .kbf-file-input { display: none; }
+      .kbf-file-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--kbf-border);
+        background: #fff;
+        color: var(--kbf-text);
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+      }
+      .kbf-file-btn:hover { border-color: var(--kbf-primary); color: var(--kbf-primary); }
+
+      /* ── Stats grid ── */
+      .kbf-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .kbf-stat-card {
+        background: #fff;
+        border: 1px solid var(--kbf-border);
+        border-radius: 16px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      .kbf-stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        flex-shrink: 0;
+      }
+      .kbf-stat-icon img { width: 20px; height: 20px; filter: invert(36%) sepia(88%) saturate(2029%) hue-rotate(198deg) brightness(95%) contrast(95%); }
+      .kbf-stat-icon--amber img { filter: invert(54%) sepia(93%) saturate(1461%) hue-rotate(14deg) brightness(96%) contrast(92%); }
+      .kbf-stat-label { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: .6px; }
+      .kbf-stat-value { font-size: 18px; font-weight: 800; color: #0f172a; }
+      .kbf-stat-sub { font-size: 12px; color: #64748b; }
+
+      /* ── Cropper ── */
+      .kbf-cropper-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .kbf-cropper-modal {
+        background: #fff;
+        border-radius: 18px;
+        padding: 16px;
+        max-width: 420px;
+        width: 92%;
+        box-shadow: 0 20px 50px rgba(15,23,42,.25);
+      }
+      .kbf-cropper-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+      .kbf-cropper-title { font-weight: 700; }
+      .kbf-cropper-sub { font-size: 12px; color: var(--kbf-slate); margin-bottom: 12px; }
+      .kbf-cropper-stage {
+        position: relative;
+        width: 240px;
+        height: 240px;
+        margin: 0 auto;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #f1f5f9;
+        cursor: grab;
+        border: 1px dashed #cbd5f5;
+      }
+      .kbf-cropper-stage.is-dragging { cursor: grabbing; }
+      .kbf-cropper-image { position: absolute; top: 0; left: 0; user-select: none; pointer-events: none; transform-origin: 0 0; }
+      .kbf-cropper-mask {
+        position: absolute;
+        inset: 0;
+        box-shadow: 0 0 0 9999px rgba(15,23,42,.35);
+        border-radius: 16px;
+        pointer-events: none;
+      }
+      .kbf-cropper-controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+      .kbf-cropper-controls input[type=range] { flex: 1; }
+      .kbf-cropper-actions { display: flex; gap: 10px; margin-top: 12px; }
+      .kbf-cropper-actions .kbf-btn { width: 100%; justify-content: center; }
+      .kbf-cropper-close {
+        border: none;
+        background: #f1f5f9;
+        color: #64748b;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 900px) {
+        .kbf-profile-grid { grid-template-columns: 1fr; }
+        .kbf-profile-card-left,
+        .kbf-profile-stack { width: 100%; min-width: 0; }
+        .kbf-stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .kbf-form-row-3 { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 480px) {
+        .kbf-stats-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <form id="kbf-profile-form" enctype="multipart/form-data">
-        <style>
-          .kbf-section {
-            width: 100%;
-            box-sizing: border-box;
-            overflow: hidden;
-          }
-          .kbf-section form {
-            width: 100%;
-            box-sizing: border-box;
-          }
-          .kbf-profile-title { margin-bottom: 6px; }
-          .kbf-profile-subtitle { margin: 0 0 18px; color: var(--kbf-slate); font-size: 13px; }
-
-          /* ── Main two-column grid ── */
-          .kbf-profile-grid {
-            display: grid;
-            grid-template-columns: 320px minmax(0, 1fr);
-            gap: 18px;
-            align-items: start;
-            width: 100%;
-            box-sizing: border-box;
-          }
-          .kbf-profile-grid > * {
-            min-width: 0;
-            box-sizing: border-box;
-          }
-          .kbf-profile-card-left,
-          .kbf-profile-stack {
-            width: 100%;
-            min-width: 0;
-            box-sizing: border-box;
-          }
-          .kbf-profile-stack { display: flex; flex-direction: column; gap: 18px; }
-
-          /* ── Cards ── */
-          .kbf-profile-card { padding: 18px; border-radius: 18px; width: 100%; box-sizing: border-box; }
-          .kbf-profile-card-left {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: center;
-            text-align: left;
-          }
-
-          /* ── Card header ── */
-          .kbf-profile-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-          .kbf-profile-card-title { font-weight: 700; margin-bottom: 8px; }
-
-          /* ── Avatar ── */
-          .kbf-profile-photo {
-            width: 190px;
-            height: 190px;
-            border-radius: 28px;
-            object-fit: cover;
-            border: 1px solid var(--kbf-border);
-            background: #fff;
-          }
-          .kbf-photo-wrap {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-          }
-          .kbf-photo-overlay {
-            position: absolute;
-            inset: 0;
-            border-radius: 28px;
-            background: rgba(15,23,42,.45);
-            opacity: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity .2s ease;
-            pointer-events: none;
-          }
-          .kbf-photo-wrap:hover .kbf-photo-overlay { opacity: 1; }
-          .kbf-photo-edit {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg,#60a5fa,#3b82f6);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 18px rgba(59,130,246,.35);
-          }
-          .kbf-photo-edit img { filter: invert(100%); }
-
-          /* ── Meta / misc ── */
-          .kbf-profile-meta { font-size: 13px; color: var(--kbf-slate); }
-          .kbf-profile-note { margin-top: 4px; }
-          .kbf-profile-divider { height: 1px; background: var(--kbf-border); margin: 10px 0; }
-          .kbf-profile-actions { display: flex; gap: 10px; align-items: center; width: 100%; }
-          .kbf-profile-actions .kbf-btn { width: 100%; justify-content: center; }
-
-          /* ── Password toggle ── */
-          .kbf-input-with-toggle { position: relative; }
-          .kbf-input-with-toggle input { padding-right: 42px; }
-          .kbf-toggle-visibility {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            border: none;
-            background: transparent;
-            color: var(--kbf-slate);
-            cursor: pointer;
-            font-size: 12px;
-          }
-          .kbf-toggle-visibility:hover { color: var(--kbf-primary); }
-
-          /* ── Bio ── */
-          .kbf-profile-bio { margin-top: 8px; width: 100%; }
-          .kbf-profile-bio textarea { width: 100%; box-sizing: border-box; }
-          .kbf-profile-card-left .kbf-form-group { width: 100%; }
-          .kbf-profile-card-left .kbf-form-group input,
-          .kbf-profile-card-left .kbf-form-group textarea { width: 100%; box-sizing: border-box; }
-
-          /* ── 3-col form row ── */
-          .kbf-form-row-3 {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px;
-            width: 100%;
-            box-sizing: border-box;
-          }
-
-          /* ── File input ── */
-          .kbf-file-input { display: none; }
-          .kbf-file-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            border: 1px solid var(--kbf-border);
-            background: #fff;
-            color: var(--kbf-text);
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            width: 100%;
-            justify-content: center;
-            box-sizing: border-box;
-          }
-          .kbf-file-btn:hover { border-color: var(--kbf-primary); color: var(--kbf-primary); }
-
-          /* ── Stats grid ── */
-          .kbf-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            width: 100%;
-            box-sizing: border-box;
-          }
-          .kbf-stat-card {
-            background: #fff;
-            border: 1px solid var(--kbf-border);
-            border-radius: 16px;
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 0;
-            box-sizing: border-box;
-          }
-          .kbf-stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            flex-shrink: 0;
-          }
-          .kbf-stat-icon img { width: 20px; height: 20px; filter: invert(36%) sepia(88%) saturate(2029%) hue-rotate(198deg) brightness(95%) contrast(95%); }
-          .kbf-stat-icon--amber img { filter: invert(54%) sepia(93%) saturate(1461%) hue-rotate(14deg) brightness(96%) contrast(92%); }
-          .kbf-stat-label { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: .6px; }
-          .kbf-stat-value { font-size: 18px; font-weight: 800; color: #0f172a; }
-          .kbf-stat-sub { font-size: 12px; color: #64748b; }
-
-          /* ── Cropper ── */
-          .kbf-cropper-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(15,23,42,.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-          }
-          .kbf-cropper-modal {
-            background: #fff;
-            border-radius: 18px;
-            padding: 16px;
-            max-width: 420px;
-            width: 92%;
-            box-shadow: 0 20px 50px rgba(15,23,42,.25);
-          }
-          .kbf-cropper-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-          .kbf-cropper-title { font-weight: 700; }
-          .kbf-cropper-sub { font-size: 12px; color: var(--kbf-slate); margin-bottom: 12px; }
-          .kbf-cropper-stage {
-            position: relative;
-            width: 240px;
-            height: 240px;
-            margin: 0 auto;
-            border-radius: 14px;
-            overflow: hidden;
-            background: #f1f5f9;
-            cursor: grab;
-            border: 1px dashed #cbd5f5;
-          }
-          .kbf-cropper-stage.is-dragging { cursor: grabbing; }
-          .kbf-cropper-image { position: absolute; top: 0; left: 0; user-select: none; pointer-events: none; transform-origin: 0 0; }
-          .kbf-cropper-mask {
-            position: absolute;
-            inset: 0;
-            box-shadow: 0 0 0 9999px rgba(15,23,42,.35);
-            border-radius: 16px;
-            pointer-events: none;
-          }
-          .kbf-cropper-controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
-          .kbf-cropper-controls input[type=range] { flex: 1; }
-          .kbf-cropper-actions { display: flex; gap: 10px; margin-top: 12px; }
-          .kbf-cropper-actions .kbf-btn { width: 100%; justify-content: center; }
-          .kbf-cropper-close {
-            border: none;
-            background: #f1f5f9;
-            color: #64748b;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-          }
-
-          /* ── Responsive ── */
-          @media (max-width: 900px) {
-            .kbf-profile-grid { grid-template-columns: 1fr; }
-            .kbf-profile-card-left,
-            .kbf-profile-stack { width: 100%; min-width: 0; }
-            .kbf-stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .kbf-form-row-3 { grid-template-columns: 1fr; }
-          }
-          @media (max-width: 480px) {
-            .kbf-stats-grid { grid-template-columns: 1fr; }
-          }
-        </style>
-
         <div class="kbf-profile-grid">
 
           <!-- ══ LEFT CARD ══ -->
@@ -282,7 +285,7 @@ function kbf_dashboard_profile_tab($business_id) {
 
             <?php
               $avatar = $profile && $profile->avatar_url ? $profile->avatar_url : get_avatar_url($user->ID, ['size'=>240]);
-            ?>
+    ?>
             <label class="kbf-photo-wrap" for="kbf-avatar" id="kbf-photo-wrap">
               <img src="<?php echo esc_url($avatar); ?>" alt="Profile photo" class="kbf-profile-photo">
               <div class="kbf-photo-overlay">
@@ -447,9 +450,9 @@ function kbf_dashboard_profile_tab($business_id) {
         </div>
 
       </form>
-    </div>
-
-    <script>
+    </div>    
+    
+    <!-- ================== JS ================== -->    <script>
     window.kbfPhotoClick = function(){
         var input = document.getElementById('kbf-avatar');
         if (input) {
@@ -639,9 +642,3 @@ function kbf_dashboard_profile_tab($business_id) {
     </script>
     <?php return ob_get_clean();
 }
-
-
-// ============================================================
-// DASHBOARD TAB: Find Funds (sponsor view -- browse & support)
-// ============================================================
-

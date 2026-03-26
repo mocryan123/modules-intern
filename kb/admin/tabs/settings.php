@@ -10,7 +10,9 @@ function kbf_admin_settings_tab() {
     $lv_pub    = kbf_get_setting('kbf_maya_live_public', '');
     $lv_sec    = kbf_get_setting('kbf_maya_live_secret', '');
     $nonce     = wp_create_nonce('kbf_admin_action');
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:8px;">Platform Settings</h3>
       <p style="color:var(--kbf-slate);font-size:13.5px;margin-bottom:24px;">Configure KonekBayan payments and live mode.</p>
@@ -113,6 +115,7 @@ function kbf_admin_settings_tab() {
 
       <div id="kbf-settings-msg" style="margin-top:12px;"></div>
     </div>
+    <!-- ================== JS ================== -->
     <script>
     window.kbfSaveSetting = function(key, val, nonce, reloadOnSuccess) {
         const fd = new FormData();
@@ -157,6 +160,3 @@ function kbf_admin_settings_tab() {
     </script>
     <?php return ob_get_clean();
 }
-
-
-

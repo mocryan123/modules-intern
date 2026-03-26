@@ -27,8 +27,9 @@ function bntm_shortcode_kbf_dashboard() {
     if ($payment_state === 'success') {
         $find_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
         ob_start();
-        ?>
-        <div class="kbf-wrap kbf-user-ui">
+    ?>
+    <!-- ================== HTML ================== -->
+    <div class="kbf-wrap kbf-user-ui">
           <div class="kbf-card" style="max-width:640px;margin:50px auto;padding:34px 30px;text-align:center;">
             <div style="font-size:26px;font-weight:800;color:var(--kbf-navy);margin-bottom:8px;">Thank You</div>
             <div style="font-size:14px;color:var(--kbf-slate);margin-bottom:22px;">Thank you for your donation or support.</div>
@@ -41,14 +42,14 @@ function bntm_shortcode_kbf_dashboard() {
 
     ob_start();
     ?>
-    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
-    <div class="kbf-wrap kbf-user-ui">
-    <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
-      <div class="kbf-loading-card">
-        <div class="kbf-loading-spinner"></div>
-        <div style="font-size:13px;color:#4f5a6b;">Submitting your fund...</div>
-      </div>
-    </div>
+    
+    
+    
+    
+    
+
+    
+    <!-- ================== CSS ================== -->
     <style>
     .kbf-user-ui{
         font-family:'Poppins',system-ui,-apple-system,sans-serif;
@@ -378,6 +379,16 @@ function bntm_shortcode_kbf_dashboard() {
     }
     html.kbf-modal-lock, body.kbf-modal-lock { overflow: hidden; }
     </style>
+
+    <!-- ================== HTML ================== -->
+    <div class="kbf-wrap kbf-user-ui">
+    <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
+      <div class="kbf-loading-card">
+        <div class="kbf-loading-spinner"></div>
+        <div style="font-size:13px;color:#4f5a6b;">Submitting your fund...</div>
+      </div>
+    </div>
+    <!-- ================== CSS ================== -->
     <style>
     .kbf-user-ui{
         font-family:'Poppins',system-ui,-apple-system,sans-serif;
@@ -755,6 +766,8 @@ function bntm_shortcode_kbf_dashboard() {
     </div>
     </div><!-- .kbf-wrap -->
 
+        <!-- ================== JS ================== -->
+    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <script>
     function kbfCloseModal(id) {
         document.getElementById(id).style.display = 'none';
@@ -1292,7 +1305,9 @@ function kbf_dashboard_admin_embed() {
     $adm_tab = isset($_GET['adm_tab']) ? sanitize_text_field($_GET['adm_tab']) : 'pending';
     $nonce   = wp_create_nonce('kbf_admin_action');
 
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== JS ================== -->
     <script>
     var _kbfAdminNonce='<?php echo $nonce; ?>';
     if(typeof window.kbfAdmin==='undefined'){
@@ -1407,8 +1422,9 @@ function bntm_shortcode_kbf_browse() {
     $fund_details_url = kbf_get_page_url('fund_details');
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
     $total_active = count($funds);
-    ob_start(); ?>
-    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
+    ob_start();
+    ?>
+    <!-- ================== CSS ================== -->
     <style>
     .kbf-user-ui{
         font-family:'Poppins',system-ui,-apple-system,sans-serif;
@@ -1475,6 +1491,343 @@ function bntm_shortcode_kbf_browse() {
     @media(max-width:900px){.kbf-browse-shell{grid-template-columns:1fr;}.kbf-browse-sidebar{position:static;min-height:auto;flex-direction:row;justify-content:space-between;padding:12px;}}
     @media(max-width:640px){.kbf-browse-grid{grid-template-columns:1fr;}.kbf-browse-search{max-width:100%;}}
     </style>
+    
+    
+    
+
+    
+    <!-- ================== CSS ================== -->
+    <style>
+    .kbf-user-ui{
+        font-family:'Poppins',system-ui,-apple-system,sans-serif;
+        color:#0f1115;
+        background:#ffffff;
+        border-radius:18px;
+        padding:22px 18px 28px;
+        border:none;
+        box-shadow:none;
+    }
+    .kbf-user-ui .kbf-btn{font-weight:400;}
+    .kbf-user-ui .kbf-card,
+    .kbf-user-ui .kbf-fund-card,
+    .kbf-user-ui .kbf-filter-bar{
+        border-radius:18px;
+        border:1px solid #edf0f4;
+        box-shadow:0 18px 40px rgba(16,24,40,0.08);
+        transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .kbf-user-ui .kbf-card:hover,
+    .kbf-user-ui .kbf-fund-card:hover{
+        transform:translateY(-3px);
+        box-shadow:0 16px 34px rgba(15,23,42,0.08);
+    }
+    .kbf-user-ui .kbf-btn-primary{
+        background:linear-gradient(135deg,#79c0ff 0%,#6fb6ff 45%,#4a98ff 100%);
+        color:#ffffff;
+        box-shadow:0 10px 22px rgba(111,182,255,0.35);
+    }
+    .kbf-user-ui .kbf-btn-primary:hover{
+        background:linear-gradient(135deg,#79c0ff 0%,#6fb6ff 45%,#4a98ff 100%);
+        color:#ffffff;
+        transform:translateY(-1px);
+        box-shadow:0 14px 30px rgba(90,160,255,0.45),0 0 0 6px rgba(111,182,255,0.15);
+        filter:saturate(1.05);
+    }
+    .kbf-user-ui .kbf-btn-secondary{
+        background:#ffffff;
+        border:1px solid #dfe7f3;
+        color:#344055;
+    }
+    .kbf-user-ui .kbf-meta,
+    .kbf-user-ui .kbf-text-sm,
+    .kbf-user-ui .kbf-browse-tab,
+    .kbf-user-ui .kbf-browse-search input{
+        color:#4f5a6b;
+    }
+    .kbf-dashboard-topbar{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:16px;
+        padding:8px 4px 14px;
+        background:transparent;
+        border:none;
+        border-radius:0;
+        box-shadow:none;
+        margin-bottom:10px;
+    }
+    .kbf-dashboard-brand{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        font-weight:800;
+        color:#0f172a;
+        font-size:15px;
+    }
+    .kbf-dashboard-brand .kbf-logo-dot{
+        width:26px;height:26px;border-radius:10px;
+        background:linear-gradient(135deg,#79c0ff 0%,#4a98ff 100%);
+        display:inline-flex;align-items:center;justify-content:center;
+        color:#fff;font-weight:800;font-size:12px;
+        box-shadow:0 8px 18px rgba(79,147,255,0.35);
+    }
+    .kbf-dashboard-nav{
+        display:flex;
+        gap:18px;
+        font-size:12.5px;
+        color:var(--kbf-muted);
+        align-items:center;
+        flex-wrap:wrap;
+    }
+    .kbf-dashboard-nav a{
+        position:relative;
+        text-decoration:none;
+        color:#64748b;
+        font-weight:600;
+    }
+    .kbf-dashboard-nav a::after{
+        content:'';
+        position:absolute;
+        left:0;
+        bottom:-8px;
+        width:0;
+        height:2px;
+        border-radius:999px;
+        background:#4a98ff;
+        transition:width .2s ease;
+    }
+    .kbf-dashboard-nav a:hover::after,
+    .kbf-dashboard-nav a.active::after{ width:100%; }
+    .kbf-dashboard-nav a.active{ color:#1f2a44; }
+    .kbf-dashboard-actions{
+        display:flex;align-items:center;gap:10px;
+    }
+    .kbf-dashboard-avatar{
+        width:34px;height:34px;border-radius:50%;
+        border:2px solid #e5efff;object-fit:cover;
+        box-shadow:0 8px 18px rgba(16,24,40,0.12);
+    }
+    .kbf-hero-wrap{
+        padding:10px 6px 0;
+    }
+    .kbf-hero-banner{
+        background:linear-gradient(135deg,#edf4ff 0%,#ffffff 50%,#e5f0ff 100%);
+        background-image:
+          radial-gradient(140% 160% at 0% 0%, rgba(79,147,255,0.28) 0%, rgba(79,147,255,0) 55%),
+          radial-gradient(140% 160% at 100% 0%, rgba(161,210,255,0.30) 0%, rgba(161,210,255,0) 55%),
+          linear-gradient(135deg,#edf4ff 0%,#ffffff 50%,#e5f0ff 100%);
+        border:1.5px solid #cfe0f7;
+        border-radius:22px;
+        padding:22px 24px;
+        box-shadow:none;
+        margin-bottom:18px;
+    }
+    .kbf-user-ui,
+    .kbf-hero-banner{
+        background-image:none !important;
+    }
+    .kbf-user-ui{
+        border:none !important;
+        box-shadow:none !important;
+    }
+    .kbf-hero-title{
+        font-size:28px;
+        font-weight:800;
+        color:#0f172a;
+        margin:0 0 6px;
+    }
+    .kbf-hero-sub{
+        color:#4b5563;
+        font-size:13.5px;
+        margin:0 0 18px;
+        max-width:520px;
+    }
+    .kbf-hero-grid{
+        display:grid;
+        grid-template-columns:1.2fr 1fr;
+        gap:18px;
+        margin-bottom:20px;
+    }
+    .kbf-hero-card{
+        background:linear-gradient(180deg,#ffffff 0%,#f7faff 100%);
+        border:1.5px solid #dfe7f3;
+        border-radius:20px;
+        padding:18px 20px;
+        box-shadow:none;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        min-height:150px;
+        position:relative;
+        overflow:hidden;
+    }
+    .kbf-hero-card.kbf-hero-primary{
+        background:linear-gradient(135deg,#2f7bdc 0%,#4a98ff 100%);
+        border:1.5px solid #8cc0ff;
+        color:#fff;
+    }
+    .kbf-hero-card h4{
+        margin:0;
+        font-size:16px;
+        font-weight:700;
+    }
+    .kbf-hero-card p{
+        margin:0;
+        font-size:12.5px;
+        color:inherit;
+        opacity:.9;
+    }
+    .kbf-hero-card .kbf-hero-icon{
+        width:34px;height:34px;border-radius:12px;
+        display:inline-flex;align-items:center;justify-content:center;
+        background:#eef4ff;color:#1f2a44;
+    }
+    .kbf-hero-card.kbf-hero-primary .kbf-hero-icon{
+        background:rgba(255,255,255,.2);
+        color:#fff;
+    }
+    @media (max-width: 900px){
+        .kbf-hero-grid{ grid-template-columns:1fr; }
+        .kbf-dashboard-topbar{ flex-wrap:wrap; }
+    }
+    .kbf-user-ui .kbf-modal-overlay{
+        position:fixed;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(11,20,38,0.45);
+        backdrop-filter:blur(6px);
+        padding:24px;
+        z-index:9999;
+    }
+    .kbf-user-ui .kbf-modal{
+        width:100%;
+        max-width:720px;
+        background:#fff;
+        border-radius:22px;
+        border:1px solid #dfe7f3;
+        box-shadow:0 30px 80px rgba(15,40,80,0.22);
+        overflow:hidden;
+        max-height:90vh;
+        display:flex;
+        flex-direction:column;
+    }
+    .kbf-user-ui .kbf-modal.kbf-modal-sm{
+        max-width:520px;
+    }
+    .kbf-user-ui .kbf-modal-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:18px 20px;
+        background:
+            radial-gradient(520px 200px at 10% -40%, rgba(111,182,255,0.25), transparent 70%),
+            #f8fbff;
+        border-bottom:1px solid #edf0f4;
+    }
+    .kbf-user-ui .kbf-modal-header h3{
+        margin:0;
+        font-size:16px;
+        font-weight:600;
+        color:#0d1a2e;
+    }
+    .kbf-user-ui .kbf-modal-close{
+        width:32px;
+        height:32px;
+        border-radius:50%;
+        border:1px solid #dfe7f3;
+        background:#fff;
+        color:#6b7a90;
+        font-size:18px;
+        line-height:1;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        transition:transform .15s ease, box-shadow .2s ease;
+    }
+    .kbf-user-ui .kbf-modal-close:hover{
+        transform:translateY(-1px);
+        box-shadow:0 8px 18px rgba(15,40,80,0.12);
+    }
+    .kbf-user-ui .kbf-modal-body{
+        padding:20px;
+        background:#fff;
+        overflow-y:auto;
+        max-height:70vh;
+    }
+    .kbf-user-ui .kbf-modal-footer{
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+        padding:16px 20px 20px;
+        background:#fbfcff;
+        border-top:1px solid #edf0f4;
+    }
+    .kbf-user-ui .kbf-modal input,
+    .kbf-user-ui .kbf-modal select,
+    .kbf-user-ui .kbf-modal textarea{
+        border-radius:12px;
+        border:1.5px solid #e2e8f0;
+        background:#fff;
+    }
+    .kbf-loading-overlay{
+        position:fixed;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(11,20,38,0.55);
+        backdrop-filter:blur(6px);
+        z-index:10000;
+    }
+    .kbf-loading-card{
+        background:#ffffff;
+        border:1px solid #dfe7f3;
+        border-radius:22px;
+        padding:24px 28px;
+        box-shadow:0 30px 80px rgba(15,40,80,0.22);
+        text-align:center;
+        min-width:220px;
+    }
+    .kbf-loading-spinner{
+        width:34px;
+        height:34px;
+        border-radius:50%;
+        border:4px solid rgba(111,182,255,0.25);
+        border-top-color:#6fb6ff;
+        margin:0 auto 12px;
+        animation:kbfSpin .8s linear infinite;
+    }
+    @keyframes kbfSpin { to { transform: rotate(360deg); } }
+    .kbf-user-ui .kbf-field-error{
+        margin-top:6px;
+        font-size:11.5px;
+        color:#e11d48;
+    }
+    .kbf-user-ui .kbf-desc-counter{
+        display:block;
+        margin-top:6px;
+        font-size:11.5px;
+        color:#4f5a6b;
+    }
+    .kbf-user-ui .kbf-char-count{
+        display:block;
+        margin-top:6px;
+        font-size:11.5px;
+        color:#4f5a6b;
+    }
+    .kbf-user-ui .kbf-title-counter{
+        display:block;
+        margin-top:6px;
+        font-size:11.5px;
+        color:#4f5a6b;
+    }
+    html.kbf-modal-lock, body.kbf-modal-lock { overflow: hidden; }
+    </style>
+
+    <!-- ================== HTML ================== -->
     <div class="kbf-wrap kbf-user-ui">
 
     <?php echo kbf_role_nav('sponsor'); ?>
@@ -1698,7 +2051,7 @@ function bntm_shortcode_kbf_browse() {
       </div>
     </div>
     </div><!-- .kbf-wrap -->
-
+    <!-- ================== JS ================== -->
     <script>
     window.kbfOpenReport=function(id){document.getElementById('report-fund-id').value=id;document.getElementById('kbf-modal-report').style.display='flex';};
     window.kbfSponsorClose=function(){document.getElementById('kbf-modal-sponsor').style.display='none';};
@@ -1919,7 +2272,8 @@ function bntm_shortcode_kbf_sponsor_history() {
         ));
     }
     $fund_details_url = kbf_get_page_url('fund_details');
-    ob_start(); ?>
+    ob_start();
+    ?>
     <div class="kbf-wrap">
       <div class="kbf-page-header">
         <h2>Donation History</h2>
@@ -2028,8 +2382,9 @@ function bntm_shortcode_kbf_fund_details() {
     $nonce_report  = wp_create_nonce('kbf_report');
     $nonce_rating  = wp_create_nonce('kbf_rating');
 
-    ob_start(); ?>
-    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
+    ob_start();
+    ?>
+    <!-- ================== CSS ================== -->
     <style>
     .kbf-detail-wrap{max-width:1000px;margin:0 auto;}
     .kbf-detail-layout{display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;}
@@ -2419,7 +2774,7 @@ function bntm_shortcode_kbf_fund_details() {
       </div>
     </div>
     </div><!-- .kbf-wrap -->
-
+    <!-- ================== JS ================== -->
     <script>
     function kbfGetActiveSponsorModal(){
         var modals = document.querySelectorAll('#kbf-modal-sponsor');
@@ -2578,7 +2933,8 @@ function bntm_shortcode_kbf_organizer_profile() {
     $funds=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d AND status IN ('active','completed') ORDER BY created_at DESC LIMIT 10",$biz_id));
     $reviews=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$rt} WHERE organizer_id=%d ORDER BY created_at DESC LIMIT 10",$biz_id));
     $socials=$profile&&$profile->social_links?json_decode($profile->social_links,true):[];
-    ob_start(); ?>
+    ob_start();
+    ?>
     <div class="kbf-wrap">
     <div class="kbf-page-header">
       <div style="display:flex;align-items:center;gap:16px;">
@@ -2670,8 +3026,16 @@ function bntm_shortcode_kbf_organizer_profile() {
 }
 
 
-// ============================================================
-// ADMIN PANEL SHORTCODE
-// ============================================================
+
+
+
+
+
+
+
+
+
+
+
 
 

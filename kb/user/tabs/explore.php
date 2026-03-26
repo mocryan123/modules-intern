@@ -28,9 +28,10 @@ function kbf_dashboard_find_funds_tab() {
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
     $base_url = strtok($_SERVER['REQUEST_URI'],'?').'?kbf_tab=find_funds';
 
-    ob_start(); ?>
-    <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
-
+    ob_start();
+    ?>
+    
+    <!-- ================== HTML ================== -->
     <!-- MODAL: Sponsor -->
     <div id="kbff-modal-sponsor" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
@@ -251,8 +252,11 @@ function kbf_dashboard_find_funds_tab() {
       <?php endforeach; ?>
     </div>
     <?php endif; ?>
-
+    
+    <!-- ================== JS ================== -->
     <script>
+      if(typeof ajaxurl==='undefined') 
+        var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';
     (function(){
         var catSel = document.getElementById('kbff-cat-select');
         var sortSel = document.getElementById('kbff-sort-select');
@@ -378,7 +382,5 @@ function kbf_dashboard_find_funds_tab() {
 }
 
 
-// ============================================================
-// DASHBOARD TAB: Admin Embed (admin-only inline panel)
-// ============================================================
+
 

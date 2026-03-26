@@ -11,7 +11,58 @@ function bntm_shortcode_kbf_admin() {
     global $wpdb;
     $tab = isset($_GET['adm_tab'])?sanitize_text_field($_GET['adm_tab']):'pending';
     $nonce = wp_create_nonce('kbf_admin_action');
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
+    <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
+      <div class="kbf-loading-card">
+        <div class="kbf-loading-logo">KB</div>
+        <div class="kbf-loading-spinner"></div>
+        <div style="font-size:13px;color:#4f5a6b;">Loading...</div>
+      </div>
+    </div>
+    <div class="kbf-wrap">
+    <?php
+    $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
+    $open_reports_count  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
+    $pending_wd_count    = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
+    $open_appeals_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_appeals WHERE status='open'"); // phpcs:ignore
+    $tabs=['pending'=>'For Review','all_funds'=>'Fundraisers','transactions'=>'Payments','withdrawals'=>'Cashouts','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Accounts','settings'=>'Settings'];
+    $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
+    ?>
+    <div class="kbf-dashboard-topbar">
+      <div class="kbf-dashboard-brand">
+        <span class="kbf-logo-dot">KB</span>
+        KonekBayan
+      </div>
+      <div class="kbf-dashboard-nav">
+        <?php foreach($tabs as $k=>$label): ?>
+        <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>">
+          <?php echo $label; ?>
+          <?php if(!empty($counts[$k]) && $counts[$k]>0): ?>
+            <span class="kbf-nav-count"><?php echo $counts[$k]; ?></span>
+          <?php endif; ?>
+        </a>
+        <?php endforeach; ?>
+      </div>
+    </div>
+
+    <div class="kbf-page-header"><h2>KonekBayan Admin Panel</h2><p>Moderate funds, manage escrow, review reports, and process withdrawals.</p></div>
+      <div class="kbf-tab-content">
+        <?php
+        if($tab==='pending')      echo kbf_admin_pending_tab();
+        elseif($tab==='all_funds')     echo kbf_admin_all_funds_tab();
+        elseif($tab==='transactions')  echo kbf_admin_transactions_tab();
+        elseif($tab==='withdrawals')   echo kbf_admin_withdrawals_tab();
+        elseif($tab==='reports')       echo kbf_admin_reports_tab();
+        elseif($tab==='appeals')       echo kbf_admin_appeals_tab();
+        elseif($tab==='organizers')    echo kbf_admin_organizers_tab();
+        elseif($tab==='settings')      echo kbf_admin_settings_tab();
+        ?>
+      </div>
+    </div>
+
+       <!-- ================== JS ================== -->
     <script>
     var ajaxurl = window.ajaxurl || '<?php echo admin_url('admin-ajax.php'); ?>';
     var _kbfAdminNonce='<?php echo $nonce; ?>';
@@ -62,61 +113,8 @@ function bntm_shortcode_kbf_admin() {
     window.kbfConfirmPayment=function(id){if(!confirm('Mark this sponsorship as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
     window.kbfVerifyOrg=function(id,cur){kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:cur?'0':'1'});};
     </script>
-    <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
-      <div class="kbf-loading-card">
-        <div class="kbf-loading-logo">KB</div>
-        <div class="kbf-loading-spinner"></div>
-        <div style="font-size:13px;color:#4f5a6b;">Loading...</div>
-      </div>
-    </div>
-    <div class="kbf-wrap">
-    <?php
-    $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
-    $open_reports_count  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
-    $pending_wd_count    = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
-    $open_appeals_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_appeals WHERE status='open'"); // phpcs:ignore
-    $tabs=['pending'=>'For Review','all_funds'=>'Fundraisers','transactions'=>'Payments','withdrawals'=>'Cashouts','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Accounts','settings'=>'Settings'];
-    $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
-    ?>
-    <div class="kbf-dashboard-topbar">
-      <div class="kbf-dashboard-brand">
-        <span class="kbf-logo-dot">KB</span>
-        KonekBayan
-      </div>
-      <div class="kbf-dashboard-nav">
-        <?php foreach($tabs as $k=>$label): ?>
-        <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>">
-          <?php echo $label; ?>
-          <?php if(!empty($counts[$k]) && $counts[$k]>0): ?>
-            <span class="kbf-nav-count"><?php echo $counts[$k]; ?></span>
-          <?php endif; ?>
-        </a>
-        <?php endforeach; ?>
-      </div>
-    </div>
-
-    <div class="kbf-page-header"><h2>KonekBayan Admin Panel</h2><p>Moderate funds, manage escrow, review reports, and process withdrawals.</p></div>
-    <div class="kbf-tab-content">
-      <?php
-      if($tab==='pending')      echo kbf_admin_pending_tab();
-      elseif($tab==='all_funds')     echo kbf_admin_all_funds_tab();
-      elseif($tab==='transactions')  echo kbf_admin_transactions_tab();
-      elseif($tab==='withdrawals')   echo kbf_admin_withdrawals_tab();
-      elseif($tab==='reports')       echo kbf_admin_reports_tab();
-      elseif($tab==='appeals')       echo kbf_admin_appeals_tab();
-      elseif($tab==='organizers')    echo kbf_admin_organizers_tab();
-      elseif($tab==='settings')      echo kbf_admin_settings_tab();
-      ?>
-    </div>
-    </div>
     <?php
     $c=ob_get_clean();
     return bntm_universal_container('KonekBayan Admin Panel',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
-
-
-
-// ============================================================
-// AJAX HANDLERS -- ADMIN
-// ============================================================
 

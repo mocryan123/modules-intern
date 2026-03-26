@@ -10,7 +10,9 @@ function kbf_dashboard_withdrawals_tab($business_id) {
         "SELECT w.*,f.title as fund_title FROM {$wt} w LEFT JOIN {$ft} f ON w.fund_id=f.id WHERE f.business_id=%d ORDER BY w.requested_at DESC",
         $business_id
     ));
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">Cashout History</h3>
       <div class="kbf-table-wrap">
@@ -46,7 +48,5 @@ function kbf_dashboard_withdrawals_tab($business_id) {
     <?php return ob_get_clean();
 }
 
-// ============================================================
-// DASHBOARD TAB: Organizer Profile
-// ============================================================
+
 

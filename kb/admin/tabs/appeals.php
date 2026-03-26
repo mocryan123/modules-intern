@@ -8,7 +8,9 @@ function kbf_admin_appeals_tab() {
     $at = $wpdb->prefix.'kbf_appeals';
     $ft = $wpdb->prefix.'kbf_funds';
     $rows = $wpdb->get_results("SELECT a.*,f.title as fund_title FROM {$at} a JOIN {$ft} f ON a.fund_id=f.id ORDER BY FIELD(a.status,'open','reviewed','approved','rejected'),a.created_at DESC"); // phpcs:ignore
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">Suspension Appeals</h3>
       <?php if(empty($rows)): ?><div class="kbf-empty"><p>No appeals filed.</p></div>
@@ -34,4 +36,3 @@ function kbf_admin_appeals_tab() {
     </div>
     <?php return ob_get_clean();
 }
-

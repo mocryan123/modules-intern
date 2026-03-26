@@ -6,7 +6,9 @@
 function kbf_admin_reports_tab() {
     global $wpdb;$rt=$wpdb->prefix.'kbf_reports';$ft=$wpdb->prefix.'kbf_funds';
     $rows=$wpdb->get_results("SELECT r.*,f.title as fund_title FROM {$rt} r JOIN {$ft} f ON r.fund_id=f.id ORDER BY FIELD(r.status,'open','reviewed','dismissed'),r.created_at DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">Fund Reports</h3>
       <?php if(empty($rows)): ?><div class="kbf-empty"><p>No reports filed.</p></div>
@@ -34,4 +36,3 @@ function kbf_admin_reports_tab() {
     </div>
     <?php return ob_get_clean();
 }
-

@@ -6,7 +6,9 @@
 function kbf_admin_pending_tab() {
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $funds=$wpdb->get_results("SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.status='pending' ORDER BY f.created_at ASC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input, table name only
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">Funds Pending Approval <span style="background:var(--kbf-red-lt);color:var(--kbf-red);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:8px;"><?php echo count($funds); ?></span></h3>
       <?php if(empty($funds)): ?><div class="kbf-empty"><p>No funds pending review.</p></div>
@@ -45,4 +47,3 @@ function kbf_admin_pending_tab() {
     </div>
     <?php return ob_get_clean();
 }
-

@@ -6,7 +6,9 @@
 function kbf_admin_transactions_tab() {
     global $wpdb;$st=$wpdb->prefix.'kbf_sponsorships';$ft=$wpdb->prefix.'kbf_funds';
     $rows=$wpdb->get_results("SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id ORDER BY s.created_at DESC LIMIT 300"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">All Transactions</h3>
       <div class="kbf-table-wrap">
@@ -30,4 +32,3 @@ function kbf_admin_transactions_tab() {
     </div>
     <?php return ob_get_clean();
 }
-

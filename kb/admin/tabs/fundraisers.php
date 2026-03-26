@@ -6,7 +6,9 @@
 function kbf_admin_all_funds_tab() {
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $funds=$wpdb->get_results("SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID ORDER BY f.created_at DESC LIMIT 200"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">All Funds</h3>
       <div class="kbf-table-wrap">
@@ -55,4 +57,3 @@ function kbf_admin_all_funds_tab() {
     </div>
     <?php return ob_get_clean();
 }
-

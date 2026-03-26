@@ -16,7 +16,9 @@ function kbf_dashboard_overview_tab($business_id) {
     $total_sponsors = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$business_id));
     $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
 
-    ob_start(); ?>
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <div class="kbf-section-header">
         <h3 class="kbf-section-title">Dashboard Overview</h3>
@@ -230,7 +232,9 @@ function kbf_dashboard_overview_tab($business_id) {
           <?php endif; ?>
         </div>
       <?php endforeach; endif; ?>
-      <script>
+      
+    <!-- ================== JS ================== -->
+    <script>
       (function(){
         var statusEl = document.getElementById('kbf-filter-status');
         var escrowEl = document.getElementById('kbf-filter-escrow');
@@ -252,12 +256,6 @@ function kbf_dashboard_overview_tab($business_id) {
     </div>
     <?php return ob_get_clean();
 }
-
-// ============================================================
-// DASHBOARD TAB: My Funds
-// ============================================================
-
-
 
 
 

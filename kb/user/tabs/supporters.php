@@ -13,7 +13,10 @@ function kbf_dashboard_sponsorships_tab($business_id) {
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
     $pending_count = 0;
     foreach ((array)$rows as $s) { if ($s->payment_status === 'pending') { $pending_count++; } }
-    ob_start(); ?>
+    ob_start();
+    ?>
+    
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title" style="margin-bottom:16px;">All Sponsorships Received</h3>
       <?php if($demo_mode): ?>
@@ -55,9 +58,8 @@ function kbf_dashboard_sponsorships_tab($business_id) {
     <?php return ob_get_clean();
 }
 
-// ============================================================
-// DASHBOARD TAB: Withdrawals
-// ============================================================
+
+
 
 
 

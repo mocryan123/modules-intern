@@ -20,6 +20,7 @@ function bntm_kbf_render_landing() {
 
     ob_start();
     ?>
+    <!-- ================== CSS ================== -->
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
@@ -35,10 +36,10 @@ function bntm_kbf_render_landing() {
         --kbf-radius: 26px;
     }
 
-    .kbf-landing {\r\n        font-family: 'Poppins', system-ui, -apple-system, sans-serif;\r\n        color: var(--kbf-ink);\r\n        background:\r\n            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),\r\n            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),\r\n            var(--kbf-surface);\r\n        width: 100%;\r\n        max-width: 1240px;\r\n        margin: 18px auto;\r\n        padding: 26px 22px 64px;\r\n        border-radius: 18px;\r\n        overflow: hidden;\r\n    }
+    .kbf-landing {..        font-family: 'Poppins', system-ui, -apple-system, sans-serif;..        color: var(--kbf-ink);..        background:..            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),..            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),..            var(--kbf-surface);..        width: 100%;..        max-width: 1240px;..        margin: 18px auto;..        padding: 26px 22px 64px;..        border-radius: 18px;..        overflow: visible;..    }
 
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
-    .kbf-container { overflow: hidden; max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 0 22px; }
     .kbf-landing a { color: inherit; text-decoration: none; }
         .kbf-divider {
         height: 1px;
@@ -58,9 +59,21 @@ function bntm_kbf_render_landing() {
         align-items: center;
         justify-content: space-between;
         gap: 18px;
-        padding: 8px 0 18px;
-        position: relative;
-        z-index: 10;
+        padding: 8px 16px 18px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid transparent;
+        transition: border-color .2s ease, box-shadow .2s ease;
+        margin: 0 -16px;
+        width: calc(100% + 32px);
+    }
+    .kbf-topbar.kbf-topbar-scrolled {
+        border-bottom-color: var(--kbf-border);
+        box-shadow: 0 4px 24px rgba(15, 40, 80, 0.06);
     }
     .kbf-topbar-left { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
     .kbf-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
@@ -85,19 +98,55 @@ function bntm_kbf_render_landing() {
         padding: 9px 18px; border-radius: 999px;
         font-weight: 400; font-size: 12.5px;
         border: 1px solid transparent;
-        transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+        transition: transform .3s ease, box-shadow .3s ease, background .3s ease, filter .3s ease;
     }
     .kbf-btn.kbf-btn-primary {
-        background: linear-gradient(135deg, #79c0ff 0%, #6fb6ff 45%, #4a98ff 100%);
+        background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 50%, #2070e0 100%);
         color: #ffffff;
-        box-shadow: 0 10px 22px rgba(111, 182, 255, 0.35);
+        box-shadow:
+            0 1px 2px rgba(32, 112, 224, 0.20),
+            0 4px 14px rgba(42, 120, 220, 0.28),
+            0 0 0 0px rgba(111, 182, 255, 0),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        position: relative;
+        isolation: isolate;
+    }
+    .kbf-btn.kbf-btn-primary::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        background: linear-gradient(135deg, #7ec4ff 0%, #5aaaf8 40%, #2878e8 100%);
+        opacity: 0;
+        z-index: -1;
+        transition: opacity .3s ease;
     }
     .kbf-btn.kbf-btn-primary:visited,
     .kbf-btn.kbf-btn-primary:active { color: #ffffff; }
     .kbf-btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 14px 30px rgba(90, 160, 255, 0.45), 0 0 0 6px rgba(111, 182, 255, 0.15);
-        filter: saturate(1.05);
+        transform: translateY(-2px);
+        box-shadow:
+            0 1px 3px rgba(32, 112, 224, 0.15),
+            0 8px 24px rgba(42, 120, 220, 0.45),
+            0 16px 40px rgba(61, 142, 240, 0.20),
+            0 0 0 4px rgba(111, 182, 255, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        filter: brightness(1.06);
+    }
+    .kbf-btn-primary:hover::before {
+        opacity: 1;
+    }
+    .kbf-btn-primary:active {
+        transform: translateY(0px);
+        box-shadow:
+            0 1px 2px rgba(32, 112, 224, 0.30),
+            0 2px 8px rgba(61, 142, 240, 0.28),
+            0 0 0 2px rgba(111, 182, 255, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        filter: brightness(0.96);
+        transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
     }
     .kbf-btn-ghost { background: transparent; border-color: var(--kbf-border); color: var(--kbf-muted); }
     .kbf-btn-ghost[aria-disabled="true"] { opacity: .7; cursor: not-allowed; }
@@ -117,8 +166,7 @@ function bntm_kbf_render_landing() {
         padding: 44px;
         border: 1px solid #dce8f8;
         box-shadow: 0 12px 40px rgba(15,40,80,0.07);
-        overflow: hidden;
-    }
+        overflow: hidden;`r`n    }
     .kbf-hero::before {
         content: '';
         position: absolute;
@@ -312,8 +360,7 @@ function bntm_kbf_render_landing() {
         border-radius: 18px; padding: 16px;
         box-shadow: 0 12px 26px rgba(15, 23, 42, 0.04);
         transition: transform .2s ease, box-shadow .2s ease;
-        position: relative; overflow: hidden;
-    }
+        position: relative; overflow: hidden;`r`n    }
     .kbf-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08); }
     .kbf-card::after {
         content: '';
@@ -443,6 +490,76 @@ function bntm_kbf_render_landing() {
         filter: invert(100%);
     }
 
+    /* About section extras */
+    .kbf-about-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--kbf-border);
+        border: 1px solid var(--kbf-border);
+        border-radius: 18px;
+        overflow: hidden;
+        margin-top: 18px;
+    }
+    .kbf-about-stat {
+        background: var(--kbf-surface);
+        padding: 24px 20px;
+        text-align: center;
+    }
+    .kbf-about-stat-num {
+        font-size: 32px;
+        font-weight: 700;
+        color: #2070e0;
+        letter-spacing: -1px;
+        line-height: 1;
+    }
+    .kbf-about-stat-label {
+        font-size: 11.5px;
+        color: var(--kbf-muted);
+        margin-top: 6px;
+        line-height: 1.4;
+    }
+    .kbf-about-values {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 14px;
+    }
+    .kbf-about-value {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        background: var(--kbf-soft);
+        border: 1px solid var(--kbf-border);
+        border-radius: 16px;
+        padding: 18px;
+    }
+    .kbf-about-value-icon {
+        font-size: 22px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .kbf-about-value-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--kbf-ink);
+        margin-bottom: 4px;
+    }
+    .kbf-about-value-desc {
+        font-size: 12px;
+        color: var(--kbf-muted);
+        line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+        .kbf-about-stats { grid-template-columns: repeat(2, 1fr); }
+        .kbf-about-values { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+        .kbf-about-stats { grid-template-columns: repeat(2, 1fr); }
+        .kbf-about-stat-num { font-size: 26px; }
+    }
+    
     /* Hamburger menu */
     .kbf-hamburger {
         display: none;
@@ -454,6 +571,14 @@ function bntm_kbf_render_landing() {
         color: var(--kbf-muted);
         align-items: center;
         justify-content: center;
+    }
+    .kbf-mobile-menu-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--kbf-border);
+        background: #fff;
     }
     .kbf-hamburger img {
         width: 18px;
@@ -631,6 +756,8 @@ function bntm_kbf_render_landing() {
     }
     </style>
 
+    <!-- ================== HTML ================== -->
+
 
     <section class="kbf-landing">
      
@@ -647,9 +774,9 @@ function bntm_kbf_render_landing() {
             </div>
             <nav class="kbf-nav">
               <a href="#kbf-home" onclick="return kbfScrollTo('kbf-home')">Home</a>
-              <a href="#kbf-donation" onclick="return kbfScrollTo('kbf-donation')">Donation</a>
-              <a href="#kbf-how" onclick="return kbfScrollTo('kbf-how')">How It Works</a>
-              <a href="#kbf-about" onclick="return kbfScrollTo('kbf-about')">About Us</a>
+              <a href="#kbf-how" onclick="return kbfScrollTo('kbf-how')">Features</a>
+              <a href="#kbf-donation" onclick="return kbfScrollTo('kbf-donation')">About</a>
+              <a href="#kbf-faq" onclick="return kbfScrollTo('kbf-faq')">FAQ</a>
             </nav>
           </div>
           <div class="kbf-actions">
@@ -660,11 +787,20 @@ function bntm_kbf_render_landing() {
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="Menu" id="kbf-hamburger-icon">
           </button>
         </div>
-      <div class="kbf-mobile-menu" id="kbf-mobile-menu">
-          <a href="#kbf-home" onclick="kbfMobileNav('kbf-home')">Home</a>
-          <a href="#kbf-donation" onclick="kbfMobileNav('kbf-donation')">Donation</a>
-          <a href="#kbf-how" onclick="kbfMobileNav('kbf-how')">How It Works</a>
-          <a href="#kbf-about" onclick="kbfMobileNav('kbf-about')">About Us</a>
+              <div class="kbf-mobile-menu" id="kbf-mobile-menu">
+          <div class="kbf-mobile-menu-header">
+            <div class="kbf-brand">
+              <span class="kbf-brand-badge">✳</span>
+              <span style="font-weight:800;">KonekBayan</span>
+            </div>
+            <button class="kbf-hamburger" onclick="document.getElementById('kbf-hamburger-btn').click()" aria-label="Close menu" style="display:inline-flex;">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="Close">
+            </button>
+          </div>
+            <a href="#kbf-home" onclick="kbfMobileNav('kbf-home')">Home</a>
+            <a href="#kbf-how" onclick="kbfMobileNav('kbf-how')">Features</a>
+            <a href="#kbf-donation" onclick="kbfMobileNav('kbf-donation')">About</a>
+            <a href="#kbf-faq" onclick="kbfMobileNav('kbf-faq')">FAQ</a>  
           <div class="kbf-mobile-menu-actions">
             <a class="kbf-btn kbf-btn-ghost" aria-disabled="true" href="<?php echo esc_url($login_url); ?>">Login (Soon)</a>
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Find Funds</a>
@@ -788,6 +924,51 @@ function bntm_kbf_render_landing() {
               <p style="margin-top:10px;">KonekBayan started because Filipinos don't need convincing to help each other. Bayanihan is already in our culture. We just needed to build something worthy of it.</p>
             </div>
           </div>
+
+          <!-- Stats row -->
+          <div class="kbf-about-stats">
+            <div class="kbf-about-stat">
+              <div class="kbf-about-stat-num">₱0</div>
+              <div class="kbf-about-stat-label">Platform fee during beta</div>
+            </div>
+            <div class="kbf-about-stat">
+              <div class="kbf-about-stat-num">48h</div>
+              <div class="kbf-about-stat-label">Average time to first donation</div>
+            </div>
+            <div class="kbf-about-stat">
+              <div class="kbf-about-stat-num">100%</div>
+              <div class="kbf-about-stat-label">Funds go directly to organizer</div>
+            </div>
+            <div class="kbf-about-stat">
+              <div class="kbf-about-stat-num">3x</div>
+              <div class="kbf-about-stat-label">More raised with proof updates</div>
+            </div>
+          </div>
+
+          <!-- Values row -->
+          <div class="kbf-about-values">
+            <div class="kbf-about-value">
+              <div class="kbf-about-value-icon">🤝</div>
+              <div>
+                <div class="kbf-about-value-title">Rooted in bayanihan</div>
+                <div class="kbf-about-value-desc">We didn't invent community giving. We just built infrastructure worthy of it.</div>
+              </div>
+            </div>
+            <div class="kbf-about-value">
+              <div class="kbf-about-value-icon">🔍</div>
+              <div>
+                <div class="kbf-about-value-title">Radical transparency</div>
+                <div class="kbf-about-value-desc">Every peso tracked. Every organizer verified. No black holes.</div>
+              </div>
+            </div>
+            <div class="kbf-about-value">
+              <div class="kbf-about-value-icon">🇵🇭</div>
+              <div>
+                <div class="kbf-about-value-title">Built for Filipinos</div>
+                <div class="kbf-about-value-desc">GCash, local banks, Taglish — designed for how we actually live.</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- STATS / COMMUNITY -->
@@ -809,7 +990,7 @@ function bntm_kbf_render_landing() {
 
         <!-- FAQ -->
         <div class="kbf-divider"></div>
-        <div class="kbf-section kbf-reveal delay-3">
+        <div id="kbf-faq" class="kbf-section kbf-reveal delay-3">
           <h2 style="text-align: center; margin-bottom: 40px; font-size: 1.5em; font-weight: 400;">Questions people actually ask</h2>
           <div class="kbf-faq">
             <details>
@@ -870,6 +1051,7 @@ function bntm_kbf_render_landing() {
 
       </div>
     </section>
+    <!-- ================== JS ================== -->
     <script>
     window.kbfScrollTo = function(id) {
         var target = document.getElementById(id);
@@ -939,6 +1121,19 @@ function bntm_kbf_render_landing() {
         if (overlay) overlay.addEventListener('click', closeMenu);
     })();
 
+        // Sticky navbar scroll effect
+    (function() {
+        var topbar = document.querySelector('.kbf-topbar');
+        if (!topbar) return;
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 10) {
+                topbar.classList.add('kbf-topbar-scrolled');
+            } else {
+                topbar.classList.remove('kbf-topbar-scrolled');
+            }
+        }, { passive: true });
+    })();
+
     window.kbfMobileNav = function(id) {
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
@@ -950,12 +1145,18 @@ function bntm_kbf_render_landing() {
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return false;
     };
+    function openMenu() {
+            open = true;
+            menu.classList.add('kbf-menu-open');
+            if (overlay) overlay.classList.add('kbf-overlay-open');
+        }
+
+        function closeMenu() {
+            open = false;
+            menu.classList.remove('kbf-menu-open');
+            if (overlay) overlay.classList.remove('kbf-overlay-open');
+        }
     </script>
     <?php
     return ob_get_clean();
 }
-
-
-
-
-

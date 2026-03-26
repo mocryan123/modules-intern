@@ -9,7 +9,10 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
     $st = $wpdb->prefix.'kbf_sponsorships';
     $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
 
-    ob_start(); ?>
+    ob_start();
+    ?>
+    
+    <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <div class="kbf-section-header">
         <h3 class="kbf-section-title">All My Funds</h3>
@@ -124,7 +127,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
     <?php return ob_get_clean();
 }
 
-// ============================================================
-// DASHBOARD TAB: Sponsorships Received
-// ============================================================
+
+
+
 
