@@ -131,7 +131,6 @@ function bntm_kbf_render_landing() {
             0 1px 3px rgba(32, 112, 224, 0.15),
             0 8px 24px rgba(42, 120, 220, 0.45),
             0 16px 40px rgba(61, 142, 240, 0.20),
-            0 0 0 4px rgba(111, 182, 255, 0.22),
             inset 0 1px 0 rgba(255, 255, 255, 0.25);
         filter: brightness(1.06);
     }

@@ -30,7 +30,174 @@ function kbf_dashboard_find_funds_tab() {
 
     ob_start();
     ?>
-    
+
+    <!-- ================== CSS ================== -->
+    <style>
+      .kbf-explore-grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+        gap:18px;
+      }
+      .kbf-explore-card{
+        background:#fff;
+        border:1px solid var(--kbf-border);
+        border-radius:18px;
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+        transition:box-shadow .2s ease, transform .15s ease;
+      }
+      .kbf-explore-card:hover{
+        box-shadow:0 18px 40px rgba(15,23,42,.10);
+        transform:translateY(-2px);
+      }
+      .kbf-explore-media{
+        position:relative;
+        display:block;
+        text-decoration:none;
+        padding:12px 12px 0;
+      }
+      .kbf-explore-media-frame{
+        border-radius:16px;
+      }
+      .kbf-explore-media img{
+        width:100%;
+        height:170px;
+        object-fit:cover;
+        display:block;
+        border-radius:12px;
+        background:#f1f5f9;
+      }
+      .kbf-explore-fallback{
+        width:100%;
+        height:170px;
+        border-radius:12px;
+        background:linear-gradient(135deg,#dce9ff 0%,#cfe2ff 55%,#eaf2ff 100%);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      }
+      .kbf-explore-chip{
+        position:absolute;
+        top:22px;
+        left:22px;
+        background:rgba(15,23,42,.55);
+        color:#ffffff;
+        padding:4px 10px;
+        border-radius:999px;
+        font-size:10px;
+        font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:.4px;
+        border:1px solid rgba(15,23,42,.25);
+        backdrop-filter:blur(2px);
+        text-shadow:0 1px 2px rgba(15,23,42,.35);
+      }
+      .kbf-explore-tag{
+        position:absolute;
+        bottom:12px;
+        left:22px;
+        background:rgba(15,23,42,.55);
+        color:#ffffff;
+        padding:4px 10px;
+        border-radius:999px;
+        font-size:10px;
+        font-weight:700;
+        border:1px solid rgba(15,23,42,.25);
+        backdrop-filter:blur(2px);
+        text-shadow:0 1px 2px rgba(15,23,42,.35);
+      }
+      .kbf-explore-body{
+        padding:14px 16px 16px;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        flex:1;
+      }
+      .kbf-explore-title{
+        font-size:14.5px;
+        font-weight:700;
+        color:var(--kbf-navy);
+        margin:0;
+        line-height:1.45;
+      }
+      .kbf-explore-title-row{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+      }
+      .kbf-explore-title-text{
+        flex:1;
+        min-width:0;
+        overflow:hidden;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+      }
+      .kbf-explore-days-inline{
+        font-size:11.5px;
+        color:#64748b;
+        font-weight:600;
+        flex-shrink:0;
+      }
+      .kbf-explore-desc{
+        font-size:12.5px;
+        color:var(--kbf-slate);
+        margin:0;
+        overflow:hidden;
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        line-height:1.5;
+      }
+      .kbf-explore-meta{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        font-size:11.5px;
+        color:var(--kbf-slate);
+        gap:8px;
+      }
+      .kbf-explore-loc{
+        flex:1;
+        min-width:0;
+        overflow:hidden;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+      }
+      .kbf-explore-progress{
+        height:6px;
+        background:#eef2f7;
+        border-radius:999px;
+        overflow:hidden;
+      }
+      .kbf-explore-progress span{
+        display:block;
+        height:100%;
+        background:linear-gradient(90deg,#63a4ff 0%,#3b82f6 100%);
+        border-radius:999px;
+      }
+      .kbf-explore-footer{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        font-size:12px;
+        color:var(--kbf-slate);
+        margin-top:2px;
+      }
+      .kbf-explore-amount{
+        font-weight:800;
+        color:#1f2a44;
+        font-size:13.5px;
+      }
+      .kbf-explore-actions{
+        display:grid;
+        gap:8px;
+      }
+      .kbf-explore-actions.is-own{ grid-template-columns:1fr auto auto; }
+      .kbf-explore-actions.is-public{ grid-template-columns:1fr auto auto auto; }
+    </style>
+
     <!-- ================== HTML ================== -->
     <!-- MODAL: Sponsor -->
     <div id="kbff-modal-sponsor" class="kbf-modal-overlay" style="display:none;">
@@ -166,7 +333,7 @@ function kbf_dashboard_find_funds_tab() {
       <?php if($q||$cat): ?><a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-primary" style="margin-top:14px;">Clear Filters</a><?php endif; ?>
     </div>
     <?php else: ?>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px;">
+    <div class="kbf-explore-grid">
       <?php foreach($funds as $f):
         $pct   = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
         $days  = $f->deadline ? max(0,ceil((strtotime($f->deadline)-time())/86400)) : null;
@@ -174,55 +341,53 @@ function kbf_dashboard_find_funds_tab() {
         $cover  = !empty($photos[0]) ? $photos[0] : null;
         $detail_url = esc_url(add_query_arg('fund_id',$f->id,$fund_details_url));
         $is_own = ($f->business_id == $current_user_id);
+        $supporters = isset($f->sponsors_count) ? (int)$f->sponsors_count : (isset($f->sponsor_count) ? (int)$f->sponsor_count : 0);
+        $supporters_label = $supporters > 0 ? $supporters.' people' : 'New';
       ?>
-      <div style="background:#fff;border:1px solid var(--kbf-border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .15s;" onmouseover="this.style.boxShadow='0 8px 28px rgba(15,32,68,.13)';this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='';this.style.transform=''">
+      <div class="kbf-explore-card">
 
         <!-- Photo / cover -->
-        <a href="<?php echo $detail_url; ?>" style="text-decoration:none;display:block;position:relative;">
-          <?php if($cover): ?>
-            <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($f->title); ?>" style="width:100%;height:180px;object-fit:cover;display:block;">
-          <?php else: ?>
-            <div style="width:100%;height:180px;background:linear-gradient(135deg,var(--kbf-navy) 0%,#243b78 100%);display:flex;align-items:center;justify-content:center;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="40" height="40" style="opacity:.25;filter:invert(100%);">
-            </div>
-          <?php endif; ?>
+        <a href="<?php echo $detail_url; ?>" class="kbf-explore-media">
+          <div class="kbf-explore-media-frame">
+            <?php if($cover): ?>
+              <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($f->title); ?>">
+            <?php else: ?>
+              <div class="kbf-explore-fallback">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="40" height="40" style="opacity:.35;filter:invert(36%) sepia(16%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              </div>
+            <?php endif; ?>
+          </div>
           <!-- Overlays -->
-          <div style="position:absolute;top:10px;left:10px;background:rgba(15,32,68,.8);backdrop-filter:blur(4px);color:var(--kbf-accent);padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"><?php echo esc_html($f->category); ?></div>
-          <?php if($days!==null): ?>
-          <div style="position:absolute;top:10px;right:10px;background:<?php echo $days<7?'rgba(220,38,38,.85)':'rgba(15,32,68,.75)'; ?>;backdrop-filter:blur(4px);color:#fff;padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;"><?php echo $days; ?>d left</div>
-          <?php endif; ?>
-          <?php if($is_own): ?>
-          <div style="position:absolute;bottom:10px;left:10px;background:rgba(15,32,68,.85);color:var(--kbf-accent);padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;">Your Fund</div>
-          <?php endif; ?>
+          <div class="kbf-explore-chip"><?php echo esc_html($f->category); ?></div>
         </a>
 
         <!-- Card body -->
-        <div style="padding:16px;flex:1;display:flex;flex-direction:column;">
+        <div class="kbf-explore-body">
           <a href="<?php echo $detail_url; ?>" style="text-decoration:none;">
-            <h4 style="font-size:14.5px;font-weight:700;color:var(--kbf-navy);margin:0 0 5px;line-height:1.4;"><?php echo esc_html($f->title); ?></h4>
+            <div class="kbf-explore-title-row">
+              <h4 class="kbf-explore-title kbf-explore-title-text"><?php echo esc_html($f->title); ?></h4>
+              <?php if($days!==null): ?>
+          
+              <?php endif; ?>
+            </div>
           </a>
-          <p style="font-size:12.5px;color:var(--kbf-slate);margin:0 0 10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.5;flex:1;"><?php echo esc_html(wp_trim_words($f->description,16)); ?></p>
 
           <!-- Location + Organizer -->
-          <div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:10px;display:flex;flex-direction:column;gap:4px;">
-            <span style="display:flex;align-items:center;gap:3px;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt.svg" alt="" width="10" height="10" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-              <?php echo esc_html($f->location); ?>
-            </span>
-            <span style="color:var(--kbf-blue);font-weight:600;">by <a href="<?php echo esc_url(add_query_arg('organizer_id',$f->business_id,kbf_get_page_url('organizer_profile'))); ?>" style="color:inherit;text-decoration:none;font-weight:700;"><?php echo esc_html($f->organizer_name?:'Organizer'); ?></a></span>
+          <div class="kbf-explore-meta">
+            <span class="kbf-explore-loc"><?php echo esc_html($f->location); ?></span>
           </div>
 
           <!-- Progress -->
-          <div class="kbf-progress-wrap" style="margin-bottom:6px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:14px;">
-            <span><strong style="color:var(--kbf-navy);font-size:13.5px;">₱<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
-            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ₱<?php echo number_format($f->goal_amount,0); ?></span>
+          <div class="kbf-explore-progress"><span style="width:<?php echo $pct; ?>%"></span></div>
+          <div class="kbf-explore-footer">
+            <span><span class="kbf-explore-amount">₱<?php echo number_format($f->raised_amount,0); ?></span> · <?php echo round($pct); ?>%</span>
+            <span class="kbf-explore-days-inline"><?php echo $days; ?> days left</span>
           </div>
 
           <!-- Action buttons -->
           <?php if($is_own): ?>
-          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;">
-            <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-secondary" style="font-size:12.5px;text-align:center;">View Details</a>
+          <div class="kbf-explore-actions is-own">
+            <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-primary" style="font-size:12.5px;text-align:center;">View Details</a>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')" title="Share">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </button>
@@ -231,7 +396,7 @@ function kbf_dashboard_find_funds_tab() {
             </button>
           </div>
           <?php else: ?>
-          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:7px;align-items:center;">
+          <div class="kbf-explore-actions is-public">
             <button class="kbf-btn kbf-btn-primary" style="font-size:12.5px;" onclick="kbffOpenSponsor(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>',<?php echo $f->goal_amount; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js(isset($cover) ? $cover : ''); ?>')">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="12" height="12" style="filter:invert(100%);">
               Sponsor
