@@ -35,25 +35,12 @@ function bntm_kbf_render_landing() {
         --kbf-radius: 26px;
     }
 
-    .kbf-landing {
-        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
-        color: var(--kbf-ink);
-        background:
-            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),
-            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),
-            var(--kbf-surface);
-        width: 100%;
-        padding: 26px 16px 64px;
-        border-radius: 18px;
-        overflow-x: hidden;
-    }
+    .kbf-landing {\r\n        font-family: 'Poppins', system-ui, -apple-system, sans-serif;\r\n        color: var(--kbf-ink);\r\n        background:\r\n            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),\r\n            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),\r\n            var(--kbf-surface);\r\n        width: 100%;\r\n        max-width: 1240px;\r\n        margin: 18px auto;\r\n        padding: 26px 22px 64px;\r\n        border-radius: 18px;\r\n        overflow: hidden;\r\n    }
 
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
-    .kbf-container { overflow-x: hidden; }
+    .kbf-container { overflow: hidden; max-width: 1120px; margin: 0 auto; padding: 0 22px; }
     .kbf-landing a { color: inherit; text-decoration: none; }
-    .kbf-landing .kbf-container { max-width: 1120px; margin: 0 auto; }
-
-    .kbf-divider {
+        .kbf-divider {
         height: 1px;
         width: 100%;
         background: linear-gradient(90deg, transparent, #e5e9f2, transparent);
@@ -62,8 +49,8 @@ function bntm_kbf_render_landing() {
         margin-bottom: 80px;
     }
     html { scroll-behavior: smooth; }
-    html.kbf-no-scroll, body.kbf-no-scroll { overflow-y: hidden; }
-    .kbf-landing-no-scroll { overflow: hidden; }
+    /* html.kbf-no-scroll, body.kbf-no-scroll { overflow-y: hidden; } */
+    /* .kbf-landing-no-scroll { overflow: hidden; } */
 
     /* TOPBAR */
     .kbf-topbar {
@@ -210,6 +197,16 @@ function bntm_kbf_render_landing() {
     .kbf-hero-right {
         flex: 0 0 420px; height: 500px;
         position: relative; z-index: 2;
+    }
+     /* Cards wrap — fixed internal coordinate system */
+    .kbf-cards-wrap {
+        position: absolute;
+        inset: 0;
+        --cw: 420px;
+        --ch: 500px;
+        width: var(--cw);
+        height: var(--ch);
+        transform-origin: top left;
     }
     .kbf-pcard {
         position: absolute; border-radius: 22px; overflow: hidden;
@@ -410,6 +407,13 @@ function bntm_kbf_render_landing() {
     .kbf-faq summary::after { content: '+'; color: var(--kbf-muted); font-weight: 700; }
     .kbf-faq details[open] summary::after { content: '–'; }
     .kbf-faq details p { margin: 10px 0 0; color: var(--kbf-muted); font-size: 12.5px; line-height: 1.5; }
+    .kbf-faq-body {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows .3s ease;
+    }
+    .kbf-faq-body > div { overflow: hidden; }
+    .kbf-faq details[open] .kbf-faq-body { grid-template-rows: 1fr; }
 
     .kbf-footer {
         margin-top: 48px; background: #0c0f14; color: #b9c0cc;
@@ -439,36 +443,200 @@ function bntm_kbf_render_landing() {
         filter: invert(100%);
     }
 
+    /* Hamburger menu */
+    .kbf-hamburger {
+        display: none;
+        background: none;
+        border: 1px solid var(--kbf-border);
+        border-radius: 8px;
+        padding: 6px 8px;
+        cursor: pointer;
+        color: var(--kbf-muted);
+        align-items: center;
+        justify-content: center;
+    }
+    .kbf-hamburger img {
+        width: 18px;
+        height: 18px;
+        display: block;
+        filter: invert(30%) sepia(10%) saturate(800%) hue-rotate(185deg) brightness(0.9);
+    }
+    .kbf-mobile-menu {
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        background: #fff;
+        border: 1px solid var(--kbf-border);
+        border-radius: 14px;
+        margin-top: 8px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(15,40,80,0.08);
+    }
+    .kbf-mobile-menu.kbf-menu-open { display: flex; }
+    .kbf-mobile-menu a {
+        padding: 13px 18px;
+        font-size: 13.5px;
+        color: var(--kbf-ink);
+        border-bottom: 1px solid var(--kbf-border);
+        transition: background .15s ease;
+    }
+    .kbf-mobile-menu a:last-of-type { border-bottom: none; }
+    .kbf-mobile-menu-actions {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        padding: 12px 14px;
+        border-top: 1px solid var(--kbf-border);
+        background: var(--kbf-soft);
+    }
+    .kbf-mobile-menu-actions .kbf-btn { flex: 1; justify-content: center; }
+    
+    /* Mobile menu overlay behaviour */
+    .kbf-mobile-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 98;
+        animation: kbfOverlayIn .2s ease forwards;
+    }
+    .kbf-mobile-overlay.kbf-overlay-open { display: block; }
+    @keyframes kbfOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .kbf-mobile-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 99;
+        border-radius: 0 0 18px 18px;
+        margin-top: 0;
+        transform: translateY(-110%);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--kbf-border);
+        box-shadow: 0 8px 32px rgba(15,40,80,0.14);
+    }
+    .kbf-mobile-menu.kbf-menu-open {
+        transform: translateY(0);
+        display: flex;
+    }
+    
     /* Responsive */
+   /* Large tablets / small desktops (≤1024px) */
+    @media (max-width: 1024px) {
+        .kbf-hero-left { max-width: 420px; }
+        .kbf-hero-right { flex: 0 0 360px; height: 440px; }
+        .kbf-cards-wrap { transform: scale(calc(360 / 420)); }
+    }
+
     @media (max-width: 900px) {
         .kbf-nav { display: none; }
-        .kbf-hero-right { flex: 0 0 320px; height: 380px; }
-        .kbf-hero-heading { font-size: 40px; }
-        .kbf-feature-grid, .kbf-urgent-grid { grid-template-columns: 1fr; }
-        .kbf-feature-grid .kbf-card { grid-column: auto; }
+        .kbf-hamburger { display: inline-flex; }
+        .kbf-actions { display: none; }
+        .kbf-hamburger { display: inline-flex; margin-left: auto; }        .kbf-hero-heading { font-size: 38px; letter-spacing: -1px; }
+        .kbf-hero-right { flex: 0 0 300px; height: 380px; }
+        .kbf-cards-wrap { transform: scale(calc(300 / 420)); }
+        .kbf-feature-grid { grid-template-columns: repeat(2, 1fr); }
+        .kbf-feature-grid .kbf-card { grid-column: span 1; }
+        .kbf-feature-grid .kbf-card:nth-child(4),
+        .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
+        .kbf-urgent-grid { grid-template-columns: repeat(2, 1fr); }
+        .kbf-about-grid { grid-template-columns: 1fr; }
+        .kbf-about-photo { height: 280px; }
         .kbf-stat .kbf-photo-grid { display: none; }
+        .kbf-stat h3 { font-size: 56px; }
+        .kbf-divider { margin-top: 56px; margin-bottom: 56px; }
     }
+
     @media (max-width: 720px) {
-        .kbf-topbar { flex-wrap: wrap; }
-        .kbf-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-        .kbf-hero-inner { flex-direction: column; padding: 32px 0 20px; }
-        .kbf-hero-left { max-width: 100%; }
-        .kbf-hero-right { width: 100%; flex: 0 0 340px; }
-    }
-    @media (max-width: 520px) {
-        .kbf-landing { padding: 14px 10px 30px; }
-        .kbf-hero-right { flex: 0 0 280px; }
-        .kbf-fchip-2 { display: none; }
+        .kbf-landing { padding: 20px 14px 48px; }
+        .kbf-topbar { flex-wrap: wrap; gap: 12px; }
+        .kbf-actions { width: 100%; justify-content: flex-start; gap: 8px; }
+        .kbf-hero { padding: 28px 24px; }
+        .kbf-hero-inner {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 24px 0 16px;
+            gap: 32px;
+        }
+        .kbf-hero-left { max-width: 100%; gap: 14px; }
+        .kbf-hero-heading { font-size: 34px; letter-spacing: -0.5px; }
+        .kbf-hero-right {
+            width: 100%;
+            flex: none;
+            height: 320px;
+            position: relative;
+            align-self: center;
+        }
+        .kbf-cards-wrap {
+            left: 50%;
+            transform: translateX(-50%) scale(calc(320 / 500));
+            transform-origin: top center;
+        }
+        .kbf-feature-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+        .kbf-feature-grid .kbf-card { grid-column: span 1; }
+        .kbf-feature-grid .kbf-card:nth-child(4),
+        .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
         .kbf-section h2 { font-size: 20px; }
-        .kbf-stat h3 { font-size: 54px; }
-        .kbf-btn { width: 100%; justify-content: center; }
+        .kbf-stat h3 { font-size: 48px; }
+        .kbf-divider { margin-top: 44px; margin-bottom: 44px; }
+        .kbf-footer { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (max-width: 480px) {
+        .kbf-landing { padding: 14px 10px 36px; }
+        .kbf-topbar { padding: 6px 0 14px; }
+        .kbf-brand-badge { width: 22px; height: 22px; font-size: 12px; }
+        .kbf-hero { padding: 20px 16px 28px; border-radius: 16px; }
+        .kbf-hero-heading { font-size: 28px; letter-spacing: -0.5px; }
+        .kbf-hero-desc { font-size: 13px; }
+        .kbf-hero-right { height: 260px; }
+        .kbf-cards-wrap {
+            transform: translateX(-50%) scale(calc(260 / 500));
+        }
+        .kbf-eyebrow { font-size: 9.5px; padding: 5px 10px; }
+        .kbf-btn { font-size: 12px; padding: 8px 14px; }
         .kbf-actions .kbf-btn { width: auto; }
-        .kbf-urgent-thumb { height: 160px; }
+        .kbf-feature-grid { grid-template-columns: 1fr; gap: 10px; }
+        .kbf-feature-grid .kbf-card,
+        .kbf-feature-grid .kbf-card:nth-child(4),
+        .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
+        .kbf-urgent-grid { grid-template-columns: 1fr; }
+        .kbf-urgent-thumb { height: 180px; }
+        .kbf-about-photo { height: 220px; }
+        .kbf-section h2 { font-size: 18px; }
+        .kbf-section p { font-size: 13px; }
+        .kbf-stat h3 { font-size: 40px; }
+        .kbf-stat p { font-size: 13px; }
+        .kbf-faq summary { font-size: 13px; }
+        .kbf-faq details p { font-size: 12px; }
+        .kbf-footer { padding: 20px 18px; border-radius: 18px; gap: 14px; }
+        .kbf-footer p { font-size: 12px; }
+        .kbf-divider { margin-top: 36px; margin-bottom: 36px; }
+    }
+
+    @media (max-width: 360px) {
+        .kbf-hero-heading { font-size: 24px; }
+        .kbf-hero-right { height: 220px; }
+        .kbf-cards-wrap {
+            transform: translateX(-50%) scale(calc(220 / 500));
+        }
+        .kbf-stat h3 { font-size: 34px; }
+        .kbf-btn.kbf-btn-primary { font-size: 11.5px; }
     }
     </style>
 
+
     <section class="kbf-landing">
-      <div class="kbf-container">
+     
+        <div class="kbf-mobile-overlay" id="kbf-mobile-overlay"></div>
+         <div class="kbf-container">
+  
 
         <!-- NAVBAR -->
         <div class="kbf-topbar kbf-reveal">
@@ -485,6 +653,19 @@ function bntm_kbf_render_landing() {
             </nav>
           </div>
           <div class="kbf-actions">
+            <a class="kbf-btn kbf-btn-ghost" aria-disabled="true" href="<?php echo esc_url($login_url); ?>">Login (Soon)</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Find Funds</a>
+          </div>
+          <button class="kbf-hamburger" id="kbf-hamburger-btn" aria-label="Open menu">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="Menu" id="kbf-hamburger-icon">
+          </button>
+        </div>
+      <div class="kbf-mobile-menu" id="kbf-mobile-menu">
+          <a href="#kbf-home" onclick="kbfMobileNav('kbf-home')">Home</a>
+          <a href="#kbf-donation" onclick="kbfMobileNav('kbf-donation')">Donation</a>
+          <a href="#kbf-how" onclick="kbfMobileNav('kbf-how')">How It Works</a>
+          <a href="#kbf-about" onclick="kbfMobileNav('kbf-about')">About Us</a>
+          <div class="kbf-mobile-menu-actions">
             <a class="kbf-btn kbf-btn-ghost" aria-disabled="true" href="<?php echo esc_url($login_url); ?>">Login (Soon)</a>
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Find Funds</a>
           </div>
@@ -508,8 +689,7 @@ function bntm_kbf_render_landing() {
               </h1>
 
               <p class="kbf-hero-desc">
-                KonekBayan helps Filipinos raise support for health,<br>
-                education, and livelihood—fast, transparent, and local.
+                KonekBayan gives Filipino families a proper place to raise support — with real transparency, real updates, and real accountability.
               </p>
 
 
@@ -519,34 +699,33 @@ function bntm_kbf_render_landing() {
 
               </a>
             </div>
-
+            
             <!-- Right: Floating phone cards -->
             <div class="kbf-hero-right" aria-hidden="true">
-          
-
-              <div class="kbf-pcard kbf-pcard-tl">
-                <div class="kbf-pcard-img kbf-pimg-1"><span class="kbf-pcard-icon">🏘️</span></div>
-                <div class="kbf-pcard-bar">
-                  <div class="kbf-pcard-av">🤝</div>
-                  <div><div class="kbf-pcard-name">Yourself</div><div class="kbf-pcard-sub">Health</div></div>
-                  <div class="kbf-pcard-play">▶</div>
+              <div class="kbf-cards-wrap">
+                <div class="kbf-pcard kbf-pcard-tl">
+                  <div class="kbf-pcard-img kbf-pimg-1"><span class="kbf-pcard-icon">🏘️</span></div>
+                  <div class="kbf-pcard-bar">
+                    <div class="kbf-pcard-av">🤝</div>
+                    <div><div class="kbf-pcard-name">Yourself</div><div class="kbf-pcard-sub">Health</div></div>
+                    <div class="kbf-pcard-play">▶</div>
+                  </div>
                 </div>
-              </div>
-
-              <div class="kbf-pcard kbf-pcard-main">
-                <div class="kbf-pcard-img kbf-pimg-2"><span class="kbf-pcard-icon">💙</span></div>
-                <div class="kbf-pcard-bar">
-                  <div class="kbf-pcard-av">🌱</div>
-                  <div><div class="kbf-pcard-name">Charity or Events</div><div class="kbf-pcard-sub">Community</div></div>
-                  <div class="kbf-pcard-play">▶</div>
+                <div class="kbf-pcard kbf-pcard-main">
+                  <div class="kbf-pcard-img kbf-pimg-2"><span class="kbf-pcard-icon">💙</span></div>
+                  <div class="kbf-pcard-bar">
+                    <div class="kbf-pcard-av">🌱</div>
+                    <div><div class="kbf-pcard-name">Charity or Events</div><div class="kbf-pcard-sub">Community</div></div>
+                    <div class="kbf-pcard-play">▶</div>
+                  </div>
                 </div>
-              </div>
-              <div class="kbf-pcard kbf-pcard-br">
-                <div class="kbf-pcard-img kbf-pimg-4"><span class="kbf-pcard-icon">🏅</span></div>
-                <div class="kbf-pcard-bar">
-                  <div class="kbf-pcard-av">🔒</div>
-                  <div><div class="kbf-pcard-name">Someone Else</div><div class="kbf-pcard-sub">Protected</div></div>
-                  <div class="kbf-pcard-play">▶</div>
+                <div class="kbf-pcard kbf-pcard-br">
+                  <div class="kbf-pcard-img kbf-pimg-4"><span class="kbf-pcard-icon">🏅</span></div>
+                  <div class="kbf-pcard-bar">
+                    <div class="kbf-pcard-av">🔒</div>
+                    <div><div class="kbf-pcard-name">Someone Else</div><div class="kbf-pcard-sub">Protected</div></div>
+                    <div class="kbf-pcard-play">▶</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -555,43 +734,43 @@ function bntm_kbf_render_landing() {
 
         <!-- FEATURES -->
         <div id="kbf-how" class="kbf-section kbf-reveal delay-1" style="margin-top: 80px;">
-          <h2 style="font-size: 1.5em; font-weight: 400;">Raise Funds With Trust</h2>
-          <p>Start a campaign in minutes and keep sponsors updated as your community rallies behind you.</p>
+          <h2 style="font-size: 1.5em; font-weight: 400;">Hindi lang pera — tiwala.</h2>
+          <p>Raising funds online is easy. Getting people to actually trust your campaign — that's the hard part. Here's how we make it easier.</p>
           <div class="kbf-feature-grid">
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lightning-fill.svg" alt="">
               </div>
-              <h4 style="font-weight: 500;">Start With Purpose</h4>
-              <p>Create a clear, honest campaign that shows what support will change for your family or community.</p>
+               <h4 style="font-weight: 500;">Tell Your Real Story</h4>
+               <p>Write it the way you'd explain it to a neighbor. Honest campaigns — even messy ones — raise more than polished ones. We help you write it right.</p>
             </div>
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
               </div>
-               <h4 style="font-weight: 500;">Share With Your Network</h4>
-              <p>Send your link to friends, barangay groups, and local networks to build momentum quickly.</p>
+                <h4 style="font-weight: 500;">Spread Through Your Network</h4>
+               <p>Share your link to group chats, barangay pages, barkadas. Your first wave of donors is already in your contacts — we just make the ask easier.</p>
             </div>
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/shield-check.svg" alt="">
               </div>
-               <h4 style="font-weight: 500;">Earn Trust</h4>
-              <p>Verified organizers and progress updates help sponsors give with confidence.</p>
+                <h4 style="font-weight: 500;">Donors Can Trust You</h4>
+               <p>Verified organizers, ID-checked accounts, and a public update log. When donors see the checkmark, they know their money won't disappear.</p>
             </div>
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/activity.svg" alt="">
               </div>
-               <h4 style="font-weight: 500;">Track Progress</h4>
-              <p>Share updates and milestones so sponsors see the impact in real time.</p>
+                <h4 style="font-weight: 500;">Show Where the Money Goes</h4>
+               <p>Post receipts, photos, milestones. Not because we force you to — but because campaigns that show proof raise 3x more. Transparency works.</p>
             </div>
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg" alt="">
               </div>
-               <h4 style="font-weight: 500;">Build Credibility</h4>
-              <p>Verified profiles and honest storytelling help campaigns go further.</p>
+                <h4 style="font-weight: 500;">Build a Track Record</h4>
+               <p>Every campaign you complete, every update you post — it all builds your profile. Future campaigns get funded faster because your reputation speaks first.</p>
             </div>
           </div>
         </div>
@@ -604,9 +783,9 @@ function bntm_kbf_render_landing() {
               <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Battle_of_Leyte_Filipino_volunteers.jpg" alt="Filipino volunteers">
             </div>
             <div class="kbf-about-card">
-              <h2 style="font-size: 1.5em; font-weight: 400;">Our Story</h2>
-              <p>KonekBayan makes it easy to raise support for health, education, disaster recovery, and livelihood. Every fundraiser is tied to a real organizer with clear updates.</p>
-              <p style="margin-top:10px;">We believe bayanihan grows when people can give with clarity, speed, and trust.</p>
+              <h2 style="font-size: 1.5em; font-weight: 400;">Why we built this</h2>
+              <p>We've all seen it — a family posting their GCash number on Facebook after a flood, a hospitalization, a fire. It works sometimes. But it's chaotic, untracked, and exhausting for the family asking.</p>
+              <p style="margin-top:10px;">KonekBayan started because Filipinos don't need convincing to help each other. Bayanihan is already in our culture. We just needed to build something worthy of it.</p>
             </div>
           </div>
         </div>
@@ -621,37 +800,47 @@ function bntm_kbf_render_landing() {
             <img src="<?php echo esc_url($bw_4); ?>" alt="">
           </div>
           <div class="kbf-stat-content">
-            <p>Built On Trust & Transparency</p>
-            <h3 style="font-weight: 300;">Safe & Secured</h3>
-            <p>Campaigns are reviewed and organizers can be verified so sponsors give with confidence.</p>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Join KonekBayan</a>
+            <p>Designed for trust</p>
+            <h3 style="font-weight: 300;">Safe & Trusted</h3>
+            <p>Reviewed. Verified. Transparent.</p>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Join KonekBayan — it's free</a>
           </div>
         </div>
 
         <!-- FAQ -->
         <div class="kbf-divider"></div>
         <div class="kbf-section kbf-reveal delay-3">
-          <h2 style="text-align: center; margin-bottom: 40px; font-size: 1.5em; font-weight: 400;">Frequently Asked Questions.</h2>
+          <h2 style="text-align: center; margin-bottom: 40px; font-size: 1.5em; font-weight: 400;">Questions people actually ask</h2>
           <div class="kbf-faq">
             <details>
               <summary>How can I sponsor a fundraiser?</summary>
-              <p>Browse active campaigns, choose a cause, and sponsor using the available payment options.</p>
+              <div class="kbf-faq-body"><div>
+                <p>Browse active campaigns, choose a cause, and sponsor using the available payment options.</p>
+              </div></div>
             </details>
             <details>
               <summary>Is my sponsorship tax‑deductible?</summary>
-              <p>Tax benefits depend on organizer accreditation and local regulations. Please check with the organizer first.</p>
+              <div class="kbf-faq-body"><div>
+                <p>Tax benefits depend on organizer accreditation and local regulations. Please check with the organizer first.</p>
+              </div></div>
             </details>
             <details>
               <summary>Can I sponsor in honor of someone?</summary>
-              <p>Yes. Organizers can add dedication notes in campaign updates and acknowledgments.</p>
+              <div class="kbf-faq-body"><div>
+                <p>Yes. Organizers can add dedication notes in campaign updates and acknowledgments.</p>
+              </div></div>
             </details>
             <details>
               <summary>How will my sponsorship be used?</summary>
-              <p>Organizers share budgets and progress updates so sponsors can see how funds are allocated.</p>
+              <div class="kbf-faq-body"><div>
+                <p>Organizers share budgets and progress updates so sponsors can see how funds are allocated.</p>
+              </div></div>
             </details>
             <details>
               <summary>Can I set up recurring sponsorships?</summary>
-              <p>Recurring sponsorships are planned and will be available in a future update.</p>
+              <div class="kbf-faq-body"><div>
+                <p>Recurring sponsorships are planned and will be available in a future update.</p>
+              </div></div>
             </details>
           </div>
         </div>
@@ -663,7 +852,7 @@ function bntm_kbf_render_landing() {
               <span class="kbf-brand-badge">✳</span>
               <span style="font-weight: 600;">KonekBayan</span>
             </div>
-            <p>Community crowdfunding and sponsorship for real local needs.</p>
+            <p>Community fundraising rooted in bayanihan.</p>
             <small>© KonekBayan. All rights reserved.</small>
           </div>
           <div class="kbf-social">
@@ -688,7 +877,85 @@ function bntm_kbf_render_landing() {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return false;
     };
+
+    // FAQ smooth animation — prevent instant jump on open
+    document.querySelectorAll('.kbf-faq details').forEach(function(detail) {
+        var body = detail.querySelector('.kbf-faq-body');
+        var summary = detail.querySelector('summary');
+        if (!body || !summary) return;
+
+        // Ensure correct initial state
+        body.style.gridTemplateRows = detail.open ? '1fr' : '0fr';
+
+        summary.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (detail.dataset.animating === '1') return;
+            detail.dataset.animating = '1';
+
+            if (detail.open) {
+                body.style.gridTemplateRows = '0fr';
+                var onEnd = function() {
+                    detail.open = false;
+                    detail.dataset.animating = '0';
+                    body.removeEventListener('transitionend', onEnd);
+                };
+                body.addEventListener('transitionend', onEnd);
+            } else {
+                detail.open = true;
+                requestAnimationFrame(function(){
+                    body.style.gridTemplateRows = '1fr';
+                    detail.dataset.animating = '0';
+                });
+            }
+        });
+    });
+    // Hamburger menu toggle
+    (function() {
+        var btn = document.getElementById('kbf-hamburger-btn');
+        var menu = document.getElementById('kbf-mobile-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        var icon = document.getElementById('kbf-hamburger-icon');
+        if (!btn || !menu) return;
+        var open = false;
+
+        function openMenu() {
+            open = true;
+            menu.classList.add('kbf-menu-open');
+            if (overlay) overlay.classList.add('kbf-overlay-open');
+            icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg';
+        }
+
+        function closeMenu() {
+            open = false;
+            menu.classList.remove('kbf-menu-open');
+            if (overlay) overlay.classList.remove('kbf-overlay-open');
+            icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg';
+        }
+
+        btn.addEventListener('click', function() {
+            open ? closeMenu() : openMenu();
+        });
+
+        if (overlay) overlay.addEventListener('click', closeMenu);
+    })();
+
+    window.kbfMobileNav = function(id) {
+        var menu = document.getElementById('kbf-mobile-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        var icon = document.getElementById('kbf-hamburger-icon');
+        if (menu) menu.classList.remove('kbf-menu-open');
+        if (overlay) overlay.classList.remove('kbf-overlay-open');
+        if (icon) icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg';
+        var target = document.getElementById(id);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return false;
+    };
     </script>
     <?php
     return ob_get_clean();
 }
+
+
+
+
+
