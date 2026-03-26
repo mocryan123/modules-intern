@@ -535,11 +535,11 @@ function bntm_shortcode_ch_auth() {
          style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center;">
         <div class="ch-modal" style="background:#fff;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
             <div class="ch-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f3f4f6;">
-                <h3 style="margin:0;font-size:18px;font-weight:700;color:#111827;">Community Guidelines</h3>
+                <h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ch-text);">Community Guidelines</h3>
                 <button onclick="document.getElementById('ch-modal-guidelines').style.display='none';document.body.style.overflow='';"
                         style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button>
             </div>
-            <div style="padding:24px;font-size:14px;color:#374151;line-height:1.7;">
+            <div style="padding:24px;font-size:14px;color:var(--ch-text-muted);line-height:1.7;">
                 <?php echo ch_get_guidelines_html(); ?>
             </div>
             <div style="padding:16px 24px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;">
@@ -580,6 +580,11 @@ add_action('wp_ajax_nopriv_ch_register', 'bntm_ajax_ch_register');
 
 // ---- Open Graph meta tags for post sharing ----
 add_action('wp_head', 'bntm_ch_og_meta_tags');
+
+// Ensure viewport meta is present for mobile
+add_action('wp_head', function() {
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">' . "\n";
+}, 1);
 function bntm_ch_og_meta_tags() {
     $rand_id = sanitize_text_field($_GET['view_post'] ?? '');
     if (!$rand_id) return;
@@ -906,7 +911,7 @@ function ch_guest_landing_page() {
                                                 <?php echo esc_html($post->title); ?>
                                             </span>
                                         </a>
-                                        <span class="ch-info-label" style="font-size:12px; color:#6b7280;">
+                                        <span class="ch-info-label" style="font-size:12px; color:var(--ch-text-muted);">
                                             <?php echo esc_html($post->cat_name ?? 'General'); ?>
                                         </span>
                                     </div>
@@ -964,7 +969,7 @@ function ch_guest_landing_page() {
 
             <div class="ch-sidebar-widget">
                 <h4>Get started</h4>
-                <p style="font-size:13px; color:#6b7280; margin:0 0 14px;">
+                <p style="font-size:13px; color:var(--ch-text-muted); margin:0 0 14px;">
                     Create an account to follow categories and post.
                 </p>
                 <a href="<?php echo esc_url($login_url); ?>" class="ch-btn ch-btn-secondary ch-btn-full" style="margin-bottom:10px;">
@@ -1366,12 +1371,12 @@ function ch_categories_tab($user_id, $is_admin) {
         <div class="ch-page-header-actions">
             <form method="get" class="ch-categories-filter-form">
                 <input type="hidden" name="tab" value="categories">
-                <div class="ch-field-row" style="align-items:center; gap:10px;">
-                    <div class="ch-field-group" style="flex:1; min-width:180px;">
+                <div class="ch-field-row ch-categories-filter-row" style="align-items:center; gap:10px;">
+                    <div class="ch-field-group ch-filter-search-group">
                         <label class="ch-label">Search</label>
                         <input type="text" name="cat_search" class="ch-input" placeholder="Search categories" value="<?php echo esc_attr($search); ?>">
                     </div>
-                    <div class="ch-field-group" style="min-width:160px;">
+                    <div class="ch-field-group ch-filter-sort-group">
                         <label class="ch-label">Sort by</label>
                         <select name="cat_sort" class="ch-input">
                             <option value="sort_order" <?php selected($sort, 'sort_order'); ?>>Custom order</option>
@@ -1380,7 +1385,7 @@ function ch_categories_tab($user_id, $is_admin) {
                             <option value="popularity" <?php selected($sort, 'popularity'); ?>>Popularity</option>
                         </select>
                     </div>
-                    <div class="ch-filter-actions" style="min-width:120px;">
+                    <div class="ch-filter-actions ch-filter-btn-group">
                         <button type="submit" class="ch-btn ch-btn-secondary">Apply</button>
                         <a href="?tab=categories" class="ch-btn ch-btn-outline">Reset</a>
                     </div>
@@ -1415,7 +1420,7 @@ function ch_categories_tab($user_id, $is_admin) {
                         <button class="ch-icon-btn" title="Toggle visibility" onclick="chToggleCategoryStatus(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->status); ?>', this)">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
-                        <button class="ch-icon-btn ch-icon-btn-danger" title="Delete" onclick="chDeleteCategory(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>')">
+                        <button class="ch-icon-btn ch-icon-btn-danger" title="Delete" onclick="chDeleteCategory(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', this)">>
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                         </button>
                     </div>
@@ -1592,7 +1597,8 @@ function ch_categories_tab($user_id, $is_admin) {
             if (!name) { alert('Please enter a category name'); return; }
 
             const btn = document.getElementById('ch-save-cat-btn');
-            btn.disabled = true; btn.textContent = 'Creating...';
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Creating...</span>';
 
             const fd = new FormData();
             fd.append('action', 'ch_create_category');
@@ -1608,8 +1614,12 @@ function ch_categories_tab($user_id, $is_admin) {
             .then(json => {
                 document.getElementById('ch-cat-msg').innerHTML =
                     '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
-                if (json.success) setTimeout(() => location.reload(), 1000);
+                if (json.success) chReloadAfterSuccess();
                 else { btn.disabled = false; btn.textContent = 'Create Category'; }
+            })
+            .catch(() => {
+                document.getElementById('ch-cat-msg').innerHTML = '<div class="bntm-notice bntm-notice-error">Network error. Please try again.</div>';
+                btn.disabled = false; btn.textContent = 'Create Category';
             });
         };
 
@@ -1619,7 +1629,8 @@ function ch_categories_tab($user_id, $is_admin) {
             if (!name) { alert('Please enter a category name'); return; }
 
             const btn = document.getElementById('ch-update-cat-btn');
-            btn.disabled = true; btn.textContent = 'Saving...';
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Saving...</span>';
 
             const fd = new FormData();
             fd.append('action', 'ch_edit_category');
@@ -1635,13 +1646,18 @@ function ch_categories_tab($user_id, $is_admin) {
             .then(json => {
                 document.getElementById('ch-edit-cat-msg').innerHTML =
                     '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
-                if (json.success) setTimeout(() => location.reload(), 1000);
+                if (json.success) chReloadAfterSuccess();
                 else { btn.disabled = false; btn.textContent = 'Save Changes'; }
+            })
+            .catch(() => {
+                document.getElementById('ch-edit-cat-msg').innerHTML = '<div class="bntm-notice bntm-notice-error">Network error. Please try again.</div>';
+                btn.disabled = false; btn.textContent = 'Save Changes';
             });
         };
 
-        window.chDeleteCategory = function(id, name) {
+        window.chDeleteCategory = function(id, name, triggerBtn) {
             if (!confirm('Delete category "'+name+'"? This cannot be undone.')) return;
+            if (triggerBtn) { triggerBtn.disabled = true; }
             const fd = new FormData();
             fd.append('action', 'ch_delete_category');
             fd.append('category_id', id);
@@ -1650,8 +1666,15 @@ function ch_categories_tab($user_id, $is_admin) {
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
             .then(json => {
-                if (json.success) location.reload();
-                else alert(json.data?.message || 'Failed to delete.');
+                if (json.success) chReloadAfterSuccess(0);
+                else {
+                    if (triggerBtn) triggerBtn.disabled = false;
+                    alert(json.data?.message || 'Failed to delete.');
+                }
+            })
+            .catch(() => {
+                if (triggerBtn) triggerBtn.disabled = false;
+                alert('Network error.');
             });
         };
 
@@ -1678,11 +1701,16 @@ function ch_categories_tab($user_id, $is_admin) {
                         badge.classList.toggle('ch-status-active', json.data.status === 'active');
                         badge.classList.toggle('ch-status-archived', json.data.status !== 'active');
                     }
-                    // Optionally reload so list respects filters
-                    setTimeout(() => location.reload(), 500);
+                    // Reload so list respects filters
+                    chReloadAfterSuccess(400);
                 } else {
                     alert(json.data?.message || 'Failed to update status.');
                 }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.title = originalTitle;
+                alert('Network error.');
             });
         };
     })();
@@ -1810,22 +1838,22 @@ function ch_posts_tab($user_id, $is_admin) {
                             <div class="ch-actions-row">
                                 <?php if ($post->status === 'pending'): ?>
                                 <button class="ch-btn-xs ch-btn-success" title="Approve"
-                                    onclick="chModeratePost(<?php echo (int)$post->id; ?>, 'approve_post', '<?php echo esc_attr($nonce); ?>')">Approve</button>
+                                    onclick="chModeratePost(<?php echo (int)$post->id; ?>, 'approve_post', '<?php echo esc_attr($nonce); ?>', this)">Approve</button>
                                 <button class="ch-btn-xs ch-btn-danger" title="Reject"
-                                    onclick="chModeratePost(<?php echo (int)$post->id; ?>, 'reject_post', '<?php echo esc_attr($nonce); ?>')">Reject</button>
+                                    onclick="chModeratePost(<?php echo (int)$post->id; ?>, 'reject_post', '<?php echo esc_attr($nonce); ?>', this)">Reject</button>
                                 <?php else: ?>
                                 <button class="ch-icon-btn" title="<?php echo $post->is_pinned ? 'Unpin' : 'Pin'; ?>"
-                                    onclick="chPinPost(<?php echo (int)$post->id; ?>, <?php echo $post->is_pinned ? 0 : 1; ?>, '<?php echo esc_attr($nonce); ?>')">
+                                    onclick="chPinPost(<?php echo (int)$post->id; ?>, <?php echo $post->is_pinned ? 0 : 1; ?>, '<?php echo esc_attr($nonce); ?>', this)">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                                 </button>
                                 <?php if ($post->status !== 'removed'): ?>
                                 <button class="ch-icon-btn ch-icon-btn-danger" title="Remove"
-                                    onclick="chModeratePost(<?php echo (int)$post->id; ?>, 'remove_post', '<?php echo esc_attr($nonce); ?>')">
+                                    onclick="chModeratePost(<?php echo (int)$post->id; ?>, 'remove_post', '<?php echo esc_attr($nonce); ?>', this)">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                                 </button>
                                 <?php else: ?>
                                 <button class="ch-icon-btn" title="Restore"
-                                    onclick="chModeratePost(<?php echo (int)$post->id; ?>, 'restore_post', '<?php echo esc_attr($nonce); ?>')">
+                                    onclick="chModeratePost(<?php echo (int)$post->id; ?>, 'restore_post', '<?php echo esc_attr($nonce); ?>', this)">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.37"/></svg>
                                 </button>
                                 <?php endif; ?>
@@ -1852,7 +1880,8 @@ function ch_posts_tab($user_id, $is_admin) {
 
     <script>
     (function() {
-        window.chPinPost = function(id, pinVal, nonce) {
+        window.chPinPost = function(id, pinVal, nonce, btn) {
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
             const fd = new FormData();
             fd.append('action', 'ch_pin_post');
             fd.append('post_id', id);
@@ -1860,12 +1889,23 @@ function ch_posts_tab($user_id, $is_admin) {
             fd.append('nonce', nonce);
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
-            .then(json => { if (json.success) location.reload(); else alert(json.data?.message); });
+            .then(json => {
+                if (json.success) chReloadAfterSuccess(0);
+                else {
+                    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                    alert(json.data?.message);
+                }
+            })
+            .catch(() => {
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                alert('Network error.');
+            });
         };
 
-        window.chModeratePost = function(id, action, nonce) {
+        window.chModeratePost = function(id, action, nonce, btn) {
             const label = action === 'remove_post' ? 'remove' : 'restore';
             if (!confirm('Are you sure you want to '+label+' this post?')) return;
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
             const fd = new FormData();
             fd.append('action', 'ch_moderate_action');
             fd.append('mod_action', action);
@@ -1873,7 +1913,17 @@ function ch_posts_tab($user_id, $is_admin) {
             fd.append('nonce', nonce);
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
-            .then(json => { if (json.success) location.reload(); else alert(json.data?.message); });
+            .then(json => {
+                if (json.success) chReloadAfterSuccess(0);
+                else {
+                    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                    alert(json.data?.message);
+                }
+            })
+            .catch(() => {
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                alert('Network error.');
+            });
         };
     })();
     </script>
@@ -2029,7 +2079,8 @@ function ch_users_tab($user_id, $is_admin) {
             fd.append('nonce', nonce);
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
-            .then(json => { if (json.success) location.reload(); else alert(json.data?.message); });
+            .then(json => { if (json.success) chReloadAfterSuccess(0); else alert(json.data?.message); })
+            .catch(() => alert('Network error.'));
         };
     })();
     </script>
@@ -2119,7 +2170,7 @@ function ch_reports_tab($user_id, $is_admin) {
                                     <?php echo ucfirst($r->target_type); ?> #<?php echo $r->target_id; ?>
                                 </span>
                                 <?php if ($r->details): ?>
-                                <span style="font-size:12px;color:#6b7280;max-width:220px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?php echo esc_attr($r->details); ?>">
+                                <span style="font-size:12px;color:var(--ch-text-muted);max-width:220px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?php echo esc_attr($r->details); ?>">
                                     <?php echo esc_html(wp_trim_words($r->details, 10)); ?>
                                 </span>
                                 <?php endif; ?>
@@ -2148,26 +2199,26 @@ function ch_reports_tab($user_id, $is_admin) {
                             <div class="ch-actions-row" style="flex-wrap:wrap;gap:6px;">
                                 <?php if ($r->status === 'pending'): ?>
                                     <button class="ch-btn-xs ch-btn-success"
-                                            onclick="chResolveReport(<?php echo $r->id; ?>, 'resolved', '<?php echo esc_attr($nonce); ?>')">
+                                            onclick="chResolveReport(<?php echo $r->id; ?>, 'resolved', '<?php echo esc_attr($nonce); ?>', this)">
                                         ✓ Resolve
                                     </button>
                                     <button class="ch-btn-xs ch-btn-secondary"
-                                            onclick="chResolveReport(<?php echo $r->id; ?>, 'dismissed', '<?php echo esc_attr($nonce); ?>')">
+                                            onclick="chResolveReport(<?php echo $r->id; ?>, 'dismissed', '<?php echo esc_attr($nonce); ?>', this)">
                                         Dismiss
                                     </button>
                                     <?php if ($r->target_type === 'post'): ?>
                                     <button class="ch-btn-xs ch-btn-danger"
-                                            onclick="chResolveAndRemove(<?php echo $r->id; ?>, <?php echo $r->target_id; ?>, 'post', '<?php echo esc_attr($nonce); ?>')">
+                                            onclick="chResolveAndRemove(<?php echo $r->id; ?>, <?php echo $r->target_id; ?>, 'post', '<?php echo esc_attr($nonce); ?>', this)">
                                         Remove Post
                                     </button>
                                     <?php elseif ($r->target_type === 'comment'): ?>
                                     <button class="ch-btn-xs ch-btn-danger"
-                                            onclick="chResolveAndRemove(<?php echo $r->id; ?>, <?php echo $r->target_id; ?>, 'comment', '<?php echo esc_attr($nonce); ?>')">
+                                            onclick="chResolveAndRemove(<?php echo $r->id; ?>, <?php echo $r->target_id; ?>, 'comment', '<?php echo esc_attr($nonce); ?>', this)">
                                         Remove Comment
                                     </button>
                                     <?php elseif ($r->target_type === 'user'): ?>
                                     <button class="ch-btn-xs ch-btn-warning"
-                                            onclick="chResolveAndSuspend(<?php echo $r->id; ?>, <?php echo $r->target_id; ?>, '<?php echo esc_attr($nonce); ?>')">
+                                            onclick="chResolveAndSuspend(<?php echo $r->id; ?>, <?php echo $r->target_id; ?>, '<?php echo esc_attr($nonce); ?>', this)">
                                         Suspend User
                                     </button>
                                     <?php endif; ?>
@@ -2186,25 +2237,30 @@ function ch_reports_tab($user_id, $is_admin) {
 
     <script>
     (function() {
-        function doPost(fd, rowId) {
+        function doPost(fd, rowId, btn) {
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
             .then(json => {
                 if (json.success) {
                     const row = document.getElementById('ch-report-row-' + rowId);
                     if (row) {
-                        row.style.opacity = '0.4';
-                        row.style.transition = 'opacity 0.3s';
+                        row.style.opacity = '0';
+                        row.style.transition = 'opacity 0.3s ease';
                     }
-                    setTimeout(() => location.reload(), 600);
+                    chReloadAfterSuccess(300);
                 } else {
+                    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
                     alert(json.data?.message || 'Action failed. Please try again.');
                 }
             })
-            .catch(() => alert('Network error. Please try again.'));
+            .catch(() => {
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                alert('Network error. Please try again.');
+            });
         }
 
-        window.chResolveReport = function(reportId, resolution, nonce) {
+        window.chResolveReport = function(reportId, resolution, nonce, btn) {
             const label = resolution === 'resolved' ? 'resolve' : 'dismiss';
             if (!confirm('Are you sure you want to ' + label + ' this report?')) return;
             const fd = new FormData();
@@ -2213,12 +2269,13 @@ function ch_reports_tab($user_id, $is_admin) {
             fd.append('target_id',   reportId);
             fd.append('resolution',  resolution);
             fd.append('nonce',       nonce);
-            doPost(fd, reportId);
+            doPost(fd, reportId, btn);
         };
 
-        window.chResolveAndRemove = function(reportId, targetId, targetType, nonce) {
+        window.chResolveAndRemove = function(reportId, targetId, targetType, nonce, btn) {
             const label = targetType === 'post' ? 'post' : 'comment';
             if (!confirm('Remove this ' + label + ' AND resolve the report?')) return;
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
             const modAction = targetType === 'post' ? 'remove_post' : 'remove_comment';
             // Step 1: remove content
             const fd1 = new FormData();
@@ -2236,12 +2293,17 @@ function ch_reports_tab($user_id, $is_admin) {
                 fd2.append('target_id',  reportId);
                 fd2.append('resolution', 'resolved');
                 fd2.append('nonce',      nonce);
-                doPost(fd2, reportId);
+                doPost(fd2, reportId, btn);
+            })
+            .catch(() => {
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                alert('Network error.');
             });
         };
 
-        window.chResolveAndSuspend = function(reportId, targetUserId, nonce) {
+        window.chResolveAndSuspend = function(reportId, targetUserId, nonce, btn) {
             if (!confirm('Suspend this user AND resolve the report?')) return;
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
             // Step 1: suspend user
             const fd1 = new FormData();
             fd1.append('action',     'ch_moderate_action');
@@ -2258,7 +2320,11 @@ function ch_reports_tab($user_id, $is_admin) {
                 fd2.append('target_id',  reportId);
                 fd2.append('resolution', 'resolved');
                 fd2.append('nonce',      nonce);
-                doPost(fd2, reportId);
+                doPost(fd2, reportId, btn);
+            })
+            .catch(() => {
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                alert('Network error.');
             });
         };
     })();
@@ -2461,7 +2527,7 @@ function ch_moderation_tab($user_id) {
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" style="margin-right:6px;vertical-align:-2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 Community Guidelines
             </h3>
-            <p style="font-size:13px;color:#6b7280;margin:4px 0 0;">Displayed to all users in the guidelines modal and on the registration page. Supports basic HTML tags.</p>
+            <p style="font-size:13px;color:var(--ch-text-muted);margin:4px 0 0;">Displayed to all users in the guidelines modal and on the registration page. Supports basic HTML tags.</p>
         </div>
         <div class="ch-card-body" style="padding:24px;">
             <form method="post">
@@ -2616,12 +2682,19 @@ function ch_profile_tab($user_id) {
                     </div>
                     <div class="ch-field-group">
                         <label class="ch-label">Avatar</label>
-                        <input type="file" id="ch-profile-avatar" class="ch-input" accept="image/*">
-                        <?php if ($profile->avatar_url): ?>
-                        <div class="ch-avatar-preview">
-                            <img src="<?php echo esc_url($profile->avatar_url); ?>" alt="Current avatar" style="width:50px;height:50px;border-radius:50%;margin-top:8px;">
+                        <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px;">
+                            <div id="ch-avatar-preview-wrap" style="width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--ch-border);flex-shrink:0;background:var(--ch-accent-light);display:flex;align-items:center;justify-content:center;">
+                                <?php if ($profile->avatar_url): ?>
+                                <img id="ch-avatar-preview-img" src="<?php echo esc_url($profile->avatar_url); ?>" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
+                                <?php else: ?>
+                                <span id="ch-avatar-preview-initials" style="font-size:22px;font-weight:700;color:var(--ch-accent);"><?php echo esc_html(strtoupper(substr($profile->display_name ?: 'U', 0, 1))); ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <input type="file" id="ch-profile-avatar" class="ch-input" accept="image/*" style="margin-bottom:4px;" onchange="chPreviewAvatar(this)">
+                                <div style="font-size:11px;color:var(--ch-text-subtle);">JPG, PNG or GIF · Max 5MB · Will be resized to 400×400</div>
+                            </div>
                         </div>
-                        <?php endif; ?>
                     </div>
                     <div class="ch-field-group">
                         <label class="ch-checkbox-label">
@@ -3337,21 +3410,21 @@ function bntm_shortcode_ch_feed() {
             <?php if ($user_id): ?>
             <a href="?tab=my_feed" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                My Feed
+                <span class="ch-nav-label">My Feed</span>
             </a>
             <?php endif; ?>
             <a href="<?php echo get_permalink(); ?>" class="ch-nav-link <?php echo !$bookmarks && $sort === 'new' && $tab === '' && !$cat_slug && !$search ? 'active' : ''; ?>">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                Home
+                <span class="ch-nav-label">Home</span>
             </a>
             <a href="?sort=trending" class="ch-nav-link <?php echo $sort === 'trending' && $tab === '' && !$bookmarks ? 'active' : ''; ?>">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                Trending
+                <span class="ch-nav-label">Trending</span>
             </a>
             <?php if ($user_id): ?>
             <a href="?bookmarks=1" class="ch-nav-link <?php echo $bookmarks && $tab === '' ? 'active' : ''; ?>">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-                Bookmarks
+                <span class="ch-nav-label">Bookmarks</span>
             </a>
             <?php endif; ?>
         </div>
@@ -4287,7 +4360,7 @@ function bntm_shortcode_ch_feed() {
                 return;
             }
             const btn = document.getElementById('ch-feed-save-cat-btn');
-            btn.disabled = true; btn.textContent = 'Creating...';
+            btn.disabled = true; btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Creating...</span>';
             const fd = new FormData();
             fd.append('action',      'ch_create_category');
             fd.append('name',        name);
@@ -4304,7 +4377,7 @@ function bntm_shortcode_ch_feed() {
                     + (json.data?.message || '') + '</div>';
                 if (json.success) {
                     // The server already auto-followed; just reload
-                    setTimeout(() => { chCloseModal('ch-modal-feed-create-cat'); location.reload(); }, 900);
+                    chCloseModal('ch-modal-feed-create-cat'); chReloadAfterSuccess(0);
                 } else {
                     btn.disabled = false; btn.textContent = 'Create Category';
                 }
@@ -4350,7 +4423,7 @@ function bntm_shortcode_ch_feed() {
                 return;
             }
             const btn = document.getElementById('ch-feed-edit-cat-btn');
-            btn.disabled = true; btn.textContent = 'Saving...';
+            btn.disabled = true; btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Saving...</span>';
             const fd = new FormData();
             fd.append('action',      'ch_edit_category');
             fd.append('category_id', id);
@@ -4365,7 +4438,7 @@ function bntm_shortcode_ch_feed() {
                     '<div class="bntm-notice bntm-notice-' + (json.success ? 'success' : 'error') + '">'
                     + (json.data?.message || '') + '</div>';
                 if (json.success) {
-                    setTimeout(() => { chCloseModal('ch-modal-feed-edit-cat'); location.reload(); }, 800);
+                    chCloseModal('ch-modal-feed-edit-cat'); chReloadAfterSuccess(0);
                 } else {
                     btn.disabled = false; btn.textContent = 'Save Changes';
                 }
@@ -4387,7 +4460,7 @@ function bntm_shortcode_ch_feed() {
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
             .then(json => {
-                if (json.success) location.reload();
+                if (json.success) chReloadAfterSuccess(0);
                 else alert(json.data?.message || 'Could not delete category.');
             })
             .catch(() => alert('Network error.'));
@@ -4645,7 +4718,7 @@ function bntm_shortcode_ch_post_view() {
                 $auth_url = get_page_by_path('login-register') ? get_permalink(get_page_by_path('login-register')) : wp_login_url(get_permalink());
                 return '<div style="padding:60px 20px;text-align:center;font-family:-apple-system,sans-serif;">
                     <svg width="48" height="48" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" style="display:block;margin:0 auto 16px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    <h3 style="color:#374151;margin:0 0 8px">Private Category</h3>
+                    <h3 style="color:var(--ch-text);margin:0 0 8px">Private Category</h3>
                     <p style="color:#9ca3af;margin:0 0 16px">Please sign in and follow this category to view this post.</p>
                     <a href="' . esc_url($auth_url) . '" style="background:#6366f1;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Sign In</a>
                 </div>';
@@ -4657,7 +4730,7 @@ function bntm_shortcode_ch_post_view() {
             if (!$is_following && !current_user_can('manage_options')) {
                 return '<div style="padding:60px 20px;text-align:center;font-family:-apple-system,sans-serif;">
                     <svg width="48" height="48" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" style="display:block;margin:0 auto 16px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    <h3 style="color:#374151;margin:0 0 8px">Private Category</h3>
+                    <h3 style="color:var(--ch-text);margin:0 0 8px">Private Category</h3>
                     <p style="color:#9ca3af;margin:0 0 4px">Follow <strong>' . esc_html($post->cat_name) . '</strong> to access this post.</p>
                 </div>';
             }
@@ -4920,7 +4993,7 @@ function bntm_shortcode_ch_post_view() {
                                     <?php endif; ?>
                                     <?php if ($user_id && ($cm->user_id !== 0 && $cm->user_id == $user_id || current_user_can('manage_options'))): ?>
                                     <button class="ch-comment-action" onclick="chEditComment(<?php echo (int)$cm->id; ?>)">Edit</button>
-                                    <button class="ch-comment-action ch-danger-action" onclick="chDeleteComment(<?php echo (int)$cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Delete</button>
+                                    <button class="ch-comment-action ch-danger-action" onclick="chDeleteComment(<?php echo (int)$cm->id; ?>, '<?php echo esc_attr($nonce); ?>', this)">Delete</button>
                                     <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
@@ -4956,7 +5029,7 @@ function bntm_shortcode_ch_post_view() {
                                                 <?php endif; ?>
                                                 <?php if ($reply->user_id !== 0 && $reply->user_id == $user_id || current_user_can('manage_options')): ?>
                                                 <button class="ch-comment-action" onclick="chEditComment(<?php echo $reply->id; ?>)">Edit</button>
-                                                <button class="ch-comment-action ch-danger-action" onclick="chDeleteComment(<?php echo $reply->id; ?>, '<?php echo esc_attr($nonce); ?>')">Delete</button>
+                                                <button class="ch-comment-action ch-danger-action" onclick="chDeleteComment(<?php echo $reply->id; ?>, '<?php echo esc_attr($nonce); ?>', this)">Delete</button>
                                                 <?php endif; ?>
                                             </div>
                                             <?php endif; ?>
@@ -6060,7 +6133,7 @@ function bntm_ajax_ch_update_profile() {
 
     $result = $wpdb->update("{$wpdb->prefix}ch_user_profiles", $update_data, ['user_id' => $user_id], array_fill(0, count($update_data), '%s'), ['%d']);
 
-    if ($result !== false) wp_send_json_success(['message' => 'Profile updated!']);
+    if ($result !== false) wp_send_json_success(['message' => 'Profile updated!', 'avatar_url' => $update_data['avatar_url'] ?? '']);
     else                   wp_send_json_error(['message' => 'No changes made']);
 }
 
@@ -6226,6 +6299,7 @@ function ch_global_styles() {
         position: sticky; top: 0; z-index: 200; box-shadow: var(--ch-shadow-sm);
     }
     .ch-nav-links { display: flex; gap: 2px; height: 100%; align-items: center; }
+    .ch-nav-label { display: inline; } /* hidden at 480px breakpoint */
     .ch-nav-link {
         display: inline-flex; align-items: center; gap: 7px;
         padding: 6px 14px; border-radius: var(--ch-radius-sm);
@@ -6880,34 +6954,196 @@ function ch_global_styles() {
     /* ── DARK MODE: special pages sidebar ────────────────────────── */
     .ch-dark .ch-trending-post-card { background: var(--ch-surface); border-color: var(--ch-border); }
 
-    /* ── RESPONSIVE ──────────────────────────────────────────────── */
-    @media (max-width: 680px) {
-        .ch-special-layout { flex-direction: column; }
-        .ch-special-sidebar { width: 100%; }
-        .ch-trending-rank { font-size: 18px; min-width: 24px; }
+    /* ============================================================
+       RESPONSIVE — comprehensive mobile/tablet fixes
+       ============================================================ */
+
+    /* Filter form helper classes */
+    .ch-categories-filter-row { align-items: flex-end; flex-wrap: wrap; }
+    .ch-filter-search-group   { flex: 1; min-width: 0; }
+    .ch-filter-sort-group     { min-width: 140px; }
+    .ch-filter-btn-group      { display: flex; gap: 6px; align-items: flex-end; flex-shrink: 0; }
+
+    /* Touch targets — 44px minimum for tappable elements */
+    @media (hover: none) and (pointer: coarse) {
+        .ch-btn, .ch-nav-link, .ch-cat-link, .ch-filter-btn,
+        .ch-vote-btn, .ch-icon-btn, .ch-page-btn,
+        .ch-post-action, .ch-comment-action { min-height: 44px; }
+        .ch-vote-btn, .ch-icon-btn { min-width: 44px; }
+        .ch-input, .ch-textarea { font-size: 16px; } /* prevents iOS zoom on focus */
     }
+
+    /* ── Tablet: 1024px ───────────────────────────────────────── */
+    @media (max-width: 1024px) {
+        .ch-feed-wrap { gap: 18px; padding: 18px 16px; }
+        .ch-feed-sidebar { width: 200px; }
+        .ch-post-view-grid { grid-template-columns: 1fr 220px; gap: 16px; }
+        .ch-stats-grid { grid-template-columns: repeat(3, 1fr); }
+        .ch-two-col { gap: 14px; }
+        .ch-guest-landing-wrap { gap: 18px; }
+        .ch-guest-right { width: 220px; }
+        .ch-guest-sidebar { width: 200px; }
+        .ch-main-content { padding: 22px 20px 40px; }
+    }
+
+    /* ── Small tablet / phablet: 780px ───────────────────────── */
     @media (max-width: 780px) {
         .ch-dashboard-wrap { flex-direction: column; }
-        .ch-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--ch-border); padding: 12px 0; }
+        .ch-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--ch-border); padding: 10px 0; }
         .ch-nav { flex-direction: row; flex-wrap: wrap; padding: 0 8px; gap: 2px; }
         .ch-nav-item { font-size: 12px; padding: 6px 10px; }
         .ch-nav-item.active { border-left: none; border-bottom: 2px solid var(--ch-accent); padding-left: 10px; }
-        .ch-main-content { padding: 18px 16px 32px; }
-        .ch-two-col { grid-template-columns: 1fr; }
-        .ch-feed-wrap { flex-direction: column; }
+        .ch-sidebar-header { padding: 8px 16px 12px; }
+        .ch-main-content { padding: 16px 14px 28px; }
+        .ch-two-col { grid-template-columns: 1fr; gap: 12px; }
+        .ch-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .ch-categories-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+        .ch-page-header { flex-direction: column; gap: 12px; }
+        .ch-page-header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+        .ch-page-header-actions .ch-btn { flex: 1; justify-content: center; min-width: 120px; }
+        .ch-toolbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+        .ch-toolbar-right { width: 100%; }
+        .ch-toolbar-filters { flex-wrap: wrap; }
+        .ch-categories-filter-row { flex-direction: column; gap: 8px; }
+        .ch-filter-search-group, .ch-filter-sort-group { width: 100%; min-width: unset; }
+        .ch-filter-btn-group { width: 100%; }
+        .ch-filter-btn-group .ch-btn { flex: 1; justify-content: center; }
+        .ch-search-form { width: 100%; }
+        .ch-search-form input { flex: 1; min-width: 0; }
+        .ch-feed-wrap { flex-direction: column; padding: 14px 12px; gap: 12px; }
         .ch-feed-sidebar { width: 100%; }
+        .ch-feed-toolbar-card { padding: 10px 12px; }
+        .ch-filter-row { flex-wrap: wrap; gap: 8px; }
+        .ch-sort-tabs { flex-wrap: wrap; }
+        .ch-location-form { width: 100%; }
+        .ch-location-select { width: 100%; }
         .ch-post-view-grid { grid-template-columns: 1fr; }
-        .ch-categories-grid { grid-template-columns: 1fr; }
-        .ch-stats-grid { grid-template-columns: repeat(2, 1fr); }
-        .ch-mf-profile-card { flex-direction: column; align-items: center; text-align: center; }
+        .ch-post-view-wrap { padding: 14px 12px; }
+        .ch-post-full { padding: 18px 16px; }
+        .ch-post-full-title { font-size: 18px; }
+        .ch-post-vote-bar { gap: 6px; flex-wrap: wrap; }
+        .ch-vote-btn-lg { padding: 5px 10px; font-size: 12px; }
+        .ch-comments-section { padding: 16px 14px; }
+        .ch-comment-form { gap: 8px; }
+        .ch-comment-form-footer { flex-direction: column; align-items: flex-start; gap: 8px; }
+        .ch-mf-profile-card { flex-direction: column; align-items: center; text-align: center; padding: 18px 16px; }
         .ch-mf-meta-row { justify-content: center; }
-        .ch-mf-stats-bar { gap: 7px; }
-        .ch-mf-stat { min-width: 78px; }
-        .ch-auth-card { padding: 24px 18px; }
-        .ch-guest-landing-wrap { flex-direction: column; }
+        .ch-mf-stats-bar { gap: 6px; }
+        .ch-mf-stat { min-width: 70px; padding: 10px 8px; }
+        .ch-mf-stat-num { font-size: 17px; }
+        .ch-mf-subnav-item { font-size: 12px; padding: 6px 0; }
+        .ch-auth-card { padding: 22px 16px; }
+        .ch-auth-wrap { padding: 20px 12px; }
+        .ch-field-row { flex-direction: column; gap: 0; }
+        .ch-guest-landing-wrap { flex-direction: column; padding: 14px 12px; }
         .ch-guest-sidebar, .ch-guest-right { width: 100%; }
         .ch-popular-cats-grid { grid-template-columns: repeat(2, 1fr); }
-        .ch-welcome-card { padding: 28px 20px; }
+        .ch-welcome-card { padding: 24px 18px; }
+        .ch-welcome-title { font-size: 19px; }
+        .ch-setting-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .ch-setting-control { width: 100%; }
+        .ch-setting-number { width: 100%; }
+        .ch-visibility-toggle { flex-direction: column; }
+        .ch-cat-hero-meta { flex-wrap: wrap; gap: 10px; }
+        .ch-cat-hero { padding: 14px 16px; }
+        .bntm-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .bntm-table { min-width: 560px; font-size: 12px; }
+        .bntm-table th, .bntm-table td { padding: 9px 12px; }
+        .ch-post-actions-row { flex-wrap: wrap; }
+        .ch-share-dropdown { margin-left: 0; }
+
+        /* Special pages (trending / bookmarks) */
+        .ch-special-page-wrap { padding: 0 14px 32px; }
+        .ch-special-hero { padding: 20px 0 18px; gap: 12px; margin-bottom: 20px; }
+        .ch-special-hero-title { font-size: 20px; }
+        .ch-special-layout { flex-direction: column; }
+        .ch-special-sidebar { width: 100%; }
+    }
+
+    /* ── Mobile: 480px ────────────────────────────────────────── */
+    @media (max-width: 480px) {
+        .ch-top-nav { padding: 0 12px; height: 52px; }
+        .ch-nav-link { padding: 5px 9px; font-size: 12px; gap: 5px; }
+        .ch-nav-label { display: none; }
+        .ch-stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+        .ch-stat-card { padding: 12px 14px; gap: 10px; }
+        .ch-stat-num { font-size: 19px; }
+        .ch-stat-icon { width: 36px; height: 36px; }
+        .ch-categories-grid { grid-template-columns: 1fr; }
+        .ch-post-card { padding: 12px 12px 10px; gap: 8px; }
+        .ch-post-title { font-size: 14px; }
+        .ch-post-preview { font-size: 12.5px; }
+        .ch-post-action { padding: 3px 7px; font-size: 11.5px; }
+        .ch-post-full-title { font-size: 16px; }
+        .ch-modal { border-radius: 16px; margin: 8px; width: calc(100% - 16px); }
+        .ch-modal-body { padding: 14px 16px; }
+        .ch-modal-footer { padding: 10px 16px; gap: 6px; }
+        .ch-modal-header { padding: 13px 16px; }
+        .ch-modal-footer .ch-btn { flex: 1; justify-content: center; }
+        .ch-dropdown-panel { min-width: unset !important; width: calc(100vw - 24px) !important; right: 12px !important; left: 12px !important; }
+        .ch-popular-cats-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+        .ch-pop-cat-chip { padding: 6px 8px; font-size: 11.5px; }
+        .ch-pop-cat-count { display: none; }
+        .ch-mf-stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .ch-mf-stat { min-width: unset; }
+        .ch-mf-profile-card { padding: 16px 14px; }
+        .ch-welcome-card { padding: 22px 16px; border-radius: 16px; }
+        .ch-welcome-icon { width: 54px; height: 54px; border-radius: 14px; }
+        .ch-welcome-title { font-size: 17px; }
+        .ch-welcome-subtitle { font-size: 12.5px; margin-bottom: 16px; }
+        .ch-welcome-feature { padding: 8px 10px; font-size: 12px; }
+        .ch-welcome-actions { flex-direction: column; gap: 6px; }
+        .ch-welcome-actions .ch-btn { width: 100%; justify-content: center; }
+        .ch-auth-form .ch-field-row { flex-direction: column; gap: 0; }
+        .ch-auth-card { padding: 20px 16px; }
+        .ch-feed-toolbar-card { padding: 10px; }
+        .ch-search-form { flex-direction: column; gap: 6px; }
+        .ch-search-form button { width: 100%; justify-content: center; }
+        .ch-filter-row { flex-direction: column; align-items: flex-start; }
+        .ch-sort-tabs { width: 100%; justify-content: space-between; }
+        .ch-sort-tab { flex: 1; text-align: center; padding: 5px 4px; font-size: 12px; }
+        .ch-page-header h1 { font-size: 17px; }
+        .ch-page-header p { font-size: 12px; }
+        .ch-comment .ch-avatar-sm, .ch-comment-reply .ch-avatar-sm { display: none; }
+        .ch-pagination { gap: 2px; padding: 10px 12px; }
+        .ch-page-btn { width: 28px; height: 28px; font-size: 11.5px; }
+        .ch-color-row { flex-wrap: wrap; gap: 6px; }
+        .ch-color-hex-input { width: 100%; }
+        .ch-card-header { flex-wrap: wrap; gap: 6px; }
+        .ch-sidebar-widget { padding: 12px; }
+        .ch-post-view-sidebar { display: none; }
+        .ch-announcement-body { margin-left: 0; margin-top: 8px; }
+        .ch-announcement-title { font-size: 14px; }
+
+        /* Special pages on mobile */
+        .ch-special-hero { flex-direction: column; text-align: center; padding: 16px 0 14px; }
+        .ch-special-hero-icon { width: 46px; height: 46px; }
+        .ch-special-hero-title { font-size: 18px; }
+        .ch-special-hero-sub { font-size: 12.5px; }
+        .ch-trending-post-card { padding: 12px 14px; gap: 10px; }
+        .ch-trending-rank { font-size: 18px; min-width: 24px; }
+
+        /* Profile standalone nav on mobile */
+        .ch-profile-standalone .ch-top-nav { padding: 0 12px; }
+    }
+
+    /* ── Very small: 360px ────────────────────────────────────── */
+    @media (max-width: 360px) {
+        .ch-top-nav { padding: 0 8px; height: 48px; }
+        .ch-nav-link { padding: 4px 7px; }
+        .ch-post-card { padding: 10px 10px 8px; }
+        .ch-mf-stats-bar { grid-template-columns: repeat(2, 1fr); }
+        .ch-welcome-actions .ch-btn { padding: 9px 12px; }
+        .ch-auth-card { padding: 18px 12px; }
+        .ch-stats-grid { grid-template-columns: 1fr; }
+        .ch-popular-cats-grid { grid-template-columns: 1fr; }
+        .ch-filter-btn-group { flex-direction: column; }
+        .ch-filter-btn-group .ch-btn { width: 100%; }
+    }
+
+    @media (max-width: 680px) {
+        .ch-special-layout { flex-direction: column; }
+        .ch-special-sidebar { width: 100%; }
     }
 
     /* ============================================================
@@ -7255,6 +7491,67 @@ function ch_global_styles() {
     .ch-dark .ch-color-wheel { background: var(--ch-surface); border-color: var(--ch-border); }
     .ch-dark .ch-color-hex-preview { border-color: var(--ch-border); }
     .ch-dark .ch-swatch:hover { box-shadow: 0 0 0 2px var(--ch-bg), 0 0 0 4px var(--ch-accent); }
+    /* ============================================================
+       BUTTON LOADING STATES & SPINNER
+       ============================================================ */
+    @keyframes ch-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+    .ch-btn-spinner {
+        animation: ch-spin 0.7s linear infinite;
+        flex-shrink: 0;
+    }
+    .ch-btn-loading {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        pointer-events: none;
+        opacity: 0.82;
+    }
+    .ch-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.72;
+    }
+    .ch-icon-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    /* ============================================================
+       NAV ITEM ACTIVE TRANSITION (tab switching feel)
+       ============================================================ */
+    .ch-nav-item {
+        transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+    }
+    .ch-nav-link {
+        transition: background 0.12s ease, color 0.12s ease;
+    }
+
+    /* Subtle click feedback on nav items */
+    .ch-nav-item:active,
+    .ch-nav-link:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+    }
+
+    /* ============================================================
+       MODAL OPEN / CLOSE ANIMATIONS
+       ============================================================ */
+    .ch-modal-overlay {
+        animation: ch-overlay-in 0.18s ease;
+    }
+    @keyframes ch-overlay-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+    .ch-modal {
+        animation: ch-modal-in 0.2s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+    @keyframes ch-modal-in {
+        from { opacity: 0; transform: scale(0.94) translateY(8px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
     </style>
     <?php
     return ob_get_clean();
@@ -7306,6 +7603,104 @@ function ch_global_scripts() {
             if (wheel) wheel.value = color;
             if (hex)   { hex.value = color.toUpperCase(); }
             if (prev)  { prev.style.background = color; prev.style.opacity = '1'; }
+        };
+
+        // ============================================================
+        // PAGE NAVIGATION LOADING BAR
+        // ============================================================
+        (function() {
+            // Create progress bar element
+            const bar = document.createElement('div');
+            bar.id = 'ch-page-loading-bar';
+            bar.style.cssText = [
+                'position:fixed','top:0','left:0','height:3px','width:0%',
+                'background:linear-gradient(90deg,#6366f1,#8b5cf6,#06b6d4)',
+                'z-index:99999','transition:width 0.25s ease,opacity 0.4s ease',
+                'border-radius:0 2px 2px 0','box-shadow:0 0 8px rgba(99,102,241,0.6)',
+                'pointer-events:none'
+            ].join(';');
+            document.body.appendChild(bar);
+
+            let _navTimer = null;
+
+            function chStartNavBar() {
+                bar.style.transition = 'width 0.25s ease, opacity 0.1s ease';
+                bar.style.opacity = '1';
+                bar.style.width = '0%';
+                // Animate to 85% quickly then slow down
+                requestAnimationFrame(() => {
+                    bar.style.transition = 'width 8s cubic-bezier(0.1,0.4,0.3,1), opacity 0.1s ease';
+                    bar.style.width = '85%';
+                });
+            }
+
+            function chFinishNavBar() {
+                bar.style.transition = 'width 0.2s ease, opacity 0.5s ease 0.2s';
+                bar.style.width = '100%';
+                setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => { bar.style.width = '0%'; }, 500); }, 200);
+            }
+
+            // Hook all same-page navigation links (tab navigation)
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a[href]');
+                if (!link) return;
+                const href = link.getAttribute('href');
+                if (!href || href.startsWith('#') || href.startsWith('javascript') || link.target === '_blank') return;
+                // Only intercept internal navigation (tab switches, same-origin)
+                try {
+                    const url = new URL(href, window.location.href);
+                    if (url.origin !== window.location.origin) return;
+                } catch(err) { return; }
+
+                chStartNavBar();
+                // Fallback: clear bar if navigation stalls
+                clearTimeout(_navTimer);
+                _navTimer = setTimeout(chFinishNavBar, 10000);
+            });
+
+            // Finish bar when page is about to unload
+            window.addEventListener('pagehide', chFinishNavBar);
+
+            // If page was loaded (e.g. from back/forward), finish any lingering bar
+            window.addEventListener('pageshow', chFinishNavBar);
+
+            // Expose globally for AJAX-triggered reloads
+            window.chNavBarStart  = chStartNavBar;
+            window.chNavBarFinish = chFinishNavBar;
+        })();
+
+        // ============================================================
+        // BUTTON LOADING STATE HELPERS
+        // ============================================================
+        const _CH_SPINNER_SVG = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
+
+        /**
+         * Set a button into loading state. Returns a restore function.
+         * Usage:  const restore = chBtnLoading(btn, 'Saving...');
+         *         ...on error: restore();
+         */
+        window.chBtnLoading = function(btn, loadingText) {
+            if (!btn) return () => {};
+            const originalHTML = btn.innerHTML;
+            const originalDisabled = btn.disabled;
+            btn.disabled = true;
+            btn.innerHTML = _CH_SPINNER_SVG + '<span>' + (loadingText || 'Loading...') + '</span>';
+            btn.classList.add('ch-btn-loading');
+            return function restore(newText) {
+                btn.disabled = originalDisabled;
+                btn.innerHTML = newText !== undefined ? newText : originalHTML;
+                btn.classList.remove('ch-btn-loading');
+            };
+        };
+
+        /**
+         * Helper: after AJAX success, trigger quick-reload with bar animation.
+         * Delay defaults to 600ms (faster than old 1000-1200ms).
+         */
+        window.chReloadAfterSuccess = function(delay) {
+            delay = delay !== undefined ? delay : 600;
+            if (window.chNavBarStart) window.chNavBarStart();
+            setTimeout(() => location.reload(), delay);
         };
 
         window.chOpenModal = function(id) {
@@ -7558,48 +7953,102 @@ function ch_global_scripts() {
             chLoadNotificationCount();
         }
 
+        window.chPreviewAvatar = function(input) {
+            if (!input.files || !input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrap = document.getElementById('ch-avatar-preview-wrap');
+                if (!wrap) return;
+                let img = document.getElementById('ch-avatar-preview-img');
+                const initials = document.getElementById('ch-avatar-preview-initials');
+                if (initials) initials.style.display = 'none';
+                if (!img) {
+                    img = document.createElement('img');
+                    img.id = 'ch-avatar-preview-img';
+                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+                    wrap.appendChild(img);
+                }
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        };
+
+        function chResizeImageToBlob(file, maxPx, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    let w = img.width, h = img.height;
+                    if (w > maxPx || h > maxPx) {
+                        if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+                        else       { w = Math.round(w * maxPx / h); h = maxPx; }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(callback, 'image/jpeg', quality);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         window.chUpdateProfile = function(nonce) {
             const displayName = document.getElementById('ch-profile-display-name').value.trim();
-            const bio = document.getElementById('ch-profile-bio').value.trim();
-            const location = document.getElementById('ch-profile-location').value.trim();
+            const bio         = document.getElementById('ch-profile-bio').value.trim();
+            const location    = document.getElementById('ch-profile-location').value.trim();
             const isAnonymous = document.getElementById('ch-profile-anonymous').checked ? 1 : 0;
-
-            const fd = new FormData();
-            fd.append('action', 'ch_update_profile');
-            fd.append('display_name', displayName);
-            fd.append('bio', bio);
-            fd.append('location', location);
-            fd.append('is_anonymous', isAnonymous);
-
-            const avatar = document.getElementById('ch-profile-avatar').files[0];
-            if (avatar) {
-                fd.append('avatar', avatar);
-            }
-
-            fd.append('nonce', nonce);
+            const avatarFile  = document.getElementById('ch-profile-avatar').files[0];
 
             const btn = event.target;
             btn.disabled = true;
-            btn.textContent = 'Saving...';
+            btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Saving...</span>';
 
-            fetch(ajaxurl, {method:'POST', body:fd})
-            .then(r => r.json())
-            .then(json => {
-                document.getElementById('ch-profile-msg').innerHTML =
-                    '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
-                if (json.success) {
-                    setTimeout(() => location.reload(), 1000);
-                } else {
+            function doSave(blob) {
+                const fd = new FormData();
+                fd.append('action',       'ch_update_profile');
+                fd.append('display_name', displayName);
+                fd.append('bio',          bio);
+                fd.append('location',     location);
+                fd.append('is_anonymous', isAnonymous);
+                fd.append('nonce',        nonce);
+                if (blob) fd.append('avatar', blob, 'avatar.jpg');
+
+                fetch(ajaxurl, {method:'POST', body:fd})
+                .then(r => r.json())
+                .then(json => {
+                    document.getElementById('ch-profile-msg').innerHTML =
+                        '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
+                    if (json.success) {
+                        btn.textContent = 'Saved!';
+                        // Update all nav avatars on the page without a full reload
+                        if (json.data?.avatar_url) {
+                            document.querySelectorAll('.ch-avatar-btn img, .ch-mf-avatar-img').forEach(el => {
+                                el.src = json.data.avatar_url + '?t=' + Date.now();
+                            });
+                        }
+                        setTimeout(() => { btn.disabled = false; btn.textContent = 'Save Profile'; }, 2000);
+                    } else {
+                        btn.disabled = false;
+                        btn.textContent = 'Save Profile';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('ch-profile-msg').innerHTML = '<div class="bntm-notice bntm-notice-error">Network error. Please try again.</div>';
                     btn.disabled = false;
                     btn.textContent = 'Save Profile';
-                }
-            })
-            .catch(error => {
-                console.error('Profile update failed:', error);
-                document.getElementById('ch-profile-msg').innerHTML = '<div class="bntm-notice bntm-notice-error">Network error. Please try again.</div>';
-                btn.disabled = false;
-                btn.textContent = 'Save Profile';
-            });
+                });
+            }
+
+            if (avatarFile) {
+                btn.textContent = 'Resizing…';
+                chResizeImageToBlob(avatarFile, 400, 0.88, function(blob) {
+                    btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Saving...</span>';
+                    doSave(blob);
+                });
+            } else {
+                doSave(null);
+            }
         };
     })();
     </script>
@@ -8049,7 +8498,8 @@ function ch_feed_scripts() {
             }
 
             const btn = document.getElementById('ch-submit-post-btn');
-            btn.disabled = true; btn.textContent = 'Posting...';
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Posting...</span>';
 
             const fd = new FormData();
             fd.append('action', 'ch_create_post');
@@ -8071,7 +8521,7 @@ function ch_feed_scripts() {
             .then(json => {
                 document.getElementById('ch-post-msg').innerHTML =
                     '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
-                if (json.success) setTimeout(() => location.reload(), 1200);
+                if (json.success) chReloadAfterSuccess();
                 else { btn.disabled = false; btn.textContent = 'Post to Community'; }
             });
         };
@@ -8121,7 +8571,8 @@ function ch_feed_scripts() {
             if (!title || !content || !catId) { alert('Please fill in all required fields'); return; }
 
             const btn = document.getElementById('ch-update-post-btn');
-            btn.disabled = true; btn.textContent = 'Updating...';
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Updating...</span>';
 
             const fd = new FormData();
             fd.append('action', 'ch_edit_post');
@@ -8143,7 +8594,7 @@ function ch_feed_scripts() {
             .then(json => {
                 document.getElementById('ch-edit-post-msg').innerHTML =
                     '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
-                if (json.success) setTimeout(() => location.reload(), 1200);
+                if (json.success) chReloadAfterSuccess();
                 else { btn.disabled = false; btn.textContent = 'Update Post'; }
             });
         };
@@ -8167,6 +8618,16 @@ function ch_feed_scripts() {
                 }
             });
         };
+
+        // ---- Nav item instant active feedback on click ----
+        document.addEventListener('click', function(e) {
+            const navItem = e.target.closest('.ch-nav-item');
+            if (navItem && !navItem.classList.contains('active')) {
+                // Optimistically mark clicked item as active for instant feel
+                document.querySelectorAll('.ch-nav-item').forEach(n => n.classList.remove('active'));
+                navItem.classList.add('active');
+            }
+        });
 
         // Close modals on overlay click
         document.addEventListener('click', function(e) {
@@ -8194,14 +8655,14 @@ function ch_feed_scripts() {
             const avatar = document.getElementById('ch-profile-avatar')?.files[0];
             if (avatar) fd.append('avatar', avatar);
 
-            if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+            if (btn) { btn.disabled = true; btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Saving…</span>'; }
 
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
             .then(json => {
                 if (msgEl) msgEl.innerHTML = '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
                 if (json.success) {
-                    setTimeout(() => location.reload(), 1000);
+                    chReloadAfterSuccess();
                 } else {
                     if (btn) { btn.disabled = false; btn.textContent = 'Save Profile'; }
                 }
@@ -8235,6 +8696,10 @@ function ch_post_view_scripts() {
 
             const isAnon = document.getElementById('ch-comment-anon')?.checked ? 1 : 0;
 
+            // Find the submit button closest to the textarea
+            const btn = contentEl ? contentEl.closest('.ch-comment-form, .ch-reply-form')?.querySelector('.ch-btn-primary') : null;
+            const restore = btn ? chBtnLoading(btn, 'Posting...') : () => {};
+
             const fd = new FormData();
             fd.append('action', 'ch_add_comment');
             fd.append('post_id', postId);
@@ -8247,11 +8712,13 @@ function ch_post_view_scripts() {
             .then(r => r.json())
             .then(json => {
                 if (json.success) {
-                    location.reload();
+                    chReloadAfterSuccess(0);
                 } else {
+                    restore();
                     alert(json.data?.message || 'Failed to post comment');
                 }
-            });
+            })
+            .catch(() => { restore(); alert('Network error.'); });
         };
 
         window.chSubmitGuestComment = function(postId, parentId, nonce) {
@@ -8273,15 +8740,17 @@ function ch_post_view_scripts() {
             .then(r => r.json())
             .then(json => {
                 if (json.success) {
-                    location.reload();
+                    chReloadAfterSuccess(0);
                 } else {
                     alert(json.data?.message || 'Failed to post comment');
                 }
-            });
+            })
+            .catch(() => alert('Network error.'));
         };
 
-        window.chDeleteComment = function(commentId, nonce) {
+        window.chDeleteComment = function(commentId, nonce, triggerBtn) {
             if (!confirm('Delete this comment?')) return;
+            if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = 'Deleting...'; }
             const fd = new FormData();
             fd.append('action', 'ch_delete_comment');
             fd.append('comment_id', commentId);
@@ -8292,10 +8761,20 @@ function ch_post_view_scripts() {
             .then(json => {
                 if (json.success) {
                     const el = document.getElementById('ch-comment-' + commentId);
-                    if (el) el.remove();
+                    if (el) {
+                        el.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                        el.style.opacity = '0';
+                        el.style.transform = 'translateX(-8px)';
+                        setTimeout(() => el.remove(), 200);
+                    }
                 } else {
+                    if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = 'Delete'; }
                     alert(json.data?.message || 'Failed to delete');
                 }
+            })
+            .catch(() => {
+                if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = 'Delete'; }
+                alert('Network error.');
             });
         };
 
@@ -8530,11 +9009,11 @@ function ch_announcements_tab() {
             const status  = document.getElementById('ch-ann-create-status').checked ? 1 : 0;
             if (!title || !content) { showMsg('ch-ann-create-msg','Title and content are required.',false); return; }
             const btn = document.getElementById('ch-ann-create-btn');
-            btn.disabled = true; btn.textContent = 'Creating...';
+            btn.disabled = true; btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Creating...</span>';
             post('ch_create_announcement', {title, content, status}).then(json => {
                 showMsg('ch-ann-create-msg', json.data?.message || (json.success?'Created!':'Failed'), json.success);
                 if (json.success) {
-                    setTimeout(() => { chCloseModal('ch-modal-create-announcement'); document.getElementById('ch-ann-create-title').value=''; document.getElementById('ch-ann-create-content').value=''; document.getElementById('ch-ann-create-status').checked=true; loadAnnouncements(); }, 800);
+                    chCloseModal('ch-modal-create-announcement'); document.getElementById('ch-ann-create-title').value=''; document.getElementById('ch-ann-create-content').value=''; document.getElementById('ch-ann-create-status').checked=true; loadAnnouncements();
                 }
                 btn.disabled = false; btn.textContent = 'Create Announcement';
             });
@@ -8559,10 +9038,10 @@ function ch_announcements_tab() {
             const status  = document.getElementById('ch-ann-edit-status').checked ? 1 : 0;
             if (!title || !content) { showMsg('ch-ann-edit-msg','Title and content are required.',false); return; }
             const btn = document.getElementById('ch-ann-edit-btn');
-            btn.disabled = true; btn.textContent = 'Saving...';
+            btn.disabled = true; btn.innerHTML = '<svg class="ch-btn-spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:ch-spin 0.7s linear infinite;flex-shrink:0;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Saving...</span>';
             post('ch_edit_announcement', {announcement_id:id, title, content, status}).then(json => {
                 showMsg('ch-ann-edit-msg', json.data?.message || (json.success?'Updated!':'Failed'), json.success);
-                if (json.success) { setTimeout(() => { chCloseModal('ch-modal-edit-announcement'); loadAnnouncements(); }, 800); }
+                if (json.success) { chCloseModal('ch-modal-edit-announcement'); loadAnnouncements(); }
                 btn.disabled = false; btn.textContent = 'Update Announcement';
             });
         };
