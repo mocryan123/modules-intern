@@ -43,7 +43,10 @@ function ch_guest_landing_page() {
 
     ob_start();
     ?>
-    <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
+    <script>
+        var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+        var chFeedUrl = '<?php echo esc_js(remove_query_arg('view_post')); ?>';
+    </script>
 
     <nav class="ch-top-nav">
         <div class="ch-nav-links">
@@ -198,12 +201,10 @@ function ch_guest_landing_page() {
         </aside>
     </div>
 
-    <?php /* Guest layout uses ch_global_styles */ ?>
-
+    <?php /* Guaranteed inline fallback for themes without wp_head/wp_footer */ ?>
     <?php
     echo ch_global_styles();
     echo ch_global_scripts();
-
     $content = ob_get_clean();
     return bntm_universal_container('CivicHub', $content);
 }
@@ -300,9 +301,9 @@ function bntm_shortcode_ch() {
         </div>
     </div>
 
-    <?php echo ch_global_styles(); ?>
-    <?php echo ch_global_scripts(); ?>
     <?php
+    echo ch_global_styles();
+    echo ch_global_scripts();
 
     $content = ob_get_clean();
     return bntm_universal_container('CivicHub Admin', $content);
@@ -630,7 +631,7 @@ function ch_categories_tab($user_id, $is_admin) {
                     <h4><?php echo esc_html($cat->name); ?></h4>
                     <?php if ($is_admin): ?>
                     <div class="ch-actions-row">
-                        <button class="ch-icon-btn" title="Edit" onclick="chEditCategory(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', '<?php echo esc_js($cat->description); ?>', '<?php echo esc_attr($cat->color); ?>', '<?php echo esc_js($cat->icon); ?>', <?php echo (int)$cat->is_private; ?>)">
+                        <button class="ch-icon-btn" title="Edit" onclick="chEditCategory(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', '<?php echo esc_js($cat->description); ?>', '<?php echo esc_attr($cat->color); ?>', '<?php echo esc_js($cat->icon); ?>', <?php echo (int)$cat->is_private; ?>, <?php echo (int)$cat->require_post_approval; ?>)">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
                         <button class="ch-icon-btn" title="Toggle visibility" onclick="chToggleCategoryStatus(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->status); ?>', this)">
@@ -716,6 +717,13 @@ function ch_categories_tab($user_id, $is_admin) {
                         </label>
                     </div>
                 </div>
+                <div class="ch-field-group">
+                    <label class="ch-label">Post Moderation</label>
+                    <label class="ch-checkbox-wrap">
+                        <input type="checkbox" id="ch-cat-require-approval" value="1">
+                        <span>Require post approval in this category</span>
+                    </label>
+                </div>
             </div>
             <div class="ch-modal-footer">
                 <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-create-cat')">Cancel</button>
@@ -779,6 +787,13 @@ function ch_categories_tab($user_id, $is_admin) {
                         </label>
                     </div>
                 </div>
+                <div class="ch-field-group">
+                    <label class="ch-label">Post Moderation</label>
+                    <label class="ch-checkbox-wrap">
+                        <input type="checkbox" id="ch-edit-cat-require-approval" value="1">
+                        <span>Require post approval in this category</span>
+                    </label>
+                </div>
             </div>
             <div class="ch-modal-footer">
                 <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-edit-cat')">Cancel</button>
@@ -790,7 +805,7 @@ function ch_categories_tab($user_id, $is_admin) {
 
     <script>
     (function() {
-        window.chEditCategory = function(id, name, desc, color, icon, isPrivate) {
+        window.chEditCategory = function(id, name, desc, color, icon, isPrivate, requireApproval) {
             document.getElementById('ch-edit-cat-id').value = id;
             document.getElementById('ch-edit-cat-name').value = name;
             document.getElementById('ch-edit-cat-desc').value = desc;
@@ -805,6 +820,8 @@ function ch_categories_tab($user_id, $is_admin) {
                 privRadio.checked = !!isPrivate;
                 pubRadio.checked  = !isPrivate;
             }
+            const requireApprovalCheckbox = document.getElementById('ch-edit-cat-require-approval');
+            if (requireApprovalCheckbox) requireApprovalCheckbox.checked = !!requireApproval;
             chOpenModal('ch-modal-edit-cat');
         };
 
@@ -823,6 +840,7 @@ function ch_categories_tab($user_id, $is_admin) {
             fd.append('color', document.getElementById('ch-cat-color').value);
             fd.append('sort_order', 0);
             fd.append('is_private', document.getElementById('ch-cat-vis-private')?.checked ? 1 : 0);
+            fd.append('require_post_approval', document.getElementById('ch-cat-require-approval')?.checked ? 1 : 0);
             fd.append('nonce', nonce);
 
             fetch(ajaxurl, {method:'POST', body:fd})
@@ -855,6 +873,7 @@ function ch_categories_tab($user_id, $is_admin) {
             fd.append('description', document.getElementById('ch-edit-cat-desc').value);
             fd.append('color', document.getElementById('ch-edit-cat-color').value);
             fd.append('is_private', document.getElementById('ch-edit-cat-vis-private')?.checked ? 1 : 0);
+            fd.append('require_post_approval', document.getElementById('ch-edit-cat-require-approval')?.checked ? 1 : 0);
             fd.append('nonce', nonce);
 
             fetch(ajaxurl, {method:'POST', body:fd})
@@ -2360,7 +2379,6 @@ function ch_public_user_profile($view_uid) {
     $joined     = $wp_user->user_registered ? date('F Y', strtotime($wp_user->user_registered)) : 'Unknown';
 
     ob_start();
-    echo ch_global_styles();
     ?>
     <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
     <div class="ch-public-profile-wrap">
@@ -3038,18 +3056,20 @@ function bntm_shortcode_ch_feed() {
                 </div>
                 <?php endif; ?>
 
-                <?php if ($user_id && !empty($followed)): ?>
-                <div class="ch-followed-categories" style="margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--ch-border);">
+                <?php if ($user_id): ?>
+                <div id="ch-followed-categories" class="ch-followed-categories" style="margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--ch-border);<?php echo empty($followed) ? 'display:none;' : ''; ?>">
                     <h5 style="margin: 0 0 8px; font-size: 10.5px; font-weight: 700; color: var(--ch-text-subtle); text-transform: uppercase; letter-spacing: 0.8px;">Following</h5>
+                    <div id="ch-followed-categories-list">
                     <?php foreach ($followed as $cat_id => $dummy): ?>
                         <?php $cat = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ch_categories WHERE id = %d", $cat_id)); ?>
                         <?php if ($cat): ?>
-                        <a href="?cat=<?php echo esc_attr($cat->slug); ?>" class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>" style="font-size: 14px;">
+                        <a href="?cat=<?php echo esc_attr($cat->slug); ?>" class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>" style="font-size: 14px;" data-followed-cat-id="<?php echo (int)$cat->id; ?>">
                             <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
                             <?php echo esc_html($cat->name); ?>
                         </a>
                         <?php endif; ?>
                     <?php endforeach; ?>
+                    </div>
                 </div>
                 <?php endif; ?>
             </div>
@@ -3088,12 +3108,17 @@ function bntm_shortcode_ch_feed() {
                             <span class="ch-cat-meta-label">discussions</span>
                         </div>
                         <div class="ch-cat-meta-item">
-                            <span class="ch-cat-meta-num"><?php echo number_format($cat_obj->follower_count); ?></span>
+                            <span class="ch-cat-meta-num ch-cat-followers" data-cat-id="<?php echo (int)$cat_obj->id; ?>"><?php echo number_format($cat_obj->follower_count); ?></span>
                             <span class="ch-cat-meta-label">followers</span>
                         </div>
                         <?php if ($user_id): ?>
                         <?php $is_following = isset($followed[$cat_obj->id]); ?>
-                        <button class="ch-btn ch-btn-sm <?php echo $is_following ? 'ch-btn-outline' : 'ch-btn-primary'; ?>" onclick="chToggleFollowCategory(<?php echo $cat_obj->id; ?>, this, '<?php echo esc_attr($nonce); ?>')">
+                        <button class="ch-btn ch-btn-sm ch-follow-toggle <?php echo $is_following ? 'ch-btn-outline' : 'ch-btn-primary'; ?>"
+                                data-follow-cat-id="<?php echo (int)$cat_obj->id; ?>"
+                                data-follow-cat-slug="<?php echo esc_attr($cat_obj->slug); ?>"
+                                data-follow-cat-name="<?php echo esc_attr($cat_obj->name); ?>"
+                                data-follow-cat-color="<?php echo esc_attr($cat_obj->color); ?>"
+                                onclick="chToggleFollowCategory(<?php echo (int)$cat_obj->id; ?>, this, '<?php echo esc_attr($nonce); ?>')">
                             <?php echo $is_following ? 'Following' : 'Follow'; ?>
                         </button>
                         <button class="ch-btn ch-btn-sm ch-btn-primary"
@@ -3105,7 +3130,7 @@ function bntm_shortcode_ch_feed() {
                         <?php if ($user_id && ($cat_obj->business_id == $user_id || current_user_can('manage_options'))): ?>
                         <button class="ch-btn ch-btn-sm ch-btn-outline"
                                 title="Edit category"
-                                onclick="chFeedOpenEditCat(<?php echo (int)$cat_obj->id; ?>, '<?php echo esc_js($cat_obj->name); ?>', '<?php echo esc_js($cat_obj->description ?? ''); ?>', '<?php echo esc_attr($cat_obj->color); ?>')">
+                                onclick="chFeedOpenEditCat(<?php echo (int)$cat_obj->id; ?>, '<?php echo esc_js($cat_obj->name); ?>', '<?php echo esc_js($cat_obj->description ?? ''); ?>', '<?php echo esc_attr($cat_obj->color); ?>', <?php echo (int)$cat_obj->is_private; ?>, <?php echo (int)$cat_obj->require_post_approval; ?>)">
                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                             Edit
                         </button>
@@ -3315,7 +3340,8 @@ function bntm_shortcode_ch_feed() {
                                 <?php echo (int)$post->comment_count; ?> comments
                             </a>
                             <?php if ($user_id): ?>
-                            <button class="ch-post-action <?php echo isset($user_bookmarks[$post->id]) ? 'ch-bookmarked' : ''; ?>"
+                            <button class="ch-post-action ch-bookmark-btn <?php echo isset($user_bookmarks[$post->id]) ? 'ch-bookmarked' : ''; ?>"
+                                    data-post-id="<?php echo (int)$post->id; ?>"
                                     onclick="chBookmark(<?php echo (int)$post->id; ?>, this, '<?php echo esc_attr($nonce); ?>')">
                                 <svg width="14" height="14" fill="<?php echo isset($user_bookmarks[$post->id]) ? 'currentColor' : 'none'; ?>" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                                 <?php echo isset($user_bookmarks[$post->id]) ? 'Saved' : 'Save'; ?>
@@ -3627,6 +3653,32 @@ function bntm_shortcode_ch_feed() {
                     </div>
                 </div>
                 </div>
+                <div class="ch-field-group">
+                    <label class="ch-label">Visibility</label>
+                    <div class="ch-visibility-toggle">
+                        <label class="ch-vis-option">
+                            <input type="radio" name="ch-feed-edit-cat-visibility" id="ch-feed-edit-cat-vis-public" value="0">
+                            <span class="ch-vis-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                Public
+                            </span>
+                        </label>
+                        <label class="ch-vis-option">
+                            <input type="radio" name="ch-feed-edit-cat-visibility" id="ch-feed-edit-cat-vis-private" value="1">
+                            <span class="ch-vis-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Private
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="ch-field-group">
+                    <label class="ch-label">Post Moderation</label>
+                    <label class="ch-checkbox-wrap">
+                        <input type="checkbox" id="ch-feed-edit-cat-require-approval" value="1">
+                        <span>Require post approval in this category</span>
+                    </label>
+                </div>
             </div>
             <div class="ch-modal-footer">
                 <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-feed-edit-cat')">Cancel</button>
@@ -3695,6 +3747,13 @@ function bntm_shortcode_ch_feed() {
                         </label>
                     </div>
                 </div>
+                <div class="ch-field-group">
+                    <label class="ch-label">Post Moderation</label>
+                    <label class="ch-checkbox-wrap">
+                        <input type="checkbox" id="ch-feed-cat-require-approval" value="1">
+                        <span>Require post approval in this category</span>
+                    </label>
+                </div>
             </div>
             <div class="ch-modal-footer">
                 <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-feed-create-cat')">Cancel</button>
@@ -3726,6 +3785,7 @@ function bntm_shortcode_ch_feed() {
             fd.append('color',       color);
             fd.append('sort_order',  0);
             fd.append('is_private',  document.getElementById('ch-feed-cat-vis-private')?.checked ? 1 : 0);
+            fd.append('require_post_approval', document.getElementById('ch-feed-cat-require-approval')?.checked ? 1 : 0);
             fd.append('nonce',       nonce);
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
@@ -3756,7 +3816,7 @@ function bntm_shortcode_ch_feed() {
         const _catNonce = '<?php echo esc_attr(wp_create_nonce('ch_category_nonce')); ?>';
 
         // Open the edit modal pre-filled
-        window.chFeedOpenEditCat = function(id, name, desc, color) {
+        window.chFeedOpenEditCat = function(id, name, desc, color, isPrivate, requireApproval) {
             document.getElementById('ch-feed-edit-cat-id').value    = id;
             document.getElementById('ch-feed-edit-cat-name').value  = name;
             document.getElementById('ch-feed-edit-cat-desc').value  = desc;
@@ -3765,6 +3825,14 @@ function bntm_shortcode_ch_feed() {
             if (wheel) wheel.value = color;
             const prev = document.getElementById('ch-feed-edit-cat-color-preview');
             if (prev) { prev.style.background = color; prev.style.opacity = '1'; }
+            const privRadio = document.getElementById('ch-feed-edit-cat-vis-private');
+            const pubRadio  = document.getElementById('ch-feed-edit-cat-vis-public');
+            if (privRadio && pubRadio) {
+                privRadio.checked = !!isPrivate;
+                pubRadio.checked  = !isPrivate;
+            }
+            const requireApprovalCheckbox = document.getElementById('ch-feed-edit-cat-require-approval');
+            if (requireApprovalCheckbox) requireApprovalCheckbox.checked = !!requireApproval;
             document.getElementById('ch-feed-edit-cat-msg').innerHTML = '';
             chOpenModal('ch-modal-feed-edit-cat');
         };
@@ -3788,6 +3856,8 @@ function bntm_shortcode_ch_feed() {
             fd.append('name',        name);
             fd.append('description', desc);
             fd.append('color',       color);
+            fd.append('is_private',  document.getElementById('ch-feed-edit-cat-vis-private')?.checked ? 1 : 0);
+            fd.append('require_post_approval', document.getElementById('ch-feed-edit-cat-require-approval')?.checked ? 1 : 0);
             fd.append('nonce',       nonce);
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
@@ -4036,10 +4106,11 @@ function bntm_shortcode_ch_feed() {
     })();
     </script>
 
-    <?php echo ch_global_styles(); ?>
-    <?php echo ch_global_scripts(); ?>
-    <?php echo ch_feed_scripts(); ?>
+    
     <?php
+    echo ch_global_styles();
+    echo ch_global_scripts();
+    echo ch_feed_scripts();
     return ob_get_clean();
 }
 
@@ -4613,15 +4684,17 @@ function bntm_shortcode_ch_post_view() {
             content: '<?php echo addslashes($post->content); ?>',
             tags: '<?php echo addslashes($post->tags); ?>',
             is_anonymous: <?php echo $post->is_anonymous; ?>,
-            media_urls: '<?php echo addslashes($post->media_urls); ?>'
+            media_urls: '<?php echo addslashes($post->media_urls); ?>',
+            edit_comment_nonce: '<?php echo wp_create_nonce('ch_post_view_nonce'); ?>'
         };
     </script>
 
-    <?php echo ch_global_styles(); ?>
-    <?php echo ch_global_scripts(); ?>
-    <?php echo ch_feed_scripts(); ?>
-    <?php echo ch_post_view_scripts(); ?>
+    
     <?php
+    echo ch_global_styles();
+    echo ch_global_scripts();
+    echo ch_feed_scripts();
+    echo ch_post_view_scripts();
     return ob_get_clean();
 }
 
@@ -4652,6 +4725,7 @@ function bntm_ajax_ch_create_category() {
     $color      = sanitize_hex_color($_POST['color'] ?? '#FF7551') ?: '#FF7551';
     $order      = (int)($_POST['sort_order'] ?? 0);
     $is_private = (int)(!empty($_POST['is_private']));
+    $require_post_approval = (int)(!empty($_POST['require_post_approval']));
 
     if (!$name) wp_send_json_error(['message' => 'Category name is required']);
 
@@ -4668,7 +4742,8 @@ function bntm_ajax_ch_create_category() {
         'color'       => $color,
         'sort_order'  => $order,
         'is_private'  => $is_private,
-    ], ['%s','%d','%s','%s','%s','%s','%d','%d']);
+        'require_post_approval' => $require_post_approval,
+    ], ['%s','%d','%s','%s','%s','%s','%d','%d','%d']);
 
     if ($result) {
         $new_cat_id = $wpdb->insert_id;
@@ -4710,9 +4785,17 @@ function bntm_ajax_ch_edit_category() {
     }
 
     $is_private = (int)(!empty($_POST['is_private']));
+    $require_post_approval = (int)(!empty($_POST['require_post_approval']));
     $result = $wpdb->update("{$wpdb->prefix}ch_categories",
-        ['name' => $name, 'description' => $desc, 'color' => $color, 'slug' => sanitize_title($name), 'is_private' => $is_private],
-        ['id' => $id], ['%s','%s','%s','%s','%d'], ['%d']
+        [
+            'name' => $name,
+            'description' => $desc,
+            'color' => $color,
+            'slug' => sanitize_title($name),
+            'is_private' => $is_private,
+            'require_post_approval' => $require_post_approval
+        ],
+        ['id' => $id], ['%s','%s','%s','%s','%d','%d'], ['%d']
     );
 
     if ($result !== false) {
@@ -4784,8 +4867,8 @@ function bntm_ajax_ch_create_post() {
 
     if (!$title || !$content || !$cat_id) wp_send_json_error(['message' => 'Title, content, and category are required']);
 
-    // Check category privacy
-    $cat = $wpdb->get_row($wpdb->prepare("SELECT is_private FROM {$wpdb->prefix}ch_categories WHERE id = %d", $cat_id));
+    // Check category privacy / moderation settings
+    $cat = $wpdb->get_row($wpdb->prepare("SELECT is_private, require_post_approval FROM {$wpdb->prefix}ch_categories WHERE id = %d", $cat_id));
     if (!$cat) wp_send_json_error(['message' => 'Category not found']);
 
     if ($cat->is_private) {
@@ -4812,7 +4895,9 @@ function bntm_ajax_ch_create_post() {
     }
 
     $rand_id = bntm_rand_id();
-    $status  = get_option('ch_post_approval_enabled', 0) ? 'pending' : 'active';
+    $global_requires_approval = (int)get_option('ch_post_approval_enabled', 0);
+    $category_requires_approval = (int)($cat->require_post_approval ?? 0);
+    $status  = ($global_requires_approval || $category_requires_approval) ? 'pending' : 'active';
     $result  = $wpdb->insert("{$wpdb->prefix}ch_posts", [
         'rand_id'      => $rand_id,
         'business_id'  => $user_id,
@@ -4883,7 +4968,16 @@ function bntm_ajax_ch_edit_post() {
 
     $post = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ch_posts WHERE id = %d", $post_id));
     if (!$post) wp_send_json_error(['message' => 'Post not found']);
-    if ($post->user_id != $user_id && !current_user_can('manage_options')) wp_send_json_error(['message' => 'Unauthorized']);
+    $category_owner_id = (int)$wpdb->get_var($wpdb->prepare(
+        "SELECT business_id FROM {$wpdb->prefix}ch_categories WHERE id = %d",
+        (int)$post->category_id
+    ));
+    $can_delete_post = (
+        (int)$post->user_id === (int)$user_id ||
+        current_user_can('manage_options') ||
+        $category_owner_id === (int)$user_id
+    );
+    if (!$can_delete_post) wp_send_json_error(['message' => 'Unauthorized']);
 
     $result = $wpdb->update("{$wpdb->prefix}ch_posts", [
         'title'        => $title,
@@ -5653,8 +5747,6 @@ function ch_log_activity($action, $target_type = null, $target_id = 0, $details 
 function ch_global_styles() {
     ob_start(); ?>
     <style>
-    @import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap');
-
     :root {
         --ch-accent:       #FF7551;
         --ch-accent-dark:  #FF6640;
@@ -7156,7 +7248,7 @@ function ch_global_scripts() {
         // ============================================================
         // PAGE NAVIGATION LOADING BAR
         // ============================================================
-        (function() {
+        function chInitNavLoadingBar() {
             // Create progress bar element
             const bar = document.createElement('div');
             bar.id = 'ch-page-loading-bar';
@@ -7231,7 +7323,14 @@ function ch_global_scripts() {
             // Expose globally for AJAX-triggered reloads
             window.chNavBarStart  = chStartNavBar;
             window.chNavBarFinish = chFinishNavBar;
-        })();
+        }
+        if (document.readyState === 'complete') {
+            (window.requestIdleCallback || function(cb){ setTimeout(cb, 120); })(chInitNavLoadingBar);
+        } else {
+            window.addEventListener('load', function() {
+                (window.requestIdleCallback || function(cb){ setTimeout(cb, 120); })(chInitNavLoadingBar);
+            }, { once: true });
+        }
 
         // ============================================================
         // BUTTON LOADING STATE HELPERS
@@ -7808,6 +7907,7 @@ function ch_feed_scripts() {
         };
 
         window.chBookmark = function(postId, btn, nonce) {
+            if (btn) btn.disabled = true;
             const fd = new FormData();
             fd.append('action', 'ch_bookmark_post');
             fd.append('post_id', postId);
@@ -7818,15 +7918,46 @@ function ch_feed_scripts() {
             .then(json => {
                 if (json.success) {
                     const isBookmarked = json.data.bookmarked;
-                    btn.classList.toggle('ch-bookmarked', isBookmarked);
-                    btn.innerHTML = isBookmarked
-                        ? '<svg width="14" height="14" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Saved'
-                        : '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> Save';
+                    const iconSaved = '<svg width="14" height="14" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+                    const iconDefault = '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>';
+                    const html = isBookmarked ? (iconSaved + ' Saved') : (iconDefault + ' Save');
+
+                    document.querySelectorAll('.ch-bookmark-btn[data-post-id="' + postId + '"]').forEach(el => {
+                        el.classList.toggle('ch-bookmarked', isBookmarked);
+                        el.innerHTML = html;
+                    });
+                    if (btn && !btn.classList.contains('ch-bookmark-btn')) {
+                        btn.classList.toggle('ch-bookmarked', isBookmarked);
+                        btn.innerHTML = html;
+                    }
+
+                    // In bookmarks view, removing bookmark should remove the card live.
+                    if (!isBookmarked && document.querySelector('.ch-bookmarks-hero')) {
+                        document.querySelectorAll('.ch-special-main .ch-post-card[data-id="' + postId + '"]').forEach(card => card.remove());
+
+                        const remaining = document.querySelectorAll('.ch-special-main .ch-post-card').length;
+                        const sub = document.querySelector('.ch-bookmarks-hero .ch-special-hero-sub');
+                        if (sub) sub.textContent = remaining + ' saved post' + (remaining === 1 ? '' : 's');
+                        if (remaining === 0) {
+                            const main = document.querySelector('.ch-special-main');
+                            if (main) {
+                                main.innerHTML = '<div class="ch-empty-state"><svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 0-2 2h10a2 2 0 0 1 2 2z"/></svg><p>No bookmarks yet. Save posts you want to come back to!</p></div>';
+                            }
+                        }
+                    }
                 }
-            });
+            })
+            .finally(() => { if (btn) btn.disabled = false; });
+        };
+
+        window.chToggleBookmark = function(btn, nonce) {
+            const postId = parseInt(btn?.dataset?.postId || '0', 10);
+            if (!postId) return;
+            window.chBookmark(postId, btn, nonce);
         };
 
         window.chToggleFollowCategory = function(categoryId, btn, nonce) {
+            if (btn) btn.disabled = true;
             const fd = new FormData();
             fd.append('action', 'ch_follow_category');
             fd.append('category_id', categoryId);
@@ -7841,15 +7972,51 @@ function ch_feed_scripts() {
                 }
 
                 const following = json.data.following;
-                btn.textContent = following ? 'Unfollow' : 'Follow';
-
-                const countEl = document.querySelector('.ch-cat-followers[data-cat-id="' + categoryId + '"]');
-                if (countEl) {
-                    const current = parseInt(countEl.textContent, 10) || 0;
-                    const next = following ? current + 1 : Math.max(0, current - 1);
-                    countEl.textContent = next + ' followers';
+                const toggleButtons = document.querySelectorAll('.ch-follow-toggle[data-follow-cat-id="' + categoryId + '"]');
+                toggleButtons.forEach(b => {
+                    b.textContent = following ? 'Following' : 'Follow';
+                    b.classList.toggle('ch-btn-outline', following);
+                    b.classList.toggle('ch-btn-primary', !following);
+                });
+                if (btn && !btn.classList.contains('ch-follow-toggle')) {
+                    btn.textContent = following ? 'Following' : 'Follow';
+                    btn.classList.toggle('ch-btn-outline', following);
+                    btn.classList.toggle('ch-btn-primary', !following);
                 }
-            });
+
+                document.querySelectorAll('.ch-cat-followers[data-cat-id="' + categoryId + '"]').forEach(countEl => {
+                    const current = parseInt((countEl.textContent || '').replace(/[^\d]/g, ''), 10) || 0;
+                    const next = following ? current + 1 : Math.max(0, current - 1);
+                    countEl.textContent = String(next);
+                });
+
+                const followedWrap = document.getElementById('ch-followed-categories');
+                const followedList = document.getElementById('ch-followed-categories-list');
+                const sourceBtn = btn || document.querySelector('.ch-follow-toggle[data-follow-cat-id="' + categoryId + '"]');
+                const catSlug = sourceBtn?.dataset.followCatSlug || '';
+                const catName = sourceBtn?.dataset.followCatName || '';
+                const catColor = sourceBtn?.dataset.followCatColor || '#FF7551';
+
+                if (followedWrap && followedList && catSlug && catName) {
+                    const selector = 'a[data-followed-cat-id="' + categoryId + '"]';
+                    const existing = followedList.querySelector(selector);
+
+                    if (following && !existing) {
+                        const a = document.createElement('a');
+                        a.href = '?cat=' + encodeURIComponent(catSlug);
+                        a.className = 'ch-cat-link';
+                        a.style.fontSize = '14px';
+                        a.setAttribute('data-followed-cat-id', String(categoryId));
+                        a.innerHTML = '<span class="ch-cat-dot" style="background:' + catColor + '"></span>' + catName;
+                        followedList.appendChild(a);
+                    }
+                    if (!following && existing) {
+                        existing.remove();
+                    }
+                    followedWrap.style.display = followedList.querySelectorAll('a[data-followed-cat-id]').length ? '' : 'none';
+                }
+            })
+            .finally(() => { if (btn) btn.disabled = false; });
         };
 
         // ---- @mention autocomplete ----
@@ -8217,7 +8384,7 @@ function ch_feed_scripts() {
             .then(json => {
                 if (json.success) {
                     alert('Post deleted successfully');
-                    window.location.href = '<?php echo get_permalink(get_page_by_path('forum-feed')); ?>';
+                    window.location.href = window.chFeedUrl || (typeof chFeedUrl !== 'undefined' ? chFeedUrl : '/forum-feed/');
                 } else {
                     alert(json.data?.message || 'Error deleting post');
                 }
@@ -8401,7 +8568,7 @@ function ch_post_view_scripts() {
             contentEl.innerHTML = `
                 <textarea class="ch-input ch-textarea" id="ch-edit-comment-${commentId}" rows="3">${originalContent}</textarea>
                 <div style="margin-top:8px">
-                    <button class="ch-btn ch-btn-primary ch-btn-sm" onclick="chSaveCommentEdit(${commentId}, '${wp_create_nonce('ch_post_view_nonce')}')">Save</button>
+                    <button class="ch-btn ch-btn-primary ch-btn-sm" onclick="chSaveCommentEdit(${commentId}, '${window.chCurrentPost?.edit_comment_nonce || ''}')">Save</button>
                     <button class="ch-btn ch-btn-secondary ch-btn-sm" onclick="chCancelCommentEdit(${commentId}, '${originalContent}')">Cancel</button>
                 </div>
             `;

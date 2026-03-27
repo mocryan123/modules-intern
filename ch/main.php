@@ -13,6 +13,154 @@ if (!defined('ABSPATH')) exit;
 define('BNTM_CH_PATH', dirname(__FILE__) . '/');
 define('BNTM_CH_URL', plugin_dir_url(__FILE__));
 
+function bntm_ch_is_frontend_context() {
+    if (is_admin()) return false;
+    if ((defined('REST_REQUEST') && REST_REQUEST) || wp_doing_ajax()) return false;
+
+    // Query-arg driven CivicHub states (e.g. post view, tabs, bookmarks).
+    foreach (['view_post', 'bookmarks', 'tab', 'sort'] as $key) {
+        if (isset($_GET[$key])) return true;
+    }
+
+    if (!is_singular()) return false;
+    $post = get_post();
+    if (!$post || empty($post->post_content)) return false;
+
+    foreach (array_keys(bntm_ch_get_shortcodes()) as $shortcode) {
+        if (has_shortcode($post->post_content, $shortcode)) return true;
+    }
+    return false;
+}
+
+function bntm_ch_page_has_shortcode($shortcode) {
+    if (!is_singular()) return false;
+    $post = get_post();
+    if (!$post || empty($post->post_content)) return false;
+    return has_shortcode($post->post_content, $shortcode);
+}
+
+function bntm_ch_extract_inline_asset($html, $type) {
+    $pattern = $type === 'css'
+        ? '~<style[^>]*>(.*?)</style>~is'
+        : '~<script[^>]*>(.*?)</script>~is';
+    if (!preg_match($pattern, $html, $m)) return '';
+    return trim($m[1]);
+}
+
+function bntm_ch_get_inline_asset_content($type) {
+    if (!in_array($type, ['css', 'js'], true)) return '';
+    if (!function_exists('ch_global_styles') || !function_exists('ch_global_scripts')) return '';
+    $inline_html = $type === 'css' ? ch_global_styles() : ch_global_scripts();
+    return bntm_ch_extract_inline_asset($inline_html, $type);
+}
+
+function bntm_ch_get_compiled_asset_url($type) {
+    if (!in_array($type, ['css', 'js'], true)) return '';
+    if (!function_exists('ch_global_styles') || !function_exists('ch_global_scripts')) return '';
+
+    $content = bntm_ch_get_inline_asset_content($type);
+    if ($content === '') return '';
+
+    $hash = substr(md5($content), 0, 16);
+    $upload = wp_upload_dir();
+    if (!empty($upload['error'])) return '';
+
+    $dir = trailingslashit($upload['basedir']) . 'civichub-assets';
+    if (!wp_mkdir_p($dir)) return '';
+
+    $filename = "ch-global-{$hash}.{$type}";
+    $filepath = trailingslashit($dir) . $filename;
+    if (!file_exists($filepath)) {
+        file_put_contents($filepath, $content);
+    }
+
+    return trailingslashit($upload['baseurl']) . 'civichub-assets/' . $filename;
+}
+
+function bntm_ch_get_compiled_callback_asset_url($callback, $type = 'js') {
+    if ($type !== 'js') return '';
+    if (!is_callable($callback)) return '';
+
+    $inline_html = call_user_func($callback);
+    $content = bntm_ch_extract_inline_asset($inline_html, 'js');
+    if ($content === '') return '';
+
+    $hash = substr(md5($callback . '|' . $content), 0, 16);
+    $upload = wp_upload_dir();
+    if (!empty($upload['error'])) return '';
+
+    $dir = trailingslashit($upload['basedir']) . 'civichub-assets';
+    if (!wp_mkdir_p($dir)) return '';
+
+    $filename = "{$callback}-{$hash}.js";
+    $filepath = trailingslashit($dir) . $filename;
+    if (!file_exists($filepath)) {
+        file_put_contents($filepath, $content);
+    }
+
+    return trailingslashit($upload['baseurl']) . 'civichub-assets/' . $filename;
+}
+
+add_action('wp_enqueue_scripts', function() {
+    if (!bntm_ch_is_frontend_context()) return;
+
+    $css_url = bntm_ch_get_compiled_asset_url('css');
+    if ($css_url) {
+        wp_enqueue_style('bntm-ch-global-style', $css_url, [], null);
+    } else {
+        $css_inline = bntm_ch_get_inline_asset_content('css');
+        if ($css_inline !== '') {
+            wp_register_style('bntm-ch-global-style-inline', false, [], null);
+            wp_enqueue_style('bntm-ch-global-style-inline');
+            wp_add_inline_style('bntm-ch-global-style-inline', $css_inline);
+        }
+    }
+
+    $js_url = bntm_ch_get_compiled_asset_url('js');
+    if ($js_url) {
+        wp_enqueue_script('bntm-ch-global-script', $js_url, [], null, true);
+        wp_script_add_data('bntm-ch-global-script', 'defer', true);
+    } else {
+        $js_inline = bntm_ch_get_inline_asset_content('js');
+        if ($js_inline !== '') {
+            wp_register_script('bntm-ch-global-script-inline', '', [], null, true);
+            wp_enqueue_script('bntm-ch-global-script-inline');
+            wp_add_inline_script('bntm-ch-global-script-inline', $js_inline);
+        }
+    }
+
+    $needs_feed_script = isset($_GET['view_post']) || bntm_ch_page_has_shortcode('ch_feed');
+    if ($needs_feed_script && function_exists('ch_feed_scripts')) {
+        $feed_js_url = bntm_ch_get_compiled_callback_asset_url('ch_feed_scripts');
+        if ($feed_js_url) {
+            wp_enqueue_script('bntm-ch-feed-script', $feed_js_url, ['bntm-ch-global-script'], null, true);
+            wp_script_add_data('bntm-ch-feed-script', 'defer', true);
+        } else {
+            $feed_inline = bntm_ch_extract_inline_asset(ch_feed_scripts(), 'js');
+            if ($feed_inline !== '') {
+                wp_register_script('bntm-ch-feed-script-inline', '', ['bntm-ch-global-script'], null, true);
+                wp_enqueue_script('bntm-ch-feed-script-inline');
+                wp_add_inline_script('bntm-ch-feed-script-inline', $feed_inline);
+            }
+        }
+    }
+
+    if (isset($_GET['view_post']) && function_exists('ch_post_view_scripts')) {
+        $post_view_js_url = bntm_ch_get_compiled_callback_asset_url('ch_post_view_scripts');
+        if ($post_view_js_url) {
+            wp_enqueue_script('bntm-ch-post-view-script', $post_view_js_url, ['bntm-ch-global-script','bntm-ch-feed-script'], null, true);
+            wp_script_add_data('bntm-ch-post-view-script', 'defer', true);
+        } else {
+            $post_view_inline = bntm_ch_extract_inline_asset(ch_post_view_scripts(), 'js');
+            if ($post_view_inline !== '') {
+                wp_register_script('bntm-ch-post-view-script-inline', '', ['bntm-ch-global-script'], null, true);
+                wp_enqueue_script('bntm-ch-post-view-script-inline');
+                wp_add_inline_script('bntm-ch-post-view-script-inline', $post_view_inline);
+            }
+        }
+    }
+}, 20);
+
 // ============================================================
 // CORE MODULE FUNCTIONS
 // ============================================================
@@ -75,11 +223,13 @@ function bntm_ch_get_tables() {
             sort_order INT DEFAULT 0,
             status ENUM('active','archived') DEFAULT 'active',
             is_private TINYINT(1) DEFAULT 0,
+            require_post_approval TINYINT(1) DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_business (business_id),
             INDEX idx_slug (slug),
-            INDEX idx_private (is_private)
+            INDEX idx_private (is_private),
+            INDEX idx_post_approval (require_post_approval)
         ) {$charset};",
 
         'ch_posts' => "CREATE TABLE {$prefix}ch_posts (
@@ -253,6 +403,10 @@ function bntm_ch_create_tables() {
     $cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories LIKE 'is_private'");
     if (empty($cols)) {
         $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_categories ADD COLUMN is_private TINYINT(1) DEFAULT 0 AFTER status");
+    }
+    $approval_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories LIKE 'require_post_approval'");
+    if (empty($approval_cols)) {
+        $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_categories ADD COLUMN require_post_approval TINYINT(1) DEFAULT 0 AFTER is_private");
     }
     $post_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_posts LIKE 'guest_name'");
     if (empty($post_cols)) {
@@ -585,6 +739,24 @@ add_action('wp_head', 'bntm_ch_og_meta_tags');
 add_action('wp_head', function() {
     echo '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">' . "\n";
 }, 1);
+
+// Performance: preload civic font resources only on CivicHub pages.
+add_filter('wp_resource_hints', function($urls, $relation_type) {
+    if (!bntm_ch_is_frontend_context()) return $urls;
+    if ($relation_type === 'preconnect') {
+        $urls[] = 'https://api.fontshare.com';
+    }
+    if ($relation_type === 'dns-prefetch') {
+        $urls[] = 'https://api.fontshare.com';
+    }
+    return array_values(array_unique($urls));
+}, 10, 2);
+
+add_action('wp_head', function() {
+    if (!bntm_ch_is_frontend_context()) return;
+    echo "<link rel=\"preload\" as=\"style\" href=\"https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap\" onload=\"this.onload=null;this.rel='stylesheet'\">\n";
+    echo "<noscript><link rel=\"stylesheet\" href=\"https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap\"></noscript>\n";
+}, 2);
 function bntm_ch_og_meta_tags() {
     $rand_id = sanitize_text_field($_GET['view_post'] ?? '');
     if (!$rand_id) return;
