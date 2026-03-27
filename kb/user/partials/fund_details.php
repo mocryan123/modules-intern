@@ -57,8 +57,21 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- ================== CSS ================== -->
     <style>
     .kbf-detail-wrap{max-width:1000px;margin:0 auto;}
-    .kbf-detail-layout{display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;}
-    .kbf-detail-sticky{position:sticky;top:24px;}
+    .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;}
+   .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
+.kbf-detail-left{display:flex;flex-direction:column;padding-bottom:24px;justify-content:flex-end;min-height:0;}
+.kbf-detail-right{display:flex;flex-direction:column;}
+.kbf-detail-sticky{display:flex;flex-direction:column;gap:14px;flex:1;padding-bottom:40px;box-sizing:border-box;}
+    .kbf-detail-sticky > *{margin-top:0 !important;margin-bottom:0 !important;}
+.kbf-leaderboard-card{flex:1;display:flex;flex-direction:column;justify-content:flex-end;}
+    .kbf-leaderboard-body{flex:1;display:flex;flex-direction:column;}
+    .kbf-leaderboard-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);}
+    .kbf-leaderboard-title{display:flex;align-items:center;gap:10px;min-width:0;}
+    .kbf-leaderboard-icon{width:28px;height:28px;border-radius:8px;background:#eef4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .kbf-leaderboard-icon img{width:14px;height:14px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
+    .kbf-leaderboard-text{font-size:14px;font-weight:800;color:var(--kbf-navy);line-height:1;}
+    .kbf-leaderboard-sub{font-size:11.5px;color:var(--kbf-slate);margin-top:3px;}
+    .kbf-leaderboard-pill{background:var(--kbf-accent);color:#fff;border-radius:99px;padding:3px 10px;font-size:10.5px;font-weight:800;flex-shrink:0;}
     .kbf-photo-gallery{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
     .kbf-photo-main{border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;}
     .kbf-photo-main img{width:100%;height:360px;object-fit:cover;display:block;transition:transform .3s ease;transform:translateX(0);}
@@ -190,11 +203,31 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-sponsor-wall{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
     .kbf-sponsor-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--kbf-slate-lt);border-radius:8px;}
     .kbf-sponsor-avatar{width:36px;height:36px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:#fff;}
+
+    .kbf-org-avatar{position:relative;width:52px;height:52px;flex-shrink:0;}
+    .kbf-org-avatar > img{width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;}
+    .kbf-org-verified{position:absolute;right:-2px;bottom:-2px;width:18px;height:18px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #fff;}
+    .kbf-org-verified::before{content:'';width:13px;height:13px;background:#1d4ed8;display:block;
+        -webkit-mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;
+        mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;}
     .kbf-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);margin-bottom:20px;}
     .kbf-breadcrumb a{color:var(--kbf-blue);text-decoration:none;font-weight:600;}
     .kbf-breadcrumb a:hover{text-decoration:underline;}
-    @media(max-width:760px){.kbf-detail-layout{grid-template-columns:1fr;}.kbf-detail-sticky{position:static;}.kbf-photo-main img{height:240px;}.kbf-photo-thumb img{height:80px;}}
-    </style>
+    @media(max-width:900px){
+        .kbf-detail-panels{display:flex;flex-direction:column;gap:20px;}
+        .kbf-detail-left,.kbf-detail-right{width:100%;}
+        .kbf-detail-right{order:0;}
+        .kbf-section-photo{order:1;}
+        .kbf-section-title{order:2;}
+        .kbf-section-organizer{order:3;}
+        .kbf-section-fund-type{order:4;}
+        .kbf-section-leaderboard{order:5;}
+        .kbf-section-progress{order:6;}
+        .kbf-detail-sticky{height:auto !important;}
+        .kbf-photo-main img{height:440px;}
+        .kbf-photo-thumb img{height:80px;}
+    }
+ </style>
     <!-- ================== HTML ================== -->
     <div class="kbf-wrap">
 
@@ -311,11 +344,12 @@ function bntm_shortcode_kbf_fund_details() {
     <?php endif; ?>
 
     <div class="kbf-detail-layout">
+      <div class="kbf-detail-panels">
       <!-- LEFT: Main content -->
-      <div>
+      <div class="kbf-detail-left">
         <!-- Photo gallery -->
         <?php if(!empty($photos)): ?>
-        <div class="kbf-photo-gallery">
+        <div class="kbf-photo-gallery kbf-section-photo">
           <div class="kbf-photo-main" id="kbf-photo-main">
             <img src="<?php echo esc_url($photos[0]); ?>" alt="<?php echo esc_attr($fund->title); ?>">
           </div>
@@ -338,7 +372,7 @@ function bntm_shortcode_kbf_fund_details() {
           <?php endif; ?>
         </div>
         <?php else: ?>
-        <div class="kbf-photo-gallery">
+        <div class="kbf-photo-gallery kbf-section-photo">
           <div class="kbf-photo-main" id="kbf-photo-main" style="height:360px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--kbf-navy) 0%,var(--kbf-navy-light) 100%);">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="64" height="64" style="opacity:.25;filter:invert(100%);">
           </div>
@@ -353,7 +387,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
 
         <!-- Title + Meta -->
-        <div style="margin-bottom:20px;">
+        <div class="kbf-section-title" style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
             <span style="background:var(--kbf-accent-lt);color:#92400e;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;"><?php echo esc_html($fund->category); ?></span>
             <span class="kbf-badge kbf-badge-<?php echo $fund->status; ?>"><?php echo ucfirst($fund->status); ?></span>
@@ -361,50 +395,37 @@ function bntm_shortcode_kbf_fund_details() {
           <h1 style="font-size:24px;font-weight:800;color:var(--kbf-navy);margin:0 0 10px;line-height:1.3;"><?php echo esc_html($fund->title); ?></h1>
           <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--kbf-slate);">
             <span style="display:flex;align-items:center;gap:5px;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
               <?php echo esc_html($fund->location); ?>
-            </span>
-            <span style="display:flex;align-items:center;gap:5px;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-              by <strong style="color:var(--kbf-text);"><a href="<?php echo esc_url($profile_url); ?>" style="color:inherit;text-decoration:none;"><?php echo esc_html($fund->organizer_name?:'Organizer'); ?></a></strong>
-            </span>
-            <?php if($days!==null): ?>
-            <span style="display:flex;align-items:center;gap:5px;color:<?php echo $days<7?'var(--kbf-red)':'var(--kbf-slate)'; ?>;font-weight:<?php echo $days<7?'700':'400'; ?>;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="" width="14" height="14" style="filter:<?php echo $days<7?'invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%)':'invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)'; ?>;">
-              <?php echo $days; ?> day<?php echo $days!==1?'s':''; ?> left <?php echo $fund->deadline?'(ends '.date('M d, Y',strtotime($fund->deadline)).')':''; ?>
-            </span>
-            <?php endif; ?>
-            <span style="display:flex;align-items:center;gap:5px;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-              <?php echo $sponsor_count; ?> sponsor<?php echo $sponsor_count!==1?'s':''; ?>
             </span>
           </div>
         </div>
 
-        <!-- Description -->
-        <div class="kbf-card" style="margin-bottom:20px;">
-          <h3 style="font-size:15px;font-weight:700;color:var(--kbf-navy);margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">About This Fund</h3>
-          <div style="font-size:14.5px;color:var(--kbf-text-sm);line-height:1.8;"><?php echo nl2br(esc_html($fund->description)); ?></div>
-        </div>
 
-        <!-- Organizer card -->
+           <!-- Organizer card -->
         <?php if($fund->organizer_name): ?>
-        <div class="kbf-card" style="margin-bottom:20px;">
+        <div class="kbf-card kbf-section-organizer">
           <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
-            <h3 style="font-size:15px;font-weight:700;color:var(--kbf-navy);margin:0;">About the Organizer</h3>
+            <h3 style="font-size:15px;font-weight:700;color:var(--kbf-navy);margin:0;">About the Account</h3>
             <a href="<?php echo esc_url($profile_url); ?>" style="background:none;border:none;color:var(--kbf-blue);cursor:pointer;font-size:12.5px;font-weight:600;padding:0;display:flex;align-items:center;gap:4px;text-decoration:none;">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="13" height="13" style="filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
               View Full Profile & History
             </a>
           </div>
           <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none;color:inherit;" title="View organizer profile">
-            <?php if($organizer&&$organizer->avatar_url): ?>
-              <img src="<?php echo esc_url($organizer->avatar_url); ?>" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);flex-shrink:0;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--kbf-blue)'" onmouseout="this.style.borderColor='var(--kbf-border)'">
-            <?php else: ?>
-              <div style="width:52px;height:52px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="24" height="24" style="filter:invert(100%);"></div>
-            <?php endif; ?>
+            <div class="kbf-org-avatar">
+              <?php if($organizer&&$organizer->avatar_url): ?>
+                <img src="<?php echo esc_url($organizer->avatar_url); ?>" style="border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--kbf-blue)'" onmouseout="this.style.borderColor='var(--kbf-border)'">
+              <?php else: ?>
+                <div style="width:52px;height:52px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;cursor:pointer;"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="24" height="24" style="filter:invert(100%);"></div>
+              <?php endif; ?>
+              <?php if($organizer&&$organizer->is_verified): ?>
+                <span class="kbf-org-verified" aria-hidden="true"></span>
+              <?php endif; ?>
+            </div>
+
             <div style="flex:1;">
-              <div style="font-weight:700;font-size:15px;color:var(--kbf-navy);"><?php echo esc_html($fund->organizer_name); ?><?php if($organizer&&$organizer->is_verified): ?><span class="kbf-badge kbf-badge-verified" style="margin-left:8px;font-size:10px;">Verified</span><?php endif; ?></div>
+              <div style="font-weight:700;font-size:15px;color:var(--kbf-navy);"><?php echo esc_html($fund->organizer_name); ?></div>
               <?php if($organizer&&$organizer->bio): ?><p style="font-size:13px;color:var(--kbf-text-sm);margin:4px 0 0;line-height:1.55;"><?php echo esc_html(wp_trim_words($organizer->bio,30)); ?></p><?php endif; ?>
               <?php if($organizer&&$organizer->rating_count>0): ?>
               <div style="display:flex;align-items:center;gap:4px;margin-top:5px;">
@@ -421,121 +442,36 @@ function bntm_shortcode_kbf_fund_details() {
           </a>
         </div>
         <?php endif; ?>
-
-        <!-- Sponsors wall -->
-        <?php if(!empty($sponsors)): ?>
-        <div class="kbf-card">
-          <h3 style="font-size:15px;font-weight:700;color:var(--kbf-navy);margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
-            Sponsors <span style="background:var(--kbf-green-lt);color:var(--kbf-green);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;"><?php echo $sponsor_count; ?></span>
-          </h3>
-          <div class="kbf-sponsor-wall">
-            <?php foreach($sponsors as $sp):
-              $initials = $sp->is_anonymous ? '?' : strtoupper(substr(isset($sp->sponsor_name) ? $sp->sponsor_name : 'A',0,1));
-            ?>
-            <div class="kbf-sponsor-item">
-              <div class="kbf-sponsor-avatar"><?php echo $initials; ?></div>
-              <div style="flex:1;">
-                <div style="font-weight:600;font-size:13.5px;color:var(--kbf-text);"><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></div>
-                <?php if($sp->message): ?><div style="font-size:12px;color:var(--kbf-slate);font-style:italic;margin-top:2px;">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
-              </div>
-              <div style="text-align:right;flex-shrink:0;">
-                <div style="font-weight:800;font-size:14px;color:var(--kbf-green);">₱<?php echo number_format($sp->amount,0); ?></div>
-                <div style="font-size:11px;color:var(--kbf-slate);"><?php echo date('M d',strtotime($sp->created_at)); ?></div>
-              </div>
-            </div>
-            <?php endforeach; ?>
-          </div>
-        </div>
-        <?php endif; ?>
       </div>
 
       <!-- RIGHT: Sticky action sidebar -->
+      <div class="kbf-detail-right">
       <div class="kbf-detail-sticky">
-        <div class="kbf-detail-sponsor-box">
-          <!-- Progress -->
-          <div style="margin-bottom:16px;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
-              <span style="font-size:24px;font-weight:800;color:var(--kbf-green);">₱<?php echo number_format($fund->raised_amount,2); ?></span>
-              <span style="font-size:13px;color:var(--kbf-slate);">of ₱<?php echo number_format($fund->goal_amount,2); ?></span>
-            </div>
-            <div class="kbf-progress-wrap" style="height:10px;margin-bottom:10px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%;height:10px;"></div></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
-              <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
-                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo round($pct); ?>%</div>
-                <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Funded</div>
-              </div>
-              <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
-                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo $sponsor_count; ?></div>
-                <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Sponsors</div>
-              </div>
-              <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
-                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo $days!==null?$days:'âˆž'; ?></div>
-                <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Days Left</div>
-              </div>
-            </div>
-          </div>
-
-          <?php if($fund->status==='active' && !$is_owner): ?>
-          <?php if($demo_mode): ?>
-          <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#92400e;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="14" height="14" style="filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%);">
-            <span><strong>Demo Mode</strong> -- no real payment processed</span>
-          </div>
-          <?php endif; ?>
-          <button class="kbf-btn kbf-btn-primary" style="width:100%;padding:13px;font-size:15px;font-weight:700;margin-bottom:10px;" onclick="document.getElementById('kbf-modal-sponsor').style.display='flex'">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="16" height="16" style="filter:invert(100%);">
-            Sponsor This Fund
-          </button>
-          <?php elseif($fund->status==='completed'): ?>
-          <div class="kbf-alert kbf-alert-success" style="margin-bottom:10px;text-align:center;font-weight:700;">This fund has been completed!</div>
-          <?php elseif($is_owner && $fund->status==='active'): ?>
-          <div style="background:var(--kbf-slate-lt);border:1.5px dashed var(--kbf-border);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--kbf-slate);margin-bottom:12px;text-align:center;">
-            <strong style="color:var(--kbf-navy);display:block;margin-bottom:4px;">This is your fund</strong>
-            Sponsors can contribute using the Sponsor button.
-          </div>
-          <?php if($demo_mode): ?>
-          <button class="kbf-btn kbf-btn-secondary" style="width:100%;padding:11px;font-size:13px;font-weight:600;margin-bottom:10px;border-style:dashed;" onclick="document.getElementById('kbf-modal-sponsor').style.display='flex'">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-            Test Demo Sponsorship
-          </button>
-          <?php endif; ?>
-          <?php endif; ?>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);"> Share
-            </button>
-            <?php if(!$is_owner): ?>
-            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg" alt="" width="13" height="13" style="filter:invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%);"> Rate
-            </button>
-            <?php else: ?>
-            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="window.history.back()">Go Back</button>
-            <?php endif; ?>
-          </div>
-          <button class="kbf-btn kbf-btn-danger" style="width:100%;font-size:13px;" onclick="document.getElementById('kbf-modal-report').style.display='flex'">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="13" height="13" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
-            Report this fund
-          </button>
-        </div>
 
         <!-- Funder type info -->
-        <div style="background:var(--kbf-slate-lt);border-radius:10px;padding:14px 16px;margin-top:14px;font-size:13px;color:var(--kbf-text-sm);">
+        <div class="kbf-section-fund-type" style="background:var(--kbf-slate-lt);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--kbf-text-sm);">
           <div style="font-weight:700;color:var(--kbf-navy);margin-bottom:4px;">Fund Type</div>
           <div><?php echo ucwords(str_replace('_',' ',$fund->funder_type)); ?></div>
           <?php if($fund->auto_return): ?><div style="margin-top:6px;display:flex;align-items:center;gap:6px;color:var(--kbf-green);font-size:12px;"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(41%) sepia(98%) saturate(342%) hue-rotate(83deg) brightness(93%) contrast(89%);">Auto-refund if goal not met</div><?php endif; ?>
         </div>
-
+  
         <!-- Top Sponsors Leaderboard -->
-        <div style="background:#fff;border:1px solid var(--kbf-border);border-radius:12px;padding:18px;margin-top:14px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bar-chart-fill.svg" alt="" width="16" height="16" style="filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);flex-shrink:0;">
-            <span style="font-size:14px;font-weight:800;color:var(--kbf-navy);">Top Sponsors</span>
-            <?php if(!empty($leaderboard)): ?><span style="background:var(--kbf-accent);color:#fff;border-radius:99px;padding:1px 8px;font-size:10px;font-weight:800;margin-left:auto;"><?php echo count($leaderboard); ?></span><?php endif; ?>
+        <div class="kbf-leaderboard-card kbf-section-leaderboard" style="background:#fff;border:1px solid var(--kbf-border);border-radius:12px;padding:18px;margin-top:14px;">
+          <div class="kbf-leaderboard-head">
+            <div class="kbf-leaderboard-title">
+              <span class="kbf-leaderboard-icon">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bar-chart-fill.svg" alt="">
+              </span>
+              <div>
+                <div class="kbf-leaderboard-text">Top Sponsors</div>
+              </div>
+            </div>
+            <?php if(!empty($leaderboard)): ?><span class="kbf-leaderboard-pill"><?php echo count($leaderboard); ?> listed</span><?php endif; ?>
           </div>
 
+          <div class="kbf-leaderboard-body">
           <?php if(empty($leaderboard)): ?>
-          <div style="text-align:center;padding:20px 10px;">
+          <div style="text-align:center;padding:20px 10px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:full;">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="32" height="32" style="margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No sponsors yet</p>
             <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to support!</p>
@@ -587,13 +523,122 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
           <?php endif; ?>
           <?php endif; ?>
+          </div>
+        </div>
+
+        <div class="kbf-detail-sponsor-box kbf-section-progress">
+          <!-- Progress -->
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+              <span style="font-size:24px;font-weight:800;color:var(--kbf-green);">₱<?php echo number_format($fund->raised_amount,2); ?></span>
+              <span style="font-size:13px;color:var(--kbf-slate);">of ₱<?php echo number_format($fund->goal_amount,2); ?></span>
+            </div>
+            <div class="kbf-progress-wrap" style="height:10px;margin-bottom:10px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%;height:10px;"></div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+              <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
+                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo round($pct); ?>%</div>
+                <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Funded</div>
+              </div>
+              <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
+                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo $sponsor_count; ?></div>
+                <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Sponsors</div>
+              </div>
+              <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
+                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo $days!==null?$days:'&infin;'; ?></div>
+                <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Days Left</div>
+              </div>
+            </div>
+          </div>
+
+          <?php if($fund->status==='active' && !$is_owner): ?>
+          <?php if($demo_mode): ?>
+          <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#92400e;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="14" height="14" style="filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%);">
+            <span><strong>Demo Mode</strong> -- no real payment processed</span>
+          </div>
+          <?php endif; ?>
+          <button class="kbf-btn kbf-btn-primary" style="width:100%;padding:13px;font-size:15px;font-weight:700;margin-bottom:10px;" onclick="document.getElementById('kbf-modal-sponsor').style.display='flex'">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="16" height="16" style="filter:invert(100%);">
+            Sponsor This Fund
+          </button>
+          <?php elseif($fund->status==='completed'): ?>
+          <div class="kbf-alert kbf-alert-success" style="margin-bottom:10px;text-align:center;font-weight:700;">This fund has been completed!</div>
+          <button class="kbf-btn kbf-btn-secondary" style="width:100%;padding:11px;font-size:13px;font-weight:600;margin-bottom:10px;border-style:dashed;" onclick="document.getElementById('kbf-modal-sponsor').style.display='flex'">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+            Test Demo Sponsorship
+          </button>
+          <?php endif; ?>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);"> Share
+            </button>
+            <?php if(!$is_owner): ?>
+            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg" alt="" width="13" height="13" style="filter:invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%);"> Rate
+            </button>
+            <?php else: ?>
+            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="window.history.back()">Go Back</button>
+            <?php endif; ?>
+          </div>
+          <button class="kbf-btn kbf-btn-danger" style="width:100%;font-size:13px;" onclick="document.getElementById('kbf-modal-report').style.display='flex'">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="13" height="13" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
+            Report this fund
+          </button>
         </div>
       </div>
+      </div>
+      </div>
     </div>
+
+    <!-- Description (full width) -->
+    <div class="kbf-card kbf-section-description" style="margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:var(--kbf-navy);margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">About This Fund</h3>
+      <div style="font-size:14.5px;color:var(--kbf-text-sm);line-height:1.8;"><?php echo nl2br(esc_html($fund->description)); ?></div>
+    </div>
+
+    <!-- Sponsors wall (full width) -->
+    <?php if(!empty($sponsors)): ?>
+    <div class="kbf-card">
+      <h3 style="font-size:15px;font-weight:700;color:var(--kbf-navy);margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
+        Sponsors <span style="background:var(--kbf-green-lt);color:var(--kbf-green);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;"><?php echo $sponsor_count; ?></span>
+      </h3>
+      <div class="kbf-sponsor-wall">
+        <?php foreach($sponsors as $sp):
+          $initials = $sp->is_anonymous ? '?' : strtoupper(substr(isset($sp->sponsor_name) ? $sp->sponsor_name : 'A',0,1));
+        ?>
+        <div class="kbf-sponsor-item">
+          <div class="kbf-sponsor-avatar"><?php echo $initials; ?></div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:13.5px;color:var(--kbf-text);"><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></div>
+            <?php if($sp->message): ?><div style="font-size:12px;color:var(--kbf-slate);font-style:italic;margin-top:2px;">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-weight:800;font-size:14px;color:var(--kbf-green);">₱<?php echo number_format($sp->amount,0); ?></div>
+            <div style="font-size:11px;color:var(--kbf-slate);"><?php echo date('M d',strtotime($sp->created_at)); ?></div>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
     </div><!-- .kbf-wrap -->
     
     <!-- ================== JS ================== -->
     <script>
+   function kbfSyncDetailPanels(){
+    if(window.innerWidth <= 760){
+        var sticky = document.querySelector('.kbf-detail-sticky');
+        if(sticky) sticky.style.height = 'auto';
+        return;
+    }
+    var left = document.querySelector('.kbf-detail-left');
+    var sticky = document.querySelector('.kbf-detail-sticky');
+    if(!left || !sticky) return;
+    sticky.style.height = 'auto';
+    var leftH = left.getBoundingClientRect().height;
+    sticky.style.height = leftH + 'px';
+}
     document.addEventListener('DOMContentLoaded', function(){
         var mainWrap = document.getElementById('kbf-photo-main');
         var mainImg = mainWrap ? mainWrap.querySelector('img') : null;
@@ -736,6 +781,8 @@ function bntm_shortcode_kbf_fund_details() {
         });
 
         startAutoRotate();
+        kbfSyncDetailPanels();
+        window.addEventListener('resize', kbfSyncDetailPanels);
     });
     function kbfGetActiveSponsorModal(){
         var modals = document.querySelectorAll('#kbf-modal-sponsor');

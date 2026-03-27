@@ -12,6 +12,7 @@ function kbf_dashboard_profile_tab($business_id) {
     $phone = get_user_meta($business_id, 'kbf_phone', true);
     $address = get_user_meta($business_id, 'kbf_address', true);
     $nonce = wp_create_nonce('kbf_organizer_profile');
+    $nonce_verify = wp_create_nonce('kbf_verify_account');
 
     ob_start();
     ?>
@@ -109,6 +110,10 @@ function kbf_dashboard_profile_tab($business_id) {
       /* ── Meta / misc ── */
       .kbf-profile-meta { font-size: 13px; color: var(--kbf-slate); }
       .kbf-profile-note { margin-top: 4px; }
+      .kbf-profile-verify-tag{margin-top:10px;text-align:center;font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+      .kbf-profile-verify-tag.kbf-verified{background:#e7f1ff;color:#1f3b8a;}
+      .kbf-profile-verify-tag.kbf-not-verified{background:#eef2f7;color:#64748b;}
+      .kbf-profile-verify-wrap{text-align:center;}
       .kbf-profile-divider { height: 1px; background: var(--kbf-border); margin: 10px 0; }
       .kbf-profile-actions { display: flex; gap: 10px; align-items: center; width: 100%; }
       .kbf-profile-actions .kbf-btn { width: 100%; justify-content: center; }
@@ -243,6 +248,17 @@ function kbf_dashboard_profile_tab($business_id) {
       }
       .kbf-cropper-controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
       .kbf-cropper-controls input[type=range] { flex: 1; }
+      #kbf-cropper-zoom{
+        accent-color: #3b82f6;
+      }
+      #kbf-cropper-zoom::-webkit-slider-thumb{
+        background:#3b82f6;
+        border:2px solid #dbeafe;
+      }
+      #kbf-cropper-zoom::-moz-range-thumb{
+        background:#3b82f6;
+        border:2px solid #dbeafe;
+      }
       .kbf-cropper-actions { display: flex; gap: 10px; margin-top: 12px; }
       .kbf-cropper-actions .kbf-btn { width: 100%; justify-content: center; }
       .kbf-cropper-close {
@@ -273,7 +289,7 @@ function kbf_dashboard_profile_tab($business_id) {
 
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <form id="kbf-profile-form" enctype="multipart/form-data">
+      <form id="kbf-profile-form" enctype="multipart/form-data" data-nonce="<?php echo esc_attr($nonce); ?>">
         <div class="kbf-profile-grid">
 
           <!-- ══ LEFT CARD ══ -->
@@ -296,6 +312,18 @@ function kbf_dashboard_profile_tab($business_id) {
             </label>
             <input id="kbf-avatar" class="kbf-file-input" type="file" name="avatar" accept="image/*">
             <div class="kbf-profile-meta kbf-profile-note">Recommended 800x800px JPG or PNG.</div>
+            <div class="kbf-profile-verify-wrap" style="margin-bottom:20px">
+              <?php if($profile && $profile->is_verified): ?>
+                <div class="kbf-profile-verify-tag kbf-verified">Verified</div>
+              <?php elseif($profile && !empty($profile->verify_status) && $profile->verify_status==='pending'): ?>
+                <div class="kbf-profile-verify-tag kbf-not-verified">Pending Review</div>
+              <?php elseif($profile && !empty($profile->verify_status) && $profile->verify_status==='rejected'): ?>
+                <div class="kbf-profile-verify-tag kbf-not-verified">Rejected</div>
+              <?php else: ?>
+                <div class="kbf-profile-verify-tag kbf-not-verified">Not Verified</div>
+              <?php endif; ?>
+            </div>
+           
 
             <div class="kbf-form-group">
               <label>Display Name</label>
@@ -318,8 +346,25 @@ function kbf_dashboard_profile_tab($business_id) {
               <input type="text" name="phone" value="<?php echo esc_attr($phone); ?>" placeholder="+63 9XX XXX XXXX">
             </div>
 
+            <?php if($profile && !empty($profile->verify_status) && $profile->verify_status==='pending'): ?>
+              <div class="kbf-alert kbf-alert-warning" style="width:100%;box-sizing:border-box;margin:6px 0 6px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:2px;padding-bottom:2px;">
+                Pending.
+              </div>
+            <?php endif; ?>
+            <?php if($profile && !empty($profile->verify_status) && $profile->verify_status==='rejected' && !empty($profile->verify_notes)): ?>
+              <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="width:100%;box-sizing:border-box;margin:6px 0 6px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:2px;padding-bottom:2px;">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="14" height="14" style="filter:invert(21%) sepia(70%) saturate(4683%) hue-rotate(342deg) brightness(88%) contrast(101%);">
+                Verification rejected: <?php echo esc_html($profile->verify_notes); ?>
+              </div>
+            <?php endif; ?>
             <div class="kbf-profile-divider"></div>
             <div class="kbf-profile-actions">
+              <?php
+                $is_pending = ($profile && !empty($profile->verify_status) && $profile->verify_status==='pending');
+              ?>
+              <button type="button" class="kbf-btn kbf-btn-secondary" <?php echo $is_pending ? 'disabled' : ''; ?> onclick="if(!this.disabled) kbfOpenVerifyModal()">
+                <?php echo $is_pending ? 'Pending' : 'Verify Account'; ?>
+              </button>
               <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSaveProfile('<?php echo $nonce; ?>')">Save Changes</button>
             </div>
           </div>
@@ -450,9 +495,53 @@ function kbf_dashboard_profile_tab($business_id) {
         </div>
 
       </form>
+
+      <!-- Verify Account Modal -->
+      <div id="kbf-modal-verify-account" class="kbf-modal-overlay" style="display:none;">
+        <div class="kbf-modal kbf-modal-sm">
+          <div class="kbf-modal-header">
+            <h3>Verify Account</h3>
+            <button type="button" class="kbf-modal-close" onclick="kbfCloseVerifyModal()">&times;</button>
+          </div>
+          <div class="kbf-modal-body">
+            <div style="background:var(--kbf-slate-lt);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--kbf-text-sm);margin-bottom:12px;">
+              <div style="font-weight:700;color:var(--kbf-navy);margin-bottom:6px;">ID Photo Guidelines</div>
+              <div>Do:</div>
+              <ul style="margin:6px 0 8px 18px;padding:0;">
+                <li>Use good lighting (not too dark or too bright)</li>
+                <li>Make sure all corners are visible</li>
+                <li>Text and photo must be readable</li>
+              </ul>
+              <div>Don’t:</div>
+              <ul style="margin:6px 0 0 18px;padding:0;">
+                <li>Cover any part of the ID</li>
+                <li>Use blurry or cropped photos</li>
+              </ul>
+            </div>
+            <form id="kbf-verify-form" enctype="multipart/form-data" onsubmit="return false;">
+              <div class="kbf-form-group">
+                <label>Valid ID (Front) *</label>
+                <input type="file" name="verify_id_front" accept="image/*" required>
+              </div>
+              <div class="kbf-form-group">
+                <label>Valid ID (Back) *</label>
+                <input type="file" name="verify_id_back" accept="image/*" required>
+              </div>
+            </form>
+            <div id="kbf-verify-msg" style="margin-top:8px;"></div>
+          </div>
+          <div class="kbf-modal-footer">
+            <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfCloseVerifyModal()">Cancel</button>
+            <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSubmitVerification('<?php echo $nonce_verify; ?>')">Submit Verification</button>
+          </div>
+        </div>
+      </div>
     </div>    
     
     <!-- ================== JS ================== -->    <script>
+    if (typeof ajaxurl === 'undefined') {
+        var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+    }
     window.kbfPhotoClick = function(){
         var input = document.getElementById('kbf-avatar');
         if (input) {
@@ -514,18 +603,20 @@ function kbf_dashboard_profile_tab($business_id) {
 
         function openCropper(file) {
             const url = URL.createObjectURL(file);
+            backdrop.style.display = 'flex';
             img.onload = function(){
                 naturalW = img.naturalWidth;
                 naturalH = img.naturalHeight;
-                const stageW = stage.clientWidth;
-                const stageH = stage.clientHeight;
-                const baseScale = Math.max(stageW / naturalW, stageH / naturalH);
-                scale = baseScale;
-                zoom.value = 1;
-                posX = (stageW - naturalW * scale) / 2;
-                posY = (stageH - naturalH * scale) / 2;
-                applyTransform();
-                backdrop.style.display = 'flex';
+                requestAnimationFrame(function(){
+                    const stageW = stage.clientWidth || 240;
+                    const stageH = stage.clientHeight || 240;
+                    const baseScale = Math.max(stageW / naturalW, stageH / naturalH);
+                    scale = baseScale;
+                    zoom.value = 1;
+                    posX = (stageW - naturalW * scale) / 2;
+                    posY = (stageH - naturalH * scale) / 2;
+                    applyTransform();
+                });
             };
             img.src = url;
         }
@@ -599,11 +690,55 @@ function kbf_dashboard_profile_tab($business_id) {
                 const preview = document.querySelector('.kbf-profile-photo');
                 if (preview) preview.src = URL.createObjectURL(blob);
                 backdrop.style.display = 'none';
+                const form = document.getElementById('kbf-profile-form');
+                if (form) {
+                    const nonce = form.getAttribute('data-nonce');
+                    if (nonce && window.kbfSaveProfile) {
+                        window.kbfSaveProfile(nonce);
+                    }
+                }
             }, 'image/jpeg', 0.92);
         });
     })();
 
-    window.kbfSaveProfile = function(nonce) {
+    
+    window.kbfOpenVerifyModal = function(){
+        var m = document.getElementById('kbf-modal-verify-account');
+        if(m) m.style.display = 'flex';
+    };
+    window.kbfCloseVerifyModal = function(){
+        var m = document.getElementById('kbf-modal-verify-account');
+        if(m) m.style.display = 'none';
+    };
+    window.kbfSubmitVerification = function(nonce){
+        var form = document.getElementById('kbf-verify-form');
+        var msg = document.getElementById('kbf-verify-msg');
+        if(!form) return;
+        var fd = new FormData(form);
+        fd.append('action','kbf_request_verification');
+        fd.append('nonce',nonce);
+        console.log('kbfSubmitVerification: posting to', ajaxurl);
+        fetch(ajaxurl,{method:'POST',body:fd}).then(async function(r){
+            const text = await r.text();
+            console.log('kbfSubmitVerification: raw response', text);
+            const cleaned = text.replace(/^\uFEFF/, '').trim();
+            try { return JSON.parse(cleaned); } catch(e){ console.error('kbfSubmitVerification: JSON parse failed', e, cleaned); throw e; }
+        }).then(function(j){
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-' + (j.success?'success':'error') + '">' + j.data.message + '</div>';
+            if(j.success){
+                var btn = document.querySelector('.kbf-profile-actions .kbf-btn-secondary');
+                if (btn) { btn.disabled = true; btn.textContent = 'Pending'; }
+                var tag = document.querySelector('.kbf-profile-verify-tag');
+                if (tag) { tag.textContent = 'Pending Review'; }
+                kbfCloseVerifyModal();
+            }
+        }).catch(function(){
+            console.error('kbfSubmitVerification: request failed');
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Upload failed. Please try again.</div>';
+        });
+    };
+
+window.kbfSaveProfile = function(nonce) {
         const form = document.getElementById('kbf-profile-form');
         const fd = new FormData(form);
         fd.append('action', 'kbf_save_organizer_profile');
@@ -625,9 +760,9 @@ function kbf_dashboard_profile_tab($business_id) {
             .then(function(j){
                 document.getElementById('kbf-profile-msg').innerHTML =
                     '<div class="kbf-alert kbf-alert-' + (j.success ? 'success' : 'error') + '">' + j.data.message + '</div>';
-                if (j && j.success) {
-                    setTimeout(function(){ location.reload(); }, 600);
-                }
+            if (j && j.success) {
+                // No full-page reload; keep the user on the form.
+            }
             })
             .catch(function(err){
                 console.error('kbfSaveProfile: request failed', err);

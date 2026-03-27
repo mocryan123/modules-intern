@@ -8,7 +8,7 @@ function bntm_shortcode_kbf_dashboard() {
     $user        = wp_get_current_user();
     global $wpdb;
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
-    $nav_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url FROM {$pt} WHERE business_id=%d", $user->ID));
+    $nav_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url,is_verified FROM {$pt} WHERE business_id=%d", $user->ID));
     $business_id = $user->ID;
     $tab         = isset($_GET['kbf_tab']) ? sanitize_text_field($_GET['kbf_tab']) : 'find_funds';
     $nonce_create = wp_create_nonce('kbf_create_fund');
@@ -181,11 +181,13 @@ function bntm_shortcode_kbf_dashboard() {
     .kbf-dashboard-actions{
         display:flex;align-items:center;gap:10px;
     }
-    .kbf-dashboard-avatar{
-        width:34px;height:34px;border-radius:50%;
-        border:1px solid var(--kbf-border);object-fit:cover;
-        box-shadow:0 8px 18px rgba(16,24,40,0.12);
-    }
+
+    .kbf-dashboard-avatar-wrap{position:relative;width:34px;height:34px;flex-shrink:0;}
+    .kbf-dashboard-avatar-wrap .kbf-dashboard-avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--kbf-border);object-fit:cover;box-shadow:0 8px 18px rgba(16,24,40,0.12);display:block;}
+    .kbf-dashboard-verified{position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #fff;}
+    .kbf-dashboard-verified::before{content:'';width:10px;height:10px;background:#1d4ed8;display:block;
+        -webkit-mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;
+        mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;}
     .kbf-dashboard-user{
         display:inline-flex;
         align-items:center;
@@ -513,16 +515,10 @@ function bntm_shortcode_kbf_dashboard() {
                 <option value="">Select Barangay</option>
               </select>
               <small>Barangay list will load based on municipality.</small>
-            </div>
-            <div class="kbf-form-group">
-              <label>Valid Government / Company ID *</label>
-              <input type="file" name="valid_id" accept="image/*,.pdf" required>
-              <small>Required for identity verification before fund approval.</small>
-            </div>
-            <div class="kbf-form-group">
+            </div><div class="kbf-form-group">
               <label>Add Photos (up to 5)</label>
               <input type="file" name="photos[]" accept="image/*" multiple required>
-              <small>Required for identity verification before fund approval.</small>
+              <small></small>
               <div class="kbf-field-error"></div>
             </div>
             <div class="kbf-form-group">
@@ -718,7 +714,12 @@ function bntm_shortcode_kbf_dashboard() {
           $avatar_url = ($nav_profile && $nav_profile->avatar_url) ? $nav_profile->avatar_url : get_avatar_url($user->ID, ['size'=>64]);
         ?>
         <a href="?kbf_tab=profile" class="kbf-dashboard-user" title="Profile">
-          <img class="kbf-dashboard-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="User avatar" id="kbf-navbar-avatar">
+          <span class="kbf-dashboard-avatar-wrap">
+            <img class="kbf-dashboard-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="User avatar" id="kbf-navbar-avatar">
+            <?php if($nav_profile && !empty($nav_profile->is_verified)): ?>
+              <span class="kbf-dashboard-verified" aria-hidden="true"></span>
+            <?php endif; ?>
+          </span>
           <span class="kbf-dashboard-name"><?php echo esc_html($user->display_name); ?></span>
         </a>
       </div>
@@ -1142,7 +1143,6 @@ function bntm_shortcode_kbf_dashboard() {
                 if (modal) modal.style.display = 'none';
                 document.documentElement.classList.remove('kbf-modal-lock');
                 document.body.classList.remove('kbf-modal-lock');
-                setTimeout(()=>location.reload(), 1800);
             }
             else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ kbfSetLoadingPage(false); kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
@@ -1177,8 +1177,9 @@ function bntm_shortcode_kbf_dashboard() {
         .then(r=>r.json()).then(json=>{
             const m = document.getElementById('kbf-edit-msg');
             m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
-            if(json.success) setTimeout(()=>location.reload(), 1500);
-            else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
+            if(json.success) {
+                kbfCloseModal('kbf-modal-edit');
+            } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
 
@@ -1195,8 +1196,9 @@ function bntm_shortcode_kbf_dashboard() {
         .then(r=>r.json()).then(json=>{
             const m = document.getElementById('kbf-wd-msg');
             m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
-            if(json.success) setTimeout(()=>location.reload(), 1500);
-            else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
+            if(json.success) {
+                kbfCloseModal('kbf-modal-wd');
+            } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
 

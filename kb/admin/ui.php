@@ -111,10 +111,18 @@ function bntm_shortcode_kbf_admin() {
         else{if(!confirm('Approve & release this withdrawal?'))return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'approve'});}
     };
     window.kbfConfirmPayment=function(id){if(!confirm('Mark this sponsorship as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
-    window.kbfVerifyOrg=function(id,cur){kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:cur?'0':'1'});};
+window.kbfVerifyOrg=function(id,verified){
+    var v = parseInt(verified,10) ? 1 : 0;
+    var notes = '';
+    if(v === 0){
+        notes = prompt('Reason for rejection (required):','') || '';
+        notes = notes.trim();
+        if(!notes){ return; }
+    }
+    kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:v,notes:notes});
+};
     </script>
     <?php
     $c=ob_get_clean();
     return bntm_universal_container('KonekBayan Admin Panel',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
-

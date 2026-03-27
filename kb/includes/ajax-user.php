@@ -16,14 +16,7 @@ function bntm_ajax_kbf_create_fund() {
     }
     if (empty($location_full)) wp_send_json_error(['message'=>'Please fill all required fields.']);
     $goal=floatval($_POST['goal_amount']);
-    if($goal<100) wp_send_json_error(['message'=>'Minimum goal is ₱100.']);
-    $valid_id='';
-    if(!empty($_FILES['valid_id']['name'])) {
-        if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');
-        $up=wp_handle_upload($_FILES['valid_id'],['test_form'=>false]);
-        if(isset($up['url'])) $valid_id=$up['url'];
-        elseif(isset($up['error'])) wp_send_json_error(['message'=>'ID upload failed: '.$up['error']]);
-    }
+    if($goal<100) wp_send_json_error(['message'=>'Minimum goal is ?100.']);
     // Handle photos
     $photo_urls=[];
     if(!empty($_FILES['photos']['name'][0])) {
@@ -47,12 +40,11 @@ function bntm_ajax_kbf_create_fund() {
         'email'         =>sanitize_email($_POST['email']),
         'phone'         =>sanitize_text_field($_POST['phone']),
         'location'      =>sanitize_text_field($location_full),
-        'valid_id_path' =>$valid_id,
         'auto_return'   =>isset($_POST['auto_return'])?1:0,
         'deadline'      =>!empty($_POST['deadline'])?sanitize_text_field($_POST['deadline']):null,
         'status'        =>'pending',
         'share_token'   =>wp_generate_password(32,false),
-    ],['%s','%d','%s','%s','%s','%s','%f','%s','%s','%s','%s','%s','%d','%s','%s','%s']);
+    ],['%s','%d','%s','%s','%s','%s','%f','%s','%s','%s','%s','%d','%s','%s','%s']);
     // Ensure organizer profile exists
     $pt=$wpdb->prefix.'kbf_organizer_profiles';
     if(!$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz))) {
@@ -61,6 +53,7 @@ function bntm_ajax_kbf_create_fund() {
     if($res) wp_send_json_success(['message'=>'Fund submitted for review! We will notify you once approved.']);
     else wp_send_json_error(['message'=>'Failed to create fund. Please try again.']);
 }
+
 
 function bntm_ajax_kbf_update_fund() {
     check_ajax_referer('kbf_update_fund','nonce');
@@ -216,6 +209,36 @@ function bntm_ajax_kbf_save_organizer_profile() {
         $wpdb->insert($pt, $data, $insert_formats);
     }
     wp_send_json_success(['message'=>'Profile saved successfully!']);
+}
+
+
+function bntm_ajax_kbf_request_verification() {
+    check_ajax_referer('kbf_verify_account','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    if(empty($_FILES['verify_id_front']['name']) || empty($_FILES['verify_id_back']['name'])) {
+        wp_send_json_error(['message'=>'Please upload both front and back of your ID.']);
+    }
+    if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');
+    $front = wp_handle_upload($_FILES['verify_id_front'], ['test_form'=>false]);
+    if(isset($front['error'])) wp_send_json_error(['message'=>'Front ID upload failed: '.$front['error']]);
+    $back = wp_handle_upload($_FILES['verify_id_back'], ['test_form'=>false]);
+    if(isset($back['error'])) wp_send_json_error(['message'=>'Back ID upload failed: '.$back['error']]);
+
+    global $wpdb; $pt = $wpdb->prefix.'kbf_organizer_profiles'; $biz = get_current_user_id();
+    $data = [
+        'verify_id_front'     => $front['url'],
+        'verify_id_back'      => $back['url'],
+        'verify_status'       => 'pending',
+        'verify_submitted_at' => current_time('mysql'),
+    ];
+    $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d", $biz));
+    if($exists) {
+        $wpdb->update($pt, $data, ['business_id'=>$biz], ['%s','%s','%s','%s'], ['%d']);
+    } else {
+        $data['business_id'] = $biz;
+        $wpdb->insert($pt, $data, ['%s','%s','%s','%s','%d']);
+    }
+    wp_send_json_success(['message'=>'Verification request submitted! Admin will review your ID.']);
 }
 
 // ============================================================

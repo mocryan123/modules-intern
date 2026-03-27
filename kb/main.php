@@ -257,6 +257,12 @@ function bntm_kbf_get_tables() {
             avatar_url VARCHAR(500),
             social_links TEXT COMMENT 'JSON: facebook, instagram, twitter',
             is_verified TINYINT(1) DEFAULT 0,
+            verify_id_front VARCHAR(500),
+            verify_id_back VARCHAR(500),
+            verify_status ENUM('none','pending','approved','rejected') DEFAULT 'none',
+            verify_submitted_at DATETIME,
+            verify_reviewed_at DATETIME,
+            verify_notes TEXT,
             total_raised DECIMAL(15,2) DEFAULT 0.00,
             total_sponsors INT DEFAULT 0,
             rating DECIMAL(3,2) DEFAULT 0.00,
@@ -304,6 +310,27 @@ function bntm_shortcode_kbf_terms() {
     return '<div class="kbf-wrap"></div>';
 }
 
+
+function bntm_kbf_ensure_profile_columns() {
+    global $wpdb;
+    $pt = $wpdb->prefix.'kbf_organizer_profiles';
+    $existing = $wpdb->get_col("SHOW COLUMNS FROM {$pt}");
+    $cols = [
+        'verify_id_front'     => "ALTER TABLE {$pt} ADD COLUMN verify_id_front VARCHAR(500) NULL",
+        'verify_id_back'      => "ALTER TABLE {$pt} ADD COLUMN verify_id_back VARCHAR(500) NULL",
+        'verify_status'       => "ALTER TABLE {$pt} ADD COLUMN verify_status ENUM('none','pending','approved','rejected') DEFAULT 'none'",
+        'verify_submitted_at' => "ALTER TABLE {$pt} ADD COLUMN verify_submitted_at DATETIME NULL",
+        'verify_reviewed_at'  => "ALTER TABLE {$pt} ADD COLUMN verify_reviewed_at DATETIME NULL",
+        'verify_notes'        => "ALTER TABLE {$pt} ADD COLUMN verify_notes TEXT NULL",
+    ];
+    foreach ($cols as $col => $sql) {
+        if (!in_array($col, $existing, true)) {
+            $wpdb->query($sql);
+        }
+    }
+}
+add_action('init', 'bntm_kbf_ensure_profile_columns');
+
 function bntm_kbf_create_tables() {
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     $tables = bntm_kbf_get_tables();
@@ -331,6 +358,7 @@ add_action('wp_ajax_kbf_request_withdrawal',         'bntm_ajax_kbf_request_with
 add_action('wp_ajax_kbf_extend_deadline',            'bntm_ajax_kbf_extend_deadline');
 add_action('wp_ajax_kbf_toggle_auto_return',         'bntm_ajax_kbf_toggle_auto_return');
 add_action('wp_ajax_kbf_save_organizer_profile',     'bntm_ajax_kbf_save_organizer_profile');
+add_action('wp_ajax_kbf_request_verification',      'bntm_ajax_kbf_request_verification');
 add_action('wp_ajax_kbf_mark_fund_complete',         'bntm_ajax_kbf_mark_fund_complete');
 
 add_action('wp_ajax_kbf_sponsor_fund',               'bntm_ajax_kbf_sponsor_fund');

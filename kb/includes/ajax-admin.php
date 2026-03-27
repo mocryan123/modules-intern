@@ -146,11 +146,23 @@ function bntm_ajax_kbf_admin_verify_organizer() {
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';
     $biz=intval($_POST['business_id']);$v=intval($_POST['verified']);
+    $notes = sanitize_text_field(isset($_POST['notes']) ? $_POST['notes'] : '');
     $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz));
-    if($exists) $wpdb->update($pt,['is_verified'=>$v],['business_id'=>$biz],['%d'],['%d']);
-    else $wpdb->insert($pt,['business_id'=>$biz,'is_verified'=>$v],['%d','%d']);
+    $status = $v ? 'approved' : 'rejected';
+    $data = [
+        'is_verified' => $v,
+        'verify_status' => $status,
+        'verify_reviewed_at' => current_time('mysql'),
+        'verify_notes' => $notes,
+    ];
+    if($exists) $wpdb->update($pt,$data,['business_id'=>$biz],['%d','%s','%s','%s'],['%d']);
+    else { $data['business_id']=$biz; $wpdb->insert($pt,$data,['%d','%s','%s','%s','%d']); }
+    // =====================================================
+    // TODO: Send verification status email to user (approved/rejected + reason)
+    // =====================================================
     wp_send_json_success(['message'=>$v?'Organizer verified!':'Verification revoked.']);
 }
+
 
 function bntm_ajax_kbf_save_setting() {
     check_ajax_referer('kbf_admin_action');
