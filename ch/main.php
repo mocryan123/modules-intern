@@ -3009,49 +3009,71 @@ function bntm_shortcode_ch_my_feed() {
             <?php endif; ?>
         </div>
 
-        <!-- Edit post modal -->
+        <!-- Edit post modal — Facebook-style composer -->
         <div id="ch-modal-edit-post" class="ch-modal-overlay" style="display:none">
-            <div class="ch-modal ch-modal-lg">
-                <div class="ch-modal-header">
+            <div class="ch-modal ch-modal-lg ch-composer-modal">
+                <div class="ch-composer-header">
                     <h3>Edit Post</h3>
-                    <button class="ch-modal-close" onclick="chCloseModal('ch-modal-edit-post')">&times;</button>
+                    <button class="ch-composer-close" onclick="chCloseModal('ch-modal-edit-post')" aria-label="Close">&times;</button>
                 </div>
-                <div class="ch-modal-body">
+                <div class="ch-composer-divider"></div>
+
+                <div class="ch-composer-body">
                     <input type="hidden" id="ch-edit-post-id">
-                    <div class="ch-field-group">
-                        <label class="ch-label">Category *</label>
-                        <select id="ch-edit-post-cat" class="ch-input">
-                            <option value="">Select a category</option>
-                            <?php foreach ($categories_for_modal as $cat): ?>
-                            <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+
+                    <div class="ch-composer-author-row">
+                        <div class="ch-composer-avatar">
+                            <?php $cd4 = wp_get_current_user()->display_name ?: 'U'; echo esc_html(strtoupper(substr($cd4, 0, 1))); ?>
+                        </div>
+                        <div class="ch-composer-author-info">
+                            <div class="ch-composer-author-name"><?php echo esc_html(wp_get_current_user()->display_name ?: 'You'); ?></div>
+                            <div class="ch-composer-meta-row">
+                                <select id="ch-edit-post-cat" class="ch-composer-cat-select">
+                                    <option value="">📂 Select category</option>
+                                    <?php foreach ($categories_for_modal as $cat): ?>
+                                    <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <label class="ch-composer-anon-toggle">
+                                    <input type="checkbox" id="ch-edit-post-anon">
+                                    <span>Anonymous</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
-                    <div class="ch-field-group">
-                        <label class="ch-label">Title *</label>
-                        <input type="text" id="ch-edit-post-title" class="ch-input" placeholder="Post title">
+
+                    <input type="text" id="ch-edit-post-title" class="ch-composer-title" placeholder="Write a title…">
+                    <textarea id="ch-edit-post-content" class="ch-composer-textarea" rows="4"
+                        placeholder="What's on your mind?"></textarea>
+
+                    <div class="ch-composer-tags-row">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        <input type="text" id="ch-edit-post-tags" class="ch-composer-tags-input" placeholder="Tags: road, drainage, urgent…">
                     </div>
-                    <div class="ch-field-group">
-                        <label class="ch-label">Content *</label>
-                        <textarea id="ch-edit-post-content" class="ch-input ch-textarea ch-textarea-lg" rows="6"></textarea>
-                    </div>
-                    <div class="ch-field-group">
-                        <label class="ch-label">Tags</label>
-                        <input type="text" id="ch-edit-post-tags" class="ch-input" placeholder="e.g., road, drainage">
-                    </div>
-                    <div class="ch-field-group">
-                        <label class="ch-label">Attach Media (optional)</label>
-                        <input type="file" id="ch-edit-post-media" class="ch-input" multiple accept="image/*,video/*">
-                    </div>
-                    <div class="ch-field-group">
-                        <label class="ch-checkbox-label"><input type="checkbox" id="ch-edit-post-anon"> Post Anonymously</label>
-                    </div>
+
+                    <label class="ch-composer-media-area" id="ch-edit-post-media-label2" for="ch-edit-post-media2">
+                        <div class="ch-composer-media-inner">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            <span>Add photos / videos</span>
+                            <span class="ch-composer-media-sub">or drag and drop</span>
+                        </div>
+                        <input type="file" id="ch-edit-post-media" style="display:none" multiple accept="image/*,video/*"
+                            onchange="chUpdateMediaLabel(this, 'ch-edit-post-media-label2')">
+                    </label>
                 </div>
-                <div class="ch-modal-footer">
-                    <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-edit-post')">Cancel</button>
-                    <button class="ch-btn ch-btn-primary" id="ch-update-post-btn" onclick="chUpdatePost('<?php echo esc_attr(wp_create_nonce('ch_post_view_nonce')); ?>')">Update Post</button>
-                </div>
+
                 <div id="ch-edit-post-msg"></div>
+
+                <div class="ch-composer-footer">
+                    <div class="ch-composer-footer-hint">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        Edit your post. Changes are visible immediately.
+                    </div>
+                    <button class="ch-btn ch-btn-primary ch-composer-submit" id="ch-update-post-btn"
+                        onclick="chUpdatePost('<?php echo esc_attr(wp_create_nonce('ch_post_view_nonce')); ?>')">
+                        Save Changes
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -3915,6 +3937,48 @@ function bntm_shortcode_ch_feed() {
             </div>
             <?php endif; ?>
 
+            <!-- ── Facebook-style Composer Trigger ── -->
+            <?php if ($user_id || true): // show for both guests and logged-in ?>
+            <?php
+                $can_post_here = true;
+                if ($cat_obj && $cat_obj->is_private && !$user_id) $can_post_here = false;
+                $current_display_feed = $user_id ? (wp_get_current_user()->display_name ?: 'You') : 'Guest';
+                $current_initial_feed = strtoupper(substr($current_display_feed, 0, 1));
+            ?>
+            <div class="ch-composer-trigger-card" onclick="<?php echo $can_post_here ? "chOpenModal('ch-modal-create-post')" : "void(0)"; ?>" role="button" tabindex="0"
+                 onkeydown="if(event.key==='Enter'||event.key===' '){<?php echo $can_post_here ? "chOpenModal('ch-modal-create-post')" : ''; ?>}">
+                <div class="ch-composer-trigger-avatar <?php echo !$user_id ? 'ch-composer-trigger-guest' : ''; ?>">
+                    <?php if ($user_id): ?>
+                        <?php echo esc_html($current_initial_feed); ?>
+                    <?php else: ?>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <?php endif; ?>
+                </div>
+                <?php if ($can_post_here): ?>
+                <div class="ch-composer-trigger-input">
+                    <?php echo $user_id
+                        ? 'What\'s on your mind, ' . esc_html(explode(' ', $current_display_feed)[0]) . '?'
+                        : 'Share something with the community…'; ?>
+                </div>
+                <div class="ch-composer-trigger-actions">
+                    <span class="ch-composer-trigger-btn">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        Photo
+                    </span>
+                    <span class="ch-composer-trigger-btn ch-composer-trigger-btn-tag">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        Tag
+                    </span>
+                </div>
+                <?php else: ?>
+                <div class="ch-composer-trigger-input ch-composer-trigger-locked">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Sign in and follow this category to post here.
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
             <div class="ch-posts-list" id="ch-posts-list">
                 <?php if (!empty($announcements)): ?>
                 <?php foreach ($announcements as $announcement): ?>
@@ -4073,107 +4137,157 @@ function bntm_shortcode_ch_feed() {
     </div>
 
     <!-- Create Post Modal -->
+    <!-- Create Post Modal — Facebook-style composer -->
     <div id="ch-modal-create-post" class="ch-modal-overlay" style="display:none">
-        <div class="ch-modal ch-modal-lg">
-            <div class="ch-modal-header">
-                <h3>Create New Post</h3>
-                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-create-post')">&times;</button>
+        <div class="ch-modal ch-modal-lg ch-composer-modal">
+            <div class="ch-composer-header">
+                <h3>Create Post</h3>
+                <button class="ch-composer-close" onclick="chCloseModal('ch-modal-create-post')" aria-label="Close">&times;</button>
             </div>
-            <div class="ch-modal-body">
-                <div class="ch-field-group">
-                    <label class="ch-label">Category *</label>
-                    <select id="ch-post-cat" class="ch-input">
-                        <option value="">Select a category</option>
-                        <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+            <div class="ch-composer-divider"></div>
+
+            <div class="ch-composer-body">
+                <!-- Author row -->
+                <div class="ch-composer-author-row">
+                    <div class="ch-composer-avatar">
+                        <?php if ($user_id): ?>
+                            <?php $cd = wp_get_current_user()->display_name ?: 'U'; echo esc_html(strtoupper(substr($cd, 0, 1))); ?>
+                        <?php else: ?>G<?php endif; ?>
+                    </div>
+                    <div class="ch-composer-author-info">
+                        <div class="ch-composer-author-name">
+                            <?php echo $user_id ? esc_html(wp_get_current_user()->display_name ?: 'You') : 'Guest'; ?>
+                        </div>
+                        <div class="ch-composer-meta-row">
+                            <select id="ch-post-cat" class="ch-composer-cat-select">
+                                <option value="">📂 Select category</option>
+                                <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <?php if ($user_id): ?>
+                            <label class="ch-composer-anon-toggle">
+                                <input type="checkbox" id="ch-post-anon">
+                                <span>Anonymous</span>
+                            </label>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Title *</label>
-                    <input type="text" id="ch-post-title" class="ch-input" placeholder="What's on your mind?">
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Content *</label>
-                    <textarea id="ch-post-content" class="ch-input ch-textarea ch-textarea-lg" rows="6" placeholder="Share your thoughts, concerns, or suggestions with the community..."></textarea>
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Tags (comma-separated)</label>
-                    <input type="text" id="ch-post-tags" class="ch-input" placeholder="e.g., road, drainage, urgent">
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Attach Media (optional)</label>
-                    <input type="file" id="ch-post-media" class="ch-input" multiple accept="image/*,video/*,audio/*">
-                </div>
+
+                <!-- Guest name field -->
                 <?php if (!$user_id): ?>
-                <div class="ch-field-group">
-                    <label class="ch-label">Your Name <span style="font-size:11px;color:#9ca3af;">(optional — leave blank to post anonymously)</span></label>
-                    <input type="text" id="ch-post-guest-name" class="ch-input" placeholder="Display name or leave blank for Anonymous" maxlength="100">
-                </div>
-                <?php else: ?>
-                <div class="ch-field-group">
-                    <label class="ch-checkbox-label">
-                        <input type="checkbox" id="ch-post-anon">
-                        Post Anonymously
-                    </label>
-                </div>
+                <input type="text" id="ch-post-guest-name" class="ch-composer-guest-name" placeholder="Your name (leave blank to post anonymously)" maxlength="100">
                 <?php endif; ?>
+
+                <!-- Title field -->
+                <input type="text" id="ch-post-title" class="ch-composer-title" placeholder="Write a title…">
+
+                <!-- Main content area -->
+                <textarea id="ch-post-content" class="ch-composer-textarea" rows="4"
+                    placeholder="What's on your mind? Share your thoughts, concerns, or suggestions with the community…"></textarea>
+
+                <!-- Tags -->
+                <div class="ch-composer-tags-row">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    <input type="text" id="ch-post-tags" class="ch-composer-tags-input" placeholder="Tags: road, drainage, urgent…">
+                </div>
+
+                <!-- Media upload area -->
+                <label class="ch-composer-media-area" id="ch-post-media-label" for="ch-post-media">
+                    <div class="ch-composer-media-inner">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>Add photos / videos</span>
+                        <span class="ch-composer-media-sub">or drag and drop</span>
+                    </div>
+                    <input type="file" id="ch-post-media" style="display:none" multiple accept="image/*,video/*,audio/*"
+                        onchange="chUpdateMediaLabel(this, 'ch-post-media-label')">
+                </label>
+                <div id="ch-post-media-preview" class="ch-composer-media-preview"></div>
             </div>
-            <div class="ch-modal-footer">
-                <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-create-post')">Cancel</button>
-                <button class="ch-btn ch-btn-primary" id="ch-submit-post-btn" onclick="chSubmitPost('<?php echo $user_id ? esc_attr(wp_create_nonce('ch_feed_nonce')) : ''; ?>')">Post to Community</button>
-            </div>
+
             <div id="ch-post-msg"></div>
+
+            <div class="ch-composer-footer">
+                <div class="ch-composer-footer-hint">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Be respectful and follow community guidelines.
+                </div>
+                <button class="ch-btn ch-btn-primary ch-composer-submit" id="ch-submit-post-btn"
+                    onclick="chSubmitPost('<?php echo $user_id ? esc_attr(wp_create_nonce('ch_feed_nonce')) : ''; ?>')">
+                    Post
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Edit Post Modal -->
+    <!-- Edit Post Modal — Facebook-style composer -->
     <?php if ($user_id): ?>
     <div id="ch-modal-edit-post" class="ch-modal-overlay" style="display:none">
-        <div class="ch-modal ch-modal-lg">
-            <div class="ch-modal-header">
+        <div class="ch-modal ch-modal-lg ch-composer-modal">
+            <div class="ch-composer-header">
                 <h3>Edit Post</h3>
-                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-edit-post')">&times;</button>
+                <button class="ch-composer-close" onclick="chCloseModal('ch-modal-edit-post')" aria-label="Close">&times;</button>
             </div>
-            <div class="ch-modal-body">
+            <div class="ch-composer-divider"></div>
+
+            <div class="ch-composer-body">
                 <input type="hidden" id="ch-edit-post-id">
-                <div class="ch-field-group">
-                    <label class="ch-label">Category *</label>
-                    <select id="ch-edit-post-cat" class="ch-input">
-                        <option value="">Select a category</option>
-                        <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+
+                <div class="ch-composer-author-row">
+                    <div class="ch-composer-avatar">
+                        <?php $cd = wp_get_current_user()->display_name ?: 'U'; echo esc_html(strtoupper(substr($cd, 0, 1))); ?>
+                    </div>
+                    <div class="ch-composer-author-info">
+                        <div class="ch-composer-author-name"><?php echo esc_html(wp_get_current_user()->display_name ?: 'You'); ?></div>
+                        <div class="ch-composer-meta-row">
+                            <select id="ch-edit-post-cat" class="ch-composer-cat-select">
+                                <option value="">📂 Select category</option>
+                                <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <label class="ch-composer-anon-toggle">
+                                <input type="checkbox" id="ch-edit-post-anon">
+                                <span>Anonymous</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Title *</label>
-                    <input type="text" id="ch-edit-post-title" class="ch-input" placeholder="What's on your mind?">
+
+                <input type="text" id="ch-edit-post-title" class="ch-composer-title" placeholder="Write a title…">
+                <textarea id="ch-edit-post-content" class="ch-composer-textarea" rows="4"
+                    placeholder="What's on your mind?"></textarea>
+
+                <div class="ch-composer-tags-row">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    <input type="text" id="ch-edit-post-tags" class="ch-composer-tags-input" placeholder="Tags: road, drainage, urgent…">
                 </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Content *</label>
-                    <textarea id="ch-edit-post-content" class="ch-input ch-textarea ch-textarea-lg" rows="6" placeholder="Share your thoughts, concerns, or suggestions with the community..."></textarea>
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Tags (comma-separated)</label>
-                    <input type="text" id="ch-edit-post-tags" class="ch-input" placeholder="e.g., road, drainage, urgent">
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Attach Media (optional)</label>
-                    <input type="file" id="ch-edit-post-media" class="ch-input" multiple accept="image/*,video/*,audio/*">
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-checkbox-label">
-                        <input type="checkbox" id="ch-edit-post-anon">
-                        Post Anonymously
-                    </label>
-                </div>
+
+                <label class="ch-composer-media-area" id="ch-edit-post-media-label" for="ch-edit-post-media">
+                    <div class="ch-composer-media-inner">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>Add photos / videos</span>
+                        <span class="ch-composer-media-sub">or drag and drop</span>
+                    </div>
+                    <input type="file" id="ch-edit-post-media" style="display:none" multiple accept="image/*,video/*,audio/*"
+                        onchange="chUpdateMediaLabel(this, 'ch-edit-post-media-label')">
+                </label>
+                <div id="ch-edit-post-media-preview" class="ch-composer-media-preview"></div>
             </div>
-            <div class="ch-modal-footer">
-                <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-edit-post')">Cancel</button>
-                <button class="ch-btn ch-btn-primary" id="ch-update-post-btn" onclick="chUpdatePost('<?php echo esc_attr(wp_create_nonce('ch_post_view_nonce')); ?>')">Update Post</button>
-            </div>
+
             <div id="ch-edit-post-msg"></div>
+
+            <div class="ch-composer-footer">
+                <div class="ch-composer-footer-hint">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Edit your post. Changes are visible immediately.
+                </div>
+                <button class="ch-btn ch-btn-primary ch-composer-submit" id="ch-update-post-btn"
+                    onclick="chUpdatePost('<?php echo esc_attr(wp_create_nonce('ch_post_view_nonce')); ?>')">
+                    Save Changes
+                </button>
+            </div>
         </div>
     </div>
     <?php endif; ?>
@@ -5074,108 +5188,140 @@ function bntm_shortcode_ch_post_view() {
         </div>
     </div>
 
-    <!-- Create Post Modal (for post view page) -->
+    <!-- Create Post Modal (for post view page) — Facebook-style composer -->
     <?php if ($user_id): ?>
     <div id="ch-modal-create-post" class="ch-modal-overlay" style="display:none">
-        <div class="ch-modal ch-modal-lg">
-            <div class="ch-modal-header">
-                <h3>Create New Post</h3>
-                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-create-post')">&times;</button>
+        <div class="ch-modal ch-modal-lg ch-composer-modal">
+            <div class="ch-composer-header">
+                <h3>Create Post</h3>
+                <button class="ch-composer-close" onclick="chCloseModal('ch-modal-create-post')" aria-label="Close">&times;</button>
             </div>
-            <div class="ch-modal-body">
-                <div class="ch-field-group">
-                    <label class="ch-label">Category *</label>
-                    <select id="ch-post-cat" class="ch-input">
-                        <option value="">Select a category</option>
-                        <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+            <div class="ch-composer-divider"></div>
+
+            <div class="ch-composer-body">
+                <div class="ch-composer-author-row">
+                    <div class="ch-composer-avatar">
+                        <?php $cd2 = wp_get_current_user()->display_name ?: 'U'; echo esc_html(strtoupper(substr($cd2, 0, 1))); ?>
+                    </div>
+                    <div class="ch-composer-author-info">
+                        <div class="ch-composer-author-name"><?php echo esc_html(wp_get_current_user()->display_name ?: 'You'); ?></div>
+                        <div class="ch-composer-meta-row">
+                            <select id="ch-post-cat" class="ch-composer-cat-select">
+                                <option value="">📂 Select category</option>
+                                <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <label class="ch-composer-anon-toggle">
+                                <input type="checkbox" id="ch-post-anon">
+                                <span>Anonymous</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Title *</label>
-                    <input type="text" id="ch-post-title" class="ch-input" placeholder="What's on your mind?">
+
+                <input type="text" id="ch-post-title" class="ch-composer-title" placeholder="Write a title…">
+                <textarea id="ch-post-content" class="ch-composer-textarea" rows="4"
+                    placeholder="What's on your mind? Share your thoughts, concerns, or suggestions…"></textarea>
+
+                <div class="ch-composer-tags-row">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    <input type="text" id="ch-post-tags" class="ch-composer-tags-input" placeholder="Tags: road, drainage, urgent…">
                 </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Content *</label>
-                    <textarea id="ch-post-content" class="ch-input ch-textarea ch-textarea-lg" rows="6" placeholder="Share your thoughts, concerns, or suggestions with the community..."></textarea>
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Tags (comma-separated)</label>
-                    <input type="text" id="ch-post-tags" class="ch-input" placeholder="e.g., road, drainage, urgent">
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Attach Media (optional)</label>
-                    <input type="file" id="ch-post-media" class="ch-input" multiple accept="image/*,video/*,audio/*">
-                </div>
-                <?php if (!$user_id): ?>
-                <div class="ch-field-group">
-                    <label class="ch-label">Your Name <span class="ch-optional">(optional — leave blank to post anonymously)</span></label>
-                    <input type="text" id="ch-post-guest-name" class="ch-input" placeholder="Display name or leave blank for Anonymous" maxlength="100">
-                </div>
-                <?php else: ?>
-                <div class="ch-field-group">
-                    <label class="ch-checkbox-label">
-                        <input type="checkbox" id="ch-post-anon">
-                        Post Anonymously
-                    </label>
-                </div>
-                <?php endif; ?>
+
+                <label class="ch-composer-media-area" id="ch-post-media-label" for="ch-post-media">
+                    <div class="ch-composer-media-inner">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>Add photos / videos</span>
+                        <span class="ch-composer-media-sub">or drag and drop</span>
+                    </div>
+                    <input type="file" id="ch-post-media" style="display:none" multiple accept="image/*,video/*,audio/*"
+                        onchange="chUpdateMediaLabel(this, 'ch-post-media-label')">
+                </label>
+                <div id="ch-post-media-preview" class="ch-composer-media-preview"></div>
             </div>
-            <div class="ch-modal-footer">
-                <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-create-post')">Cancel</button>
-                <button class="ch-btn ch-btn-primary" id="ch-submit-post-btn" onclick="chSubmitPost('<?php echo $user_id ? wp_create_nonce('ch_feed_nonce') : ''; ?>')">Post to Community</button>
-            </div>
+
             <div id="ch-post-msg"></div>
+
+            <div class="ch-composer-footer">
+                <div class="ch-composer-footer-hint">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Be respectful and follow community guidelines.
+                </div>
+                <button class="ch-btn ch-btn-primary ch-composer-submit" id="ch-submit-post-btn"
+                    onclick="chSubmitPost('<?php echo $user_id ? wp_create_nonce('ch_feed_nonce') : ''; ?>')">
+                    Post
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Edit Post Modal -->
+    <!-- Edit Post Modal (for post view page) — Facebook-style composer -->
     <div id="ch-modal-edit-post" class="ch-modal-overlay" style="display:none">
-        <div class="ch-modal ch-modal-lg">
-            <div class="ch-modal-header">
+        <div class="ch-modal ch-modal-lg ch-composer-modal">
+            <div class="ch-composer-header">
                 <h3>Edit Post</h3>
-                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-edit-post')">&times;</button>
+                <button class="ch-composer-close" onclick="chCloseModal('ch-modal-edit-post')" aria-label="Close">&times;</button>
             </div>
-            <div class="ch-modal-body">
+            <div class="ch-composer-divider"></div>
+
+            <div class="ch-composer-body">
                 <input type="hidden" id="ch-edit-post-id">
-                <div class="ch-field-group">
-                    <label class="ch-label">Category *</label>
-                    <select id="ch-edit-post-cat" class="ch-input">
-                        <option value="">Select a category</option>
-                        <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+
+                <div class="ch-composer-author-row">
+                    <div class="ch-composer-avatar">
+                        <?php $cd3 = wp_get_current_user()->display_name ?: 'U'; echo esc_html(strtoupper(substr($cd3, 0, 1))); ?>
+                    </div>
+                    <div class="ch-composer-author-info">
+                        <div class="ch-composer-author-name"><?php echo esc_html(wp_get_current_user()->display_name ?: 'You'); ?></div>
+                        <div class="ch-composer-meta-row">
+                            <select id="ch-edit-post-cat" class="ch-composer-cat-select">
+                                <option value="">📂 Select category</option>
+                                <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo (int)$cat->id; ?>"><?php echo esc_html($cat->name); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <label class="ch-composer-anon-toggle">
+                                <input type="checkbox" id="ch-edit-post-anon">
+                                <span>Anonymous</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Title *</label>
-                    <input type="text" id="ch-edit-post-title" class="ch-input" placeholder="What's on your mind?">
+
+                <input type="text" id="ch-edit-post-title" class="ch-composer-title" placeholder="Write a title…">
+                <textarea id="ch-edit-post-content" class="ch-composer-textarea" rows="4"
+                    placeholder="What's on your mind?"></textarea>
+
+                <div class="ch-composer-tags-row">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    <input type="text" id="ch-edit-post-tags" class="ch-composer-tags-input" placeholder="Tags: road, drainage, urgent…">
                 </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Content *</label>
-                    <textarea id="ch-edit-post-content" class="ch-input ch-textarea ch-textarea-lg" rows="6" placeholder="Share your thoughts, concerns, or suggestions with the community..."></textarea>
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Tags (comma-separated)</label>
-                    <input type="text" id="ch-edit-post-tags" class="ch-input" placeholder="e.g., road, drainage, urgent">
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-label">Attach Media (optional)</label>
-                    <input type="file" id="ch-edit-post-media" class="ch-input" multiple accept="image/*,video/*,audio/*">
-                </div>
-                <div class="ch-field-group">
-                    <label class="ch-checkbox-label">
-                        <input type="checkbox" id="ch-edit-post-anon">
-                        Post Anonymously
-                    </label>
-                </div>
+
+                <label class="ch-composer-media-area" id="ch-edit-post-media-label" for="ch-edit-post-media">
+                    <div class="ch-composer-media-inner">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>Add photos / videos</span>
+                        <span class="ch-composer-media-sub">or drag and drop</span>
+                    </div>
+                    <input type="file" id="ch-edit-post-media" style="display:none" multiple accept="image/*,video/*,audio/*"
+                        onchange="chUpdateMediaLabel(this, 'ch-edit-post-media-label')">
+                </label>
+                <div id="ch-edit-post-media-preview" class="ch-composer-media-preview"></div>
             </div>
-            <div class="ch-modal-footer">
-                <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-edit-post')">Cancel</button>
-                <button class="ch-btn ch-btn-primary" id="ch-update-post-btn" onclick="chUpdatePost('<?php echo esc_attr($nonce); ?>')">Update Post</button>
-            </div>
+
             <div id="ch-edit-post-msg"></div>
+
+            <div class="ch-composer-footer">
+                <div class="ch-composer-footer-hint">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Edit your post. Changes are visible immediately.
+                </div>
+                <button class="ch-btn ch-btn-primary ch-composer-submit" id="ch-update-post-btn"
+                    onclick="chUpdatePost('<?php echo esc_attr($nonce); ?>')">
+                    Save Changes
+                </button>
+            </div>
         </div>
     </div>
     <?php endif; ?>
@@ -6600,6 +6746,134 @@ function ch_global_styles() {
     .ch-modal-body { padding: 20px 22px; }
     .ch-modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 22px; border-top: 1px solid var(--ch-border-soft); }
 
+    /* ── FACEBOOK-STYLE COMPOSER MODAL ── */
+    .ch-composer-modal { max-width: 548px; border-radius: 12px; overflow: hidden; }
+    .ch-composer-header { display: flex; align-items: center; justify-content: center; position: relative; padding: 14px 52px; }
+    .ch-composer-header h3 { margin: 0; font-size: 17px; font-weight: 700; color: var(--ch-text); letter-spacing: -0.2px; }
+    .ch-composer-close { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--ch-bg); color: var(--ch-text-muted); font-size: 20px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s; }
+    .ch-composer-close:hover { background: var(--ch-border); color: var(--ch-text); }
+    .ch-composer-divider { height: 1px; background: var(--ch-border-soft); margin: 0; }
+    .ch-composer-body { padding: 14px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* Author row with avatar */
+    .ch-composer-author-row { display: flex; align-items: flex-start; gap: 10px; }
+    .ch-composer-avatar { width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark)); color: #fff; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ch-composer-author-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .ch-composer-author-name { font-size: 14px; font-weight: 700; color: var(--ch-text); line-height: 1.2; }
+    .ch-composer-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .ch-composer-cat-select { font-size: 12px; font-weight: 600; font-family: var(--ch-font); color: var(--ch-text); background: var(--ch-bg); border: 1px solid var(--ch-border); border-radius: 6px; padding: 4px 8px; cursor: pointer; outline: none; max-width: 200px; transition: border-color 0.15s; }
+    .ch-composer-cat-select:focus { border-color: var(--ch-accent); }
+    .ch-composer-anon-toggle { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--ch-text-muted); cursor: pointer; user-select: none; white-space: nowrap; }
+    .ch-composer-anon-toggle input { accent-color: var(--ch-accent); cursor: pointer; }
+
+    /* Guest name */
+    .ch-composer-guest-name { width: 100%; box-sizing: border-box; border: none; border-bottom: 1px solid var(--ch-border-soft); padding: 6px 2px; font-size: 13px; font-family: var(--ch-font); color: var(--ch-text); background: transparent; outline: none; }
+    .ch-composer-guest-name:focus { border-bottom-color: var(--ch-accent); }
+    .ch-composer-guest-name::placeholder { color: var(--ch-text-subtle); }
+
+    /* Title field */
+    .ch-composer-title { width: 100%; box-sizing: border-box; border: none; padding: 4px 2px; font-size: 15px; font-weight: 600; font-family: var(--ch-font); color: var(--ch-text); background: transparent; outline: none; border-bottom: 1px solid var(--ch-border-soft); }
+    .ch-composer-title:focus { border-bottom-color: var(--ch-accent); }
+    .ch-composer-title::placeholder { color: var(--ch-text-subtle); font-weight: 400; }
+
+    /* Main textarea */
+    .ch-composer-textarea { width: 100%; box-sizing: border-box; border: none; resize: none; font-size: 15px; font-family: var(--ch-font); color: var(--ch-text); background: transparent; outline: none; line-height: 1.55; min-height: 90px; }
+    .ch-composer-textarea::placeholder { color: var(--ch-text-subtle); }
+
+    /* Tags row */
+    .ch-composer-tags-row { display: flex; align-items: center; gap: 7px; padding: 6px 10px; background: var(--ch-bg); border-radius: 8px; border: 1px solid var(--ch-border-soft); }
+    .ch-composer-tags-row svg { flex-shrink: 0; color: var(--ch-text-subtle); }
+    .ch-composer-tags-input { flex: 1; border: none; background: transparent; font-size: 13px; font-family: var(--ch-font); color: var(--ch-text); outline: none; }
+    .ch-composer-tags-input::placeholder { color: var(--ch-text-subtle); }
+
+    /* Media upload area */
+    .ch-composer-media-area { display: block; border: 2px dashed var(--ch-border); border-radius: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; text-decoration: none; }
+    .ch-composer-media-area:hover { border-color: var(--ch-accent-mid); background: var(--ch-accent-light); }
+    .ch-composer-media-inner { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 16px 12px; color: var(--ch-text-muted); }
+    .ch-composer-media-inner svg { color: var(--ch-text-subtle); }
+    .ch-composer-media-inner span { font-size: 13.5px; font-weight: 600; }
+    .ch-composer-media-sub { font-size: 11.5px !important; font-weight: 400 !important; color: var(--ch-text-subtle); }
+    .ch-composer-media-preview { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ch-composer-media-preview img, .ch-composer-media-preview video { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--ch-border); }
+
+    /* Footer */
+    .ch-composer-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--ch-border-soft); gap: 10px; }
+    .ch-composer-footer-hint { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--ch-text-subtle); flex: 1; min-width: 0; }
+    .ch-composer-footer-hint svg { flex-shrink: 0; color: var(--ch-text-subtle); }
+    .ch-composer-submit { padding: 9px 28px; font-size: 14px; border-radius: 8px; }
+
+    /* Dark mode tweaks */
+    .ch-dark .ch-composer-modal { background: var(--ch-surface); }
+    .ch-dark .ch-composer-cat-select { background: var(--ch-bg); color: var(--ch-text); border-color: var(--ch-border); }
+    .ch-dark .ch-composer-media-area { border-color: var(--ch-border); }
+    .ch-dark .ch-composer-close { background: rgba(255,255,255,0.08); }
+    .ch-dark .ch-composer-close:hover { background: rgba(255,255,255,0.15); color: var(--ch-text); }
+
+    /* Responsive */
+    @media (max-width: 520px) {
+        .ch-composer-modal { border-radius: 0; max-height: 100dvh; }
+        .ch-composer-body { padding: 12px 12px 6px; }
+        .ch-composer-footer { padding: 10px 12px; }
+        .ch-composer-submit { padding: 8px 18px; }
+        .ch-composer-footer-hint { display: none; }
+    }
+
+    /* ── COMPOSER TRIGGER CARD (Feed) ── */
+    .ch-composer-trigger-card {
+        display: flex; align-items: center; gap: 10px;
+        background: var(--ch-surface);
+        border: 1px solid var(--ch-border-soft);
+        border-radius: var(--ch-radius-lg);
+        padding: 10px 14px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        outline: none;
+    }
+    .ch-composer-trigger-card:hover { border-color: var(--ch-accent-mid); box-shadow: 0 2px 10px rgba(99,102,241,0.08); }
+    .ch-composer-trigger-card:focus-visible { border-color: var(--ch-accent); box-shadow: 0 0 0 3px var(--ch-accent-light); }
+    .ch-composer-trigger-avatar {
+        width: 38px; height: 38px; min-width: 38px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark));
+        color: #fff; font-size: 15px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .ch-composer-trigger-guest { background: var(--ch-bg); border: 1.5px solid var(--ch-border); color: var(--ch-text-subtle); }
+    .ch-composer-trigger-input {
+        flex: 1; min-width: 0;
+        background: var(--ch-bg);
+        border: 1px solid var(--ch-border-soft);
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-size: 14px; color: var(--ch-text-subtle);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        transition: border-color 0.15s;
+        pointer-events: none;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .ch-composer-trigger-card:hover .ch-composer-trigger-input { border-color: var(--ch-accent-mid); color: var(--ch-text-muted); }
+    .ch-composer-trigger-locked { color: var(--ch-text-subtle); cursor: default; }
+    .ch-composer-trigger-actions {
+        display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    }
+    .ch-composer-trigger-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 10px; border-radius: 6px;
+        font-size: 12.5px; font-weight: 600; color: var(--ch-text-muted);
+        transition: background 0.13s, color 0.13s;
+        white-space: nowrap;
+    }
+    .ch-composer-trigger-btn:hover { background: var(--ch-accent-light); color: var(--ch-accent); }
+    .ch-composer-trigger-btn-tag:hover { background: #fef3c7; color: #92400e; }
+    @media (max-width: 600px) {
+        .ch-composer-trigger-actions { display: none; }
+        .ch-composer-trigger-input { font-size: 13px; padding: 7px 14px; }
+    }
+    @media (max-width: 400px) {
+        .ch-composer-trigger-card { padding: 8px 10px; gap: 8px; }
+        .ch-composer-trigger-avatar { width: 32px; height: 32px; min-width: 32px; font-size: 13px; }
+    }
+
     /* GUIDELINES */
     .ch-guidelines-content h4 { margin: 0 0 14px; font-size: 15px; font-weight: 700; color: var(--ch-text); }
     .ch-guidelines-content h5 { margin: 18px 0 7px; font-size: 13px; font-weight: 600; color: var(--ch-accent); }
@@ -7572,6 +7846,20 @@ function ch_global_scripts() {
                 document.documentElement.classList.add('ch-dark');
             }
         } catch(e) {}
+
+        // ---- Composer media label updater ----
+        window.chUpdateMediaLabel = function(input, labelId) {
+            const label = document.getElementById(labelId);
+            if (!label) return;
+            const inner = label.querySelector('.ch-composer-media-inner');
+            if (!inner) return;
+            const count = input.files.length;
+            if (count === 0) {
+                inner.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>Add photos / videos</span><span class="ch-composer-media-sub">or drag and drop</span>';
+            } else {
+                inner.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span>' + count + ' file' + (count !== 1 ? 's' : '') + ' selected</span><span class="ch-composer-media-sub">Click to change</span>';
+            }
+        };
 
         // ---- Color picker helpers (wheel + hex text + preview, all synced) ----
         window.chSyncColorWheel = function(wheelId, hexId, previewId) {
