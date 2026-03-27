@@ -14,6 +14,13 @@ define('BNTM_PS_PATH', dirname(__FILE__) . '/');
 define('BNTM_PS_URL', plugin_dir_url(__FILE__));
 
 // ─────────────────────────────────────────────────────────────
+// EMAILJS CONFIGURATION
+// ─────────────────────────────────────────────────────────────
+define('PS_EMAILJS_PUBLIC_KEY',   'uBQKj9AWTDWMuW40_');
+define('PS_EMAILJS_SERVICE_ID',   'service_uu81rw4');
+define('PS_EMAILJS_TEMPLATE_ID',  'template_usp73c8');
+
+// ─────────────────────────────────────────────────────────────
 // 1. CORE MODULE CONFIGURATION FUNCTIONS
 // ─────────────────────────────────────────────────────────────
 
@@ -130,6 +137,14 @@ function bntm_shortcode_ps_dashboard() {
     ob_start();
     ?>
     <script>var ajaxurl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';</script>
+
+    <!-- EmailJS SDK (needed for ready-for-pickup notifications) -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+    (function(){
+        emailjs.init('<?php echo esc_js(PS_EMAILJS_PUBLIC_KEY); ?>');
+    })();
+    </script>
 
     <div class="bntm-ps-container">
         <div class="bntm-tabs">
@@ -392,8 +407,31 @@ function ps_orders_tab($business_id) {
 
     <script>
     (function(){
-        const nonce = '<?php echo esc_js($nonce); ?>';
+        const nonce       = '<?php echo esc_js($nonce); ?>';
+        const SERVICE_ID  = '<?php echo esc_js(PS_EMAILJS_SERVICE_ID); ?>';
+        const TEMPLATE_ID = '<?php echo esc_js(PS_EMAILJS_TEMPLATE_ID); ?>';
+        const SHOP_NAME   = '<?php echo esc_js(ps_get_setting("shop_name", "PrintEase")); ?>';
+        const SHOP_ADDR   = '<?php echo esc_js(ps_get_setting("shop_address", "")); ?>';
+        const SHOP_HOURS  = '<?php echo esc_js(ps_get_setting("shop_hours", "Mon–Sat, 8:00 AM – 6:00 PM")); ?>';
 
+        // ── Send "Ready for Pickup" email to customer ───────────
+        function psSendReadyEmail(data) {
+            if (!data.customer_email) return;
+            emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                to_email     : data.customer_email,
+                to_name      : data.customer_name,
+                reply_to     : data.customer_email,
+                order_id     : data.rand_id,
+                file_name    : data.file_name,
+                total_price  : '₱' + data.total_price,
+                shop_name    : SHOP_NAME,
+                shop_address : SHOP_ADDR,
+                shop_hours   : SHOP_HOURS,
+                message      : 'Your print order is now ready for pickup! Please bring your Order ID when you visit the shop.',
+            }).catch(err => console.warn('EmailJS ready email error:', err));
+        }
+
+        // ── Status dropdown change ──────────────────────────────
         document.querySelectorAll('.ps-status-select').forEach(sel => {
             sel.addEventListener('change', function() {
                 const fd = new FormData();
@@ -402,11 +440,22 @@ function ps_orders_tab($business_id) {
                 fd.append('status', this.value);
                 fd.append('nonce', nonce);
                 fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
-                    if (!json.success) alert('Failed to update status: ' + json.data.message);
+                    if (!json.success) {
+                        alert('Failed to update status: ' + json.data.message);
+                    } else if (json.data.send_ready_email) {
+                        psSendReadyEmail({
+                            customer_email : json.data.customer_email,
+                            customer_name  : json.data.customer_name,
+                            rand_id        : json.data.rand_id,
+                            file_name      : json.data.file_name,
+                            total_price    : json.data.total_price,
+                        });
+                    }
                 });
             });
         });
 
+        // ── View order modal ────────────────────────────────────
         document.querySelectorAll('.ps-view-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const fd = new FormData();
@@ -419,6 +468,7 @@ function ps_orders_tab($business_id) {
             });
         });
 
+        // ── Mark picked up ──────────────────────────────────────
         document.querySelectorAll('.ps-pickup-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (!confirm('Mark this order as picked up?')) return;
@@ -433,6 +483,7 @@ function ps_orders_tab($business_id) {
             });
         });
 
+        // ── Mark paid ───────────────────────────────────────────
         document.querySelectorAll('.ps-markpaid-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (!confirm('Mark this order as paid?')) return;
@@ -448,6 +499,7 @@ function ps_orders_tab($business_id) {
             });
         });
 
+        // ── Delete order ────────────────────────────────────────
         document.querySelectorAll('.ps-delete-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (!confirm('Delete this order permanently?')) return;
@@ -478,9 +530,11 @@ function ps_settings_tab($business_id) {
     $bw_a4             = ps_get_setting('bw_a4', 2.00);
     $bw_a3             = ps_get_setting('bw_a3', 4.00);
     $bw_letter         = ps_get_setting('bw_letter', 2.00);
+    $bw_long           = ps_get_setting('bw_long', 2.00);
     $color_a4          = ps_get_setting('color_a4', 8.00);
     $color_a3          = ps_get_setting('color_a3', 14.00);
     $color_letter      = ps_get_setting('color_letter', 8.00);
+    $color_long        = ps_get_setting('color_long', 8.00);
     $binding_spiral    = ps_get_setting('binding_spiral', 35.00);
     $binding_staple    = ps_get_setting('binding_staple', 5.00);
     $binding_hardcover = ps_get_setting('binding_hardcover', 80.00);
@@ -493,6 +547,7 @@ function ps_settings_tab($business_id) {
     $gcash_name        = ps_get_setting('gcash_name', '');
     $gcash_number      = ps_get_setting('gcash_number', '');
     $gcash_qr_url      = ps_get_setting('gcash_qr_url', '');
+    $admin_email       = ps_get_setting('admin_email', get_option('admin_email'));
 
     ob_start();
     ?>
@@ -507,6 +562,7 @@ function ps_settings_tab($business_id) {
             <div class="bntm-form-group"><label>A4 per page (₱)</label><input type="number" id="bw_a4" value="<?php echo esc_attr($bw_a4); ?>" step="0.01" min="0" class="bntm-input"></div>
             <div class="bntm-form-group"><label>A3 per page (₱)</label><input type="number" id="bw_a3" value="<?php echo esc_attr($bw_a3); ?>" step="0.01" min="0" class="bntm-input"></div>
             <div class="bntm-form-group"><label>Short/Letter per page (₱)</label><input type="number" id="bw_letter" value="<?php echo esc_attr($bw_letter); ?>" step="0.01" min="0" class="bntm-input"></div>
+            <div class="bntm-form-group"><label>Long/Legal per page (₱)</label><input type="number" id="bw_long" value="<?php echo esc_attr($bw_long); ?>" step="0.01" min="0" class="bntm-input"></div>
         </div>
 
         <h4 style="margin-bottom:12px;font-size:14px;color:#374151;">Color</h4>
@@ -514,6 +570,7 @@ function ps_settings_tab($business_id) {
             <div class="bntm-form-group"><label>A4 per page (₱)</label><input type="number" id="color_a4" value="<?php echo esc_attr($color_a4); ?>" step="0.01" min="0" class="bntm-input"></div>
             <div class="bntm-form-group"><label>A3 per page (₱)</label><input type="number" id="color_a3" value="<?php echo esc_attr($color_a3); ?>" step="0.01" min="0" class="bntm-input"></div>
             <div class="bntm-form-group"><label>Short/Letter per page (₱)</label><input type="number" id="color_letter" value="<?php echo esc_attr($color_letter); ?>" step="0.01" min="0" class="bntm-input"></div>
+            <div class="bntm-form-group"><label>Long/Legal per page (₱)</label><input type="number" id="color_long" value="<?php echo esc_attr($color_long); ?>" step="0.01" min="0" class="bntm-input"></div>
         </div>
 
         <h4 style="margin-bottom:12px;font-size:14px;color:#374151;">Binding Add-ons</h4>
@@ -535,12 +592,19 @@ function ps_settings_tab($business_id) {
     </div>
 
     <div class="bntm-form-section">
+        <h3>Email Notification Settings</h3>
+        <p style="color:#6b7280;margin-bottom:20px;">Admin email for new order notifications via EmailJS.</p>
+        <div class="bntm-form-group"><label>Admin Email Address</label><input type="email" id="admin_email" value="<?php echo esc_attr($admin_email); ?>" placeholder="admin@yourshop.com" class="bntm-input"></div>
+        <button id="ps-save-shop-btn" class="bntm-btn-primary" data-nonce="<?php echo $nonce; ?>">Save Settings</button>
+    </div>
+
+    <div class="bntm-form-section">
         <h3>Upload Configuration</h3>
         <div class="ps-options-grid">
             <div class="bntm-form-group"><label>Allowed File Types (comma-separated)</label><input type="text" id="allowed_file_types" value="<?php echo esc_attr($allowed_types); ?>" class="bntm-input" placeholder="pdf,doc,docx,jpg,png"></div>
             <div class="bntm-form-group"><label>Max File Size (MB)</label><input type="number" id="max_file_mb" value="<?php echo esc_attr($max_file_mb); ?>" min="1" max="100" class="bntm-input"></div>
         </div>
-        <button id="ps-save-shop-btn" class="bntm-btn-primary" data-nonce="<?php echo $nonce; ?>">Save Settings</button>
+        <button id="ps-save-upload-btn" class="bntm-btn-primary" data-nonce="<?php echo $nonce; ?>">Save Upload Settings</button>
     </div>
 
     <div class="bntm-form-section">
@@ -586,13 +650,19 @@ function ps_settings_tab($business_id) {
         const pricingBtn = document.getElementById('ps-save-pricing-btn');
         pricingBtn.dataset.label = 'Save Pricing';
         pricingBtn.addEventListener('click', function() {
-            saveSettings(collectSettings(['bw_a4','bw_a3','bw_letter','color_a4','color_a3','color_letter','binding_spiral','binding_staple','binding_hardcover']), this, this.dataset.nonce);
+            saveSettings(collectSettings(['bw_a4','bw_a3','bw_letter','bw_long','color_a4','color_a3','color_letter','color_long','binding_spiral','binding_staple','binding_hardcover']), this, this.dataset.nonce);
         });
 
         const shopBtn = document.getElementById('ps-save-shop-btn');
         shopBtn.dataset.label = 'Save Settings';
         shopBtn.addEventListener('click', function() {
-            saveSettings(collectSettings(['shop_name','shop_address','shop_hours','shop_note','allowed_file_types','max_file_mb']), this, this.dataset.nonce);
+            saveSettings(collectSettings(['shop_name','shop_address','shop_hours','shop_note','admin_email']), this, this.dataset.nonce);
+        });
+
+        const uploadBtn = document.getElementById('ps-save-upload-btn');
+        uploadBtn.dataset.label = 'Save Upload Settings';
+        uploadBtn.addEventListener('click', function() {
+            saveSettings(collectSettings(['allowed_file_types','max_file_mb']), this, this.dataset.nonce);
         });
 
         const gcashBtn = document.getElementById('ps-save-gcash-btn');
@@ -607,7 +677,7 @@ function ps_settings_tab($business_id) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 7. FRONTEND: ORDER SUBMISSION SHORTCODE (Redesigned)
+// 7. FRONTEND: ORDER SUBMISSION SHORTCODE
 // ─────────────────────────────────────────────────────────────
 
 function bntm_shortcode_ps_order() {
@@ -625,9 +695,18 @@ function bntm_shortcode_ps_order() {
     $gcash_name    = ps_get_setting('gcash_name', '');
     $gcash_number  = ps_get_setting('gcash_number', '');
     $gcash_qr_url  = ps_get_setting('gcash_qr_url', '');
+    $admin_email   = ps_get_setting('admin_email', get_option('admin_email'));
 
     ob_start();
     ?>
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+    (function(){
+        emailjs.init('<?php echo esc_js(PS_EMAILJS_PUBLIC_KEY); ?>');
+    })();
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script>var ajaxurl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';</script>
 
@@ -703,7 +782,7 @@ function bntm_shortcode_ps_order() {
                         </div>
                         <p class="pso-upload-cta">Drop your file here</p>
                         <p class="pso-upload-or">or</p>
-                        <button type="button" class="pso-btn-outline" onclick="document.getElementById('pso-file-input').click()">Browse files</button>
+                        <button type="button" class="pso-btn-outline" id="pso-browse-btn">Browse files</button>
                     </div>
 
                     <div class="pso-upload-progress" id="pso-upload-progress" style="display:none;">
@@ -725,7 +804,7 @@ function bntm_shortcode_ps_order() {
                             <div id="pso-success-filename" class="pso-success-filename"></div>
                             <div id="pso-success-meta" class="pso-success-meta"></div>
                         </div>
-                        <button type="button" class="pso-reupload-btn" onclick="psoResetUpload()">
+                        <button type="button" class="pso-reupload-btn" id="pso-reupload-btn">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             Change
                         </button>
@@ -757,6 +836,7 @@ function bntm_shortcode_ps_order() {
                             <label class="pso-radio-card active"><input type="radio" name="paper_size" value="A4" checked><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" stroke-width="1.5"/></svg><span>A4</span><small>210 × 297 mm</small></div></label>
                             <label class="pso-radio-card"><input type="radio" name="paper_size" value="A3"><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" stroke-width="1.5"/></svg><span>A3</span><small>297 × 420 mm</small></div></label>
                             <label class="pso-radio-card"><input type="radio" name="paper_size" value="Short"><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="1.5"/></svg><span>Short</span><small>216 × 279 mm</small></div></label>
+                            <label class="pso-radio-card"><input type="radio" name="paper_size" value="Long"><div class="pso-radio-card-inner"><svg width="18" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 22"><rect x="1" y="1" width="16" height="20" rx="2" stroke-width="1.5"/></svg><span>Long</span><small>216 × 330 mm</small></div></label>
                         </div>
                     </div>
 
@@ -1044,8 +1124,10 @@ function bntm_shortcode_ps_order() {
     .pso-btn-ghost:hover { border-color:var(--pso-ink-3); color:var(--pso-ink); background:var(--pso-surface-2); }
     .pso-btn-outline { display:inline-flex; align-items:center; gap:8px; background:none; border:1.5px solid var(--pso-accent); color:var(--pso-accent); border-radius:var(--pso-radius-sm); padding:10px 22px; font-size:14px; font-weight:600; font-family:var(--pso-font-body); cursor:pointer; transition:all .2s; }
     .pso-btn-outline:hover { background:var(--pso-accent); color:#fff; }
-    .pso-upload-zone { border:2px dashed var(--pso-border); border-radius:var(--pso-radius); padding:56px 32px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; background:var(--pso-surface-2); position:relative; }
-    .pso-upload-zone:hover,.pso-upload-zone.dragging { border-color:var(--pso-accent); background:var(--pso-accent-bg); }
+    /* Upload zone — pointer events only when idle */
+    .pso-upload-zone { border:2px dashed var(--pso-border); border-radius:var(--pso-radius); padding:56px 32px; text-align:center; transition:border-color .2s,background .2s; background:var(--pso-surface-2); position:relative; }
+    .pso-upload-zone.idle { cursor:pointer; }
+    .pso-upload-zone.idle:hover,.pso-upload-zone.dragging { border-color:var(--pso-accent); background:var(--pso-accent-bg); }
     .pso-upload-zone.has-file { border-color:var(--pso-green); background:var(--pso-green-bg); cursor:default; }
     .pso-upload-graphic { position:relative; display:inline-block; margin-bottom:16px; }
     .pso-upload-circle { width:72px; height:72px; border-radius:50%; background:#fff; border:1.5px solid var(--pso-border); display:flex; align-items:center; justify-content:center; color:var(--pso-accent); box-shadow:var(--pso-shadow); margin:0 auto; }
@@ -1169,6 +1251,68 @@ function bntm_shortcode_ps_order() {
 
     <script>
     (function(){
+        // ── EmailJS Config ──────────────────────────────────────
+        const EMAILJS_SERVICE_ID  = '<?php echo esc_js(PS_EMAILJS_SERVICE_ID); ?>';
+        const EMAILJS_TEMPLATE_ID = '<?php echo esc_js(PS_EMAILJS_TEMPLATE_ID); ?>';
+        const ADMIN_EMAIL         = '<?php echo esc_js($admin_email); ?>';
+        const SHOP_NAME           = '<?php echo esc_js($shop_name); ?>';
+        const SHOP_ADDRESS        = '<?php echo esc_js($shop_address); ?>';
+        const SHOP_HOURS          = '<?php echo esc_js($shop_hours); ?>';
+
+        // ── Send EmailJS Notification ───────────────────────────
+        function psSendEmail(params) {
+            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
+                .catch(err => console.warn('EmailJS error:', err));
+        }
+
+        // ── Send Order Confirmation to Customer ─────────────────
+        function psSendConfirmation(orderData) {
+            if (!orderData.customer_email) return;
+            return psSendEmail({
+                to_email      : orderData.customer_email,
+                to_name       : orderData.customer_name,
+                reply_to      : orderData.customer_email,
+                order_id      : orderData.rand_id,
+                file_name     : orderData.file_name,
+                paper_size    : orderData.paper_size,
+                color_mode    : orderData.color_mode === 'color' ? 'Full Color' : 'Black & White',
+                copies        : orderData.copies,
+                sides         : orderData.sides,
+                orientation   : orderData.orientation,
+                binding       : orderData.binding,
+                total_pages   : orderData.total_pages,
+                total_price   : '₱' + orderData.total_price,
+                payment_method: orderData.payment_method === 'gcash' ? 'GCash' : 'Cash on Pickup',
+                shop_name     : SHOP_NAME,
+                shop_address  : SHOP_ADDRESS,
+                shop_hours    : SHOP_HOURS,
+                message       : 'Your print order has been received! We will notify you when it is ready for pickup.',
+            });
+        }
+
+        // ── Send New Order Alert to Admin ───────────────────────
+        function psSendAdminAlert(orderData) {
+            if (!ADMIN_EMAIL) return;
+            return psSendEmail({
+                to_email      : ADMIN_EMAIL,
+                to_name       : 'Admin',
+                reply_to      : orderData.customer_email || ADMIN_EMAIL,
+                order_id      : orderData.rand_id,
+                file_name     : orderData.file_name,
+                paper_size    : orderData.paper_size,
+                color_mode    : orderData.color_mode === 'color' ? 'Full Color' : 'Black & White',
+                copies        : orderData.copies,
+                sides         : orderData.sides,
+                orientation   : orderData.orientation,
+                binding       : orderData.binding,
+                total_pages   : orderData.total_pages,
+                total_price   : '₱' + orderData.total_price,
+                payment_method: orderData.payment_method === 'gcash' ? 'GCash' : 'Cash on Pickup',
+                shop_name     : SHOP_NAME,
+                message       : 'New print order received from ' + orderData.customer_name + ' (' + orderData.customer_email + ').',
+            });
+        }
+
         let uploadedFile    = null;
         let calculatedPrice = null;
 
@@ -1190,11 +1334,49 @@ function bntm_shortcode_ps_order() {
         const fileInput = document.getElementById('pso-file-input');
         const nextBtn1  = document.getElementById('pso-next-1');
 
-        dropZone.addEventListener('click', () => { if (!dropZone.classList.contains('has-file')) fileInput.click(); });
-        dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+        // ── Upload zone: only open picker when in idle state ────
+        // The zone itself handles drag/drop; clicks only work via
+        // the "Browse files" button (idle) or "Change" button (success).
+        // This prevents a second file dialog from opening after upload.
+        dropZone.addEventListener('click', function(e) {
+            // Ignore clicks that originated from buttons inside the zone
+            if (e.target.closest('button')) return;
+            // Only open picker when the zone is in idle state
+            if (!dropZone.classList.contains('has-file') &&
+                document.getElementById('pso-upload-progress').style.display === 'none') {
+                fileInput.click();
+            }
+        });
+
+        // "Browse files" button — explicit click, stop bubble so zone doesn't also fire
+        document.getElementById('pso-browse-btn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        // "Change" (re-upload) button — explicit click, stop bubble
+        document.getElementById('pso-reupload-btn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            psoResetUpload();
+            fileInput.click();
+        });
+
+        dropZone.addEventListener('dragover',  e => { e.preventDefault(); if (!dropZone.classList.contains('has-file')) dropZone.classList.add('dragging'); });
         dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
-        dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragging'); if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]); });
-        fileInput.addEventListener('change', () => { if (fileInput.files[0]) uploadFile(fileInput.files[0]); });
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragging');
+            if (!dropZone.classList.contains('has-file') && e.dataTransfer.files[0]) {
+                uploadFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Use a one-time change listener pattern to avoid double-fire
+        fileInput.addEventListener('change', function() {
+            if (this.files[0]) uploadFile(this.files[0]);
+            // Reset value so the same file can be re-selected after "Change"
+            this.value = '';
+        });
 
         function uploadFile(file) {
             const maxBytes = <?php echo $max_mb; ?> * 1024 * 1024;
@@ -1230,9 +1412,11 @@ function bntm_shortcode_ps_order() {
                     document.getElementById('pso-success-meta').textContent = psoFormatBytes(json.data.file_size) + (json.data.page_count ? '  ·  ' + json.data.page_count + ' pages detected' : '');
                     document.getElementById('pso-upload-success').style.display = 'flex';
                     dropZone.classList.add('has-file');
+                    dropZone.classList.remove('idle');
                     nextBtn1.disabled = false;
                 } else {
                     document.getElementById('pso-upload-idle').style.display = 'block';
+                    dropZone.classList.add('idle');
                     errEl.style.display = 'block';
                     errEl.textContent   = json.data.message || 'Upload failed. Please try again.';
                 }
@@ -1240,6 +1424,7 @@ function bntm_shortcode_ps_order() {
             xhr.onerror = () => {
                 document.getElementById('pso-upload-progress').style.display = 'none';
                 document.getElementById('pso-upload-idle').style.display = 'block';
+                dropZone.classList.add('idle');
                 errEl.style.display = 'block';
                 errEl.textContent   = 'Upload failed. Check your connection and try again.';
             };
@@ -1247,9 +1432,13 @@ function bntm_shortcode_ps_order() {
             xhr.send(fd);
         }
 
+        // Initialise idle state
+        dropZone.classList.add('idle');
+
         window.psoResetUpload = function() {
-            uploadedFile = null; fileInput.value = '';
+            uploadedFile = null;
             dropZone.classList.remove('has-file');
+            dropZone.classList.add('idle');
             document.getElementById('pso-upload-idle').style.display    = 'block';
             document.getElementById('pso-upload-success').style.display = 'none';
             document.getElementById('pso-upload-error').style.display   = 'none';
@@ -1278,8 +1467,7 @@ function bntm_shortcode_ps_order() {
                 document.querySelectorAll('.pso-payment-card').forEach(c => c.classList.remove('active'));
                 card.classList.add('active');
                 card.querySelector('input').checked = true;
-                // Show/hide GCash panel
-                const gcashPanel = document.getElementById('pso-gcash-panel');
+                const gcashPanel   = document.getElementById('pso-gcash-panel');
                 const gcashConfirm = document.getElementById('pso-gcash-confirm');
                 const gcashErr     = document.getElementById('pso-gcash-confirm-error');
                 const isGcash = card.querySelector('input').value === 'gcash';
@@ -1324,10 +1512,8 @@ function bntm_shortcode_ps_order() {
         document.getElementById('pso-next-2').addEventListener('click', () => goToStep(3));
         document.getElementById('pso-back-3').addEventListener('click', () => goToStep(2));
         document.getElementById('pso-next-3').addEventListener('click', () => {
-            const name  = document.getElementById('cust-name').value.trim();
-            if (!name)  { document.getElementById('cust-name').focus();  alert('Please enter your full name.'); return; }
-
-            // Block if GCash selected but not confirmed
+            const name = document.getElementById('cust-name').value.trim();
+            if (!name) { document.getElementById('cust-name').focus(); alert('Please enter your full name.'); return; }
             const paymentVal = getSelected('payment_method');
             if (paymentVal === 'gcash') {
                 const confirmed = document.getElementById('pso-gcash-confirm');
@@ -1340,7 +1526,6 @@ function bntm_shortcode_ps_order() {
                 }
                 if (errEl) errEl.style.display = 'none';
             }
-
             buildReview(); goToStep(4);
         });
 
@@ -1389,10 +1574,30 @@ function bntm_shortcode_ps_order() {
 
             fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
                 if (json.success) {
+                    const orderData = {
+                        rand_id        : json.data.rand_id,
+                        customer_name  : document.getElementById('cust-name').value,
+                        customer_email : document.getElementById('cust-email').value,
+                        file_name      : uploadedFile.file_name,
+                        paper_size     : getSelected('paper_size'),
+                        color_mode     : getSelected('color_mode'),
+                        copies         : qtyInput.value,
+                        sides          : getSelected('sides'),
+                        orientation    : getSelected('orientation'),
+                        binding        : bindingLabels[document.getElementById('opt-binding').value] || 'None',
+                        total_pages    : calculatedPrice ? calculatedPrice.total_pages : '—',
+                        total_price    : calculatedPrice ? calculatedPrice.total_price : '0.00',
+                        payment_method : getSelected('payment_method'),
+                    };
+
+                    // ── Fire EmailJS emails ──────────────────────
+                    psSendConfirmation(orderData);  // to customer
+                    psSendAdminAlert(orderData);    // to admin
+
                     document.getElementById('pso-order-id-display').textContent = json.data.rand_id;
                     const emailVal = document.getElementById('cust-email').value;
                     document.getElementById('pso-success-msg').textContent = emailVal
-                        ? 'We\'ll notify you at ' + emailVal + ' when it\'s ready.'
+                        ? 'A confirmation email has been sent to ' + emailVal + '.'
                         : 'Your order has been submitted. Please check back for updates.';
                     goToStep('success');
                 } else {
@@ -1434,6 +1639,13 @@ function bntm_shortcode_ps_tracking() {
     $nonce = wp_create_nonce('ps_track_nonce');
     ob_start();
     ?>
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+    (function(){
+        emailjs.init('<?php echo esc_js(PS_EMAILJS_PUBLIC_KEY); ?>');
+    })();
+    </script>
     <script>var ajaxurl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';</script>
 
     <div style="max-width:560px;margin:0 auto;font-family:'Segoe UI',system-ui,sans-serif;">
@@ -1579,8 +1791,8 @@ function bntm_ajax_ps_calculate_price() {
     $binding    = sanitize_text_field($_POST['binding'] ?? 'none');
 
     $prices = [
-        'bw'    => ['A4' => ps_get_setting('bw_a4', 2), 'A3' => ps_get_setting('bw_a3', 4), 'Short' => ps_get_setting('bw_letter', 2)],
-        'color' => ['A4' => ps_get_setting('color_a4', 8), 'A3' => ps_get_setting('color_a3', 14), 'Short' => ps_get_setting('color_letter', 8)],
+        'bw'    => ['A4' => ps_get_setting('bw_a4', 2), 'A3' => ps_get_setting('bw_a3', 4), 'Short' => ps_get_setting('bw_letter', 2), 'Long' => ps_get_setting('bw_long', 2)],
+        'color' => ['A4' => ps_get_setting('color_a4', 8), 'A3' => ps_get_setting('color_a3', 14), 'Short' => ps_get_setting('color_letter', 8), 'Long' => ps_get_setting('color_long', 8)],
     ];
     $unit_price   = floatval($prices[$color_mode][$paper_size] ?? $prices['bw']['A4']);
     $total_pages  = $page_count * $copies;
@@ -1621,10 +1833,9 @@ function bntm_ajax_ps_submit_order() {
 
     if (!$customer_name || !$file_name) wp_send_json_error(['message' => 'Missing required fields.']);
 
-    // Server-side recalculation
     $prices = [
-        'bw'    => ['A4' => ps_get_setting('bw_a4', 2), 'A3' => ps_get_setting('bw_a3', 4), 'Short' => ps_get_setting('bw_letter', 2)],
-        'color' => ['A4' => ps_get_setting('color_a4', 8), 'A3' => ps_get_setting('color_a3', 14), 'Short' => ps_get_setting('color_letter', 8)],
+        'bw'    => ['A4' => ps_get_setting('bw_a4', 2), 'A3' => ps_get_setting('bw_a3', 4), 'Short' => ps_get_setting('bw_letter', 2), 'Long' => ps_get_setting('bw_long', 2)],
+        'color' => ['A4' => ps_get_setting('color_a4', 8), 'A3' => ps_get_setting('color_a3', 14), 'Short' => ps_get_setting('color_letter', 8), 'Long' => ps_get_setting('color_long', 8)],
     ];
     $real_unit        = floatval($prices[$color_mode][$paper_size] ?? $prices['bw']['A4']);
     $real_total_pages = max(1, $page_count) * $copies;
@@ -1647,7 +1858,6 @@ function bntm_ajax_ps_submit_order() {
     ], ['%s','%d','%s','%s','%s','%s','%s','%d','%d','%d','%s','%s','%s','%s','%s','%s','%d','%f','%f','%s','%s','%s']);
 
     if ($result) {
-        ps_send_confirmation_email($customer_email, $customer_name, $rand_id, $real_total, $file_name);
         wp_send_json_success(['rand_id' => $rand_id, 'total' => $real_total]);
     } else {
         wp_send_json_error(['message' => 'Failed to save order. Please try again.']);
@@ -1664,6 +1874,7 @@ function bntm_ajax_ps_get_order_status() {
     if (!$order) wp_send_json_error(['message' => 'Order not found. Please check your Order ID.']);
     wp_send_json_success([
         'rand_id' => $order->rand_id, 'customer_name' => $order->customer_name,
+        'customer_email' => $order->customer_email,
         'file_name' => $order->file_name, 'copies' => $order->copies,
         'paper_size' => $order->paper_size, 'color_mode' => $order->color_mode,
         'total_price' => $order->total_price, 'status' => $order->status,
@@ -1752,13 +1963,23 @@ function bntm_ajax_ps_update_order_status() {
 
     $result = $wpdb->update($t, $update_data, ['id' => $order_id], $update_format, ['%d']);
 
-    // Send ready email after update
+    // Return order data for EmailJS ready notification
     if ($status === 'ready') {
         $order = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d", $order_id));
-        if ($order) ps_send_status_email($order->customer_email, $order->customer_name, $order->rand_id, 'ready');
+        if ($order && $result !== false) {
+            wp_send_json_success([
+                'message'          => 'Status updated',
+                'send_ready_email' => true,
+                'customer_email'   => $order->customer_email,
+                'customer_name'    => $order->customer_name,
+                'rand_id'          => $order->rand_id,
+                'file_name'        => $order->file_name,
+                'total_price'      => number_format($order->total_price, 2),
+            ]);
+        }
     }
 
-    if ($result !== false) wp_send_json_success(['message' => 'Status updated']);
+    if ($result !== false) wp_send_json_success(['message' => 'Status updated', 'send_ready_email' => false]);
     else wp_send_json_error(['message' => 'Update failed']);
 }
 
@@ -1802,12 +2023,13 @@ function bntm_ajax_ps_save_pricing() {
     check_ajax_referer('ps_admin_nonce', 'nonce');
     if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
 
-    $keys = ['bw_a4','bw_a3','bw_letter','color_a4','color_a3','color_letter',
+    $keys = ['bw_a4','bw_a3','bw_letter','bw_long','color_a4','color_a3','color_letter','color_long',
              'binding_spiral','binding_staple','binding_hardcover',
-             'shop_name','shop_address','shop_hours','shop_note','allowed_file_types','max_file_mb',
+             'shop_name','shop_address','shop_hours','shop_note',
+             'allowed_file_types','max_file_mb','admin_email',
              'gcash_name','gcash_number','gcash_qr_url'];
     $text_keys = ['shop_name','shop_address','shop_hours','shop_note','allowed_file_types',
-                  'gcash_name','gcash_number','gcash_qr_url'];
+                  'admin_email','gcash_name','gcash_number','gcash_qr_url'];
 
     foreach ($keys as $key) {
         if (isset($_POST[$key])) {
@@ -1864,29 +2086,4 @@ function ps_count_pdf_pages($file_path) {
         }
     } catch (Exception $e) {}
     return $count;
-}
-
-function ps_send_confirmation_email($to, $name, $rand_id, $total, $file_name) {
-    $shop_name  = ps_get_setting('shop_name', 'PrintEase');
-    $shop_hours = ps_get_setting('shop_hours', '');
-    $shop_addr  = ps_get_setting('shop_address', '');
-    $subject    = "[{$shop_name}] Print Order Received — #{$rand_id}";
-    $message    = "Hi {$name},\n\nYour print order has been received!\n\nOrder ID: {$rand_id}\nFile: {$file_name}\nTotal: ₱" . number_format($total, 2) . "\n\nWe will notify you when your order is ready for pickup.\n\n";
-    if ($shop_addr)  $message .= "Pickup Location: {$shop_addr}\n";
-    if ($shop_hours) $message .= "Hours: {$shop_hours}\n";
-    $message .= "\nThank you!\n{$shop_name}";
-    wp_mail($to, $subject, $message);
-}
-
-function ps_send_status_email($to, $name, $rand_id, $status) {
-    $shop_name = ps_get_setting('shop_name', 'PrintEase');
-    $shop_addr = ps_get_setting('shop_address', '');
-    $shop_note = ps_get_setting('shop_note', '');
-    if ($status !== 'ready') return;
-    $subject = "[{$shop_name}] Your order #{$rand_id} is ready for pickup!";
-    $message = "Hi {$name},\n\nGreat news! Your print order #{$rand_id} is now READY for pickup.\n\n";
-    if ($shop_addr) $message .= "Location: {$shop_addr}\n";
-    if ($shop_note) $message .= "{$shop_note}\n";
-    $message .= "\nThank you for choosing {$shop_name}!";
-    wp_mail($to, $subject, $message);
 }
