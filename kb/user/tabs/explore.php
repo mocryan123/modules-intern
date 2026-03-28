@@ -43,12 +43,13 @@ function kbf_dashboard_find_funds_tab() {
         border:1px solid var(--kbf-border);
         border-radius:18px;
         overflow:hidden;
+        box-shadow:var(--kbf-shadow);
         display:flex;
         flex-direction:column;
         transition:box-shadow .2s ease, transform .15s ease;
       }
       .kbf-explore-card:hover{
-        box-shadow:0 18px 40px rgba(15,23,42,.10);
+        box-shadow:var(--kbf-shadow-lg);
         transform:translateY(-2px);
       }
       .kbf-explore-media{
@@ -196,6 +197,69 @@ function kbf_dashboard_find_funds_tab() {
       }
       .kbf-explore-actions.is-own{ grid-template-columns:1fr auto auto; }
       .kbf-explore-actions.is-public{ grid-template-columns:1fr auto auto auto; }
+      .kbf-explore-card .kbf-btn-primary{
+        box-shadow:
+          0 1px 2px rgba(32, 112, 224, 0.18),
+          0 3px 10px rgba(42, 120, 220, 0.18);
+      }
+      .kbf-explore-card .kbf-btn-primary::before{
+        opacity:0;
+      }
+      .kbf-explore-card .kbf-btn-primary:hover{
+        box-shadow:
+          0 2px 6px rgba(32, 112, 224, 0.16),
+          0 6px 16px rgba(42, 120, 220, 0.22);
+      }
+      .kbf-explore-pager{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        padding:10px 2px 0;
+        border:none;
+        background:transparent;
+        font-size:12px;
+        color:var(--kbf-slate);
+        flex-wrap:wrap;
+      }
+      .kbf-explore-pager .kbf-pager-pages{
+        display:flex;
+        align-items:center;
+        gap:6px;
+        flex-wrap:wrap;
+      }
+      .kbf-explore-pager .kbf-table-pager-btn{
+        border:1px solid #dbe3ef;
+        background:#fff;
+        color:var(--kbf-navy);
+        padding:6px 10px;
+        border-radius:8px;
+        font-size:12px;
+        font-weight:600;
+        cursor:pointer;
+        transition:all .15s ease;
+      }
+      .kbf-explore-pager .kbf-table-pager-btn:hover{border-color:#bcd2f3;background:#f8fafc;}
+      .kbf-explore-pager .kbf-table-pager-btn:disabled{opacity:.45;cursor:not-allowed;}
+      .kbf-explore-pager .kbf-page-btn{
+        min-width:30px;
+        height:30px;
+        padding:0 8px;
+        border-radius:10px;
+        border:1px solid transparent;
+        background:#fff;
+        color:var(--kbf-slate);
+        font-weight:600;
+        cursor:pointer;
+        transition:all .15s ease;
+      }
+      .kbf-explore-pager .kbf-page-btn:hover{border-color:#cbd5f1;color:#1f2a44;}
+      .kbf-explore-pager .kbf-page-btn.is-active{
+        background:#eef4ff;
+        border-color:#dbe7ff;
+        color:#1f2a44;
+      }
+      .kbf-explore-pager .kbf-page-gap{padding:0 2px;color:#94a3b8;font-weight:600;}
     </style>
 
     <!-- ================== HTML ================== -->
@@ -333,6 +397,7 @@ function kbf_dashboard_find_funds_tab() {
       <?php if($q||$cat): ?><a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-primary" style="margin-top:14px;">Clear Filters</a><?php endif; ?>
     </div>
     <?php else: ?>
+    <div class="kbf-card-list" data-kbf-card-pager="explore">
     <div class="kbf-explore-grid">
       <?php foreach($funds as $f):
         $pct   = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
@@ -416,6 +481,7 @@ function kbf_dashboard_find_funds_tab() {
       </div>
       <?php endforeach; ?>
     </div>
+    </div>
     <?php endif; ?>
     
     <!-- ================== JS ================== -->
@@ -448,6 +514,92 @@ function kbf_dashboard_find_funds_tab() {
         }
         catSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
         sortSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
+    })();
+
+    (function(){
+        var wrap = document.querySelector('.kbf-card-list[data-kbf-card-pager="explore"]');
+        if(!wrap || wrap.dataset.kbfPager === 'on') return;
+        var cards = Array.prototype.slice.call(wrap.querySelectorAll('.kbf-explore-card'));
+        if(cards.length === 0) return;
+        wrap.dataset.kbfPager = 'on';
+
+        var pager = document.createElement('div');
+        pager.className = 'kbf-explore-pager';
+        pager.innerHTML = '' +
+          '<button class="kbf-table-pager-btn kbf-table-prev" type="button">Previous</button>' +
+          '<div class="kbf-pager-pages"></div>' +
+          '<button class="kbf-table-pager-btn kbf-table-next" type="button">Next</button>';
+        wrap.insertAdjacentElement('afterend', pager);
+
+        var prevBtn = pager.querySelector('.kbf-table-prev');
+        var nextBtn = pager.querySelector('.kbf-table-next');
+        var pagesWrap = pager.querySelector('.kbf-pager-pages');
+        var page = 1;
+        var perPage = 9;
+
+        function buildPageModel(pages, current){
+          var items = [];
+          if(pages <= 7){
+            for(var i=1;i<=pages;i++) items.push(i);
+            return items;
+          }
+          items.push(1);
+          if(current > 3) items.push('gap');
+          var start = Math.max(2, current - 1);
+          var end = Math.min(pages - 1, current + 1);
+          for(var i=start;i<=end;i++) items.push(i);
+          if(current < pages - 2) items.push('gap');
+          items.push(pages);
+          return items;
+        }
+        function renderPages(pages, current){
+          pagesWrap.innerHTML = '';
+          buildPageModel(pages, current).forEach(function(p){
+            if(p === 'gap'){
+              var span = document.createElement('span');
+              span.className = 'kbf-page-gap';
+              span.textContent = '…';
+              pagesWrap.appendChild(span);
+              return;
+            }
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'kbf-page-btn' + (p === current ? ' is-active' : '');
+            btn.textContent = String(p);
+            btn.addEventListener('click', function(){
+              page = p;
+              render();
+            });
+            pagesWrap.appendChild(btn);
+          });
+        }
+
+        function render(){
+          var total = cards.length;
+          var pages = Math.max(1, Math.ceil(total / perPage));
+          if(page > pages) page = pages;
+          var start = (page - 1) * perPage;
+          var end = start + perPage;
+          cards.forEach(function(card, i){
+            card.style.display = (i >= start && i < end) ? '' : 'none';
+          });
+          renderPages(pages, page);
+          prevBtn.disabled = page <= 1;
+          nextBtn.disabled = page >= pages;
+          pager.style.display = total > 0 ? 'flex' : 'none';
+        }
+        function setLoading(btn){
+          btn.classList.add('is-loading');
+          btn.disabled = true;
+          setTimeout(function(){ btn.classList.remove('is-loading'); render(); }, 250);
+        }
+        prevBtn.addEventListener('click', function(){
+          if(page > 1){ page--; setLoading(prevBtn); }
+        });
+        nextBtn.addEventListener('click', function(){
+          page++; setLoading(nextBtn);
+        });
+        render();
     })();
 
     window.kbffOpenReport=function(id){document.getElementById('kbff-report-fund-id').value=id;document.getElementById('kbff-modal-report').style.display='flex';};

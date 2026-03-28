@@ -92,6 +92,10 @@ function bntm_kbf_get_pages() {
     ];
 }
 
+function bntm_kbf_should_use_fullwidth_template($title) {
+    return in_array($title, ['KonekBayan: User', 'KonekBayan: Admin'], true);
+}
+
 // Ensure required pages exist and have the correct shortcodes.
 add_action('admin_init', 'bntm_kbf_ensure_pages');
 function bntm_kbf_ensure_pages() {
@@ -99,6 +103,7 @@ function bntm_kbf_ensure_pages() {
     $pages = bntm_kbf_get_pages();
     foreach ($pages as $title => $shortcode) {
         $shortcode_tag = trim($shortcode, '[]');
+        $force_fullwidth = bntm_kbf_should_use_fullwidth_template($title);
 
         // 1) Prefer an existing page that already contains the shortcode.
         $existing = get_posts([
@@ -118,6 +123,9 @@ function bntm_kbf_ensure_pages() {
             if ($page->post_status !== 'publish') {
                 wp_update_post(['ID' => $page->ID, 'post_status' => 'publish']);
             }
+            if ($force_fullwidth) {
+                update_post_meta($page->ID, '_wp_page_template', 'kbf-fullwidth.php');
+            }
             continue;
         }
 
@@ -131,18 +139,100 @@ function bntm_kbf_ensure_pages() {
             if ($title_page->post_status !== 'publish') {
                 wp_update_post(['ID' => $title_page->ID, 'post_status' => 'publish']);
             }
+            if ($force_fullwidth) {
+                update_post_meta($title_page->ID, '_wp_page_template', 'kbf-fullwidth.php');
+            }
             continue;
         }
 
         // 3) Otherwise, create the page.
-        wp_insert_post([
+        $new_id = wp_insert_post([
             'post_title'   => $title,
             'post_content' => $shortcode,
             'post_status'  => 'publish',
             'post_type'    => 'page',
         ]);
+        if ($force_fullwidth && !is_wp_error($new_id)) {
+            update_post_meta($new_id, '_wp_page_template', 'kbf-fullwidth.php');
+        }
     }
 }
+
+// Register custom full-width page template from the plugin.
+add_filter('theme_page_templates', function($templates){
+    $templates['kbf-fullwidth.php'] = 'KBF Full Width (KonekBayan)';
+    return $templates;
+});
+
+// Use the plugin template file when selected.
+add_filter('template_include', function($template){
+    if (!is_page()) return $template;
+    $page_id = get_queried_object_id();
+    if (!$page_id) return $template;
+    $custom = BNTM_KBF_PATH . 'templates/kbf-fullwidth.php';
+    if (!file_exists($custom)) return $template;
+
+    $tpl = get_page_template_slug($page_id);
+    if ($tpl === 'kbf-fullwidth.php') return $custom;
+
+    $content = get_post_field('post_content', $page_id);
+    if (!$content) return $template;
+    if (has_shortcode($content, 'kbf_dashboard') || has_shortcode($content, 'kbf_admin')) {
+        return $custom;
+    }
+    return $template;
+});
+
+add_filter('body_class', function($classes){
+    if (!is_page()) return $classes;
+    $page_id = get_queried_object_id();
+    if (!$page_id) return $classes;
+    $content = get_post_field('post_content', $page_id);
+    $tpl = get_page_template_slug($page_id);
+    if ($tpl === 'kbf-fullwidth.php' || has_shortcode($content, 'kbf_dashboard') || has_shortcode($content, 'kbf_admin')) {
+        $classes[] = 'kbf-fullwidth-page';
+    }
+    return $classes;
+});
+
+add_action('wp_head', function(){
+    if (!is_page()) return;
+    $page_id = get_queried_object_id();
+    if (!$page_id) return;
+    $content = get_post_field('post_content', $page_id);
+    $tpl = get_page_template_slug($page_id);
+    if ($tpl !== 'kbf-fullwidth.php' && !has_shortcode($content, 'kbf_dashboard') && !has_shortcode($content, 'kbf_admin')) {
+        return;
+    }
+    ?>
+    <style>
+    body.kbf-fullwidth-page,
+    body.kbf-fullwidth-page #page,
+    body.kbf-fullwidth-page .wp-site-blocks,
+    body.kbf-fullwidth-page .wp-block-group,
+    body.kbf-fullwidth-page .wp-block-group__inner-container,
+    body.kbf-fullwidth-page .is-layout-constrained,
+    body.kbf-fullwidth-page .wp-block-post-content,
+    body.kbf-fullwidth-page .wp-site-blocks > * {
+        width: 100% !important;
+        max-width: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    body.kbf-fullwidth-page .bntm-container,
+    body.kbf-fullwidth-page .bntm-content{
+        width: 100% !important;
+        max-width: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    </style>
+    <?php
+}, 99);
 
 function bntm_kbf_get_tables() {
     global $wpdb;
@@ -381,7 +471,6 @@ add_action('wp_ajax_kbf_admin_release_escrow',       'bntm_ajax_kbf_admin_releas
 add_action('wp_ajax_kbf_admin_hold_escrow',          'bntm_ajax_kbf_admin_hold_escrow');
 add_action('wp_ajax_kbf_admin_process_withdrawal',   'bntm_ajax_kbf_admin_process_withdrawal');
 add_action('wp_ajax_kbf_admin_dismiss_report',       'bntm_ajax_kbf_admin_dismiss_report');
-add_action('wp_ajax_kbf_admin_review_report',        'bntm_ajax_kbf_admin_review_report');
 add_action('wp_ajax_kbf_admin_review_appeal',        'bntm_ajax_kbf_admin_review_appeal');
 add_action('wp_ajax_kbf_admin_confirm_payment',      'bntm_ajax_kbf_admin_confirm_payment');
 add_action('wp_ajax_kbf_admin_verify_organizer',     'bntm_ajax_kbf_admin_verify_organizer');
@@ -441,6 +530,7 @@ function kbf_global_assets() {
     ?>
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Shippori+Antique+B1&display=swap');
     /* === KBF DESIGN SYSTEM -- Landing-aligned (Blue/White) === */
     :root {
         --kbf-navy:       #0f1115;
@@ -462,10 +552,42 @@ function kbf_global_assets() {
         --kbf-bg:         #ffffff;
         --kbf-surface:    #ffffff;
         --kbf-radius:     14px;
-        --kbf-shadow:     0 12px 30px rgba(15,23,42,.06);
-        --kbf-shadow-lg:  0 18px 40px rgba(15,23,42,.10);
+        --kbf-shadow:     rgba(0, 0, 0, 0.05) 0px 2px 4px -1px, rgba(0, 0, 0, 0.04) 0px 1px 2px -1px;
+        --kbf-shadow-lg:  rgba(0, 0, 0, 0.06) 0px 6px 12px -3px, rgba(0, 0, 0, 0.05) 0px 3px 6px -2px;
     }
     .kbf-wrap { font-family: 'Poppins', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); padding: 18px; }    
+    .kbf-wrap h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:#0d1a2e;margin:0 0 6px;}
+    .kbf-wrap h2{font-size:22px;font-weight:600;color:#0f172a;margin:0 0 6px;}
+    .kbf-wrap h3{font-size:16px;font-weight:600;color:#0f172a;margin:0 0 6px;}
+    .kbf-wrap h4{font-size:14px;font-weight:600;color:#0f172a;margin:0 0 6px;}
+    .kbf-wrap p{font-size:13.5px;font-weight:400;color:#4f5a6b;line-height:1.6;margin:0;}
+    .kbf-wrap small,
+    .kbf-wrap .kbf-meta,
+    .kbf-wrap .kbf-text-sm{font-size:12.5px;color:#4f5a6b;}
+    .kbf-wrap label{font-size:13px;font-weight:600;color:#4f5a6b;}
+    .kbf-wrap .kbf-table thead th{
+        font-size:11px;
+        font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:.5px;
+        color:#64748b;
+    }
+    .kbf-wrap .kbf-table tbody td{font-size:12.5px;color:#0f172a;}
+    .kbf-gradient-num{
+        background: linear-gradient(180deg,#63b3ff 0%,#1d4ed8 100%);
+        -webkit-background-clip:text;
+        background-clip:text;
+        -webkit-text-fill-color:transparent;
+        color:transparent;
+        font-weight:800 !important;
+    }
+    .kbf-admin-wrap{ padding:0; }
+    .kbf-admin-shell{
+        max-width:1120px;
+        margin:0 auto;
+        padding:76px 22px 0;
+        box-sizing:border-box;
+    }
     .kbf-eyebrow { font-size: 11.5px; text-transform: uppercase; letter-spacing: .16em; color: var(--kbf-slate); font-weight: 700; }
     /* Tabs */
     .kbf-tabs { display: flex; gap: 18px; background: transparent; border: none; border-radius: 0; padding: 0; overflow-x: auto; margin-bottom: 10px; }
@@ -475,14 +597,23 @@ function kbf_global_assets() {
     .kbf-tab:hover::after, .kbf-tab.active::after{ width:100%; }
     .kbf-tab:hover { color: #1f2a44; background: transparent; }
     .kbf-tab.active { color: #1f2a44; background: transparent; border: none; }
-    .kbf-tab-content { background: var(--kbf-surface); border: 1px solid var(--kbf-border); border-radius: 16px; padding: 24px; margin-top: 14px; box-shadow: none; }
+    .kbf-tab-content { background: var(--kbf-surface); border: 1px solid var(--kbf-border); border-radius: 16px; padding: 24px; margin-top: 14px; box-shadow: var(--kbf-shadow); }
 
     /* Cards & Sections */
     .kbf-section { margin-bottom: 28px; }
     .kbf-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
     .kbf-section-title { font-size: 16px; font-weight: 700; color: var(--kbf-text); margin: 0; }
-    .kbf-card { background: var(--kbf-surface); border: 1px solid var(--kbf-border); border-radius: 16px; padding: 20px; margin-bottom: 14px; transition: transform .18s, box-shadow .2s; }
-    .kbf-card:hover { box-shadow: none; transform: translateY(-1px); }
+    .kbf-card { background: var(--kbf-surface); border: 1px solid var(--kbf-border); border-radius: 16px; padding: 20px; margin-bottom: 14px; transition: transform .18s, box-shadow .2s; box-shadow: var(--kbf-shadow); }
+    .kbf-card:hover { box-shadow: var(--kbf-shadow-lg); transform: translateY(-3px); }
+    .kbf-admin-card{
+        border-radius:18px;
+        border-color:#edf0f4;
+        box-shadow:var(--kbf-shadow);
+    }
+    .kbf-admin-card:hover{
+        box-shadow:var(--kbf-shadow-lg);
+        transform:translateY(-3px);
+    }
     .kbf-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
 
     /* Stats Row */
@@ -492,7 +623,7 @@ function kbf_global_assets() {
 .kbf-stat-icon-img{filter:invert(36%) sepia(88%) saturate(2029%) hue-rotate(198deg) brightness(95%) contrast(95%);}
     .kbf-stat-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .kbf-stat-label { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--kbf-slate); }
-    .kbf-stat-value { font-size: 22px; font-weight: 800; color: var(--kbf-navy); line-height: 1.2; }
+    .kbf-stat-value { font-size: 22px; font-weight: 600; color: var(--kbf-navy); line-height: 1.2; }
     .kbf-stat-sub { font-size: 12px; color: var(--kbf-slate); margin-top: 2px; }
 
     /* Progress */
@@ -640,14 +771,26 @@ function kbf_global_assets() {
         display:flex;
         align-items:center;
         justify-content:space-between;
-        gap:16px;
-        padding:8px 4px 14px;
-        background:transparent;
-        border:none;
+        gap:18px;
+        padding:10px 16px;
+        min-height:56px;
+        position:fixed;
+        top:0;
+        left:0;
+        right:0;
+        z-index:1000;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom:1px solid transparent;
         border-radius:0;
         box-shadow: none;
         margin-bottom:10px;
         flex-wrap:wrap;
+    }
+    .kbf-dashboard-topbar.kbf-topbar-scrolled{
+        border-bottom-color:#e2e8f0;
+        box-shadow:0 4px 24px rgba(15,40,80,0.06);
     }
     .kbf-dashboard-brand{
         display:flex;
@@ -657,6 +800,7 @@ function kbf_global_assets() {
         color:#0f172a;
         font-size:15px;
     }
+    .kbf-brand-text{color:#3d8ef0;font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif;}
     .kbf-dashboard-brand .kbf-logo-dot{
         width:26px;height:26px;border-radius:10px;
         background:linear-gradient(135deg,#79c0ff 0%,#4a98ff 100%);
@@ -666,7 +810,7 @@ function kbf_global_assets() {
     }
     .kbf-dashboard-nav{
         display:flex;
-        gap:18px;
+        gap:20px;
         font-size:12.5px;
         color:var(--kbf-muted);
         align-items:center;
@@ -676,7 +820,7 @@ function kbf_global_assets() {
         position:relative;
         text-decoration:none;
         color:#64748b;
-        font-weight:600;
+        font-weight:400;
         display:inline-flex;
         align-items:center;
         gap:6px;
@@ -698,11 +842,17 @@ function kbf_global_assets() {
     .kbf-nav-count{
         background:var(--kbf-red);
         color:#fff;
-        border-radius:99px;
-        padding:1px 7px;
+        border-radius:999px;
+        padding:0 6px;
+        min-width:18px;
+        height:18px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
         font-size:10px;
-        font-weight:800;
-        line-height:1.5;
+        font-weight:700;
+        line-height:1;
+        box-shadow:0 4px 10px rgba(239,68,68,0.25);
     }
     /* Forms */
     .kbf-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -785,6 +935,62 @@ function kbf_global_assets() {
         background: #22c55e;
         border-radius: 999px;
     }
+    .kbf-table-pager{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        padding:10px 2px 0;
+        border:none;
+        border-radius:0;
+        background:transparent;
+        box-shadow:none;
+        font-size:12px;
+        color:var(--kbf-slate);
+    }
+    .kbf-table-pager-left,
+    .kbf-table-pager-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .kbf-table-pager select{
+        border:1px solid #e2e8f0;
+        border-radius:8px;
+        padding:6px 8px;
+        font-size:12px;
+        background:#f8fafc;
+        color:var(--kbf-navy);
+        font-weight:600;
+    }
+    .kbf-table-pager-btn{
+        border:1px solid #dbe3ef;
+        background:#fff;
+        color:var(--kbf-navy);
+        padding:6px 10px;
+        border-radius:8px;
+        font-size:12px;
+        font-weight:600;
+        cursor:pointer;
+        transition:all .15s ease;
+    }
+    .kbf-table-pager-btn:hover{border-color:#bcd2f3;background:#f8fafc;}
+    .kbf-table-pager-btn:disabled{opacity:.45;cursor:not-allowed;}
+    .kbf-table-pager-btn.is-loading{
+        position:relative;
+        color:transparent;
+        pointer-events:none;
+        opacity:.75;
+    }
+    .kbf-table-pager-btn.is-loading::after{
+        content:'';
+        position:absolute;
+        inset:0;
+        margin:auto;
+        width:14px;
+        height:14px;
+        border-radius:50%;
+        border:2px solid rgba(59,130,246,0.25);
+        border-top-color:#3b82f6;
+        animation:kbfspin .7s linear infinite;
+    }
+    .kbf-table-pager-page{font-weight:600;color:var(--kbf-navy);}
     .kbf-cell-stack{display:flex;flex-direction:column;gap:4px;}
     .kbf-cell-center{display:flex;flex-direction:column;justify-content:center;gap:4px;height:100%;}
     .kbf-cell-spacer{height:14px;}
@@ -877,7 +1083,7 @@ function kbf_global_assets() {
     .kbf-divider { border: none; border-top: 1px solid var(--kbf-border); margin: 20px 0; }
     .kbf-meta { font-size: 12px; color: var(--kbf-slate); }
     .kbf-fund-amounts { display: flex; gap: 20px; margin: 10px 0; }
-    .kbf-fund-amounts span strong { display: block; font-size: 17px; font-weight: 800; color: var(--kbf-navy); }
+    .kbf-fund-amounts span strong { display: block; font-size: 17px; font-weight: 600; color: var(--kbf-navy); }
     .kbf-fund-amounts span { font-size: 12px; color: var(--kbf-slate); }
     .kbf-verified-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--kbf-navy); color: #fff; padding: 2px 9px; border-radius: 99px; font-size: 10.5px; font-weight: 700; vertical-align: middle; margin-left: 6px; }
     .kbf-verified-badge svg { width: 11px; height: 11px; }
@@ -942,6 +1148,90 @@ function kbf_global_assets() {
             })
             .catch(err=>onErr(err && err.message ? err.message : 'Request failed.'));
         };
+    }
+    if (typeof window.kbfInitTablePager === 'undefined') {
+        window.kbfInitTablePager = function(){
+            document.querySelectorAll('.kbf-table').forEach(function(table){
+                if(table.dataset.kbfPager === 'on') return;
+                var tbody = table.querySelector('tbody');
+                if(!tbody) return;
+                var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+                if(rows.length === 0) return;
+                var wrap = table.closest('.kbf-table-wrap') || table.parentElement;
+                if(!wrap) return;
+                if(wrap.nextElementSibling && wrap.nextElementSibling.classList.contains('kbf-table-pager')) return;
+
+                table.dataset.kbfPager = 'on';
+
+                var pager = document.createElement('div');
+                pager.className = 'kbf-table-pager';
+                pager.innerHTML = '' +
+                  '<div class="kbf-table-pager-left">Show ' +
+                  '<select class="kbf-table-rows">' +
+                    '<option value="5">5</option>' +
+                    '<option value="10" selected>10</option>' +
+                    '<option value="20">20</option>' +
+                    '<option value="50">50</option>' +
+                  '</select> rows' +
+                  '</div>' +
+                  '<div class="kbf-table-pager-right">' +
+                    '<button class="kbf-table-pager-btn kbf-table-prev" type="button">Prev</button>' +
+                    '<span class="kbf-table-pager-page">1 / 1</span>' +
+                    '<button class="kbf-table-pager-btn kbf-table-next" type="button">Next</button>' +
+                  '</div>';
+                wrap.insertAdjacentElement('afterend', pager);
+
+                var select = pager.querySelector('.kbf-table-rows');
+                var prevBtn = pager.querySelector('.kbf-table-prev');
+                var nextBtn = pager.querySelector('.kbf-table-next');
+                var pageLabel = pager.querySelector('.kbf-table-pager-page');
+                var page = 1;
+                var perPage = 10;
+
+                function render(){
+                    var total = rows.length;
+                    var pages = Math.max(1, Math.ceil(total / perPage));
+                    if(page > pages) page = pages;
+                    var start = (page - 1) * perPage;
+                    var end = start + perPage;
+                    rows.forEach(function(row, i){
+                        row.style.display = (i >= start && i < end) ? '' : 'none';
+                    });
+                    pageLabel.textContent = page + ' / ' + pages;
+                    prevBtn.disabled = page <= 1;
+                    nextBtn.disabled = page >= pages;
+                    pager.style.display = total > 0 ? 'flex' : 'none';
+                }
+
+                function setLoading(btn){
+                    if(!btn) return;
+                    btn.classList.add('is-loading');
+                    btn.disabled = true;
+                    setTimeout(function(){
+                        btn.classList.remove('is-loading');
+                        render();
+                    }, 250);
+                }
+
+                select.addEventListener('change', function(){
+                    perPage = parseInt(this.value, 10) || 10;
+                    page = 1;
+                    render();
+                });
+                prevBtn.addEventListener('click', function(){
+                    if(page > 1){
+                        page--;
+                        setLoading(prevBtn);
+                    }
+                });
+                nextBtn.addEventListener('click', function(){
+                    page++;
+                    setLoading(nextBtn);
+                });
+                render();
+            });
+        };
+        document.addEventListener('DOMContentLoaded', window.kbfInitTablePager);
     }
     </script>
 

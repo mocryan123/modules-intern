@@ -84,15 +84,6 @@ function bntm_ajax_kbf_admin_dismiss_report() {
     wp_send_json_success(['message'=>'Report dismissed.']);
 }
 
-function bntm_ajax_kbf_admin_review_report() {
-    check_ajax_referer('kbf_admin_action');
-    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
-    global $wpdb;$t=$wpdb->prefix.'kbf_reports';$id=intval($_POST['report_id']);
-    $notes=sanitize_text_field(isset($_POST['notes']) ? $_POST['notes'] : '');
-    $wpdb->update($t,['status'=>'reviewed','admin_notes'=>$notes],['id'=>$id],['%s','%s'],['%d']);
-    wp_send_json_success(['message'=>'Report marked as reviewed.']);
-}
-
 function bntm_ajax_kbf_admin_review_appeal() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }

@@ -24,7 +24,7 @@ function bntm_shortcode_kbf_dashboard() {
         ob_start();
     ?>
     
-    <div class="kbf-wrap kbf-user-ui">
+    <div class="kbf-user-ui">
           <div class="kbf-card" style="max-width:640px;margin:50px auto;padding:34px 30px;text-align:center;">
             <div style="font-size:26px;font-weight:800;color:var(--kbf-navy);margin-bottom:8px;">Thank You</div>
             <div style="font-size:14px;color:var(--kbf-slate);margin-bottom:22px;">Thank you for your donation or support.</div>
@@ -53,20 +53,42 @@ function bntm_shortcode_kbf_dashboard() {
     background:transparent;
     border-radius:0;
     padding:0;
+    width:100%;
+    max-width:none;
+    margin:0;
+    --kbf-shadow: rgba(0, 0, 0, 0.05) 0px 2px 4px -1px, rgba(0, 0, 0, 0.04) 0px 1px 2px -1px;
+    --kbf-shadow-lg: rgba(0, 0, 0, 0.06) 0px 6px 12px -3px, rgba(0, 0, 0, 0.05) 0px 3px 6px -2px;
 }
+    .kbf-user-ui h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:#0d1a2e;margin:0 0 6px;}
+    .kbf-user-ui h2{font-size:22px;font-weight:600;color:#0f172a;margin:0 0 6px;}
+    .kbf-user-ui h3{font-size:16px;font-weight:600;color:#0f172a;margin:0 0 6px;}
+    .kbf-user-ui h4{font-size:14px;font-weight:600;color:#0f172a;margin:0 0 6px;}
+    .kbf-user-ui p{font-size:13.5px;font-weight:400;color:#4f5a6b;line-height:1.6;margin:0;}
+    .kbf-user-ui small,
+    .kbf-user-ui .kbf-meta,
+    .kbf-user-ui .kbf-text-sm{font-size:12.5px;color:#4f5a6b;}
+    .kbf-user-ui label{font-size:13px;font-weight:600;color:#4f5a6b;}
+    .kbf-user-ui .kbf-table thead th{
+        font-size:11px;
+        font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:.5px;
+        color:#64748b;
+    }
+    .kbf-user-ui .kbf-table tbody td{font-size:12.5px;color:#0f172a;}
     .kbf-user-ui .kbf-btn{font-weight:400;}
     .kbf-user-ui .kbf-card,
     .kbf-user-ui .kbf-fund-card,
     .kbf-user-ui .kbf-filter-bar{
         border-radius:18px;
         border:1px solid #edf0f4;
-        box-shadow:0 18px 40px rgba(16,24,40,0.08);
+        box-shadow:var(--kbf-shadow);
         transition:transform .2s ease, box-shadow .2s ease;
     }
     .kbf-user-ui .kbf-card:hover,
     .kbf-user-ui .kbf-fund-card:hover{
         transform:translateY(-3px);
-        box-shadow:0 16px 34px rgba(15,23,42,0.08);
+        box-shadow:var(--kbf-shadow-lg);
     }
     .kbf-user-ui .kbf-btn-primary{
         background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 50%, #2070e0 100%);
@@ -123,55 +145,53 @@ function bntm_shortcode_kbf_dashboard() {
     .kbf-user-ui .kbf-browse-search input{
         color:#4f5a6b;
     }
-    .kbf-dashboard-topbar{
+    .kbf-dashboard-shell{
+        max-width:1120px;
+        margin:0 auto;
+        padding:76px 22px 0;
+        box-sizing:border-box;
+    }
+    .kbf-tab-content{
+        margin-bottom:24px;
+    }
+    .kbf-topbar{
         display:flex;
         align-items:center;
         justify-content:space-between;
-        gap:16px;
+        gap:18px;
         padding:10px 16px;
-        background: rgba(255, 255, 255, 0.78);
+        min-height:56px;
+        position:fixed;
+        top:0;
+        left:0;
+        right:0;
+        z-index:1000;
+        background: rgba(255, 255, 255, 0.75);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(226, 232, 240, 0.85);
-        border-radius:16px;
-        box-shadow: 0 6px 18px rgba(15, 40, 80, 0.08);
-        margin-bottom:16px;
-        position: sticky;
-        top: 10px;
-        z-index: 1000;
-        width: 100%;
-        box-sizing: border-box;
+        border-bottom:1px solid transparent;
+        transition:border-color .2s ease, box-shadow .2s ease;
+        margin:0;
+        width:100%;
+        box-sizing:border-box;
     }
-    .kbf-dashboard-brand{
+    .kbf-topbar.kbf-topbar-scrolled{
+        border-bottom-color:#e2e8f0;
+        box-shadow:0 4px 24px rgba(15,40,80,0.06);
+    }
+    .kbf-topbar-left{display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
+    .kbf-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:#0f172a;font-size:15px;}
+    .kbf-brand-text{color:#3d8ef0;font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif;}
+    .kbf-nav{
         display:flex;
-        align-items:center;
-        gap:10px;
-        font-weight:800;
-        color:#0f172a;
-        font-size:15px;
-    }
-    .kbf-dashboard-brand .kbf-logo-dot{
-        width:26px;height:26px;border-radius:10px;
-        background:linear-gradient(135deg,#79c0ff 0%,#4a98ff 100%);
-        display:inline-flex;align-items:center;justify-content:center;
-        color:#fff;font-weight:800;font-size:12px;
-        box-shadow:0 8px 18px rgba(79,147,255,0.35);
-    }
-    .kbf-dashboard-nav{
-        display:flex;
-        gap:18px;
+        gap:20px;
         font-size:12.5px;
-        color:var(--kbf-muted);
+        color:#64748b;
         align-items:center;
         flex-wrap:wrap;
     }
-    .kbf-dashboard-nav a{
-        position:relative;
-        text-decoration:none;
-        color:#64748b;
-        font-weight:600;
-    }
-    .kbf-dashboard-nav a::after{
+    .kbf-nav a{position:relative;text-decoration:none;color:#64748b;font-weight:400;display:inline-flex;align-items:center;}
+    .kbf-nav a::after{
         content:'';
         position:absolute;
         left:0;
@@ -182,12 +202,73 @@ function bntm_shortcode_kbf_dashboard() {
         background:#4a98ff;
         transition:width .2s ease;
     }
-    .kbf-dashboard-nav a:hover::after,
-    .kbf-dashboard-nav a.active::after{ width:100%; }
-    .kbf-dashboard-nav a.active{ color:#1f2a44; }
-    .kbf-dashboard-actions{
-        display:flex;align-items:center;gap:10px;
+    .kbf-nav a:hover::after,
+    .kbf-nav a.active::after{width:100%;}
+    .kbf-nav a.active{color:#1f2a44;}
+    .kbf-actions{display:flex;align-items:center;gap:10px;}
+    .kbf-actions .kbf-hamburger{order:1;}
+    .kbf-actions .kbf-dashboard-user{order:0;}
+    .kbf-hamburger{
+        display:none;
+        background:#fff;
+        border:1px solid var(--kbf-border);
+        border-radius:10px;
+        padding:6px 8px;
+        cursor:pointer;
+        color:#64748b;
+        align-items:center;
+        justify-content:center;
     }
+    .kbf-hamburger img{
+        width:18px;height:18px;display:block;
+        filter: invert(30%) sepia(10%) saturate(800%) hue-rotate(185deg) brightness(0.9);
+    }
+    .kbf-mobile-overlay{
+        display:none;
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.45);
+        z-index:998;
+        animation:kbfOverlayIn .2s ease forwards;
+    }
+    .kbf-mobile-overlay.kbf-overlay-open{display:block;}
+    @keyframes kbfOverlayIn{from{opacity:0}to{opacity:1}}
+    .kbf-mobile-menu{
+        position:fixed;
+        top:0;left:0;right:0;
+        z-index:999;
+        border-radius:0;
+        margin-top:0;
+        transform:translateY(-110%);
+        transition:transform .3s cubic-bezier(.4,0,.2,1);
+        display:flex;
+        flex-direction:column;
+        overflow:hidden;
+        background:#fff;
+        border:1px solid var(--kbf-border);
+        box-shadow:0 10px 26px rgba(15,40,80,0.18);
+    }
+    .kbf-mobile-menu.kbf-menu-open{transform:translateY(0);display:flex;}
+    .kbf-mobile-menu-header{
+        display:flex;align-items:center;justify-content:space-between;
+        padding:14px 16px;border-bottom:1px solid var(--kbf-border);
+        background:#fff;
+    }
+    .kbf-mobile-menu a{
+        padding:13px 18px;
+        font-size:13.5px;
+        color:#0f172a;
+        border-bottom:1px solid var(--kbf-border);
+        transition:background .15s ease;
+        text-align:center;
+    }
+    .kbf-mobile-menu a:last-of-type{border-bottom:none;}
+    .kbf-mobile-menu-actions{
+        display:flex;flex-direction:row;gap:8px;
+        padding:12px 14px;border-top:1px solid var(--kbf-border);
+        background:var(--kbf-slate-lt);
+    }
+    .kbf-mobile-menu-actions .kbf-btn{flex:1;justify-content:center;}
 
     .kbf-dashboard-avatar-wrap{position:relative;width:34px;height:34px;flex-shrink:0;}
     .kbf-dashboard-avatar-wrap .kbf-dashboard-avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--kbf-border);object-fit:cover;box-shadow:0 8px 18px rgba(16,24,40,0.12);display:block;}
@@ -204,9 +285,76 @@ function bntm_shortcode_kbf_dashboard() {
         font-size:12.5px;
         font-weight:600;
     }
+    .kbf-dashboard-user .kbf-dashboard-avatar-wrap{order:1;}
+    .kbf-dashboard-user .kbf-dashboard-name{order:0;}
     .kbf-dashboard-user:hover{ color:#1f2a44; }
     .kbf-hero-wrap{
-        padding:10px 6px 0;
+        padding:0;
+        margin-bottom:14px;
+    }
+    .kbf-table-wrap{
+        width:100%;
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+    }
+    .kbf-table{
+        min-width:980px;
+        table-layout:auto;
+    }
+    .kbf-table th,
+    .kbf-table td{
+        white-space:nowrap;
+    }
+    .kbf-fund-amounts strong{
+        font-weight:600;
+    }
+    .kbf-note-row td,
+    .kbf-note-cell{
+        background:var(--kbf-slate-lt);
+        font-size:12px;
+        padding:6px 14px;
+        border-top:1px solid var(--kbf-border);
+        white-space:normal !important;
+    }
+    .kbf-note-text{
+        display:inline-block;
+        padding-left:8px;
+        color:var(--kbf-text-sm);
+    }
+    .kbf-cashout-table{
+        min-width:760px;
+        table-layout:fixed;
+    }
+    .kbf-cashout-table th,
+    .kbf-cashout-table td{
+        white-space:normal;
+    }
+    .kbf-cashout-table th:nth-child(1),
+    .kbf-cashout-table td:nth-child(1){width:30%;}
+    .kbf-cashout-table th:nth-child(2),
+    .kbf-cashout-table td:nth-child(2){width:12%;}
+    .kbf-cashout-table th:nth-child(3),
+    .kbf-cashout-table td:nth-child(3){width:20%;}
+    .kbf-cashout-table th:nth-child(4),
+    .kbf-cashout-table td:nth-child(4){width:12%;}
+    .kbf-cashout-table th:nth-child(5),
+    .kbf-cashout-table td:nth-child(5){width:13%;}
+    .kbf-cashout-table th:nth-child(6),
+    .kbf-cashout-table td:nth-child(6){width:13%;}
+    .kbf-cashout-table .kbf-note-cell{white-space:normal;}
+    .kbf-cashout-table .kbf-note-row td,
+    .kbf-cashout-table .kbf-note-cell{
+        display:table-cell !important;
+        width:auto !important;
+    }
+    .kbf-cashout-title{
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+        white-space:normal;
+        word-break:normal;
+        overflow-wrap:break-word;
     }
     .kbf-hero-banner{
         background:linear-gradient(135deg,#edf4ff 0%,#ffffff 50%,#e5f0ff 100%);
@@ -218,7 +366,9 @@ function bntm_shortcode_kbf_dashboard() {
         border-radius:22px;
         padding:22px 24px;
         box-shadow:none;
-        margin-bottom:18px;
+        margin-bottom:0;
+        width:100%;
+        box-sizing:border-box;
     }
     .kbf-user-ui,
     .kbf-hero-banner{
@@ -289,7 +439,9 @@ function bntm_shortcode_kbf_dashboard() {
     }
     @media (max-width: 900px){
         .kbf-hero-grid{ grid-template-columns:1fr; }
-        .kbf-dashboard-topbar{ flex-wrap:wrap; }
+        .kbf-topbar{ flex-wrap:wrap; }
+        .kbf-nav{ display:none; }
+        .kbf-hamburger{ display:inline-flex; }
     }
     .kbf-user-ui .kbf-modal-overlay{
         position:fixed;
@@ -431,7 +583,7 @@ function bntm_shortcode_kbf_dashboard() {
     <!-- ================== HTML ================== -->
 
     
-    <div class="kbf-wrap kbf-user-ui">
+    <div class="kbf-user-ui">
     <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
       <div class="kbf-loading-card">
         <div class="kbf-loading-spinner"></div>
@@ -703,20 +855,44 @@ function bntm_shortcode_kbf_dashboard() {
     </div>
 
     <!-- Topbar (Landing-style) -->
-    <div class="kbf-dashboard-topbar">
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-        <div class="kbf-dashboard-brand">
-          <span class="kbf-logo-dot">KB</span>
-          KonekBayan
+    <div class="kbf-mobile-overlay" id="kbf-mobile-overlay"></div>
+    <div class="kbf-mobile-menu" id="kbf-mobile-menu">
+      <div class="kbf-mobile-menu-header">
+        <div class="kbf-brand">
+          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
+          <span class="kbf-brand-text">ambag</span>
         </div>
-        <nav class="kbf-dashboard-nav">
+        <button class="kbf-hamburger" type="button" onclick="kbfCloseMobileMenu()">
+          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="">
+        </button>
+      </div>
+      <a href="?kbf_tab=overview" onclick="kbfCloseMobileMenu()">Home</a>
+      <a href="?kbf_tab=sponsorships" onclick="kbfCloseMobileMenu()">Supporters</a>
+      <a href="?kbf_tab=withdrawals" onclick="kbfCloseMobileMenu()">Cashout</a>
+      <a href="?kbf_tab=find_funds" onclick="kbfCloseMobileMenu()">Explore</a>
+      <div class="kbf-mobile-menu-actions">
+        <a class="kbf-btn kbf-btn-secondary" href="?kbf_tab=profile">Profile</a>
+        <a class="kbf-btn kbf-btn-primary" href="?kbf_tab=find_funds">Find Funds</a>
+      </div>
+    </div>
+
+    <div class="kbf-topbar">
+      <div class="kbf-topbar-left">
+        <div class="kbf-brand">
+          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
+          <span class="kbf-brand-text">ambag</span>
+        </div>
+        <nav class="kbf-nav">
           <a href="?kbf_tab=overview" class="<?php echo $tab==='overview'?'active':''; ?>">Home</a>
           <a href="?kbf_tab=sponsorships" class="<?php echo $tab==='sponsorships'?'active':''; ?>">Supporters</a>
           <a href="?kbf_tab=withdrawals" class="<?php echo $tab==='withdrawals'?'active':''; ?>">Cashout</a>
           <a href="?kbf_tab=find_funds" class="<?php echo $tab==='find_funds'?'active':''; ?>">Explore</a>
         </nav>
       </div>
-      <div class="kbf-dashboard-actions">
+      <div class="kbf-actions">
+        <button class="kbf-hamburger" type="button" onclick="kbfToggleMobileMenu()">
+          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="">
+        </button>
         <?php
           $avatar_url = ($nav_profile && $nav_profile->avatar_url) ? $nav_profile->avatar_url : get_avatar_url($user->ID, ['size'=>64]);
         ?>
@@ -732,28 +908,12 @@ function bntm_shortcode_kbf_dashboard() {
       </div>
     </div>
 
+    <div class="kbf-dashboard-shell">
+
     <div class="kbf-hero-wrap">
       <div class="kbf-hero-banner">
         <h2 class="kbf-hero-title">Welcome, <?php echo esc_html($user->display_name); ?></h2>
         <p class="kbf-hero-sub">Empower change today. Oversee and manage your community-driven impact initiatives.</p>
-      </div>
-      <div class="kbf-hero-grid">
-        <div class="kbf-hero-card">
-          <span class="kbf-hero-icon">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/search.svg" alt="" width="16" height="16">
-          </span>
-          <h4>Find Funds</h4>
-          <p>Discover verified local causes needing urgent resources and support.</p>
-          <a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-secondary" style="align-self:flex-start;">Browse Initiatives</a>
-        </div>
-        <div class="kbf-hero-card kbf-hero-primary">
-          <span class="kbf-hero-icon">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus.svg" alt="" width="16" height="16">
-          </span>
-          <h4>Start a Fund</h4>
-          <p>Launch a fundraising campaign for a verified social good project.</p>
-          <button class="kbf-btn kbf-btn-primary" style="background:#ffffff;color:#1f2a44;align-self:flex-start;" onclick="kbfOpenModal('kbf-modal-create')">Get Started</button>
-        </div>
       </div>
     </div>
     <div class="kbf-tab-content">
@@ -767,14 +927,51 @@ function bntm_shortcode_kbf_dashboard() {
       elseif ($tab === 'organizer_profile') echo bntm_shortcode_kbf_organizer_profile();
       elseif ($tab === 'sponsor_history') echo bntm_shortcode_kbf_sponsor_history();
       ?>
-    </div>
-    </div><!-- .kbf-wrap -->
+      </div>
+      </div><!-- .kbf-dashboard-shell -->
+    </div><!-- .kbf-user-ui -->
 
         
         <!-- ================== JS ================== -->
     <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <script>
-    function kbfCloseModal(id) {
+      (function(){
+        var topbar = document.querySelector('.kbf-topbar');
+        if (!topbar) return;
+        function onScroll(){
+          if (window.scrollY > 10) topbar.classList.add('kbf-topbar-scrolled');
+          else topbar.classList.remove('kbf-topbar-scrolled');
+        }
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+      })();
+
+      function kbfToggleMobileMenu(){
+        var menu = document.getElementById('kbf-mobile-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        if (!menu || !overlay) return;
+        menu.classList.toggle('kbf-menu-open');
+        overlay.classList.toggle('kbf-overlay-open');
+      }
+      function kbfCloseMobileMenu(){
+        var menu = document.getElementById('kbf-mobile-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        if (menu) menu.classList.remove('kbf-menu-open');
+        if (overlay) overlay.classList.remove('kbf-overlay-open');
+      }
+      window.addEventListener('resize', function(){
+        if (window.innerWidth > 900) kbfCloseMobileMenu();
+      });
+      document.addEventListener('click', function(e){
+        var menu = document.getElementById('kbf-mobile-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        if (!menu || !overlay) return;
+        if (overlay.classList.contains('kbf-overlay-open') && e.target === overlay) {
+          kbfCloseMobileMenu();
+        }
+      });
+
+      function kbfCloseModal(id) {
         document.getElementById(id).style.display = 'none';
         if (id === 'kbf-modal-create') {
             document.documentElement.classList.remove('kbf-modal-lock');
@@ -1294,5 +1491,5 @@ function bntm_shortcode_kbf_dashboard() {
     </script>
     <?php
     $content = ob_get_clean();
-    return bntm_universal_container('KonekBayan -- Finding Platform', $content, ['show_topbar'=>false,'show_header'=>false]);
+    return bntm_universal_container('KonekBayan -- Finding Platform', $content, ['show_topbar'=>false,'show_header'=>false,'wrap'=>false]);
 }

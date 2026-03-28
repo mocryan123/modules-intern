@@ -21,7 +21,7 @@ function bntm_shortcode_kbf_admin() {
         <div style="font-size:13px;color:#4f5a6b;">Loading...</div>
       </div>
     </div>
-    <div class="kbf-wrap">
+    <div class="kbf-wrap kbf-admin-wrap">
     <?php
     $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
     $open_reports_count  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
@@ -32,22 +32,25 @@ function bntm_shortcode_kbf_admin() {
     ?>
     <div class="kbf-dashboard-topbar">
       <div class="kbf-dashboard-brand">
-        <span class="kbf-logo-dot">KB</span>
-        KonekBayan
+        <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
+        <span class="kbf-brand-text">ambag</span>
       </div>
       <div class="kbf-dashboard-nav">
         <?php foreach($tabs as $k=>$label): ?>
+        <?php $raw_count = !empty($counts[$k]) ? (int)$counts[$k] : 0; ?>
+        <?php $display_count = $raw_count >= 100 ? '99+' : (string)$raw_count; ?>
         <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>">
           <?php echo $label; ?>
-          <?php if(!empty($counts[$k]) && $counts[$k]>0): ?>
-            <span class="kbf-nav-count"><?php echo $counts[$k]; ?></span>
+          <?php if($raw_count > 0): ?>
+            <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
           <?php endif; ?>
         </a>
         <?php endforeach; ?>
       </div>
     </div>
 
-    <div class="kbf-page-header"><h2>KonekBayan Admin Panel</h2><p>Moderate funds, manage escrow, review reports, and process withdrawals.</p></div>
+    <div class="kbf-admin-shell">
+    <div class="kbf-page-header"><h2>Ambag Admin Panel</h2><p>Moderate funds, manage escrow, review reports, and process withdrawals.</p></div>
       <div class="kbf-tab-content">
         <?php
         if($tab==='pending')      echo kbf_admin_pending_tab();
@@ -59,6 +62,7 @@ function bntm_shortcode_kbf_admin() {
         elseif($tab==='organizers')    echo kbf_admin_organizers_tab();
         elseif($tab==='settings')      echo kbf_admin_settings_tab();
         ?>
+      </div>
       </div>
     </div>
 
@@ -104,7 +108,6 @@ function bntm_shortcode_kbf_admin() {
     window.kbfVerifyBadge=function(id,cur){kbfAdmin('kbf_admin_verify_badge',{fund_id:id,verified:cur?'0':'1'});};
     window.kbfEscrow=function(id,act){kbfAdmin('kbf_admin_'+act+'_escrow',{fund_id:id});};
         window.kbfDismissReport=function(id){kbfAdmin('kbf_admin_dismiss_report',{report_id:id});};
-        window.kbfReviewReport=function(id){const n=prompt('Admin notes (optional):');if(n===null)return;kbfAdmin('kbf_admin_review_report',{report_id:id,notes:n});};
         window.kbfReviewAppeal=function(id,action){const n=prompt('Admin notes (optional):');if(n===null)return;kbfAdmin('kbf_admin_review_appeal',{appeal_id:id,action_type:action,notes:n});};
     window.kbfProcessWd=function(id,type){
         if(type==='reject'){const r=prompt('Reason for rejection:');if(!r)return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'reject',notes:r});}
@@ -124,5 +127,5 @@ window.kbfVerifyOrg=function(id,verified){
     </script>
     <?php
     $c=ob_get_clean();
-    return bntm_universal_container('KonekBayan Admin Panel',$c, ['show_topbar'=>false,'show_header'=>false]);
+    return bntm_universal_container('KonekBayan Admin Panel',$c, ['show_topbar'=>false,'show_header'=>false,'wrap'=>false]);
 }

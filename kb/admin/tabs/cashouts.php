@@ -53,6 +53,11 @@ function kbf_admin_withdrawals_tab() {
           </tbody>
         </table>
       </div>
+      <script>
+        if (window.kbfInitTablePager) {
+          window.kbfInitTablePager();
+        }
+      </script>
     </div>
     <?php return ob_get_clean();
 }

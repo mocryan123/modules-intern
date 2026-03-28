@@ -8,6 +8,7 @@ function kbf_dashboard_overview_tab($business_id) {
     $ft = $wpdb->prefix.'kbf_funds';
     $st = $wpdb->prefix.'kbf_sponsorships';
     $wt = $wpdb->prefix.'kbf_withdrawals';
+    $fund_details_url = kbf_get_page_url('fund_details');
 
     $total_funds    = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d",$business_id));
     $active_funds   = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d AND status='active'",$business_id));
@@ -20,6 +21,33 @@ function kbf_dashboard_overview_tab($business_id) {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
+      <style>
+        .kbf-card-list[data-kbf-card-pager="home"] + .kbf-table-pager{
+          margin-bottom:0;
+          padding-bottom:0;
+        }
+      </style>
+      <style>
+        .kbf-sponsor-details{border-top:1px solid var(--kbf-border);margin-top:14px;}
+        .kbf-sponsor-details summary{
+          cursor:pointer;
+          font-size:13px;
+          font-weight:600;
+          color:var(--kbf-navy);
+          list-style:none;
+          padding:12px 0;
+          display:flex;
+          align-items:center;
+          gap:8px;
+        }
+        .kbf-sponsor-details summary::-webkit-details-marker{display:none;}
+        .kbf-sponsor-details-content{
+          display:none;
+        }
+        .kbf-sponsor-details[open] .kbf-sponsor-details-content{
+          display:block;
+        }
+      </style>
       <div class="kbf-section-header">
         <h3 class="kbf-section-title">Dashboard Overview</h3>
         <button class="kbf-btn kbf-btn-primary" onclick="kbfOpenModal('kbf-modal-create')">
@@ -106,7 +134,9 @@ function kbf_dashboard_overview_tab($business_id) {
       </div>
       <?php if(empty($funds)): ?>
         <div class="kbf-empty"><svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg><p>No funds created yet.</p></div>
-      <?php else: foreach($funds as $f):
+      <?php else: ?>
+      <div class="kbf-card-list" data-kbf-card-pager="home">
+      <?php foreach($funds as $f):
         $pct = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
         $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
         $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
@@ -172,7 +202,7 @@ function kbf_dashboard_overview_tab($business_id) {
               </div>
               <div class="kbf-meta">
                 <?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?>
-                <?php if($days_left!==null): ?> &bull; <span style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;font-weight:700;"><?php echo $days_left; ?> days left</span><?php endif; ?>
+                <?php if($days_left!==null): ?> &bull; <span style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;font-weight:600;"><?php echo $days_left; ?> days left</span><?php endif; ?>
                 &bull; <?php echo $sc; ?> sponsors
                 &bull; Escrow: <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
               </div>
@@ -185,6 +215,10 @@ function kbf_dashboard_overview_tab($business_id) {
             <span><strong><?php echo round($pct); ?>%</strong>funded</span>
           </div>
           <div class="kbf-btn-group" style="margin-top:12px;">
+            <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund_id',$f->id,$fund_details_url)); ?>">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
+              View Details
+            </a>
             <?php if(in_array($f->status,['active','pending'])): ?>
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>)">Edit</button>
             <?php endif; ?>
@@ -211,9 +245,10 @@ function kbf_dashboard_overview_tab($business_id) {
           <?php
           $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' ORDER BY amount DESC LIMIT 5",$f->id));
           if(!empty($sponsors)): ?>
-          <details style="margin-top:14px;border-top:1px solid var(--kbf-border);padding-top:12px;">
-            <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--kbf-navy);">View Sponsors (<?php echo $sc; ?>)</summary>
-            <div class="kbf-table-wrap" style="margin-top:10px;">
+          <details class="kbf-sponsor-details">
+            <summary>View Sponsors (<?php echo $sc; ?>)</summary>
+            <div class="kbf-sponsor-details-content">
+              <div class="kbf-table-wrap" style="margin-top:10px;">
               <table class="kbf-table">
                 <thead><tr><th>Sponsor</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead>
                 <tbody>
@@ -227,11 +262,14 @@ function kbf_dashboard_overview_tab($business_id) {
                 <?php endforeach; ?>
                 </tbody>
               </table>
+              </div>
             </div>
           </details>
           <?php endif; ?>
         </div>
-      <?php endforeach; endif; ?>
+      <?php endforeach; ?>
+      </div>
+      <?php endif; ?>
       
     <!-- ================== JS ================== -->
     <script>
@@ -246,11 +284,90 @@ function kbf_dashboard_overview_tab($business_id) {
           cards.forEach(function(card){
             var matchStatus = (statusVal === 'all') || (card.getAttribute('data-status') === statusVal);
             var matchEscrow = (escrowVal === 'all') || (card.getAttribute('data-escrow') === escrowVal);
-            card.style.display = (matchStatus && matchEscrow) ? '' : 'none';
+            card.dataset.kbfFilterHidden = (matchStatus && matchEscrow) ? '0' : '1';
           });
+          if (window.kbfHomeRenderCards) window.kbfHomeRenderCards();
         }
         statusEl.addEventListener('change', applyFilters);
         escrowEl.addEventListener('change', applyFilters);
+        applyFilters();
+      })();
+
+      (function(){
+        var wrap = document.querySelector('.kbf-card-list[data-kbf-card-pager="home"]');
+        if(!wrap || wrap.dataset.kbfPager === 'on') return;
+        var cards = Array.prototype.slice.call(wrap.querySelectorAll('.kbf-card[data-status]'));
+        if(cards.length === 0) return;
+        wrap.dataset.kbfPager = 'on';
+
+        var pager = document.createElement('div');
+        pager.className = 'kbf-table-pager';
+        pager.innerHTML = '' +
+          '<div class="kbf-table-pager-left">Show ' +
+          '<select class="kbf-table-rows">' +
+            '<option value="3">3</option>' +
+            '<option value="5" selected>5</option>' +
+            '<option value="10">10</option>' +
+          '</select> cards</div>' +
+          '<div class="kbf-table-pager-right">' +
+            '<button class="kbf-table-pager-btn kbf-table-prev" type="button">Prev</button>' +
+            '<span class="kbf-table-pager-page">1 / 1</span>' +
+            '<button class="kbf-table-pager-btn kbf-table-next" type="button">Next</button>' +
+          '</div>';
+        wrap.insertAdjacentElement('afterend', pager);
+
+        var select = pager.querySelector('.kbf-table-rows');
+        var prevBtn = pager.querySelector('.kbf-table-prev');
+        var nextBtn = pager.querySelector('.kbf-table-next');
+        var pageLabel = pager.querySelector('.kbf-table-pager-page');
+        var page = 1;
+        var perPage = parseInt(select.value, 10) || 5;
+
+        function getFilteredCards(){
+          return cards.filter(function(card){ return card.dataset.kbfFilterHidden !== '1'; });
+        }
+
+        function render(){
+          var visible = getFilteredCards();
+          var total = visible.length;
+          var pages = Math.max(1, Math.ceil(total / perPage));
+          if(page > pages) page = pages;
+          var start = (page - 1) * perPage;
+          var end = start + perPage;
+          cards.forEach(function(card){
+            card.style.display = 'none';
+          });
+          visible.forEach(function(card, i){
+            if (i >= start && i < end) card.style.display = '';
+          });
+          pageLabel.textContent = page + ' / ' + pages;
+          prevBtn.disabled = page <= 1;
+          nextBtn.disabled = page >= pages;
+          pager.style.display = total > 0 ? 'flex' : 'none';
+        }
+        function setLoading(btn){
+          btn.classList.add('is-loading');
+          btn.disabled = true;
+          setTimeout(function(){ btn.classList.remove('is-loading'); render(); }, 250);
+        }
+        select.addEventListener('change', function(){
+          perPage = parseInt(this.value, 10) || 5;
+          page = 1;
+          render();
+        });
+        prevBtn.addEventListener('click', function(){
+          if(page > 1){ page--; setLoading(prevBtn); }
+        });
+        nextBtn.addEventListener('click', function(){
+          page++; setLoading(nextBtn);
+        });
+
+        window.kbfHomeRenderCards = function(){
+          page = 1;
+          render();
+        };
+
+        render();
       })();
       </script>
     </div>

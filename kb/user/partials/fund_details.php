@@ -200,6 +200,15 @@ function bntm_shortcode_kbf_fund_details() {
         cursor:pointer;
     }
     .kbf-detail-sponsor-box{background:#fff;border:1px solid var(--kbf-border);border-radius:12px;padding:24px;box-shadow:var(--kbf-shadow);}
+    .kbf-gradient-num{
+        font-weight:800 !important;
+        display:inline-block;
+        background:linear-gradient(to top,#1f6fe0 0%, #4da0ff 100%);
+        -webkit-background-clip:text;
+        background-clip:text;
+        color:transparent !important;
+        -webkit-text-fill-color:transparent !important;
+    }
     .kbf-sponsor-wall{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
     .kbf-sponsor-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--kbf-slate-lt);border-radius:8px;}
     .kbf-sponsor-avatar{width:36px;height:36px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:#fff;}
@@ -332,9 +341,10 @@ function bntm_shortcode_kbf_fund_details() {
 
     <!-- Breadcrumb -->
     <div class="kbf-breadcrumb">
-      <a href="<?php echo esc_url($browse_url); ?>">Browse Funds</a>
-      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chevron-right.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-      <span><?php echo esc_html(wp_trim_words($fund->title,6)); ?></span>
+      <a href="<?php echo esc_url($browse_url); ?>" style="display:inline-flex;align-items:center;gap:6px;">
+        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-left.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+        Back to Browse
+      </a>
     </div>
 
     <?php if($fund->status==='pending' && $is_owner): ?>
@@ -530,21 +540,21 @@ function bntm_shortcode_kbf_fund_details() {
           <!-- Progress -->
           <div style="margin-bottom:16px;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
-              <span style="font-size:24px;font-weight:800;color:var(--kbf-green);">₱<?php echo number_format($fund->raised_amount,2); ?></span>
+              <span class="kbf-gradient-num" style="font-size:24px;font-weight:800 !important;">₱<?php echo number_format($fund->raised_amount,2); ?></span>
               <span style="font-size:13px;color:var(--kbf-slate);">of ₱<?php echo number_format($fund->goal_amount,2); ?></span>
             </div>
             <div class="kbf-progress-wrap" style="height:10px;margin-bottom:10px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%;height:10px;"></div></div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
               <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
-                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo round($pct); ?>%</div>
+                <div class="kbf-gradient-num" style="font-size:16px;"><?php echo round($pct); ?>%</div>
                 <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Funded</div>
               </div>
               <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
-                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo $sponsor_count; ?></div>
+                <div class="kbf-gradient-num" style="font-size:16px;"><?php echo $sponsor_count; ?></div>
                 <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Sponsors</div>
               </div>
               <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px 6px;">
-                <div style="font-size:16px;font-weight:800;color:var(--kbf-navy);"><?php echo $days!==null?$days:'&infin;'; ?></div>
+                <div class="kbf-gradient-num" style="font-size:16px;"><?php echo $days!==null?$days:'&infin;'; ?></div>
                 <div style="font-size:11px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.3px;">Days Left</div>
               </div>
             </div>
@@ -594,7 +604,7 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- Description (full width) -->
     <div class="kbf-card kbf-section-description" style="margin-bottom:20px;">
       <h3 style="font-size:15px;font-weight:700;color:var(--kbf-navy);margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">About This Fund</h3>
-      <div style="font-size:14.5px;color:var(--kbf-text-sm);line-height:1.8;"><?php echo nl2br(esc_html($fund->description)); ?></div>
+      <div style="font-size:14.5px;color:var(--kbf-text-sm);line-height:1.8;"><?php echo nl2br(esc_html(wp_unslash($fund->description))); ?></div>
     </div>
 
     <!-- Sponsors wall (full width) -->

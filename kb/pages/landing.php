@@ -23,6 +23,7 @@ function bntm_kbf_render_landing() {
     <!-- ================== CSS ================== -->
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Shippori+Antique+B1&display=swap');
 
     :root {
         --kbf-ink: #0f1115;
@@ -55,6 +56,7 @@ function bntm_kbf_render_landing() {
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
     .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 76px 22px 0; }
     .kbf-landing a { color: inherit; text-decoration: none; }
+    .kbf-brand-text{ color:#3d8ef0; font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif; }
         .kbf-divider {
         height: 1px;
         width: 100%;
@@ -73,7 +75,8 @@ function bntm_kbf_render_landing() {
         align-items: center;
         justify-content: space-between;
         gap: 18px;
-        padding: 8px 16px 18px;
+        padding: 10px 16px;
+        min-height: 56px;
         position: fixed;
         top: 0;
         left: 0;
@@ -102,7 +105,7 @@ function bntm_kbf_render_landing() {
         color: #103054; font-weight: 800; font-size: 14px;
     }
     .kbf-nav { display: flex; flex-direction: row; gap: 20px; font-size: 12.5px; color: var(--kbf-muted); }
-    .kbf-nav a { position: relative; }
+    .kbf-nav a { position: relative; display:inline-flex; align-items:center; }
     .kbf-nav a::after {
         content: ''; position: absolute; left: 0; bottom: -8px;
         width: 0; height: 2px; border-radius: 999px;
@@ -818,8 +821,8 @@ function bntm_kbf_render_landing() {
         <div class="kbf-topbar kbf-reveal">
           <div class="kbf-topbar-left">
             <div class="kbf-brand">
-              <span class="kbf-brand-badge">✳</span>
-              <span style="font-weight: 00;">KonekBayan</span>
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
+              <span class="kbf-brand-text" style="font-weight: 00;">ambag</span>
             </div>
             <nav class="kbf-nav">
               <a href="#kbf-home" onclick="return kbfScrollTo('kbf-home')">Home</a>
@@ -839,8 +842,8 @@ function bntm_kbf_render_landing() {
               <div class="kbf-mobile-menu" id="kbf-mobile-menu">
           <div class="kbf-mobile-menu-header">
             <div class="kbf-brand">
-              <span class="kbf-brand-badge">✳</span>
-              <span style="font-weight:800;">KonekBayan</span>
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:24px;height:24px;object-fit:contain;border-radius:6px;">
+              <span class="kbf-brand-text" style="font-weight:800;">ambag</span>
             </div>
             <button class="kbf-hamburger" onclick="document.getElementById('kbf-hamburger-btn').click()" aria-label="Close menu" style="display:inline-flex;">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="Close">
@@ -874,7 +877,7 @@ function bntm_kbf_render_landing() {
               </h1>
 
               <p class="kbf-hero-desc">
-                KonekBayan gives Filipino families a proper place to raise support — with real transparency, real updates, and real accountability.
+                Ambag gives Filipino families a proper place to raise support — with real transparency, real updates, and real accountability.
               </p>
 
 
@@ -970,7 +973,7 @@ function bntm_kbf_render_landing() {
             <div class="kbf-about-card">
               <h2 style="font-size: 1.5em; font-weight: 400;">Why we built this</h2>
               <p>We've all seen it — a family posting their GCash number on Facebook after a flood, a hospitalization, a fire. It works sometimes. But it's chaotic, untracked, and exhausting for the family asking.</p>
-              <p style="margin-top:10px;">KonekBayan started because Filipinos don't need convincing to help each other. Bayanihan is already in our culture. We just needed to build something worthy of it.</p>
+              <p style="margin-top:10px;">Ambag started because Filipinos don't need convincing to help each other. Bayanihan is already in our culture. We just needed to build something worthy of it.</p>
             </div>
           </div>
 
@@ -1030,7 +1033,7 @@ function bntm_kbf_render_landing() {
             <p>Designed for trust</p>
             <h3 style="font-weight: 300;">Safe & Trusted</h3>
             <p>Reviewed. Verified. Transparent.</p>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Join KonekBayan — it's free</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Join Ambag — it's free</a>
           </div>
         </div>
 
@@ -1088,11 +1091,11 @@ function bntm_kbf_render_landing() {
         <footer class="kbf-footer kbf-reveal delay-3" style="margin-top:80px;">
           <div>
             <div class="kbf-brand" style="margin-bottom:8px;">
-              <span class="kbf-brand-badge">✳</span>
-              <span style="font-weight: 600;">KonekBayan</span>
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:20px;height:20px;object-fit:contain;border-radius:6px;">
+              <span class="kbf-brand-text" style="font-weight: 600;">ambag</span>
             </div>
             <p>Community fundraising rooted in bayanihan.</p>
-            <small>© KonekBayan. All rights reserved.</small>
+            <small>© Ambag. All rights reserved.</small>
           </div>
           <div class="kbf-social">
             <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
