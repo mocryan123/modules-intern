@@ -32,14 +32,28 @@ function bntm_kbf_render_landing() {
         --kbf-soft: #f7f8fb;
         --kbf-lime: #6fb6ff;
         --kbf-lime-dark: #0f2a52;
-        --kbf-shadow: 0 18px 40px rgba(16, 24, 40, 0.08);
+        --kbf-shadow: rgba(0, 0, 0, 0.05) 0px 2px 4px -1px, rgba(0, 0, 0, 0.04) 0px 1px 2px -1px;
+        --kbf-shadow-lg: rgba(0, 0, 0, 0.06) 0px 6px 12px -3px, rgba(0, 0, 0, 0.05) 0px 3px 6px -2px;
         --kbf-radius: 26px;
     }
 
-    .kbf-landing {..        font-family: 'Poppins', system-ui, -apple-system, sans-serif;..        color: var(--kbf-ink);..        background:..            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),..            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),..            var(--kbf-surface);..        width: 100%;..        max-width: 1240px;..        margin: 18px auto;..        padding: 26px 22px 64px;..        border-radius: 18px;..        overflow: visible;..    }
+    .kbf-landing {
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+        color: var(--kbf-ink);
+        background:
+            radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),
+            radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),
+            var(--kbf-surface);
+        width: 100%;
+        max-width: 1240px;
+        margin: 0 auto 18px;
+        padding: 26px 22px 64px;
+        border-radius: 18px;
+        overflow: visible;
+    }
 
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
-    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 76px 22px 0; }
     .kbf-landing a { color: inherit; text-decoration: none; }
         .kbf-divider {
         height: 1px;
@@ -60,16 +74,19 @@ function bntm_kbf_render_landing() {
         justify-content: space-between;
         gap: 18px;
         padding: 8px 16px 18px;
-        position: sticky;
+        position: fixed;
         top: 0;
-        z-index: 100;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid transparent;
         transition: border-color .2s ease, box-shadow .2s ease;
-        margin: 0 -16px;
-        width: calc(100% + 32px);
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
     .kbf-topbar.kbf-topbar-scrolled {
         border-bottom-color: var(--kbf-border);
@@ -164,8 +181,9 @@ function bntm_kbf_render_landing() {
         border-radius: 22px;
         padding: 44px;
         border: 1px solid #dce8f8;
-        box-shadow: 0 12px 40px rgba(15,40,80,0.07);
-        overflow: hidden;`r`n    }
+        box-shadow: var(--kbf-shadow-lg);
+        overflow: hidden;
+    }
     .kbf-hero::before {
         content: '';
         position: absolute;
@@ -253,12 +271,13 @@ function bntm_kbf_render_landing() {
         --ch: 500px;
         width: var(--cw);
         height: var(--ch);
+        transform: scale(1.08);
         transform-origin: top left;
     }
     .kbf-pcard {
         position: absolute; border-radius: 22px; overflow: hidden;
         background: #fff; border: 1px solid #ddeaf8;
-        box-shadow: 0 12px 32px rgba(15,40,80,0.10);
+        box-shadow: var(--kbf-shadow);
     }
     /* Main card — tall, center-left, highest z */
     .kbf-pcard-main {
@@ -340,12 +359,12 @@ function bntm_kbf_render_landing() {
         padding: 5px 11px; font-size: 10.5px; font-weight: 600;
         color: #1a3a66; display: flex; align-items: center; gap: 6px;
         z-index: 5; white-space: nowrap;
-        box-shadow: 0 4px 16px rgba(15,40,80,0.10);
+        box-shadow: var(--kbf-shadow);
         backdrop-filter: blur(8px);
     }
 
     /* SECTIONS */
-    .kbf-section { margin-top: 54px; }
+    .kbf-section { margin-top: 54px; scroll-margin-top: calc(var(--kbf-topbar-h, 64px) + 16px); }
     .kbf-section:first-of-type { margin-top: 32px; }
     .kbf-section h2 { font-size: 22px; margin: 0 0 6px; }
     .kbf-section p { color: var(--kbf-muted); margin: 0; font-size: 13.5px; }
@@ -357,10 +376,11 @@ function bntm_kbf_render_landing() {
     .kbf-card {
         background: var(--kbf-surface); border: 1px solid var(--kbf-border);
         border-radius: 18px; padding: 16px;
-        box-shadow: 0 12px 26px rgba(15, 23, 42, 0.04);
+        box-shadow: var(--kbf-shadow);
         transition: transform .2s ease, box-shadow .2s ease;
-        position: relative; overflow: hidden;`r`n    }
-    .kbf-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08); }
+        position: relative; overflow: hidden;
+    }
+    .kbf-card:hover { transform: translateY(-3px); box-shadow: var(--kbf-shadow-lg); }
     .kbf-card::after {
         content: '';
         position: absolute;
@@ -377,14 +397,16 @@ function bntm_kbf_render_landing() {
     .kbf-card .kbf-chip {
         transition: 0.3s ease;
         width: 30px; height: 30px; border-radius: 12px;
-        background: #e7f1ff; display: inline-flex; align-items: center;
+        background: #e7f1ff;
+        border: 1px solid #d7e7ff;
+        display: inline-flex; align-items: center;
         justify-content: center; color: #2a5a9e; font-weight: 700; font-size: 13px;
     }
     .kbf-card .kbf-chip img {
         width: 16px;
         height: 16px;
         display: block;
-        filter: invert(26%) sepia(20%) saturate(1200%) hue-rotate(185deg) brightness(0.95);
+        filter: invert(46%) sepia(85%) saturate(1381%) hue-rotate(198deg) brightness(98%) contrast(93%);
     }
     .kbf-card h4 { margin: 12px 0 6px; font-size: 14px; }
     .kbf-card p { font-size: 12.5px; }
@@ -444,7 +466,7 @@ function bntm_kbf_render_landing() {
     .kbf-stat .kbf-btn-primary { margin-top: 6px; }
 
     .kbf-faq { margin-top: 22px; border-top: 1px solid var(--kbf-border); }
-    .kbf-faq details { border-bottom: 1px solid var(--kbf-border); padding: 12px 0; }
+    .kbf-faq details { border-bottom: 1px solid var(--kbf-border); padding: 18px 0; }
     .kbf-faq summary {
         list-style: none; cursor: pointer; font-size: 13.5px; font-weight: 600;
         display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -462,7 +484,10 @@ function bntm_kbf_render_landing() {
     .kbf-faq details[open] .kbf-faq-body { grid-template-rows: 1fr; }
 
     .kbf-footer {
-        margin-top: 48px; background: #0c0f14; color: #b9c0cc;
+        margin-top: 48px; 
+        background: #0c0f14; 
+        color: #b9c0cc;
+        margin-bottom:48px;
         border-radius: 26px; padding: 26px 28px;
         display: flex; flex-direction: row;
         justify-content: space-between; align-items: center;
@@ -507,8 +532,12 @@ function bntm_kbf_render_landing() {
     }
     .kbf-about-stat-num {
         font-size: 32px;
-        font-weight: 700;
-        color: #2070e0;
+        font-weight: 400;
+        background: linear-gradient(to top, #1f6fe0 0%, #4da0ff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
         letter-spacing: -1px;
         line-height: 1;
     }
@@ -592,10 +621,10 @@ function bntm_kbf_render_landing() {
         width: 100%;
         background: #fff;
         border: 1px solid var(--kbf-border);
-        border-radius: 14px;
+        border-radius: 0;
         margin-top: 8px;
         overflow: hidden;
-        box-shadow: 0 8px 24px rgba(15,40,80,0.08);
+        box-shadow: var(--kbf-shadow);
     }
     .kbf-mobile-menu.kbf-menu-open { display: flex; }
     .kbf-mobile-menu a {
@@ -634,7 +663,7 @@ function bntm_kbf_render_landing() {
         left: 0;
         right: 0;
         z-index: 99;
-        border-radius: 0 0 18px 18px;
+        border-radius: 0;
         margin-top: 0;
         transform: translateY(-110%);
         transition: transform .3s cubic-bezier(.4,0,.2,1);
@@ -643,7 +672,7 @@ function bntm_kbf_render_landing() {
         overflow: hidden;
         background: #fff;
         border: 1px solid var(--kbf-border);
-        box-shadow: 0 8px 32px rgba(15,40,80,0.14);
+        box-shadow: var(--kbf-shadow-lg);
     }
     .kbf-mobile-menu.kbf-menu-open {
         transform: translateY(0);
@@ -662,32 +691,42 @@ function bntm_kbf_render_landing() {
         .kbf-nav { display: none; }
         .kbf-hamburger { display: inline-flex; }
         .kbf-actions { display: none; }
-        .kbf-hamburger { display: inline-flex; margin-left: auto; }        .kbf-hero-heading { font-size: 38px; letter-spacing: -1px; }
+        .kbf-hamburger { display: inline-flex; margin-left: auto; }        
+        .kbf-mobile-menu a { text-align: center; }
+        .kbf-hero-heading { font-size: 38px; letter-spacing: -1px; }
         .kbf-hero-right { flex: 0 0 300px; height: 380px; }
         .kbf-cards-wrap { transform: scale(calc(300 / 420)); }
-        .kbf-feature-grid { grid-template-columns: repeat(2, 1fr); }
+        .kbf-feature-grid { grid-template-columns: 1fr; }
         .kbf-feature-grid .kbf-card { grid-column: span 1; }
         .kbf-feature-grid .kbf-card:nth-child(4),
         .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
-        .kbf-urgent-grid { grid-template-columns: repeat(2, 1fr); }
+        .kbf-urgent-grid { grid-template-columns: 1fr; }
         .kbf-about-grid { grid-template-columns: 1fr; }
-        .kbf-about-photo { height: 280px; }
+        .kbf-about-photo { height: 320px; }
         .kbf-stat .kbf-photo-grid { display: none; }
         .kbf-stat h3 { font-size: 56px; }
         .kbf-divider { margin-top: 56px; margin-bottom: 56px; }
+        .kbf-footer { flex-direction: column; align-items: center; text-align: center; margin: 20px auto; }
+        .kbf-footer .kbf-social { justify-content: center; }
+        .kbf-footer .kbf-brand { justify-content: center; }
+        .kbf-footer > div:first-child { display: contents; }
+        .kbf-footer .kbf-brand { order: 1; }
+        .kbf-footer p { order: 2; }
+        .kbf-footer .kbf-social { order: 3; }
+        .kbf-footer small { order: 4; }
     }
-
-    @media (max-width: 720px) {
-        .kbf-landing { padding: 20px 14px 48px; }
-        .kbf-topbar { flex-wrap: wrap; gap: 12px; }
-        .kbf-actions { width: 100%; justify-content: flex-start; gap: 8px; }
+    @media (max-width: 830px) {
         .kbf-hero { padding: 28px 24px; }
         .kbf-hero-inner {
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
             padding: 24px 0 16px;
             gap: 32px;
+            text-align: center;
         }
+        .kbf-hero-left { align-items: center; }
+        .kbf-hero-left .kbf-chip { margin-left: auto; margin-right: auto; }
+        .kbf-hero-left .kbf-actions { justify-content: center; }
         .kbf-hero-left { max-width: 100%; gap: 14px; }
         .kbf-hero-heading { font-size: 34px; letter-spacing: -0.5px; }
         .kbf-hero-right {
@@ -699,17 +738,28 @@ function bntm_kbf_render_landing() {
         }
         .kbf-cards-wrap {
             left: 50%;
+            right: auto;
+            margin-left: auto;
+            margin-right: auto;
             transform: translateX(-50%) scale(calc(320 / 500));
             transform-origin: top center;
         }
-        .kbf-feature-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    }
+
+    @media (max-width: 720px) {
+        .kbf-landing { padding: 20px 14px 48px; text-align: center; }
+        .kbf-topbar { flex-wrap: wrap; gap: 12px; justify-content: center; }
+        .kbf-actions { width: 100%; justify-content: center; gap: 8px; }
+        .kbf-feature-grid { grid-template-columns: 1fr; gap: 12px; }
         .kbf-feature-grid .kbf-card { grid-column: span 1; }
         .kbf-feature-grid .kbf-card:nth-child(4),
         .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
         .kbf-section h2 { font-size: 20px; }
         .kbf-stat h3 { font-size: 48px; }
         .kbf-divider { margin-top: 44px; margin-bottom: 44px; }
-        .kbf-footer { flex-direction: column; align-items: flex-start; }
+        .kbf-footer { flex-direction: column; align-items: center; text-align: center; margin: 20px auto; }
+        .kbf-footer .kbf-social { justify-content: center; }
+        .kbf-footer .kbf-brand { justify-content: center; }
     }
 
     @media (max-width: 480px) {
@@ -732,7 +782,7 @@ function bntm_kbf_render_landing() {
         .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
         .kbf-urgent-grid { grid-template-columns: 1fr; }
         .kbf-urgent-thumb { height: 180px; }
-        .kbf-about-photo { height: 220px; }
+        .kbf-about-photo { height: 240px; }
         .kbf-section h2 { font-size: 18px; }
         .kbf-section p { font-size: 13px; }
         .kbf-stat h3 { font-size: 40px; }
@@ -873,36 +923,36 @@ function bntm_kbf_render_landing() {
           <p>Raising funds online is easy. Getting people to actually trust your campaign — that's the hard part. Here's how we make it easier.</p>
           <div class="kbf-feature-grid">
             <div class="kbf-card">
-              <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lightning-fill.svg" alt="">
-              </div>
+                <div class="kbf-chip" aria-hidden="true">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/book-half.svg" alt="">
+                </div>
                <h4 style="font-weight: 500;">Tell Your Real Story</h4>
                <p>Write it the way you'd explain it to a neighbor. Honest campaigns — even messy ones — raise more than polished ones. We help you write it right.</p>
             </div>
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/megaphone-fill.svg" alt="">
               </div>
                 <h4 style="font-weight: 500;">Spread Through Your Network</h4>
                <p>Share your link to group chats, barangay pages, barkadas. Your first wave of donors is already in your contacts — we just make the ask easier.</p>
             </div>
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/shield-check.svg" alt="">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" alt="">
               </div>
                 <h4 style="font-weight: 500;">Donors Can Trust You</h4>
                <p>Verified organizers, ID-checked accounts, and a public update log. When donors see the checkmark, they know their money won't disappear.</p>
             </div>
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/activity.svg" alt="">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/transparency.svg" alt="">
               </div>
                 <h4 style="font-weight: 500;">Show Where the Money Goes</h4>
                <p>Post receipts, photos, milestones. Not because we force you to — but because campaigns that show proof raise 3x more. Transparency works.</p>
             </div>
             <div class="kbf-card">
               <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg" alt="">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/capslock-fill.svg" alt="">
               </div>
                 <h4 style="font-weight: 500;">Build a Track Record</h4>
                <p>Every campaign you complete, every update you post — it all builds your profile. Future campaigns get funded faster because your reputation speaks first.</p>
@@ -947,21 +997,18 @@ function bntm_kbf_render_landing() {
           <!-- Values row -->
           <div class="kbf-about-values">
             <div class="kbf-about-value">
-              <div class="kbf-about-value-icon">🤝</div>
               <div>
                 <div class="kbf-about-value-title">Rooted in bayanihan</div>
                 <div class="kbf-about-value-desc">We didn't invent community giving. We just built infrastructure worthy of it.</div>
               </div>
             </div>
             <div class="kbf-about-value">
-              <div class="kbf-about-value-icon">🔍</div>
               <div>
                 <div class="kbf-about-value-title">Radical transparency</div>
                 <div class="kbf-about-value-desc">Every peso tracked. Every organizer verified. No black holes.</div>
               </div>
             </div>
             <div class="kbf-about-value">
-              <div class="kbf-about-value-icon">🇵🇭</div>
               <div>
                 <div class="kbf-about-value-title">Built for Filipinos</div>
                 <div class="kbf-about-value-desc">GCash, local banks, Taglish — designed for how we actually live.</div>
@@ -1022,6 +1069,18 @@ function bntm_kbf_render_landing() {
                 <p>Recurring sponsorships are planned and will be available in a future update.</p>
               </div></div>
             </details>
+            <details>
+              <summary>How do organizers receive the funds?</summary>
+              <div class="kbf-faq-body"><div>
+                <p>Funds are released to organizers based on the platform’s payout schedule and verification steps.</p>
+              </div></div>
+            </details>
+            <details>
+              <summary>What if a fundraiser looks suspicious?</summary>
+              <div class="kbf-faq-body"><div>
+                <p>You can report the fundraiser and our team will review it promptly.</p>
+              </div></div>
+            </details>
           </div>
         </div>
 
@@ -1053,6 +1112,10 @@ function bntm_kbf_render_landing() {
     <!-- ================== JS ================== -->
     <script>
     window.kbfScrollTo = function(id) {
+        if (id === 'kbf-home') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return false;
+        }
         var target = document.getElementById(id);
         if (!target) return false;
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1091,13 +1154,13 @@ function bntm_kbf_render_landing() {
         });
     });
     // Hamburger menu toggle
-    (function() {
-        var btn = document.getElementById('kbf-hamburger-btn');
-        var menu = document.getElementById('kbf-mobile-menu');
-        var overlay = document.getElementById('kbf-mobile-overlay');
-        var icon = document.getElementById('kbf-hamburger-icon');
-        if (!btn || !menu) return;
-        var open = false;
+      (function() {
+          var btn = document.getElementById('kbf-hamburger-btn');
+          var menu = document.getElementById('kbf-mobile-menu');
+          var overlay = document.getElementById('kbf-mobile-overlay');
+          var icon = document.getElementById('kbf-hamburger-icon');
+          if (!btn || !menu) return;
+          var open = false;
 
         function openMenu() {
             open = true;
@@ -1113,12 +1176,17 @@ function bntm_kbf_render_landing() {
             icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg';
         }
 
-        btn.addEventListener('click', function() {
-            open ? closeMenu() : openMenu();
-        });
+          btn.addEventListener('click', function() {
+              open ? closeMenu() : openMenu();
+          });
 
-        if (overlay) overlay.addEventListener('click', closeMenu);
-    })();
+          if (overlay) overlay.addEventListener('click', closeMenu);
+          window.addEventListener('resize', function(){
+              if (window.innerWidth > 900 && open) {
+                  closeMenu();
+              }
+          });
+      })();
 
         // Sticky navbar scroll effect
     (function() {
@@ -1159,3 +1227,4 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
+

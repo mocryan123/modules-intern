@@ -128,12 +128,19 @@ function bntm_shortcode_kbf_dashboard() {
         align-items:center;
         justify-content:space-between;
         gap:16px;
-        padding:8px 4px 14px;
-        background:transparent;
-        border:none;
-        border-radius:0;
-        box-shadow:none;
-        margin-bottom:10px;
+        padding:10px 16px;
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        border-radius:16px;
+        box-shadow: 0 6px 18px rgba(15, 40, 80, 0.08);
+        margin-bottom:16px;
+        position: sticky;
+        top: 10px;
+        z-index: 1000;
+        width: 100%;
+        box-sizing: border-box;
     }
     .kbf-dashboard-brand{
         display:flex;
