@@ -37,17 +37,21 @@ function kbf_dashboard_find_funds_tab() {
         display:grid;
         grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
         gap:18px;
+        overflow:visible;
       }
       .kbf-explore-card{
         background:#fff;
         border:1px solid var(--kbf-border);
         border-radius:18px;
-        overflow:hidden;
+        overflow:visible;
         box-shadow:var(--kbf-shadow);
         display:flex;
         flex-direction:column;
         transition:box-shadow .2s ease, transform .15s ease;
+        position:relative;
+        z-index:1;
       }
+      .kbf-explore-card.is-menu-open{z-index:60;}
       .kbf-explore-card:hover{
         box-shadow:var(--kbf-shadow-lg);
         transform:translateY(-2px);
@@ -60,6 +64,7 @@ function kbf_dashboard_find_funds_tab() {
       }
       .kbf-explore-media-frame{
         border-radius:16px;
+        overflow:hidden;
       }
       .kbf-explore-media img{
         width:100%;
@@ -114,6 +119,8 @@ function kbf_dashboard_find_funds_tab() {
         flex-direction:column;
         gap:10px;
         flex:1;
+        position:relative;
+        z-index:2;
       }
       .kbf-explore-title{
         font-size:14.5px;
@@ -209,6 +216,36 @@ function kbf_dashboard_find_funds_tab() {
         box-shadow:
           0 2px 6px rgba(32, 112, 224, 0.16),
           0 6px 16px rgba(42, 120, 220, 0.22);
+      }
+      .kbf-explore-more-wrap{position:relative;z-index:30;}
+      .kbf-explore-more-menu{
+        position:absolute;
+        right:0;
+        top:calc(100% + 8px);
+        background:#fff;
+        border:1px solid var(--kbf-border);
+        border-radius:12px;
+        box-shadow:var(--kbf-shadow);
+        padding:6px;
+        min-width:150px;
+        display:none;
+        z-index:50;
+      }
+      .kbf-explore-more-menu.open{display:block;}
+      .kbf-explore-actions .kbf-btn-sm{
+        height:32px;
+        min-width:32px;
+        padding:0;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+      }
+      .kbf-explore-actions .kbf-btn-sm img{margin:0;}
+      .kbf-explore-more-menu button{
+        width:100%;
+        justify-content:flex-start;
+        gap:8px;
+        margin:4px 0;
       }
       .kbf-explore-pager{
         display:flex;
@@ -386,6 +423,7 @@ function kbf_dashboard_find_funds_tab() {
         Showing funds near: <strong><?php echo esc_html($loc); ?></strong>
       </div>
       <?php endif; ?>
+      <div class="kbf-cta-note" id="kbf-explore-tip"><strong>Tip:</strong> Funds with regular updates raise up to 3x more.</div>
     </div>
 
     <!-- Fund grid -->
@@ -453,12 +491,24 @@ function kbf_dashboard_find_funds_tab() {
           <?php if($is_own): ?>
           <div class="kbf-explore-actions is-own">
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-primary" style="font-size:12.5px;text-align:center;">View Details</a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')" title="Share">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>')" title="Save" data-tooltip="Save">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </button>
-            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbffOpenReport(<?php echo $f->id; ?>)" title="Report">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="13" height="13" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
-            </button>
+            <div class="kbf-explore-more-wrap">
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleExploreMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              </button>
+              <div class="kbf-explore-more-menu" id="kbf-explore-more-<?php echo esc_attr($f->id); ?>">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Share
+                </button>
+                <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
+                  Report
+                </button>
+              </div>
+            </div>
           </div>
           <?php else: ?>
           <div class="kbf-explore-actions is-public">
@@ -469,12 +519,24 @@ function kbf_dashboard_find_funds_tab() {
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-secondary kbf-btn-sm" title="View full details">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')" title="Share">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>')" title="Save" data-tooltip="Save">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </button>
-            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbffOpenReport(<?php echo $f->id; ?>)" title="Report">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="13" height="13" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
-            </button>
+            <div class="kbf-explore-more-wrap">
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleExploreMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              </button>
+              <div class="kbf-explore-more-menu" id="kbf-explore-more-<?php echo esc_attr($f->id); ?>">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Share
+                </button>
+                <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
+                  Report
+                </button>
+              </div>
+            </div>
           </div>
           <?php endif; ?>
         </div>
@@ -602,6 +664,35 @@ function kbf_dashboard_find_funds_tab() {
         render();
     })();
 
+    if (typeof window.kbfSaveFund === 'undefined') {
+        window.kbfSaveFund = function(id){
+            alert('Saved! (Feature coming soon)');
+        };
+    }
+    window.kbfToggleExploreMore=function(e,id){
+        if(e) e.stopPropagation();
+        var menu = document.getElementById('kbf-explore-more-' + id);
+        if(!menu) return;
+        var card = menu.closest('.kbf-explore-card');
+        menu.onclick = function(ev){ ev.stopPropagation(); };
+        document.querySelectorAll('.kbf-explore-more-menu.open').forEach(function(m){
+            if(m !== menu) m.classList.remove('open');
+        });
+        document.querySelectorAll('.kbf-explore-card.is-menu-open').forEach(function(c){
+            if(!card || c !== card) c.classList.remove('is-menu-open');
+        });
+        menu.classList.toggle('open');
+        if(card){ card.classList.toggle('is-menu-open', menu.classList.contains('open')); }
+    };
+    document.addEventListener('click', function(){
+        document.querySelectorAll('.kbf-explore-more-menu.open').forEach(function(m){
+            m.classList.remove('open');
+        });
+        document.querySelectorAll('.kbf-explore-card.is-menu-open').forEach(function(c){
+            c.classList.remove('is-menu-open');
+        });
+    });
+
     window.kbffOpenReport=function(id){document.getElementById('kbff-report-fund-id').value=id;document.getElementById('kbff-modal-report').style.display='flex';};
     window.kbffOpenSponsor=function(id,title,goal,raised,img){
         document.getElementById('kbff-fund-id').value=id;
@@ -693,6 +784,35 @@ function kbf_dashboard_find_funds_tab() {
             else{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     };
+    (function(){
+        var tipEl = document.getElementById('kbf-explore-tip');
+        if(!tipEl) return;
+        var tips = [
+            'Tip: Funds with regular updates raise up to 3x more.',
+            'Tip: Add 2–3 photos to build trust quickly.',
+            'Tip: Clear titles get more clicks in search.',
+            'Tip: Short, specific titles perform better in search.',
+            'Tip: Goals with clear purposes get more sponsors.',
+            'Tip: Share to your closest circles first for momentum.',
+            'Tip: Use real photos to improve credibility.',
+            'Tip: Thank early sponsors to build social proof.',
+            'Tip: Post updates after big milestones.',
+            'Tip: Found a malicious fund post? Report it to us.'
+        ];
+        function pickRandom(){
+            return tips[Math.floor(Math.random()*tips.length)];
+        }
+        function setTip(){
+            var next = pickRandom();
+            if(next.indexOf('Tip:') === 0){
+                tipEl.innerHTML = '<strong>Tip:</strong> ' + next.replace(/^Tip:\s*/,'');
+            } else {
+                tipEl.textContent = next;
+            }
+        }
+        setTip();
+        setInterval(setTip, 180000);
+    })();
     </script>
     <?php
     return ob_get_clean();

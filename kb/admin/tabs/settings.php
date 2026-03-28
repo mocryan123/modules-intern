@@ -44,7 +44,7 @@ function kbf_admin_settings_tab() {
           </div>
         </div>
         <?php if($demo_mode): ?>
-        <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="font-size:12.5px;display:flex;align-items:center;gap:8px;width:100%;margin-top:12px;">
+        <div class="kbf-alert kbf-alert-warning kbf-alert-noicon kbf-alert-compact kbf-alert-block" style="margin-top:12px;">
           <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
               <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/>
@@ -53,7 +53,7 @@ function kbf_admin_settings_tab() {
           <div><strong>Demo Mode is active.</strong> Configure your Maya API keys below, then switch to Live.</div>
         </div>
         <?php else: ?>
-        <div class="kbf-alert kbf-alert-success kbf-alert-noicon" style="font-size:12.5px;margin-top:12px;display:flex;align-items:center;gap:8px;"><span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM12.03 5.97a.75.75 0 0 0-1.06-1.06L7.5 8.44 5.53 6.47a.75.75 0 1 0-1.06 1.06L6.97 10a.75.75 0 0 0 1.06 0l4-4z"/></svg></span><div><strong>Live Mode active.</strong> Maya Checkout processes all payments. Sandbox keys used for testing.</div></div>
+        <div class="kbf-alert kbf-alert-success kbf-alert-noicon kbf-alert-compact kbf-alert-block" style="margin-top:12px;"><span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM12.03 5.97a.75.75 0 0 0-1.06-1.06L7.5 8.44 5.53 6.47a.75.75 0 1 0-1.06 1.06L6.97 10a.75.75 0 0 0 1.06 0l4-4z"/></svg></span><div><strong>Live Mode active.</strong> Maya Checkout processes all payments. Sandbox keys used for testing.</div></div>
         <?php endif; ?>
       </div>
 
@@ -151,7 +151,7 @@ function kbf_admin_settings_tab() {
             fetch((window.ajaxurl || '<?php echo admin_url('admin-ajax.php'); ?>'), {method:'POST', body:fd})
             .then(r => r.json()).then(j => {
                 if (++done === pairs.length && msg) {
-                    msg.innerHTML = '<div class="kbf-alert kbf-alert-success" style="font-size:13px;">' + (type==='sandbox'?'Sandbox':'Live') + ' keys saved successfully.</div>';
+                    msg.innerHTML = '<div class="kbf-alert kbf-alert-success kbf-alert-compact">' + (type==='sandbox'?'Sandbox':'Live') + ' keys saved successfully.</div>';
                     setTimeout(() => msg.innerHTML = '', 4000);
                 }
             });

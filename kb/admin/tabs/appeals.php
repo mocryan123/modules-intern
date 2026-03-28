@@ -23,14 +23,14 @@ function kbf_admin_appeals_tab() {
               <strong style="font-size:14px;">Fund: <?php echo esc_html($a->fund_title); ?></strong>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:6px 0 0;"><?php echo esc_html($a->message); ?></p>
               <div class="kbf-meta" style="margin-top:6px;">Appeal ID: <?php echo esc_html($a->rand_id); ?> &bull; <?php echo date('M d, Y H:i',strtotime($a->created_at)); ?></div>
-              <?php if($a->admin_notes): ?><div class="kbf-alert kbf-alert-info" style="margin-top:8px;font-size:12px;"><strong>Admin Note:</strong> <?php echo esc_html($a->admin_notes); ?></div><?php endif; ?>
+              <?php if($a->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><strong>Admin Note:</strong> <?php echo esc_html($a->admin_notes); ?></div><?php endif; ?>
             </div>
             <span class="kbf-badge kbf-badge-<?php echo $a->status; ?>"><?php echo ucfirst($a->status); ?></span>
           </div>
           <?php if($a->status==='open'): ?>
-          <div class="kbf-btn-group">
+          <div class="kbf-btn-group" style="justify-content:flex-end;gap:8px;">
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfReviewAppeal(<?php echo $a->id; ?>,'reject')">Reject</button>
             <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfReviewAppeal(<?php echo $a->id; ?>,'approve')">Approve & Reinstate</button>
-            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfReviewAppeal(<?php echo $a->id; ?>,'reject')">Reject</button>
           </div>
           <?php endif; ?>
         </div>

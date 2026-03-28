@@ -16,6 +16,7 @@ function kbf_dashboard_overview_tab($business_id) {
     $total_raised   = (float)$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(raised_amount),0) FROM {$ft} WHERE business_id=%d",$business_id));
     $total_sponsors = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$business_id));
     $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
+    $find_funds_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
 
     ob_start();
     ?>
@@ -50,10 +51,6 @@ function kbf_dashboard_overview_tab($business_id) {
       </style>
       <div class="kbf-section-header">
         <h3 class="kbf-section-title">Dashboard Overview</h3>
-        <button class="kbf-btn kbf-btn-primary" onclick="kbfOpenModal('kbf-modal-create')">
-          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          Create Fund
-        </button>
       </div>
       <?php if($pending_funds > 0): ?>
       <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;">
@@ -201,10 +198,22 @@ function kbf_dashboard_overview_tab($business_id) {
                 <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
               </div>
               <div class="kbf-meta">
-                <?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?>
-                <?php if($days_left!==null): ?> &bull; <span style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;font-weight:600;"><?php echo $days_left; ?> days left</span><?php endif; ?>
-                &bull; <?php echo $sc; ?> sponsors
-                &bull; Escrow: <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
+                <div class="kbf-meta-row">
+                  <span class="kbf-meta-item"><?php echo esc_html($f->category); ?></span>
+                  <span class="kbf-meta-divider"></span>
+                  <span class="kbf-meta-item"><?php echo esc_html($f->location); ?></span>
+                </div>
+                <div class="kbf-meta-row">
+                  <?php if($days_left!==null): ?>
+                    <span class="kbf-meta-item kbf-meta-strong" style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;"><?php echo $days_left; ?> days left</span>
+                    <span class="kbf-meta-divider"></span>
+                  <?php endif; ?>
+                  <span class="kbf-meta-item"><?php echo $sc; ?> sponsors</span>
+                  <span class="kbf-meta-divider"></span>
+                  <span class="kbf-meta-item">Escrow:
+                    <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -214,33 +223,52 @@ function kbf_dashboard_overview_tab($business_id) {
             <span><strong>₱<?php echo number_format($f->goal_amount,2); ?></strong>goal</span>
             <span><strong><?php echo round($pct); ?>%</strong>funded</span>
           </div>
-          <div class="kbf-btn-group" style="margin-top:12px;">
+          <?php
+            $wd_block = $last_wd && in_array($last_wd->status, ['pending','approved','released']);
+          ?>
+          <div class="kbf-card-actions">
             <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund_id',$f->id,$fund_details_url)); ?>">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
               View Details
             </a>
-            <?php if(in_array($f->status,['active','pending'])): ?>
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>)">Edit</button>
-            <?php endif; ?>
-            <?php
-              $wd_block = $last_wd && in_array($last_wd->status, ['pending','approved','released']);
-            ?>
-            <?php if(in_array($f->status,['active','completed']) && $f->raised_amount>0 && !$wd_block): ?>
-              <button class="kbf-btn kbf-btn-primary kbf-btn-sm" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Request Withdrawal
-              </button>
-            <?php endif; ?>
-            <?php if($f->status==='active' && $f->raised_amount>=$f->goal_amount): ?>
-              <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfMarkComplete(<?php echo $f->id; ?>)">Mark Complete</button>
-            <?php endif; ?>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-              Share
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>')" title="Save" data-tooltip="Save">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </button>
-            <?php if(!in_array($f->status,['cancelled','completed'])): ?>
-              <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfCancelFund(<?php echo $f->id; ?>)">Cancel</button>
-            <?php endif; ?>
+            <div class="kbf-card-more-wrap">
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              </button>
+              <div class="kbf-card-more-menu" id="kbf-home-more-<?php echo esc_attr($f->id); ?>">
+                <?php if(in_array($f->status,['active','pending'])): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>)">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/pencil-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Edit
+                </button>
+                <?php endif; ?>
+                <?php if(in_array($f->status,['active','completed']) && $f->raised_amount>0 && !$wd_block): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Request Withdrawal
+                </button>
+                <?php endif; ?>
+                <?php if($f->status==='active' && $f->raised_amount>=$f->goal_amount): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfMarkComplete(<?php echo $f->id; ?>)">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check2-circle.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Mark Complete
+                </button>
+                <?php endif; ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Share
+                </button>
+                <?php if(!in_array($f->status,['cancelled','completed'])): ?>
+                <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfCancelFund(<?php echo $f->id; ?>)">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
+                  Cancel
+                </button>
+                <?php endif; ?>
+              </div>
+            </div>
           </div>
           <?php
           $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' ORDER BY amount DESC LIMIT 5",$f->id));
@@ -270,6 +298,43 @@ function kbf_dashboard_overview_tab($business_id) {
       <?php endforeach; ?>
       </div>
       <?php endif; ?>
+      <div class="kbf-cta-card">
+        <div>
+          <div class="kbf-cta-eyebrow">Next Step</div>
+          <div class="kbf-cta-title">Launch your next fundraiser</div>
+          <div class="kbf-cta-sub">Create a new fund to mobilize support. Keep updates consistent to build trust and improve conversion.</div>
+          <div class="kbf-cta-checklist">
+            <div class="kbf-cta-check">
+              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              Add a clear goal and deadline
+            </div>
+            <div class="kbf-cta-check">
+              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              Upload 2–3 photos to build trust
+            </div>
+            <div class="kbf-cta-check">
+              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              Share once it’s live to get first sponsors
+            </div>
+            <div class="kbf-cta-check">
+              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              Post a quick update every milestone
+            </div>
+          </div>
+        </div>
+        <div class="kbf-cta-right">
+          <div class="kbf-cta-actions">
+            <button class="kbf-btn kbf-btn-primary" onclick="kbfOpenModal('kbf-modal-create')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Start a Fundraiser
+            </button>
+            <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url($find_funds_url); ?>">
+              Browse Funds
+            </a>
+          </div>
+          <div class="kbf-cta-note">Start a fund in under 3 minutes. We’ll guide you step‑by‑step.</div>
+        </div>
+      </div>
       
     <!-- ================== JS ================== -->
     <script>
@@ -369,6 +434,30 @@ function kbf_dashboard_overview_tab($business_id) {
 
         render();
       })();
+
+      window.kbfToggleHomeMore=function(e,id){
+        if(e) e.stopPropagation();
+        var menu = document.getElementById('kbf-home-more-' + id);
+        if(!menu) return;
+        var card = menu.closest('.kbf-card');
+        menu.onclick = function(ev){ ev.stopPropagation(); };
+        document.querySelectorAll('.kbf-card-more-menu.open').forEach(function(m){
+          if(m !== menu) m.classList.remove('open');
+        });
+        document.querySelectorAll('.kbf-card.is-menu-open').forEach(function(c){
+          if(!card || c !== card) c.classList.remove('is-menu-open');
+        });
+        menu.classList.toggle('open');
+        if(card){ card.classList.toggle('is-menu-open', menu.classList.contains('open')); }
+      };
+      document.addEventListener('click', function(){
+        document.querySelectorAll('.kbf-card-more-menu.open').forEach(function(m){
+          m.classList.remove('open');
+        });
+        document.querySelectorAll('.kbf-card.is-menu-open').forEach(function(c){
+          c.classList.remove('is-menu-open');
+        });
+      });
       </script>
     </div>
     <?php return ob_get_clean();

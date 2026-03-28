@@ -59,24 +59,24 @@ function bntm_shortcode_kbf_dashboard() {
     --kbf-shadow: rgba(0, 0, 0, 0.05) 0px 2px 4px -1px, rgba(0, 0, 0, 0.04) 0px 1px 2px -1px;
     --kbf-shadow-lg: rgba(0, 0, 0, 0.06) 0px 6px 12px -3px, rgba(0, 0, 0, 0.05) 0px 3px 6px -2px;
 }
-    .kbf-user-ui h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:#0d1a2e;margin:0 0 6px;}
-    .kbf-user-ui h2{font-size:22px;font-weight:600;color:#0f172a;margin:0 0 6px;}
-    .kbf-user-ui h3{font-size:16px;font-weight:600;color:#0f172a;margin:0 0 6px;}
-    .kbf-user-ui h4{font-size:14px;font-weight:600;color:#0f172a;margin:0 0 6px;}
-    .kbf-user-ui p{font-size:13.5px;font-weight:400;color:#4f5a6b;line-height:1.6;margin:0;}
+    .kbf-user-ui h1{font-size:28px;font-weight:700;letter-spacing:-0.4px;color:#0d1a2e;margin:0 0 6px;line-height:1.2;}
+    .kbf-user-ui h2{font-size:22px;font-weight:600;color:#0f172a;margin:0 0 6px;line-height:1.3;}
+    .kbf-user-ui h3{font-size:16px;font-weight:600;color:#0f172a;margin:0 0 6px;line-height:1.35;}
+    .kbf-user-ui h4{font-size:14px;font-weight:600;color:#0f172a;margin:0 0 6px;line-height:1.4;}
+    .kbf-user-ui p{font-size:13.5px;font-weight:400;color:#4f5a6b;line-height:1.65;margin:0;}
     .kbf-user-ui small,
     .kbf-user-ui .kbf-meta,
     .kbf-user-ui .kbf-text-sm{font-size:12.5px;color:#4f5a6b;}
     .kbf-user-ui label{font-size:13px;font-weight:600;color:#4f5a6b;}
     .kbf-user-ui .kbf-table thead th{
-        font-size:11px;
-        font-weight:700;
+        font-size:10.5px;
+        font-weight:600;
         text-transform:uppercase;
-        letter-spacing:.5px;
-        color:#64748b;
+        letter-spacing:.6px;
+        color:#94a3b8;
     }
     .kbf-user-ui .kbf-table tbody td{font-size:12.5px;color:#0f172a;}
-    .kbf-user-ui .kbf-btn{font-weight:400;}
+    .kbf-user-ui .kbf-btn{font-weight:600;}
     .kbf-user-ui .kbf-card,
     .kbf-user-ui .kbf-fund-card,
     .kbf-user-ui .kbf-filter-bar{
@@ -85,6 +85,8 @@ function bntm_shortcode_kbf_dashboard() {
         box-shadow:var(--kbf-shadow);
         transition:transform .2s ease, box-shadow .2s ease;
     }
+    .kbf-user-ui .kbf-card{overflow:visible;position:relative;z-index:1;}
+    .kbf-user-ui .kbf-card.is-menu-open{z-index:60;}
     .kbf-user-ui .kbf-card:hover,
     .kbf-user-ui .kbf-fund-card:hover{
         transform:translateY(-3px);
@@ -135,9 +137,45 @@ function bntm_shortcode_kbf_dashboard() {
         transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
     }
     .kbf-user-ui .kbf-btn-secondary{
-        background:#ffffff;
-        border:1px solid #dfe7f3;
-        color:#344055;
+        background:#f8fafc;
+        border:1px solid #e5e7eb;
+        color:#334155;
+    }
+    .kbf-card-actions{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        justify-content:flex-start;
+        margin-top:12px;
+    }
+    .kbf-card-actions .kbf-btn-sm{
+        height:32px;
+        min-width:32px;
+        padding:0 10px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .kbf-card-more-wrap{position:relative;}
+    .kbf-card-more-menu{
+        position:absolute;
+        right:0;
+        top:calc(100% + 8px);
+        background:#fff;
+        border:1px solid var(--kbf-border);
+        border-radius:12px;
+        box-shadow:var(--kbf-shadow);
+        padding:6px;
+        min-width:180px;
+        display:none;
+        z-index:50;
+    }
+    .kbf-card-more-menu.open{display:block;}
+    .kbf-card-more-menu button{
+        width:100%;
+        justify-content:flex-start;
+        gap:8px;
+        margin:4px 0;
     }
     .kbf-user-ui .kbf-meta,
     .kbf-user-ui .kbf-text-sm,
@@ -190,7 +228,7 @@ function bntm_shortcode_kbf_dashboard() {
         align-items:center;
         flex-wrap:wrap;
     }
-    .kbf-nav a{position:relative;text-decoration:none;color:#64748b;font-weight:400;display:inline-flex;align-items:center;}
+    .kbf-nav a{position:relative;text-decoration:none;color:#64748b;font-weight:500;display:inline-flex;align-items:center;}
     .kbf-nav a::after{
         content:'';
         position:absolute;

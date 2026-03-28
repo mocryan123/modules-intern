@@ -347,12 +347,12 @@ function kbf_dashboard_profile_tab($business_id) {
             </div>
 
             <?php if($profile && !empty($profile->verify_status) && $profile->verify_status==='pending'): ?>
-              <div class="kbf-alert kbf-alert-warning" style="width:100%;box-sizing:border-box;margin:6px 0 6px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:2px;padding-bottom:2px;">
+              <div class="kbf-alert kbf-alert-warning kbf-alert-compact kbf-alert-center kbf-alert-block" style="margin:6px 0;">
                 Pending.
               </div>
             <?php endif; ?>
             <?php if($profile && !empty($profile->verify_status) && $profile->verify_status==='rejected' && !empty($profile->verify_notes)): ?>
-              <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="width:100%;box-sizing:border-box;margin:6px 0 6px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;padding-top:2px;padding-bottom:2px;">
+              <div class="kbf-alert kbf-alert-error kbf-alert-noicon kbf-alert-compact kbf-alert-center kbf-alert-block" style="margin:6px 0;">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="14" height="14" style="filter:invert(21%) sepia(70%) saturate(4683%) hue-rotate(342deg) brightness(88%) contrast(101%);">
                 Verification rejected: <?php echo esc_html($profile->verify_notes); ?>
               </div>
