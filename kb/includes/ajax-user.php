@@ -50,6 +50,9 @@ function bntm_ajax_kbf_create_fund() {
     if(!$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz))) {
         $wpdb->insert($pt,['business_id'=>$biz],['%d']);
     }
+    if (function_exists('kbf_get_or_create_organizer_token')) {
+        kbf_get_or_create_organizer_token($biz);
+    }
     if($res) wp_send_json_success(['message'=>'Fund submitted for review! We will notify you once approved.']);
     else wp_send_json_error(['message'=>'Failed to create fund. Please try again.']);
 }
@@ -208,6 +211,9 @@ function bntm_ajax_kbf_save_organizer_profile() {
         $insert_formats = array_fill(0, count($data), '%s');
         $wpdb->insert($pt, $data, $insert_formats);
     }
+    if (function_exists('kbf_get_or_create_organizer_token')) {
+        kbf_get_or_create_organizer_token($biz);
+    }
     wp_send_json_success(['message'=>'Profile saved successfully!']);
 }
 
@@ -327,6 +333,32 @@ function bntm_ajax_kbf_report_fund() {
     $res=$wpdb->insert($t,['rand_id'=>bntm_rand_id(),'fund_id'=>$id,'reporter_id'=>get_current_user_id(),'reporter_email'=>sanitize_email($_POST['reporter_email']??''),'reason'=>$reason,'details'=>$details,'status'=>'open'],['%s','%d','%d','%s','%s','%s','%s']);
     if($res) wp_send_json_success(['message'=>'Report submitted. Our team will review it shortly.']);
     else wp_send_json_error(['message'=>'Failed to submit report.']);
+}
+
+function bntm_ajax_kbf_toggle_save_fund() {
+    check_ajax_referer('kbf_save_fund','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Please log in to save funds.']); }
+    global $wpdb;
+    $sf = $wpdb->prefix.'kbf_saved_funds';
+    $ft = $wpdb->prefix.'kbf_funds';
+    // Ensure saved table exists (for fresh installs)
+    $table_exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $sf));
+    if(!$table_exists && function_exists('bntm_kbf_create_tables')) {
+        bntm_kbf_create_tables();
+    }
+    $fund_id = intval($_POST['fund_id'] ?? 0);
+    $user_id = get_current_user_id();
+    if(!$fund_id) wp_send_json_error(['message'=>'Invalid fund.']);
+    $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$ft} WHERE id=%d", $fund_id));
+    if(!$exists) wp_send_json_error(['message'=>'Fund not found.']);
+    $saved_id = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$sf} WHERE user_id=%d AND fund_id=%d", $user_id, $fund_id));
+    if($saved_id) {
+        $wpdb->delete($sf, ['id'=>$saved_id], ['%d']);
+        wp_send_json_success(['saved'=>false,'message'=>'Removed from saved.']);
+    } else {
+        $wpdb->insert($sf, ['user_id'=>$user_id,'fund_id'=>$fund_id], ['%d','%d']);
+        wp_send_json_success(['saved'=>true,'message'=>'Saved!']);
+    }
 }
 
 function bntm_ajax_kbf_submit_appeal() {

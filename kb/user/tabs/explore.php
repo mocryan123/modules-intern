@@ -11,22 +11,43 @@ function kbf_dashboard_find_funds_tab() {
     // Filters from GET
     $q    = isset($_GET['ff_q'])   ? sanitize_text_field($_GET['ff_q'])   : '';
     $cat  = isset($_GET['ff_cat']) ? sanitize_text_field($_GET['ff_cat']) : '';
-    $loc  = isset($_GET['ff_loc']) ? sanitize_text_field($_GET['ff_loc']) : '';
     $sort = isset($_GET['ff_sort'])? sanitize_text_field($_GET['ff_sort']): 'newest';
+    $saved_only = isset($_GET['ff_saved']) ? sanitize_text_field($_GET['ff_saved']) : '';
 
     $where = "WHERE f.status='active'"; $params = [];
-    if($q)  { $where .= " AND (f.title LIKE %s OR f.description LIKE %s)"; $params[] = "%".$wpdb->esc_like($q)."%"; $params[] = "%".$wpdb->esc_like($q)."%"; }
+    if($saved_only) {
+        $where = "WHERE f.status IN ('active','completed')";
+    }
+    if($q)  { $where .= " AND (f.title LIKE %s OR f.description LIKE %s OR f.location LIKE %s OR u.display_name LIKE %s)"; $params[] = "%".$wpdb->esc_like($q)."%"; $params[] = "%".$wpdb->esc_like($q)."%"; $params[] = "%".$wpdb->esc_like($q)."%"; $params[] = "%".$wpdb->esc_like($q)."%"; }
     if($cat){ $where .= " AND f.category=%s"; $params[] = $cat; }
-    if($loc){ $where .= " AND f.location LIKE %s"; $params[] = "%".$wpdb->esc_like($loc)."%"; }
     $order = $sort === 'most_funded' ? 'f.raised_amount DESC' : ($sort === 'ending_soon' ? 'f.deadline ASC' : 'f.created_at DESC');
-    $sql = "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY {$order}";
-    $funds = !empty($params) ? $wpdb->get_results($wpdb->prepare($sql,...$params)) : $wpdb->get_results($sql); // phpcs:ignore
+    $join = '';
+    if($saved_only) {
+        if(!$current_user_id) {
+            $funds = [];
+        } else {
+            $sf = $wpdb->prefix.'kbf_saved_funds';
+            $join = "JOIN {$sf} sf ON sf.fund_id=f.id AND sf.user_id=%d";
+            array_unshift($params, $current_user_id);
+        }
+    }
+    if(!isset($funds)) {
+        $sql = "SELECT f.*,u.display_name as organizer_name FROM {$ft} f {$join} LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY {$order}";
+        $funds = !empty($params) ? $wpdb->get_results($wpdb->prepare($sql,...$params)) : $wpdb->get_results($sql); // phpcs:ignore
+    }
     $cats  = kbf_get_categories();
     $nonce_sponsor = wp_create_nonce('kbf_sponsor');
     $nonce_report  = wp_create_nonce('kbf_report');
+    $nonce_save    = wp_create_nonce('kbf_save_fund');
     $fund_details_url = kbf_get_page_url('fund_details');
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
     $base_url = strtok($_SERVER['REQUEST_URI'],'?').'?kbf_tab=find_funds';
+    $saved_ids = [];
+    if($current_user_id) {
+        $sf = $wpdb->prefix.'kbf_saved_funds';
+        $saved_ids = $wpdb->get_col($wpdb->prepare("SELECT fund_id FROM {$sf} WHERE user_id=%d", $current_user_id));
+    $saved_ids = array_map('intval', $saved_ids);
+    }
 
     ob_start();
     ?>
@@ -258,6 +279,20 @@ function kbf_dashboard_find_funds_tab() {
         justify-content:center;
       }
       .kbf-explore-actions .kbf-btn-sm img{margin:0;}
+      .kbf-save-btn{
+        transition:all .3s ease;
+      }
+      .kbf-save-btn img{
+        transition:filter .3s ease, transform .3s ease;
+      }
+      .kbf-save-btn.is-saved{
+        background:#e7f1ff;
+        border-color:#bfd7ff;
+        color:#1d4ed8;
+      }
+      .kbf-save-btn.is-saved img{
+        filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
+      }
       .kbf-explore-more-menu button{
         width:100%;
         justify-content:flex-start;
@@ -393,10 +428,11 @@ function kbf_dashboard_find_funds_tab() {
     <!-- Header -->
     <div style="background:#fff;border:none;border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:none;">
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-        <form method="GET" style="display:flex;gap:8px;flex-wrap:nowrap;flex:1;align-items:center;" id="kbff-search-form">
+        <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;align-items:center;" id="kbff-search-form">
           <input type="hidden" name="kbf_tab" value="find_funds">
           <?php if($cat): ?><input type="hidden" name="ff_cat" value="<?php echo esc_attr($cat); ?>"><?php endif; ?>
           <?php if($sort && $sort!=='newest'): ?><input type="hidden" name="ff_sort" value="<?php echo esc_attr($sort); ?>"><?php endif; ?>
+          <?php if($saved_only): ?><input type="hidden" name="ff_saved" value="<?php echo esc_attr($saved_only); ?>"><?php endif; ?>
 
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -420,9 +456,17 @@ function kbf_dashboard_find_funds_tab() {
             </select>
           </div>
 
-          <input type="text" name="ff_q" value="<?php echo esc_attr($q); ?>" placeholder="Search by title or description..." style="flex:2;min-width:0;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
-          <input type="text" name="ff_loc" id="kbff-loc-input" value="<?php echo esc_attr($loc); ?>" placeholder="Location (city, province)..." style="flex:1;min-width:0;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="14" height="14">
+            </span>
+            <select id="kbff-saved-select" name="ff_saved" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:130px;">
+              <option value="">All Funds</option>
+              <option value="1" <?php echo $saved_only ? 'selected' : ''; ?>>Saved</option>
+            </select>
+          </div>
 
+          <input type="text" name="ff_q" id="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer..." style="flex:0 0 220px;min-width:200px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
           <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt.svg" alt="" width="14" height="14" style="margin-right:6px;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             Near Me
@@ -431,16 +475,11 @@ function kbf_dashboard_find_funds_tab() {
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/search.svg" alt="" width="14" height="14" style="filter:invert(100%);margin-right:6px;">
             Search
           </button>
-          <?php if($q||$cat||$loc): ?><a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-secondary" style="padding:9px 14px;">Clear</a><?php endif; ?>
         </form>
       </div>
-      <?php if($loc): ?>
-      <div style="margin-top:10px;font-size:12.5px;color:var(--kbf-text-sm);display:flex;align-items:center;gap:6px;">
-        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-        Showing funds near: <strong><?php echo esc_html($loc); ?></strong>
+      <div class="kbf-cta-note" id="kbf-explore-tip" style="font-size:12.5px;color:var(--kbf-slate);margin-top:10px;">
+        <strong>Tip:</strong> Funds with regular updates raise up to 3x more.
       </div>
-      <?php endif; ?>
-      <div class="kbf-cta-note" id="kbf-explore-tip"><strong>Tip:</strong> Funds with regular updates raise up to 3x more.</div>
     </div>
 
     <!-- Fund grid -->
@@ -459,10 +498,14 @@ function kbf_dashboard_find_funds_tab() {
         $days  = $f->deadline ? max(0,ceil((strtotime($f->deadline)-time())/86400)) : null;
         $photos = $f->photos ? json_decode($f->photos,true) : [];
         $cover  = !empty($photos[0]) ? $photos[0] : null;
-        $detail_url = esc_url(add_query_arg('fund_id',$f->id,$fund_details_url));
+        $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : '';
+        $detail_url = esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url));
         $is_own = ($f->business_id == $current_user_id);
         $supporters = isset($f->sponsors_count) ? (int)$f->sponsors_count : (isset($f->sponsor_count) ? (int)$f->sponsor_count : 0);
         $supporters_label = $supporters > 0 ? $supporters.' people' : 'New';
+        $is_saved = in_array((int)$f->id, $saved_ids, true);
+        $save_icon = $is_saved ? 'bookmark-check-fill' : 'bookmark';
+        $save_title = $is_saved ? 'Saved' : 'Save';
       ?>
       <div class="kbf-explore-card">
 
@@ -486,6 +529,7 @@ function kbf_dashboard_find_funds_tab() {
           <a href="<?php echo $detail_url; ?>" style="text-decoration:none;">
           <div class="kbf-explore-title-row">
             <h4 class="kbf-explore-title kbf-explore-title-text"><?php echo esc_html($f->title); ?></h4>
+            <?php if(!empty($f->verified_badge)): ?><span class="kbf-badge kbf-badge-verified">Verified</span><?php endif; ?>
           </div>
         </a>
 
@@ -517,9 +561,9 @@ function kbf_dashboard_find_funds_tab() {
           <?php if($is_own): ?>
           <div class="kbf-explore-actions is-own">
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-primary" style="font-size:12.5px;text-align:center;">View Details</a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>')" title="Save" data-tooltip="Save">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-            </button>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" title="<?php echo esc_attr($save_title); ?>" data-tooltip="<?php echo esc_attr($save_title); ?>">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($save_icon); ?>.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              </button>
             <div class="kbf-explore-more-wrap">
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleExploreMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
@@ -545,9 +589,9 @@ function kbf_dashboard_find_funds_tab() {
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-secondary kbf-btn-sm" title="View full details">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>')" title="Save" data-tooltip="Save">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-            </button>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" title="<?php echo esc_attr($save_title); ?>" data-tooltip="<?php echo esc_attr($save_title); ?>">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($save_icon); ?>.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              </button>
             <div class="kbf-explore-more-wrap">
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleExploreMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
@@ -579,9 +623,10 @@ function kbf_dashboard_find_funds_tab() {
     (function(){
         var catSel = document.getElementById('kbff-cat-select');
         var sortSel = document.getElementById('kbff-sort-select');
+        var savedSel = document.getElementById('kbff-saved-select');
         var msg = document.getElementById('kbff-message');
         var msgCount = document.getElementById('kbff-message-count');
-        if (!catSel || !sortSel) return;
+        if (!catSel || !sortSel || !savedSel) return;
         function updateMsgCount(){
             if(!msg || !msgCount) return;
             msgCount.textContent = (msg.value ? msg.value.length : 0) + '/300';
@@ -593,16 +638,21 @@ function kbf_dashboard_find_funds_tab() {
         function buildUrl(){
             var url = '<?php echo esc_url($base_url); ?>';
             var params = [];
-            <?php if($q): ?>params.push('ff_q=<?php echo urlencode($q); ?>');<?php endif; ?>
-            <?php if($loc): ?>params.push('ff_loc=<?php echo urlencode($loc); ?>');<?php endif; ?>
+            var qEl = document.querySelector('#kbff-search-form input[name="ff_q"]');
+            if(qEl && qEl.value) params.push('ff_q=' + encodeURIComponent(qEl.value));
             if (catSel.value) params.push('ff_cat=' + encodeURIComponent(catSel.value));
             if (sortSel.value) params.push('ff_sort=' + encodeURIComponent(sortSel.value));
+            if (savedSel.value) params.push('ff_saved=' + encodeURIComponent(savedSel.value));
             if (params.length) url += '&' + params.join('&');
             return url;
         }
         catSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
         sortSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
+        savedSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
     })();
+
+    // Ensure Near Me fills the single search input
+    window.kbffNearMe = function() { kbfNearMe('kbff-search-input','kbff-search-form'); };
 
     (function(){
         var wrap = document.querySelector('.kbf-card-list[data-kbf-card-pager="explore"]');
@@ -690,9 +740,34 @@ function kbf_dashboard_find_funds_tab() {
         render();
     })();
 
+    var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
+    var kbfSavedOnly = '<?php echo $saved_only ? '1' : ''; ?>';
     if (typeof window.kbfSaveFund === 'undefined') {
-        window.kbfSaveFund = function(id){
-            alert('Saved! (Feature coming soon)');
+        window.kbfSaveFund = function(id, btn){
+            if(!id) return;
+            var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
+            var fd = new FormData();
+            fd.append('action','kbf_toggle_save_fund');
+            fd.append('nonce', kbfSaveNonce);
+            fd.append('fund_id', id);
+            kbfFetchJson(ajaxurl, fd, function(j){
+                if(j && j.success){
+                    var saved = !!(j.data && j.data.saved);
+                    if(el){
+                        el.classList.toggle('is-saved', saved);
+                        el.setAttribute('data-saved', saved ? '1' : '0');
+                        el.title = saved ? 'Saved' : 'Save';
+                        el.setAttribute('data-tooltip', saved ? 'Saved' : 'Save');
+                        var img = el.querySelector('img');
+                        if(img){ img.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/' + (saved ? 'bookmark-check-fill' : 'bookmark') + '.svg'; }
+                    }
+                    if(kbfSavedOnly && !saved){ window.location.reload(); }
+                } else {
+                    alert((j && j.data && j.data.message) ? j.data.message : 'Unable to save.');
+                }
+            }, function(err){
+                alert(err || 'Request failed.');
+            });
         };
     }
     window.kbfToggleExploreMore=function(e,id){
@@ -843,6 +918,7 @@ function kbf_dashboard_find_funds_tab() {
     <?php
     return ob_get_clean();
 }
+
 
 
 

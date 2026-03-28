@@ -17,6 +17,13 @@ function kbf_dashboard_overview_tab($business_id) {
     $total_sponsors = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$business_id));
     $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
     $find_funds_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
+    $nonce_save = wp_create_nonce('kbf_save_fund');
+    $saved_ids = [];
+    if($business_id){
+        $sf = $wpdb->prefix.'kbf_saved_funds';
+        $saved_ids = $wpdb->get_col($wpdb->prepare("SELECT fund_id FROM {$sf} WHERE user_id=%d", $business_id));
+        $saved_ids = array_map('intval', $saved_ids);
+    }
 
     ob_start();
     ?>
@@ -26,6 +33,20 @@ function kbf_dashboard_overview_tab($business_id) {
         .kbf-card-list[data-kbf-card-pager="home"] + .kbf-table-pager{
           margin-bottom:0;
           padding-bottom:0;
+        }
+        .kbf-save-btn{
+          transition:all .3s ease;
+        }
+        .kbf-save-btn img{
+          transition:filter .3s ease, transform .3s ease;
+        }
+        .kbf-save-btn.is-saved{
+          background:#e7f1ff;
+          border-color:#bfd7ff;
+          color:#1d4ed8;
+        }
+        .kbf-save-btn.is-saved img{
+          filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
         }
       </style>
       <style>
@@ -138,6 +159,8 @@ function kbf_dashboard_overview_tab($business_id) {
         $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
         $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
         $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status, admin_notes FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1",$f->id));
+        $is_saved = in_array((int)$f->id, $saved_ids, true);
+        $save_icon = $is_saved ? 'bookmark-check-fill' : 'bookmark';
         ?>
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
           <?php if($last_wd && $last_wd->status === 'rejected'): ?>
@@ -194,7 +217,7 @@ function kbf_dashboard_overview_tab($business_id) {
           <div class="kbf-card-header">
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-                <strong style="font-size:15px;"><?php echo esc_html($f->title); ?></strong>
+                  <strong class="kbf-clamp-2" style="font-size:15px;max-width:520px;"><?php echo esc_html($f->title); ?></strong>
                 <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
               </div>
               <div class="kbf-meta">
@@ -241,12 +264,13 @@ function kbf_dashboard_overview_tab($business_id) {
             $wd_block = $last_wd && in_array($last_wd->status, ['pending','approved','released']);
           ?>
           <div class="kbf-card-actions">
-            <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund_id',$f->id,$fund_details_url)); ?>">
+              <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : ''; ?>
+              <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
               View Details
             </a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>')" title="Save" data-tooltip="Save">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" title="<?php echo $is_saved ? 'Saved' : 'Save'; ?>" data-tooltip="<?php echo $is_saved ? 'Saved' : 'Save'; ?>">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($save_icon); ?>.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
             </button>
             <div class="kbf-card-more-wrap">
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
@@ -472,10 +496,40 @@ function kbf_dashboard_overview_tab($business_id) {
           c.classList.remove('is-menu-open');
         });
       });
-      </script>
+      
+      var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
+      var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
+      if (typeof window.kbfSaveFund === 'undefined') {
+        window.kbfSaveFund = function(id, btn){
+          if(!id) return;
+          var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
+          var fd = new FormData();
+          fd.append('action','kbf_toggle_save_fund');
+          fd.append('nonce', kbfSaveNonce);
+          fd.append('fund_id', id);
+          if(typeof kbfFetchJson === 'undefined'){ alert('Save failed.'); return; }
+          kbfFetchJson(ajaxurl, fd, function(j){
+            if(j && j.success){
+              var saved = !!(j.data && j.data.saved);
+              if(el){
+                el.classList.toggle('is-saved', saved);
+                el.setAttribute('data-saved', saved ? '1' : '0');
+                el.title = saved ? 'Saved' : 'Save';
+                el.setAttribute('data-tooltip', saved ? 'Saved' : 'Save');
+                var img = el.querySelector('img');
+                if(img){ img.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/' + (saved ? 'bookmark-check-fill' : 'bookmark') + '.svg'; }
+              }
+            } else {
+              alert((j && j.data && j.data.message) ? j.data.message : 'Unable to save.');
+            }
+          }, function(err){ alert(err || 'Request failed.'); });
+        };
+      }
+    </script>
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

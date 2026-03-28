@@ -6,7 +6,13 @@ function bntm_shortcode_kbf_fund_details() {
     $ft = $wpdb->prefix.'kbf_funds';
     $fund = null;
     $current_user_id = get_current_user_id();
-    if(!empty($_GET['fund_id'])) {
+    if(!empty($_GET['fund'])) {
+        $f_token = sanitize_text_field($_GET['fund']);
+        $fund = $wpdb->get_row($wpdb->prepare(
+            "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.fund_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d)",
+            $f_token, $current_user_id
+        ));
+    } elseif(!empty($_GET['fund_id'])) {
         $fid = intval($_GET['fund_id']);
         $fund = $wpdb->get_row($wpdb->prepare(
             "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.id=%d AND (f.status IN ('active','completed') OR f.business_id=%d)",
@@ -45,11 +51,31 @@ function bntm_shortcode_kbf_fund_details() {
     $days     = $fund->deadline ? max(0,ceil((strtotime($fund->deadline)-time())/86400)) : null;
     $photos   = $fund->photos ? json_decode($fund->photos,true) : [];
     $browse_url = kbf_get_page_url('browse');
-    $profile_url = $fund ? add_query_arg('organizer_id', $fund->business_id, kbf_get_page_url('organizer_profile')) : kbf_get_page_url('organizer_profile');
+    $org_token = ($fund && function_exists('kbf_get_or_create_organizer_token'))
+        ? kbf_get_or_create_organizer_token($fund->business_id)
+        : '';
+    $fund_token = ($fund && function_exists('kbf_get_or_create_fund_token'))
+        ? kbf_get_or_create_fund_token($fund->id)
+        : '';
+    $profile_url = $fund
+        ? add_query_arg(
+            [
+                'organizer' => $org_token ?: $fund->business_id,
+                'fund'      => $fund_token ?: $fund->id,
+            ],
+            kbf_get_page_url('organizer_profile')
+        )
+        : kbf_get_page_url('organizer_profile');
     $demo_mode  = (bool)kbf_get_setting('kbf_demo_mode',true);
     $nonce_sponsor = wp_create_nonce('kbf_sponsor');
     $nonce_report  = wp_create_nonce('kbf_report');
     $nonce_rating  = wp_create_nonce('kbf_rating');
+    $nonce_save   = wp_create_nonce('kbf_save_fund');
+    $is_saved = false;
+    if($current_user_id){
+        $sf = $wpdb->prefix.'kbf_saved_funds';
+        $is_saved = (bool)$wpdb->get_var($wpdb->prepare("SELECT id FROM {$sf} WHERE user_id=%d AND fund_id=%d", $current_user_id, $fund->id));
+    }
 
     ob_start();
     ?>
@@ -63,6 +89,20 @@ function bntm_shortcode_kbf_fund_details() {
 .kbf-detail-right{display:flex;flex-direction:column;}
 .kbf-detail-sticky{display:flex;flex-direction:column;gap:14px;flex:1;padding-bottom:40px;box-sizing:border-box;}
     .kbf-detail-sticky > *{margin-top:0 !important;margin-bottom:0 !important;}
+    .kbf-save-btn{
+          transition:all .3s ease;
+        }
+        .kbf-save-btn img{
+          transition:filter .3s ease, transform .3s ease;
+        }
+        .kbf-save-btn.is-saved{
+      background:#e7f1ff;
+      border-color:#bfd7ff;
+      color:#1d4ed8;
+    }
+    .kbf-save-btn.is-saved img{
+      filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
+    }
 .kbf-leaderboard-card{flex:1;display:flex;flex-direction:column;justify-content:flex-end;}
     .kbf-leaderboard-body{flex:1;display:flex;flex-direction:column;}
     .kbf-leaderboard-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);}
@@ -466,16 +506,17 @@ function bntm_shortcode_kbf_fund_details() {
             <div style="flex:1;">
               <div style="font-weight:700;font-size:15px;color:var(--kbf-navy);"><?php echo esc_html($fund->organizer_name); ?></div>
               <?php if($organizer&&$organizer->bio): ?><p style="font-size:13px;color:var(--kbf-text-sm);margin:4px 0 0;line-height:1.55;"><?php echo esc_html(wp_trim_words($organizer->bio,30)); ?></p><?php endif; ?>
-              <?php if($organizer&&$organizer->rating_count>0): ?>
-              <div style="display:flex;align-items:center;gap:4px;margin-top:5px;">
-                <?php for($i=1;$i<=5;$i++): ?>
-                  <img src="<?php echo $i<=round($organizer->rating)?'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg':'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg'; ?>" width="12" height="12" alt="" style="filter:<?php echo $i<=round($organizer->rating)?'invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%)':'invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%)'; ?>;">
-                <?php endfor; ?>
-                <span style="font-size:11.5px;color:var(--kbf-slate);margin-left:2px;"><?php echo number_format($organizer->rating,1); ?>/5 &bull; ₱<?php echo number_format($organizer->total_raised,0); ?> raised</span>
-              </div>
-              <?php else: ?>
-              <div style="font-size:12px;color:var(--kbf-slate);margin-top:4px;">Click to view fund history &amp; reviews</div>
-              <?php endif; ?>
+              <?php
+  $rating_val = ($organizer && $organizer->rating_count > 0) ? (float)$organizer->rating : 0;
+  $rating_round = round($rating_val);
+  $rating_count = (int)($organizer ? $organizer->rating_count : 0);
+?>
+<div style="display:flex;align-items:center;gap:4px;margin-top:6px;flex-wrap:wrap;">
+  <?php for($i=1;$i<=5;$i++): ?>
+    <img src="<?php echo $i<=$rating_round?'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg':'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg'; ?>" width="12" height="12" alt="" style="filter:<?php echo $i<=$rating_round?'invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%)':'invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%)'; ?>;">
+  <?php endfor; ?>
+  <span style="font-size:11.5px;color:var(--kbf-slate);margin-left:4px;">Rating <?php echo number_format($rating_val,1); ?>/5 (<?php echo $rating_count; ?> reviews)</span>
+</div>
             </div>
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chevron-right.svg" alt="" width="16" height="16" style="flex-shrink:0;opacity:.7;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
           </a>
@@ -610,8 +651,8 @@ function bntm_shortcode_kbf_fund_details() {
           <?php endif; ?>
 
           <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:10px;">
-            <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="kbfSaveFund('<?php echo esc_js($fund->id); ?>')">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);"> Save Fund
+            <button class="kbf-btn kbf-btn-secondary kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" style="font-size:13px;" data-fund-id="<?php echo esc_attr($fund->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" data-save-label="Save Fund" onclick="kbfSaveFund('<?php echo esc_js($fund->id); ?>', this)">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo $is_saved ? 'bookmark-check-fill' : 'bookmark'; ?>.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);"> <span class="kbf-save-label"><?php echo $is_saved ? 'Saved' : 'Save Fund'; ?></span>
             </button>
             <div class="kbf-more-wrap">
               <button class="kbf-btn kbf-btn-secondary" style="font-size:13px;" onclick="kbfToggleMoreMenu(event)">
@@ -982,8 +1023,31 @@ function bntm_shortcode_kbf_fund_details() {
         var menu = document.getElementById('kbf-more-menu');
         if(menu) menu.classList.remove('open');
     });
-    window.kbfSaveFund=function(id){
-        alert('Saved! (Feature coming soon)');
+    var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
+    var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
+    window.kbfSaveFund=function(id, btn){
+        if(!id) return;
+        var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
+        var fd = new FormData();
+        fd.append('action','kbf_toggle_save_fund');
+        fd.append('nonce', kbfSaveNonce);
+        fd.append('fund_id', id);
+        if(typeof kbfFetchJson === 'undefined'){ alert('Save failed.'); return; }
+        kbfFetchJson(ajaxurl, fd, function(j){
+            if(j && j.success){
+                var saved = !!(j.data && j.data.saved);
+                if(el){
+                    el.classList.toggle('is-saved', saved);
+                    el.setAttribute('data-saved', saved ? '1' : '0');
+                    var img = el.querySelector('img');
+                    if(img){ img.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/' + (saved ? 'bookmark-check-fill' : 'bookmark') + '.svg'; }
+                    var label = el.querySelector('.kbf-save-label');
+                    if(label){ label.textContent = saved ? 'Saved' : (el.getAttribute('data-save-label') || 'Save Fund'); }
+                }
+            } else {
+                alert((j && j.data && j.data.message) ? j.data.message : 'Unable to save.');
+            }
+        }, function(err){ alert(err || 'Request failed.'); });
     };
     </script>
     <?php
@@ -993,3 +1057,11 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
+
+
+
+
+
+
+

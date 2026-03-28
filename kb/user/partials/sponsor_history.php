@@ -49,7 +49,8 @@ function bntm_shortcode_kbf_sponsor_history() {
               <td>
                 <strong><?php echo esc_html($s->fund_title ?: 'Fundraiser'); ?></strong>
                 <?php if($s->fund_id): ?>
-                  <div class="kbf-meta"><a href="<?php echo esc_url(add_query_arg('fund_id',$s->fund_id,$fund_details_url)); ?>" style="color:var(--kbf-blue);text-decoration:none;">View fundraiser</a></div>
+                  <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($s->fund_id) : ''; ?>
+                  <div class="kbf-meta"><a href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $s->fund_id, $fund_details_url)); ?>" style="color:var(--kbf-blue);text-decoration:none;">View fundraiser</a></div>
                 <?php endif; ?>
               </td>
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name ?: 'Sponsor'); ?></td>

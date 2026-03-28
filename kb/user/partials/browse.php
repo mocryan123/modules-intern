@@ -649,7 +649,8 @@ function bntm_shortcode_kbf_browse() {
         $days  = $f->deadline ? max(0,ceil((strtotime($f->deadline)-time())/86400)) : null;
         $photos = $f->photos ? json_decode($f->photos,true) : [];
         $cover  = !empty($photos[0]) ? $photos[0] : null;
-        $detail_url = esc_url(add_query_arg('fund_id',$f->id,$fund_details_url));
+        $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : '';
+        $detail_url = esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url));
         $days_color = $days!==null&&$days<7 ? '#fca5a5' : 'rgba(255,255,255,.85)';
         $days_bg    = $days!==null&&$days<7 ? 'rgba(220,38,38,.85)' : 'rgba(15,32,68,.7)';
       ?>
@@ -685,7 +686,11 @@ function bntm_shortcode_kbf_browse() {
               <?php echo esc_html($f->location); ?>
             </span>
             <button onclick="kbfViewOrganizer(<?php echo $f->business_id; ?>)" style="background:none;border:none;color:var(--kbf-blue);cursor:pointer;font-size:12px;padding:0;font-weight:600;">
-              by <a href="<?php echo esc_url(add_query_arg('organizer_id',$f->business_id,kbf_get_page_url('organizer_profile'))); ?>" style="color:inherit;text-decoration:none;font-weight:700;"><?php echo esc_html($f->organizer_name?:'Organizer'); ?></a>
+              <?php
+                $org_token = function_exists('kbf_get_or_create_organizer_token') ? kbf_get_or_create_organizer_token($f->business_id) : '';
+                $org_param = $org_token ? ['organizer'=>$org_token] : ['organizer_id'=>$f->business_id];
+              ?>
+              by <a href="<?php echo esc_url(add_query_arg($org_param, kbf_get_page_url('organizer_profile'))); ?>" style="color:inherit;text-decoration:none;font-weight:700;"><?php echo esc_html($f->organizer_name?:'Organizer'); ?></a>
             </button>
           </div>
 
@@ -923,3 +928,5 @@ function bntm_shortcode_kbf_browse() {
     $c=ob_get_clean();
     return bntm_universal_container('Browse Funds -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
+

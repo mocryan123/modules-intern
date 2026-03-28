@@ -671,7 +671,11 @@ function bntm_shortcode_kbf_dashboard() {
             <div class="kbf-form-row">
               <div class="kbf-form-group">
                 <label>Goal Amount (PHP) *</label>
-                <input type="number" name="goal_amount" placeholder="0.00" min="100" step="0.01" required>
+                <input type="number" name="goal_amount" id="kbf-goal-amount" placeholder="0.00" min="100" step="0.01" required>
+                <small class="kbf-text-sm" id="kbf-fee-note">Platform fee: 5% per transaction.</small>
+                <div class="kbf-meta" id="kbf-fee-preview" style="margin-top:6px;">
+                  Platform cut: ₱0.00 &nbsp;•&nbsp; Net goal: ₱0.00
+                </div>
               </div>
             <div class="kbf-form-group">
               <label>Deadline</label>
@@ -1347,6 +1351,24 @@ function bntm_shortcode_kbf_dashboard() {
             funderSelect.addEventListener('change', updatePlaceholder);
             updatePlaceholder();
         }
+        (function(){
+            var input = document.getElementById('kbf-goal-amount');
+            var out = document.getElementById('kbf-fee-preview');
+            if(!input || !out) return;
+            var rate = 0.05;
+            function fmt(n){
+                return n.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+            }
+            function render(){
+                var val = parseFloat(input.value || '0');
+                if(isNaN(val)) val = 0;
+                var cut = val * rate;
+                var net = Math.max(0, val - cut);
+                out.innerHTML = 'Platform cut: ₱' + fmt(cut) + ' &nbsp;•&nbsp; Net goal: ₱' + fmt(net);
+            }
+            input.addEventListener('input', render);
+            render();
+        })();
     })();
 
     function kbfSubmitCreate() {

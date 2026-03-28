@@ -29,7 +29,8 @@ function kbf_admin_reports_tab() {
           </div>
           <?php if($r->status==='open'): ?>
           <div class="kbf-btn-group" style="justify-content:flex-end;gap:8px;">
-            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund_id',$r->fund_id,$fund_details_url)); ?>">
+            <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($r->fund_id) : ''; ?>
+            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $r->fund_id, $fund_details_url)); ?>">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
               View Fund
             </a>
