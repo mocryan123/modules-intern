@@ -279,7 +279,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-more-menu.open{display:block;}
     .kbf-more-menu button{
         width:100%;
-        justify-content:flex-start;
+        justify-content:center;
         gap:8px;
         margin:4px 0;
     }

@@ -271,8 +271,9 @@ function kbf_dashboard_find_funds_tab() {
       }
       .kbf-explore-more-menu.open{display:block;}
       .kbf-explore-actions .kbf-btn-sm{
-        height:32px;
-        min-width:32px;
+        width:38px;
+        height:38px;
+        min-width:38px;
         padding:0;
         display:inline-flex;
         align-items:center;
@@ -502,7 +503,8 @@ function kbf_dashboard_find_funds_tab() {
         $detail_url = esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url));
         $is_own = ($f->business_id == $current_user_id);
         $supporters = isset($f->sponsors_count) ? (int)$f->sponsors_count : (isset($f->sponsor_count) ? (int)$f->sponsor_count : 0);
-        $supporters_label = $supporters > 0 ? $supporters.' people' : 'New';
+        $supporters_label = $supporters > 0 ? $supporters.' people' : '';
+        $supporters_icon = 'people-fill';
         $is_saved = in_array((int)$f->id, $saved_ids, true);
         $save_icon = $is_saved ? 'bookmark-check-fill' : 'bookmark';
         $save_title = $is_saved ? 'Saved' : 'Save';
@@ -539,23 +541,25 @@ function kbf_dashboard_find_funds_tab() {
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
             <?php echo esc_html($f->location); ?>
           </span>
+          <?php if($supporters > 0): ?>
           <span class="kbf-explore-meta-item" style="flex-shrink:0;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($supporters_icon); ?>.svg" alt="">
             <?php echo esc_html($supporters_label); ?>
           </span>
-        </div>
-
-          <!-- Progress -->
-          <div class="kbf-explore-progress"><span style="width:<?php echo $pct; ?>%"></span></div>
-          <div class="kbf-explore-footer">
-          <span><span class="kbf-explore-amount">₱<?php echo number_format($f->raised_amount,0); ?></span> · <?php echo round($pct); ?>%</span>
+          <?php endif; ?>
           <?php if($days!==null): ?>
-          <span class="kbf-explore-days-inline">
+          <span class="kbf-explore-meta-item" style="flex-shrink:0;">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="">
             <?php echo $days; ?>d
           </span>
           <?php endif; ?>
         </div>
+
+          <!-- Progress -->
+          <div class="kbf-explore-progress"><span style="width:<?php echo $pct; ?>%"></span></div>
+          <div class="kbf-explore-footer">
+            <span><span class="kbf-explore-amount">₱<?php echo number_format($f->raised_amount,0); ?></span> · <?php echo round($pct); ?>%</span>
+          </div>
 
           <!-- Action buttons -->
           <?php if($is_own): ?>

@@ -11,5 +11,5 @@ require_once __DIR__ . '/partials/admin_embed.php';
 require_once __DIR__ . '/partials/browse.php';
 require_once __DIR__ . '/partials/sponsor_history.php';
 require_once __DIR__ . '/partials/fund_details.php';
-require_once __DIR__ . '/partials/organizer_profile.php';
+require_once __DIR__ . '/partials/account_profile.php';
 
