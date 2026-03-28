@@ -16,7 +16,34 @@ function kbf_admin_organizers_tab() {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:16px;">Organizer Management</h3>
+      <h3 class="kbf-section-title">Organizer Management</h3>
+      <style>
+        .kbf-table-accounts .kbf-verify-cell{
+          text-align:center;
+        }
+        .kbf-table-accounts .kbf-verify-stack{
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          gap:6px;
+        }
+        .kbf-table-accounts .kbf-btn.kbf-btn-sm{
+          min-width:76px;
+          justify-content:center;
+          padding:0 9px;
+          font-size:11px;
+          border-radius:9px;
+          height:32px;
+        }
+        .kbf-table-accounts .kbf-btn-group .kbf-btn{
+          min-width:76px;
+        }
+        .kbf-table-accounts .kbf-verify-empty{
+          color:var(--kbf-slate);
+          font-size:12px;
+          display:inline-block;
+        }
+      </style>
       <div class="kbf-stats" style="margin-bottom:18px;">
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
@@ -47,7 +74,7 @@ function kbf_admin_organizers_tab() {
         </div>
       </div>
       <div class="kbf-table-wrap">
-        <table class="kbf-table">
+        <table class="kbf-table kbf-table-accounts">
           <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Rating</th><th>ID Verification</th><th>Verify</th></tr></thead>
           <tbody>
           <?php if(empty($rows)): ?>
@@ -56,25 +83,29 @@ function kbf_admin_organizers_tab() {
             <tr>
               <td>
               <div class="kbf-cell-spacer"></div>
-              <strong><?php echo esc_html($p->display_name); ?></strong></td>
+              <div class="kbf-cell-spacer"></div>
+              <strong><?php echo esc_html($p->display_name); ?></strong>
+              <div class="kbf-cell-spacer"></div>
+              <div class="kbf-cell-spacer"></div>
+              </td>
               <td class="kbf-meta" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 <?php echo esc_html($p->user_email); ?>
               </td>
               <td><strong>₱<?php echo number_format($p->total_raised,0); ?></strong></td>
               <td><?php echo number_format($p->total_sponsors); ?></td>
             <td><?php echo number_format($p->rating,1); ?>/5 (<?php echo $p->rating_count; ?>)</td>
-            <td>
+            <td class="kbf-verify-cell">
               <?php if(!empty($p->verify_id_front) || !empty($p->verify_id_back)): ?>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-                  <?php if(!empty($p->verify_id_front)): ?><a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($p->verify_id_front); ?>" target="_blank" style="min-width:92px;justify-content:center;">Front ID</a><?php endif; ?>
-                  <?php if(!empty($p->verify_id_back)): ?><a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($p->verify_id_back); ?>" target="_blank" style="min-width:92px;justify-content:center;">Back ID</a><?php endif; ?>
+                <div class="kbf-btn-group kbf-verify-stack">
+                  <?php if(!empty($p->verify_id_front)): ?><a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($p->verify_id_front); ?>" target="_blank">Front ID</a><?php endif; ?>
+                  <?php if(!empty($p->verify_id_back)): ?><a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($p->verify_id_back); ?>" target="_blank">Back ID</a><?php endif; ?>
                 </div>
-              <?php else: ?>--<?php endif; ?>
+              <?php else: ?><span class="kbf-verify-empty">—</span><?php endif; ?>
             </td>
-              <td>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="min-width:92px;justify-content:center;" onclick="kbfVerifyOrg(<?php echo $p->business_id; ?>,1)">Approve</button>
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="min-width:92px;justify-content:center;" onclick="kbfVerifyOrg(<?php echo $p->business_id; ?>,0)">Reject</button>
+              <td class="kbf-verify-cell">
+                <div class="kbf-btn-group kbf-verify-stack">
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfVerifyOrg(<?php echo $p->business_id; ?>,1)">Approve</button>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfVerifyOrg(<?php echo $p->business_id; ?>,0)">Reject</button>
                 </div>
               </td>
             </tr>
@@ -85,3 +116,11 @@ function kbf_admin_organizers_tab() {
     </div>
     <?php return ob_get_clean();
 }
+
+
+
+
+
+
+
+

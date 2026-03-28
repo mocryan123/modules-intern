@@ -147,6 +147,13 @@ function kbf_dashboard_find_funds_tab() {
         color:#64748b;
         font-weight:600;
         flex-shrink:0;
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+      }
+      .kbf-explore-days-inline img{
+        width:12px;
+        height:12px;
       }
       .kbf-explore-desc{
         font-size:12.5px;
@@ -165,6 +172,16 @@ function kbf_dashboard_find_funds_tab() {
         font-size:11.5px;
         color:var(--kbf-slate);
         gap:8px;
+      }
+      .kbf-explore-meta-item{
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        min-width:0;
+      }
+      .kbf-explore-meta-item img{
+        width:12px;
+        height:12px;
       }
       .kbf-explore-loc{
         flex:1;
@@ -304,7 +321,7 @@ function kbf_dashboard_find_funds_tab() {
     <div id="kbff-modal-sponsor" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
         <div class="kbf-modal-header">
-          <h3>Sponsor This Fund</h3>
+          <h3 class="kbf-section-title">Sponsor This Fund</h3>
           <button class="kbf-modal-close" onclick="document.getElementById('kbff-modal-sponsor').style.display='none'">&times;</button>
         </div>
         <div class="kbf-modal-body">
@@ -354,7 +371,7 @@ function kbf_dashboard_find_funds_tab() {
     <!-- MODAL: Report -->
     <div id="kbff-modal-report" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3>Report This Fund</h3><button class="kbf-modal-close" onclick="document.getElementById('kbff-modal-report').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-header"><h3 class="kbf-section-title">Report This Fund</h3><button class="kbf-modal-close" onclick="document.getElementById('kbff-modal-report').style.display='none'">&times;</button></div>
         <div class="kbf-modal-body">
           <form id="kbff-report-form">
             <input type="hidden" name="fund_id" id="kbff-report-fund-id">
@@ -467,25 +484,34 @@ function kbf_dashboard_find_funds_tab() {
         <!-- Card body -->
         <div class="kbf-explore-body">
           <a href="<?php echo $detail_url; ?>" style="text-decoration:none;">
-            <div class="kbf-explore-title-row">
-              <h4 class="kbf-explore-title kbf-explore-title-text"><?php echo esc_html($f->title); ?></h4>
-              <?php if($days!==null): ?>
-          
-              <?php endif; ?>
-            </div>
-          </a>
-
-          <!-- Location + Organizer -->
-          <div class="kbf-explore-meta">
-            <span class="kbf-explore-loc"><?php echo esc_html($f->location); ?></span>
+          <div class="kbf-explore-title-row">
+            <h4 class="kbf-explore-title kbf-explore-title-text"><?php echo esc_html($f->title); ?></h4>
           </div>
+        </a>
+
+        <!-- Location + Organizer -->
+        <div class="kbf-explore-meta">
+          <span class="kbf-explore-meta-item kbf-explore-loc">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
+            <?php echo esc_html($f->location); ?>
+          </span>
+          <span class="kbf-explore-meta-item" style="flex-shrink:0;">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="">
+            <?php echo esc_html($supporters_label); ?>
+          </span>
+        </div>
 
           <!-- Progress -->
           <div class="kbf-explore-progress"><span style="width:<?php echo $pct; ?>%"></span></div>
           <div class="kbf-explore-footer">
-            <span><span class="kbf-explore-amount">₱<?php echo number_format($f->raised_amount,0); ?></span> · <?php echo round($pct); ?>%</span>
-            <span class="kbf-explore-days-inline"><?php echo $days; ?> days left</span>
-          </div>
+          <span><span class="kbf-explore-amount">₱<?php echo number_format($f->raised_amount,0); ?></span> · <?php echo round($pct); ?>%</span>
+          <?php if($days!==null): ?>
+          <span class="kbf-explore-days-inline">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="">
+            <?php echo $days; ?>d
+          </span>
+          <?php endif; ?>
+        </div>
 
           <!-- Action buttons -->
           <?php if($is_own): ?>

@@ -14,7 +14,7 @@ function kbf_admin_settings_tab() {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:8px;">Platform Settings</h3>
+      <h3 class="kbf-section-title">Platform Settings</h3>
       <p style="color:var(--kbf-slate);font-size:13.5px;margin-bottom:24px;">Configure KonekBayan payments and live mode.</p>
 
       <!-- Demo / Live Mode Toggle -->

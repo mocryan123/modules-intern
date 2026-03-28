@@ -12,7 +12,7 @@ function kbf_admin_appeals_tab() {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:16px;">Suspension Appeals</h3>
+      <h3 class="kbf-section-title">Suspension Appeals</h3>
       <?php if(empty($rows)): ?><div class="kbf-empty"><p>No appeals filed.</p></div>
       <?php else: ?>
       <div class="kbf-admin-card-list" data-kbf-card-pager="appeals">

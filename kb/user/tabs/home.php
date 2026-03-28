@@ -102,7 +102,7 @@ function kbf_dashboard_overview_tab($business_id) {
       </div>
 
       <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;">
-        <h3 class="kbf-section-title" style="margin:0;">All My Funds</h3>
+        <h3 class="kbf-section-title">All My Funds</h3>
         <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
@@ -199,18 +199,32 @@ function kbf_dashboard_overview_tab($business_id) {
               </div>
               <div class="kbf-meta">
                 <div class="kbf-meta-row">
-                  <span class="kbf-meta-item"><?php echo esc_html($f->category); ?></span>
+                  <span class="kbf-meta-item">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="">
+                    <?php echo esc_html($f->category); ?>
+                  </span>
                   <span class="kbf-meta-divider"></span>
-                  <span class="kbf-meta-item"><?php echo esc_html($f->location); ?></span>
+                  <span class="kbf-meta-item">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
+                    <?php echo esc_html($f->location); ?>
+                  </span>
                 </div>
                 <div class="kbf-meta-row">
                   <?php if($days_left!==null): ?>
-                    <span class="kbf-meta-item kbf-meta-strong" style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;"><?php echo $days_left; ?> days left</span>
+                    <span class="kbf-meta-item kbf-meta-strong" style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;">
+                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="">
+                      <?php echo $days_left; ?>d left
+                    </span>
                     <span class="kbf-meta-divider"></span>
                   <?php endif; ?>
-                  <span class="kbf-meta-item"><?php echo $sc; ?> sponsors</span>
+                  <span class="kbf-meta-item">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="">
+                    <?php echo $sc; ?> sponsors
+                  </span>
                   <span class="kbf-meta-divider"></span>
-                  <span class="kbf-meta-item">Escrow:
+                  <span class="kbf-meta-item">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/shield-fill-check.svg" alt="">
+                    Escrow
                     <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
                   </span>
                 </div>

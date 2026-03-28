@@ -500,7 +500,7 @@ function kbf_dashboard_profile_tab($business_id) {
       <div id="kbf-modal-verify-account" class="kbf-modal-overlay" style="display:none;">
         <div class="kbf-modal kbf-modal-sm">
           <div class="kbf-modal-header">
-            <h3>Verify Account</h3>
+            <h3 class="kbf-section-title">Verify Account</h3>
             <button type="button" class="kbf-modal-close" onclick="kbfCloseVerifyModal()">&times;</button>
           </div>
           <div class="kbf-modal-body">

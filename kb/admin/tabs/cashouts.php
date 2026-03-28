@@ -10,7 +10,7 @@ function kbf_admin_withdrawals_tab() {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:16px;">Withdrawal Requests</h3>
+      <h3 class="kbf-section-title">Withdrawal Requests</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
           <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Account</th><th>Status</th><th>Requested</th><th>Released</th><th>Actions</th></tr></thead>

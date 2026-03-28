@@ -11,7 +11,7 @@ function kbf_admin_reports_tab() {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:16px;">Fund Reports</h3>
+      <h3 class="kbf-section-title">Fund Reports</h3>
       <?php if(empty($rows)): ?><div class="kbf-empty"><p>No reports filed.</p></div>
       <?php else: ?>
       <div class="kbf-admin-card-list" data-kbf-card-pager="reports">

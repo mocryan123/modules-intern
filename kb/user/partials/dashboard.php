@@ -66,8 +66,8 @@ function bntm_shortcode_kbf_dashboard() {
     .kbf-user-ui p{font-size:13.5px;font-weight:400;color:#4f5a6b;line-height:1.65;margin:0;}
     .kbf-user-ui small,
     .kbf-user-ui .kbf-meta,
-    .kbf-user-ui .kbf-text-sm{font-size:12.5px;color:#4f5a6b;}
-    .kbf-user-ui label{font-size:13px;font-weight:600;color:#4f5a6b;}
+    .kbf-user-ui .kbf-text-sm{font-size:12.5px;font-weight:400;color:#4f5a6b;line-height:1.5;}
+    .kbf-user-ui label{font-size:12.5px;font-weight:600;color:#4f5a6b;}
     .kbf-user-ui .kbf-table thead th{
         font-size:10.5px;
         font-weight:600;

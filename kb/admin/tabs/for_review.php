@@ -10,7 +10,7 @@ function kbf_admin_pending_tab() {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:16px;">Funds Pending Approval <span style="background:var(--kbf-red-lt);color:var(--kbf-red);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:8px;"><?php echo count($funds); ?></span></h3>
+      <h3 class="kbf-section-title">Funds Pending Approval <span style="background:var(--kbf-red-lt);color:var(--kbf-red);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:8px;"><?php echo count($funds); ?></span></h3>
       <?php if(empty($funds)): ?><div class="kbf-empty"><p>No funds pending review.</p></div>
       <?php else: foreach($funds as $f): ?>
         <div class="kbf-card">

@@ -14,7 +14,7 @@ function kbf_dashboard_withdrawals_tab($business_id) {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:16px;">Cashout History</h3>
+      <h3 class="kbf-section-title">Cashout History</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table kbf-cashout-table">
           <colgroup>

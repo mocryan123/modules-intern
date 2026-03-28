@@ -10,7 +10,7 @@ function kbf_admin_all_funds_tab() {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:16px;">All Funds</h3>
+      <h3 class="kbf-section-title">All Funds</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
           <thead><tr><th>Fundraiser</th><th>Organizer</th><th>Category</th><th>Goal</th><th>Raised</th><th>Status</th><th>Escrow</th><th>Actions</th></tr></thead>

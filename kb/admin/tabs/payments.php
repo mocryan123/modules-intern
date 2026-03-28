@@ -10,7 +10,7 @@ function kbf_admin_transactions_tab() {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title" style="margin-bottom:16px;">All Transactions</h3>
+      <h3 class="kbf-section-title">All Transactions</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
           <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>Date</th></tr></thead>
