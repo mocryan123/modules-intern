@@ -1372,208 +1372,71 @@ function bae_admin_dashboard() {
                     </div>
 
                 <?php elseif ($route === 'payments'):
-                    // Fix: use correct table $payt, not nonexistent bntm_pay_events
-                    $paid_count         = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$payt} WHERE status='paid'");
-                    $pending_count      = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$payt} WHERE status='pending'");
-                    $revenue_all        = (int)$wpdb->get_var("SELECT COALESCE(SUM(amount),0) FROM {$payt} WHERE status='paid'");
-                    $revenue_this_month = (int)$wpdb->get_var("SELECT COALESCE(SUM(amount),0) FROM {$payt} WHERE status='paid' AND MONTH(created_at)=MONTH(NOW()) AND YEAR(created_at)=YEAR(NOW())");
-                    $avg_value          = $paid_count ? round($revenue_all / $paid_count) : 0;
+                    $revenue_this_month = $wpdb->get_var("SELECT SUM(amount) FROM bntm_pay_events WHERE status = 'paid' AND MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW())") ?: 0;
+                    $paid_count = $wpdb->get_var("SELECT COUNT(*) FROM bntm_pay_events WHERE status = 'paid'") ?: 0;
+                    $pending_count = $wpdb->get_var("SELECT COUNT(*) FROM bntm_pay_events WHERE status = 'pending'") ?: 0;
                 ?>
-                <style>
-                .bae-pay-hero {
-                    display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 12px;
-                    margin-bottom: 24px;
-                }
-                .bae-pay-hero-card {
-                    background: var(--bg-2);
-                    border: 1px solid var(--border);
-                    border-radius: 16px;
-                    padding: 20px 22px;
-                    position: relative;
-                    overflow: hidden;
-                }
-                .bae-pay-hero-card::before {
-                    content: '';
-                    position: absolute;
-                    top: 0; left: 0; right: 0;
-                    height: 2px;
-                    border-radius: 16px 16px 0 0;
-                }
-                .bae-pay-hero-card.green::before { background: linear-gradient(90deg, #34d399, transparent); }
-                .bae-pay-hero-card.purple::before { background: linear-gradient(90deg, #8b5cf6, transparent); }
-                .bae-pay-hero-card.yellow::before { background: linear-gradient(90deg, #fbbf24, transparent); }
-                .bae-pay-hero-card.blue::before   { background: linear-gradient(90deg, #60a5fa, transparent); }
-                .bae-pay-hero-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 10px; }
-                .bae-pay-hero-val   { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 4px; }
-                .bae-pay-hero-sub   { font-size: 11px; color: var(--text-3); }
-                .bae-pay-filters {
-                    display: flex; gap: 8px; margin-bottom: 16px; align-items: center;
-                }
-                .bae-pay-filter-btn {
-                    background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
-                    padding: 6px 14px; font-size: 12px; font-weight: 600; color: var(--text-3);
-                    cursor: pointer; font-family: inherit; transition: all .15s;
-                }
-                .bae-pay-filter-btn:hover { color: var(--text); border-color: var(--border-2); }
-                .bae-pay-filter-btn.active { background: var(--surface); color: var(--brand-s); border-color: rgba(139,92,246,.3); }
-                .bae-pay-table-wrap {
-                    background: var(--bg-2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
-                }
-                .bae-pay-table-head {
-                    display: flex; align-items: center; justify-content: space-between;
-                    padding: 16px 20px; border-bottom: 1px solid var(--border);
-                }
-                .bae-pay-table { width: 100%; border-collapse: collapse; }
-                .bae-pay-table th {
-                    text-align: left; padding: 10px 16px; font-size: 10px; font-weight: 700;
-                    color: var(--text-3); text-transform: uppercase; letter-spacing: .07em;
-                    border-bottom: 1px solid var(--border); background: var(--bg-3);
-                }
-                .bae-pay-table td {
-                    padding: 13px 16px; font-size: 13px; color: var(--text-2);
-                    border-bottom: 1px solid rgba(255,255,255,.03);
-                }
-                .bae-pay-table tbody tr:last-child td { border-bottom: none; }
-                .bae-pay-table tbody tr:hover td { background: rgba(255,255,255,.02); }
-                .bae-pay-ref { font-family: monospace; font-size: 11px; color: var(--text-3); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-                .bae-pay-badge {
-                    display: inline-flex; align-items: center; gap: 5px;
-                    font-size: 10px; font-weight: 700; border-radius: 999px; padding: 3px 10px;
-                }
-                .bae-pay-amount { font-size: 14px; font-weight: 700; }
-                .bae-pay-empty {
-                    display: flex; flex-direction: column; align-items: center; justify-content: center;
-                    padding: 64px 24px; text-align: center;
-                }
-                .bae-pay-empty-icon {
-                    width: 56px; height: 56px; border-radius: 16px;
-                    background: var(--bg-3); border: 1px solid var(--border);
-                    display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
-                }
-                </style>
-
-                <!-- Hero stats -->
-                <div class="bae-pay-hero">
-                    <div class="bae-pay-hero-card green">
-                        <div class="bae-pay-hero-label">Total Revenue</div>
-                        <div class="bae-pay-hero-val">₱<?php echo number_format($revenue_all / 100); ?></div>
-                        <div class="bae-pay-hero-sub">all time · <?php echo $paid_count; ?> paid</div>
-                    </div>
-                    <div class="bae-pay-hero-card purple">
-                        <div class="bae-pay-hero-label">This Month</div>
-                        <div class="bae-pay-hero-val">₱<?php echo number_format($revenue_this_month / 100); ?></div>
-                        <div class="bae-pay-hero-sub"><?php echo date('F Y'); ?></div>
-                    </div>
-                    <div class="bae-pay-hero-card yellow">
-                        <div class="bae-pay-hero-label">Avg. Transaction</div>
-                        <div class="bae-pay-hero-val">₱<?php echo number_format($avg_value / 100); ?></div>
-                        <div class="bae-pay-hero-sub">per payment</div>
-                    </div>
-                    <div class="bae-pay-hero-card blue">
-                        <div class="bae-pay-hero-label">Pending</div>
-                        <div class="bae-pay-hero-val"><?php echo $pending_count; ?></div>
-                        <div class="bae-pay-hero-sub">awaiting confirmation</div>
-                    </div>
-                </div>
-
-                <!-- Filters + table -->
-                <div class="bae-pay-filters">
-                    <button class="bae-pay-filter-btn active" onclick="baePayFilter('all',this)">All</button>
-                    <button class="bae-pay-filter-btn" onclick="baePayFilter('paid',this)">Paid</button>
-                    <button class="bae-pay-filter-btn" onclick="baePayFilter('pending',this)">Pending</button>
-                    <button class="bae-pay-filter-btn" onclick="baePayFilter('failed',this)">Failed</button>
-                    <div style="margin-left:auto;font-size:11px;color:var(--text-3);"><?php echo count($payments); ?> transaction<?php echo count($payments) !== 1 ? 's' : ''; ?></div>
-                </div>
-
-                <div class="bae-pay-table-wrap">
-                    <?php if (empty($payments)): ?>
-                    <div class="bae-pay-empty">
-                        <div class="bae-pay-empty-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5" width="24" height="24">
-                                <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-                            </svg>
+                    <div class="bae-adm-metric-pills">
+                        <div class="bae-adm-metric-pill" style="border-color:rgba(52,211,153,.3);">
+                            <div class="bae-adm-sysinfo-dot ok"></div> Paid: <strong><?php echo $paid_count; ?></strong>
                         </div>
-                        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">No transactions yet</div>
-                        <div style="font-size:13px;color:var(--text-3);">Payments will appear here once users upgrade their plan.</div>
+                        <div class="bae-adm-metric-pill" style="border-color:rgba(251,191,36,.3);">
+                            <div class="bae-adm-sysinfo-dot warn"></div> Pending: <strong><?php echo $pending_count; ?></strong>
+                        </div>
+                    </div>
+
+                    <div class="bae-adm-stats" style="grid-template-columns:repeat(3,1fr);">
+                        <div class="bae-adm-stat bae-adm-stat-accent-green">
+                            <div class="bae-adm-stat-label">Total Revenue</div>
+                            <div class="bae-adm-stat-val">₱<?php echo number_format($revenue / 100); ?></div>
+                            <div class="bae-adm-stat-sub">all time</div>
+                        </div>
+                        <div class="bae-adm-stat bae-adm-stat-accent-blue">
+                            <div class="bae-adm-stat-label">This Month</div>
+                            <div class="bae-adm-stat-val">₱<?php echo number_format($revenue_this_month / 100); ?></div>
+                            <div class="bae-adm-stat-sub">current period</div>
+                        </div>
+                        <div class="bae-adm-stat bae-adm-stat-accent-yellow">
+                            <div class="bae-adm-stat-label">Avg. Value</div>
+                            <div class="bae-adm-stat-val">₱<?php echo $paid_count ? number_format(($revenue / 100) / $paid_count) : 0; ?></div>
+                            <div class="bae-adm-stat-sub">per transaction</div>
+                        </div>
+                    </div>
+
+                    <?php if (empty($payments)): ?>
+                    <div class="bae-adm-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:16px;">
+                            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                        </svg>
+                        <div style="font-size:14px;color:var(--text);font-weight:600;margin-bottom:8px;">No transactions yet</div>
+                        <div>Transactions will appear here once PayMaya is integrated and users start upgrading.</div>
                     </div>
                     <?php else: ?>
-                    <table class="bae-pay-table" id="bae-pay-table">
-                        <thead>
+                    <div class="bae-adm-table-wrap">
+                        <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
+                            <div style="font-size:13px;font-weight:600;color:var(--text);">Recent Transactions</div>
+                        </div>
+                        <table class="bae-adm-table">
+                            <thead><tr><th>Reference</th><th>Ticket</th><th>Plan</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                            <tbody>
+                            <?php foreach ($payments as $pay):
+                                $ptk = $wpdb->get_var($wpdb->prepare("SELECT ticket FROM {$pt} WHERE user_id = %d LIMIT 1", $pay['user_id']));
+                                $status_color = $pay['status'] === 'paid' ? 'var(--green)' : ($pay['status'] === 'pending' ? 'var(--yellow)' : 'var(--red)');
+                                $status_bg = $pay['status'] === 'paid' ? 'rgba(52,211,153,.1)' : ($pay['status'] === 'pending' ? 'rgba(251,191,36,.1)' : 'rgba(239,68,68,.1)');
+                            ?>
                             <tr>
-                                <th>Reference</th>
-                                <th>User</th>
-                                <th>Plan</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                                <th>Date</th>
+                                <td style="font-family:monospace;font-size:11px;color:var(--text-3);"><?php echo esc_html($pay['reference']); ?></td>
+                                <td class="ticket-code"><?php echo esc_html($ptk ?: '—'); ?></td>
+                                <td><span class="bae-plan bae-plan-<?php echo esc_attr($pay['plan']); ?>"><?php echo ucfirst($pay['plan']); ?></span></td>
+                                <td style="font-weight:700;color:<?php echo $status_color; ?>;">₱<?php echo number_format($pay['amount'] / 100); ?></td>
+                                <td><span style="font-size:10px;font-weight:700;color:<?php echo $status_color; ?>;background:<?php echo $status_bg; ?>;border-radius:999px;padding:3px 10px;"><?php echo ucfirst($pay['status']); ?></span></td>
+                                <td style="color:var(--text-3);font-size:12px;white-space:nowrap;"><?php echo date('M d, Y H:i', strtotime($pay['created_at'])); ?></td>
                             </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($payments as $pay):
-                            // Get ticket — try user_id lookup for WP users
-                            $ptk = '';
-                            if (!empty($pay['user_id'])) {
-                                $ptk = $wpdb->get_var($wpdb->prepare(
-                                    "SELECT ticket FROM {$pt} WHERE user_id = %d AND ticket != '' LIMIT 1",
-                                    $pay['user_id']
-                                ));
-                            }
-                            // Get business name from profile
-                            $biz = '';
-                            if ($ptk) {
-                                $biz = $wpdb->get_var($wpdb->prepare("SELECT business_name FROM {$pt} WHERE ticket = %s", $ptk));
-                            }
-
-                            $is_paid    = $pay['status'] === 'paid';
-                            $is_pending = $pay['status'] === 'pending';
-                            $sc = $is_paid ? '#34d399' : ($is_pending ? '#fbbf24' : '#fb7185');
-                            $sb = $is_paid ? 'rgba(52,211,153,.1)' : ($is_pending ? 'rgba(251,191,36,.1)' : 'rgba(251,113,133,.1)');
-                        ?>
-                        <tr data-status="<?php echo esc_attr($pay['status']); ?>">
-                            <td><div class="bae-pay-ref" title="<?php echo esc_attr($pay['reference']); ?>"><?php echo esc_html($pay['reference']); ?></div></td>
-                            <td>
-                                <?php if ($biz): ?>
-                                    <div style="font-size:13px;font-weight:600;color:var(--text);"><?php echo esc_html($biz); ?></div>
-                                    <?php if ($ptk): ?><div style="font-size:10px;font-family:monospace;color:var(--text-3);margin-top:2px;"><?php echo esc_html($ptk); ?></div><?php endif; ?>
-                                <?php elseif ($ptk): ?>
-                                    <div style="font-size:11px;font-family:monospace;color:var(--text-3);"><?php echo esc_html($ptk); ?></div>
-                                <?php else: ?>
-                                    <span style="color:var(--text-3);">—</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <span class="bae-plan bae-plan-<?php echo esc_attr($pay['plan']); ?>"><?php echo ucfirst($pay['plan']); ?></span>
-                            </td>
-                            <td>
-                                <span class="bae-pay-amount" style="color:<?php echo $sc; ?>;">₱<?php echo number_format($pay['amount'] / 100); ?></span>
-                            </td>
-                            <td>
-                                <span class="bae-pay-badge" style="color:<?php echo $sc; ?>;background:<?php echo $sb; ?>;">
-                                    <svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="<?php echo $sc; ?>"/></svg>
-                                    <?php echo ucfirst($pay['status']); ?>
-                                </span>
-                            </td>
-                            <td style="color:var(--text-3);font-size:12px;white-space:nowrap;">
-                                <?php echo date('M d, Y', strtotime($pay['created_at'])); ?>
-                                <div style="font-size:10px;margin-top:1px;"><?php echo date('g:i A', strtotime($pay['created_at'])); ?></div>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
                     <?php endif; ?>
-                </div>
-                <script>
-                function baePayFilter(status, btn) {
-                    document.querySelectorAll('.bae-pay-filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.querySelectorAll('#bae-pay-table tbody tr').forEach(row => {
-                        row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
-                    });
-                }
-                </script>
 
                 <?php elseif ($route === 'plans'):
                     $plan_prices = ['free' => 0, 'starter' => 49, 'pro' => 99];

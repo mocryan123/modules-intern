@@ -30,66 +30,6 @@ add_action( 'wp_ajax_nopriv_bae_ticket_logout', 'bntm_bae_ajax_ticket_logout' );
 add_action( 'wp_ajax_bae_ticket_logout',        'bntm_bae_ajax_ticket_logout' );
 
 // =============================================================================
-// EMAIL via Gmail SMTP — set in .env:
-//   BAE_SMTP_FROM=yourname@gmail.com
-//   BAE_SMTP_PASS=xxxx xxxx xxxx xxxx  (Gmail App Password)
-// =============================================================================
-$bae_resend_last_error = '';
-
-function bae_resend_email( $to, $subject, $text ) {
-    global $bae_resend_last_error;
-    $bae_resend_last_error = '';
-
-    $from = getenv( 'BAE_SMTP_FROM' );
-    $pass = getenv( 'BAE_SMTP_PASS' );
-
-    if ( empty( $from ) || empty( $pass ) ) {
-        $bae_resend_last_error = 'BAE_SMTP_FROM or BAE_SMTP_PASS is not set in environment.';
-        error_log( '[BAE Mail] ' . $bae_resend_last_error );
-        return false;
-    }
-
-    // Use PHPMailer — bundled with WordPress core, always available
-    require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
-    require_once ABSPATH . WPINC . '/PHPMailer/SMTP.php';
-    require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';
-
-    $mail = new PHPMailer\PHPMailer\PHPMailer( true );
-
-    try {
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $from;
-        $mail->Password   = $pass;
-        $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-
-        $mail->setFrom( $from, 'Brand Asset Engine' );
-        $mail->addAddress( $to );
-        $mail->Subject = $subject;
-        $mail->Body    = $text;
-
-        $mail->send();
-        error_log( '[BAE Mail] Sent OK to ' . $to );
-        return true;
-
-    } catch ( PHPMailer\PHPMailer\Exception $e ) {
-        $bae_resend_last_error = $mail->ErrorInfo;
-        error_log( '[BAE Mail] Failed: ' . $bae_resend_last_error );
-        return false;
-    }
-}
-
-// FIX Issue 5: Login code (email 2FA) actions
-add_action( 'wp_ajax_nopriv_bae_toggle_login_code', 'bntm_bae_ajax_toggle_login_code' );
-add_action( 'wp_ajax_bae_toggle_login_code',        'bntm_bae_ajax_toggle_login_code' );
-add_action( 'wp_ajax_nopriv_bae_send_login_otp',    'bntm_bae_ajax_send_login_otp' );
-add_action( 'wp_ajax_bae_send_login_otp',           'bntm_bae_ajax_send_login_otp' );
-add_action( 'wp_ajax_nopriv_bae_verify_login_otp',  'bntm_bae_ajax_verify_login_otp' );
-add_action( 'wp_ajax_bae_verify_login_otp',         'bntm_bae_ajax_verify_login_otp' );
-
-// =============================================================================
 // TICKET HELPERS — all prefixed bntm_bae_ to avoid any conflict
 // =============================================================================
 
@@ -186,48 +126,6 @@ function bntm_bae_ajax_ticket_check() {
 
     $profile = bntm_bae_profile_by_ticket( $ticket );
 
-    // FIX Issue 5: If login code verification is enabled for this ticket,
-    // don't grant access yet — tell the client to collect the OTP first.
-    // The server will send the OTP email; client shows the code input step.
-    if (
-        ! empty( $profile['login_code_enabled'] ) &&
-        ! empty( $profile['login_code_email'] ) &&
-        $ticket !== 'BAE-2525-2525'
-    ) {
-        // Generate and store OTP
-        $otp     = str_pad( wp_rand( 0, 999999 ), 6, '0', STR_PAD_LEFT );
-        $expires = date( 'Y-m-d H:i:s', time() + 600 );
-        global $wpdb;
-        $wpdb->update(
-            $wpdb->prefix . 'bae_profiles',
-            [ 'login_otp' => $otp, 'login_otp_expires' => $expires ],
-            [ 'ticket' => $ticket ],
-            [ '%s', '%s' ],
-            [ '%s' ]
-        );
-
-        $email   = $profile['login_code_email'];
-        $name    = $profile['business_name'] ?: 'your workspace';
-        $subject = 'Your Brand Asset Engine login code';
-        $body    = "Hi,\n\nYour login verification code for {$name} is:\n\n    {$otp}\n\nThis code expires in 10 minutes.\n\n— Brand Asset Engine";
-        $sent = bae_resend_email( $email, $subject, $body );
-
-        if ( ! $sent ) {
-            global $bae_resend_last_error;
-            wp_send_json_error( [ 'message' => 'Email failed: ' . ( $bae_resend_last_error ?: 'Unknown — check BAE_SMTP_FROM and BAE_SMTP_PASS in .env' ) ] );
-        }
-
-        $at     = strpos( $email, '@' );
-        $masked = substr( $email, 0, 2 ) . str_repeat( '*', max( 1, $at - 2 ) ) . substr( $email, $at );
-
-        wp_send_json_success( [
-            'ticket'        => $ticket,
-            'has_profile'   => true,
-            'requires_code' => true,
-            'masked_email'  => $masked,
-        ] );
-    }
-
     wp_send_json_success( [
         'ticket'      => $ticket,
         'has_profile' => ! empty( $profile ) || $ticket === 'BAE-2525-2525',
@@ -304,22 +202,9 @@ function bntm_bae_inject_settings_ticket( $html ) {
     $ticket = bntm_bae_read_ticket();
     if ( empty( $ticket ) ) return $html;
 
-    global $wpdb;
-    $profile = $wpdb->get_row(
-        $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}bae_profiles WHERE ticket = %s", $ticket ),
-        ARRAY_A
-    );
-
     $aj     = esc_js( admin_url( 'admin-ajax.php' ) );
     $tk_esc = esc_html( $ticket );
     $tk_js  = esc_js( $ticket );
-
-    // 2FA state from profile
-    $code_enabled = ! empty( $profile['login_code_enabled'] );
-    $code_email   = esc_attr( $profile['login_code_email'] ?? '' );
-    $profile_email = esc_attr( $profile['email'] ?? '' );
-    $has_email    = ! empty( $profile['email'] ) || ! empty( $profile['login_code_email'] );
-    $initial_email = $code_email ?: $profile_email;
 
     $card = '
     <div class="bae-card" style="margin-bottom:20px;">
@@ -343,44 +228,7 @@ function bntm_bae_inject_settings_ticket( $html ) {
             Sign out of this device
         </button>
     </div>
-
-    <div class="bae-card" style="margin-bottom:20px;" id="bae-login-code-card">
-        <div class="bae-card-header" style="margin-bottom:16px;">
-            <div>
-                <div class="bae-card-title">Login Verification</div>
-                <div class="bae-card-desc" style="margin-top:4px;">
-                    When enabled, entering your ticket code will also require a one-time email code. Adds a layer of security to your workspace.
-                </div>
-            </div>
-            <label class="bae-toggle-wrap" style="flex-shrink:0;cursor:pointer;display:flex;align-items:center;gap:10px;" title="' . ( $has_email ? 'Toggle login verification' : 'Add an email to your profile to enable this' ) . '">
-                <div class="bae-toggle ' . ( $code_enabled ? 'active' : '' ) . '" id="bae-lc-toggle" style="width:40px;height:22px;border-radius:999px;background:' . ( $code_enabled ? 'var(--brand-s)' : 'rgba(255,255,255,0.1)' ) . ';position:relative;transition:background .2s;' . ( $has_email ? '' : 'opacity:0.4;pointer-events:none;' ) . '">
-                    <div id="bae-lc-knob" style="position:absolute;top:3px;left:' . ( $code_enabled ? '21px' : '3px' ) . ';width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>
-                </div>
-                <span id="bae-lc-label" style="font-size:13px;font-weight:600;color:' . ( $code_enabled ? 'var(--text)' : 'var(--text-3)' ) . ';">' . ( $code_enabled ? 'Enabled' : 'Disabled' ) . '</span>
-            </label>
-        </div>
-
-        <div id="bae-lc-email-row" style="' . ( $code_enabled ? '' : 'display:none;' ) . 'margin-top:4px;">
-            <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Verification codes will be sent to:</div>
-            <div style="display:flex;gap:8px;align-items:center;">
-                <input type="email" id="bae-lc-email-inp" value="' . $initial_email . '" placeholder="your@email.com"
-                    style="flex:1;background:var(--bg-3);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--text);outline:none;font-family:\'Geist\',sans-serif;transition:border-color .2s;"
-                    onfocus="this.style.borderColor=\'var(--brand-s)\'" onblur="this.style.borderColor=\'var(--border)\'">
-                <button onclick="baeLcSave()" id="bae-lc-save-btn"
-                    style="background:var(--brand-s);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:\'Geist\',sans-serif;white-space:nowrap;transition:opacity .2s;">
-                    Save
-                </button>
-            </div>
-            <div id="bae-lc-msg" style="font-size:12px;margin-top:8px;display:none;"></div>
-        </div>
-
-        ' . ( ! $has_email ? '<div style="font-size:12px;color:var(--text-3);margin-top:4px;display:flex;align-items:center;gap:6px;"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'11\' height=\'11\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\'><circle cx=\'12\' cy=\'12\' r=\'10\'/><path d=\'M12 8v4M12 16h.01\'/></svg> Add an email address to your brand profile to enable this feature.</div>' : '' ) . '
-    </div>
-
     <script>
-    var _baeTkAjLc = \'' . $aj . '\';
-    var _baeLcEnabled = ' . ( $code_enabled ? 'true' : 'false' ) . ';
-
     function baeTkCopySettings() {
         var btn = document.getElementById(\'bae-tk-copy-settings\');
         navigator.clipboard.writeText(\'' . $tk_js . '\').then(function() {
@@ -390,212 +238,21 @@ function bntm_bae_inject_settings_ticket( $html ) {
             setTimeout(function() { btn.innerHTML = orig; btn.style.color = \'\'; btn.style.borderColor = \'\'; }, 2000);
         });
     }
-
     function baeTkLogout() {
         var btn = document.getElementById(\'bae-tk-logout\');
         btn.disabled = true; btn.textContent = \'Signing out...\';
         var fd = new FormData(); fd.append(\'action\', \'bae_ticket_logout\');
         fetch(\'' . $aj . '\', {method:\'POST\',body:fd}).finally(function() {
+            // Clear cookie client-side regardless of server response
             document.cookie = \'bae_ticket=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax\';
             window.location.href = window.location.pathname;
         });
     }
-
-    (function() {
-        var toggle   = document.getElementById(\'bae-lc-toggle\');
-        var knob     = document.getElementById(\'bae-lc-knob\');
-        var label    = document.getElementById(\'bae-lc-label\');
-        var emailRow = document.getElementById(\'bae-lc-email-row\');
-        if (!toggle) return;
-
-        toggle.addEventListener(\'click\', function() {
-            _baeLcEnabled = !_baeLcEnabled;
-            toggle.style.background = _baeLcEnabled ? \'var(--brand-s)\' : \'rgba(255,255,255,0.1)\';
-            knob.style.left         = _baeLcEnabled ? \'21px\' : \'3px\';
-            label.textContent       = _baeLcEnabled ? \'Enabled\' : \'Disabled\';
-            label.style.color       = _baeLcEnabled ? \'var(--text)\' : \'var(--text-3)\';
-            emailRow.style.display  = _baeLcEnabled ? \'\' : \'none\';
-            if (!_baeLcEnabled) baeLcToggleServer(false, \'\');
-        });
-    })();
-
-    function baeLcSave() {
-        var email = document.getElementById(\'bae-lc-email-inp\').value.trim();
-        if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
-            baeLcShowMsg(\'Please enter a valid email address.\', \'#fb7185\');
-            return;
-        }
-        baeLcToggleServer(true, email);
-    }
-
-    function baeLcToggleServer(enable, email) {
-        var btn = document.getElementById(\'bae-lc-save-btn\');
-        if (btn) { btn.disabled = true; btn.textContent = \'Saving...\'; }
-        var msg = document.getElementById(\'bae-lc-msg\');
-        var fd = new FormData();
-        fd.append(\'action\', \'bae_toggle_login_code\');
-        fd.append(\'enable\', enable ? \'1\' : \'0\');
-        fd.append(\'email\', email);
-        fetch(_baeTkAjLc, {method:\'POST\', body:fd})
-            .then(function(r){ return r.json(); })
-            .then(function(j) {
-                if (j.success) {
-                    baeLcShowMsg(j.data.message, \'#34d399\');
-                } else {
-                    baeLcShowMsg(j.data.message || \'Failed to save.\', \'#fb7185\');
-                    // Revert toggle on error
-                    _baeLcEnabled = !enable;
-                    var toggle = document.getElementById(\'bae-lc-toggle\');
-                    var knob   = document.getElementById(\'bae-lc-knob\');
-                    var label  = document.getElementById(\'bae-lc-label\');
-                    var emailRow = document.getElementById(\'bae-lc-email-row\');
-                    if (toggle) { toggle.style.background = _baeLcEnabled ? \'var(--brand-s)\' : \'rgba(255,255,255,0.1)\'; }
-                    if (knob)   { knob.style.left = _baeLcEnabled ? \'21px\' : \'3px\'; }
-                    if (label)  { label.textContent = _baeLcEnabled ? \'Enabled\' : \'Disabled\'; label.style.color = _baeLcEnabled ? \'var(--text)\' : \'var(--text-3)\'; }
-                    if (emailRow) { emailRow.style.display = _baeLcEnabled ? \'\' : \'none\'; }
-                }
-            })
-            .catch(function() { baeLcShowMsg(\'Network error. Try again.\', \'#fb7185\'); })
-            .finally(function() { if (btn) { btn.disabled = false; btn.textContent = \'Save\'; } });
-    }
-
-    function baeLcShowMsg(text, color) {
-        var msg = document.getElementById(\'bae-lc-msg\');
-        if (!msg) return;
-        msg.textContent = text;
-        msg.style.color = color;
-        msg.style.display = \'block\';
-        setTimeout(function() { msg.style.display = \'none\'; }, 4000);
-    }
     </script>
     ';
 
+    // Inject before the first <div class="bae-card"> in the settings output
     return $card . $html;
-}
-
-// =============================================================================
-// FIX Issue 5: EMAIL LOGIN CODE (2FA) — Toggle, Send OTP, Verify OTP
-// User can enable "require email code on login" from the Settings tab.
-// Requires their profile to have an email address set.
-// =============================================================================
-
-function bntm_bae_ajax_toggle_login_code() {
-    $ticket = bntm_bae_read_ticket();
-    if ( ! bntm_bae_ticket_valid( $ticket ) ) {
-        wp_send_json_error( [ 'message' => 'Invalid ticket.' ] );
-    }
-
-    global $wpdb;
-    $table   = $wpdb->prefix . 'bae_profiles';
-    $profile = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE ticket = %s", $ticket ), ARRAY_A );
-
-    if ( ! $profile ) {
-        wp_send_json_error( [ 'message' => 'Profile not found.' ] );
-    }
-
-    $enable = ! empty( $_POST['enable'] ) && $_POST['enable'] === '1';
-    $email  = sanitize_email( $_POST['email'] ?? $profile['login_code_email'] ?? '' );
-
-    if ( $enable && empty( $email ) ) {
-        wp_send_json_error( [ 'message' => 'An email address is required to enable login verification.' ] );
-    }
-
-    $wpdb->update(
-        $table,
-        [
-            'login_code_enabled' => $enable ? 1 : 0,
-            'login_code_email'   => $enable ? $email : '',
-        ],
-        [ 'ticket' => $ticket ],
-        [ '%d', '%s' ],
-        [ '%s' ]
-    );
-
-    wp_send_json_success( [
-        'enabled' => $enable,
-        'message' => $enable ? 'Login verification enabled.' : 'Login verification disabled.',
-    ] );
-}
-
-function bntm_bae_ajax_send_login_otp() {
-    $ticket = strtoupper( sanitize_text_field( $_POST['ticket'] ?? '' ) );
-    if ( ! bntm_bae_ticket_valid( $ticket ) ) {
-        wp_send_json_error( [ 'message' => 'Invalid ticket.' ] );
-    }
-
-    global $wpdb;
-    $table   = $wpdb->prefix . 'bae_profiles';
-    $profile = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE ticket = %s", $ticket ), ARRAY_A );
-
-    if ( ! $profile || empty( $profile['login_code_enabled'] ) || empty( $profile['login_code_email'] ) ) {
-        wp_send_json_error( [ 'message' => 'Login verification is not configured for this ticket.' ] );
-    }
-
-    // Generate 6-digit OTP
-    $otp     = str_pad( wp_rand( 0, 999999 ), 6, '0', STR_PAD_LEFT );
-    $expires = date( 'Y-m-d H:i:s', time() + 600 ); // 10 minutes
-
-    $wpdb->update(
-        $table,
-        [ 'login_otp' => $otp, 'login_otp_expires' => $expires ],
-        [ 'ticket' => $ticket ],
-        [ '%s', '%s' ],
-        [ '%s' ]
-    );
-
-    $email   = $profile['login_code_email'];
-    $name    = $profile['business_name'] ?: 'your workspace';
-    $subject = 'Your Brand Asset Engine login code';
-    $body    = "Hi,\n\nYour login verification code for {$name} is:\n\n    {$otp}\n\nThis code expires in 10 minutes. If you didn't request this, you can ignore this email.\n\n— Brand Asset Engine";
-
-    $sent = bae_resend_email( $email, $subject, $body );
-
-    if ( ! $sent ) {
-        global $bae_resend_last_error;
-        wp_send_json_error( [ 'message' => 'Resend failed: ' . ( $bae_resend_last_error ?: 'Unknown error — check BAE_RESEND_API_KEY is set.' ) ] );
-    }
-
-    // Mask email for display: he***@example.com
-    $at       = strpos( $email, '@' );
-    $masked   = substr( $email, 0, 2 ) . str_repeat( '*', max( 1, $at - 2 ) ) . substr( $email, $at );
-
-    wp_send_json_success( [ 'message' => "Code sent to {$masked}.", 'masked_email' => $masked ] );
-}
-
-function bntm_bae_ajax_verify_login_otp() {
-    $ticket = strtoupper( sanitize_text_field( $_POST['ticket'] ?? '' ) );
-    $otp    = sanitize_text_field( $_POST['otp'] ?? '' );
-
-    if ( ! bntm_bae_ticket_valid( $ticket ) || empty( $otp ) ) {
-        wp_send_json_error( [ 'message' => 'Invalid request.' ] );
-    }
-
-    global $wpdb;
-    $table   = $wpdb->prefix . 'bae_profiles';
-    $profile = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE ticket = %s", $ticket ), ARRAY_A );
-
-    if ( ! $profile ) {
-        wp_send_json_error( [ 'message' => 'Ticket not found.' ] );
-    }
-
-    if ( empty( $profile['login_otp'] ) || $profile['login_otp'] !== $otp ) {
-        wp_send_json_error( [ 'message' => 'Incorrect code. Please try again.' ] );
-    }
-
-    if ( strtotime( $profile['login_otp_expires'] ) < time() ) {
-        wp_send_json_error( [ 'message' => 'This code has expired. Please request a new one.' ] );
-    }
-
-    // Clear OTP after successful use
-    $wpdb->update(
-        $table,
-        [ 'login_otp' => '', 'login_otp_expires' => null ],
-        [ 'ticket' => $ticket ],
-        [ '%s', '%s' ],
-        [ '%s' ]
-    );
-
-    wp_send_json_success( [ 'ticket' => $ticket, 'verified' => true ] );
 }
 
 function bntm_bae_ticket_migrate() {
@@ -615,22 +272,6 @@ function bntm_bae_ticket_migrate() {
     if ( empty( $has_a ) ) {
         $wpdb->query( "ALTER TABLE `{$assets}` ADD COLUMN ticket VARCHAR(20) NOT NULL DEFAULT '' AFTER user_id" );
         $wpdb->query( "ALTER TABLE `{$assets}` ADD INDEX bae_ticket_a_idx (ticket)" );
-    }
-
-    // FIX Issue 5: Add login code verification columns for optional email 2FA
-    $has_code = $wpdb->get_results( "SHOW COLUMNS FROM `{$profiles}` LIKE 'login_code_enabled'" );
-    if ( empty( $has_code ) ) {
-        $wpdb->query( "ALTER TABLE `{$profiles}` ADD COLUMN login_code_enabled TINYINT(1) NOT NULL DEFAULT 0 AFTER kit_visibility" );
-        $wpdb->query( "ALTER TABLE `{$profiles}` ADD COLUMN login_code_email VARCHAR(255) NOT NULL DEFAULT '' AFTER login_code_enabled" );
-        $wpdb->query( "ALTER TABLE `{$profiles}` ADD COLUMN login_otp VARCHAR(10) NOT NULL DEFAULT '' AFTER login_code_email" );
-        $wpdb->query( "ALTER TABLE `{$profiles}` ADD COLUMN login_otp_expires DATETIME NULL DEFAULT NULL AFTER login_otp" );
-    }
-
-    // FIX: Add payment pending columns for ticket-based checkout flow
-    $has_pending = $wpdb->get_results( "SHOW COLUMNS FROM `{$profiles}` LIKE 'bae_pm_pending_ref'" );
-    if ( empty( $has_pending ) ) {
-        $wpdb->query( "ALTER TABLE `{$profiles}` ADD COLUMN bae_pm_pending_ref VARCHAR(120) NOT NULL DEFAULT '' AFTER login_otp_expires" );
-        $wpdb->query( "ALTER TABLE `{$profiles}` ADD COLUMN bae_pm_pending_plan VARCHAR(20) NOT NULL DEFAULT '' AFTER bae_pm_pending_ref" );
     }
 
     $wpdb->show_errors();
@@ -787,6 +428,7 @@ function bntm_bae_ticket_screen() {
         .then(function(j) {
             if (j.success) {
                 if (j.data.is_admin) {
+                    // Admin code — route to admin view on same page
                     if (lbl) lbl.textContent = 'Opening Admin...';
                     var adminUrl = window.location.pathname + '?bae=admin';
                     if (window.gsap) {
@@ -796,17 +438,6 @@ function bntm_bae_ticket_screen() {
                     }
                     return;
                 }
-
-                // FIX Issue 5: If login code verification is required, show OTP step
-                if (j.data.requires_code) {
-                    btn.disabled = false;
-                    if (sp)  sp.style.display  = 'none';
-                    if (arr) arr.style.display = '';
-                    if (lbl) lbl.textContent   = 'Enter Workspace';
-                    baeTkShowOtpStep(j.data.ticket, j.data.masked_email);
-                    return;
-                }
-
                 var exp = new Date(Date.now() + 365*24*60*60*1000).toUTCString();
                 document.cookie = 'bae_ticket=' + encodeURIComponent(j.data.ticket) + '; expires=' + exp + '; path=/; SameSite=Lax';
                 if (lbl) lbl.textContent = 'Opening...';
@@ -829,125 +460,6 @@ function bntm_bae_ticket_screen() {
             if (arr) arr.style.display = '';
             if (lbl) lbl.textContent   = 'Enter Workspace';
             if (err) { err.textContent = 'Connection error. Please try again.'; err.style.display = 'block'; }
-        });
-    }
-
-    // FIX Issue 5: OTP verification step — shown after ticket check returns requires_code:true
-    function baeTkShowOtpStep(ticket, maskedEmail) {
-        var wrap = _baeTkEl('baetk-in');
-        if (!wrap) return;
-
-        if (window.gsap) gsap.to(wrap, {opacity:0, y:-14, duration:.22, ease:'power2.in', onComplete: renderOtp});
-        else renderOtp();
-
-        function renderOtp() {
-            wrap.innerHTML =
-                '<div class="baetk-logo">' +
-                    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
-                '</div>' +
-                '<div class="baetk-title">Check your email</div>' +
-                '<div class="baetk-sub">A 6-digit code was sent to<br><strong style="color:#8b88a4;">' + (maskedEmail || 'your registered email') + '</strong></div>' +
-                '<input type="text" id="baetk-otp" class="baetk-inp" placeholder="000000" maxlength="6" autocomplete="one-time-code" inputmode="numeric" style="letter-spacing:.35em;font-size:26px;">' +
-                '<button class="baetk-btn" id="baetk-otp-btn" onclick="baeTkVerifyOtp(\'' + ticket + '\')">' +
-                    '<div class="baetk-spin" id="baetk-otp-sp"></div>' +
-                    '<span id="baetk-otp-lbl">Verify Code</span>' +
-                    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="baetk-otp-arr"><path d="M5 12h14M12 5l7 7-7 7"/></svg>' +
-                '</button>' +
-                '<div class="baetk-err" id="baetk-otp-err"></div>' +
-                '<div class="baetk-hint" style="margin-top:14px;">' +
-                    'Didn\'t get a code? <button onclick="baeTkResendOtp(\'' + ticket + '\')" style="background:none;border:none;color:#6d5fad;font-size:12px;font-family:\'Geist\',sans-serif;cursor:pointer;padding:0;" id="baetk-resend-btn">Resend</button>' +
-                    ' &nbsp;·&nbsp; <button onclick="window.location.reload()" style="background:none;border:none;color:#4d4a65;font-size:12px;font-family:\'Geist\',sans-serif;cursor:pointer;padding:0;">Back</button>' +
-                '</div>';
-
-            if (window.gsap) gsap.fromTo(wrap, {opacity:0, y:20}, {opacity:1, y:0, duration:.4, ease:'power3.out'});
-            else wrap.style.opacity = 1;
-
-            var otpInp = _baeTkEl('baetk-otp');
-            if (otpInp) {
-                otpInp.addEventListener('input', function() {
-                    this.value = this.value.replace(/\D/g, '').substring(0, 6);
-                });
-                otpInp.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') baeTkVerifyOtp(ticket);
-                });
-                setTimeout(function() { otpInp.focus(); }, 200);
-            }
-        }
-    }
-
-    function baeTkVerifyOtp(ticket) {
-        var otp    = (_baeTkEl('baetk-otp') || {}).value || '';
-        var btn    = _baeTkEl('baetk-otp-btn');
-        var sp     = _baeTkEl('baetk-otp-sp');
-        var lbl    = _baeTkEl('baetk-otp-lbl');
-        var arr    = _baeTkEl('baetk-otp-arr');
-        var err    = _baeTkEl('baetk-otp-err');
-
-        if (otp.length < 6) {
-            if (err) { err.textContent = 'Please enter the 6-digit code.'; err.style.display = 'block'; }
-            return;
-        }
-
-        if (btn) btn.disabled = true;
-        if (sp)  sp.style.display  = 'block';
-        if (arr) arr.style.display = 'none';
-        if (lbl) lbl.textContent   = 'Verifying...';
-
-        var fd = new FormData();
-        fd.append('action', 'bae_verify_login_otp');
-        fd.append('ticket', ticket);
-        fd.append('otp', otp);
-
-        fetch(_baeTkAj, { method:'POST', body:fd })
-        .then(function(r) { return r.json(); })
-        .then(function(j) {
-            if (j.success && j.data.verified) {
-                if (lbl) lbl.textContent = 'Opening...';
-                var exp = new Date(Date.now() + 365*24*60*60*1000).toUTCString();
-                document.cookie = 'bae_ticket=' + encodeURIComponent(ticket) + '; expires=' + exp + '; path=/; SameSite=Lax';
-                if (window.gsap) {
-                    gsap.to('#baetk-in', {opacity:0, y:-20, duration:.3, ease:'power2.in', onComplete:function(){ window.location.reload(); }});
-                } else {
-                    window.location.reload();
-                }
-            } else {
-                if (btn) btn.disabled = false;
-                if (sp)  sp.style.display  = 'none';
-                if (arr) arr.style.display = '';
-                if (lbl) lbl.textContent   = 'Verify Code';
-                if (err) { err.textContent = (j.data && j.data.message) ? j.data.message : 'Incorrect code.'; err.style.display = 'block'; }
-                if (window.gsap) gsap.fromTo(_baeTkEl('baetk-otp'), {x:-5},{x:0,duration:.35,ease:'elastic.out(1,.4)'});
-            }
-        })
-        .catch(function() {
-            if (btn) btn.disabled = false;
-            if (sp)  sp.style.display  = 'none';
-            if (arr) arr.style.display = '';
-            if (lbl) lbl.textContent   = 'Verify Code';
-            if (err) { err.textContent = 'Connection error. Try again.'; err.style.display = 'block'; }
-        });
-    }
-
-    function baeTkResendOtp(ticket) {
-        var resendBtn = _baeTkEl('baetk-resend-btn');
-        var err       = _baeTkEl('baetk-otp-err');
-        if (resendBtn) { resendBtn.disabled = true; resendBtn.textContent = 'Sending...'; }
-
-        var fd = new FormData();
-        fd.append('action', 'bae_send_login_otp');
-        fd.append('ticket', ticket);
-
-        fetch(_baeTkAj, { method:'POST', body:fd })
-        .then(function(r) { return r.json(); })
-        .then(function(j) {
-            if (j.success) {
-                if (err) { err.textContent = j.data.message; err.style.color = '#34d399'; err.style.display = 'block'; setTimeout(function(){ err.style.display='none'; err.style.color=''; },3000); }
-            } else {
-                if (err) { err.textContent = (j.data && j.data.message) || 'Failed to resend.'; err.style.display = 'block'; }
-            }
-        })
-        .finally(function() {
-            if (resendBtn) { resendBtn.disabled = false; resendBtn.textContent = 'Resend'; }
         });
     }
 
@@ -1057,29 +569,9 @@ function bntm_bae_ticket_shortcode_wrapper( $atts ) {
     $ticket = bntm_bae_read_ticket();
     $valid  = bntm_bae_ticket_valid( $ticket );
 
-    // No valid ticket format → show ticket screen
+    // No valid ticket → show ticket screen
     if ( ! $valid ) {
         return bntm_bae_ticket_screen();
-    }
-
-    // FIX Issue 1: After format check, confirm ticket actually exists in DB.
-    // When the DB is wiped/reset, old browser cookies still pass the regex
-    // and would silently skip the ticket screen and launch the wizard.
-    // For non-demo tickets: verify DB row exists, otherwise clear stale cookie.
-    if ( $ticket !== 'BAE-2525-2525' ) {
-        global $wpdb;
-        $wpdb->hide_errors();
-        $ticket_in_db = $wpdb->get_var( $wpdb->prepare(
-            "SELECT id FROM {$wpdb->prefix}bae_profiles WHERE ticket = %s LIMIT 1",
-            $ticket
-        ) );
-        $wpdb->show_errors();
-
-        if ( ! $ticket_in_db ) {
-            // Stale cookie — expire it server-side and show the ticket entry screen
-            setcookie( 'bae_ticket', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), false );
-            return bntm_bae_ticket_screen();
-        }
     }
 
     // Step 2: resolve profile by ticket ONLY

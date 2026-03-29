@@ -19,8 +19,8 @@ define('BNTM_BAE_URL', plugin_dir_url(__FILE__));
 // Load ticketing system
 require_once BNTM_BAE_PATH . 'ticket.php';
 
-// Load Stripe payment integration
-require_once BNTM_BAE_PATH . 'stripe.php';
+// Load PayMaya payment integration
+require_once BNTM_BAE_PATH . 'paymaya.php';
 
 // Load Admin Panel
 require_once BNTM_BAE_PATH . 'admin.php';
@@ -104,6 +104,8 @@ function bntm_bae_get_tables() {
             tone_statement TEXT NOT NULL DEFAULT '',
             kit_visibility VARCHAR(10) NOT NULL DEFAULT 'private',
             kit_slug VARCHAR(100) UNIQUE NOT NULL DEFAULT '',
+            kit_views INT UNSIGNED NOT NULL DEFAULT 0,
+            kit_unique_views INT UNSIGNED NOT NULL DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_user (user_id)
@@ -248,6 +250,143 @@ function bae_render_block_brand_guideline($attributes, $content) {
 function bae_safe_color($value, $fallback = '#000000') {
     $clean = sanitize_hex_color(trim($value));
     return $clean ?: $fallback;
+}
+
+function bae_hex_to_rgb($hex) {
+    $hex = ltrim(bae_safe_color($hex), '#');
+    if (strlen($hex) !== 6) return ['r' => 0, 'g' => 0, 'b' => 0];
+    return [
+        'r' => hexdec(substr($hex, 0, 2)),
+        'g' => hexdec(substr($hex, 2, 2)),
+        'b' => hexdec(substr($hex, 4, 2)),
+    ];
+}
+
+function bae_rgb_to_hex($r, $g, $b) {
+    $r = max(0, min(255, (int) round($r)));
+    $g = max(0, min(255, (int) round($g)));
+    $b = max(0, min(255, (int) round($b)));
+    return sprintf('#%02x%02x%02x', $r, $g, $b);
+}
+
+function bae_color_luminance_score($hex) {
+    $rgb = bae_hex_to_rgb($hex);
+    return (int) round(($rgb['r'] * 0.299) + ($rgb['g'] * 0.587) + ($rgb['b'] * 0.114));
+}
+
+function bae_color_hue_deg($hex) {
+    $rgb = bae_hex_to_rgb($hex);
+    $r = $rgb['r'] / 255;
+    $g = $rgb['g'] / 255;
+    $b = $rgb['b'] / 255;
+    $max = max($r, $g, $b);
+    $min = min($r, $g, $b);
+    $delta = $max - $min;
+
+    if ($delta == 0.0) return 0.0;
+
+    if ($max === $r) {
+        $h = fmod((($g - $b) / $delta), 6);
+    } elseif ($max === $g) {
+        $h = (($b - $r) / $delta) + 2;
+    } else {
+        $h = (($r - $g) / $delta) + 4;
+    }
+
+    $deg = $h * 60;
+    return $deg < 0 ? $deg + 360 : $deg;
+}
+
+function bae_hue_difference($hex_a, $hex_b) {
+    $diff = abs(bae_color_hue_deg($hex_a) - bae_color_hue_deg($hex_b));
+    return min($diff, 360 - $diff);
+}
+
+function bae_adjust_secondary_contrast($primary, $secondary, $min_diff = 30) {
+    $primary = bae_safe_color($primary, '#1a1a2e');
+    $secondary = bae_safe_color($secondary, '#16213e');
+    $primary_lum = bae_color_luminance_score($primary);
+    $secondary_lum = bae_color_luminance_score($secondary);
+
+    if (abs($primary_lum - $secondary_lum) >= $min_diff) {
+        return $secondary;
+    }
+
+    $rgb = bae_hex_to_rgb($secondary);
+    $direction = $primary_lum >= 128 ? -1 : 1;
+    $delta = max($min_diff, 36);
+
+    return bae_rgb_to_hex(
+        $rgb['r'] + ($direction * $delta),
+        $rgb['g'] + ($direction * $delta),
+        $rgb['b'] + ($direction * $delta)
+    );
+}
+
+function bae_rotate_accent_hue($hex, $degrees = 45) {
+    $rgb = bae_hex_to_rgb($hex);
+    $r = $rgb['r'] / 255;
+    $g = $rgb['g'] / 255;
+    $b = $rgb['b'] / 255;
+    $max = max($r, $g, $b);
+    $min = min($r, $g, $b);
+    $delta = $max - $min;
+    $l = ($max + $min) / 2;
+
+    if ($delta == 0.0) {
+        return bae_rgb_to_hex($rgb['r'] + 36, $rgb['g'] - 18, $rgb['b'] + 18);
+    }
+
+    $s = $delta / (1 - abs((2 * $l) - 1));
+
+    if ($max === $r) {
+        $h = fmod((($g - $b) / $delta), 6);
+    } elseif ($max === $g) {
+        $h = (($b - $r) / $delta) + 2;
+    } else {
+        $h = (($r - $g) / $delta) + 4;
+    }
+
+    $h = fmod((($h * 60) + $degrees + 360), 360);
+    $c = (1 - abs((2 * $l) - 1)) * $s;
+    $x = $c * (1 - abs(fmod(($h / 60), 2) - 1));
+    $m = $l - ($c / 2);
+
+    if ($h < 60) {
+        [$rp, $gp, $bp] = [$c, $x, 0];
+    } elseif ($h < 120) {
+        [$rp, $gp, $bp] = [$x, $c, 0];
+    } elseif ($h < 180) {
+        [$rp, $gp, $bp] = [0, $c, $x];
+    } elseif ($h < 240) {
+        [$rp, $gp, $bp] = [0, $x, $c];
+    } elseif ($h < 300) {
+        [$rp, $gp, $bp] = [$x, 0, $c];
+    } else {
+        [$rp, $gp, $bp] = [$c, 0, $x];
+    }
+
+    return bae_rgb_to_hex(
+        ($rp + $m) * 255,
+        ($gp + $m) * 255,
+        ($bp + $m) * 255
+    );
+}
+
+function bae_normalize_palette_colors($primary, $secondary, $accent) {
+    $primary = bae_safe_color($primary, '#1a1a2e');
+    $secondary = bae_adjust_secondary_contrast($primary, $secondary, 30);
+    $accent = bae_safe_color($accent, '#e94560');
+
+    if (bae_hue_difference($primary, $accent) < 30) {
+        $accent = bae_rotate_accent_hue($accent, 45);
+    }
+
+    return [
+        'primary' => $primary,
+        'secondary' => $secondary,
+        'accent' => $accent,
+    ];
 }
 
 // =============================================================================
@@ -477,6 +616,7 @@ function bae_wizard_shortcode($user_id) {
 
             <!-- Palette tiles — filled by JS -->
             <div id="bae-wiz-palette-tiles" style="display:none;width:100%;"></div>
+            <div class="bae-wiz-error" id="bae-wiz-palette-warning" style="display:none;"></div>
 
             <div class="bae-wiz-error" id="bae-wiz-vibe-err">Please pick a palette.</div>
             <button class="bae-wiz-next" id="bae-wiz-next-3" onclick="baeWizGo(4)" disabled>Continue &rarr;</button>
@@ -601,6 +741,65 @@ function bae_wizard_shortcode($user_id) {
             { name:'Tech',    primary:'#0f172a', secondary:'#020617', accent:'#6366f1', personality:'Tech-forward, analytical, precise',  reason:'Dark navy with indigo accents — modern and precise.' },
         ];
 
+        function baeHexToRgb(hex) {
+            hex = (hex || '').replace('#', '');
+            if (hex.length !== 6) return null;
+            return {
+                r: parseInt(hex.slice(0, 2), 16),
+                g: parseInt(hex.slice(2, 4), 16),
+                b: parseInt(hex.slice(4, 6), 16)
+            };
+        }
+
+        function baeColorLuminance(hex) {
+            var rgb = baeHexToRgb(hex);
+            if (!rgb) return 0;
+            return Math.round((rgb.r * 0.299) + (rgb.g * 0.587) + (rgb.b * 0.114));
+        }
+
+        function baeColorHue(hex) {
+            var rgb = baeHexToRgb(hex);
+            if (!rgb) return 0;
+            var r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+            var max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+            if (!delta) return 0;
+            var h;
+            if (max === r) h = ((g - b) / delta) % 6;
+            else if (max === g) h = ((b - r) / delta) + 2;
+            else h = ((r - g) / delta) + 4;
+            h *= 60;
+            return h < 0 ? h + 360 : h;
+        }
+
+        function baeHueDifference(a, b) {
+            var diff = Math.abs(baeColorHue(a) - baeColorHue(b));
+            return Math.min(diff, 360 - diff);
+        }
+
+        function baePaletteWarnings(primary, secondary, accent) {
+            var warnings = [];
+            if (Math.abs(baeColorLuminance(primary) - baeColorLuminance(secondary)) < 30) {
+                warnings.push('Primary and secondary are very close in brightness.');
+            }
+            if (baeHueDifference(primary, accent) < 30) {
+                warnings.push('Primary and accent are too close in hue.');
+            }
+            return warnings;
+        }
+
+        function baeRenderPaletteWarning(targetId, primary, secondary, accent) {
+            var el = document.getElementById(targetId);
+            if (!el) return;
+            var warnings = baePaletteWarnings(primary, secondary, accent);
+            if (!warnings.length) {
+                el.style.display = 'none';
+                el.textContent = '';
+                return;
+            }
+            el.style.display = 'block';
+            el.textContent = warnings.join(' ');
+        }
+
         function setProgress(s) {
             var pct = ((s-1)/5)*100;
             document.getElementById('bae-wiz-progress').style.width = pct + '%';
@@ -684,7 +883,13 @@ function bae_wizard_shortcode($user_id) {
                 badge.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg> Personalized by AI for ' + state.name;
                 container.appendChild(badge);
             } else {
+                // FIX Issue 2: When AI fails/is unconfigured, show a visible soft notice
+                // so users know they're seeing default palettes, not personalized ones.
                 hint.textContent = 'Pick a palette that fits your brand. You can fine-tune colors later.';
+                var fallbackNotice = document.createElement('div');
+                fallbackNotice.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:11px;color:#4d4a65;padding:8px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:10px;';
+                fallbackNotice.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4d4a65" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>\u00a0AI palette generation unavailable \u2014 showing curated defaults. Colors can be customized after setup.';
+                container.appendChild(fallbackNotice);
             }
 
             palettes.forEach(function(p, i) {
@@ -716,6 +921,7 @@ function bae_wizard_shortcode($user_id) {
                     state.secondary   = card.dataset.secondary;
                     state.accent      = card.dataset.accent;
                     state.personality = card.dataset.personality;
+                    baeRenderPaletteWarning('bae-wiz-palette-warning', state.primary, state.secondary, state.accent);
                     document.getElementById('bae-wiz-next-3').disabled = false;
                     document.getElementById('bae-wiz-vibe-err').style.display = 'none';
                     if (window.gsap) gsap.fromTo(card, {scale:0.98}, {scale:1, duration:0.25, ease:'back.out(2)'});
@@ -730,6 +936,7 @@ function bae_wizard_shortcode($user_id) {
 
             loading.style.display   = 'none';
             container.style.display = 'block';
+            baeRenderPaletteWarning('bae-wiz-palette-warning', state.primary, state.secondary, state.accent);
         }
 
         // ── Show Step 3 — wait for palette promise if needed ──────────────
@@ -2059,6 +2266,35 @@ function bntm_shortcode_bae() {
     .bae-swatch:hover .bae-swatch-copy-btn { opacity: 1; transform: translateY(0); }
     .bae-swatch-copy-btn svg { width: 10px; height: 10px; }
     .bae-swatch-copy-btn.copied { background: rgba(16,185,129,0.12); color: #34d399; border-color: rgba(16,185,129,0.2); }
+    .bae-swatch-copy-wrap { position: relative; }
+    .bae-swatch-copy-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        min-width: 88px;
+        background: var(--surface);
+        border: 1px solid var(--border-2);
+        border-radius: 12px;
+        box-shadow: 0 18px 36px rgba(0,0,0,.24);
+        padding: 6px;
+        display: none;
+        z-index: 20;
+    }
+    .bae-swatch-copy-menu.open { display: block; }
+    .bae-swatch-copy-option {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: var(--text-2);
+        font: inherit;
+        font-size: 11px;
+        font-weight: 700;
+        text-align: left;
+        border-radius: 8px;
+        padding: 7px 9px;
+        cursor: pointer;
+    }
+    .bae-swatch-copy-option:hover { background: rgba(139,92,246,.12); color: var(--text); }
     .bae-font-copy-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
     .bae-font-copy-btn {
         font-size: 10px; font-weight: 700;
@@ -2413,7 +2649,7 @@ function bntm_shortcode_bae() {
                 });
         };
 
-        // After Stripe redirect back — refresh plan badge without full reload
+        // After PayMaya redirect back — refresh plan badge without full reload
         (function() {
             var params = new URLSearchParams(window.location.search);
             if (params.get('bae_pm') === 'success') {
@@ -2566,7 +2802,7 @@ function bae_overview_tab($user_id, $profile) {
 
     ob_start();
 
-    // Stripe payment success flash banner
+    // Payment success flash banner
     $pm_success = get_transient('bae_pm_success_' . $user_id);
     if ($pm_success) {
         delete_transient('bae_pm_success_' . $user_id);
@@ -2818,6 +3054,7 @@ function bae_overview_tab($user_id, $profile) {
                         <small>Highlight color — badges, links, CTAs.</small>
                     </div>
                 </div>
+                <div class="bae-notice bae-notice-error" id="bae-color-warning" style="display:none;margin-top:12px;"></div>
             </div>
 
             <div class="bae-divider"></div>
@@ -3113,11 +3350,21 @@ function bae_overview_tab($user_id, $profile) {
                 <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:10px;">Color Palette</div>
                 <div class="bae-color-swatches">
                     <?php foreach (['Primary'=>$pc_bi,'Secondary'=>$sc_bi,'Accent'=>$ac_bi] as $lbl=>$hex): ?>
-                    <div class="bae-swatch" onclick="navigator.clipboard.writeText('<?php echo strtoupper($hex); ?>');this.querySelector('.bae-swatch-copy-btn').textContent='Copied!';setTimeout(()=>this.querySelector('.bae-swatch-copy-btn').textContent='Copy',1600);">
+                    <div class="bae-swatch" data-color="<?php echo esc_attr(strtoupper($hex)); ?>">
                         <div class="bae-swatch-block" style="background:<?php echo $hex; ?>;"></div>
                         <div class="bae-swatch-label"><?php echo $lbl; ?></div>
                         <div class="bae-swatch-hex"><?php echo strtoupper($hex); ?></div>
-                        <button class="bae-swatch-copy-btn">Copy</button>
+                        <div class="bae-swatch-copy-wrap">
+                            <button type="button" class="bae-swatch-copy-btn" onclick="baeToggleColorMenu(event, this)">
+                                Copy
+                            </button>
+                            <div class="bae-swatch-copy-menu">
+                                <button type="button" class="bae-swatch-copy-option" onclick="baeCopyColorFormat(event, this, 'hex')">HEX</button>
+                                <button type="button" class="bae-swatch-copy-option" onclick="baeCopyColorFormat(event, this, 'rgb')">RGB</button>
+                                <button type="button" class="bae-swatch-copy-option" onclick="baeCopyColorFormat(event, this, 'hsl')">HSL</button>
+                                <button type="button" class="bae-swatch-copy-option" onclick="baeCopyColorFormat(event, this, 'cmyk')">CMYK</button>
+                            </div>
+                        </div>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -3213,6 +3460,66 @@ function bae_overview_tab($user_id, $profile) {
                     btn.textContent = 'Save Brand Profile';
                 });
             });
+        }
+
+        function baeHexToRgbWarn(hex) {
+            hex = (hex || '').trim().replace('#', '');
+            if (hex.length !== 6) return null;
+            return {
+                r: parseInt(hex.slice(0, 2), 16),
+                g: parseInt(hex.slice(2, 4), 16),
+                b: parseInt(hex.slice(4, 6), 16)
+            };
+        }
+
+        function baeWarnLuminance(hex) {
+            var rgb = baeHexToRgbWarn(hex);
+            if (!rgb) return 0;
+            return Math.round((rgb.r * 0.299) + (rgb.g * 0.587) + (rgb.b * 0.114));
+        }
+
+        function baeWarnHue(hex) {
+            var rgb = baeHexToRgbWarn(hex);
+            if (!rgb) return 0;
+            var r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+            var max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+            if (!delta) return 0;
+            var h;
+            if (max === r) h = ((g - b) / delta) % 6;
+            else if (max === g) h = ((b - r) / delta) + 2;
+            else h = ((r - g) / delta) + 4;
+            h *= 60;
+            return h < 0 ? h + 360 : h;
+        }
+
+        function baeWarnHueDiff(a, b) {
+            var diff = Math.abs(baeWarnHue(a) - baeWarnHue(b));
+            return Math.min(diff, 360 - diff);
+        }
+
+        function baeUpdateColorWarning() {
+            var warning = document.getElementById('bae-color-warning');
+            var primary = document.getElementById('bae-primary-color');
+            var secondary = document.getElementById('bae-secondary-color');
+            var accent = document.getElementById('bae-accent-color');
+            if (!warning || !primary || !secondary || !accent) return;
+
+            var messages = [];
+            if (Math.abs(baeWarnLuminance(primary.value) - baeWarnLuminance(secondary.value)) < 30) {
+                messages.push('Primary and secondary are very close in brightness.');
+            }
+            if (baeWarnHueDiff(primary.value, accent.value) < 30) {
+                messages.push('Primary and accent are very close in hue.');
+            }
+
+            if (!messages.length) {
+                warning.style.display = 'none';
+                warning.textContent = '';
+                return;
+            }
+
+            warning.style.display = 'block';
+            warning.textContent = messages.join(' ');
         }
 
         // ── Live Preview ─────────────────────────────────────────────────
@@ -3357,6 +3664,20 @@ function bae_overview_tab($user_id, $profile) {
             });
         }
 
+        ['bae-primary-color', 'bae-secondary-color', 'bae-accent-color'].forEach(function(id) {
+            var input = document.getElementById(id);
+            if (!input) return;
+            input.addEventListener('input', baeUpdateColorWarning);
+            input.addEventListener('change', baeUpdateColorWarning);
+        });
+        ['primary_color_picker', 'secondary_color_picker', 'accent_color_picker'].forEach(function(name) {
+            var picker = document.querySelector('[name="' + name + '"]');
+            if (!picker) return;
+            picker.addEventListener('input', function() { setTimeout(baeUpdateColorWarning, 0); });
+            picker.addEventListener('change', function() { setTimeout(baeUpdateColorWarning, 0); });
+        });
+        baeUpdateColorWarning();
+
         // Brand Intelligence toggle
         window.baeToggleIntel = function() {
             var body    = document.getElementById('bae-intel-body');
@@ -3423,6 +3744,7 @@ function bae_overview_tab($user_id, $profile) {
                             applyColor('primary_color', p.primary);
                             applyColor('secondary_color', p.secondary);
                             applyColor('accent_color', p.accent);
+                            if (typeof baeUpdateColorWarning === 'function') baeUpdateColorWarning();
                             card.style.borderColor = '#8b5cf6';
                             card.style.background = 'rgba(139,92,246,.08)';
                             colorPanel.style.display = 'none';
@@ -3826,14 +4148,22 @@ function bae_identity_tab($user_id, $profile) {
             ];
             foreach ($colors as $label => $hex):
             ?>
-            <div class="bae-swatch" onclick="baeCopyHex('<?php echo esc_js(strtoupper($hex)); ?>', this)">
+            <div class="bae-swatch" data-color="<?php echo esc_attr(strtoupper($hex)); ?>">
                 <div class="bae-swatch-block" style="background:<?php echo esc_attr($hex); ?>;"></div>
                 <div class="bae-swatch-label"><?php echo $label; ?></div>
                 <div class="bae-swatch-hex"><?php echo strtoupper($hex); ?></div>
-                <button class="bae-swatch-copy-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                    Copy
-                </button>
+                <div class="bae-swatch-copy-wrap">
+                    <button type="button" class="bae-swatch-copy-btn" onclick="baeToggleColorMenu(event, this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        Copy
+                    </button>
+                    <div class="bae-swatch-copy-menu">
+                        <button type="button" class="bae-swatch-copy-option" onclick="baeCopyColorFormat(event, this, 'hex')">HEX</button>
+                        <button type="button" class="bae-swatch-copy-option" onclick="baeCopyColorFormat(event, this, 'rgb')">RGB</button>
+                        <button type="button" class="bae-swatch-copy-option" onclick="baeCopyColorFormat(event, this, 'hsl')">HSL</button>
+                        <button type="button" class="bae-swatch-copy-option" onclick="baeCopyColorFormat(event, this, 'cmyk')">CMYK</button>
+                    </div>
+                </div>
             </div>
             <?php endforeach; ?>
             <div class="bae-swatch">
@@ -3912,15 +4242,82 @@ function bae_identity_tab($user_id, $profile) {
         <a href="?tab=overview" class="bae-btn bae-btn-outline">&larr; Edit Profile</a>
     </div>
     <script>
-    function baeCopyHex(hex, swatchEl) {
-        navigator.clipboard.writeText(hex).then(function() {
-            var btn = swatchEl.querySelector('.bae-swatch-copy-btn');
-            if (!btn) return;
-            var orig = btn.innerHTML;
-            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Copied';
-            btn.classList.add('copied');
-            if (window.gsap) gsap.fromTo(btn, {scale:0.9}, {scale:1, duration:0.3, ease:'back.out(2)'});
-            setTimeout(function() { btn.innerHTML = orig; btn.classList.remove('copied'); }, 1800);
+    function baeHexToRgbObject(hex) {
+        hex = (hex || '').replace('#', '');
+        if (hex.length !== 6) return null;
+        return {
+            r: parseInt(hex.slice(0, 2), 16),
+            g: parseInt(hex.slice(2, 4), 16),
+            b: parseInt(hex.slice(4, 6), 16)
+        };
+    }
+    function baeHexToHslString(hex) {
+        var rgb = baeHexToRgbObject(hex);
+        if (!rgb) return hex;
+        var r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) {
+            h = 0; s = 0;
+        } else {
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                default: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return 'hsl(' + Math.round(h * 360) + ', ' + Math.round(s * 100) + '%, ' + Math.round(l * 100) + '%)';
+    }
+    function baeHexToCmykString(hex) {
+        var rgb = baeHexToRgbObject(hex);
+        if (!rgb) return hex;
+        var r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
+        var k = 1 - Math.max(r, g, b);
+        if (k === 1) return 'cmyk(0%, 0%, 0%, 100%)';
+        var c = (1 - r - k) / (1 - k);
+        var m = (1 - g - k) / (1 - k);
+        var y = (1 - b - k) / (1 - k);
+        return 'cmyk(' + Math.round(c * 100) + '%, ' + Math.round(m * 100) + '%, ' + Math.round(y * 100) + '%, ' + Math.round(k * 100) + '%)';
+    }
+    function baeFormatColorValue(hex, format) {
+        var rgb = baeHexToRgbObject(hex);
+        if (!rgb) return hex;
+        if (format === 'rgb') return 'rgb(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ')';
+        if (format === 'hsl') return baeHexToHslString(hex);
+        if (format === 'cmyk') return baeHexToCmykString(hex);
+        return (hex || '').toUpperCase();
+    }
+    function baeFlashCopyButton(btn, label) {
+        if (!btn) return;
+        var orig = btn.innerHTML;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> ' + label;
+        btn.classList.add('copied');
+        if (window.gsap) gsap.fromTo(btn, {scale:0.9}, {scale:1, duration:0.3, ease:'back.out(2)'});
+        setTimeout(function() { btn.innerHTML = orig; btn.classList.remove('copied'); }, 1800);
+    }
+    function baeToggleColorMenu(event, btn) {
+        event.preventDefault();
+        event.stopPropagation();
+        document.querySelectorAll('.bae-swatch-copy-menu.open').forEach(function(menu) {
+            if (!btn.parentNode.contains(menu)) menu.classList.remove('open');
+        });
+        var menu = btn.parentNode.querySelector('.bae-swatch-copy-menu');
+        if (menu) menu.classList.toggle('open');
+    }
+    function baeCopyColorFormat(event, btn, format) {
+        event.preventDefault();
+        event.stopPropagation();
+        var swatch = btn.closest('.bae-swatch');
+        if (!swatch) return;
+        var hex = swatch.dataset.color || '';
+        var value = baeFormatColorValue(hex, format);
+        navigator.clipboard.writeText(value).then(function() {
+            var menu = swatch.querySelector('.bae-swatch-copy-menu');
+            if (menu) menu.classList.remove('open');
+            baeFlashCopyButton(swatch.querySelector('.bae-swatch-copy-btn'), format.toUpperCase() + ' Copied');
         });
     }
     function baeCopyText(text, btnEl) {
@@ -3932,6 +4329,11 @@ function bae_identity_tab($user_id, $profile) {
             setTimeout(function() { btnEl.innerHTML = orig; btnEl.classList.remove('copied'); }, 1800);
         });
     }
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.bae-swatch-copy-menu.open').forEach(function(menu) {
+            menu.classList.remove('open');
+        });
+    });
     </script>
     <?php
     return ob_get_clean();
@@ -4074,7 +4476,6 @@ function bae_assets_tab($user_id, $profile) {
                             data-html="<?php echo esc_attr($gen_data['asset_html']); ?>">
                         Preview
                     </button>
-                    <?php if ( empty($meta['custom']) ): ?>
                     <?php if ($is_free): ?>
                     <button type="button" class="bae-btn bae-btn-outline bae-btn-sm" onclick="baePricingOpen('Regenerate anytime', 'Free plan generates each asset once. Upgrade to regenerate whenever you update your brand.')">
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
@@ -4088,12 +4489,12 @@ function bae_assets_tab($user_id, $profile) {
                         Regenerate
                     </button>
                     <?php endif; ?>
-                    <?php endif; ?>
                     <?php if (!empty($gen_data['asset_html_prev'])): ?>
                     <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-undo-btn"
                             data-type="<?php echo $type; ?>"
                             data-nonce="<?php echo $nonce; ?>"
                             data-pid="<?php echo $profile_id; ?>"
+                            data-mode="undo"
                             title="Undo last generation">
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
                     </button>
@@ -4378,13 +4779,65 @@ function bae_assets_tab($user_id, $profile) {
             });
         }
 
-        // Undo
-        document.querySelectorAll('.bae-undo-btn').forEach(function(btn) {
+        function baeUndoButtonMarkup(mode) {
+            if (mode === 'redo') {
+                return '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg><span>Redo</span>';
+            }
+            return '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg><span>Undo</span>';
+        }
+
+        function baeSetUndoButtonState(btn, mode) {
+            if (!btn) return;
+            btn.dataset.mode = mode;
+            btn.title = mode === 'redo' ? 'Redo last undo' : 'Undo last generation';
+            btn.style.display = '';
+            btn.disabled = false;
+            btn.innerHTML = baeUndoButtonMarkup(mode);
+        }
+
+        function baeFindUndoInsertTarget(actions) {
+            return actions.querySelector('.bae-delete-btn')
+                || actions.querySelector('.bae-download-btn')
+                || null;
+        }
+
+        function baeEnsureUndoButton(card, type, nonce, pid) {
+            if (!card) return null;
+            var btn = card.querySelector('.bae-undo-btn');
+            if (!btn) {
+                var actions = card.querySelector('.bae-asset-actions');
+                if (!actions) return null;
+                btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'bae-btn bae-btn-outline bae-btn-sm bae-undo-btn';
+                btn.dataset.type = type;
+                btn.dataset.nonce = nonce;
+                btn.dataset.pid = pid;
+                var insertBefore = baeFindUndoInsertTarget(actions);
+                if (insertBefore) actions.insertBefore(btn, insertBefore);
+                else actions.appendChild(btn);
+            }
+            btn.dataset.type = type;
+            btn.dataset.nonce = nonce;
+            btn.dataset.pid = pid;
+            baeSetUndoButtonState(btn, 'undo');
+            baeBindUndoButton(btn);
+            return btn;
+        }
+
+        function baeBindUndoButton(btn) {
+            if (!btn || btn.dataset.undoBound === '1') return;
+            btn.dataset.undoBound = '1';
+            if (!btn.dataset.mode) {
+                btn.dataset.mode = 'undo';
+            }
+            baeSetUndoButtonState(btn, btn.dataset.mode);
             btn.addEventListener('click', function() {
                 var type  = this.dataset.type;
                 var nonce = this.dataset.nonce;
                 var pid   = this.dataset.pid;
                 var self  = this;
+                var currentMode = self.dataset.mode || 'undo';
                 self.disabled = true;
                 var fd = new FormData();
                 fd.append('action', 'bae_undo_asset');
@@ -4400,13 +4853,21 @@ function bae_assets_tab($user_id, $profile) {
                             var inner = card.querySelector('.bae-asset-preview-inner');
                             if (inner) inner.innerHTML = json.data.html;
                         }
-                        self.style.display = 'none'; // hide undo after use
+                        baeSetUndoButtonState(self, currentMode === 'undo' ? 'redo' : 'undo');
                     } else {
                         alert((json.data && json.data.message) ? json.data.message : 'Undo failed.');
                         self.disabled = false;
                     }
+                })
+                .catch(function() {
+                    alert('Undo failed.');
+                    self.disabled = false;
                 });
             });
+        }
+
+        document.querySelectorAll('.bae-undo-btn').forEach(function(btn) {
+            baeBindUndoButton(btn);
         });
 
         // Delete
@@ -4554,6 +5015,13 @@ function bae_assets_tab($user_id, $profile) {
                         preview.style.display = 'none';
                         preview.offsetHeight;
                         preview.style.display = '';
+                    }
+
+                    if (card) {
+                        var existingUndoBtn = card.querySelector('.bae-undo-btn');
+                        if (existingUndoBtn || isRegen) {
+                            baeEnsureUndoButton(card, type, nonce, pid);
+                        }
                     }
 
                     // If it's the fallback message, reload to show the actual asset
@@ -4936,13 +5404,14 @@ function bae_kit_tab($user_id, $profile) {
 
     $p         = $profile;
     $kit_slug  = !empty($p['kit_slug']) ? $p['kit_slug'] : sanitize_title($p['business_name']) . '-' . substr($p['rand_id'], 0, 6);
-    $kit_page  = get_page_by_path('brand-kit');
-    $kit_base  = $kit_page ? get_permalink($kit_page) : home_url('/brand-kit/');
-    $kit_url   = add_query_arg('slug', $kit_slug, $kit_base);
+    $kit_url   = bae_get_kit_public_url($p);
+    $kit_qr_url = bae_get_kit_qr_url($kit_url, 360);
     $is_pub    = $p['kit_visibility'] === 'public';
     $nonce     = wp_create_nonce('bae_save_kit_settings');
     $user_plan = bae_get_user_plan($user_id, $profile);
     $is_free   = $user_plan === 'free';
+    $kit_views = number_format_i18n((int)($p['kit_views'] ?? 0));
+    $kit_unique_views = number_format_i18n((int)($p['kit_unique_views'] ?? 0));
 
     ob_start();
     ?>
@@ -4979,6 +5448,37 @@ function bae_kit_tab($user_id, $profile) {
             <button class="bae-btn bae-btn-sm bae-btn-outline" onclick="navigator.clipboard.writeText('<?php echo esc_js($kit_url); ?>');this.textContent='Copied!';setTimeout(function(){this.textContent='Copy Link';}.bind(this),2000);">
                 Copy Link
             </button>
+        </div>
+        <?php endif; ?>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+            <div style="flex:1;min-width:180px;padding:14px 16px;border-radius:12px;background:var(--bg-3);border:1px solid var(--border);">
+                <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;">Total Views</div>
+                <div style="font-size:26px;font-weight:800;color:var(--text);margin-top:6px;"><?php echo esc_html($kit_views); ?></div>
+            </div>
+            <div style="flex:1;min-width:180px;padding:14px 16px;border-radius:12px;background:var(--bg-3);border:1px solid var(--border);">
+                <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;">Unique Viewers</div>
+                <div style="font-size:26px;font-weight:800;color:var(--text);margin-top:6px;"><?php echo esc_html($kit_unique_views); ?></div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:4px;">Approx. one unique browser per year, GitHub-style.</div>
+            </div>
+        </div>
+
+        <?php if ($is_pub && !$is_free): ?>
+        <div style="display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:18px;align-items:center;margin-bottom:20px;padding:18px;border-radius:14px;background:var(--bg-3);border:1px solid var(--border);">
+            <div style="display:flex;justify-content:center;">
+                <div style="background:#fff;padding:14px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.18);">
+                    <img src="<?php echo esc_url($kit_qr_url); ?>" alt="QR code for Brand Kit" style="display:block;width:220px;height:220px;border-radius:10px;">
+                </div>
+            </div>
+            <div>
+                <div style="font-size:12px;font-weight:700;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">QR Code</div>
+                <div style="font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px;">Share your Brand Kit with one scan</div>
+                <div style="font-size:13px;color:var(--text-3);line-height:1.7;margin-bottom:14px;">Use this QR on printed cards, proposals, booths, or packaging so people can open your public Brand Kit instantly.</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <a href="<?php echo esc_url($kit_qr_url); ?>" download="<?php echo esc_attr(sanitize_title($p['business_name'] ?: 'brand-kit')); ?>-kit-qr.svg" class="bae-btn bae-btn-primary bae-btn-sm">Download QR</a>
+                    <button type="button" class="bae-btn bae-btn-outline bae-btn-sm" onclick="navigator.clipboard.writeText('<?php echo esc_js($kit_url); ?>');this.textContent='Link Copied!';setTimeout(function(){this.textContent='Copy Link';}.bind(this),2000);">Copy Link</button>
+                </div>
+            </div>
         </div>
         <?php endif; ?>
 
@@ -5291,6 +5791,8 @@ function bntm_shortcode_bae_kit() {
         }
     }
 
+    $profile = bae_track_kit_view($profile);
+
     // CHANGED: Inject OG tags into <head> for social sharing previews
     $og_title       = esc_attr($profile['business_name'] . ' — Brand Kit');
     $og_description = esc_attr($profile['tagline'] ?: 'Official brand guidelines and assets.');
@@ -5309,219 +5811,63 @@ function bntm_shortcode_bae_kit() {
     return '<div class="bae-kit-wrap">' . bae_render_kit_html($profile) . '</div>';
 }
 
+function bae_get_kit_public_url($profile) {
+    $kit_slug = !empty($profile['kit_slug'])
+        ? sanitize_title($profile['kit_slug'])
+        : sanitize_title(($profile['business_name'] ?? 'brand-kit')) . '-' . substr(($profile['rand_id'] ?? wp_generate_password(6, false)), 0, 6);
+
+    $kit_page = get_page_by_path('brand-kit');
+    $kit_base = $kit_page ? get_permalink($kit_page) : home_url('/brand-kit/');
+
+    return add_query_arg('slug', $kit_slug, $kit_base);
+}
+
+function bae_get_kit_qr_url($url, $size = 320) {
+    $size = max(160, min(1000, (int) $size));
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=' . $size . 'x' . $size . '&format=svg&data=' . rawurlencode($url);
+}
+
+function bae_track_kit_view($profile) {
+    if (empty($profile['id'])) return $profile;
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_profiles';
+    $kit_slug = sanitize_title($profile['kit_slug'] ?? '');
+    $cookie_name = 'bae_kit_view_' . substr(md5($kit_slug ?: (string) $profile['id']), 0, 16);
+    $is_unique = empty($_COOKIE[$cookie_name]);
+
+    $wpdb->query(
+        $wpdb->prepare(
+            "UPDATE {$table}
+             SET kit_views = kit_views + 1,
+                 kit_unique_views = kit_unique_views + %d
+             WHERE id = %d",
+            $is_unique ? 1 : 0,
+            (int) $profile['id']
+        )
+    );
+
+    if ($is_unique && !headers_sent()) {
+        setcookie($cookie_name, '1', time() + YEAR_IN_SECONDS, COOKIEPATH ?: '/', COOKIE_DOMAIN, is_ssl(), true);
+        $_COOKIE[$cookie_name] = '1';
+    }
+
+    $profile['kit_views'] = (int) ($profile['kit_views'] ?? 0) + 1;
+    $profile['kit_unique_views'] = (int) ($profile['kit_unique_views'] ?? 0) + ($is_unique ? 1 : 0);
+
+    return $profile;
+}
+
 // =============================================================================
 // ASSET HTML GENERATORS
 // CHANGED: Contact fields (email, phone, website, address) used throughout
 // CHANGED: Colors run through bae_safe_color() before injection into HTML
 // =============================================================================
-
+// AI PROVIDER — Gemini with Groq fallback
+// bae_gemini_json_request() and bae_gemini_request() are defined in ai-provider.php
 // =============================================================================
-// GEMINI AI ASSET GENERATION
-// Calls Gemini to generate unique, brand-specific HTML for each asset type.
-// Falls back to static template if API fails or quota is hit.
-// =============================================================================
+require_once __DIR__ . '/ai-provider.php';
 
-// Load environment variables from .env file if not already loaded
-if ( file_exists( BNTM_BAE_PATH . '.env' ) && ! getenv('BAE_GEMINI_API_KEY') ) {
-    $env_file = BNTM_BAE_PATH . '.env';
-    $lines = file( $env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-    foreach ( $lines as $line ) {
-        if ( strpos( trim( $line ), '#' ) === 0 ) continue; // Skip comments
-        if ( strpos( $line, '=' ) === false ) continue; // Skip invalid lines
-        list( $key, $value ) = explode( '=', $line, 2 );
-        $key = trim( $key );
-        $value = trim( $value );
-        if ( ! empty( $key ) && ! getenv( $key ) ) {
-            putenv( $key . '=' . $value );
-        }
-    }
-}
-
-if ( ! defined( 'BAE_GEMINI_API_KEY' ) ) {
-    $api_key = getenv( 'BAE_GEMINI_API_KEY' );
-    if ( ! $api_key ) {
-        $api_key = 'MISSING_GEMINI_KEY'; // Fallback if not set
-    }
-    define( 'BAE_GEMINI_API_KEY', $api_key );
-    define( 'BAE_GEMINI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . BAE_GEMINI_API_KEY );
-}
-
-// =============================================================================
-// JSON-only response handler (no HTML sanitization)
-// Used for palette generation, tone analysis, and other JSON APIs
-// =============================================================================
-function bae_gemini_json_request( $prompt ) {
-    $body = json_encode([
-        'contents' => [[
-            'parts' => [[ 'text' => $prompt ]]
-        ]],
-        'generationConfig' => [
-            'temperature'      => 0.9,
-            'maxOutputTokens'  => 2048,
-            'responseMimeType' => 'application/json',
-        ]
-    ]);
-
-    $response = wp_remote_post( BAE_GEMINI_ENDPOINT, [
-        'timeout' => 45,
-        'body'    => $body,
-    ]);
-
-    if ( is_wp_error($response) ) {
-        return [ 'error' => 'Request failed: ' . $response->get_error_message() ];
-    }
-
-    $code = wp_remote_retrieve_response_code($response);
-    if ( $code !== 200 ) {
-        $decoded = json_decode( wp_remote_retrieve_body($response), true );
-        $msg     = $decoded['error']['message'] ?? "HTTP {$code}";
-        return [ 'error' => "Gemini error: {$msg}" ];
-    }
-
-    $data = json_decode( wp_remote_retrieve_body($response), true );
-    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-    if ( ! $text ) {
-        return [ 'error' => 'Gemini returned empty response.' ];
-    }
-
-    // For JSON responses, only strip markdown code fences (no HTML sanitization)
-    $text = preg_replace( '/^```json\s*/i', '', trim($text) );
-    $text = preg_replace( '/^```\s*/i',     '', trim($text) );
-    $text = preg_replace( '/```\s*$/',      '', trim($text) );
-    $text = trim($text);
-
-    // Robustly extract the first JSON array or object in case Gemini added surrounding text
-    if ( preg_match( '/(\[[\s\S]*\]|\{[\s\S]*\})/s', $text, $m ) ) {
-        $text = $m[1];
-    }
-
-    return $text;
-}
-
-/**
- * Sanitize asset HTML so it can be safely echoed inline without breaking the page.
- * Wraps any bare <style> blocks so their selectors are scoped to .bae-ai-asset,
- * and strips tags that would break the surrounding DOM.
- */
-function bae_sanitize_asset_html( $html ) {
-    if ( empty( $html ) ) return $html;
-
-    // Strip <html>, <head>, <body> wrappers
-    $html = preg_replace( '/<html[^>]*>/i',           '', $html );
-    $html = preg_replace( '/<\/html>/i',              '', $html );
-    $html = preg_replace( '/<head[^>]*>.*?<\/head>/is','', $html );
-    $html = preg_replace( '/<body[^>]*>/i',           '', $html );
-    $html = preg_replace( '/<\/body>/i',              '', $html );
-
-    // Strip <script> tags entirely
-    $html = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', $html );
-
-    // Strip <link stylesheet> tags
-    $html = preg_replace( '/<link\b[^>]*rel=[\'"]?stylesheet[\'"]?[^>]*>/is', '', $html );
-
-    // Scope <style> blocks — prefix every rule with .bae-ai-asset
-    // but leave @import and @font-face untouched so fonts still load
-    $html = preg_replace_callback(
-        '/<style([^>]*)>(.*?)<\/style>/is',
-        function ( $m ) {
-            $css = $m[2];
-            // Scope regular selectors but skip @-rules
-            $css = preg_replace_callback(
-                '/([^@{}][^{}]*)\{/m',
-                function ( $sel ) {
-                    $s = trim( $sel[1] );
-                    if ( empty( $s ) ) return $sel[0];
-                    return '.bae-ai-asset ' . $s . '{';
-                },
-                $css
-            );
-            return '<style' . $m[1] . '>' . $css . '</style>';
-        },
-        $html
-    );
-
-    return trim( $html );
-}
-
-function bae_gemini_request( $prompt ) {
-    $body = json_encode([
-        'contents' => [[
-            'parts' => [[ 'text' => $prompt ]]
-        ]],
-        'generationConfig' => [
-            'temperature'     => 0.9,
-            'maxOutputTokens' => 8192,
-        ]
-    ]);
-
-    $response = wp_remote_post( BAE_GEMINI_ENDPOINT, [
-        'timeout' => 60,
-        'headers' => [ 'Content-Type' => 'application/json' ],
-        'body'    => $body,
-    ]);
-
-    if ( is_wp_error($response) ) {
-        return [ 'error' => 'Request failed: ' . $response->get_error_message() ];
-    }
-
-    $code = wp_remote_retrieve_response_code($response);
-    if ( $code !== 200 ) {
-        $decoded = json_decode( wp_remote_retrieve_body($response), true );
-        $msg     = $decoded['error']['message'] ?? "HTTP {$code}";
-        return [ 'error' => "Gemini error: {$msg}" ];
-    }
-
-    $data      = json_decode( wp_remote_retrieve_body($response), true );
-    $candidate = $data['candidates'][0] ?? null;
-    $finish    = $candidate['finishReason'] ?? '';
-    $text      = $candidate['content']['parts'][0]['text'] ?? null;
-
-    if ( ! $text ) {
-        return [ 'error' => 'Gemini returned empty response.' ];
-    }
-
-    // Reject truncated responses — unclosed tags cause the page to blob
-    if ( $finish === 'MAX_TOKENS' ) {
-        return [ 'error' => 'The generated asset was too large and got cut off. Try a simpler or shorter request.' ];
-    }
-
-    // Strip markdown code fences
-    $text = preg_replace( '/^```html\s*/i', '', trim($text) );
-    $text = preg_replace( '/^```\s*/i',     '', trim($text) );
-    $text = preg_replace( '/```\s*$/',      '', trim($text) );
-    $text = trim($text);
-
-    // Strip <html>, <head>, <body> wrappers
-    $text = preg_replace( '/<html[^>]*>/i',            '', $text );
-    $text = preg_replace( '/<\/html>/i',              '', $text );
-    $text = preg_replace( '/<head[^>]*>.*?<\/head>/is','', $text );
-    $text = preg_replace( '/<body[^>]*>/i',            '', $text );
-    $text = preg_replace( '/<\/body>/i',              '', $text );
-
-    // Remove <script> tags
-    $text = preg_replace( '/<script\b[^>]*>.*?<\/script>/is', '', $text );
-
-    // Scope <style> blocks — skip @-rules so fonts still load
-    $text = preg_replace_callback(
-        '/<style([^>]*)>(.*?)<\/style>/is',
-        function ( $matches ) {
-            $css = $matches[2];
-            $css = preg_replace_callback(
-                '/([^@{}][^{}]*)\{/m',
-                function ( $sel ) {
-                    $s = trim( $sel[1] );
-                    if ( empty( $s ) ) return $sel[0];
-                    return '.bae-ai-asset ' . $s . '{';
-                },
-                $css
-            );
-            return '<style' . $matches[1] . '>' . $css . '</style>';
-        },
-        $text
-    );
-
-    return trim($text);
-}
 
 
 // =============================================================================
@@ -5587,11 +5933,16 @@ Return ONLY a valid JSON array. No markdown, no code fences, no explanation. Exa
     $clean = [];
     foreach ( $palettes as $p ) {
         if ( empty( $p['primary'] ) || empty( $p['name'] ) ) continue;
+        $normalized = bae_normalize_palette_colors(
+            $p['primary'] ?? '',
+            $p['secondary'] ?? '',
+            $p['accent'] ?? ''
+        );
         $clean[] = [
             'name'        => sanitize_text_field( $p['name']        ?? 'Custom' ),
-            'primary'     => bae_safe_color( $p['primary']   ?? '', '#1a1a2e' ),
-            'secondary'   => bae_safe_color( $p['secondary'] ?? '', '#16213e' ),
-            'accent'      => bae_safe_color( $p['accent']    ?? '', '#e94560' ),
+            'primary'     => $normalized['primary'],
+            'secondary'   => $normalized['secondary'],
+            'accent'      => $normalized['accent'],
             'personality' => sanitize_text_field( $p['personality'] ?? 'Professional, distinctive' ),
             'reason'      => sanitize_text_field( $p['reason']      ?? '' ),
         ];
@@ -5704,8 +6055,8 @@ function bntm_ajax_bae_suggest_fonts() {
         [ 'heading' => 'Space Grotesk', 'body' => 'Inter',     'reason' => 'Tech-forward feel with excellent legibility.' ],
     ];
 
-    // If Gemini isn't configured, return fallback immediately.
-    if ( defined('BAE_GEMINI_API_KEY') && BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY' ) {
+    // If no AI keys are configured, return fallback immediately.
+    if ( empty( bae_gemini_key_pool() ) && empty( bae_groq_key_pool() ) ) {
         // Put current pair first if it isn't already.
         array_unshift( $fallback, [ 'heading' => $currentH, 'body' => $currentB, 'reason' => 'Your current selection.' ] );
         wp_send_json_success( [ 'pairs' => array_slice( $fallback, 0, 6 ) ] );
@@ -6715,6 +7066,10 @@ function bae_render_kit_html($p) {
     $phone   = esc_html($p['phone']   ?? '');
     $website = esc_html($p['website'] ?? '');
     $address = esc_html($p['address'] ?? '');
+    $kit_views = number_format_i18n((int)($p['kit_views'] ?? 0));
+    $kit_unique_views = number_format_i18n((int)($p['kit_unique_views'] ?? 0));
+    $kit_url = bae_get_kit_public_url($p);
+    $kit_qr_url = bae_get_kit_qr_url($kit_url, 300);
 
     ob_start();
     ?>
@@ -6735,6 +7090,14 @@ function bae_render_kit_html($p) {
                 </div>
             </div>
             <div style="margin-top:16px;font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-transform:uppercase;">Official Brand Kit</div>
+            <div style="margin-top:18px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+                <div style="padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.12);font-size:12px;color:#fff;font-weight:600;">
+                    <?php echo esc_html($kit_views); ?> views
+                </div>
+                <div style="padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.12);font-size:12px;color:#fff;font-weight:600;">
+                    <?php echo esc_html($kit_unique_views); ?> unique viewers
+                </div>
+            </div>
         </div>
 
         <div style="padding:40px;">
@@ -6792,6 +7155,25 @@ function bae_render_kit_html($p) {
                 </div>
             </div>
             <?php endif; ?>
+
+            <div style="margin-bottom:36px;">
+                <div style="font-size:11px;font-weight:700;color:<?php echo $ac; ?>;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px;">Quick Access</div>
+                <div style="display:grid;grid-template-columns:minmax(170px,210px) 1fr;gap:18px;align-items:center;border:1px solid #e5e7eb;border-radius:14px;padding:18px;">
+                    <div style="display:flex;justify-content:center;">
+                        <div style="background:#fff;padding:12px;border-radius:14px;box-shadow:0 8px 22px rgba(15,23,42,.08);">
+                            <img src="<?php echo esc_url($kit_qr_url); ?>" alt="QR code for this Brand Kit" style="display:block;width:170px;height:170px;border-radius:8px;">
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:8px;">Scan to open this Brand Kit</div>
+                        <div style="font-size:13px;color:#6b7280;line-height:1.7;margin-bottom:12px;">Share this QR in proposals, print materials, booths, or packaging so collaborators can open the latest version instantly.</div>
+                        <div style="font-size:12px;color:#374151;word-break:break-all;font-family:'Courier New',monospace;background:#f9fafb;border:1px solid #f3f4f6;border-radius:10px;padding:10px 12px;"><?php echo esc_html($kit_url); ?></div>
+                        <div style="margin-top:12px;">
+                            <a href="<?php echo esc_url($kit_qr_url); ?>" download="<?php echo esc_attr(sanitize_title($p['business_name'] ?: 'brand-kit')); ?>-kit-qr.svg" style="display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:<?php echo $pc; ?>;color:#fff;text-decoration:none;font-size:12px;font-weight:700;">Download QR</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Usage Rules -->
             <div>
@@ -6903,7 +7285,8 @@ function bntm_ajax_bae_generate_asset() {
     $regen_prompt = sanitize_text_field($_POST['regen_prompt'] ?? '');
 
     $allowed_types = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap'];
-    if (!in_array($asset_type, $allowed_types)) {
+    $is_custom_asset = strpos($asset_type, 'custom_') === 0;
+    if (!$is_custom_asset && !in_array($asset_type, $allowed_types)) {
         wp_send_json_error(['message' => 'Invalid asset type.']);
     }
 
@@ -6938,14 +7321,23 @@ function bntm_ajax_bae_generate_asset() {
             }
         }
         // AI regen requires a configured key; do not silently fall back.
-        if ( defined('BAE_GEMINI_API_KEY') && BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY' ) {
-            wp_send_json_error(['message' => 'AI regeneration is not configured (missing Gemini API key).']);
+        if ( empty( bae_gemini_key_pool() ) && empty( bae_groq_key_pool() ) ) {
+            wp_send_json_error(['message' => 'AI regeneration is not configured (no API keys found).']);
         }
     }
 
     // Regeneration path: use AI and error loudly if it fails (no silent static fallback).
     if ( ! empty($regen_prompt) ) {
-        $current_html = bae_generate_asset_html_static($asset_type, $profile, '');
+        // Custom assets: fetch saved HTML from DB. Standard assets: use static generator.
+        if ( $is_custom_asset ) {
+            $existing_row = $wpdb->get_row($wpdb->prepare(
+                "SELECT asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
+                $profile_id, $asset_type
+            ));
+            $current_html = $existing_row->asset_html ?? '';
+        } else {
+            $current_html = bae_generate_asset_html_static($asset_type, $profile, '');
+        }
         $asset_names = [
             'business_card'    => 'business card',
             'letterhead'       => 'letterhead',
@@ -6954,7 +7346,9 @@ function bntm_ajax_bae_generate_asset() {
             'brand_guidelines' => 'brand guidelines',
             'sitemap'          => 'site structure',
         ];
-        $asset_name = $asset_names[$asset_type] ?? 'asset';
+        $asset_name = $is_custom_asset
+            ? ( $existing_row->asset_name ?? 'custom asset' )
+            : ( $asset_names[$asset_type] ?? 'asset' );
         $ai_prompt = "Improve this {$asset_name} HTML based on the user's request: '{$regen_prompt}'. Return only the improved HTML, no explanations or markdown. IMPORTANT: Do not include <style> tags, <link> tags, or external CSS — use inline styles only.\n\nCurrent HTML:\n{$current_html}";
         $improved_html = bae_gemini_request($ai_prompt);
 
@@ -6986,9 +7380,16 @@ function bntm_ajax_bae_generate_asset() {
     ];
 
     $existing = $wpdb->get_row($wpdb->prepare(
-        "SELECT id, asset_html FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
-        $profile_id, $asset_type
+        "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND user_id = %d AND asset_type = %s",
+        $profile_id, $user_id, $asset_type
     ));
+
+    if (!$existing) {
+        $existing = $wpdb->get_row($wpdb->prepare(
+            "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
+            $profile_id, $asset_type
+        ));
+    }
 
     // Sanitize before saving so echoed HTML can never break the page
     $asset_html = bae_sanitize_asset_html( $asset_html );
@@ -7005,7 +7406,7 @@ function bntm_ajax_bae_generate_asset() {
             'profile_id'   => $profile_id,
             'user_id'      => $user_id,
             'asset_type'   => $asset_type,
-            'asset_name'   => $names[$asset_type],
+            'asset_name'   => $is_custom_asset ? ( $existing->asset_name ?? 'Custom Asset' ) : ( $names[$asset_type] ?? 'Asset' ),
             'asset_html'   => $asset_html,
             'is_generated' => 1,
         ]);
@@ -9149,6 +9550,22 @@ function bae_migrate_asset_prev_column() {
     }
 }
 
+add_action('admin_init', 'bae_migrate_kit_view_columns');
+function bae_migrate_kit_view_columns() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_profiles';
+
+    $kit_views = $wpdb->get_results("SHOW COLUMNS FROM {$table} LIKE 'kit_views'");
+    if (empty($kit_views)) {
+        $wpdb->query("ALTER TABLE {$table} ADD COLUMN kit_views INT UNSIGNED NOT NULL DEFAULT 0 AFTER kit_slug");
+    }
+
+    $kit_unique_views = $wpdb->get_results("SHOW COLUMNS FROM {$table} LIKE 'kit_unique_views'");
+    if (empty($kit_unique_views)) {
+        $wpdb->query("ALTER TABLE {$table} ADD COLUMN kit_unique_views INT UNSIGNED NOT NULL DEFAULT 0 AFTER kit_views");
+    }
+}
+
 // =============================================================================
 // AJAX: Undo asset — swap asset_html ↔ asset_html_prev
 // =============================================================================
@@ -9161,17 +9578,19 @@ function bntm_ajax_bae_undo_asset() {
     $asset_type = sanitize_text_field($_POST['asset_type'] ?? '');
     $profile_id = intval($_POST['profile_id'] ?? 0);
 
-    $ticket = '';
-    if (!empty($_COOKIE['bae_ticket'])) {
-        $raw = strtoupper(sanitize_text_field($_COOKIE['bae_ticket']));
-        if (preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw)) $ticket = $raw;
+    $user_id = is_user_logged_in() ? get_current_user_id() : 0;
+
+    $row = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, asset_html, asset_html_prev FROM {$table} WHERE asset_type = %s AND profile_id = %d AND user_id = %d LIMIT 1",
+        $asset_type, $profile_id, $user_id
+    ), ARRAY_A);
+
+    if (!$row) {
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT id, asset_html, asset_html_prev FROM {$table} WHERE asset_type = %s AND profile_id = %d LIMIT 1",
+            $asset_type, $profile_id
+        ), ARRAY_A);
     }
-
-    $where = $ticket
-        ? $wpdb->prepare("asset_type = %s AND profile_id = %d AND ticket = %s", $asset_type, $profile_id, $ticket)
-        : $wpdb->prepare("asset_type = %s AND profile_id = %d AND user_id = %d", $asset_type, $profile_id, is_user_logged_in() ? get_current_user_id() : 0);
-
-    $row = $wpdb->get_row("SELECT id, asset_html, asset_html_prev FROM {$table} WHERE {$where} LIMIT 1", ARRAY_A);
 
     if (!$row || empty($row['asset_html_prev'])) {
         wp_send_json_error(['message' => 'No previous version to restore.']);
@@ -9229,8 +9648,8 @@ add_action('wp_ajax_bae_autofix_consistency',       'bntm_ajax_bae_autofix_consi
 add_action('wp_ajax_nopriv_bae_autofix_consistency','bntm_ajax_bae_autofix_consistency');
 function bntm_ajax_bae_autofix_consistency() {
     check_ajax_referer('bae_generate_asset', 'nonce');
-    if (!defined('BAE_GEMINI_API_KEY') || BAE_GEMINI_API_KEY === 'MISSING_GEMINI_KEY') {
-        wp_send_json_error(['message' => 'Gemini API key not configured.']);
+    if ( empty( bae_gemini_key_pool() ) && empty( bae_groq_key_pool() ) ) {
+        wp_send_json_error(['message' => 'No AI API keys configured.']);
     }
 
     global $wpdb;
