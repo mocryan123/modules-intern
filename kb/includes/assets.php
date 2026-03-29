@@ -35,6 +35,7 @@ function kbf_global_assets() {
         --kbf-radius:     14px;
         --kbf-shadow:     rgba(0, 0, 0, 0.05) 0px 2px 4px -1px, rgba(0, 0, 0, 0.04) 0px 1px 2px -1px;
         --kbf-shadow-lg:  rgba(0, 0, 0, 0.06) 0px 6px 12px -3px, rgba(0, 0, 0, 0.05) 0px 3px 6px -2px;
+        --kbf-brand-logo: url('<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>');
     }
     .kbf-wrap { font-family: 'Poppins', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); padding: 18px; }    
     .kbf-wrap h1{font-size:28px;font-weight:700;letter-spacing:-0.4px;color:#0d1a2e;margin:0 0 6px;line-height:1.2;}
@@ -684,38 +685,6 @@ function kbf_global_assets() {
     .kbf-alert-noicon{
         padding-left:14px;
     }
-    .kbf-loading-overlay{
-        position:fixed;
-        inset:0;
-        display:none;
-        align-items:center;
-        justify-content:center;
-        background:rgba(11,20,38,0.55);
-        z-index:10000;
-    }
-    .kbf-loading-card{
-        background:#ffffff;
-        border:1px solid #dfe7f3;
-        border-radius:22px;
-        padding:24px 28px;
-        box-shadow: none;
-        text-align:center;
-        min-width:220px;
-    }
-    .kbf-loading-logo{
-        width:42px;height:42px;border-radius:14px;background:#e7f0ff;color:#1d4ed8;
-        display:inline-flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.5px;margin-bottom:10px;
-    }
-    .kbf-loading-spinner{
-        width:34px;
-        height:34px;
-        border-radius:50%;
-        border:4px solid rgba(111,182,255,0.25);
-        border-top-color:#6fb6ff;
-        margin:0 auto 12px;
-        animation:kbfspin .8s linear infinite;
-    }
-    @keyframes kbfspin{to{transform:rotate(360deg);}}
     .kbf-alert-success { background: #ecfdf3; color: #166534; border-color: #bbf7d0; }
     .kbf-alert-success::before{
         background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='%23166534'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM12.03 5.97a.75.75 0 0 0-1.08-1.04L7.477 8.417 5.384 6.323a.75.75 0 0 0-1.06 1.06l2.647 2.647a.75.75 0 0 0 1.08-.02l3.98-4.04z'/%3E%3C/svg%3E");
@@ -770,6 +739,7 @@ function kbf_global_assets() {
     .kbf-share-url-row{display:flex;gap:8px;margin:16px 0;}
     .kbf-share-url-input{flex:1;padding:10px 14px;border:1.5px solid var(--kbf-border);border-radius:8px;font-size:13px;color:var(--kbf-text);background:var(--kbf-slate-lt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .kbf-share-platforms{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px;}
+    #kbf-share-in,#kbf-share-wa{display:none !important;}
     .kbf-share-platform{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border:1.5px solid var(--kbf-border);border-radius:10px;cursor:pointer;text-decoration:none;font-size:11.5px;font-weight:600;color:var(--kbf-navy);transition:all .15s;background:#fff;}
     .kbf-share-platform:hover{border-color:var(--kbf-navy);background:var(--kbf-slate-lt);}
     @media(max-width:520px){.kbf-share-platforms{grid-template-columns:repeat(2,1fr);}}
@@ -920,13 +890,9 @@ function kbf_global_assets() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="#111"><path d="M18.244 2H21.5l-7.147 8.168L22.5 22h-6.55l-5.14-6.71L4.9 22H1.644l7.64-8.735L1.5 2h6.72l4.65 6.02L18.244 2zm-1.15 18h1.803L7.08 4H5.147l11.947 16z"/></svg>
             X / Twitter
           </a>
-          <a id="kbf-share-in" href="#" target="_blank" class="kbf-share-platform" onclick="kbfSharePlatform('linkedin');return false;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452H16.89v-5.569c0-1.327-.027-3.037-1.85-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.35V9h3.41v1.561h.048c.476-.9 1.637-1.85 3.368-1.85 3.602 0 4.266 2.368 4.266 5.451v6.29zM5.337 7.433c-1.144 0-2.07-.928-2.07-2.07 0-1.143.926-2.07 2.07-2.07 1.143 0 2.07.927 2.07 2.07 0 1.142-.927 2.07-2.07 2.07zM6.813 20.452H3.861V9h2.952v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.727v20.545C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.273V1.727C24 .774 23.2 0 22.222 0z"/></svg>
-            LinkedIn
-          </a>
-          <a id="kbf-share-wa" href="#" target="_blank" class="kbf-share-platform" onclick="kbfSharePlatform('whatsapp');return false;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            WhatsApp
+          <a id="kbf-share-ig" href="#" target="_blank" class="kbf-share-platform" onclick="kbfSharePlatform('instagram');return false;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#e1306c"><path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2zm0 1.5A4.25 4.25 0 0 0 3.5 7.75v8.5A4.25 4.25 0 0 0 7.75 20.5h8.5a4.25 4.25 0 0 0 4.25-4.25v-8.5A4.25 4.25 0 0 0 16.25 3.5h-8.5zm8.85 2.7a.95.95 0 1 1 0 1.9.95.95 0 0 1 0-1.9zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 1.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"/></svg>
+            Instagram
           </a>
           <a id="kbf-share-msg" href="#" class="kbf-share-platform" onclick="kbfSharePlatform('native');return false;">
             <svg width="22" height="22" fill="none" stroke="var(--kbf-navy)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
@@ -955,21 +921,23 @@ function kbf_global_assets() {
         const fbQuote = 'Support this fundraiser: "' + _kbfShareTitle + '"' + (_kbfShareDesc ? '\n\n' + _kbfShareDesc : '');
         const fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(_kbfShareUrl) + '&quote=' + encodeURIComponent(fbQuote);
         const xUrl  = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent('Support this fundraiser: "' + _kbfShareTitle + '"\n\n' + shareBody) + '&url=' + encodeURIComponent(_kbfShareUrl);
-        const inUrl = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(_kbfShareUrl);
-        // WhatsApp: full message text with link
-        const waUrl = 'https://wa.me/?text=' + encodeURIComponent(shareText);
+        // Instagram doesn't support prefilled web share; use the share URL as fallback
+        const igUrl = _kbfShareUrl;
         document.getElementById('kbf-share-fb').href  = fbUrl;
         document.getElementById('kbf-share-x').href   = xUrl;
-        document.getElementById('kbf-share-in').href  = inUrl;
-        document.getElementById('kbf-share-wa').href  = waUrl;
+        document.getElementById('kbf-share-ig').href  = igUrl;
+        // Ensure deprecated buttons are removed if cached markup still exists
+        ['kbf-share-in','kbf-share-wa'].forEach(function(id){
+          var el = document.getElementById(id);
+          if(el && el.parentNode){ el.parentNode.removeChild(el); }
+        });
         // Store for platform handler
         window._kbfFbUrl = fbUrl;
         window._kbfXUrl  = xUrl;
-        window._kbfInUrl = inUrl;
-        window._kbfWaUrl = waUrl;
+        window._kbfIgUrl = igUrl;
         window._kbfShareText = shareText;
         document.getElementById('kbf-share-modal').style.display = 'flex';
-    };
+      };
     window.kbfCloseShare = function() {
         document.getElementById('kbf-share-modal').style.display = 'none';
     };
@@ -993,10 +961,8 @@ function kbf_global_assets() {
             window.open(window._kbfFbUrl || ('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(_kbfShareUrl)), '_blank', 'width=620,height=500,left=200,top=100');
         } else if(platform === 'twitter') {
             window.open(window._kbfXUrl || ('https://twitter.com/intent/tweet?text=' + encodeURIComponent(_kbfShareTitle) + '&url=' + encodeURIComponent(_kbfShareUrl)), '_blank');
-        } else if(platform === 'linkedin') {
-            window.open(window._kbfInUrl || ('https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(_kbfShareUrl)), '_blank');
-        } else if(platform === 'whatsapp') {
-            window.open(window._kbfWaUrl || ('https://wa.me/?text=' + encodeURIComponent(window._kbfShareText || (_kbfShareTitle + '\n' + _kbfShareUrl))), '_blank');
+        } else if(platform === 'instagram') {
+            window.open(window._kbfIgUrl || _kbfShareUrl, '_blank');
         } else if(platform === 'native') {
             if(navigator.share) {
                 navigator.share({ title: _kbfShareTitle, text: (window._kbfShareText || _kbfShareTitle), url: _kbfShareUrl })

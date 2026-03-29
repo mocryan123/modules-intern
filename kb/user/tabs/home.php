@@ -35,10 +35,10 @@ function kbf_dashboard_overview_tab($business_id) {
           padding-bottom:0;
         }
         .kbf-save-btn{
-          transition:all .3s ease;
+          transition:none;
         }
         .kbf-save-btn img{
-          transition:filter .3s ease, transform .3s ease;
+          transition:none;
         }
         .kbf-save-btn.is-saved{
           background:#e7f1ff;

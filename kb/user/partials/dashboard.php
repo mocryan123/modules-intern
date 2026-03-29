@@ -37,11 +37,7 @@ function bntm_shortcode_kbf_dashboard() {
 
     ob_start();
     ?>
-    
-    
-    
-    
-    
+    <?php if(false): ?><div></div><?php endif; ?>
 
     
     
@@ -563,35 +559,6 @@ function bntm_shortcode_kbf_dashboard() {
         border:1.5px solid #e2e8f0;
         background:#fff;
     }
-    .kbf-loading-overlay{
-        position:fixed;
-        inset:0;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        background:rgba(11,20,38,0.55);
-        backdrop-filter:blur(6px);
-        z-index:10000;
-    }
-    .kbf-loading-card{
-        background:#ffffff;
-        border:1px solid #dfe7f3;
-        border-radius:22px;
-        padding:24px 28px;
-        box-shadow:0 30px 80px rgba(15,40,80,0.22);
-        text-align:center;
-        min-width:220px;
-    }
-    .kbf-loading-spinner{
-        width:34px;
-        height:34px;
-        border-radius:50%;
-        border:4px solid rgba(111,182,255,0.25);
-        border-top-color:#6fb6ff;
-        margin:0 auto 12px;
-        animation:kbfSpin .8s linear infinite;
-    }
-    @keyframes kbfSpin { to { transform: rotate(360deg); } }
     .kbf-user-ui .kbf-field-error{
         margin-top:6px;
         font-size:11.5px;
@@ -622,12 +589,7 @@ function bntm_shortcode_kbf_dashboard() {
 
     
     <div class="kbf-user-ui">
-    <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
-      <div class="kbf-loading-card">
-        <div class="kbf-loading-spinner"></div>
-        <div style="font-size:13px;color:#4f5a6b;">Submitting your fund...</div>
-      </div>
-    </div>
+    <?php if(false): ?><div></div><?php endif; ?>
     
     <!-- ===== MODAL: Create Fund ===== -->
     <div id="kbf-modal-create" class="kbf-modal-overlay" style="display:none;">
@@ -977,6 +939,7 @@ function bntm_shortcode_kbf_dashboard() {
         <!-- ================== JS ================== -->
     <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <script>
+      // preload removed
       (function(){
         var topbar = document.querySelector('.kbf-topbar');
         if (!topbar) return;

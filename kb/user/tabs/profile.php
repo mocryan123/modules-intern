@@ -466,6 +466,32 @@ function kbf_dashboard_profile_tab($business_id) {
               <?php endif; ?>
             </div>
 
+            <!-- Social Links -->
+            <div class="kbf-card kbf-profile-card">
+              <div class="kbf-profile-card-title">Social Links</div>
+              <div class="kbf-form-row kbf-form-row-2">
+                <div class="kbf-form-group">
+                  <label>Facebook</label>
+                  <input type="url" name="social_facebook" id="kbf-social-facebook" placeholder="https://facebook.com/yourname" value="<?php echo esc_attr($socials['facebook'] ?? ''); ?>">
+                </div>
+                <div class="kbf-form-group">
+                  <label>Instagram</label>
+                  <input type="url" name="social_instagram" id="kbf-social-instagram" placeholder="https://instagram.com/yourname" value="<?php echo esc_attr($socials['instagram'] ?? ''); ?>">
+                </div>
+              </div>
+              <div class="kbf-form-row kbf-form-row-2">
+                <div class="kbf-form-group">
+                  <label>X (Twitter)</label>
+                  <input type="url" name="social_twitter" id="kbf-social-twitter" placeholder="https://x.com/yourname" value="<?php echo esc_attr($socials['twitter'] ?? ''); ?>">
+                </div>
+                <div class="kbf-form-group">
+                  <label>Website</label>
+                  <input type="url" name="social_website" id="kbf-social-website" placeholder="https://yourwebsite.com" value="<?php echo esc_attr($socials['website'] ?? ''); ?>">
+                </div>
+              </div>
+              <div class="kbf-meta" style="font-size:12.5px;">These links will appear on your public profile.</div>
+            </div>
+
             <div id="kbf-profile-msg"></div>
 
           </div><!-- /.kbf-profile-stack -->

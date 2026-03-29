@@ -214,6 +214,29 @@ function bntm_kbf_ensure_fund_columns() {
 }
 add_action('init', 'bntm_kbf_ensure_fund_columns');
 
+function bntm_kbf_ensure_perf_indexes() {
+    global $wpdb;
+    $ft = $wpdb->prefix.'kbf_funds';
+    $st = $wpdb->prefix.'kbf_sponsorships';
+    $rt = $wpdb->prefix.'kbf_ratings';
+
+    $idx = $wpdb->get_var($wpdb->prepare("SHOW INDEX FROM {$ft} WHERE Key_name=%s", 'idx_business_status'));
+    if (!$idx) {
+        $wpdb->query("CREATE INDEX idx_business_status ON {$ft} (business_id, status)");
+    }
+
+    $idx = $wpdb->get_var($wpdb->prepare("SHOW INDEX FROM {$st} WHERE Key_name=%s", 'idx_fund_status'));
+    if (!$idx) {
+        $wpdb->query("CREATE INDEX idx_fund_status ON {$st} (fund_id, payment_status)");
+    }
+
+    $idx = $wpdb->get_var($wpdb->prepare("SHOW INDEX FROM {$rt} WHERE Key_name=%s", 'idx_organizer_email'));
+    if (!$idx) {
+        $wpdb->query("CREATE INDEX idx_organizer_email ON {$rt} (organizer_id, sponsor_email)");
+    }
+}
+add_action('init', 'bntm_kbf_ensure_perf_indexes');
+
 function kbf_get_or_create_organizer_token($business_id) {
     global $wpdb;
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
@@ -246,11 +269,44 @@ function kbf_get_or_create_fund_token($fund_id) {
     return $token;
 }
 
+function kbf_get_fund_tokens($fund_ids) {
+    global $wpdb;
+    $ft = $wpdb->prefix.'kbf_funds';
+    $ids = array_values(array_unique(array_filter(array_map('intval', (array)$fund_ids))));
+    if (empty($ids)) return [];
+
+    $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT id, fund_token FROM {$ft} WHERE id IN ($placeholders)",
+        $ids
+    ));
+    $map = [];
+    foreach ($rows as $r) {
+        if (!empty($r->fund_token)) {
+            $map[(int)$r->id] = (string)$r->fund_token;
+        }
+    }
+    foreach ($ids as $id) {
+        if (empty($map[$id])) {
+            $map[$id] = kbf_get_or_create_fund_token($id);
+        }
+    }
+    return $map;
+}
+
 function bntm_kbf_create_tables() {
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     $tables = bntm_kbf_get_tables();
     foreach ($tables as $sql) { dbDelta($sql); }
     return count($tables);
+}
+
+function bntm_kbf_ensure_saved_funds_table() {
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    $tables = bntm_kbf_get_tables();
+    if (!empty($tables['kbf_saved_funds'])) {
+        dbDelta($tables['kbf_saved_funds']);
+    }
 }
 add_action('init', 'bntm_kbf_maybe_update_db', 1);
 function bntm_kbf_maybe_update_db() {

@@ -12,4 +12,5 @@ require_once __DIR__ . '/partials/browse.php';
 require_once __DIR__ . '/partials/sponsor_history.php';
 require_once __DIR__ . '/partials/fund_details.php';
 require_once __DIR__ . '/partials/account_profile.php';
+require_once dirname(__DIR__) . '/includes/preload.php';
 

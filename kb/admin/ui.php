@@ -14,13 +14,7 @@ function bntm_shortcode_kbf_admin() {
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
-    <div id="kbf-loading-overlay" class="kbf-loading-overlay" style="display:none;">
-      <div class="kbf-loading-card">
-        <div class="kbf-loading-logo">KB</div>
-        <div class="kbf-loading-spinner"></div>
-        <div style="font-size:13px;color:#4f5a6b;">Loading...</div>
-      </div>
-    </div>
+    <?php if(false): ?><div></div><?php endif; ?>
     <div class="kbf-wrap kbf-admin-wrap">
     <?php
     $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore

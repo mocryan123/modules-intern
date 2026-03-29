@@ -197,7 +197,12 @@ function bntm_ajax_kbf_save_organizer_profile() {
         $up=wp_handle_upload($_FILES['avatar'],['test_form'=>false]);
         if(isset($up['url'])) $avatar=$up['url'];
     }
-    $socials=json_encode(['facebook'=>esc_url_raw($_POST['social_facebook']??''),'instagram'=>esc_url_raw($_POST['social_instagram']??''),'twitter'=>esc_url_raw($_POST['social_twitter']??'')]);
+    $socials=json_encode([
+        'facebook'=>esc_url_raw($_POST['social_facebook']??''),
+        'instagram'=>esc_url_raw($_POST['social_instagram']??''),
+        'twitter'=>esc_url_raw($_POST['social_twitter']??''),
+        'website'=>esc_url_raw($_POST['social_website']??''),
+    ]);
     $data=['bio'=>sanitize_textarea_field($_POST['bio']??''),'social_links'=>$socials,'business_id'=>$biz];
     if($avatar) $data['avatar_url']=$avatar;
     if(isset($_POST['phone'])) update_user_meta($biz,'kbf_phone',sanitize_text_field($_POST['phone']));
@@ -341,11 +346,11 @@ function bntm_ajax_kbf_toggle_save_fund() {
     global $wpdb;
     $sf = $wpdb->prefix.'kbf_saved_funds';
     $ft = $wpdb->prefix.'kbf_funds';
-    // Ensure saved table exists (for fresh installs)
-    $table_exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $sf));
-    if(!$table_exists && function_exists('bntm_kbf_create_tables')) {
-        bntm_kbf_create_tables();
-    }
+      // Ensure saved table exists (for fresh installs) without rebuilding all tables
+      $table_exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $sf));
+      if(!$table_exists && function_exists('bntm_kbf_ensure_saved_funds_table')) {
+          bntm_kbf_ensure_saved_funds_table();
+      }
     $fund_id = intval($_POST['fund_id'] ?? 0);
     $user_id = get_current_user_id();
     if(!$fund_id) wp_send_json_error(['message'=>'Invalid fund.']);

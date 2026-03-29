@@ -22,6 +22,23 @@ function bntm_shortcode_kbf_organizer_profile() {
     if(!$user) return bntm_universal_container('Organizer Profile','<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Organizer not found.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
     $funds=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d AND status IN ('active','completed') ORDER BY created_at DESC LIMIT 50",$biz_id));
     $reviews=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$rt} WHERE organizer_id=%d ORDER BY created_at DESC LIMIT 50",$biz_id));
+    $sponsor_counts = [];
+    $fund_ids = [];
+    if (!empty($funds)) {
+        $fund_ids = array_values(array_filter(array_map(function($f){ return (int)$f->id; }, $funds)));
+        if (!empty($fund_ids)) {
+            $placeholders = implode(',', array_fill(0, count($fund_ids), '%d'));
+            $sql = "SELECT fund_id, COUNT(*) AS cnt FROM {$st} WHERE fund_id IN ($placeholders) AND payment_status='completed' GROUP BY fund_id";
+            $rows = $wpdb->get_results($wpdb->prepare($sql, $fund_ids));
+            foreach ($rows as $r) {
+                $sponsor_counts[(int)$r->fund_id] = (int)$r->cnt;
+            }
+        }
+    }
+    $fund_tokens = [];
+    if (!empty($fund_ids) && function_exists('kbf_get_fund_tokens')) {
+        $fund_tokens = kbf_get_fund_tokens($fund_ids);
+    }
     $fund_details_url = kbf_get_page_url('fund_details');
     $browse_url = kbf_get_page_url('browse');
     $back_url = $browse_url;
@@ -84,6 +101,28 @@ function bntm_shortcode_kbf_organizer_profile() {
           -webkit-mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;
           mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;
         }
+        .kbf-social-icons{
+          display:flex;
+          align-items:center;
+          gap:10px;
+          margin-top:8px;
+        }
+        .kbf-social-icon{
+          width:34px;
+          height:34px;
+          border-radius:8px;
+          border:1px solid var(--kbf-border);
+          background:#fff;
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+        }
+        .kbf-social-icon img{
+          width:18px;
+          height:18px;
+          display:block;
+          filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);
+        }
       </style>
       <!-- Breadcrumb -->
       <div class="kbf-breadcrumb">
@@ -106,17 +145,33 @@ function bntm_shortcode_kbf_organizer_profile() {
             <span class="kbf-org-verified"></span>
           <?php endif; ?>
         </div>
-        <div>
-          <h2 style="margin:0 0 6px;"><?php echo esc_html($user->display_name); ?></h2>
-          <?php if(trim($bio_text) !== ''): ?>
-            <div style="color:#4f5a6b;font-size:13px;line-height:1.6;max-width:520px;">
-              <?php echo nl2br(esc_html($bio_text)); ?>
+        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+          <div style="min-width:0;">
+            <h2 style="margin:0 0 6px;"><?php echo esc_html($user->display_name); ?></h2>
+            <?php if(trim($bio_text) !== ''): ?>
+              <div style="color:#4f5a6b;font-size:13px;line-height:1.6;max-width:520px;">
+                <?php echo nl2br(esc_html($bio_text)); ?>
+              </div>
+            <?php endif; ?>
+            <?php if($profile&&$profile->rating_count>0): ?>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+              <?php for($i=1;$i<=5;$i++): ?><svg width="14" height="14" viewBox="0 0 24 24" fill="<?php echo $i<=round($profile->rating)?'#fbbf24':'#d1d5db'; ?>"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg><?php endfor; ?>
+              <span style="color:var(--kbf-slate);font-size:13px;"><?php echo number_format($profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
             </div>
-          <?php endif; ?>
-          <?php if($profile&&$profile->rating_count>0): ?>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
-            <?php for($i=1;$i<=5;$i++): ?><svg width="14" height="14" viewBox="0 0 24 24" fill="<?php echo $i<=round($profile->rating)?'#fbbf24':'#d1d5db'; ?>"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg><?php endfor; ?>
-            <span style="color:var(--kbf-slate);font-size:13px;"><?php echo number_format($profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
+            <?php endif; ?>
+          </div>
+          <?php if(!empty(array_filter($socials))): ?>
+          <div class="kbf-social-icons" style="margin-top:0;">
+            <?php foreach([
+              'facebook' => 'facebook',
+              'instagram' => 'instagram',
+              'twitter' => 'twitter-x',
+              'website' => 'globe2'
+            ] as $k=>$icon): if(!empty($socials[$k])): ?>
+              <a class="kbf-social-icon" href="<?php echo esc_url($socials[$k]); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr(ucfirst($k)); ?>">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($icon); ?>.svg" alt="<?php echo esc_attr(ucfirst($k)); ?>">
+              </a>
+            <?php endif; endforeach; ?>
           </div>
           <?php endif; ?>
         </div>
@@ -161,7 +216,7 @@ function bntm_shortcode_kbf_organizer_profile() {
         <div class="kbf-card-list" data-kbf-card-pager="organizer-campaigns">
         <?php foreach($funds as $f):
           $pct=$f->goal_amount>0?min(100,($f->raised_amount/$f->goal_amount)*100):0;
-          $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
+          $sc  = isset($sponsor_counts[(int)$f->id]) ? (int)$sponsor_counts[(int)$f->id] : 0;
           $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
         ?>
           <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status ?? ''); ?>">
@@ -208,7 +263,14 @@ function bntm_shortcode_kbf_organizer_profile() {
             <div class="kbf-progress-wrap" style="margin-bottom:12px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
             <div class="kbf-fund-amounts"><span><strong>₱<?php echo number_format($f->raised_amount,2); ?></strong>raised</span><span><strong>₱<?php echo number_format($f->goal_amount,2); ?></strong>goal</span><span><strong><?php echo round($pct); ?>%</strong>funded</span></div>
             <div class="kbf-card-actions">
-              <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : ''; ?>
+              <?php
+                $fund_token = '';
+                if (!empty($fund_tokens) && isset($fund_tokens[(int)$f->id])) {
+                    $fund_token = $fund_tokens[(int)$f->id];
+                } elseif (function_exists('kbf_get_or_create_fund_token')) {
+                    $fund_token = kbf_get_or_create_fund_token($f->id);
+                }
+              ?>
               <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
                 View Details
@@ -276,16 +338,7 @@ function bntm_shortcode_kbf_organizer_profile() {
           <?php endif; ?>
         </div>
 
-        <?php if(!empty(array_filter($socials))): ?>
-        <div class="kbf-card">
-          <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Connect</h4>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <?php foreach(['facebook'=>'Facebook','instagram'=>'Instagram','twitter'=>'Twitter/X'] as $k=>$label): if(!empty($socials[$k])): ?>
-              <a href="<?php echo esc_url($socials[$k]); ?>" target="_blank" rel="noopener" class="kbf-btn kbf-btn-secondary kbf-btn-sm"><?php echo $label; ?></a>
-            <?php endif; endforeach; ?>
-          </div>
-        </div>
-        <?php endif; ?>
+        <?php if(false): ?><div></div><?php endif; ?>
       </div>
     </div>
     </div>

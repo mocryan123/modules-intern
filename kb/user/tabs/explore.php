@@ -279,12 +279,19 @@ function kbf_dashboard_find_funds_tab() {
         align-items:center;
         justify-content:center;
       }
+      .kbf-explore-more-menu .kbf-btn-sm{
+        width:100%;
+        min-width:0;
+        height:auto;
+        padding:6px 10px;
+        justify-content:flex-start;
+      }
       .kbf-explore-actions .kbf-btn-sm img{margin:0;}
       .kbf-save-btn{
-        transition:all .3s ease;
+        transition:none;
       }
       .kbf-save-btn img{
-        transition:filter .3s ease, transform .3s ease;
+        transition:none;
       }
       .kbf-save-btn.is-saved{
         background:#e7f1ff;
