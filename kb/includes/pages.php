@@ -11,6 +11,8 @@ function bntm_kbf_get_pages() {
         'KonekBayan: User'  => '[kbf_dashboard]',
         'KonekBayan: Terms' => '[kbf_terms]',
         'KonekBayan: Admin' => '[kbf_admin]',
+        'KonekBayan: Sign In' => '[kbf_signin]',
+        'KonekBayan: Sign Up' => '[kbf_signup]',
     ];
 }
 

@@ -70,6 +70,7 @@ function bntm_shortcode_kbf_organizer_profile() {
     } else {
         $bio_text = (string)get_user_meta($biz_id, 'description', true);
     }
+    $account_address = trim((string)get_user_meta($biz_id, 'kbf_address', true));
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -123,6 +124,23 @@ function bntm_shortcode_kbf_organizer_profile() {
           display:block;
           filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);
         }
+        .kbf-profile-sidebar{
+          position:sticky;
+          top:24px;
+          align-self:start;
+          height:max-content;
+        }
+        .bntm-container,
+        .bntm-content{
+          overflow:visible !important;
+        }
+        .kbf-profile-grid{
+          align-items:start;
+          overflow:visible;
+        }
+        @media(max-width:900px){
+          .kbf-profile-sidebar{position:static;top:auto;}
+        }
       </style>
       <!-- Breadcrumb -->
       <div class="kbf-breadcrumb">
@@ -153,12 +171,18 @@ function bntm_shortcode_kbf_organizer_profile() {
                 <?php echo nl2br(esc_html($bio_text)); ?>
               </div>
             <?php endif; ?>
-            <?php if($profile&&$profile->rating_count>0): ?>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
-              <?php for($i=1;$i<=5;$i++): ?><svg width="14" height="14" viewBox="0 0 24 24" fill="<?php echo $i<=round($profile->rating)?'#fbbf24':'#d1d5db'; ?>"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg><?php endfor; ?>
-              <span style="color:var(--kbf-slate);font-size:13px;"><?php echo number_format($profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
-            </div>
+            <?php if($account_address !== ''): ?>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--kbf-slate);font-size:12.5px;">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <span><?php echo esc_html($account_address); ?></span>
+              </div>
             <?php endif; ?>
+<?php if($profile&&$profile->rating_count>0): ?>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" width="14" height="14" alt="" style="filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);">
+            <span style="color:var(--kbf-slate);font-size:13px;"><?php echo number_format($profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
+          </div>
+          <?php endif; ?>
           </div>
           <?php if(!empty(array_filter($socials))): ?>
           <div class="kbf-social-icons" style="margin-top:0;">
@@ -178,8 +202,8 @@ function bntm_shortcode_kbf_organizer_profile() {
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 360px;gap:24px;">
-      <div>
+    <div class="kbf-profile-grid" style="display:grid;grid-template-columns:1fr 360px;gap:24px;">
+      <div class="kbf-profile-sidebar">
         <?php if(false): ?><div></div><?php endif; ?>
 
         <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;">
@@ -298,25 +322,23 @@ function bntm_shortcode_kbf_organizer_profile() {
 
         <div class="kbf-card" style="margin-bottom:16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
-            <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin:0;text-transform:uppercase;letter-spacing:.5px;">Ratings</h4>
+            <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin:0;text-transform:uppercase;letter-spacing:.5px;">Credibility Score</h4>
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="display:inline-flex;gap:2px;line-height:1;font-size:12px;">
-                <?php for($i=1;$i<=5;$i++): ?>
-                  <span class="<?php echo $i<=round((float)$profile->rating)?'kbf-star':'kbf-star-empty'; ?>">★</span>
-                <?php endfor; ?>
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" width="12" height="12" alt="" style="filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);">
               </span>
               <strong style="font-size:12.5px;"><?php echo number_format((float)$profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</strong>
             </div>
           </div>
           <?php if(is_user_logged_in() && !$has_reviewed): ?>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="margin-bottom:10px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Review</button>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="margin-bottom:10px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Score</button>
           <?php elseif(is_user_logged_in() && $has_reviewed): ?>
-            <span class="kbf-meta" style="font-size:11.5px;display:block;margin-bottom:10px;">Already reviewed</span>
+            <span class="kbf-meta" style="font-size:11.5px;display:block;margin-bottom:10px;">Already scored</span>
           <?php else: ?>
-            <span class="kbf-meta" style="font-size:11.5px;display:block;margin-bottom:10px;">Log in to review</span>
+            <span class="kbf-meta" style="font-size:11.5px;display:block;margin-bottom:10px;">Log in to score</span>
           <?php endif; ?>
           <?php if(empty($reviews)): ?>
-            <div class="kbf-empty" style="padding:18px 10px;"><p>No reviews yet.</p></div>
+            <div class="kbf-empty" style="padding:18px 10px;"><p>No scores yet.</p></div>
           <?php else: ?>
           <div class="kbf-card-list" data-kbf-card-pager="organizer-reviews">
           <?php foreach($reviews as $r): ?>
@@ -324,7 +346,7 @@ function bntm_shortcode_kbf_organizer_profile() {
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
                 <div style="display:flex;align-items:center;gap:3px;">
                   <?php for($i=1;$i<=5;$i++): ?>
-                    <img src="<?php echo $i <= (int)$r->rating ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg' : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg'; ?>" width="12" height="12" alt="" style="filter:<?php echo $i <= (int)$r->rating ? 'invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%)' : 'invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%)'; ?>;">
+                  <img src="<?php echo $i <= (int)$r->rating ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg' : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg'; ?>" width="12" height="12" alt="" style="filter:<?php echo $i <= (int)$r->rating ? 'invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)' : 'invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%)'; ?>;">
                   <?php endfor; ?>
                 </div>
                 <span class="kbf-meta"><?php echo date('M d, Y',strtotime($r->created_at)); ?></span>
@@ -345,27 +367,27 @@ function bntm_shortcode_kbf_organizer_profile() {
     <!-- Rating Modal -->
     <div id="kbf-modal-rating" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3>Rate This Organizer</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-rating').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-header"><h3>Credibility Score</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-rating').style.display='none'">&times;</button></div>
         <div class="kbf-modal-body">
           <form id="kbf-rating-form" onsubmit="return false;">
             <input type="hidden" name="organizer_id" value="<?php echo (int)$biz_id; ?>">
             <input type="hidden" name="fund_id" value="0">
-            <div class="kbf-form-group"><label>Rating</label>
+            <div class="kbf-form-group"><label>Credibility</label>
               <div id="kbf-star-picker" style="display:flex;gap:8px;margin-top:6px;">
                 <?php for($i=1;$i<=5;$i++): ?>
-                  <img class="kbf-star-btn" data-val="<?php echo $i; ?>" data-filled="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg" data-empty="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg" alt="" width="28" height="28" style="cursor:pointer;filter:invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%);" onclick="kbfSetRating(<?php echo $i; ?>)">
+                  <img class="kbf-star-btn" data-val="<?php echo $i; ?>" data-filled="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" data-empty="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg" alt="" width="28" height="28" style="cursor:pointer;filter:invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%);" onclick="kbfSetRating(<?php echo $i; ?>)">
                 <?php endfor; ?>
               </div>
               <input type="hidden" name="rating" id="kbf-rating-val" value="5">
             </div>
             <div class="kbf-form-group"><label>Your Email *</label><input type="email" name="sponsor_email" required placeholder="your@email.com" value="<?php echo esc_attr($current_email); ?>"></div>
-            <div class="kbf-form-group"><label>Review (optional)</label><textarea name="review" rows="3" placeholder="Share your experience..."></textarea></div>
+            <div class="kbf-form-group"><label>Comment (optional)</label><textarea name="review" rows="3" placeholder="Share your thoughts..."></textarea></div>
             <div id="kbf-rate-msg"></div>
           </form>
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbf-modal-rating').style.display='none'">Cancel</button>
-          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitRating('<?php echo $nonce_rating; ?>')">Submit Review</button>
+          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitRating('<?php echo $nonce_rating; ?>')">Submit Score</button>
         </div>
       </div>
     </div>
@@ -377,8 +399,8 @@ function bntm_shortcode_kbf_organizer_profile() {
           var val = parseInt(star.getAttribute('data-val'),10);
           star.src = val <= v ? star.getAttribute('data-filled') : star.getAttribute('data-empty');
           star.style.filter = val <= v
-            ? 'invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%)'
-            : 'invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%)';
+            ? 'invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)'
+            : 'invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%)';
         });
         var inp = document.getElementById('kbf-rating-val');
         if(inp) inp.value = v;

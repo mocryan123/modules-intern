@@ -69,6 +69,7 @@ function bntm_kbf_get_tables() {
             funder_name VARCHAR(255),
             amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
             method VARCHAR(100),
+            account_type VARCHAR(100),
             account_name VARCHAR(255),
             account_number VARCHAR(255),
             account_details TEXT,
@@ -88,6 +89,7 @@ function bntm_kbf_get_tables() {
             reporter_email VARCHAR(255),
             reason VARCHAR(255),
             details TEXT,
+            report_image VARCHAR(500),
             status ENUM('open','reviewed','dismissed') DEFAULT 'open',
             admin_notes TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -116,6 +118,9 @@ function bntm_kbf_get_tables() {
             bio TEXT,
             avatar_url VARCHAR(500),
             social_links TEXT COMMENT 'JSON: facebook, instagram, twitter',
+            payout_type VARCHAR(50),
+            payout_name VARCHAR(255),
+            payout_number VARCHAR(255),
             is_verified TINYINT(1) DEFAULT 0,
             verify_id_front VARCHAR(500),
             verify_id_back VARCHAR(500),
@@ -169,6 +174,9 @@ function bntm_kbf_ensure_profile_columns() {
         'verify_reviewed_at'  => "ALTER TABLE {$pt} ADD COLUMN verify_reviewed_at DATETIME NULL",
         'verify_notes'        => "ALTER TABLE {$pt} ADD COLUMN verify_notes TEXT NULL",
         'organizer_token'     => "ALTER TABLE {$pt} ADD COLUMN organizer_token VARCHAR(64) NULL",
+        'payout_type'         => "ALTER TABLE {$pt} ADD COLUMN payout_type VARCHAR(50) NULL",
+        'payout_name'         => "ALTER TABLE {$pt} ADD COLUMN payout_name VARCHAR(255) NULL",
+        'payout_number'       => "ALTER TABLE {$pt} ADD COLUMN payout_number VARCHAR(255) NULL",
     ];
     foreach ($cols as $col => $sql) {
         if (!in_array($col, $existing, true)) {
@@ -213,6 +221,36 @@ function bntm_kbf_ensure_fund_columns() {
     }
 }
 add_action('init', 'bntm_kbf_ensure_fund_columns');
+
+function bntm_kbf_ensure_report_columns() {
+    global $wpdb;
+    $rt = $wpdb->prefix.'kbf_reports';
+    $existing = $wpdb->get_col("SHOW COLUMNS FROM {$rt}");
+    $cols = [
+        'report_image' => "ALTER TABLE {$rt} ADD COLUMN report_image VARCHAR(500) NULL",
+    ];
+    foreach ($cols as $col => $sql) {
+        if (!in_array($col, $existing, true)) {
+            $wpdb->query($sql);
+        }
+    }
+}
+add_action('init', 'bntm_kbf_ensure_report_columns');
+
+function bntm_kbf_ensure_withdrawal_columns() {
+    global $wpdb;
+    $wt = $wpdb->prefix.'kbf_withdrawals';
+    $existing = $wpdb->get_col("SHOW COLUMNS FROM {$wt}");
+    $cols = [
+        'account_type' => "ALTER TABLE {$wt} ADD COLUMN account_type VARCHAR(100) NULL",
+    ];
+    foreach ($cols as $col => $sql) {
+        if (!in_array($col, $existing, true)) {
+            $wpdb->query($sql);
+        }
+    }
+}
+add_action('init', 'bntm_kbf_ensure_withdrawal_columns');
 
 function bntm_kbf_ensure_perf_indexes() {
     global $wpdb;

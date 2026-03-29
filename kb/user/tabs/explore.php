@@ -379,7 +379,7 @@ function kbf_dashboard_find_funds_tab() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ₱1" min="1" step="1" required>
+              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" required>
               <div id="kbff-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
             </div>
             <div class="kbf-form-group">
@@ -388,8 +388,8 @@ function kbf_dashboard_find_funds_tab() {
               <div class="kbf-char-count" id="kbff-message-count">0/300</div>
             </div>
             <div class="kbf-form-row">
-              <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
-              <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
+              <div class="kbf-form-group"><label>Email (for receipt) *</label><input type="email" name="email" placeholder="your@email.com" required></div>
+              <div class="kbf-form-group"><label>Phone *</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX" required></div>
             </div>
             <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
@@ -419,6 +419,7 @@ function kbf_dashboard_find_funds_tab() {
           <form id="kbff-report-form">
             <input type="hidden" name="fund_id" id="kbff-report-fund-id">
             <div class="kbf-form-group"><label>Your Email (optional)</label><input type="email" name="reporter_email" placeholder="your@email.com"></div>
+            <div class="kbf-form-group"><label>Upload Photo (optional)</label><input type="file" name="report_image" accept="image/*"></div>
             <div class="kbf-form-group"><label>Reason *</label>
               <select name="reason" required><option value="">Select Reason</option><option value="Fraud">Fraudulent Campaign</option><option value="Misleading">Misleading Information</option><option value="Inappropriate">Inappropriate Content</option><option value="Scam">Suspected Scam</option><option value="Other">Other</option></select>
             </div>
@@ -584,9 +585,9 @@ function kbf_dashboard_find_funds_tab() {
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
                   Share
                 </button>
-                <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
-                  Report
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Report Abuse
                 </button>
               </div>
             </div>
@@ -612,9 +613,9 @@ function kbf_dashboard_find_funds_tab() {
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
                   Share
                 </button>
-                <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
-                  Report
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Report Abuse
                 </button>
               </div>
             </div>

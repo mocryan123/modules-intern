@@ -11,11 +11,17 @@ function bntm_ajax_kbf_create_fund() {
     global $wpdb;$table=$wpdb->prefix.'kbf_funds';
     $biz=get_current_user_id();
     $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? $_POST['location_full'] : (isset($_POST['location']) ? $_POST['location'] : '');
-    foreach(['title','description','goal_amount','email','phone','category','funder_type'] as $f) {
+    foreach(['title','description','goal_amount','email','phone','category','funder_type','deadline'] as $f) {
         if(empty($_POST[$f])) wp_send_json_error(['message'=>'Please fill all required fields.']);
     }
     if (empty($location_full)) wp_send_json_error(['message'=>'Please fill all required fields.']);
     $goal=floatval($_POST['goal_amount']);
+    $deadline = sanitize_text_field($_POST['deadline'] ?? '');
+    if(!$deadline) wp_send_json_error(['message'=>'Please fill all required fields.']);
+    $min_deadline = strtotime('+7 days', current_time('timestamp'));
+    if(strtotime($deadline) < $min_deadline) {
+        wp_send_json_error(['message'=>'Deadline must be at least 7 days from today.']);
+    }
     if($goal<100) wp_send_json_error(['message'=>'Minimum goal is ?100.']);
     // Handle photos
     $photo_urls=[];
@@ -41,7 +47,7 @@ function bntm_ajax_kbf_create_fund() {
         'phone'         =>sanitize_text_field($_POST['phone']),
         'location'      =>sanitize_text_field($location_full),
         'auto_return'   =>isset($_POST['auto_return'])?1:0,
-        'deadline'      =>!empty($_POST['deadline'])?sanitize_text_field($_POST['deadline']):null,
+        'deadline'      =>$deadline,
         'status'        =>'pending',
         'share_token'   =>wp_generate_password(32,false),
     ],['%s','%d','%s','%s','%s','%s','%f','%s','%s','%s','%s','%d','%s','%s','%s']);
@@ -111,7 +117,7 @@ function bntm_ajax_kbf_mark_fund_complete() {
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund||$fund->status!=='active') wp_send_json_error(['message'=>'Fund not found or not active.']);
-    $wpdb->update($t,['status'=>'completed'],['id'=>$id],['%s'],['%d']);
+    $wpdb->update($t,['status'=>'completed','escrow_status'=>'released'],['id'=>$id],['%s','%s'],['%d']);
     wp_send_json_success(['message'=>'Fund marked as complete!']);
 }
 
@@ -133,7 +139,7 @@ function bntm_ajax_kbf_request_withdrawal() {
     if($fund->escrow_status === 'refunded') wp_send_json_error(['message'=>'Funds have been refunded and are no longer available for withdrawal.']);
     if($amount<=0) wp_send_json_error(['message'=>'Please enter a valid amount.']);
     if($amount>$fund->raised_amount) wp_send_json_error(['message'=>'Amount exceeds total raised funds (PHP '.number_format($fund->raised_amount,2).' ).']);
-    if(empty($_POST['method'])||empty($_POST['account_name'])||empty($_POST['account_number'])) wp_send_json_error(['message'=>'Please fill all required fields.']);
+    if(empty($_POST['method'])||empty($_POST['account_type'])||empty($_POST['account_name'])||empty($_POST['account_number'])) wp_send_json_error(['message'=>'Please fill all required fields.']);
     // Prevent duplicate pending request for same fund
     $pending=$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wt} WHERE fund_id=%d AND status='pending'",$id));
     if($pending>0) wp_send_json_error(['message'=>'You already have a pending withdrawal request for this fund. Please wait for admin to process it first.']);
@@ -155,6 +161,7 @@ function bntm_ajax_kbf_request_withdrawal() {
         'funder_name'    =>$funder_name,
         'amount'         =>$amount,
         'method'         =>sanitize_text_field($_POST['method']),
+        'account_type'   =>sanitize_text_field($_POST['account_type']),
         'account_name'   =>sanitize_text_field($_POST['account_name']),
         'account_number' =>sanitize_text_field($_POST['account_number']),
         'account_details'=>sanitize_textarea_field($_POST['account_details']??''),
@@ -203,7 +210,14 @@ function bntm_ajax_kbf_save_organizer_profile() {
         'twitter'=>esc_url_raw($_POST['social_twitter']??''),
         'website'=>esc_url_raw($_POST['social_website']??''),
     ]);
-    $data=['bio'=>sanitize_textarea_field($_POST['bio']??''),'social_links'=>$socials,'business_id'=>$biz];
+    $data=[
+        'bio'=>sanitize_textarea_field($_POST['bio']??''),
+        'social_links'=>$socials,
+        'payout_type'=>sanitize_text_field($_POST['payout_type']??''),
+        'payout_name'=>sanitize_text_field($_POST['payout_name']??''),
+        'payout_number'=>sanitize_text_field($_POST['payout_number']??''),
+        'business_id'=>$biz
+    ];
     if($avatar) $data['avatar_url']=$avatar;
     if(isset($_POST['phone'])) update_user_meta($biz,'kbf_phone',sanitize_text_field($_POST['phone']));
     if(isset($_POST['address'])) update_user_meta($biz,'kbf_address',sanitize_text_field($_POST['address']));
@@ -269,7 +283,7 @@ function bntm_ajax_kbf_sponsor_fund() {
     check_ajax_referer('kbf_sponsor','nonce');
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$st=$wpdb->prefix.'kbf_sponsorships';
     $id=intval($_POST['fund_id']);$amount=floatval($_POST['amount']);
-    if($amount<1) wp_send_json_error(['message'=>'Minimum sponsorship is ₱1.']);
+    if($amount<50) wp_send_json_error(['message'=>'Minimum sponsorship is ₱50.']);
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'",$id));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found or not accepting sponsorships.']);
     if ($fund->goal_amount > 0) {
@@ -283,6 +297,11 @@ function bntm_ajax_kbf_sponsor_fund() {
     }
     $anon=intval($_POST['is_anonymous']??0);
     $method=sanitize_text_field($_POST['payment_method']??'');
+    $email = sanitize_email($_POST['email'] ?? '');
+    $phone = sanitize_text_field($_POST['phone'] ?? '');
+    if (empty($email) || empty($phone)) {
+        wp_send_json_error(['message'=>'Email and phone are required to proceed.']);
+    }
 
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
 
@@ -300,8 +319,8 @@ function bntm_ajax_kbf_sponsor_fund() {
         'sponsor_name'     =>$anon?'Anonymous':sanitize_text_field($_POST['sponsor_name']??'Anonymous'),
         'is_anonymous'     =>$anon,
         'amount'           =>$amount,
-        'email'            =>sanitize_email($_POST['email']??''),
-        'phone'            =>sanitize_text_field($_POST['phone']??''),
+        'email'            =>$email,
+        'phone'            =>$phone,
         'payment_method'   =>$method,
         'payment_status'   =>'completed',
         'message'          =>sanitize_textarea_field($_POST['message']??''),
@@ -313,7 +332,7 @@ function bntm_ajax_kbf_sponsor_fund() {
         $updated_fund = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount FROM {$ft} WHERE id=%d",$id));
         $just_completed = false;
         if($updated_fund && $updated_fund->goal_amount > 0 && $updated_fund->raised_amount >= $updated_fund->goal_amount) {
-            $wpdb->update($ft,['status'=>'completed','escrow_status'=>'holding'],['id'=>$id],['%s','%s'],['%d']);
+            $wpdb->update($ft,['status'=>'completed','escrow_status'=>'released'],['id'=>$id],['%s','%s'],['%d']);
             $just_completed = true;
             do_action('kbf_fund_goal_reached', $id);
         }
@@ -335,7 +354,32 @@ function bntm_ajax_kbf_report_fund() {
     global $wpdb;$t=$wpdb->prefix.'kbf_reports';
     $id=intval($_POST['fund_id']);$reason=sanitize_text_field($_POST['reason']);$details=sanitize_textarea_field($_POST['details']);
     if(empty($reason)||empty($details)) wp_send_json_error(['message'=>'Please fill all required fields.']);
-    $res=$wpdb->insert($t,['rand_id'=>bntm_rand_id(),'fund_id'=>$id,'reporter_id'=>get_current_user_id(),'reporter_email'=>sanitize_email($_POST['reporter_email']??''),'reason'=>$reason,'details'=>$details,'status'=>'open'],['%s','%d','%d','%s','%s','%s','%s']);
+    $report_image = '';
+    if (!empty($_FILES['report_image']['name'])) {
+        $file = $_FILES['report_image'];
+        $allowed = ['jpg','jpeg','png','webp'];
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed, true)) {
+            wp_send_json_error(['message'=>'Please upload a JPG, PNG, or WebP image.']);
+        }
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        $upload = wp_handle_upload($file, ['test_form'=>false]);
+        if (!empty($upload['url'])) {
+            $report_image = esc_url_raw($upload['url']);
+        } else {
+            wp_send_json_error(['message'=>'Failed to upload image.']);
+        }
+    }
+    $res=$wpdb->insert($t,[
+        'rand_id'=>bntm_rand_id(),
+        'fund_id'=>$id,
+        'reporter_id'=>get_current_user_id(),
+        'reporter_email'=>sanitize_email($_POST['reporter_email']??''),
+        'reason'=>$reason,
+        'details'=>$details,
+        'report_image'=>$report_image,
+        'status'=>'open'
+    ],['%s','%d','%d','%s','%s','%s','%s','%s']);
     if($res) wp_send_json_success(['message'=>'Report submitted. Our team will review it shortly.']);
     else wp_send_json_error(['message'=>'Failed to submit report.']);
 }
@@ -465,16 +509,16 @@ function bntm_ajax_kbf_submit_rating() {
     global $wpdb;$rt=$wpdb->prefix.'kbf_ratings';$pt=$wpdb->prefix.'kbf_organizer_profiles';
     $org_id=intval($_POST['organizer_id']);$rating=min(5,max(1,intval($_POST['rating'])));
     $email=sanitize_email($_POST['sponsor_email']??'');
-    if(empty($email)) wp_send_json_error(['message'=>'Email required to submit a review.']);
+    if(empty($email)) wp_send_json_error(['message'=>'Email required to submit a score.']);
     // Prevent duplicate rating per email per organizer
     $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$rt} WHERE organizer_id=%d AND sponsor_email=%s",$org_id,$email));
-    if($exists) wp_send_json_error(['message'=>'You have already submitted a review for this organizer.']);
+    if($exists) wp_send_json_error(['message'=>'You have already submitted a score for this organizer.']);
     $wpdb->insert($rt,['rand_id'=>bntm_rand_id(),'organizer_id'=>$org_id,'sponsor_email'=>$email,'rating'=>$rating,'review'=>sanitize_textarea_field($_POST['review']??''),'fund_id'=>intval($_POST['fund_id']??0)],['%s','%d','%s','%d','%s','%d']);
     // Recalculate average
     $avg=$wpdb->get_var($wpdb->prepare("SELECT AVG(rating) FROM {$rt} WHERE organizer_id=%d",$org_id));
     $cnt=$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$rt} WHERE organizer_id=%d",$org_id));
     $wpdb->update($pt,['rating'=>round($avg,2),'rating_count'=>(int)$cnt],['business_id'=>$org_id],['%f','%d'],['%d']);
-    wp_send_json_success(['message'=>'Thank you for your review!']);
+    wp_send_json_success(['message'=>'Thank you for your score!']);
 }
 
 // ============================================================

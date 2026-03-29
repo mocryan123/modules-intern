@@ -13,10 +13,10 @@ function kbf_admin_withdrawals_tab() {
       <h3 class="kbf-section-title">Withdrawal Requests</h3>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
-          <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Account</th><th>Status</th><th>Requested</th><th>Released</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Account Type</th><th>Account</th><th>Status</th><th>Requested</th><th>Released</th><th>Actions</th></tr></thead>
           <tbody>
           <?php if(empty($rows)): ?>
-            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--kbf-slate);">No withdrawal requests.</td></tr>
+            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--kbf-slate);">No withdrawal requests.</td></tr>
           <?php else: foreach($rows as $w): ?>
             <tr>
               <td>
@@ -34,6 +34,8 @@ function kbf_admin_withdrawals_tab() {
                 </div>
               </td>
               <td><strong>PHP <?php echo number_format($w->amount,2); ?></strong></td>
+              <?php $type_label = $w->account_type ? ucwords(str_replace('_',' ', $w->account_type)) : '—'; ?>
+              <td class="kbf-meta"><?php echo esc_html($type_label); ?></td>
               <td class="kbf-meta"><?php echo esc_html($w->account_name); ?><br><?php echo esc_html($w->account_number); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
               <td class="kbf-meta"><?php echo date('M d, Y',strtotime($w->requested_at)); ?></td>

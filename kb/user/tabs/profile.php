@@ -9,6 +9,9 @@ function kbf_dashboard_profile_tab($business_id) {
     $profile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$business_id));
     $user = get_userdata($business_id);
     $socials = $profile && $profile->social_links ? json_decode($profile->social_links,true) : [];
+    $payout_type = $profile->payout_type ?? '';
+    $payout_name = $profile->payout_name ?? '';
+    $payout_number = $profile->payout_number ?? '';
     $phone = get_user_meta($business_id, 'kbf_phone', true);
     $address = get_user_meta($business_id, 'kbf_address', true);
     $nonce = wp_create_nonce('kbf_organizer_profile');
@@ -29,6 +32,13 @@ function kbf_dashboard_profile_tab($business_id) {
       }
       .kbf-profile-title { margin-bottom: 6px; }
       .kbf-profile-subtitle { margin: 0 0 18px; color: var(--kbf-slate); font-size: 13px; }
+      .kbf-section-title{
+        font-size:16px;
+        font-weight:600 !important;
+        color:#0f172a;
+        margin:0 0 6px;
+        line-height:1.35;
+      }
 
       /* ── Main two-column grid ── */
       .kbf-profile-grid {
@@ -63,7 +73,7 @@ function kbf_dashboard_profile_tab($business_id) {
 
       /* ── Card header ── */
       .kbf-profile-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-      .kbf-profile-card-title { font-weight: 700; margin-bottom: 8px; }
+      .kbf-profile-card-title { font-size:16px; font-weight:600; color:#0f172a; margin:0 0 6px; line-height:1.35; }
 
       /* ── Avatar ── */
       .kbf-profile-photo {
@@ -117,6 +127,17 @@ function kbf_dashboard_profile_tab($business_id) {
       .kbf-profile-divider { height: 1px; background: var(--kbf-border); margin: 10px 0; }
       .kbf-profile-actions { display: flex; gap: 10px; align-items: center; width: 100%; }
       .kbf-profile-actions .kbf-btn { width: 100%; justify-content: center; }
+      .kbf-input-error{
+        border-color:#dc2626 !important;
+        box-shadow:0 0 0 3px rgba(220,38,38,.12);
+      }
+      .kbf-field-error{
+        display:none;
+        margin-top:6px;
+        color:#dc2626;
+        font-size:11.5px;
+        font-weight:600;
+      }
 
       /* ── Password toggle ── */
       .kbf-input-with-toggle { position: relative; }
@@ -201,8 +222,8 @@ function kbf_dashboard_profile_tab($business_id) {
       }
       .kbf-stat-icon img { width: 20px; height: 20px; filter: invert(36%) sepia(88%) saturate(2029%) hue-rotate(198deg) brightness(95%) contrast(95%); }
       .kbf-stat-icon--amber img { filter: invert(54%) sepia(93%) saturate(1461%) hue-rotate(14deg) brightness(96%) contrast(92%); }
-      .kbf-stat-label { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: .6px; }
-      .kbf-stat-value { font-size: 18px; font-weight: 800; color: #0f172a; }
+      .kbf-stat-label { font-size: 11px; font-weight: 600; color: #64748b; letter-spacing: .5px; }
+      .kbf-profile-card .kbf-stat-value { font-size: 16px; font-weight: 600; color: #0f172a; }
       .kbf-stat-sub { font-size: 12px; color: #64748b; }
 
       /* ── Cropper ── */
@@ -295,7 +316,7 @@ function kbf_dashboard_profile_tab($business_id) {
           <!-- ══ LEFT CARD ══ -->
           <div class="kbf-card kbf-profile-card kbf-profile-card-left">
             <div class="kbf-profile-header">
-              <div style="font-weight:700;">My profile</div>
+              <div class="kbf-profile-card-title" style="margin:0;">My profile</div>
               <div class="kbf-profile-meta">Last update: <?php echo esc_html($profile && $profile->updated_at ? date('M d, Y', strtotime($profile->updated_at)) : 'Recently'); ?></div>
             </div>
 
@@ -361,9 +382,10 @@ function kbf_dashboard_profile_tab($business_id) {
             <div class="kbf-profile-actions">
               <?php
                 $is_pending = ($profile && !empty($profile->verify_status) && $profile->verify_status==='pending');
+                $is_verified = ($profile && !empty($profile->is_verified));
               ?>
-              <button type="button" class="kbf-btn kbf-btn-secondary" <?php echo $is_pending ? 'disabled' : ''; ?> onclick="if(!this.disabled) kbfOpenVerifyModal()">
-                <?php echo $is_pending ? 'Pending' : 'Verify Account'; ?>
+              <button type="button" class="kbf-btn kbf-btn-secondary" <?php echo ($is_pending || $is_verified) ? 'disabled' : ''; ?> onclick="if(!this.disabled) kbfOpenVerifyModal()">
+                <?php echo $is_verified ? 'Already Verified' : ($is_pending ? 'Pending' : 'Verify Account'); ?>
               </button>
               <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSaveProfile('<?php echo $nonce; ?>')">Save Changes</button>
             </div>
@@ -378,21 +400,21 @@ function kbf_dashboard_profile_tab($business_id) {
               <div class="kbf-form-row kbf-form-row-3">
                 <div class="kbf-form-group">
                   <label>Account Type</label>
-                  <select name="payout_type">
-                    <option value="">Select type</option>
-                    <option value="maya_wallet">Maya Wallet</option>
-                    <option value="gcash">GCash</option>
-                    <option value="card">Credit/Debit Card</option>
+                  <select name="payout_type" id="kbf-payout-type" autocomplete="off">
+                    <option value="" <?php echo $payout_type===''?'selected':''; ?>>Select type</option>
+                    <option value="maya_wallet" <?php echo $payout_type==='maya_wallet'?'selected':''; ?>>Maya Wallet</option>
+                    <option value="gcash" <?php echo $payout_type==='gcash'?'selected':''; ?>>GCash</option>
+                    <option value="card" <?php echo $payout_type==='card'?'selected':''; ?>>Credit/Debit Card</option>
                   </select>
                 </div>
                 <div class="kbf-form-group">
                   <label>Account Name</label>
-                  <input type="text" name="payout_name" placeholder="Full name on the account">
+                  <input type="text" name="payout_name" id="kbf-payout-name" value="<?php echo esc_attr($payout_name); ?>" placeholder="Account name" autocomplete="off" autocapitalize="none" spellcheck="false" <?php echo $payout_type===''?'disabled':''; ?>>
                 </div>
                 <div class="kbf-form-group">
                   <label>Account Number</label>
                   <div class="kbf-input-with-toggle">
-                    <input type="password" name="payout_number" id="kbf-payout-number" placeholder="e.g., 09XX XXX XXXX or card number">
+                    <input type="password" name="payout_number" id="kbf-payout-number" value="<?php echo esc_attr($payout_number); ?>" placeholder="Account number" autocomplete="new-password" autocapitalize="none" spellcheck="false" <?php echo $payout_type===''?'disabled':''; ?>>
                     <button type="button" class="kbf-toggle-visibility" onclick="kbfTogglePayoutNumber()">Show</button>
                   </div>
                 </div>
@@ -454,12 +476,11 @@ function kbf_dashboard_profile_tab($business_id) {
                 </div>
                 <div class="kbf-stat kbf-stat-card">
                   <div class="kbf-stat-icon">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg" alt="" width="16" height="16" class="kbf-stat-icon-img">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" alt="" width="16" height="16" class="kbf-stat-icon-img">
                   </div>
                   <div>
-                    <div class="kbf-stat-label">RATING</div>
-                    <div class="kbf-stat-value"><?php echo number_format($profile->rating, 1); ?>/5</div>
-                    <div class="kbf-stat-sub"><?php echo esc_html($profile->rating_count); ?> reviews</div>
+                    <div class="kbf-stat-label">CREDIBILITY</div>
+                    <div class="kbf-stat-value"><?php echo number_format($profile->rating, 1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</div>
                   </div>
                 </div>
               </div>
@@ -473,16 +494,19 @@ function kbf_dashboard_profile_tab($business_id) {
                 <div class="kbf-form-group">
                   <label>Facebook</label>
                   <input type="url" name="social_facebook" id="kbf-social-facebook" placeholder="https://facebook.com/yourname" value="<?php echo esc_attr($socials['facebook'] ?? ''); ?>">
+                  <div class="kbf-field-error" id="kbf-social-facebook-error"></div>
                 </div>
                 <div class="kbf-form-group">
                   <label>Instagram</label>
                   <input type="url" name="social_instagram" id="kbf-social-instagram" placeholder="https://instagram.com/yourname" value="<?php echo esc_attr($socials['instagram'] ?? ''); ?>">
+                  <div class="kbf-field-error" id="kbf-social-instagram-error"></div>
                 </div>
               </div>
               <div class="kbf-form-row kbf-form-row-2">
                 <div class="kbf-form-group">
                   <label>X (Twitter)</label>
                   <input type="url" name="social_twitter" id="kbf-social-twitter" placeholder="https://x.com/yourname" value="<?php echo esc_attr($socials['twitter'] ?? ''); ?>">
+                  <div class="kbf-field-error" id="kbf-social-twitter-error"></div>
                 </div>
                 <div class="kbf-form-group">
                   <label>Website</label>
@@ -577,14 +601,32 @@ function kbf_dashboard_profile_tab($business_id) {
         }
     };
 
-    window.kbfTogglePayoutNumber = function(){
-        const input = document.getElementById('kbf-payout-number');
-        const btn = document.querySelector('.kbf-toggle-visibility');
-        if (!input) return;
-        const isHidden = input.type === 'password';
-        input.type = isHidden ? 'text' : 'password';
-        if (btn) btn.textContent = isHidden ? 'Hide' : 'Show';
-    };
+window.kbfTogglePayoutNumber = function(){
+    const input = document.getElementById('kbf-payout-number');
+    const btn = document.querySelector('.kbf-toggle-visibility');
+    if (!input) return;
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    if (btn) btn.textContent = isHidden ? 'Hide' : 'Show';
+};
+
+window.kbfTogglePayoutInputs = function(){
+    const typeSel = document.getElementById('kbf-payout-type');
+    const nameEl = document.getElementById('kbf-payout-name');
+    const numEl = document.getElementById('kbf-payout-number');
+    if (!typeSel || !nameEl || !numEl) return;
+    const enabled = !!typeSel.value;
+    nameEl.disabled = !enabled;
+    numEl.disabled = !enabled;
+};
+
+document.addEventListener('DOMContentLoaded', function(){
+    const typeSel = document.getElementById('kbf-payout-type');
+    if (typeSel) {
+        typeSel.addEventListener('change', kbfTogglePayoutInputs);
+        kbfTogglePayoutInputs();
+    }
+});
 
     window.kbfProfileBioCount = function(){
         var ta = document.getElementById('kbf-profile-bio');
@@ -609,6 +651,39 @@ function kbf_dashboard_profile_tab($business_id) {
             window.kbfProfileBioCount();
         }
     });
+
+    window.kbfValidateSocialLinks = function(){
+        var rules = [
+            { id: 'kbf-social-facebook',  err: 'kbf-social-facebook-error',  re: /^(https?:\/\/)?(www\.)?(facebook\.com|fb\.me)\/[A-Za-z0-9._%\-/?=&#]+$/i, msg: 'Please enter a valid Facebook profile URL.' },
+            { id: 'kbf-social-instagram', err: 'kbf-social-instagram-error', re: /^(https?:\/\/)?(www\.)?instagram\.com\/[A-Za-z0-9._-]+\/?$/i,          msg: 'Please enter a valid Instagram profile URL.' },
+            { id: 'kbf-social-twitter',   err: 'kbf-social-twitter-error',   re: /^(https?:\/\/)?(www\.)?(x\.com|twitter\.com)\/[A-Za-z0-9._-]+\/?$/i,    msg: 'Please enter a valid X (Twitter) profile URL.' }
+        ];
+        var ok = true;
+        rules.forEach(function(rule){
+            var input = document.getElementById(rule.id);
+            var error = document.getElementById(rule.err);
+            if (!input || !error) return;
+            var val = (input.value || '').trim();
+            if (val && !rule.re.test(val)) {
+                input.classList.add('kbf-input-error');
+                error.textContent = rule.msg;
+                error.style.display = 'block';
+                ok = false;
+            } else {
+                input.classList.remove('kbf-input-error');
+                error.textContent = '';
+                error.style.display = 'none';
+            }
+        });
+        return ok;
+    };
+
+    document.addEventListener('blur', function(e){
+        if (!e.target) return;
+        if (['kbf-social-facebook','kbf-social-instagram','kbf-social-twitter'].indexOf(e.target.id) > -1) {
+            window.kbfValidateSocialLinks();
+        }
+    }, true);
 
     (function(){
         const fileInput  = document.getElementById('kbf-avatar');
@@ -766,7 +841,26 @@ function kbf_dashboard_profile_tab($business_id) {
 
 window.kbfSaveProfile = function(nonce) {
         const form = document.getElementById('kbf-profile-form');
+        if (!window.kbfValidateSocialLinks()) {
+            document.getElementById('kbf-profile-msg').innerHTML =
+                '<div class="kbf-alert kbf-alert-error">Please fix the highlighted social links.</div>';
+            return;
+        }
         const fd = new FormData(form);
+        const typeSel = document.getElementById('kbf-payout-type');
+        const nameEl = document.getElementById('kbf-payout-name');
+        const numEl = document.getElementById('kbf-payout-number');
+        if (typeSel) {
+            const typeVal = (typeSel.value || '').trim();
+            fd.set('payout_type', typeVal);
+            if (!typeVal) {
+                fd.set('payout_name', '');
+                fd.set('payout_number', '');
+            } else {
+                if (nameEl) fd.set('payout_name', (nameEl.value || '').trim());
+                if (numEl) fd.set('payout_number', (numEl.value || '').trim());
+            }
+        }
         fd.append('action', 'kbf_save_organizer_profile');
         fd.append('nonce', nonce);
         const btn = form.querySelector('.kbf-btn-primary');

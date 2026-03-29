@@ -488,13 +488,13 @@ function bntm_shortcode_kbf_browse() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Enter amount" min="10" step="1" required>
+              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" required>
               <div id="kbf-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
             </div>
             <div class="kbf-form-group"><label>Message (optional)</label><textarea name="message" rows="2" placeholder="Leave an encouraging message..."></textarea></div>
             <div class="kbf-form-row">
-              <div class="kbf-form-group"><label>Email (for receipt)</label><input type="email" name="email" placeholder="your@email.com"></div>
-              <div class="kbf-form-group"><label>Phone</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX"></div>
+              <div class="kbf-form-group"><label>Email (for receipt) *</label><input type="email" name="email" placeholder="your@email.com" required></div>
+              <div class="kbf-form-group"><label>Phone *</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX" required></div>
             </div>
             <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
@@ -523,6 +523,7 @@ function bntm_shortcode_kbf_browse() {
           <form id="kbf-report-form">
             <input type="hidden" name="fund_id" id="report-fund-id">
             <div class="kbf-form-group"><label>Your Email (optional)</label><input type="email" name="reporter_email" placeholder="your@email.com"></div>
+            <div class="kbf-form-group"><label>Upload Photo (optional)</label><input type="file" name="report_image" accept="image/*"></div>
             <div class="kbf-form-group"><label>Reason *</label><select name="reason" required><option value="">Select Reason</option><option value="Fraud">Fraudulent Campaign</option><option value="Misleading">Misleading Information</option><option value="Inappropriate">Inappropriate Content</option><option value="Scam">Suspected Scam</option><option value="Other">Other</option></select></div>
             <div class="kbf-form-group"><label>Details *</label><textarea name="details" rows="4" placeholder="Describe the issue..." required></textarea></div>
             <div id="kbf-report-msg"></div>
@@ -684,7 +685,7 @@ function bntm_shortcode_kbf_browse() {
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')" title="Share">
               <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
             </button>
-            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfOpenReport(<?php echo $f->id; ?>)" title="Report">
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenReport(<?php echo $f->id; ?>)" title="Report Abuse">
               <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </button>
           </div>
@@ -831,10 +832,10 @@ function bntm_shortcode_kbf_browse() {
             if(j.success){
                 const d=j.data;
                 const starSvg=(filled)=>{
-                    const src = filled ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star-fill.svg' : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/star.svg';
+                    const src = filled ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg' : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg';
                     const filter = filled
-                        ? 'invert(70%) sepia(85%) saturate(531%) hue-rotate(3deg) brightness(98%) contrast(92%)'
-                        : 'invert(85%) sepia(9%) saturate(184%) hue-rotate(181deg) brightness(94%) contrast(90%)';
+                        ? 'invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)'
+                        : 'invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%)';
                     return '<img src="'+src+'" width="14" height="14" style="filter:'+filter+';">';
                 };
                 const stars=Array.from({length:5},(_,i)=>starSvg(i<Math.round(parseFloat(d.rating)))).join('');
@@ -858,7 +859,7 @@ function bntm_shortcode_kbf_browse() {
 
                 // Reviews HTML
                 const reviewsHtml = d.reviews&&d.reviews.length
-                    ? '<div style="margin-top:20px;"><h4 style="font-size:13px;font-weight:800;color:var(--kbf-navy);margin:0 0 10px;">Recent Reviews</h4>'
+                    ? '<div style="margin-top:20px;"><h4 style="font-size:13px;font-weight:800;color:var(--kbf-navy);margin:0 0 10px;">Recent Scores</h4>'
                       + d.reviews.map(r=>'<div style="border:1px solid var(--kbf-border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">'
                         +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
                         +'<div style="display:flex;gap:2px;">'+Array.from({length:5},(_,i)=>starSvg(i<r.rating)).join('')+'</div>'
@@ -878,7 +879,7 @@ function bntm_shortcode_kbf_browse() {
                 +(d.is_verified?'<span class="kbf-badge kbf-badge-verified" style="font-size:10px;">Verified</span>':'')
                 +'</div>'
                 +'<div style="display:flex;gap:3px;align-items:center;margin-top:5px;">'+stars
-                +'<span style="font-size:12px;color:var(--kbf-slate);margin-left:5px;"><strong>'+d.rating+'</strong>/5 &nbsp;&bull;&nbsp; '+d.rating_count+' review'+(d.rating_count!==1?'s':'')+'</span></div>'
+                +'<span style="font-size:12px;color:var(--kbf-slate);margin-left:5px;"><strong>'+d.rating+'</strong>/5 &nbsp;&bull;&nbsp; '+d.rating_count+' score'+(d.rating_count!==1?'s':'')+'</span></div>'
                 +(d.bio?'<p style="font-size:13px;color:var(--kbf-slate);margin:6px 0 0;line-height:1.55;">'+d.bio+'</p>':'')
                 +'</div></div>'
                 // Stats

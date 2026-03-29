@@ -22,20 +22,25 @@ function kbf_admin_reports_tab() {
               <strong style="font-size:14px;">Fund: <?php echo esc_html($r->fund_title); ?></strong>
               <div style="font-size:13px;color:var(--kbf-red);font-weight:700;margin-top:2px;">Reason: <?php echo esc_html($r->reason); ?></div>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:6px 0 0;"><?php echo esc_html($r->details); ?></p>
+              <?php if(!empty($r->report_image)): ?>
+                <a href="<?php echo esc_url($r->report_image); ?>" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;">
+                  <img src="<?php echo esc_url($r->report_image); ?>" alt="Report attachment" style="width:120px;height:auto;border-radius:8px;border:1px solid var(--kbf-border);">
+                </a>
+              <?php endif; ?>
               <div class="kbf-meta" style="margin-top:6px;"><?php echo $r->reporter_email?esc_html($r->reporter_email):'Anonymous reporter'; ?> &bull; <?php echo date('M d, Y H:i',strtotime($r->created_at)); ?></div>
               <?php if($r->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><strong>Admin Note:</strong> <?php echo esc_html($r->admin_notes); ?></div><?php endif; ?>
             </div>
             <span class="kbf-badge kbf-badge-<?php echo $r->status; ?>"><?php echo ucfirst($r->status); ?></span>
           </div>
           <?php if($r->status==='open'): ?>
-          <div class="kbf-btn-group" style="justify-content:flex-end;gap:8px;">
+          <div class="kbf-btn-group" style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;align-items:center;">
             <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($r->fund_id) : ''; ?>
-            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $r->fund_id, $fund_details_url)); ?>">
+            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;gap:6px;" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $r->fund_id, $fund_details_url)); ?>">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
               View Fund
             </a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfDismissReport(<?php echo $r->id; ?>)">Dismiss</button>
-            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfSuspend(<?php echo $r->fund_id; ?>)">Suspend Fund</button>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;" onclick="kbfDismissReport(<?php echo $r->id; ?>)">Dismiss</button>
+            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;" onclick="kbfSuspend(<?php echo $r->fund_id; ?>)">Suspend Fund</button>
           </div>
           <?php endif; ?>
         </div>

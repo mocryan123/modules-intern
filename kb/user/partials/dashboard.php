@@ -9,6 +9,10 @@ function bntm_shortcode_kbf_dashboard() {
     global $wpdb;
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
     $nav_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url,is_verified FROM {$pt} WHERE business_id=%d", $user->ID));
+    $payout_profile = $wpdb->get_row($wpdb->prepare("SELECT payout_type, payout_name, payout_number FROM {$pt} WHERE business_id=%d", $user->ID));
+    $payout_type = $payout_profile->payout_type ?? '';
+    $payout_name = $payout_profile->payout_name ?? '';
+    $payout_number = $payout_profile->payout_number ?? '';
     $business_id = $user->ID;
     $tab         = isset($_GET['kbf_tab']) ? sanitize_text_field($_GET['kbf_tab']) : 'find_funds';
     $nonce_create = wp_create_nonce('kbf_create_fund');
@@ -151,6 +155,12 @@ function bntm_shortcode_kbf_dashboard() {
         display:inline-flex;
         align-items:center;
         justify-content:center;
+    }
+    .kbf-btn-withdraw{
+        height:34px;
+        padding:0 12px;
+        gap:6px;
+        white-space:nowrap;
     }
     .kbf-card-more-wrap{position:relative;}
     .kbf-card-more-menu{
@@ -318,10 +328,41 @@ function bntm_shortcode_kbf_dashboard() {
         color:#4f5a6b;
         font-size:12.5px;
         font-weight:600;
+        background:none;
+        border:0;
+        cursor:pointer;
+        padding:0;
     }
     .kbf-dashboard-user .kbf-dashboard-avatar-wrap{order:1;}
     .kbf-dashboard-user .kbf-dashboard-name{order:0;}
     .kbf-dashboard-user:hover{ color:#1f2a44; }
+    .kbf-user-menu{position:relative;display:inline-flex;align-items:center;}
+    .kbf-user-dropdown{
+        position:absolute;
+        top:calc(100% + 8px);
+        right:0;
+        min-width:160px;
+        background:#fff;
+        border:1px solid var(--kbf-border);
+        border-radius:12px;
+        box-shadow:0 16px 36px rgba(15,40,80,0.18);
+        padding:6px;
+        display:none;
+        z-index:999;
+    }
+    .kbf-user-dropdown a{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        padding:9px 10px;
+        border-radius:10px;
+        font-size:12.5px;
+        color:#1f2a44;
+        text-decoration:none;
+        font-weight:600;
+    }
+    .kbf-user-dropdown a:hover{background:var(--kbf-slate-lt);}
+    .kbf-user-dropdown.kbf-open{display:block;}
     .kbf-hero-wrap{
         padding:0;
         margin-bottom:14px;
@@ -621,8 +662,8 @@ function bntm_shortcode_kbf_dashboard() {
             </div>
             <div class="kbf-form-group">
               <label>Fund Title *</label>
-              <input type="text" name="title" id="kbf-create-title" placeholder="Clear, compelling title" maxlength="50" required>
-              <small class="kbf-title-counter">0 / 40</small>
+              <input type="text" name="title" id="kbf-create-title" placeholder="Clear, compelling title" maxlength="150" required>
+              <small class="kbf-title-counter">0 / 150</small>
             </div>
             <div class="kbf-form-group">
               <label>Description *</label>
@@ -640,9 +681,9 @@ function bntm_shortcode_kbf_dashboard() {
                 </div>
               </div>
             <div class="kbf-form-group">
-              <label>Deadline</label>
-              <input type="date" name="deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>">
-              <small>Optional — set an end date (minimum 7 days from today).</small>
+              <label>Deadline *</label>
+              <input type="date" name="deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" required>
+              <small>Required — set an end date (minimum 7 days from today).</small>
             </div>
             </div>
             <div class="kbf-form-row">
@@ -719,8 +760,8 @@ function bntm_shortcode_kbf_dashboard() {
             <input type="hidden" name="fund_id" id="edit-fund-id">
             <div class="kbf-form-group">
               <label>Title</label>
-              <input type="text" name="title" id="edit-fund-title" maxlength="80" required>
-              <small class="kbf-title-counter">0 / 80</small>
+              <input type="text" name="title" id="edit-fund-title" maxlength="150" required>
+              <small class="kbf-title-counter">0 / 150</small>
               <div class="kbf-field-error"></div>
             </div>
             <div class="kbf-form-group">
@@ -799,22 +840,24 @@ function bntm_shortcode_kbf_dashboard() {
               <input type="number" name="amount" id="wd-amount" placeholder="0.00" min="1" step="0.01" required>
               <small style="color:var(--kbf-slate);font-size:11.5px;">Admin will review and process your request within 1-3 business days.</small>
             </div>
-            <div class="kbf-form-group">
-              <label>Withdrawal Method *</label>
-              <select name="method" required>
-                <option value="">Select Method</option>
-                <option value="online_payment">Online Payment (GCash / Maya / E-Wallet)</option>
-                <option value="bank_payment">Bank Payment (Bank Transfer / Over-the-Counter)</option>
-              </select>
-            </div>
-            <div class="kbf-form-row">
-              <div class="kbf-form-group">
-                <label>Account Name *</label>
-                <input type="text" name="account_name" placeholder="Full name on account" required>
-              </div>
+            <input type="hidden" name="method" value="online_payment">
+              <div class="kbf-form-row">
+                <div class="kbf-form-group">
+                  <label>Account Type *</label>
+                  <select name="account_type" required>
+                    <option value="" <?php echo $payout_type===''?'selected':''; ?>>Select type</option>
+                    <option value="maya_wallet" <?php echo $payout_type==='maya_wallet'?'selected':''; ?>>Maya Wallet</option>
+                    <option value="gcash" <?php echo $payout_type==='gcash'?'selected':''; ?>>GCash</option>
+                    <option value="card" <?php echo $payout_type==='card'?'selected':''; ?>>Credit/Debit Card</option>
+                  </select>
+                </div>
+                <div class="kbf-form-group">
+                  <label>Account Name *</label>
+                  <input type="text" name="account_name" value="<?php echo esc_attr($payout_name); ?>" placeholder="Full name on account" required>
+                </div>
               <div class="kbf-form-group">
                 <label>Account Number *</label>
-                <input type="text" name="account_number" placeholder="e.g. 09XX XXX XXXX" required>
+                <input type="text" name="account_number" value="<?php echo esc_attr($payout_number); ?>" placeholder="e.g. 09XX XXX XXXX" required>
               </div>
             </div>
             <div class="kbf-form-group">
@@ -900,15 +943,25 @@ function bntm_shortcode_kbf_dashboard() {
         <?php
           $avatar_url = ($nav_profile && $nav_profile->avatar_url) ? $nav_profile->avatar_url : get_avatar_url($user->ID, ['size'=>64]);
         ?>
-        <a href="?kbf_tab=profile" class="kbf-dashboard-user" title="Profile">
-          <span class="kbf-dashboard-avatar-wrap">
-            <img class="kbf-dashboard-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="User avatar" id="kbf-navbar-avatar">
-            <?php if($nav_profile && !empty($nav_profile->is_verified)): ?>
-              <span class="kbf-dashboard-verified" aria-hidden="true"></span>
-            <?php endif; ?>
-          </span>
-          <span class="kbf-dashboard-name"><?php echo esc_html($user->display_name); ?></span>
-        </a>
+        <?php
+          $landing_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : home_url('/');
+          $logout_url = wp_logout_url($landing_url);
+        ?>
+        <div class="kbf-user-menu" id="kbf-user-menu">
+          <button class="kbf-dashboard-user" type="button" id="kbf-user-menu-btn" aria-haspopup="true" aria-expanded="false">
+            <span class="kbf-dashboard-avatar-wrap">
+              <img class="kbf-dashboard-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="User avatar" id="kbf-navbar-avatar">
+              <?php if($nav_profile && !empty($nav_profile->is_verified)): ?>
+                <span class="kbf-dashboard-verified" aria-hidden="true"></span>
+              <?php endif; ?>
+            </span>
+            <span class="kbf-dashboard-name"><?php echo esc_html($user->display_name); ?></span>
+          </button>
+          <div class="kbf-user-dropdown" id="kbf-user-dropdown" role="menu" aria-label="User menu">
+            <a href="?kbf_tab=profile" role="menuitem">Profile</a>
+            <a href="<?php echo esc_url($logout_url); ?>" role="menuitem">Sign out</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -938,6 +991,24 @@ function bntm_shortcode_kbf_dashboard() {
         
         <!-- ================== JS ================== -->
     <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
+    <script>
+      (function(){
+        var btn = document.getElementById('kbf-user-menu-btn');
+        var dd = document.getElementById('kbf-user-dropdown');
+        if(!btn || !dd) return;
+        function closeMenu(){
+          dd.classList.remove('kbf-open');
+          btn.setAttribute('aria-expanded','false');
+        }
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          var isOpen = dd.classList.toggle('kbf-open');
+          btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+        document.addEventListener('click', function(){ closeMenu(); });
+        document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMenu(); });
+      })();
+    </script>
     <script>
       // preload removed
       (function(){
@@ -1209,6 +1280,7 @@ function bntm_shortcode_kbf_dashboard() {
             group.appendChild(err);
         }
         err.textContent = message;
+        field.classList.add('kbf-input-error');
     }
 
     function kbfClearFieldError(field) {
@@ -1216,6 +1288,7 @@ function bntm_shortcode_kbf_dashboard() {
         if (!group) return;
         var err = group.querySelector('.kbf-field-error');
         if (err) err.textContent = '';
+        field.classList.remove('kbf-input-error');
     }
 
     function kbfValidateEditFund(form) {
@@ -1283,17 +1356,17 @@ function bntm_shortcode_kbf_dashboard() {
         textarea.addEventListener('input', update);
         update();
     }
-    function kbfInitTitleCounter(input){
-        if (!input) return;
-        var counter = input.parentNode.querySelector('.kbf-title-counter');
-        function update(){
-            if (!counter) return;
-            var len = (input.value || '').length;
-            counter.textContent = len + ' / 80';
+        function kbfInitTitleCounter(input){
+            if (!input) return;
+            var counter = input.parentNode.querySelector('.kbf-title-counter');
+            function update(){
+                if (!counter) return;
+                var len = (input.value || '').length;
+                counter.textContent = len + ' / 150';
+            }
+            input.addEventListener('input', update);
+            update();
         }
-        input.addEventListener('input', update);
-        update();
-    }
     (function(){
         kbfInitDescCounter(document.querySelector('#kbf-create-fund-form textarea[name="description"]'));
         kbfInitDescCounter(document.getElementById('edit-fund-desc'));
@@ -1421,6 +1494,7 @@ function bntm_shortcode_kbf_dashboard() {
         fd.append('nonce', '<?php echo $nonce_wd; ?>');
         fetch(ajaxurl, {method:'POST', body:fd})
         .then(r=>r.json()).then(json=>{
+            console.log('kbfSubmitWd: response', json);
             const m = document.getElementById('kbf-wd-msg');
             m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
             if(json.success) {
@@ -1453,7 +1527,7 @@ function bntm_shortcode_kbf_dashboard() {
         var hiddenLoc = document.getElementById('edit-fund-location-hidden');
         if (hiddenLoc) hiddenLoc.value = loc || '';
         var titleCounter = document.getElementById('edit-fund-title').parentNode.querySelector('.kbf-title-counter');
-        if (titleCounter) titleCounter.textContent = (title || '').length + ' / 80';
+        if (titleCounter) titleCounter.textContent = (title || '').length + ' / 150';
         var deadlineEl = document.getElementById('edit-fund-deadline');
         if (deadlineEl) deadlineEl.value = deadline || '';
         var autoEl = document.getElementById('edit-fund-auto-return');

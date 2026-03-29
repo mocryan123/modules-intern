@@ -87,7 +87,10 @@ function bntm_ajax_kbf_create_checkout() {
     $is_anon      = intval($_POST['is_anonymous'] ?? 0);
     $method       = sanitize_text_field($_POST['payment_method'] ?? 'online_payment');
 
-    if ($amount < 1) wp_send_json_error(['message' => 'Minimum sponsorship is ₱1.']);
+    if ($amount < 50) wp_send_json_error(['message' => 'Minimum sponsorship is ₱50.']);
+    if (empty($email) || empty($phone)) {
+        wp_send_json_error(['message' => 'Email and phone are required to proceed.']);
+    }
     if ($method !== 'online_payment') {
         wp_send_json_error(['message' => 'Please select Online Payment to proceed to Maya Checkout.']);
     }
@@ -125,7 +128,7 @@ function bntm_ajax_kbf_create_checkout() {
         $wpdb->query($wpdb->prepare("UPDATE {$ft} SET raised_amount=raised_amount+%f WHERE id=%d", $amount, $fund_id));
         $updated = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount FROM {$ft} WHERE id=%d", $fund_id));
         if ($updated && $updated->goal_amount > 0 && $updated->raised_amount >= $updated->goal_amount) {
-            $wpdb->update($ft, ['status'=>'completed','escrow_status'=>'holding'], ['id'=>$fund_id], ['%s','%s'], ['%d']);
+            $wpdb->update($ft, ['status'=>'completed','escrow_status'=>'released'], ['id'=>$fund_id], ['%s','%s'], ['%d']);
         }
         $pt = $wpdb->prefix . 'kbf_organizer_profiles';
         $total = $wpdb->get_var($wpdb->prepare(
@@ -291,7 +294,7 @@ function kbf_maya_webhook_handler(WP_REST_Request $request) {
         // Auto-complete if goal reached
         $updated = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount FROM {$ft} WHERE id=%d", $fund->id));
         if ($updated && $updated->goal_amount > 0 && $updated->raised_amount >= $updated->goal_amount) {
-            $wpdb->update($ft, ['status' => 'completed', 'escrow_status' => 'holding'],
+            $wpdb->update($ft, ['status' => 'completed', 'escrow_status' => 'released'],
                 ['id' => $fund->id], ['%s','%s'], ['%d']);
             do_action('kbf_fund_goal_reached', $fund->id);
         }

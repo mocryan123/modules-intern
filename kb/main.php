@@ -26,6 +26,13 @@ require_once(BNTM_KBF_PATH . 'includes/ajax-hooks.php');
 require_once(BNTM_KBF_PATH . 'includes/cron.php');
 require_once(BNTM_KBF_PATH . 'includes/assets.php');
 
+// Mark new accounts to land on profile after first login.
+function kbf_mark_first_login($user_id) {
+    if (!$user_id) return;
+    update_user_meta($user_id, 'kbf_first_login', 1);
+}
+add_action('user_register', 'kbf_mark_first_login', 10, 1);
+
 
 // ============================================================
 // SHARE META TAGS (Open Graph / Twitter)
@@ -225,6 +232,8 @@ function kbf_get_page_url($page_key) {
     $shortcode_map = [
         'dashboard'         => 'kbf_dashboard',
         'admin'             => 'kbf_admin',
+        'signin'            => 'kbf_signin',
+        'signup'            => 'kbf_signup',
     ];
     $shortcode = $shortcode_map[$page_key] ?? $page_key;
     // Try bntm framework page setting first

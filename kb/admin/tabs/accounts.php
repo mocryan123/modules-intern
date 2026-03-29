@@ -75,7 +75,7 @@ function kbf_admin_organizers_tab() {
       </div>
       <div class="kbf-table-wrap">
         <table class="kbf-table kbf-table-accounts">
-          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Rating</th><th>ID Verification</th><th>Verify</th></tr></thead>
+          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Credibility Score</th><th>ID Verification</th><th>Verify</th></tr></thead>
           <tbody>
           <?php if(empty($rows)): ?>
             <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--kbf-slate);">No organizer profiles yet.</td></tr>

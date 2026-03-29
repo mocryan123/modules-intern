@@ -29,7 +29,10 @@ function bntm_shortcode_kbf_admin() {
         <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
         <span class="kbf-brand-text">ambag</span>
       </div>
-      <div class="kbf-dashboard-nav">
+      <button class="kbf-hamburger" type="button" onclick="kbfToggleMobileMenu()" aria-label="Toggle menu">
+        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="">
+      </button>
+      <div class="kbf-dashboard-nav" id="kbf-admin-nav">
         <?php foreach($tabs as $k=>$label): ?>
         <?php $raw_count = !empty($counts[$k]) ? (int)$counts[$k] : 0; ?>
         <?php $display_count = $raw_count >= 100 ? '99+' : (string)$raw_count; ?>
@@ -58,6 +61,28 @@ function bntm_shortcode_kbf_admin() {
         ?>
       </div>
       </div>
+    </div>
+    <div class="kbf-mobile-overlay" id="kbf-mobile-overlay"></div>
+    <div class="kbf-mobile-menu" id="kbf-mobile-menu">
+      <div class="kbf-mobile-menu-header">
+        <div class="kbf-dashboard-brand">
+          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
+          <span class="kbf-brand-text">ambag</span>
+        </div>
+        <button class="kbf-hamburger" type="button" onclick="kbfCloseMobileMenu()">
+          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="">
+        </button>
+      </div>
+      <?php foreach($tabs as $k=>$label): ?>
+        <?php $raw_count = !empty($counts[$k]) ? (int)$counts[$k] : 0; ?>
+        <?php $display_count = $raw_count >= 100 ? '99+' : (string)$raw_count; ?>
+        <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>" onclick="kbfCloseMobileMenu()">
+          <?php echo $label; ?>
+          <?php if($raw_count > 0): ?>
+            <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
+          <?php endif; ?>
+        </a>
+      <?php endforeach; ?>
     </div>
 
        <!-- ================== JS ================== -->
@@ -108,6 +133,30 @@ function bntm_shortcode_kbf_admin() {
         else{if(!confirm('Approve & release this withdrawal?'))return;kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'approve'});}
     };
     window.kbfConfirmPayment=function(id){if(!confirm('Mark this sponsorship as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
+    function kbfToggleMobileMenu(){
+        var menu = document.getElementById('kbf-mobile-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        if (!menu || !overlay) return;
+        menu.classList.toggle('kbf-menu-open');
+        overlay.classList.toggle('kbf-overlay-open');
+    }
+    function kbfCloseMobileMenu(){
+        var menu = document.getElementById('kbf-mobile-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        if (menu) menu.classList.remove('kbf-menu-open');
+        if (overlay) overlay.classList.remove('kbf-overlay-open');
+    }
+    window.kbfToggleMobileMenu = kbfToggleMobileMenu;
+    window.kbfCloseMobileMenu = kbfCloseMobileMenu;
+    window.addEventListener('resize', function(){
+        if (window.innerWidth > 900) kbfCloseMobileMenu();
+    });
+    document.addEventListener('click', function(e){
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        if (overlay && e.target === overlay) {
+            kbfCloseMobileMenu();
+        }
+    });
 window.kbfVerifyOrg=function(id,verified){
     var v = parseInt(verified,10) ? 1 : 0;
     var notes = '';

@@ -7,7 +7,8 @@ if (!defined('ABSPATH')) exit;
 
 function bntm_kbf_render_landing() {
     $cta_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('browse') : home_url('/');
-    $login_url = '#';
+    $login_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : '#';
+    $join_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $cta_url;
 
     $urgent_1 = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Elderly_woman_gazing_at_art_%28Unsplash%29.jpg/1200px-Elderly_woman_gazing_at_art_%28Unsplash%29.jpg';
     $urgent_2 = 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Womens_wheelchair_basketball_%28Unsplash%29.jpg';
@@ -832,8 +833,7 @@ function bntm_kbf_render_landing() {
             </nav>
           </div>
           <div class="kbf-actions">
-            <a class="kbf-btn kbf-btn-ghost" aria-disabled="true" href="<?php echo esc_url($login_url); ?>">Login (Soon)</a>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Find Funds</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
           </div>
           <button class="kbf-hamburger" id="kbf-hamburger-btn" aria-label="Open menu">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="Menu" id="kbf-hamburger-icon">
@@ -854,8 +854,7 @@ function bntm_kbf_render_landing() {
             <a href="#kbf-donation" onclick="kbfMobileNav('kbf-donation')">About</a>
             <a href="#kbf-faq" onclick="kbfMobileNav('kbf-faq')">FAQ</a>  
           <div class="kbf-mobile-menu-actions">
-            <a class="kbf-btn kbf-btn-ghost" aria-disabled="true" href="<?php echo esc_url($login_url); ?>">Login (Soon)</a>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Find Funds</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
           </div>
         </div>
 
@@ -882,7 +881,7 @@ function bntm_kbf_render_landing() {
 
 
               <a class="kbf-btn kbf-btn-primary kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
-                Start a Fundraiser
+                Start Supporting
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-up-right.svg" alt="">
 
               </a>
@@ -1033,7 +1032,7 @@ function bntm_kbf_render_landing() {
             <p>Designed for trust</p>
             <h3 style="font-weight: 300;">Safe & Trusted</h3>
             <p>Reviewed. Verified. Transparent.</p>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($cta_url); ?>">Join Ambag — it's free</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($join_url); ?>">Join Ambag — it's free</a>
           </div>
         </div>
 
