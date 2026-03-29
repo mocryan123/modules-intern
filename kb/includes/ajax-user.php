@@ -236,6 +236,14 @@ function bntm_ajax_kbf_save_organizer_profile() {
     wp_send_json_success(['message'=>'Profile saved successfully!']);
 }
 
+function bntm_ajax_kbf_dismiss_onboarding() {
+    check_ajax_referer('kbf_onboarding','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    $biz = get_current_user_id();
+    delete_user_meta($biz, 'kbf_show_onboarding');
+    wp_send_json_success(['message'=>'Onboarding dismissed.']);
+}
+
 
 function bntm_ajax_kbf_request_verification() {
     check_ajax_referer('kbf_verify_account','nonce');

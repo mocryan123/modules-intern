@@ -16,6 +16,48 @@ function kbf_admin_settings_tab() {
     <div class="kbf-section">
       <h3 class="kbf-section-title">Platform Settings</h3>
       <p style="color:var(--kbf-slate);font-size:13.5px;margin-bottom:24px;">Configure KonekBayan payments and live mode.</p>
+      <style>
+        .kbf-admin-preload{
+          position:fixed;
+          inset:0;
+          z-index:99999;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background:rgba(248,250,252,0.78);
+          backdrop-filter: blur(8px);
+          transition:opacity .35s ease, visibility .35s ease;
+        }
+        .kbf-admin-preload.kbf-preload-hide{
+          opacity:0;
+          visibility:hidden;
+          pointer-events:none;
+        }
+        html.kbf-preload-lock,
+        body.kbf-preload-lock{
+          overflow:hidden !important;
+          height:100%;
+        }
+        .kbf-admin-preload-mark{
+          width:54px;
+          height:54px;
+          border-radius:14px;
+          background:linear-gradient(135deg, #5ba8f5, #3d8ef0);
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          color:#ffffff;
+          font-weight:800;
+          letter-spacing:.6px;
+          box-shadow:0 8px 18px rgba(61,142,240,.2);
+          overflow:hidden;
+          animation:kbfpreloadjump 1.2s cubic-bezier(.34,1.2,.64,1) infinite;
+        }
+        .kbf-admin-preload-mark img{
+          width:26px;height:26px;object-fit:contain;display:block;
+          filter:brightness(0) invert(1);
+        }
+      </style>
 
       <!-- Demo / Live Mode Toggle -->
         <div class="kbf-card" style="margin-bottom:20px;">
@@ -123,15 +165,43 @@ function kbf_admin_settings_tab() {
         fd.append('_ajax_nonce', nonce);
         fd.append('setting_key', key);
         fd.append('setting_val', val);
+        if (reloadOnSuccess && window.kbfTriggerAdminPreload) window.kbfTriggerAdminPreload();
         if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
         fetch((window.ajaxurl||'<?php echo admin_url('admin-ajax.php'); ?>'),{method:'POST',body:fd})
         .then(r=>r.json()).then(j=>{
             alert(j.data&&j.data.message?j.data.message:(j.success?'Setting saved!':'Failed to save.'));
             if(j.success && reloadOnSuccess) location.reload();
             if(!reloadOnSuccess && window.kbfSetLoadingPage) window.kbfSetLoadingPage(false);
+            if(!reloadOnSuccess && window.kbfHideAdminPreload) window.kbfHideAdminPreload();
+            if(reloadOnSuccess && !j.success && window.kbfHideAdminPreload) window.kbfHideAdminPreload();
         }).catch(()=>{
             if(window.kbfSetLoadingPage) window.kbfSetLoadingPage(false);
+            if(window.kbfHideAdminPreload) window.kbfHideAdminPreload();
         });
+    };
+    window.kbfTriggerAdminPreload = function(){
+        if (document.getElementById('kbf-admin-preload')) return;
+        var root = document.documentElement;
+        if (root) root.classList.add('kbf-preload-lock');
+        if (document.body) document.body.classList.add('kbf-preload-lock');
+        var pre = document.createElement('div');
+        pre.id = 'kbf-admin-preload';
+        pre.className = 'kbf-admin-preload';
+        var logo = '<?php echo defined('BNTM_KBF_URL') ? esc_url(BNTM_KBF_URL . 'assets/branding/logo.png') : ''; ?>';
+        pre.innerHTML = '<div class="kbf-admin-preload-mark">' + (logo ? '<img src="'+logo+'" alt="">' : 'BS') + '</div>';
+        document.body.appendChild(pre);
+    };
+    window.kbfHideAdminPreload = function(){
+        var pre = document.getElementById('kbf-admin-preload');
+        var root = document.documentElement;
+        if (pre) {
+            pre.classList.add('kbf-preload-hide');
+            setTimeout(function(){
+                if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
+            }, 300);
+        }
+        if (root) root.classList.remove('kbf-preload-lock');
+        if (document.body) document.body.classList.remove('kbf-preload-lock');
     };
     window.kbfSaveMayaKeys = function(type) {
         const nonce = '<?php echo $nonce; ?>';

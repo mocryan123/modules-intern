@@ -167,6 +167,10 @@ window.kbfVerifyOrg=function(id,verified){
     }
     kbfAdmin('kbf_admin_verify_organizer',{business_id:id,verified:v,notes:notes});
 };
+window.kbfTriggerOnboarding=function(id){
+    if(!confirm('Restart onboarding for this account?')) return;
+    kbfAdmin('kbf_admin_trigger_onboarding',{business_id:id});
+};
     </script>
     <?php
     $c=ob_get_clean();

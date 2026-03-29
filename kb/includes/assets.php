@@ -75,6 +75,54 @@ function kbf_global_assets() {
         color:transparent;
         font-weight:800 !important;
     }
+    .kbf-empty{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+        padding:40px 24px;
+        border:1px solid var(--kbf-border);
+        border-radius:16px;
+        background:#fff;
+        color:var(--kbf-slate);
+        text-align:center;
+    }
+    .kbf-empty svg{
+        width:42px;
+        height:42px;
+        padding:10px;
+        border-radius:14px;
+        background:#f1f5f9;
+        color:#94a3b8;
+        stroke:none;
+        fill:currentColor;
+    }
+    .kbf-table-empty{
+        border:1px solid var(--kbf-border);
+        border-radius:16px;
+        background:#fff;
+        overflow:hidden;
+        box-shadow:var(--kbf-shadow);
+    }
+    .kbf-table-empty-head{
+        display:grid;
+        gap:8px;
+        padding:14px 18px;
+        border-bottom:1px solid var(--kbf-border);
+        background:#fbfdff;
+        text-transform:uppercase;
+        letter-spacing:.6px;
+        font-size:10.5px;
+        font-weight:600;
+        color:#94a3b8;
+    }
+    .kbf-table-empty-body{
+        padding:34px 18px;
+        text-align:center;
+        color:var(--kbf-slate);
+        font-size:13px;
+    }
     .kbf-admin-wrap{ padding:0; }
     .kbf-admin-shell{
         max-width:1120px;

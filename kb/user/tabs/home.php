@@ -3,12 +3,23 @@
  * KBF user dashboard tab: Overview.
  */
 
-function kbf_dashboard_overview_tab($business_id) {
-    global $wpdb;
-    $ft = $wpdb->prefix.'kbf_funds';
-    $st = $wpdb->prefix.'kbf_sponsorships';
-    $wt = $wpdb->prefix.'kbf_withdrawals';
-    $fund_details_url = kbf_get_page_url('fund_details');
+  function kbf_dashboard_overview_tab($business_id) {
+      global $wpdb;
+      $ft = $wpdb->prefix.'kbf_funds';
+      $st = $wpdb->prefix.'kbf_sponsorships';
+      $wt = $wpdb->prefix.'kbf_withdrawals';
+      $fund_details_url = kbf_get_page_url('fund_details');
+      $pt = $wpdb->prefix.'kbf_organizer_profiles';
+      $profile = $business_id ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,social_links,payout_type,payout_name,payout_number,is_verified FROM {$pt} WHERE business_id=%d", $business_id)) : null;
+      $show_onboarding = $business_id ? (bool) get_user_meta($business_id, 'kbf_show_onboarding', true) : false;
+      $address = $business_id ? get_user_meta($business_id, 'kbf_address', true) : '';
+      $socials = $profile && $profile->social_links ? json_decode($profile->social_links, true) : [];
+      $has_avatar = $profile && !empty($profile->avatar_url);
+      $has_bio = $profile && !empty(trim((string) $profile->bio));
+      $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
+      $has_address = !empty(trim((string) $address));
+      $has_social = !empty($socials['facebook']) || !empty($socials['instagram']) || !empty($socials['twitter']) || !empty($socials['website']);
+      $nonce_onboard = wp_create_nonce('kbf_onboarding');
 
     // Ensure completed funds have released escrow (auto-release on completion).
     if ($business_id) {
@@ -37,6 +48,251 @@ function kbf_dashboard_overview_tab($business_id) {
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
+      <style>
+        .kbf-onboard-open{
+          overflow:hidden;
+        }
+        .kbf-onboard-backdrop{
+          position:fixed;
+          inset:0;
+          background:rgba(15,23,42,.5);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          z-index:9999;
+          padding:22px;
+        }
+        .kbf-onboard{
+          background:#fff;
+          border:1px solid rgba(15,23,42,.08);
+          border-radius:18px;
+          padding:0;
+          width:100%;
+          max-width:820px;
+          display:grid;
+          box-shadow:0 28px 70px rgba(15,23,42,.22);
+          position:relative;
+          overflow:hidden;
+        }
+        .kbf-onboard h4{margin:0 0 6px;font-size:19px;font-weight:600;color:var(--kbf-navy);letter-spacing:-.3px;}
+        .kbf-onboard p{margin:0;font-size:13px;color:var(--kbf-slate);line-height:1.7;}
+        .kbf-onboard-shell{
+          display:grid;
+          grid-template-columns:260px 1fr;
+          min-height:260px;
+        }
+        .kbf-onboard-left{
+          padding:20px 18px;
+          background:linear-gradient(160deg,#eef4ff 0%, #f7fbff 55%, #ffffff 100%);
+          border-right:1px solid rgba(15,23,42,.08);
+          display:flex;
+          flex-direction:column;
+          gap:12px;
+        }
+        .kbf-onboard-avatar{
+          width:54px;
+          height:54px;
+          border-radius:16px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          overflow:hidden;
+          background:#eaf1ff;
+          border:1px solid rgba(37,99,235,.2);
+        }
+        .kbf-onboard-avatar.is-empty{
+          background:linear-gradient(135deg,#3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
+          border:none;
+          box-shadow:0 10px 18px rgba(37,99,235,.25);
+        }
+        .kbf-onboard-avatar img{
+          width:100%;
+          height:100%;
+          object-fit:cover;
+        }
+        .kbf-onboard-avatar svg{
+          width:26px;
+          height:26px;
+          fill:#fff;
+        }
+        .kbf-onboard-right{
+          padding:20px 22px 18px;
+          display:grid;
+          gap:14px;
+        }
+        .kbf-onboard-badge{
+          display:inline-flex;
+          align-items:center;
+          gap:6px;
+          padding:6px 10px;
+          border-radius:999px;
+          background:#eef4ff;
+          color:#1d4ed8;
+          font-size:10.5px;
+          font-weight:600;
+          text-transform:uppercase;
+        }
+        .kbf-onboard-progress{
+          display:flex;
+          align-items:flex-end;
+          gap:10px;
+        }
+        .kbf-onboard-progress .kbf-count{
+          font-size:28px;
+          font-weight:600;
+          color:var(--kbf-navy);
+          line-height:1;
+        }
+        .kbf-onboard-progress .kbf-count span{
+          font-size:12px;
+          font-weight:500;
+          color:var(--kbf-slate);
+          margin-left:2px;
+        }
+        .kbf-onboard-bar{
+          flex:1;
+          height:7px;
+          border-radius:999px;
+          background:#e7efff;
+          overflow:hidden;
+        }
+        .kbf-onboard-bar span{
+          display:block;
+          height:100%;
+          background:linear-gradient(90deg,#2563eb 0%, #60a5fa 100%);
+        }
+        .kbf-onboard-step-list{
+          margin:0;
+          padding:0;
+          list-style:none;
+          display:grid;
+          gap:10px;
+        }
+        .kbf-onboard-step{
+          list-style:none;
+          background:#ffffff;
+          border:1px solid rgba(15,23,42,.08);
+          border-radius:12px;
+          padding:12px 14px;
+          font-size:12px;
+          font-weight:600;
+          color:var(--kbf-navy);
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:10px;
+          box-shadow:0 8px 16px rgba(15,23,42,.05);
+        }
+        .kbf-onboard-step.is-done{
+          border-color:rgba(34,197,94,.25);
+          background:#f0fdf4;
+        }
+        .kbf-onboard-step .kbf-step-left{
+          display:flex;
+          align-items:center;
+          gap:10px;
+        }
+        .kbf-onboard-dot{
+          width:10px;
+          height:10px;
+          border-radius:50%;
+          background:#c7d2fe;
+        }
+        .kbf-onboard-step.is-done .kbf-onboard-dot{
+          background:#22c55e;
+          box-shadow:0 0 0 4px rgba(34,197,94,.16);
+        }
+        .kbf-onboard-meta{
+          font-size:10.5px;
+          font-weight:500;
+          color:var(--kbf-slate);
+          text-transform:uppercase;
+          letter-spacing:.3px;
+        }
+        .kbf-onboard-actions{
+          display:flex;
+          gap:10px;
+          align-items:center;
+          justify-content:flex-end;
+        }
+        @media (max-width: 820px){
+          .kbf-onboard-shell{grid-template-columns:1fr;}
+          .kbf-onboard-left{border-right:0;border-bottom:1px solid rgba(15,23,42,.08);}
+        }
+      </style>
+      <?php if ($show_onboarding): ?>
+        <div class="kbf-onboard-backdrop" id="kbf-onboard-backdrop">
+          <div class="kbf-onboard" id="kbf-onboard-card" role="dialog" aria-modal="true" aria-labelledby="kbf-onboard-title">
+            <div class="kbf-onboard-shell">
+              <div class="kbf-onboard-left">
+                <div class="kbf-onboard-avatar <?php echo $has_avatar ? '' : 'is-empty'; ?>">
+                  <?php if ($has_avatar): ?>
+                    <img src="<?php echo esc_url($profile->avatar_url); ?>" alt="Profile">
+                  <?php else: ?>
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                    </svg>
+                  <?php endif; ?>
+                </div>
+                <div class="kbf-onboard-badge">Onboarding</div>
+                <h4 id="kbf-onboard-title">Set up your organizer profile</h4>
+                <p>Complete a few essentials to unlock withdrawals and build supporter trust.</p>
+                <?php $done = 0; $done += $has_avatar ? 1 : 0; $done += $has_bio ? 1 : 0; $done += $has_payout ? 1 : 0; $done += $has_address ? 1 : 0; $done += $has_social ? 1 : 0; $pct_done = round(($done/5)*100); ?>
+                <div class="kbf-onboard-progress">
+                  <div class="kbf-count"><?php echo (int) $done; ?><span>/5</span></div>
+                  <div class="kbf-onboard-bar"><span style="width:<?php echo (int) $pct_done; ?>%;"></span></div>
+                </div>
+              </div>
+              <div class="kbf-onboard-right">
+                <ul class="kbf-onboard-step-list">
+                  <li class="kbf-onboard-step <?php echo $has_avatar ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Upload photo</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_avatar ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_bio ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>About/Bio</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_bio ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_payout ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Payout details</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_payout ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_address ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Address</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_address ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_social ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Social links</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_social ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                </ul>
+                <div class="kbf-onboard-actions">
+                  <a class="kbf-btn kbf-btn-primary" href="?kbf_tab=profile">Complete Profile</a>
+                  <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfDismissOnboarding()">Skip for now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <script>
+          document.documentElement.classList.add('kbf-onboard-open');
+          if (typeof ajaxurl === 'undefined') {
+            var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+          }
+          function kbfDismissOnboarding(){
+            document.documentElement.classList.remove('kbf-onboard-open');
+            const backdrop = document.getElementById('kbf-onboard-backdrop');
+            const card = document.getElementById('kbf-onboard-card');
+            const fd = new FormData();
+            fd.append('action', 'kbf_dismiss_onboarding');
+            fd.append('nonce', '<?php echo esc_attr($nonce_onboard); ?>');
+            fetch(ajaxurl, {method:'POST', body:fd})
+              .then(r => r.json())
+              .then(() => { if (backdrop) backdrop.remove(); if (card) card.remove(); })
+              .catch(() => { if (backdrop) backdrop.remove(); if (card) card.remove(); });
+          }
+        </script>
+      <?php endif; ?>
       <style>
         .kbf-card-list[data-kbf-card-pager="home"] + .kbf-table-pager{
           margin-bottom:0;

@@ -38,31 +38,43 @@ function bntm_shortcode_kbf_sponsor_history() {
       <?php if(!$email): ?>
         <div class="kbf-empty"><p>Enter an email to view your donations.</p></div>
       <?php else: ?>
-      <div class="kbf-table-wrap">
-        <table class="kbf-table">
-          <thead><tr><th>Fundraiser</th><th>Sponsor</th><th>Amount</th><th>Status</th><th>Method</th><th>Date</th></tr></thead>
-          <tbody>
-          <?php if(empty($rows)): ?>
-            <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--kbf-slate);">No donations found for this email.</td></tr>
-          <?php else: foreach($rows as $s): ?>
-            <tr>
-              <td>
-                <strong><?php echo esc_html($s->fund_title ?: 'Fundraiser'); ?></strong>
-                <?php if($s->fund_id): ?>
-                  <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($s->fund_id) : ''; ?>
-                  <div class="kbf-meta"><a href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $s->fund_id, $fund_details_url)); ?>" style="color:var(--kbf-blue);text-decoration:none;">View fundraiser</a></div>
-                <?php endif; ?>
-              </td>
-              <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name ?: 'Sponsor'); ?></td>
-              <td><strong style="color:var(--kbf-green);">PHP <?php echo number_format($s->amount,2); ?></strong></td>
-              <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
-              <td><?php echo esc_html($s->payment_method==='online_payment'?'Online Payment':($s->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',isset($s->payment_method) ? $s->payment_method : '')))); ?></td>
-              <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>
-            </tr>
-          <?php endforeach; endif; ?>
-          </tbody>
-        </table>
-      </div>
+      <?php if(empty($rows)): ?>
+        <div class="kbf-table-empty">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr 1fr .9fr .9fr 1fr .9fr;">
+            <span>Fundraiser</span>
+            <span>Sponsor</span>
+            <span>Amount</span>
+            <span>Status</span>
+            <span>Method</span>
+            <span>Date</span>
+          </div>
+          <div class="kbf-table-empty-body">No donations found for this email.</div>
+        </div>
+      <?php else: ?>
+        <div class="kbf-table-wrap">
+          <table class="kbf-table">
+            <thead><tr><th>Fundraiser</th><th>Sponsor</th><th>Amount</th><th>Status</th><th>Method</th><th>Date</th></tr></thead>
+            <tbody>
+            <?php foreach($rows as $s): ?>
+              <tr>
+                <td>
+                  <strong><?php echo esc_html($s->fund_title ?: 'Fundraiser'); ?></strong>
+                  <?php if($s->fund_id): ?>
+                    <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($s->fund_id) : ''; ?>
+                    <div class="kbf-meta"><a href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $s->fund_id, $fund_details_url)); ?>" style="color:var(--kbf-blue);text-decoration:none;">View fundraiser</a></div>
+                  <?php endif; ?>
+                </td>
+                <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name ?: 'Sponsor'); ?></td>
+                <td><strong style="color:var(--kbf-green);">PHP <?php echo number_format($s->amount,2); ?></strong></td>
+                <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
+                <td><?php echo esc_html($s->payment_method==='online_payment'?'Online Payment':($s->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',isset($s->payment_method) ? $s->payment_method : '')))); ?></td>
+                <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>
+              </tr>
+            <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      <?php endif; ?>
       <?php endif; ?>
     </div>
     <?php

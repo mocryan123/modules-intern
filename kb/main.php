@@ -30,6 +30,7 @@ require_once(BNTM_KBF_PATH . 'includes/assets.php');
 function kbf_mark_first_login($user_id) {
     if (!$user_id) return;
     update_user_meta($user_id, 'kbf_first_login', 1);
+    update_user_meta($user_id, 'kbf_show_onboarding', 1);
 }
 add_action('user_register', 'kbf_mark_first_login', 10, 1);
 

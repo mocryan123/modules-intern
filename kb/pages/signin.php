@@ -10,14 +10,7 @@ function bntm_kbf_render_signin() {
     $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : '#';
     if (is_user_logged_in()) {
         $dash = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
-        $user_id = get_current_user_id();
-        $first_login = $user_id ? get_user_meta($user_id, 'kbf_first_login', true) : '';
-        if ($first_login) {
-            delete_user_meta($user_id, 'kbf_first_login');
-            wp_safe_redirect(add_query_arg('kbf_tab', 'profile', $dash));
-        } else {
-            wp_safe_redirect(add_query_arg('kbf_tab', 'overview', $dash));
-        }
+        wp_safe_redirect(add_query_arg('kbf_tab', 'overview', $dash));
         exit;
     }
     $login_error = '';
@@ -47,14 +40,7 @@ function bntm_kbf_render_signin() {
                 }
             } else {
                 $dash = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
-                $user_id = isset($user->ID) ? (int) $user->ID : 0;
-                $first_login = $user_id ? get_user_meta($user_id, 'kbf_first_login', true) : '';
-                if ($first_login) {
-                    delete_user_meta($user_id, 'kbf_first_login');
-                    wp_safe_redirect(add_query_arg('kbf_tab', 'profile', $dash));
-                } else {
-                    wp_safe_redirect(add_query_arg('kbf_tab', 'overview', $dash));
-                }
+                wp_safe_redirect(add_query_arg('kbf_tab', 'overview', $dash));
                 exit;
             }
         }

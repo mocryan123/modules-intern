@@ -11,13 +11,27 @@ function kbf_admin_withdrawals_tab() {
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title">Withdrawal Requests</h3>
+      <?php if(empty($rows)): ?>
+        <div class="kbf-table-empty">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.3fr 1fr .8fr .9fr 1.2fr .8fr .8fr .8fr .8fr;">
+            <span>Fund</span>
+            <span>Funder</span>
+            <span>Amount</span>
+            <span>Account Type</span>
+            <span>Account</span>
+            <span>Status</span>
+            <span>Requested</span>
+            <span>Released</span>
+            <span>Actions</span>
+          </div>
+          <div class="kbf-table-empty-body">No withdrawal requests.</div>
+        </div>
+      <?php else: ?>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
           <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Account Type</th><th>Account</th><th>Status</th><th>Requested</th><th>Released</th><th>Actions</th></tr></thead>
           <tbody>
-          <?php if(empty($rows)): ?>
-            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--kbf-slate);">No withdrawal requests.</td></tr>
-          <?php else: foreach($rows as $w): ?>
+          <?php foreach($rows as $w): ?>
             <tr>
               <td>
                 <div class="kbf-cell-center">
@@ -51,10 +65,11 @@ function kbf_admin_withdrawals_tab() {
                 <?php endif; ?>
               </td>
             </tr>
-          <?php endforeach; endif; ?>
+          <?php endforeach; ?>
           </tbody>
         </table>
       </div>
+      <?php endif; ?>
       <script>
         if (window.kbfInitTablePager) {
           window.kbfInitTablePager();

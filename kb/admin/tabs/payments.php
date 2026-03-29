@@ -11,13 +11,23 @@ function kbf_admin_transactions_tab() {
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title">All Transactions</h3>
+      <?php if(empty($rows)): ?>
+        <div class="kbf-table-empty">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr 1.2fr .9fr .9fr .9fr;">
+            <span>Fundraiser</span>
+            <span>Supporter</span>
+            <span>Amount</span>
+            <span>Payment</span>
+            <span>Date</span>
+          </div>
+          <div class="kbf-table-empty-body">No transactions found.</div>
+        </div>
+      <?php else: ?>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
           <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>Date</th></tr></thead>
           <tbody>
-          <?php if(empty($rows)): ?>
-            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--kbf-slate);">No transactions found.</td></tr>
-          <?php else: foreach($rows as $s): ?>
+          <?php foreach($rows as $s): ?>
             <tr>
               <td><strong><?php echo esc_html(wp_trim_words($s->fund_title,5)); ?></strong></td>
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?></td>
@@ -25,10 +35,11 @@ function kbf_admin_transactions_tab() {
               <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
               <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>
             </tr>
-          <?php endforeach; endif; ?>
+          <?php endforeach; ?>
           </tbody>
         </table>
       </div>
+      <?php endif; ?>
     </div>
     <?php return ob_get_clean();
 }

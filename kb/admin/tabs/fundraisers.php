@@ -11,13 +11,26 @@ function kbf_admin_all_funds_tab() {
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title">All Funds</h3>
+      <?php if(empty($funds)): ?>
+        <div class="kbf-table-empty">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr 1fr .9fr .8fr .8fr .7fr .7fr 1fr;">
+            <span>Fundraiser</span>
+            <span>Organizer</span>
+            <span>Category</span>
+            <span>Goal</span>
+            <span>Raised</span>
+            <span>Status</span>
+            <span>Escrow</span>
+            <span>Actions</span>
+          </div>
+          <div class="kbf-table-empty-body">No funds found.</div>
+        </div>
+      <?php else: ?>
       <div class="kbf-table-wrap">
         <table class="kbf-table">
           <thead><tr><th>Fundraiser</th><th>Organizer</th><th>Category</th><th>Goal</th><th>Raised</th><th>Status</th><th>Escrow</th><th>Actions</th></tr></thead>
           <tbody>
-          <?php if(empty($funds)): ?>
-            <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--kbf-slate);">No funds found.</td></tr>
-          <?php else: foreach($funds as $f): ?>
+          <?php foreach($funds as $f): ?>
             <?php $pct = $f->goal_amount > 0 ? min(100, round(($f->raised_amount / $f->goal_amount) * 100)) : 0; ?>
             <tr>
               <td>
@@ -50,10 +63,11 @@ function kbf_admin_all_funds_tab() {
                 </div>
               </td>
             </tr>
-          <?php endforeach; endif; ?>
+          <?php endforeach; ?>
           </tbody>
         </table>
       </div>
+      <?php endif; ?>
     </div>
     <?php return ob_get_clean();
 }

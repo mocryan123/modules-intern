@@ -154,6 +154,15 @@ function bntm_ajax_kbf_admin_verify_organizer() {
     wp_send_json_success(['message'=>$v?'Organizer verified!':'Verification revoked.']);
 }
 
+function bntm_ajax_kbf_admin_trigger_onboarding() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    $biz = intval(isset($_POST['business_id']) ? $_POST['business_id'] : 0);
+    if(!$biz) { wp_send_json_error(['message'=>'Invalid account.']); }
+    update_user_meta($biz, 'kbf_show_onboarding', 1);
+    wp_send_json_success(['message'=>'Onboarding has been triggered for this account.']);
+}
+
 
 function bntm_ajax_kbf_save_setting() {
     check_ajax_referer('kbf_admin_action');

@@ -18,6 +18,13 @@ function kbf_admin_organizers_tab() {
     <div class="kbf-section">
       <h3 class="kbf-section-title">Organizer Management</h3>
       <style>
+        .kbf-table-wrap{
+          max-width:100%;
+          overflow-x:auto;
+        }
+        .kbf-table-accounts{
+          min-width:980px;
+        }
         .kbf-table-accounts .kbf-verify-cell{
           text-align:center;
         }
@@ -73,13 +80,27 @@ function kbf_admin_organizers_tab() {
           </div>
         </div>
       </div>
+      <?php if(empty($rows)): ?>
+        <div class="kbf-table-empty">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.2fr 1.4fr .7fr .7fr 1fr 1.1fr .9fr .7fr;">
+            <span>Account</span>
+            <span>Email</span>
+            <span>Raised</span>
+            <span>Supporters</span>
+            <span>Credibility</span>
+            <span>ID Verification</span>
+            <span>Verify</span>
+            <span>Onboarding</span>
+          </div>
+          <div class="kbf-table-empty-body">No organizer profiles yet.</div>
+        </div>
+      <?php else: ?>
       <div class="kbf-table-wrap">
         <table class="kbf-table kbf-table-accounts">
-          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Credibility Score</th><th>ID Verification</th><th>Verify</th></tr></thead>
+          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Credibility Score</th><th>ID Verification</th><th>Verify</th><th>Onboarding</th></tr></thead>
           <tbody>
-          <?php if(empty($rows)): ?>
-            <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--kbf-slate);">No organizer profiles yet.</td></tr>
-          <?php else: foreach($rows as $p): ?>
+          <?php foreach($rows as $p): ?>
+            <?php $onboarding_active = !empty(get_user_meta($p->business_id, 'kbf_show_onboarding', true)); ?>
             <tr>
               <td>
               <div class="kbf-cell-spacer"></div>
@@ -108,11 +129,18 @@ function kbf_admin_organizers_tab() {
                   <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfVerifyOrg(<?php echo $p->business_id; ?>,0)">Reject</button>
                 </div>
               </td>
+              <td class="kbf-verify-cell">
+                <div class="kbf-btn-group kbf-verify-stack">
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfTriggerOnboarding(<?php echo $p->business_id; ?>)">Send</button>
+                  <span class="kbf-verify-empty"><?php echo $onboarding_active ? 'Active' : 'Off'; ?></span>
+                </div>
+              </td>
             </tr>
-          <?php endforeach; endif; ?>
+          <?php endforeach; ?>
           </tbody>
         </table>
       </div>
+      <?php endif; ?>
     </div>
     <?php return ob_get_clean();
 }

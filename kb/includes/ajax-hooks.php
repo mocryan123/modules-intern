@@ -12,6 +12,7 @@ add_action('wp_ajax_kbf_request_withdrawal',         'bntm_ajax_kbf_request_with
 add_action('wp_ajax_kbf_extend_deadline',            'bntm_ajax_kbf_extend_deadline');
 add_action('wp_ajax_kbf_toggle_auto_return',         'bntm_ajax_kbf_toggle_auto_return');
 add_action('wp_ajax_kbf_save_organizer_profile',     'bntm_ajax_kbf_save_organizer_profile');
+add_action('wp_ajax_kbf_dismiss_onboarding',         'bntm_ajax_kbf_dismiss_onboarding');
 add_action('wp_ajax_kbf_request_verification',      'bntm_ajax_kbf_request_verification');
 add_action('wp_ajax_kbf_mark_fund_complete',         'bntm_ajax_kbf_mark_fund_complete');
 
@@ -39,6 +40,7 @@ add_action('wp_ajax_kbf_admin_dismiss_report',       'bntm_ajax_kbf_admin_dismis
 add_action('wp_ajax_kbf_admin_review_appeal',        'bntm_ajax_kbf_admin_review_appeal');
 add_action('wp_ajax_kbf_admin_confirm_payment',      'bntm_ajax_kbf_admin_confirm_payment');
 add_action('wp_ajax_kbf_admin_verify_organizer',     'bntm_ajax_kbf_admin_verify_organizer');
+add_action('wp_ajax_kbf_admin_trigger_onboarding',   'bntm_ajax_kbf_admin_trigger_onboarding');
 add_action('wp_ajax_kbf_save_setting',               'bntm_ajax_kbf_save_setting');
 add_action('wp_ajax_kbf_create_checkout',            'bntm_ajax_kbf_create_checkout');
 add_action('wp_ajax_nopriv_kbf_create_checkout',     'bntm_ajax_kbf_create_checkout');

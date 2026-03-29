@@ -16,6 +16,7 @@ function kbf_dashboard_profile_tab($business_id) {
     $address = get_user_meta($business_id, 'kbf_address', true);
     $nonce = wp_create_nonce('kbf_organizer_profile');
     $nonce_verify = wp_create_nonce('kbf_verify_account');
+    $is_verified = ($profile && !empty($profile->is_verified));
 
     ob_start();
     ?>
@@ -127,6 +128,46 @@ function kbf_dashboard_profile_tab($business_id) {
       .kbf-profile-divider { height: 1px; background: var(--kbf-border); margin: 10px 0; }
       .kbf-profile-actions { display: flex; gap: 10px; align-items: center; width: 100%; }
       .kbf-profile-actions .kbf-btn { width: 100%; justify-content: center; }
+      .kbf-inline-preload{
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(248,250,252,0.78);
+        backdrop-filter: blur(8px);
+        transition:opacity .35s ease, visibility .35s ease;
+      }
+      .kbf-inline-preload.kbf-preload-hide{
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+      }
+      html.kbf-preload-lock,
+      body.kbf-preload-lock{
+        overflow:hidden !important;
+        height:100%;
+      }
+      .kbf-inline-preload-mark{
+        width:54px;
+        height:54px;
+        border-radius:14px;
+        background:linear-gradient(135deg, #5ba8f5, #3d8ef0);
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        color:#ffffff;
+        font-weight:800;
+        letter-spacing:.6px;
+        box-shadow:0 8px 18px rgba(61,142,240,.2);
+        overflow:hidden;
+        animation:kbfpreloadjump 1.2s cubic-bezier(.34,1.2,.64,1) infinite;
+      }
+      .kbf-inline-preload-mark img{
+        width:26px;height:26px;object-fit:contain;display:block;
+        filter:brightness(0) invert(1);
+      }
       .kbf-input-error{
         border-color:#dc2626 !important;
         box-shadow:0 0 0 3px rgba(220,38,38,.12);
@@ -839,7 +880,7 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     };
 
-window.kbfSaveProfile = function(nonce) {
+      window.kbfSaveProfile = function(nonce) {
         const form = document.getElementById('kbf-profile-form');
         if (!window.kbfValidateSocialLinks()) {
             document.getElementById('kbf-profile-msg').innerHTML =
@@ -877,13 +918,15 @@ window.kbfSaveProfile = function(nonce) {
                     throw e;
                 }
             })
-            .then(function(j){
-                document.getElementById('kbf-profile-msg').innerHTML =
-                    '<div class="kbf-alert kbf-alert-' + (j.success ? 'success' : 'error') + '">' + j.data.message + '</div>';
-            if (j && j.success) {
-                // No full-page reload; keep the user on the form.
-            }
-            })
+              .then(function(j){
+                  document.getElementById('kbf-profile-msg').innerHTML =
+                      '<div class="kbf-alert kbf-alert-' + (j.success ? 'success' : 'error') + '">' + j.data.message + '</div>';
+              if (j && j.success) {
+                  if (window.kbfTriggerPreload) {
+                      window.kbfTriggerPreload();
+                  }
+              }
+              })
             .catch(function(err){
                 console.error('kbfSaveProfile: request failed', err);
                 document.getElementById('kbf-profile-msg').innerHTML =
@@ -893,7 +936,27 @@ window.kbfSaveProfile = function(nonce) {
                 btn.disabled = false;
                 btn.textContent = 'Save Changes';
             });
-    };
-    </script>
+      };
+      window.kbfTriggerPreload = function(){
+          if (document.getElementById('kbf-inline-preload')) return;
+          var root = document.documentElement;
+          if (root) root.classList.add('kbf-preload-lock');
+          if (document.body) document.body.classList.add('kbf-preload-lock');
+          var pre = document.createElement('div');
+          pre.id = 'kbf-inline-preload';
+          pre.className = 'kbf-inline-preload';
+          var logo = '<?php echo defined('BNTM_KBF_URL') ? esc_url(BNTM_KBF_URL . 'assets/branding/logo.png') : ''; ?>';
+          pre.innerHTML = '<div class="kbf-inline-preload-mark">' + (logo ? '<img src="'+logo+'" alt="">' : 'BS') + '</div>';
+          document.body.appendChild(pre);
+          setTimeout(function(){
+              pre.classList.add('kbf-preload-hide');
+              setTimeout(function(){
+                  if (root) root.classList.remove('kbf-preload-lock');
+                  if (document.body) document.body.classList.remove('kbf-preload-lock');
+                  if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
+              }, 400);
+          }, 1200);
+      };
+      </script>
     <?php return ob_get_clean();
 }
