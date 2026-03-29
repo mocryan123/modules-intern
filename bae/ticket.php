@@ -732,41 +732,859 @@ function bntm_bae_ticket_screen() {
     .baetk-new-btn svg { flex-shrink:0; }
     .baetk-spin { width:18px; height:18px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:baetk-sp .7s linear infinite; display:none; flex-shrink:0; }
     @keyframes baetk-sp { to { transform:rotate(360deg); } }
+
+    /* Landing overrides */
+    .baetk {
+        background:
+            radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 34%),
+            radial-gradient(circle at 12% 18%, rgba(236,72,153,.08), transparent 24%),
+            linear-gradient(180deg, #fcfcf9 0%, #f7f4ed 100%);
+        color:#1d1a16;
+        display:block;
+        padding:0;
+        min-height:100vh;
+    }
+    .baetk[data-theme="dark"] {
+        background:
+            radial-gradient(circle at top right, rgba(124,58,237,.16), transparent 32%),
+            radial-gradient(circle at 18% 20%, rgba(236,72,153,.08), transparent 24%),
+            linear-gradient(180deg, #0a0a0f 0%, #10101a 100%);
+        color:#f4f1ff;
+    }
+    .baetk-shell { width:min(1200px, calc(100% - 32px)); margin:0 auto; padding:14px 0 30px; position:relative; z-index:2; }
+    .baetk-nav { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:2px 0 12px; }
+    .baetk-brand { display:flex; align-items:center; gap:10px; min-width:0; }
+    .baetk-kicker { display:block; font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:#8c857a; margin-bottom:2px; }
+    .baetk[data-theme="dark"] .baetk-kicker { color:#8c88a8; }
+    .baetk-brandname { display:block; font-family:'Instrument Serif',serif; font-size:18px; line-height:1; color:inherit; }
+    .baetk-theme { display:inline-flex; gap:4px; padding:3px; border:1px solid rgba(28,20,12,.08); background:rgba(255,255,255,.74); border-radius:999px; box-shadow:0 14px 34px rgba(28,20,12,.08); backdrop-filter:blur(20px); transition:transform .25s ease, box-shadow .25s ease, filter .25s ease; }
+    .baetk[data-theme="dark"] .baetk-theme { border-color:rgba(255,255,255,.08); background:rgba(28,28,38,.86); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+    .baetk-theme button { appearance:none; border:none; background:transparent; color:#6d665c; font:600 10px/1 'Geist',sans-serif; padding:8px 11px; border-radius:999px; cursor:pointer; transition:all .2s ease; letter-spacing:.08em; text-transform:uppercase; }
+    .baetk[data-theme="dark"] .baetk-theme button { color:#a7a2bb; }
+    .baetk-theme button.is-active { color:#1d1a16; background:rgba(248,246,240,.9); box-shadow:inset 0 0 0 1px rgba(28,20,12,.08), 0 0 18px rgba(124,58,237,.08); }
+    .baetk[data-theme="dark"] .baetk-theme button.is-active { color:#f4f1ff; background:rgba(34,34,46,.92); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+    .baetk-theme button:hover { transform:translateY(-1px) scale(1.03); box-shadow:0 10px 22px rgba(124,58,237,.12); }
+    .baetk-logo { width:36px; height:36px; background:linear-gradient(135deg,#111827,#7c3aed); border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0; box-shadow:0 16px 32px rgba(124,58,237,.18); position:relative; z-index:2; transition:transform .28s ease, box-shadow .28s ease, filter .28s ease; }
+    .baetk-logo svg { width:18px; height:18px; }
+    .baetk-logo:hover { transform:scale(1.05) rotate(-2deg); box-shadow:0 20px 46px rgba(124,58,237,.26); }
+    .baetk-in { width:100%; max-width:none; text-align:left; position:relative; z-index:2; display:block; }
+    .baetk-err { color:#dc2626; background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.18); }
+    .baetk-hint { color:#8c857a; }
+    .baetk[data-theme="dark"] .baetk-hint { color:#8c88a8; }
+    .baetk-new-btn { color:#1d1a16; border-color:rgba(28,20,12,.08); background:rgba(255,255,255,.52); }
+    .baetk[data-theme="dark"] .baetk-new-btn { color:#f4f1ff; border-color:rgba(255,255,255,.08); background:rgba(28,28,38,.72); }
+    .baetk-new-btn:hover { background:rgba(124,58,237,.08); border-color:rgba(124,58,237,.3); color:inherit; transform:translateY(-1px) scale(1.01); box-shadow:0 16px 30px rgba(124,58,237,.12); }
+    .baetk-logo:hover { transform:scale(1.05) rotate(-2deg); box-shadow:0 20px 46px rgba(124,58,237,.26); }
+    .baetk-spin { border:2px solid rgba(124,58,237,.24); border-top-color:var(--accent); }
+    .baetk-inp::placeholder { color:#a49c92; }
+    .baetk[data-theme="dark"] .baetk-inp::placeholder { color:#6a667e; }
+    .baetk-hero { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr); gap:28px; align-items:start; min-height:calc(100vh - 118px); padding:8px 0 24px; }
+    .baetk-copy { position:relative; z-index:1; }
+    .baetk-eyebrow { display:inline-flex; align-items:center; gap:10px; padding:10px 14px; border-radius:999px; border:1px solid rgba(28,20,12,.08); background:rgba(255,255,255,.86); color:#6d665c; font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:24px; box-shadow:0 18px 50px rgba(28,20,12,.08); backdrop-filter:blur(20px); }
+    .baetk[data-theme="dark"] .baetk-eyebrow { border-color:rgba(255,255,255,.08); background:rgba(28,28,38,.86); color:#a7a2bb; }
+    .baetk-eyebrow i { width:8px; height:8px; border-radius:50%; background:linear-gradient(135deg,#ec4899,#8b5cf6); box-shadow:0 0 0 6px rgba(139,92,246,.12); display:inline-block; }
+    .baetk-title { font-family:'Instrument Serif',serif; font-size:clamp(42px, 5.1vw, 72px); line-height:.92; letter-spacing:-.03em; color:inherit; margin:0 0 16px; max-width:11ch; }
+    .baetk-sub { font-size:clamp(14px, 1.1vw, 18px); line-height:1.85; color:#6d665c; margin-bottom:22px; max-width:58ch; }
+    .baetk[data-theme="dark"] .baetk-sub { color:#a7a2bb; }
+    .baetk-chips { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px; }
+    .baetk-chip { padding:9px 12px; border-radius:999px; border:1px solid rgba(124,58,237,.16); background:rgba(124,58,237,.08); color:#5b21b6; font-size:11px; font-weight:600; letter-spacing:.03em; transition:transform .25s ease, box-shadow .25s ease, background .25s ease; }
+    .baetk[data-theme="dark"] .baetk-chip { background:rgba(167,139,250,.12); border-color:rgba(167,139,250,.2); color:#ddd6fe; }
+    .baetk-proof { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; max-width:640px; }
+    .baetk-stat { padding:18px 16px; border-radius:20px; background:rgba(255,255,255,.86); border:1px solid rgba(28,20,12,.08); box-shadow:0 18px 50px rgba(28,20,12,.08); backdrop-filter:blur(20px); transition:transform .25s ease, box-shadow .25s ease; }
+    .baetk[data-theme="dark"] .baetk-stat { background:rgba(28,28,38,.86); border-color:rgba(255,255,255,.08); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+    .baetk-stat strong { display:block; font-size:15px; color:inherit; margin-bottom:4px; }
+    .baetk-stat span { display:block; font-size:11px; line-height:1.55; color:#8c857a; }
+    .baetk[data-theme="dark"] .baetk-stat span { color:#6a667e; }
+    .baetk-card { border-radius:30px; border:1px solid rgba(28,20,12,.08); background:linear-gradient(180deg, rgba(255,255,255,.62), rgba(248,246,240,.78)); box-shadow:0 22px 60px rgba(28,20,12,.1); backdrop-filter:blur(26px); padding:28px; position:relative; overflow:hidden; margin-top:-28px; transition:transform .28s ease, box-shadow .28s ease; }
+    .baetk[data-theme="dark"] .baetk-card { border-color:rgba(255,255,255,.08); background:linear-gradient(180deg, rgba(28,28,38,.88), rgba(34,34,46,.92)); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+    .baetk-card::before { content:''; position:absolute; inset:auto -30px -30px auto; width:170px; height:170px; border-radius:50%; background:radial-gradient(circle, rgba(124,58,237,.14) 0%, transparent 70%); pointer-events:none; animation:baetk-drift 14s ease-in-out infinite; }
+    .baetk-card:hover { transform:translateY(-4px) scale(1.01); box-shadow:0 28px 72px rgba(28,20,12,.14); }
+    .baetk-card-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+    .baetk-card-top h2 { margin:0; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:#8c857a; }
+    .baetk[data-theme="dark"] .baetk-card-top h2 { color:#6a667e; }
+    .baetk-pill { padding:8px 12px; border-radius:999px; background:rgba(124,58,237,.08); color:#5b21b6; font-size:11px; font-weight:600; letter-spacing:.04em; }
+    .baetk[data-theme="dark"] .baetk-pill { background:rgba(167,139,250,.12); color:#ddd6fe; }
+    .baetk-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; padding:8px 0 20px; }
+    .baetk-feature { padding:20px 18px; border-radius:24px; background:rgba(255,255,255,.86); border:1px solid rgba(28,20,12,.08); box-shadow:0 18px 50px rgba(28,20,12,.08); backdrop-filter:blur(16px); transition:transform .25s ease, box-shadow .25s ease; }
+    .baetk[data-theme="dark"] .baetk-feature { background:rgba(28,28,38,.86); border-color:rgba(255,255,255,.08); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+    .baetk-feature h3 { margin:0 0 10px; font-size:14px; color:inherit; }
+    .baetk-feature p { margin:0; font-size:13px; line-height:1.75; color:#6d665c; }
+    .baetk[data-theme="dark"] .baetk-feature p { color:#a7a2bb; }
+    .baetk-feature:hover { transform:translateY(-3px); box-shadow:0 24px 60px rgba(28,20,12,.12); }
+    .baetk-surface,
+    .baetk-storycard,
+    .baetk-railcard,
+    .baetk-metric,
+    .baetk-slide {
+        transition:transform .28s ease, box-shadow .28s ease, filter .28s ease;
+    }
+    .baetk-surface:hover,
+    .baetk-storycard:hover,
+    .baetk-railcard:hover,
+    .baetk-metric:hover,
+    .baetk-slide:hover {
+        transform:translateY(-4px) scale(1.01);
+        box-shadow:0 28px 78px rgba(28,20,12,.16);
+        filter:saturate(1.04);
+    }
+    .baetk-story {
+        display:grid;
+        grid-template-columns:1.05fr .95fr;
+        gap:18px;
+        align-items:stretch;
+        padding:18px 0 36px;
+    }
+    .baetk-quote {
+        padding:28px;
+        border-radius:28px;
+        background:rgba(255,255,255,.86);
+        border:1px solid rgba(28,20,12,.08);
+        box-shadow:0 18px 50px rgba(28,20,12,.08);
+        backdrop-filter:blur(20px);
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        min-height:360px;
+    }
+    .baetk[data-theme="dark"] .baetk-quote { background:rgba(28,28,38,.86); border-color:rgba(255,255,255,.08); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+    .baetk-quote h2 { margin:0 0 16px; font-family:'Instrument Serif',serif; font-size:clamp(28px, 3.4vw, 44px); line-height:.95; }
+    .baetk-quote p { margin:0; color:#6d665c; line-height:1.85; font-size:14px; max-width:55ch; }
+    .baetk[data-theme="dark"] .baetk-quote p { color:#a7a2bb; }
+    .baetk-quote-foot { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:26px; flex-wrap:wrap; }
+    .baetk-mini {
+        display:flex;
+        gap:12px;
+        align-items:center;
+        padding:14px;
+        border-radius:20px;
+        background:rgba(124,58,237,.08);
+        border:1px solid rgba(124,58,237,.16);
+        color:#5b21b6;
+    }
+    .baetk[data-theme="dark"] .baetk-mini { background:rgba(167,139,250,.12); border-color:rgba(167,139,250,.2); color:#ddd6fe; }
+    .baetk-mini strong { display:block; font-size:13px; color:inherit; margin-bottom:2px; }
+    .baetk-mini span { display:block; font-size:11px; color:inherit; opacity:.8; }
+    .baetk-gallery {
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:14px;
+    }
+    .baetk-shot {
+        position:relative;
+        overflow:hidden;
+        border-radius:24px;
+        min-height:172px;
+        border:1px solid rgba(28,20,12,.08);
+        box-shadow:0 18px 50px rgba(28,20,12,.08);
+        background:#f3f0ea;
+    }
+    .baetk[data-theme="dark"] .baetk-shot { border-color:rgba(255,255,255,.08); box-shadow:0 20px 50px rgba(0,0,0,.35); background:#111118; }
+    .baetk-shot img { width:100%; height:100%; object-fit:cover; display:block; filter:saturate(.92) contrast(1.02); transform:scale(1.02); }
+    .baetk-shot .cap {
+        position:absolute;
+        left:14px;
+        bottom:14px;
+        padding:8px 10px;
+        border-radius:999px;
+        background:rgba(255,255,255,.72);
+        color:#1d1a16;
+        font-size:11px;
+        font-weight:700;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+        backdrop-filter:blur(10px);
+    }
+    .baetk[data-theme="dark"] .baetk-shot .cap { background:rgba(17,24,39,.68); color:#f4f1ff; }
+    .baetk-section {
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        padding:76px 0;
+        position:relative;
+        overflow:hidden;
+        border-top:1px solid rgba(28,20,12,.08);
+    }
+    .baetk[data-theme="dark"] .baetk-section { border-top-color:rgba(255,255,255,.08); }
+    .baetk-section::before {
+        content:'';
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        opacity:.9;
+        background:radial-gradient(circle at 80% 20%, rgba(124,58,237,.08), transparent 26%);
+    }
+    .baetk-section .baetk-section-inner {
+        width:min(1200px, calc(100% - 40px));
+        margin:0 auto;
+        position:relative;
+        z-index:2;
+    }
+    .baetk-split {
+        display:grid;
+        grid-template-columns:1.05fr .95fr;
+        gap:28px;
+        align-items:center;
+    }
+    .baetk-copy-xl {
+        font-family:'Instrument Serif',serif;
+        font-size:clamp(40px, 5vw, 78px);
+        line-height:.94;
+        letter-spacing:-.03em;
+        margin:0 0 18px;
+        max-width:12ch;
+    }
+    .baetk-copy-sm {
+        font-size:14px;
+        line-height:1.9;
+        color:#6d665c;
+        max-width:56ch;
+        margin:0;
+    }
+    .baetk[data-theme="dark"] .baetk-copy-sm { color:#a7a2bb; }
+    .baetk-section-head {
+        display:flex;
+        align-items:flex-end;
+        justify-content:space-between;
+        gap:18px;
+        margin-bottom:18px;
+        flex-wrap:wrap;
+    }
+    .baetk-section-head h3 {
+        margin:0;
+        font-size:10px;
+        letter-spacing:.28em;
+        text-transform:uppercase;
+        color:#8c857a;
+    }
+    .baetk-section-head p {
+        margin:0;
+        color:#8c857a;
+        font-size:12px;
+        line-height:1.7;
+        max-width:48ch;
+    }
+    .baetk[data-theme="dark"] .baetk-section-head h3,
+    .baetk[data-theme="dark"] .baetk-section-head p { color:#6a667e; }
+    .baetk-surface {
+        border-radius:32px;
+        overflow:hidden;
+        min-height:520px;
+        border:1px solid rgba(28,20,12,.08);
+        box-shadow:0 24px 70px rgba(28,20,12,.12);
+        background:#f3f0ea;
+        position:relative;
+        isolation:isolate;
+    }
+    .baetk[data-theme="dark"] .baetk-surface { border-color:rgba(255,255,255,.08); box-shadow:0 24px 70px rgba(0,0,0,.38); background:#111118; }
+    .baetk-surface img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.001); transition:transform .45s ease, filter .45s ease, opacity .45s ease; }
+    .baetk-surface:hover img { transform:scale(1.04); filter:saturate(1.05) contrast(1.02); }
+    .baetk-surface::after {
+        content:'';
+        position:absolute;
+        inset:0;
+        background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.08));
+        pointer-events:none;
+        z-index:1;
+    }
+    .baetk-surface:hover { transform:translateY(-3px) scale(1.005); box-shadow:0 30px 80px rgba(28,20,12,.16); }
+    .baetk-caption {
+        position:absolute;
+        left:18px;
+        bottom:18px;
+        padding:8px 10px;
+        border-radius:999px;
+        background:rgba(255,255,255,.7);
+        color:#1d1a16;
+        font-size:11px;
+        font-weight:700;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+        backdrop-filter:blur(10px);
+        z-index:2;
+    }
+    .baetk[data-theme="dark"] .baetk-caption { background:rgba(17,24,39,.68); color:#f4f1ff; }
+    .baetk-lines { display:grid; gap:14px; margin-top:24px; }
+    .baetk-line {
+        padding:14px 0;
+        border-top:1px solid rgba(28,20,12,.1);
+        display:flex;
+        align-items:flex-start;
+        gap:18px;
+    }
+    .baetk[data-theme="dark"] .baetk-line { border-top-color:rgba(255,255,255,.08); }
+    .baetk-line .num {
+        font-size:11px;
+        letter-spacing:.24em;
+        text-transform:uppercase;
+        color:#8c857a;
+        min-width:84px;
+        padding-top:3px;
+    }
+    .baetk[data-theme="dark"] .baetk-line .num { color:#6a667e; }
+    .baetk-line h4 { margin:0 0 4px; font-size:14px; }
+    .baetk-line p { margin:0; font-size:13px; line-height:1.75; color:#6d665c; }
+    .baetk[data-theme="dark"] .baetk-line p { color:#a7a2bb; }
+    .baetk-deepglow {
+        position:relative;
+        overflow:hidden;
+    }
+    .baetk-deepglow::before,
+    .baetk-deepglow::after {
+        content:'';
+        position:absolute;
+        inset:auto;
+        width:460px;
+        height:460px;
+        border-radius:50%;
+        pointer-events:none;
+        filter:blur(10px);
+        opacity:.95;
+    }
+    .baetk-deepglow::before {
+        right:-120px;
+        top:-110px;
+        background:radial-gradient(circle, rgba(124,58,237,.38) 0%, rgba(124,58,237,.12) 34%, transparent 68%);
+        animation:baetk-orbit 18s linear infinite;
+    }
+    .baetk-deepglow::after {
+        left:-140px;
+        bottom:-130px;
+        background:radial-gradient(circle, rgba(236,72,153,.26) 0%, rgba(236,72,153,.10) 34%, transparent 68%);
+        animation:baetk-orbit 24s linear infinite reverse;
+    }
+    .baetk-deepglow .shadow-orb {
+        position:absolute;
+        width:220px;
+        height:220px;
+        border-radius:50%;
+        pointer-events:none;
+        background:radial-gradient(circle, rgba(17,24,39,.18) 0%, rgba(17,24,39,.08) 34%, transparent 70%);
+        filter:blur(22px);
+        animation:baetk-drift 16s ease-in-out infinite;
+    }
+    .baetk-deepglow .shadow-orb.one { right:12%; top:10%; }
+    .baetk-deepglow .shadow-orb.two { left:10%; bottom:6%; animation-duration:19s; }
+    .baetk-deepglow .deep-core {
+        position:relative;
+        z-index:2;
+        border-radius:34px;
+        border:1px solid rgba(255,255,255,.12);
+        background:rgba(255,255,255,.64);
+        box-shadow:0 30px 80px rgba(17,24,39,.16), inset 0 0 0 1px rgba(255,255,255,.24);
+        backdrop-filter:blur(20px);
+    }
+    .baetk[data-theme="dark"] .baetk-deepglow .deep-core {
+        background:rgba(17,24,39,.64);
+        box-shadow:0 30px 80px rgba(0,0,0,.34), inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+    .baetk-deepglow .orbit-ring {
+        position:absolute;
+        border-radius:50%;
+        border:1px solid rgba(124,58,237,.28);
+        box-shadow:0 0 40px rgba(124,58,237,.22), inset 0 0 24px rgba(124,58,237,.12);
+        animation:baetk-spin-slow 28s linear infinite;
+    }
+    .baetk-deepglow .orbit-ring.a { width:68%; height:68%; left:16%; top:16%; }
+    .baetk-deepglow .orbit-ring.b { width:42%; height:42%; left:29%; top:29%; animation-duration:18s; animation-direction:reverse; }
+    .baetk-deepglow .orbit-pill {
+        position:absolute;
+        padding:10px 14px;
+        border-radius:999px;
+        border:1px solid rgba(124,58,237,.18);
+        background:rgba(255,255,255,.58);
+        backdrop-filter:blur(12px);
+        font-size:11px;
+        font-weight:700;
+        letter-spacing:.18em;
+        text-transform:uppercase;
+        color:#5b21b6;
+        box-shadow:0 12px 36px rgba(124,58,237,.16);
+        animation:baetk-drift 10s ease-in-out infinite;
+    }
+    .baetk[data-theme="dark"] .baetk-deepglow .orbit-pill {
+        background:rgba(17,24,39,.62);
+        color:#ddd6fe;
+        border-color:rgba(167,139,250,.18);
+    }
+    .baetk-deepglow .orbit-pill.one { top:20%; left:6%; }
+    .baetk-deepglow .orbit-pill.two { bottom:18%; right:8%; animation-duration:12s; }
+    .baetk-deepglow .orbit-pill.three { top:12%; right:22%; animation-duration:14s; }
+    .baetk-deepglow .glow-panel {
+        position:relative;
+        min-height:520px;
+        overflow:hidden;
+    }
+    .baetk-deepglow .glow-panel::before,
+    .baetk-deepglow .glow-panel::after {
+        content:'';
+        position:absolute;
+        inset:auto;
+        width:180px;
+        height:180px;
+        border-radius:50%;
+        pointer-events:none;
+        filter:blur(18px);
+        opacity:.9;
+        border:1px solid rgba(255,255,255,.06);
+    }
+    .baetk-deepglow .glow-panel::before { right:12px; top:12px; background:radial-gradient(circle, rgba(124,58,237,.28) 0%, transparent 68%); animation:baetk-spin-slow 16s linear infinite; }
+    .baetk-deepglow .glow-panel::after { left:10px; bottom:8px; background:radial-gradient(circle, rgba(236,72,153,.18) 0%, transparent 68%); animation:baetk-spin-slow 22s linear infinite reverse; }
+    @keyframes baetk-spin-slow { to { transform:rotate(360deg); } }
+    @keyframes baetk-orbit {
+        0% { transform:translate3d(0,0,0) scale(1) rotate(0deg); }
+        50% { transform:translate3d(12px,-10px,0) scale(1.05) rotate(180deg); }
+        100% { transform:translate3d(0,0,0) scale(1) rotate(360deg); }
+    }
+    @keyframes baetk-drift {
+        0%,100% { transform:translate3d(0,0,0) scale(1); }
+        50% { transform:translate3d(16px,-10px,0) scale(1.08); }
+    }
+    .baetk-carousel { display:grid; gap:18px; }
+    .baetk-carousel-track {
+        display:grid;
+        grid-auto-flow:column;
+        grid-auto-columns:minmax(72%, 1fr);
+        gap:18px;
+        overflow-x:auto;
+        scroll-snap-type:x mandatory;
+        padding-bottom:10px;
+        scrollbar-width:none;
+    }
+    .baetk-carousel-track::-webkit-scrollbar { display:none; }
+    .baetk-slide {
+        scroll-snap-align:start;
+        min-height:620px;
+        border-radius:34px;
+        overflow:hidden;
+        position:relative;
+        border:1px solid rgba(28,20,12,.08);
+        box-shadow:0 24px 70px rgba(28,20,12,.12);
+        background:#f3f0ea;
+    }
+    .baetk[data-theme="dark"] .baetk-slide { border-color:rgba(255,255,255,.08); box-shadow:0 24px 70px rgba(0,0,0,.38); background:#111118; }
+    .baetk-slide img { width:100%; height:100%; object-fit:cover; display:block; }
+    .baetk-slide .overlay {
+        position:absolute;
+        inset:auto 24px 24px 24px;
+        padding:18px 18px 16px;
+        border-radius:22px;
+        background:rgba(255,255,255,.72);
+        backdrop-filter:blur(16px);
+        border:1px solid rgba(28,20,12,.08);
+    }
+    .baetk[data-theme="dark"] .baetk-slide .overlay { background:rgba(17,24,39,.7); border-color:rgba(255,255,255,.08); }
+    .baetk-slide .overlay h4 { margin:0 0 6px; font-size:15px; }
+    .baetk-slide .overlay p { margin:0; font-size:13px; line-height:1.75; color:#6d665c; }
+    .baetk[data-theme="dark"] .baetk-slide .overlay p { color:#a7a2bb; }
+    .baetk-scrollhint {
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        align-items:center;
+        color:#8c857a;
+        font-size:12px;
+    }
+    .baetk[data-theme="dark"] .baetk-scrollhint { color:#6a667e; }
+    .baetk-storyband {
+        min-height:100vh;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        gap:28px;
+    }
+    .baetk-marquee {
+        white-space:nowrap;
+        overflow:hidden;
+        border-top:1px solid rgba(28,20,12,.08);
+        border-bottom:1px solid rgba(28,20,12,.08);
+        padding:18px 0;
+        font-family:'Instrument Serif',serif;
+        font-size:clamp(34px, 7vw, 88px);
+        line-height:1;
+        letter-spacing:-.03em;
+        color:inherit;
+    }
+    .baetk[data-theme="dark"] .baetk-marquee { border-top-color:rgba(255,255,255,.08); border-bottom-color:rgba(255,255,255,.08); }
+    .baetk-marquee span { display:inline-block; padding-right:42px; animation:baetk-marq 26s linear infinite; }
+    .baetk-marquee.alt span { animation-duration:34s; animation-direction:reverse; }
+    @keyframes baetk-marq { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+    .baetk-storygrid {
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:24px;
+        align-items:center;
+    }
+    .baetk-storycard {
+        min-height:360px;
+        border-radius:32px;
+        padding:28px;
+        border:1px solid rgba(28,20,12,.08);
+        background:rgba(255,255,255,.82);
+        box-shadow:0 24px 70px rgba(28,20,12,.1);
+        backdrop-filter:blur(20px);
+    }
+    .baetk[data-theme="dark"] .baetk-storycard { background:rgba(28,28,38,.86); border-color:rgba(255,255,255,.08); box-shadow:0 24px 70px rgba(0,0,0,.35); }
+    .baetk-storycard p { margin:0; font-size:14px; line-height:1.9; color:#6d665c; }
+    .baetk[data-theme="dark"] .baetk-storycard p { color:#a7a2bb; }
+    .baetk-storycard:hover { transform:translateY(-3px); box-shadow:0 28px 78px rgba(28,20,12,.14); }
+    .baetk-timeline {
+        display:grid;
+        gap:12px;
+    }
+    .baetk-tline {
+        display:flex;
+        gap:14px;
+        align-items:flex-start;
+        padding:14px 0;
+        border-top:1px solid rgba(28,20,12,.08);
+    }
+    .baetk[data-theme="dark"] .baetk-tline { border-top-color:rgba(255,255,255,.08); }
+    .baetk-tline b { min-width:72px; font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:#8c857a; padding-top:3px; }
+    .baetk[data-theme="dark"] .baetk-tline b { color:#6a667e; }
+    .baetk-tline div { font-size:13px; line-height:1.75; color:#6d665c; }
+    .baetk[data-theme="dark"] .baetk-tline div { color:#a7a2bb; }
+    .baetk-horizontal {
+        min-height:100vh;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        gap:20px;
+    }
+    .baetk-rail {
+        display:grid;
+        grid-auto-flow:column;
+        grid-auto-columns:minmax(260px, 26vw);
+        gap:14px;
+        overflow-x:auto;
+        padding-bottom:10px;
+        scrollbar-width:none;
+    }
+    .baetk-rail::-webkit-scrollbar { display:none; }
+    .baetk-railcard {
+        min-height:360px;
+        border-radius:28px;
+        overflow:hidden;
+        position:relative;
+        border:1px solid rgba(28,20,12,.08);
+        box-shadow:0 20px 60px rgba(28,20,12,.12);
+        background:#f3f0ea;
+    }
+    .baetk[data-theme="dark"] .baetk-railcard { border-color:rgba(255,255,255,.08); box-shadow:0 20px 60px rgba(0,0,0,.38); background:#111118; }
+    .baetk-railcard img { width:100%; height:100%; object-fit:cover; display:block; }
+    .baetk-railcard .meta {
+        position:absolute;
+        inset:auto 16px 16px 16px;
+        background:rgba(255,255,255,.72);
+        border-radius:18px;
+        padding:14px;
+        backdrop-filter:blur(14px);
+    }
+    .baetk[data-theme="dark"] .baetk-railcard .meta { background:rgba(17,24,39,.7); }
+    .baetk-railcard .meta .n { display:block; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:#8c857a; margin-bottom:6px; }
+    .baetk[data-theme="dark"] .baetk-railcard .meta .n { color:#6a667e; }
+    .baetk-railcard .meta h4 { margin:0 0 4px; font-size:14px; }
+    .baetk-railcard .meta p { margin:0; font-size:12px; line-height:1.7; color:#6d665c; }
+    .baetk[data-theme="dark"] .baetk-railcard .meta p { color:#a7a2bb; }
+    .baetk-railcard:hover { transform:translateY(-4px) scale(1.01); box-shadow:0 26px 70px rgba(28,20,12,.16); }
+    .baetk-typing {
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+    }
+    .baetk-metrics {
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:14px;
+        margin-top:20px;
+    }
+    .baetk-metric {
+        padding:24px;
+        border-radius:26px;
+        background:rgba(255,255,255,.82);
+        border:1px solid rgba(28,20,12,.08);
+        box-shadow:0 18px 50px rgba(28,20,12,.08);
+        backdrop-filter:blur(20px);
+    }
+    .baetk[data-theme="dark"] .baetk-metric { background:rgba(28,28,38,.86); border-color:rgba(255,255,255,.08); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+    .baetk-metric strong { display:block; font-size:34px; font-family:'Instrument Serif',serif; line-height:1; margin-bottom:8px; }
+    .baetk-metric span { display:block; font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#8c857a; }
+    .baetk[data-theme="dark"] .baetk-metric span { color:#6a667e; }
+    .baetk-metric:hover { transform:translateY(-3px) scale(1.01); box-shadow:0 24px 60px rgba(28,20,12,.12); }
+    .baetk-mosaic { display:grid; grid-template-columns:1.2fr .8fr; gap:14px; }
+    .baetk-stack { display:grid; gap:14px; }
+    .baetk-stack .baetk-surface { min-height:calc(50vh - 36px); }
+    .baetk-quote-full {
+        display:grid;
+        grid-template-columns:1fr auto;
+        gap:18px;
+        align-items:end;
+        min-height:calc(100vh - 160px);
+    }
+    .baetk-quote-full h2 { margin:0; font-family:'Instrument Serif',serif; font-size:clamp(36px, 5vw, 74px); line-height:.95; max-width:11ch; }
+    .baetk-quote-full p { margin:0; font-size:15px; line-height:1.9; color:#6d665c; max-width:48ch; }
+    .baetk[data-theme="dark"] .baetk-quote-full p { color:#a7a2bb; }
+    .baetk-river { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:28px; }
+    .baetk-river div { padding:14px; border-top:1px solid rgba(28,20,12,.1); font-size:13px; color:#6d665c; }
+    .baetk[data-theme="dark"] .baetk-river div { border-top-color:rgba(255,255,255,.08); color:#a7a2bb; }
+    .baetk-cta {
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:80px 0;
+        background:linear-gradient(135deg, rgba(17,24,39,.95), rgba(124,58,237,.88));
+        color:#fff;
+    }
+    .baetk-cta-inner {
+        width:min(1200px, calc(100% - 40px));
+        margin:0 auto;
+        display:grid;
+        grid-template-columns:1.05fr .95fr;
+        gap:24px;
+        align-items:center;
+    }
+    .baetk-cta h3 { margin:0 0 12px; font-size:14px; letter-spacing:.22em; text-transform:uppercase; opacity:.8; }
+    .baetk-cta p { margin:0; font-size:14px; line-height:1.85; color:rgba(255,255,255,.82); max-width:56ch; }
+    .baetk-cta .btn {
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        margin-top:22px;
+        padding:12px 16px;
+        border-radius:999px;
+        background:#fff;
+        color:#111827;
+        text-decoration:none;
+        font-size:13px;
+        font-weight:700;
+    }
+    .baetk-footer {
+        min-height:40vh;
+        display:flex;
+        align-items:flex-end;
+        padding:24px 0 18px;
+        color:#8c857a;
+        font-size:12px;
+    }
+    .baetk-footer-inner {
+        width:min(1200px, calc(100% - 40px));
+        margin:0 auto;
+        display:grid;
+        grid-template-columns:1fr auto;
+        gap:12px;
+        align-items:end;
+        padding-top:18px;
+        border-top:1px solid rgba(28,20,12,.08);
+    }
+    .baetk[data-theme="dark"] .baetk-footer-inner { border-top-color:rgba(255,255,255,.08); color:#6a667e; }
+    .baetk-footer-links { display:flex; gap:14px; flex-wrap:wrap; justify-content:flex-end; }
+    .baetk-footer-links a { color:inherit; text-decoration:none; }
+    #baetk-section-1 { background:linear-gradient(180deg, rgba(251,251,248,.2), rgba(247,244,237,.05)); }
+    #baetk-section-2 { background:linear-gradient(180deg, rgba(247,244,237,.05), rgba(251,251,248,.18)); }
+    #baetk-section-3 { background:linear-gradient(180deg, rgba(247,244,237,.12), rgba(251,251,248,.02)); }
+    #baetk-section-4 { background:linear-gradient(180deg, rgba(251,251,248,.04), rgba(247,244,237,.14)); }
+    #baetk-section-5 { background:linear-gradient(180deg, rgba(247,244,237,.1), rgba(251,251,248,.04)); }
+    @media (max-width: 980px) {
+        .baetk-hero { grid-template-columns:1fr; min-height:auto; padding-top:8px; }
+        .baetk-proof, .baetk-grid, .baetk-story, .baetk-gallery, .baetk-two, .baetk-steps, .baetk-duo, .baetk-split, .baetk-mosaic, .baetk-quote-full, .baetk-cta-inner, .baetk-storygrid { grid-template-columns:1fr; }
+        .baetk-carousel-track { grid-auto-columns:86%; }
+        .baetk-rail { grid-auto-columns:82vw; }
+        .baetk-title { max-width:none; }
+    }
+    @media (max-width: 640px) {
+        .baetk-shell { width:min(100% - 24px, 1200px); }
+        .baetk-nav { flex-direction:column; align-items:flex-start; }
+        .baetk-card { padding:22px; border-radius:24px; }
+        .baetk-title { font-size:clamp(38px, 14vw, 56px); }
+        .baetk-inp { font-size:18px; letter-spacing:.1em; }
+        .baetk-theme { width:100%; justify-content:space-between; }
+    }
     </style>
 
-    <div class="baetk">
-        <div class="baetk-in" id="baetk-in">
-            <div class="baetk-logo">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </div>
-            <div class="baetk-title">Brand Asset Engine</div>
-            <div class="baetk-sub">Enter your ticket code to access<br>your brand workspace.</div>
-            <input type="text" id="baetk-f" class="baetk-inp"
-                   placeholder="BAE-XXXX-XXXX"
-                   maxlength="13" autocomplete="off" spellcheck="false"
-                   inputmode="text">
-            <button class="baetk-btn" id="baetk-btn" onclick="baeTkGo()">
-                <div class="baetk-spin" id="baetk-sp"></div>
-                <span id="baetk-lbl">Enter Workspace</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="baetk-arrow"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
-            <div class="baetk-err" id="baetk-err"></div>
-            <div class="baetk-hint">
-                Already have a ticket? Enter it above.
+    <div class="baetk" id="baetk-page" data-theme="light">
+        <div class="baetk-shell">
+            <div class="baetk-nav">
+                <div class="baetk-brand">
+                    <div class="baetk-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <div>
+                        <span class="baetk-kicker">Brand Asset Engine</span>
+                        <span class="baetk-brandname">One ticket. One brand.</span>
+                    </div>
+                </div>
+                <div class="baetk-theme" role="tablist" aria-label="Theme toggle">
+                    <button type="button" id="baetk-light-btn" class="is-active" onclick="baeTkTheme('light')">Light</button>
+                    <button type="button" id="baetk-dark-btn" onclick="baeTkTheme('dark')">Dark</button>
+                </div>
             </div>
 
-            <!-- Divider -->
-            <div style="display:flex;align-items:center;gap:12px;margin:20px 0;">
-                <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
-                <span style="font-size:11px;color:#2a2740;font-weight:600;letter-spacing:0.08em;">OR</span>
-                <div style="flex:1;height:1px;background:rgba(255,255,255,0.07);"></div>
+            <div class="baetk-hero">
+                <div class="baetk-copy" id="baetk-copy">
+                    <div class="baetk-eyebrow"><i></i> Brand Asset Engine</div>
+                    <div class="baetk-title">Build a clean brand asset system with one ticket.</div>
+                    <div class="baetk-sub">Claim access, open your workspace, and create the visual pieces your brand needs without clutter. BAE keeps the system focused, simple, and easy to trust.</div>
+                    <div class="baetk-chips">
+                        <div class="baetk-chip">Brand assets</div>
+                        <div class="baetk-chip">One workspace</div>
+                        <div class="baetk-chip">MSME-friendly</div>
+                    </div>
+                </div>
+
+                <div class="baetk-card" id="baetk-card">
+                    <div class="baetk-card-top">
+                        <h2>Enter Access</h2>
+                        <div class="baetk-pill">Secure ticket gate</div>
+                    </div>
+                    <div class="baetk-in" id="baetk-in">
+                        <input type="text" id="baetk-f" class="baetk-inp"
+                               placeholder="BAE-XXXX-XXXX"
+                               maxlength="13" autocomplete="off" spellcheck="false"
+                               inputmode="text">
+                        <button class="baetk-btn" id="baetk-btn" onclick="baeTkGo()">
+                            <div class="baetk-spin" id="baetk-sp"></div>
+                            <span id="baetk-lbl">Enter Workspace</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="baetk-arrow"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                        <div class="baetk-err" id="baetk-err"></div>
+                        <div class="baetk-hint">Already have a ticket? Enter it above.</div>
+                        <button class="baetk-new-btn" id="baetk-new" onclick="baeTkNew()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                            New here? Start for free
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- New user -->
-            <button class="baetk-new-btn" id="baetk-new" onclick="baeTkNew()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                New here? Start for free
-            </button>
+            <section class="baetk-section" id="baetk-section-1" data-motion="left">
+                <div class="baetk-section-inner">
+                    <div class="baetk-split">
+                        <div class="baetk-copy-block">
+                            <div class="baetk-eyebrow" style="margin-bottom:18px;"><i></i> Brand language</div>
+                            <h2 class="baetk-copy-xl">A clean entrance for a serious MSME tool.</h2>
+                            <p class="baetk-copy-sm">BAE should feel like a polished front door, not a rough utility screen. White-first, editorial, and calm. The ticket gate is the first impression, so it needs to carry the mood of the whole product.</p>
+                        </div>
+                        <div class="baetk-surface">
+                            <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1400&q=80" alt="Soft workspace mood">
+                            <div class="baetk-caption">Mood reference</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="baetk-section baetk-deepglow" id="baetk-section-2" data-motion="right">
+                <div class="shadow-orb one"></div>
+                <div class="shadow-orb two"></div>
+                <div class="baetk-section-inner">
+                    <div class="deep-core glow-panel" style="padding:32px; min-height:100vh;">
+                        <div class="orbit-ring a"></div>
+                        <div class="orbit-ring b"></div>
+                        <div class="orbit-pill one">Access</div>
+                        <div class="orbit-pill two">Trust</div>
+                        <div class="orbit-pill three">Focus</div>
+                        <div class="baetk-split" style="position:relative; z-index:2;">
+                            <div>
+                                <div class="baetk-section-head">
+                            <h3>Asset core</h3>
+                            <p>Brand assets should feel alive, polished, and easy to trust. This core scene shows the identity system itself, not the mechanics around it.</p>
+                        </div>
+                        <h2 class="baetk-copy-xl">Your brand assets, glowing at the center of the system.</h2>
+                        <p class="baetk-copy-sm">BAE keeps the logo, palette, typography, and export-ready pieces in one calm workspace. The glow is there to frame the brand kit, so the experience feels premium without losing clarity.</p>
+                        <div class="baetk-lines">
+                                    <div class="baetk-line"><div class="num">01</div><div><h4>Logo system</h4><p>Keep the primary mark, alt mark, and usage clean in one place.</p></div></div>
+                                    <div class="baetk-line"><div class="num">02</div><div><h4>Visual language</h4><p>Hold color, type, and spacing together as one branded mood.</p></div></div>
+                                    <div class="baetk-line"><div class="num">03</div><div><h4>Export flow</h4><p>Move from setup to usable brand assets without friction.</p></div></div>
+                                </div>
+                            </div>
+                            <div class="baetk-surface" style="min-height:560px; background:rgba(255,255,255,.56);">
+                                <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=80" alt="Brand asset glow">
+                                <div class="baetk-caption">Brand kit glow</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="baetk-section" id="baetk-section-3" data-motion="up">
+                <div class="baetk-section-inner baetk-storyband">
+                    <div class="baetk-marquee"><span>Brand Asset Engine / assets / identity / kit / launch / export /</span><span>Brand Asset Engine / assets / identity / kit / launch / export /</span></div>
+                    <div class="baetk-storygrid">
+                        <div class="baetk-storycard">
+                            <div class="baetk-eyebrow" style="margin-bottom:18px;"><i></i> Identity flow</div>
+                            <h2 class="baetk-copy-xl">Build the brand world once, then keep every asset aligned.</h2>
+                            <p class="baetk-copy-sm">BAE helps a small business move from rough ideas into a usable identity system. Every logo, color choice, and layout cue should feel like part of the same brand family, not a one-off file.</p>
+                        </div>
+                        <div class="baetk-surface">
+                            <img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1600&q=80" alt="Quiet workspace">
+                            <div class="baetk-caption">Identity flow</div>
+                        </div>
+                    </div>
+                    <div class="baetk-marquee alt"><span>logo / palette / type / export / consistency / identity /</span><span>logo / palette / type / export / consistency / identity /</span></div>
+                </div>
+            </section>
+
+            <section class="baetk-section baetk-deepglow" id="baetk-section-4" data-motion="left">
+                <div class="shadow-orb one"></div>
+                <div class="shadow-orb two"></div>
+                <div class="baetk-section-inner baetk-horizontal">
+                    <div class="baetk-section-head">
+                        <h3>Deliverables</h3>
+                        <p>The asset set moves like a reel so the brand pieces feel alive, but each frame still speaks the same visual language.</p>
+                    </div>
+                    <div class="baetk-rail">
+                        <div class="baetk-railcard"><img src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80" alt="Brand board 1"><div class="meta"><span class="n">01</span><h4>Logo suite</h4><p>Primary mark, lockup, and variants.</p></div></div>
+                        <div class="baetk-railcard"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80" alt="Brand board 2"><div class="meta"><span class="n">02</span><h4>Color logic</h4><p>Soft neutrals with depth and contrast.</p></div></div>
+                        <div class="baetk-railcard"><img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=80" alt="Brand board 3"><div class="meta"><span class="n">03</span><h4>Type system</h4><p>Elegant hierarchy for brand clarity.</p></div></div>
+                        <div class="baetk-railcard"><img src="https://images.unsplash.com/photo-1487887235947-a955ef187fcc?auto=format&fit=crop&w=1200&q=80" alt="Brand board 4"><div class="meta"><span class="n">04</span><h4>Asset export</h4><p>Ready to use across touchpoints.</p></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="baetk-section" id="baetk-section-5" data-motion="right">
+                <div class="baetk-section-inner baetk-typing">
+                    <div style="width:100%;">
+                        <div class="baetk-section-head">
+                            <h3>System facts</h3>
+                            <p>These details keep the product simple for owners while protecting the consistency of the brand asset kit.</p>
+                        </div>
+                        <h2 class="baetk-copy-xl" style="max-width:14ch;">Built for owners who want a brand system they can trust.</h2>
+                        <p class="baetk-copy-sm">The engine keeps the path simple: one ticket, one workspace, one brand. That structure gives MSMEs a quick way to move from setup to usable assets without losing visual consistency or momentum.</p>
+                        <div class="baetk-metrics">
+                            <div class="baetk-metric"><strong>1</strong><span>ticket = one brand</span></div>
+                            <div class="baetk-metric"><strong>2</strong><span>theme modes</span></div>
+                            <div class="baetk-metric"><strong>3</strong><span>core asset groups</span></div>
+                            <div class="baetk-metric"><strong>0</strong><span>multi-brand clutter</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="baetk-cta" id="baetk-section-6" data-motion="down">
+                <div class="baetk-cta-inner">
+                    <div>
+                        <h3>Launch ready</h3>
+                        <p>Keep the gate calm, let the Brand Asset Engine do the work, and preserve the brand mood from first click to final export. That is the right shape for a small MSME product that needs speed, clarity, and trust.</p>
+                        <a class="btn" href="javascript:void(0)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Back to ticket gate</a>
+                    </div>
+                    <div class="baetk-surface" style="min-height:420px;">
+                        <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1400&q=80" alt="Soft landing image">
+                        <div class="baetk-caption">Brand Asset Engine</div>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="baetk-footer">
+                <div class="baetk-footer-inner">
+                    <div>
+                        <strong style="display:block;font-size:13px;color:inherit;margin-bottom:4px;">Brand Asset Engine</strong>
+                        <span>One ticket, one workspace, one brand system.</span>
+                    </div>
+                    <div class="baetk-footer-links">
+                        <a href="javascript:void(0)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Top</a>
+                        <a href="javascript:void(0)" onclick="_baeTkEl('baetk-f') && _baeTkEl('baetk-f').focus()">Enter ticket</a>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
 
@@ -776,8 +1594,24 @@ function bntm_bae_ticket_screen() {
 
     function _baeTkEl(id) { return document.getElementById(id); }
 
+    function baeTkTheme(theme) {
+        var page = _baeTkEl('baetk-page');
+        var lightBtn = _baeTkEl('baetk-light-btn');
+        var darkBtn = _baeTkEl('baetk-dark-btn');
+        if (!page) return;
+        page.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
+        if (lightBtn) lightBtn.className = theme === 'light' ? 'is-active' : '';
+        if (darkBtn) darkBtn.className = theme === 'dark' ? 'is-active' : '';
+        try { localStorage.setItem('bae_theme', page.getAttribute('data-theme')); } catch (e) {}
+    }
+
     // Auto-format input as user types → BAE-XXXX-XXXX
     document.addEventListener('DOMContentLoaded', function() {
+        try {
+            var savedTheme = localStorage.getItem('bae_theme');
+            if (savedTheme === 'dark' || savedTheme === 'light') baeTkTheme(savedTheme);
+        } catch (e) {}
+
         var f = _baeTkEl('baetk-f');
         if (!f) return;
 
@@ -809,8 +1643,35 @@ function bntm_bae_ticket_screen() {
         setTimeout(function() { f.focus(); }, 380);
 
         if (window.gsap) {
-            gsap.fromTo('#baetk-in', {opacity:0, y:24}, {opacity:1, y:0, duration:.55, ease:'power3.out', delay:.1});
-            gsap.to('.baetk-logo', {boxShadow:'0 0 44px rgba(139,92,246,.55)', duration:1.8, repeat:-1, yoyo:true, ease:'sine.inOut', delay:1});
+            gsap.fromTo('#baetk-copy', {opacity:0, y:24}, {opacity:1, y:0, duration:.7, ease:'power3.out', delay:.05});
+            gsap.fromTo('#baetk-card', {opacity:0, y:24, scale:.98}, {opacity:1, y:0, scale:1, duration:.65, ease:'power3.out', delay:.12});
+            gsap.to('.baetk-logo', {boxShadow:'0 18px 40px rgba(124,58,237,.24), 0 0 44px rgba(139,92,246,.22)', duration:1.8, repeat:-1, yoyo:true, ease:'sine.inOut', delay:1});
+        }
+
+        var sections = document.querySelectorAll('.baetk-section, .baetk-cta, .baetk-footer');
+        if (window.gsap && 'IntersectionObserver' in window && sections.length) {
+            var seen = new WeakSet();
+            var io = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (!entry.isIntersecting || seen.has(entry.target)) return;
+                    seen.add(entry.target);
+
+                    var motion = entry.target.getAttribute('data-motion') || 'up';
+                    var target = entry.target.querySelector('.baetk-section-inner, .baetk-cta-inner, .baetk-footer-inner') || entry.target;
+                    var from = { opacity:0, y:18 };
+                    if (motion === 'left') from = { opacity:0, x:-24 };
+                    else if (motion === 'right') from = { opacity:0, x:24 };
+                    else if (motion === 'down') from = { opacity:0, y:-18 };
+
+                    gsap.fromTo(target, from, { opacity:1, x:0, y:0, duration:.8, ease:'power3.out' });
+                    io.unobserve(entry.target);
+                });
+            }, { threshold: 0.24 });
+
+            sections.forEach(function(section) {
+                section.style.opacity = 1;
+                io.observe(section);
+            });
         }
     });
 
