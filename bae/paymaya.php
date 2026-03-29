@@ -61,6 +61,8 @@ function bntm_ajax_bae_pm_checkout() {
         wp_send_json_error(['message' => 'PayMaya public key is missing.']);
     }
 
+    bae_pm_ensure_log_table();
+
     if ($plan === 'starter' && $billing === 'lifetime') {
         $amount_centavos = BAE_PRICE_STARTER_LIFETIME;
         $amount_php = 199;
@@ -152,6 +154,7 @@ function bntm_ajax_bae_pm_checkout() {
     }
 
     update_user_meta($user_id, 'bae_pm_pending_amount', $amount_centavos);
+    bae_pm_store_pending_payment($user_id, $plan, $ref, $amount_centavos);
 
     wp_send_json_success([
         'checkout_url' => $checkout_url,
@@ -173,6 +176,10 @@ function bae_pm_handle_redirect() {
 
         if ($ref && $ref === $pending_ref && $pending_plan) {
             bae_pm_upgrade_user($user_id, $pending_plan);
+            bae_pm_log_payment($user_id, $pending_plan, $ref, [
+                'source' => 'redirect_success',
+                'reference' => $ref,
+            ]);
             delete_user_meta($user_id, 'bae_pm_pending_ref');
             delete_user_meta($user_id, 'bae_pm_pending_plan');
             set_transient('bae_pm_success_' . $user_id, $pending_plan, 60);
@@ -261,6 +268,7 @@ add_action('plugins_loaded', 'bae_pm_create_log_table');
 function bae_pm_log_payment($user_id, $plan, $ref, $event) {
     global $wpdb;
     $table = $wpdb->prefix . 'bae_payments';
+    bae_pm_ensure_log_table();
 
     $amount = 0;
     if (strpos($ref, 'starter_lifetime') !== false) {
@@ -271,14 +279,86 @@ function bae_pm_log_payment($user_id, $plan, $ref, $event) {
         $amount = BAE_PRICE_PRO_MONTHLY;
     }
 
-    $wpdb->insert($table, [
+    $existing_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM {$table} WHERE reference = %s LIMIT 1",
+        $ref
+    ));
+
+    $data = [
         'user_id' => $user_id,
         'plan' => $plan,
         'reference' => $ref,
         'amount' => $amount,
         'status' => 'paid',
         'raw_event' => wp_json_encode($event),
-    ], ['%d', '%s', '%s', '%d', '%s', '%s']);
+    ];
+
+    if ($existing_id) {
+        $wpdb->update($table, $data, ['id' => (int) $existing_id], ['%d', '%s', '%s', '%d', '%s', '%s'], ['%d']);
+        return;
+    }
+
+    $wpdb->insert($table, $data, ['%d', '%s', '%s', '%d', '%s', '%s']);
+}
+
+function bae_pm_store_pending_payment($user_id, $plan, $ref, $amount) {
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_payments';
+    bae_pm_ensure_log_table();
+
+    $existing_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM {$table} WHERE reference = %s LIMIT 1",
+        $ref
+    ));
+
+    $data = [
+        'user_id' => $user_id,
+        'plan' => $plan,
+        'reference' => $ref,
+        'amount' => $amount,
+        'status' => 'pending',
+        'raw_event' => wp_json_encode([
+            'source' => 'checkout_created',
+            'reference' => $ref,
+        ]),
+    ];
+
+    if ($existing_id) {
+        $wpdb->update($table, $data, ['id' => (int) $existing_id], ['%d', '%s', '%s', '%d', '%s', '%s'], ['%d']);
+        return;
+    }
+
+    $wpdb->insert($table, $data, ['%d', '%s', '%s', '%d', '%s', '%s']);
+}
+
+function bae_pm_ensure_log_table() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_payments';
+
+    $exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table));
+    if ($exists === $table) {
+        return true;
+    }
+
+    $charset = $wpdb->get_charset_collate();
+    $sql = "CREATE TABLE IF NOT EXISTS {$table} (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        user_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+        plan VARCHAR(20) NOT NULL DEFAULT '',
+        reference VARCHAR(100) NOT NULL DEFAULT '',
+        amount INT NOT NULL DEFAULT 0,
+        status VARCHAR(20) NOT NULL DEFAULT 'paid',
+        raw_event LONGTEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        INDEX idx_user (user_id),
+        INDEX idx_ref (reference)
+    ) {$charset};";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+
+    return (bool) $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table));
 }
 
 function bae_pm_request($method, $endpoint, $body = null, $key_type = 'secret') {

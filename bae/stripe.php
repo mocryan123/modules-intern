@@ -82,6 +82,7 @@ function bae_ajax_stripe_checkout() {
     $success_url = add_query_arg([
         'bae_stripe_success' => '1',
         'plan'               => $plan,
+        'billing'            => $billing,
         'ticket'             => urlencode($ticket),
     ], get_permalink());
 
@@ -126,8 +127,9 @@ add_action('template_redirect', 'bae_handle_stripe_success', 5);
 function bae_handle_stripe_success() {
     if (empty($_GET['bae_stripe_success']) || $_GET['bae_stripe_success'] !== '1') return;
 
-    $plan   = sanitize_text_field($_GET['plan']   ?? 'starter');
-    $ticket = strtoupper(sanitize_text_field($_GET['ticket'] ?? ''));
+    $plan    = sanitize_text_field($_GET['plan']   ?? 'starter');
+    $billing = sanitize_text_field($_GET['billing'] ?? 'monthly');
+    $ticket  = strtoupper(sanitize_text_field($_GET['ticket'] ?? ''));
 
     if (!preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $ticket)) return;
     if (!in_array($plan, ['starter', 'pro'])) return;
@@ -139,6 +141,16 @@ function bae_handle_stripe_success() {
         ['ticket' => $ticket],
         ['%s'], ['%s']
     );
+
+    $amount = 0;
+    if ($plan === 'starter' && $billing === 'lifetime') {
+        $amount = BAE_PRICE_STARTER_LIFETIME;
+    } elseif ($plan === 'starter') {
+        $amount = BAE_PRICE_STARTER_MONTHLY;
+    } elseif ($plan === 'pro') {
+        $amount = BAE_PRICE_PRO_MONTHLY;
+    }
+    bae_stripe_log_payment($ticket, $plan, $amount, 'stripe_redirect_' . $ticket . '_' . $plan . '_' . $billing, 'paid');
 
     $user_id = is_user_logged_in() ? get_current_user_id() : 0;
     if ($user_id) set_transient('bae_pm_success_' . $user_id, $plan, 60);
@@ -266,16 +278,26 @@ function bae_stripe_log_payment($ticket, $plan, $amount, $reference, $status = '
     ));
     if ($row) $user_id = (int) $row->user_id;
 
-    $wpdb->insert($pay_table, [
-        'rand_id'   => bntm_rand_id(),
-        'user_id'   => $user_id,
-        'ticket'    => $ticket,
-        'plan'      => $plan,
-        'amount'    => $amount,
-        'reference' => $reference,
-        'status'    => $status,
-        'created_at'=> current_time('mysql'),
-    ]);
+    $existing_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM {$pay_table} WHERE reference = %s LIMIT 1",
+        $reference
+    ));
+
+    $data = [
+        'user_id'    => $user_id,
+        'plan'       => $plan,
+        'reference'  => $reference,
+        'amount'     => $amount,
+        'status'     => $status,
+        'created_at' => current_time('mysql'),
+    ];
+
+    if ($existing_id) {
+        $wpdb->update($pay_table, $data, ['id' => (int) $existing_id], ['%d','%s','%s','%d','%s','%s'], ['%d']);
+        return;
+    }
+
+    $wpdb->insert($pay_table, $data, ['%d','%s','%s','%d','%s','%s']);
 }
 
 // ─────────────────────────────────────────────────────────────────

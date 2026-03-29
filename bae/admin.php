@@ -1372,7 +1372,7 @@ function bae_admin_dashboard() {
                     </div>
 
                 <?php elseif ($route === 'payments'):
-                    // Fix: use correct table $payt, not nonexistent bntm_pay_events
+                    // Use the shared BAE payments table.
                     $paid_count         = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$payt} WHERE status='paid'");
                     $pending_count      = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$payt} WHERE status='pending'");
                     $revenue_all        = (int)$wpdb->get_var("SELECT COALESCE(SUM(amount),0) FROM {$payt} WHERE status='paid'");
@@ -1754,11 +1754,11 @@ function bae_admin_dashboard() {
                 <?php elseif ($route === 'logs'): ?>
                     <?php
                     $recent = $wpdb->get_results(
-                        "SELECT business_name, ticket, plan, created_at, 'signup' as event FROM {$pt} WHERE business_name != ''
+                        "SELECT COALESCE(NULLIF(business_name, ''), ticket) as business_name, ticket, plan, created_at, 'signup' as event FROM {$pt} WHERE ticket != ''
                          UNION ALL
-                         SELECT p.business_name, a.ticket, p.plan, a.created_at, CONCAT('asset:', a.asset_type) as event FROM {$at} a LEFT JOIN {$pt} p ON p.ticket = a.ticket WHERE a.is_generated = 1
+                         SELECT COALESCE(NULLIF(p.business_name, ''), a.ticket) as business_name, a.ticket, p.plan, a.created_at, CONCAT('asset:', a.asset_type) as event FROM {$at} a LEFT JOIN {$pt} p ON p.ticket = a.ticket WHERE a.is_generated = 1
                          UNION ALL 
-                         SELECT p.business_name, pe.ticket, pe.plan, pe.created_at, 'payment' as event FROM bntm_pay_events pe LEFT JOIN {$pt} p ON p.ticket = pe.ticket WHERE pe.status = 'paid'
+                         SELECT COALESCE(NULLIF(p.business_name, ''), pe.reference) as business_name, p.ticket, pe.plan, pe.created_at, 'payment' as event FROM {$payt} pe LEFT JOIN {$pt} p ON p.user_id = pe.user_id WHERE pe.status = 'paid'
                          ORDER BY created_at DESC LIMIT 60",
                         ARRAY_A
                     ) ?: [];

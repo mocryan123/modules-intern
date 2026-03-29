@@ -156,6 +156,10 @@ function bae_pm_handle_redirect() {
         // Only upgrade if ref matches and plan not already upgraded
         if ($ref && $ref === $pending_ref && $pending_plan) {
             bae_pm_upgrade_user($user_id, $pending_plan);
+            bae_pm_log_payment($user_id, $pending_plan, $ref, [
+                'source' => 'redirect_success',
+                'reference_number' => $ref,
+            ]);
             delete_user_meta($user_id, 'bae_pm_pending_ref');
             delete_user_meta($user_id, 'bae_pm_pending_plan');
 
@@ -284,14 +288,26 @@ function bae_pm_log_payment($user_id, $plan, $ref, $event) {
     elseif (strpos($ref, 'starter'))                $amount = BAE_PRICE_STARTER_MONTHLY;
     elseif (strpos($ref, 'pro'))                    $amount = BAE_PRICE_PRO_MONTHLY;
 
-    $wpdb->insert($table, [
+    $existing_id = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM {$table} WHERE reference = %s LIMIT 1",
+        $ref
+    ));
+
+    $data = [
         'user_id'   => $user_id,
         'plan'      => $plan,
         'reference' => $ref,
         'amount'    => $amount,
         'status'    => 'paid',
         'raw_event' => json_encode($event),
-    ], ['%d','%s','%s','%d','%s','%s']);
+    ];
+
+    if ($existing_id) {
+        $wpdb->update($table, $data, ['id' => (int) $existing_id], ['%d','%s','%s','%d','%s','%s'], ['%d']);
+        return;
+    }
+
+    $wpdb->insert($table, $data, ['%d','%s','%s','%d','%s','%s']);
 }
 
 
