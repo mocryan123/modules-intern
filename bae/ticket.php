@@ -144,6 +144,65 @@ function bntm_bae_count_by_ticket( $ticket ) {
     return $n;
 }
 
+/**
+ * Return the best-effort client IP for rate limiting.
+ * Prefers proxy headers when present, falls back to REMOTE_ADDR.
+ */
+function bntm_bae_client_ip() {
+    $candidates = [
+        $_SERVER['HTTP_CF_CONNECTING_IP'] ?? '',
+        $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '',
+        $_SERVER['HTTP_X_REAL_IP'] ?? '',
+        $_SERVER['REMOTE_ADDR'] ?? '',
+    ];
+
+    foreach ( $candidates as $candidate ) {
+        if ( empty( $candidate ) ) continue;
+        $parts = array_map( 'trim', explode( ',', $candidate ) );
+        foreach ( $parts as $part ) {
+            if ( filter_var( $part, FILTER_VALIDATE_IP ) ) {
+                return $part;
+            }
+        }
+    }
+
+    return '';
+}
+
+/**
+ * Track ticket-generation attempts per IP.
+ * Allows 1 ticket every 20 minutes per IP.
+ */
+function bntm_bae_ticket_rate_limit_check() {
+    $ip = bntm_bae_client_ip();
+    if ( empty( $ip ) ) {
+        return true;
+    }
+
+    $key = 'bae_ticket_rate_' . md5( $ip );
+    $now = time();
+    $attempts = get_transient( $key );
+    if ( ! is_array( $attempts ) ) {
+        $attempts = [];
+    }
+
+    $recent_window = array_filter( $attempts, function( $ts ) use ( $now ) {
+        return is_numeric( $ts ) && ( $now - (int) $ts ) < 20 * MINUTE_IN_SECONDS;
+    } );
+
+    if ( count( $recent_window ) >= 1 ) {
+        return new WP_Error( 'bae_ticket_rate_limited', 'Please wait 20 minutes before creating another ticket.' );
+    }
+
+    $attempts[] = $now;
+    $attempts = array_values( array_filter( $attempts, function( $ts ) use ( $now ) {
+        return is_numeric( $ts ) && ( $now - (int) $ts ) < 20 * MINUTE_IN_SECONDS;
+    } ) );
+    set_transient( $key, $attempts, 20 * MINUTE_IN_SECONDS );
+
+    return true;
+}
+
 // =============================================================================
 // AJAX: ticket check
 // Client submits ticket code → server confirms format is valid → returns has_profile
@@ -246,6 +305,11 @@ function bntm_bae_ajax_ticket_generate() {
     for ( $i = 0; $i < 4; $i++ ) $part1 .= $chars[ wp_rand( 0, $len - 1 ) ];
     for ( $i = 0; $i < 4; $i++ ) $part2 .= $chars[ wp_rand( 0, $len - 1 ) ];
     $ticket = 'BAE-' . $part1 . '-' . $part2;
+
+    $rate_check = bntm_bae_ticket_rate_limit_check();
+    if ( is_wp_error( $rate_check ) ) {
+        wp_send_json_error( [ 'message' => $rate_check->get_error_message() ] );
+    }
 
     global $wpdb;
     $wpdb->hide_errors();
