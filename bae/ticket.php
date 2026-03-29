@@ -2219,7 +2219,7 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
 
     .bae-wrap {
         font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: var(--bg);
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
         color: var(--text);
         border-radius: 20px;
         overflow: hidden;

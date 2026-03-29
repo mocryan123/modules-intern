@@ -485,7 +485,7 @@ function bae_wizard_shortcode($user_id) {
     .bae-wiz-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
     .bae-wiz-wrap {
         font-family: 'Geist', -apple-system, sans-serif;
-        background: #09090e;
+        background: linear-gradient(180deg, #09090e 0%, #141423 100%);
         color: #ede9ff;
         min-height: 100vh;
         display: flex;
@@ -496,6 +496,10 @@ function bae_wizard_shortcode($user_id) {
         position: relative;
         overflow: hidden;
         border-radius: 0;
+    }
+    .bae-wiz-wrap.bae-light {
+        background: linear-gradient(180deg, #fcfcf9 0%, #f4f3ff 45%, #eae7f2 100%);
+        color: #1d1a16;
     }
     .bae-wiz-wrap::before {
         content: '';
@@ -558,6 +562,15 @@ function bae_wizard_shortcode($user_id) {
     }
     .bae-wiz-input:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
     .bae-wiz-input::placeholder { color: #4d4a65; }
+    .bae-wiz-wrap.bae-light .bae-wiz-input { background: rgba(255,255,255,0.82); border-color: rgba(139,92,246,0.3); color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-input::placeholder { color: #6b6880; }
+    .bae-wiz-wrap.bae-light .bae-wiz-tile { background: rgba(255,255,255,0.72); border-color: rgba(28,20,40,0.14); }
+    .bae-wiz-wrap.bae-light .bae-wiz-tile:hover { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.12); }
+    .bae-wiz-wrap.bae-light .bae-wiz-tile-icon { color: #1d1a16; opacity: 0.85; }
+    .bae-wiz-wrap.bae-light .bae-wiz-tile-label { color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-tile-desc { color: #5c586d; }
+    .bae-wiz-wrap.bae-light .bae-wiz-hint { color: #6b6880; }
+    .bae-wiz-wrap.bae-light .bae-wiz-question, .bae-wiz-wrap.bae-light .bae-wiz-tagline-opt { color: #1d1a16; }
     .bae-wiz-tiles {
         display: grid; grid-template-columns: 1fr 1fr;
         gap: 10px; margin-bottom: 22px;
@@ -616,6 +629,7 @@ function bae_wizard_shortcode($user_id) {
     }
     .bae-wiz-next:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(109,40,217,0.5); }
     .bae-wiz-next:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
+
     .bae-wiz-back {
         display: inline-flex; align-items: center; gap: 6px;
         background: none; border: none; color: #4d4a65;
@@ -803,6 +817,33 @@ function bae_wizard_shortcode($user_id) {
         var taglinePromise   = null;
         var taglinesReady    = false;
         var taglinesData     = null;
+
+        // Theme state
+        var baeWizIsDark = (localStorage.getItem('bae_theme') !== 'light');
+        function baeWizApplyTheme(dark) {
+            var wrap = document.getElementById('bae-wiz-wrap');
+            var btn  = document.getElementById('bae-wiz-theme-btn');
+            if (!wrap) return;
+            if (dark) {
+                wrap.classList.remove('bae-light');
+                if (btn) btn.textContent = 'Light';
+            } else {
+                wrap.classList.add('bae-light');
+                if (btn) btn.textContent = 'Dark';
+            }
+            try { localStorage.setItem('bae_theme', dark ? 'dark' : 'light'); } catch (e) {}
+        }
+        function baeWizToggleTheme() {
+            baeWizIsDark = !baeWizIsDark;
+            baeWizApplyTheme(baeWizIsDark);
+        }
+
+        // Remove the theme toggle button if still present (intentional no-theme UI)
+        var themeToggle = document.getElementById('bae-wiz-theme-btn');
+        if (themeToggle) themeToggle.remove();
+
+        // Initialize wizard theme on open
+        baeWizApplyTheme(baeWizIsDark);
 
         // Static fallback palettes — used if AI fails or times out
         var staticPalettes = [
@@ -1207,6 +1248,8 @@ function bae_wizard_shortcode($user_id) {
         document.getElementById('bae-wiz-name').addEventListener('keydown', function(e){ if(e.key==='Enter') baeWizGo(2); });
 
         window.baeWizSubmit = function() {
+            // Keep wizard theme in sync on submission
+            baeWizApplyTheme(baeWizIsDark);
             state.email   = (document.getElementById('bae-wiz-email').value||'').trim();
             state.phone   = (document.getElementById('bae-wiz-phone').value||'').trim();
             state.website = (document.getElementById('bae-wiz-website').value||'').trim();
