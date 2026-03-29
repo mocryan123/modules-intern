@@ -535,6 +535,29 @@ function bae_admin_dashboard() {
         display: flex;
         flex-direction: column;
     }
+    .bae-adm.bae-light {
+        --bg:       #f7f4ed;
+        --bg-2:     #ffffff;
+        --bg-3:     #f5f1e8;
+        --surface:  #ffffff;
+        --border:   rgba(28,20,12,.08);
+        --border-2: rgba(28,20,12,.12);
+        --text:     #1d1a16;
+        --text-2:   #4b443c;
+        --text-3:   #8c857a;
+        --brand:    #8b5cf6;
+        --brand-d:  #6d28d9;
+        --brand-s:  #7c3aed;
+        --pink:     #ec4899;
+        --green:    #10b981;
+        --yellow:   #f59e0b;
+        --red:      #ef4444;
+        background:
+            radial-gradient(circle at top right, rgba(124,58,237,.08), transparent 32%),
+            radial-gradient(circle at 18% 20%, rgba(236,72,153,.05), transparent 24%),
+            linear-gradient(180deg, #f7f4ed 0%, #fbfaf6 100%);
+        color: var(--text);
+    }
 
     /* ── Layout ── */
     .bae-adm-layout { display: flex; flex: 1; overflow: hidden; }
@@ -650,6 +673,34 @@ function bae_admin_dashboard() {
     .bae-adm-topbar-title { font-size: 15px; font-weight: 700; color: var(--text); }
     .bae-adm-topbar-sub   { font-size: 11px; color: var(--text-3); margin-top: 1px; }
     .bae-adm-topbar-date  { font-size: 11px; color: var(--text-3); }
+    .bae-adm-topbar-right { display:flex; align-items:center; gap:12px; }
+
+    .bae-adm-theme-btn {
+        display:flex; align-items:center; gap:8px;
+        background:var(--surface); border:1px solid var(--border-2);
+        border-radius:10px; padding:7px 14px;
+        font-size:12px; font-weight:600; color:var(--text-2);
+        cursor:pointer; font-family:'Geist',sans-serif;
+        transition:all .2s, box-shadow .25s ease, transform .2s ease;
+    }
+    .bae-adm-theme-btn:hover { color:var(--text); border-color:var(--brand-s); transform:translateY(-1px); }
+    .bae-adm-theme-icon { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; }
+    .bae-adm-theme-label { font-size:12px; font-weight:600; letter-spacing:.01em; }
+    .bae-adm-toggle-track {
+        width:34px; height:18px;
+        background:var(--surface-2); border:1px solid var(--border-2);
+        border-radius:999px; position:relative;
+        transition:background .3s, border-color .3s;
+        flex-shrink:0;
+    }
+    .bae-adm-toggle-track.on { background:var(--brand); border-color:var(--brand); }
+    .bae-adm-toggle-thumb {
+        position:absolute; top:2px; left:2px;
+        width:12px; height:12px; background:#fff;
+        border-radius:50%; transition:transform .35s var(--ease-out);
+        box-shadow:0 1px 3px rgba(0,0,0,.3);
+    }
+    .bae-adm-toggle-track.on .bae-adm-toggle-thumb { transform:translateX(16px); }
     .bae-adm-body { padding: 24px; }
 
     /* ── Stats ── */
@@ -1051,7 +1102,19 @@ function bae_admin_dashboard() {
                         <div class="bae-adm-topbar-title"><?php echo esc_html($route_titles[$route] ?? 'Overview'); ?></div>
                         <div class="bae-adm-topbar-sub">Brand Asset Engine</div>
                     </div>
-                    <div class="bae-adm-topbar-date"><?php echo date('M d, Y'); ?></div>
+                    <div class="bae-adm-topbar-right">
+                        <div class="bae-adm-topbar-date"><?php echo date('M d, Y'); ?></div>
+                        <button type="button" class="bae-adm-theme-btn" id="bae-adm-theme-btn" onclick="baeAdmToggleTheme()">
+                            <span class="bae-adm-theme-icon" id="bae-adm-theme-icon">
+                                <svg id="bae-adm-icon-sun" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                                <svg id="bae-adm-icon-moon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                            </span>
+                            <span class="bae-adm-theme-label" id="bae-adm-theme-label">Light</span>
+                            <div class="bae-adm-toggle-track on" id="bae-adm-toggle-track">
+                                <div class="bae-adm-toggle-thumb"></div>
+                            </div>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bae-adm-body">
@@ -2110,8 +2173,42 @@ function bae_admin_dashboard() {
         });
     }
 
+    // ── Theme toggle
+    var baeAdmIsDark = (function() {
+        try { return localStorage.getItem('bae_theme') !== 'light'; } catch (e) { return true; }
+    })();
+
+    function baeAdmApplyTheme(dark, animate) {
+        var root  = document.querySelector('.bae-adm');
+        var track = document.getElementById('bae-adm-toggle-track');
+        var label = document.getElementById('bae-adm-theme-label');
+        var icon  = document.getElementById('bae-adm-theme-icon');
+        var sun   = document.getElementById('bae-adm-icon-sun');
+        var moon  = document.getElementById('bae-adm-icon-moon');
+        if (!root) return;
+        root.classList.toggle('bae-light', !dark);
+        if (track) track.className = dark ? 'bae-adm-toggle-track on' : 'bae-adm-toggle-track';
+        if (label) label.textContent = dark ? 'Dark' : 'Light';
+        if (sun) sun.style.display = dark ? 'none' : '';
+        if (moon) moon.style.display = dark ? '' : 'none';
+        try { localStorage.setItem('bae_theme', dark ? 'dark' : 'light'); } catch (e) {}
+        if (window.gsap) {
+            gsap.to('.bae-adm-toggle-thumb', { x: dark ? 16 : 0, duration: animate ? 0.4 : 0, ease: 'back.out(1.8)' });
+            if (icon && animate) gsap.fromTo(icon, { scale: 0.92 }, { scale: 1, duration: 0.25, ease: 'power2.out' });
+        } else {
+            var thumb = document.querySelector('.bae-adm-toggle-thumb');
+            if (thumb) thumb.style.transform = dark ? 'translateX(16px)' : 'translateX(0)';
+        }
+    }
+
+    function baeAdmToggleTheme() {
+        baeAdmIsDark = !baeAdmIsDark;
+        baeAdmApplyTheme(baeAdmIsDark, true);
+    }
+
     // ── Init
     document.addEventListener('DOMContentLoaded', function() {
+        baeAdmApplyTheme(baeAdmIsDark, false);
         if (window.gsap) gsap.fromTo('.bae-adm-stat', {opacity:0,y:12}, {opacity:1,y:0,duration:.4,stagger:.05,ease:'power2.out',delay:.1});
     });
     </script>

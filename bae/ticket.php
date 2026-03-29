@@ -718,7 +718,7 @@ function bntm_bae_ticket_screen() {
     .baetk-logo svg { width:26px; height:26px; }
     .baetk-title { font-family:'Instrument Serif',serif; font-size:32px; font-style:italic; color:#ede9ff; margin-bottom:8px; line-height:1.2; width:100%; position:relative; z-index:2; }
     .baetk-sub { font-size:14px; color:#4d4a65; margin-bottom:36px; line-height:1.7; width:100%; position:relative; z-index:2; }
-    .baetk-inp { width:100%; background:rgba(255,255,255,.05); border:1.5px solid rgba(139,92,246,.2); border-radius:14px; padding:16px 20px; font-size:22px; font-family:'Geist',monospace; font-weight:700; letter-spacing:.15em; color:#ede9ff; outline:none; text-align:center; text-transform:uppercase; transition:border-color .2s,box-shadow .2s; margin-bottom:14px; display:block; box-sizing:border-box; position:relative; z-index:2; pointer-events:auto; }
+    .baetk-inp { width:100%; background:rgba(28,20,12,0.04); border:1.5px solid rgba(139,92,246,.2); border-radius:14px; padding:16px 20px; font-size:22px; font-family:'Geist',monospace; font-weight:700; letter-spacing:.15em; color:#1d1a16; outline:none; text-align:center; text-transform:uppercase; transition:border-color .2s,box-shadow .2s; margin-bottom:14px; display:block; box-sizing:border-box; position:relative; z-index:2; pointer-events:auto; }
     .baetk-inp:focus { border-color:#8b5cf6; box-shadow:0 0 0 3px rgba(139,92,246,.15); }
     .baetk-inp::placeholder { color:#2a2740; font-size:15px; letter-spacing:.08em; }
     .baetk-btn { width:100%; background:linear-gradient(135deg,#6d28d9,#8b5cf6); color:white; border:none; border-radius:14px; padding:15px 24px; font-size:15px; font-weight:700; font-family:'Geist',sans-serif; cursor:pointer; transition:all .2s; box-shadow:0 8px 28px rgba(109,40,217,.4); display:flex; align-items:center; justify-content:center; gap:10px; box-sizing:border-box; position:relative; z-index:2; pointer-events:auto; }
@@ -757,13 +757,37 @@ function bntm_bae_ticket_screen() {
     .baetk-kicker { display:block; font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:#8c857a; margin-bottom:2px; }
     .baetk[data-theme="dark"] .baetk-kicker { color:#8c88a8; }
     .baetk-brandname { display:block; font-family:'Instrument Serif',serif; font-size:18px; line-height:1; color:inherit; }
-    .baetk-theme { display:inline-flex; gap:4px; padding:3px; border:1px solid rgba(28,20,12,.08); background:rgba(255,255,255,.74); border-radius:999px; box-shadow:0 14px 34px rgba(28,20,12,.08); backdrop-filter:blur(20px); transition:transform .25s ease, box-shadow .25s ease, filter .25s ease; }
-    .baetk[data-theme="dark"] .baetk-theme { border-color:rgba(255,255,255,.08); background:rgba(28,28,38,.86); box-shadow:0 20px 50px rgba(0,0,0,.35); }
-    .baetk-theme button { appearance:none; border:none; background:transparent; color:#6d665c; font:600 10px/1 'Geist',sans-serif; padding:8px 11px; border-radius:999px; cursor:pointer; transition:all .2s ease; letter-spacing:.08em; text-transform:uppercase; }
-    .baetk[data-theme="dark"] .baetk-theme button { color:#a7a2bb; }
-    .baetk-theme button.is-active { color:#1d1a16; background:rgba(248,246,240,.9); box-shadow:inset 0 0 0 1px rgba(28,20,12,.08), 0 0 18px rgba(124,58,237,.08); }
-    .baetk[data-theme="dark"] .baetk-theme button.is-active { color:#f4f1ff; background:rgba(34,34,46,.92); box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
-    .baetk-theme button:hover { transform:translateY(-1px) scale(1.03); box-shadow:0 10px 22px rgba(124,58,237,.12); }
+    .baetk-theme-btn {
+        display:flex; align-items:center; gap:8px;
+        background:rgba(255,255,255,.74); border:1px solid rgba(28,20,12,.08);
+        border-radius:10px; padding:7px 14px;
+        font-size:12px; font-weight:600; color:#6d665c;
+        cursor:pointer; font-family:'Geist',sans-serif;
+        transition:all .2s ease, box-shadow .25s ease, transform .2s ease;
+        backdrop-filter:blur(20px);
+    }
+    .baetk[data-theme="dark"] .baetk-theme-btn { color:#a7a2bb; background:rgba(28,28,38,.86); border-color:rgba(255,255,255,.08); box-shadow:0 20px 50px rgba(0,0,0,.35); }
+    .baetk-theme-btn:hover { color:#1d1a16; border-color:#d6c9ff; transform:translateY(-1px); }
+    .baetk[data-theme="dark"] .baetk-theme-btn:hover { color:#f4f1ff; border-color:rgba(167,139,250,.3); }
+    .baetk-theme-icon { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; }
+    .baetk-theme-label { font-size:12px; font-weight:600; letter-spacing:.01em; }
+    .baetk-toggle-track {
+        width:34px; height:18px;
+        background:rgba(255,255,255,.7);
+        border:1px solid rgba(28,20,12,.08);
+        border-radius:999px; position:relative;
+        transition:background .3s, border-color .3s;
+        flex-shrink:0;
+    }
+    .baetk[data-theme="dark"] .baetk-toggle-track { background:rgba(34,34,46,.92); border-color:rgba(255,255,255,.08); }
+    .baetk-toggle-track.on { background:var(--accent); border-color:var(--accent); }
+    .baetk-toggle-thumb {
+        position:absolute; top:2px; left:2px;
+        width:12px; height:12px; background:white;
+        border-radius:50%; transition:transform .35s cubic-bezier(.2,.8,.2,1);
+        box-shadow:0 1px 3px rgba(0,0,0,.3);
+    }
+    .baetk-toggle-track.on .baetk-toggle-thumb { transform:translateX(16px); }
     .baetk-logo { width:36px; height:36px; background:linear-gradient(135deg,#111827,#7c3aed); border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0; box-shadow:0 16px 32px rgba(124,58,237,.18); position:relative; z-index:2; transition:transform .28s ease, box-shadow .28s ease, filter .28s ease; }
     .baetk-logo svg { width:18px; height:18px; }
     .baetk-logo:hover { transform:scale(1.05) rotate(-2deg); box-shadow:0 20px 46px rgba(124,58,237,.26); }
@@ -778,6 +802,7 @@ function bntm_bae_ticket_screen() {
     .baetk-spin { border:2px solid rgba(124,58,237,.24); border-top-color:var(--accent); }
     .baetk-inp::placeholder { color:#a49c92; }
     .baetk[data-theme="dark"] .baetk-inp::placeholder { color:#6a667e; }
+    .baetk[data-theme="dark"] .baetk-inp { color:#ede9ff; background:rgba(255,255,255,.05); }
     .baetk-hero { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr); gap:28px; align-items:start; min-height:calc(100vh - 118px); padding:8px 0 24px; }
     .baetk-copy { position:relative; z-index:1; }
     .baetk-eyebrow { display:inline-flex; align-items:center; gap:10px; padding:10px 14px; border-radius:999px; border:1px solid rgba(28,20,12,.08); background:rgba(255,255,255,.86); color:#6d665c; font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:24px; box-shadow:0 18px 50px rgba(28,20,12,.08); backdrop-filter:blur(20px); }
@@ -795,7 +820,7 @@ function bntm_bae_ticket_screen() {
     .baetk-stat strong { display:block; font-size:15px; color:inherit; margin-bottom:4px; }
     .baetk-stat span { display:block; font-size:11px; line-height:1.55; color:#8c857a; }
     .baetk[data-theme="dark"] .baetk-stat span { color:#6a667e; }
-    .baetk-card { border-radius:30px; border:1px solid rgba(28,20,12,.08); background:linear-gradient(180deg, rgba(255,255,255,.62), rgba(248,246,240,.78)); box-shadow:0 22px 60px rgba(28,20,12,.1); backdrop-filter:blur(26px); padding:28px; position:relative; overflow:hidden; margin-top:-28px; transition:transform .28s ease, box-shadow .28s ease; }
+    .baetk-card { border-radius:30px; border:1px solid rgba(28,20,12,.08); background:linear-gradient(180deg, rgba(255,255,255,.62), rgba(248,246,240,.78)); box-shadow:0 22px 60px rgba(28,20,12,.1); backdrop-filter:blur(26px); padding:28px; position:relative; overflow:hidden; margin-top:10px; transition:transform .28s ease, box-shadow .28s ease; }
     .baetk[data-theme="dark"] .baetk-card { border-color:rgba(255,255,255,.08); background:linear-gradient(180deg, rgba(28,28,38,.88), rgba(34,34,46,.92)); box-shadow:0 20px 50px rgba(0,0,0,.35); }
     .baetk-card::before { content:''; position:absolute; inset:auto -30px -30px auto; width:170px; height:170px; border-radius:50%; background:radial-gradient(circle, rgba(124,58,237,.14) 0%, transparent 70%); pointer-events:none; animation:baetk-drift 14s ease-in-out infinite; }
     .baetk-card:hover { transform:translateY(-4px) scale(1.01); box-shadow:0 28px 72px rgba(28,20,12,.14); }
@@ -1334,6 +1359,27 @@ function bntm_bae_ticket_screen() {
         padding:80px 0;
         background:linear-gradient(135deg, rgba(17,24,39,.95), rgba(124,58,237,.88));
         color:#fff;
+        position:relative;
+        -webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0), rgba(0,0,0,1) 16%);
+        mask-image: linear-gradient(0deg, rgba(0,0,0,0), rgba(0,0,0,1) 16%);
+    }
+    .baetk-cta::before {
+        /* optional decorative glow on bottom edge */
+        content:'';
+        position:absolute;
+        bottom:0;
+        left:0;
+        right:0;
+        height:150px;
+        pointer-events:none;
+        z-index:1;
+    }
+    .baetk[data-theme="dark"] .baetk-cta {
+        -webkit-mask-image: linear-gradient(0deg, rgba(0,0,0,0), rgba(0,0,0,1) 16%);
+        mask-image: linear-gradient(0deg, rgba(0,0,0,0), rgba(0,0,0,1) 16%);
+    }
+    .baetk[data-theme="dark"] .baetk-cta::before {
+        background:linear-gradient(0deg, rgba(3,6,15,0) 0%, rgba(5,8,20,0.64) 100%);
     }
     .baetk-cta-inner {
         width:min(1200px, calc(100% - 40px));
@@ -1342,6 +1388,8 @@ function bntm_bae_ticket_screen() {
         grid-template-columns:1.05fr .95fr;
         gap:24px;
         align-items:center;
+        position:relative;
+        z-index:2;
     }
     .baetk-cta h3 { margin:0 0 12px; font-size:14px; letter-spacing:.22em; text-transform:uppercase; opacity:.8; }
     .baetk-cta p { margin:0; font-size:14px; line-height:1.85; color:rgba(255,255,255,.82); max-width:56ch; }
@@ -1379,7 +1427,27 @@ function bntm_bae_ticket_screen() {
     .baetk[data-theme="dark"] .baetk-footer-inner { border-top-color:rgba(255,255,255,.08); color:#6a667e; }
     .baetk-footer-links { display:flex; gap:14px; flex-wrap:wrap; justify-content:flex-end; }
     .baetk-footer-links a { color:inherit; text-decoration:none; }
-    #baetk-section-1 { background:linear-gradient(180deg, rgba(251,251,248,.2), rgba(247,244,237,.05)); }
+    #baetk-section-1 {
+        background:linear-gradient(180deg, rgba(251,251,248,.2), rgba(247,244,237,.05));
+        position:relative;
+        -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,1) 16%);
+        mask-image: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,1) 16%);
+    }
+    #baetk-section-1::before {
+        /* optional decorative glow, can be kept or removed */
+        content:'';
+        position:absolute;
+        top:0;
+        left:0;
+        right:0;
+        height:120px;
+        pointer-events:none;
+        z-index:1;
+    }
+    .baetk[data-theme="dark"] #baetk-section-1 {
+        -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,1) 16%);
+        mask-image: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,1) 16%);
+    }
     #baetk-section-2 { background:linear-gradient(180deg, rgba(247,244,237,.05), rgba(251,251,248,.18)); }
     #baetk-section-3 { background:linear-gradient(180deg, rgba(247,244,237,.12), rgba(251,251,248,.02)); }
     #baetk-section-4 { background:linear-gradient(180deg, rgba(251,251,248,.04), rgba(247,244,237,.14)); }
@@ -1413,10 +1481,16 @@ function bntm_bae_ticket_screen() {
                         <span class="baetk-brandname">One ticket. One brand.</span>
                     </div>
                 </div>
-                <div class="baetk-theme" role="tablist" aria-label="Theme toggle">
-                    <button type="button" id="baetk-light-btn" class="is-active" onclick="baeTkTheme('light')">Light</button>
-                    <button type="button" id="baetk-dark-btn" onclick="baeTkTheme('dark')">Dark</button>
-                </div>
+                <button type="button" class="baetk-theme-btn" id="baetk-theme-btn" onclick="baeTkToggleTheme()">
+                    <span class="baetk-theme-icon" id="baetk-theme-icon">
+                        <svg id="baetk-icon-sun" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                        <svg id="baetk-icon-moon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    </span>
+                    <span class="baetk-theme-label" id="baetk-theme-label">Light</span>
+                    <div class="baetk-toggle-track on" id="baetk-toggle-track">
+                        <div class="baetk-toggle-thumb"></div>
+                    </div>
+                </button>
             </div>
 
             <div class="baetk-hero">
@@ -1594,23 +1668,43 @@ function bntm_bae_ticket_screen() {
 
     function _baeTkEl(id) { return document.getElementById(id); }
 
-    function baeTkTheme(theme) {
+    var baeTkIsDark = (localStorage.getItem('bae_theme') !== 'light');
+
+    function baeTkApplyTheme(dark, animate) {
         var page = _baeTkEl('baetk-page');
-        var lightBtn = _baeTkEl('baetk-light-btn');
-        var darkBtn = _baeTkEl('baetk-dark-btn');
+        var track = _baeTkEl('baetk-toggle-track');
+        var label = _baeTkEl('baetk-theme-label');
+        var icon  = _baeTkEl('baetk-theme-icon');
+        var sun   = _baeTkEl('baetk-icon-sun');
+        var moon  = _baeTkEl('baetk-icon-moon');
         if (!page) return;
-        page.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
-        if (lightBtn) lightBtn.className = theme === 'light' ? 'is-active' : '';
-        if (darkBtn) darkBtn.className = theme === 'dark' ? 'is-active' : '';
+        page.setAttribute('data-theme', dark ? 'dark' : 'light');
+        if (track) track.className = dark ? 'baetk-toggle-track on' : 'baetk-toggle-track';
+        if (label) label.textContent = dark ? 'Dark' : 'Light';
+        if (sun) sun.style.display = dark ? 'none' : '';
+        if (moon) moon.style.display = dark ? '' : 'none';
         try { localStorage.setItem('bae_theme', page.getAttribute('data-theme')); } catch (e) {}
+        if (window.gsap) {
+            gsap.to('.baetk-toggle-thumb', { x: dark ? 16 : 0, duration: animate ? 0.4 : 0, ease: 'back.out(1.8)' });
+            if (icon && animate) gsap.fromTo(icon, { scale: 0.92 }, { scale: 1, duration: 0.25, ease: 'power2.out' });
+        } else if (track) {
+            var thumb = track.querySelector('.baetk-toggle-thumb');
+            if (thumb) thumb.style.transform = dark ? 'translateX(16px)' : 'translateX(0)';
+        }
+    }
+
+    function baeTkToggleTheme() {
+        baeTkIsDark = !baeTkIsDark;
+        baeTkApplyTheme(baeTkIsDark, true);
     }
 
     // Auto-format input as user types → BAE-XXXX-XXXX
     document.addEventListener('DOMContentLoaded', function() {
         try {
             var savedTheme = localStorage.getItem('bae_theme');
-            if (savedTheme === 'dark' || savedTheme === 'light') baeTkTheme(savedTheme);
+            if (savedTheme === 'dark' || savedTheme === 'light') baeTkIsDark = (savedTheme === 'dark');
         } catch (e) {}
+        baeTkApplyTheme(baeTkIsDark, false);
 
         var f = _baeTkEl('baetk-f');
         if (!f) return;
@@ -1895,23 +1989,40 @@ function bntm_bae_ticket_screen() {
                 var exp = new Date(Date.now() + 365*24*60*60*1000).toUTCString();
                 document.cookie = 'bae_ticket=' + encodeURIComponent(ticket) + '; expires=' + exp + '; path=/; SameSite=Lax';
 
+                var theme = document.querySelector('#baetk-page').getAttribute('data-theme') || 'light';
+                var isDark = theme === 'dark';
+
+                var overlayBg = isDark ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.85)';
+                var modalBg = isDark ? '#13111f' : '#ffffff';
+                var modalBorder = isDark ? 'rgba(139,92,246,0.3)' : 'rgba(28,20,12,0.08)';
+                var titleColor = isDark ? '#ede9ff' : '#1d1a16';
+                var textColor = isDark ? '#4d4a65' : '#6d665c';
+                var codeBg = isDark ? 'rgba(139,92,246,0.1)' : 'rgba(124,58,237,0.06)';
+                var codeBorder = isDark ? 'rgba(139,92,246,0.25)' : 'rgba(124,58,237,0.16)';
+                var codeLabelColor = isDark ? '#4d4a65' : '#5b21b6';
+                var codeTextColor = isDark ? '#ede9ff' : '#1d1a16';
+                var copyBtnBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.8)';
+                var copyBtnBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(28,20,12,0.08)';
+                var copyBtnColor = isDark ? '#8b88a4' : '#6d665c';
+                var footerColor = isDark ? '#2a2740' : '#8c857a';
+
                 var overlay = document.createElement('div');
                 overlay.id = 'baetk-reveal';
-                overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:24px;';
+                overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:' + overlayBg + ';display:flex;align-items:center;justify-content:center;padding:24px;';
                 overlay.innerHTML = [
-                    '<div style="background:#13111f;border:1px solid rgba(139,92,246,0.3);border-radius:20px;padding:36px 32px;max-width:420px;width:100%;text-align:center;">',
+                    '<div style="background:' + modalBg + ';border:1px solid ' + modalBorder + ';border-radius:20px;padding:36px 32px;max-width:420px;width:100%;text-align:center;">',
                         '<div style="width:48px;height:48px;background:linear-gradient(135deg,#6d28d9,#ec4899);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">',
                             '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg>',
                         '</div>',
-                        '<div style="font-family:Instrument Serif,serif;font-size:26px;font-style:italic;color:#ede9ff;margin-bottom:8px;">Your ticket is ready</div>',
-                        '<div style="font-size:13px;color:#4d4a65;margin-bottom:24px;">Save this code to access your workspace from any device.</div>',
-                        '<div style="background:rgba(139,92,246,0.1);border:1.5px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px 20px;margin-bottom:8px;">',
-                            '<div style="font-size:11px;font-weight:700;color:#4d4a65;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Your Ticket Code</div>',
-                            '<div style="font-family:monospace;font-size:26px;font-weight:800;letter-spacing:0.18em;color:#ede9ff;">' + ticket + '</div>',
+                        '<div style="font-family:Instrument Serif,serif;font-size:26px;font-style:italic;color:' + titleColor + ';margin-bottom:8px;">Your ticket is ready</div>',
+                        '<div style="font-size:13px;color:' + textColor + ';margin-bottom:24px;">Save this code to access your workspace from any device.</div>',
+                        '<div style="background:' + codeBg + ';border:1.5px solid ' + codeBorder + ';border-radius:12px;padding:16px 20px;margin-bottom:8px;">',
+                            '<div style="font-size:11px;font-weight:700;color:' + codeLabelColor + ';letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Your Ticket Code</div>',
+                            '<div style="font-family:monospace;font-size:26px;font-weight:800;letter-spacing:0.18em;color:' + codeTextColor + ';">' + ticket + '</div>',
                         '</div>',
-                        '<button onclick="baeTkCopyReveal(\'' + ticket + '\')" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px;font-size:13px;font-weight:600;color:#8b88a4;cursor:pointer;margin-bottom:16px;" id="baetk-copy-reveal">Copy ticket code</button>',
+                        '<button onclick="baeTkCopyReveal(\'' + ticket + '\')" style="width:100%;background:' + copyBtnBg + ';border:1px solid ' + copyBtnBorder + ';border-radius:10px;padding:10px;font-size:13px;font-weight:600;color:' + copyBtnColor + ';cursor:pointer;margin-bottom:16px;" id="baetk-copy-reveal">Copy ticket code</button>',
                         '<button onclick="baeTkRevealContinue()" style="width:100%;background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:white;border:none;border-radius:12px;padding:14px 24px;font-size:15px;font-weight:700;cursor:pointer;">Continue to workspace</button>',
-                        '<div style="font-size:11px;color:#2a2740;margin-top:16px;">You can find this code in Settings anytime.</div>',
+                        '<div style="font-size:11px;color:' + footerColor + ';margin-top:16px;">You can find this code in Settings anytime.</div>',
                     '</div>'
                 ].join('');
                 document.body.appendChild(overlay);
