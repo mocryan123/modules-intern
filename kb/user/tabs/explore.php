@@ -372,7 +372,7 @@ function kbf_dashboard_find_funds_tab() {
           <form id="kbff-sponsor-form" onsubmit="return false;">
             <input type="hidden" name="fund_id" id="kbff-fund-id">
             <div class="kbf-form-row">
-              <div class="kbf-form-group"><label>Name / Company / Organization</label><input type="text" name="sponsor_name" id="kbff-name" placeholder="Your name, company, or org"></div>
+              <div class="kbf-form-group"><label>Name / Company / Account</label><input type="text" name="sponsor_name" id="kbff-name" placeholder="Your name, company, or account"></div>
               <div class="kbf-form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;">
                 <label class="kbf-checkbox-row"><input type="checkbox" id="kbff-anon" onchange="document.getElementById('kbff-name').disabled=this.checked"> Sponsor Anonymously</label>
               </div>

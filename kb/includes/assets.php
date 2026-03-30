@@ -647,7 +647,10 @@ function kbf_global_assets() {
     .kbf-form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--kbf-text-sm); margin-bottom: 6px; }
     .kbf-form-group input,
     .kbf-form-group select,
-    .kbf-form-group textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--kbf-border); border-radius: 7px; font-size: 13.5px; color: var(--kbf-text); background: #fff; transition: border-color .15s; }
+    .kbf-form-group textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--kbf-border); border-radius: 7px; font-size: 13.5px; color: var(--kbf-text); background: #fff; transition: border-color .15s; font-family: inherit; }
+    .kbf-form-group input::placeholder,
+    .kbf-form-group textarea::placeholder { color: #8aa0b8; font-weight: 400; font-family: inherit; }
+    .kbf-form-group input[type="date"] { font-family: inherit; color: var(--kbf-text); }
     .kbf-form-group input:focus,
     .kbf-form-group select:focus,
     .kbf-form-group textarea:focus { outline: none; border-color: var(--kbf-navy-light); box-shadow: none; }
@@ -656,15 +659,27 @@ function kbf_global_assets() {
     .kbf-checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--kbf-navy); }
 
     /* Modals */
-    .kbf-modal-overlay { position: fixed; inset: 0; background: rgba(15,32,68,.55); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(3px); }
-    .kbf-modal { background: #fff; border-radius: 14px; width: 94%; max-width: 660px; max-height: 92vh; overflow-y: auto; box-shadow: none; display: flex; flex-direction: column; }
+    .kbf-modal-overlay { position: fixed; inset: 0; background: rgba(10,16,32,.58); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(6px); }
+    .kbf-modal {
+        position: relative;
+        background: #fff;
+        border-radius: 18px;
+        width: 94%;
+        max-width: 660px;
+        max-height: 92vh;
+        overflow-y: auto;
+        border: 1px solid #e6edf7;
+        box-shadow: 0 24px 60px rgba(15,23,42,.18), 0 8px 20px rgba(15,23,42,.12);
+        display: flex;
+        flex-direction: column;
+    }
     .kbf-modal-sm { max-width: 460px; }
-    .kbf-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 16px; border-bottom: 1px solid var(--kbf-border); background: #0b1220; border-radius: 14px 14px 0 0; }
-    .kbf-modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #fff; font-family: 'Fraunces', serif; }
-    .kbf-modal-close { background: rgba(255,255,255,.15); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background .15s; }
-    .kbf-modal-close:hover { background: rgba(255,255,255,.28); }
+    .kbf-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 16px; border-bottom: 1px solid #e7eef8; background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%); border-radius: 18px 18px 0 0; }
+    .kbf-modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; font-family: inherit; }
+    .kbf-modal-close { background: #f1f5ff; border: 1px solid #dbe7ff; color: #2a5bd7; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background .15s, transform .15s, box-shadow .15s; }
+    .kbf-modal-close:hover { background: #e7efff; box-shadow: 0 4px 10px rgba(42,91,215,.18); transform: translateY(-1px); }
     .kbf-modal-body { padding: 24px; flex: 1; }
-    .kbf-modal-footer { padding: 16px 24px; border-top: 1px solid var(--kbf-border); background: var(--kbf-slate-lt); border-radius: 0 0 14px 14px; display: flex; justify-content: flex-end; gap: 10px; }
+    .kbf-modal-footer { padding: 16px 24px; border-top: 1px solid #e7eef8; background: #f7f9fd; border-radius: 0 0 18px 18px; display: flex; justify-content: flex-end; gap: 10px; }
 
     /* Tables */
     .kbf-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid #e9eef6; background: #fff; }
@@ -1187,6 +1202,8 @@ function kbf_global_assets() {
     </script>
     <?php
 }
+
+
 
 
 

@@ -9,8 +9,8 @@ function bntm_kbf_render_signin() {
     kbf_global_assets();
     $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : '#';
     if (is_user_logged_in()) {
-        $dash = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
-        wp_safe_redirect(add_query_arg('kbf_tab', 'overview', $dash));
+        $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('home') : home_url('/');
+        wp_safe_redirect($home);
         exit;
     }
     $login_error = '';
@@ -39,14 +39,14 @@ function bntm_kbf_render_signin() {
                     $login_error = 'Invalid login details. Please try again.';
                 }
             } else {
-                $dash = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
-                wp_safe_redirect(add_query_arg('kbf_tab', 'overview', $dash));
+                $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('home') : home_url('/');
+                wp_safe_redirect($home);
                 exit;
             }
         }
     }
     ob_start();
-    ?>
+?>
     <style>
       html,body{margin:0 !important;padding:0;width:100%;height:100%;overflow:hidden;}
       html,body{margin-top:0 !important;}
@@ -209,4 +209,5 @@ function bntm_kbf_render_signin() {
     </div>
     <?php
     return ob_get_clean();
-}
+}\r\n\r\n?>\r\n
+

@@ -216,6 +216,102 @@ function bntm_kbf_render_landing() {
         position: relative;
         z-index: 1;
     }
+    /* Premium motion (subtle, non-slop) */
+    .kbf-hero .kbf-hero-left,
+    .kbf-hero .kbf-hero-right{
+        opacity:1;
+        transform:translateY(0);
+    }
+    .kbf-page-loaded .kbf-hero .kbf-hero-left{animation:kbfHeroRise .7s cubic-bezier(.2,.65,.3,1) .05s both;}
+    .kbf-page-loaded .kbf-hero .kbf-hero-right{animation:kbfHeroRise .7s cubic-bezier(.2,.65,.3,1) .15s both;}
+    @keyframes kbfHeroRise{
+        from{opacity:0; transform:translateY(12px);}
+        to{opacity:1; transform:translateY(0);}
+    }
+    /* ─── Scroll reveal system ─── */
+    .kbf-reveal {
+        opacity: 0;
+        transform: translateY(22px);
+        transition:
+            opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: opacity, transform;
+    }
+    .kbf-reveal.is-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Delay variants for staggered sibling reveals */
+    .kbf-reveal.delay-1 { transition-delay: 0.06s; }
+    .kbf-reveal.delay-2 { transition-delay: 0.13s; }
+    .kbf-reveal.delay-3 { transition-delay: 0.20s; }
+
+    /* Child stagger — direct children of a revealed section */
+    .kbf-reveal.is-in > * {
+        opacity: 0;
+        transform: translateY(14px);
+        animation: none;
+    }
+    /* Stagger kicks in after parent resolves */
+    .kbf-reveal.is-in > *:nth-child(1) { animation: kbfChildIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
+    .kbf-reveal.is-in > *:nth-child(2) { animation: kbfChildIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both; }
+    .kbf-reveal.is-in > *:nth-child(3) { animation: kbfChildIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both; }
+    .kbf-reveal.is-in > *:nth-child(4) { animation: kbfChildIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both; }
+    .kbf-reveal.is-in > *:nth-child(n+5) { animation: kbfChildIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.46s both; }
+
+    @keyframes kbfChildIn {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Heading clip reveal — apply .kbf-heading-reveal to h1/h2 */
+    .kbf-heading-reveal {
+        clip-path: inset(0 0 100% 0);
+        transition: clip-path 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .kbf-reveal.is-in .kbf-heading-reveal,
+    .is-in.kbf-heading-reveal {
+        clip-path: inset(0 0 0% 0);
+    }
+
+    /* Cards in feature grid — cascade with y offset */
+    .kbf-reveal.is-in .kbf-card:nth-child(1) { animation: kbfCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
+    .kbf-reveal.is-in .kbf-card:nth-child(2) { animation: kbfCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both; }
+    .kbf-reveal.is-in .kbf-card:nth-child(3) { animation: kbfCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both; }
+    .kbf-reveal.is-in .kbf-card:nth-child(4) { animation: kbfCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both; }
+    .kbf-reveal.is-in .kbf-card:nth-child(5) { animation: kbfCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.48s both; }
+
+    @keyframes kbfCardIn {
+        from { opacity: 0; transform: translateY(18px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stat numbers — count-up is handled in JS; just fade the block */
+    .kbf-about-stat {
+        opacity: 0;
+        transform: translateY(10px);
+        transition:
+            opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .kbf-stats-revealed .kbf-about-stat:nth-child(1) { opacity: 1; transform: none; transition-delay: 0.10s; }
+    .kbf-stats-revealed .kbf-about-stat:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.20s; }
+    .kbf-stats-revealed .kbf-about-stat:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.30s; }
+    .kbf-stats-revealed .kbf-about-stat:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.40s; }
+    @media (prefers-reduced-motion: reduce) {
+        .kbf-reveal,
+        .kbf-reveal.is-in > *,
+        .kbf-card,
+        .kbf-about-stat,
+        .kbf-heading-reveal {
+            transition: none !important;
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            clip-path: none !important;
+        }
+    }
 
     /* Left */
     .kbf-hero-left {
@@ -510,11 +606,6 @@ function bntm_kbf_render_landing() {
         justify-content: space-between; align-items: center;
         flex-wrap: wrap; gap: 18px;
     }
-    .kbf-reveal { opacity: 0; transform: translateY(12px); animation: kbfFadeUp .6s ease forwards; }
-    .kbf-reveal.delay-1 { animation-delay: .1s; }
-    .kbf-reveal.delay-2 { animation-delay: .2s; }
-    .kbf-reveal.delay-3 { animation-delay: .3s; }
-    @keyframes kbfFadeUp { to { opacity: 1; transform: translateY(0); } }
     .kbf-footer h5 { margin: 0 0 8px; color: #fff; }
     .kbf-footer small { color: #8590a6; }
     .kbf-footer .kbf-social { display: flex; gap: 8px; }
@@ -832,7 +923,7 @@ function bntm_kbf_render_landing() {
   
 
         <!-- NAVBAR -->
-        <div class="kbf-topbar kbf-reveal">
+        <div class="kbf-topbar">
           <div class="kbf-topbar-left">
             <div class="kbf-brand">
               <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:25px;object-fit:contain;border-radius:6px;">
@@ -871,7 +962,7 @@ function bntm_kbf_render_landing() {
         </div>
 
         <!-- HERO -->
-        <div id="kbf-home" class="kbf-hero kbf-reveal delay-1" style="margin-top: 45px; margin-bottom: 45px;">
+        <div id="kbf-home" class="kbf-hero" style="margin-top: 45px; margin-bottom: 45px;">
           <div class="kbf-hero-inner">
 
             <!-- Left: Text -->
@@ -1125,6 +1216,84 @@ function bntm_kbf_render_landing() {
     </section>
     <!-- ================== JS ================== -->
     <script>
+    (function () {
+        // Page load: mark immediately so hero animations fire
+        requestAnimationFrame(function () {
+            document.documentElement.classList.add('kbf-page-loaded');
+        });
+
+        if (!('IntersectionObserver' in window)) {
+            // Fallback: reveal everything
+            document.querySelectorAll('.kbf-reveal').forEach(function (el) {
+                el.classList.add('is-in');
+            });
+            document.querySelectorAll('.kbf-about-stats').forEach(function (el) {
+                el.classList.add('kbf-stats-revealed');
+            });
+            return;
+        }
+
+        // ── Section reveals ──────────────────────────────────────────
+        var revealIO = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-in');
+                revealIO.unobserve(entry.target);
+            });
+        }, {
+            rootMargin: '0px 0px -8% 0px',
+            threshold: 0.07
+        });
+
+        document.querySelectorAll(
+            '.kbf-section, .kbf-urgent-grid, .kbf-feature-grid, .kbf-faq, .kbf-stat, .kbf-footer'
+        ).forEach(function (el) {
+            if (!el.classList.contains('kbf-reveal')) {
+                el.classList.add('kbf-reveal');
+            }
+            revealIO.observe(el);
+        });
+
+        // ── Stat number count-up ─────────────────────────────────────
+        var statsIO = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('kbf-stats-revealed');
+                animateStatNumbers(entry.target);
+                statsIO.unobserve(entry.target);
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('.kbf-about-stats').forEach(function (el) {
+            statsIO.observe(el);
+        });
+
+        function animateStatNumbers(container) {
+            container.querySelectorAll('.kbf-about-stat-num').forEach(function (el, i) {
+                var raw = el.textContent.trim();
+                var prefix = raw.match(/^[^\\d]*/)[0];
+                var suffix = raw.match(/[^\\d]*$/)[0];
+                var num    = parseFloat(raw.replace(/[^\\d.]/g, '')) || 0;
+
+                if (num === 0) return;
+
+                var delay  = 60 * i;
+                var dur    = 700;
+                var start  = null;
+
+                setTimeout(function () {
+                    requestAnimationFrame(function tick(ts) {
+                        if (!start) start = ts;
+                        var p = Math.min((ts - start) / dur, 1);
+                        var eased = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+                        var val = eased * num;
+                        el.textContent = prefix + (Number.isInteger(num) ? Math.round(val) : val.toFixed(1)) + suffix;
+                        if (p < 1) requestAnimationFrame(tick);
+                    });
+                }, delay);
+            });
+        }
+    })();
     window.kbfScrollTo = function(id) {
         if (id === 'kbf-home') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1241,4 +1410,5 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
+
 

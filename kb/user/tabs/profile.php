@@ -198,7 +198,34 @@ function kbf_dashboard_profile_tab($business_id) {
 
       /* ── Bio ── */
       .kbf-profile-bio { margin-top: 8px; width: 100%; }
-      .kbf-profile-bio textarea { width: 100%; box-sizing: border-box; }
+      .kbf-profile-bio textarea {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 180px;
+        border-radius: 10px;
+        border: 1.5px solid var(--kbf-border);
+        padding: 12px 14px;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--kbf-text);
+        background: #fff;
+        font-family: inherit;
+      }
+      .kbf-profile-bio textarea:focus{
+        outline: none;
+        border-color: var(--kbf-navy-light);
+        box-shadow: none;
+      }
+      .kbf-profile-bio textarea::placeholder{
+        color: #8aa0b8;
+        font-weight: 400;
+        font-family: inherit;
+      }
+      .kbf-profile-bio .kbf-char-count{
+        margin-top: 6px;
+        font-size: 11.5px;
+        color: #4f5a6b;
+      }
       .kbf-profile-card-left .kbf-form-group { width: 100%; }
       .kbf-profile-card-left .kbf-form-group input,
       .kbf-profile-card-left .kbf-form-group textarea { width: 100%; box-sizing: border-box; }
@@ -394,7 +421,7 @@ function kbf_dashboard_profile_tab($business_id) {
 
             <div class="kbf-profile-bio">
               <div class="kbf-profile-card-title">Bio / About</div>
-              <textarea id="kbf-profile-bio" name="bio" rows="4" maxlength="300" placeholder="Tell sponsors about yourself or your organization..."><?php echo esc_textarea(isset($profile->bio) ? $profile->bio : ''); ?></textarea>
+              <textarea id="kbf-profile-bio" name="bio" rows="4" maxlength="300" placeholder="Tell sponsors about yourself or your account..."><?php echo esc_textarea(isset($profile->bio) ? $profile->bio : ''); ?></textarea>
               <div class="kbf-char-count" id="kbf-profile-bio-count">0 / 300</div>
             </div>
 

@@ -481,7 +481,7 @@ function bntm_shortcode_kbf_browse() {
           <form id="kbf-sponsor-form" onsubmit="return false;">
             <input type="hidden" name="fund_id" id="sponsor-fund-id">
             <div class="kbf-form-row">
-              <div class="kbf-form-group"><label>Name / Company / Organization</label><input type="text" name="sponsor_name" id="sponsor-name-field" placeholder="Your name, company, or org"></div>
+              <div class="kbf-form-group"><label>Name / Company / Account</label><input type="text" name="sponsor_name" id="sponsor-name-field" placeholder="Your name, company, or account"></div>
               <div class="kbf-form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;">
                 <label class="kbf-checkbox-row"><input type="checkbox" id="anon-check" onchange="document.getElementById('sponsor-name-field').disabled=this.checked"> Sponsor Anonymously</label>
               </div>
