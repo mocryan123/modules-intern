@@ -958,4 +958,4 @@ foreach ($ajax_actions as $action => [$callback, $admin_only]) {
 
 // ============================================================
 
-require_once BNTM_CH_PATH . 'frontend.php';
+require_once BNTM_CH_PATH . 'includes/frontend.php';
