@@ -346,7 +346,7 @@
         </span>
         <div>
           <strong><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</strong>
-          Not visible to sponsors yet. You’ll be notified after approval.
+          Not visible to sponsors yet. Usually 24–48 hours. You’ll be notified after approval.
           <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
         </div>
       </div>
@@ -457,16 +457,7 @@
             </div>
           </div>
           <?php endif; ?>
-          <?php if($f->status === 'pending'): ?>
-          <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-            <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/>
-              </svg>
-            </span>
-            <div><strong>Under Review</strong> — Awaiting admin approval. Not visible to sponsors yet. Usually 24–48 hours.</div>
-          </div>
-          <?php elseif($f->status === 'suspended'): ?>
+          <?php if($f->status === 'suspended'): ?>
           <div style="background:#fce7f3;border-left:3px solid #db2777;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#831843;display:flex;align-items:flex-start;gap:10px;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
             <div><strong>Fund Suspended</strong> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
@@ -704,6 +695,19 @@
           return cards.filter(function(card){ return card.dataset.kbfFilterHidden !== '1'; });
         }
 
+        function scrollToCards(){
+          try {
+            var target = wrap.closest('.kbf-section') || wrap;
+            if (target && target.scrollIntoView) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          } catch(e) {
+            window.scrollTo(0, 0);
+          }
+        }
+
         function render(){
           var visible = getFilteredCards();
           var total = visible.length;
@@ -725,7 +729,7 @@
         function setLoading(btn){
           btn.classList.add('is-loading');
           btn.disabled = true;
-          setTimeout(function(){ btn.classList.remove('is-loading'); render(); }, 250);
+          setTimeout(function(){ btn.classList.remove('is-loading'); render(); scrollToCards(); }, 250);
         }
         select.addEventListener('change', function(){
           perPage = parseInt(this.value, 10) || 5;

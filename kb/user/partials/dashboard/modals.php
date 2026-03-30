@@ -140,37 +140,18 @@
     
 
     
-    <!-- ===== MODAL: Save Draft ===== -->
     <div id="kbf-modal-draft" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
         <div class="kbf-modal-header">
           <h3>Save as Draft?</h3>
-          <button class="kbf-modal-close" onclick="kbfCloseModal(''kbf-modal-draft'')">&times;</button>
+          <button class="kbf-modal-close" type="button" onclick="kbfCancelDraftPrompt()">&times;</button>
         </div>
         <div class="kbf-modal-body">
           <p style="margin:0;color:var(--kbf-slate);font-size:13px;">Do you want to save your progress so you can continue later?</p>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfDiscardCreateDraft()">No, discard</button>
-          <button class="kbf-btn kbf-btn-primary" type="button" onclick="kbfSaveCreateDraft()">Yes, save draft</button>
-        </div>
-      </div>
-    </div>
-
-    
-    <!-- ===== MODAL: Save Draft ===== -->
-    <div id="kbf-modal-draft" class="kbf-modal-overlay" style="display:none;">
-      <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header">
-          <h3>Save as Draft?</h3>
-          <button class="kbf-modal-close" onclick="kbfCloseModal(''kbf-modal-draft'')">&times;</button>
-        </div>
-        <div class="kbf-modal-body">
-          <p style="margin:0;color:var(--kbf-slate);font-size:13px;">Do you want to save your progress so you can continue later?</p>
-        </div>
-        <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfDiscardCreateDraft()">No, discard</button>
-          <button class="kbf-btn kbf-btn-primary" type="button" onclick="kbfSaveCreateDraft()">Yes, save draft</button>
+          <button class="kbf-btn kbf-btn-secondary" id="kbf-draft-discard" type="button" onclick="kbfDiscardCreateDraft()">No, discard</button>
+          <button class="kbf-btn kbf-btn-primary" id="kbf-draft-save" type="button" onclick="kbfSaveCreateDraft()">Yes, save draft</button>
         </div>
       </div>
     </div>
@@ -326,6 +307,5 @@
         </div>
       </div>
     </div>
-
 
 
