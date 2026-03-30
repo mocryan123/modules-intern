@@ -154,6 +154,29 @@ function bntm_ajax_kbf_admin_verify_organizer() {
     wp_send_json_success(['message'=>$v?'Organizer verified!':'Verification revoked.']);
 }
 
+function bntm_ajax_kbf_admin_process_escrow_request() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;
+    $et = $wpdb->prefix.'kbf_escrow_requests';
+    $ft = $wpdb->prefix.'kbf_funds';
+    $id = intval($_POST['request_id']);
+    $action = sanitize_text_field($_POST['action_type']);
+    $notes = sanitize_text_field(isset($_POST['notes']) ? $_POST['notes'] : '');
+    $req = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$et} WHERE id=%d",$id));
+    if(!$req) wp_send_json_error(['message'=>'Request not found.']);
+    if($req->status !== 'pending') wp_send_json_error(['message'=>'Request already processed.']);
+
+    if($action === 'approve') {
+        $wpdb->update($et, ['status'=>'approved','admin_notes'=>$notes,'reviewed_at'=>current_time('mysql')], ['id'=>$id], ['%s','%s','%s'], ['%d']);
+        $wpdb->update($ft, ['escrow_status'=>'released'], ['id'=>$req->fund_id], ['%s'], ['%d']);
+        wp_send_json_success(['message'=>'Escrow request approved. Funds released.']);
+    } else {
+        $wpdb->update($et, ['status'=>'rejected','admin_notes'=>$notes,'reviewed_at'=>current_time('mysql')], ['id'=>$id], ['%s','%s','%s'], ['%d']);
+        wp_send_json_success(['message'=>'Escrow request rejected.']);
+    }
+}
+
 function bntm_ajax_kbf_admin_trigger_onboarding() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }

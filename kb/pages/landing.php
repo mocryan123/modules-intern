@@ -5,10 +5,120 @@
 
 if (!defined('ABSPATH')) exit;
 
+if (!function_exists('bntm_kbf_landing_seo_meta')) {
+    function bntm_kbf_landing_seo_meta() {
+        if (empty($GLOBALS['kbf_landing_seo'])) return;
+        $seo = $GLOBALS['kbf_landing_seo'];
+        $title = esc_attr($seo['title']);
+        $desc  = esc_attr($seo['desc']);
+        $url   = esc_url($seo['url']);
+        $site  = esc_attr($seo['site']);
+        $logo  = esc_url($seo['logo']);
+        ?>
+        <meta name="description" content="<?php echo $desc; ?>">
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="<?php echo $title; ?>">
+        <meta property="og:description" content="<?php echo $desc; ?>">
+        <meta property="og:url" content="<?php echo $url; ?>">
+        <?php if ($logo): ?><meta property="og:image" content="<?php echo $logo; ?>"><?php endif; ?>
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="<?php echo $title; ?>">
+        <meta name="twitter:description" content="<?php echo $desc; ?>">
+        <?php if ($logo): ?><meta name="twitter:image" content="<?php echo $logo; ?>"><?php endif; ?>
+        <script type="application/ld+json">
+        <?php echo wp_json_encode($seo['schema']); ?>
+        </script>
+        <?php
+    }
+}
+
 function bntm_kbf_render_landing() {
     $cta_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('browse') : home_url('/');
     $login_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : '#';
     $join_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $cta_url;
+
+    $site_name = 'fundora';
+    $site_url  = home_url('/');
+    $page_url  = function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : $site_url;
+    $logo_url  = esc_url(BNTM_KBF_URL . 'assets/branding/logo.png');
+    $seo_title = 'fundora — Community-Powered Fundraising in the Philippines';
+    $seo_desc  = 'Start or support verified fundraisers with transparency, real updates, and community trust. Built for bayanihan, designed for Filipinos.';
+    $faq_schema = [
+        [
+            'question' => 'How can I sponsor a fundraiser?',
+            'answer' => 'Browse active campaigns, choose a cause, and sponsor using the available payment options.'
+        ],
+        [
+            'question' => 'Is my sponsorship taxdeductible?',
+            'answer' => 'Tax benefits depend on organizer accreditation and local regulations. Please check with the organizer first.'
+        ],
+        [
+            'question' => 'Can I sponsor in honor of someone?',
+            'answer' => 'Yes. Organizers can add dedication notes in campaign updates and acknowledgments.'
+        ],
+        [
+            'question' => 'How will my sponsorship be used?',
+            'answer' => 'Organizers share budgets and progress updates so sponsors can see how funds are allocated.'
+        ],
+        [
+            'question' => 'Can I set up recurring sponsorships?',
+            'answer' => 'Recurring sponsorships are planned and will be available in a future update.'
+        ],
+        [
+            'question' => 'How do organizers receive the funds?',
+            'answer' => 'Funds are released to organizers based on the platform’s payout schedule and verification steps.'
+        ],
+        [
+            'question' => 'What if a fundraiser looks suspicious?',
+            'answer' => 'You can report the fundraiser and our team will review it promptly.'
+        ],
+    ];
+    $faq_entities = array_map(function($item){
+        return [
+            '@type' => 'Question',
+            'name' => $item['question'],
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => $item['answer']
+            ]
+        ];
+    }, $faq_schema);
+    $schema = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            [
+                '@type' => 'Organization',
+                'name' => $site_name,
+                'url' => $site_url,
+                'logo' => $logo_url
+            ],
+            [
+                '@type' => 'WebSite',
+                'name' => $site_name,
+                'url' => $site_url,
+                'potentialAction' => [
+                    '@type' => 'SearchAction',
+                    'target' => $site_url . '?s={search_term_string}',
+                    'query-input' => 'required name=search_term_string'
+                ]
+            ],
+            [
+                '@type' => 'FAQPage',
+                'mainEntity' => $faq_entities
+            ]
+        ]
+    ];
+    $GLOBALS['kbf_landing_seo'] = [
+        'title' => $seo_title,
+        'desc' => $seo_desc,
+        'url' => $page_url ?: $site_url,
+        'site' => $site_name,
+        'logo' => $logo_url,
+        'schema' => $schema
+    ];
+    if (!has_action('wp_head', 'bntm_kbf_landing_seo_meta')) {
+        add_action('wp_head', 'bntm_kbf_landing_seo_meta', 1);
+    }
 
     $urgent_1 = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Elderly_woman_gazing_at_art_%28Unsplash%29.jpg/1200px-Elderly_woman_gazing_at_art_%28Unsplash%29.jpg';
     $urgent_2 = 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Womens_wheelchair_basketball_%28Unsplash%29.jpg';

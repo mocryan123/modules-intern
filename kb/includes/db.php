@@ -159,6 +159,19 @@ function bntm_kbf_get_tables() {
             INDEX idx_user (user_id),
             INDEX idx_fund (fund_id)
         ) {$charset};",
+
+        'kbf_escrow_requests' => "CREATE TABLE {$prefix}kbf_escrow_requests (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            fund_id BIGINT UNSIGNED NOT NULL,
+            business_id BIGINT UNSIGNED NOT NULL,
+            status ENUM('pending','approved','rejected') DEFAULT 'pending',
+            admin_notes TEXT,
+            requested_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            reviewed_at DATETIME,
+            INDEX idx_fund (fund_id),
+            INDEX idx_business (business_id),
+            INDEX idx_status (status)
+        ) {$charset};",
     ];
 }
 

@@ -4,12 +4,53 @@
  */
 
 function kbf_admin_withdrawals_tab() {
-    global $wpdb;$wt=$wpdb->prefix.'kbf_withdrawals';$ft=$wpdb->prefix.'kbf_funds';
+    global $wpdb;$wt=$wpdb->prefix.'kbf_withdrawals';$ft=$wpdb->prefix.'kbf_funds';$et=$wpdb->prefix.'kbf_escrow_requests';
     $rows=$wpdb->get_results("SELECT w.*,f.title as fund_title,u.display_name as funder_display FROM {$wt} w LEFT JOIN {$ft} f ON w.fund_id=f.id LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID ORDER BY w.requested_at DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $escrows=$wpdb->get_results("SELECT e.*,f.title as fund_title,u.display_name as funder_display FROM {$et} e LEFT JOIN {$ft} f ON e.fund_id=f.id LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID ORDER BY e.requested_at DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
+      <h3 class="kbf-section-title">Escrow Release Requests</h3>
+      <?php if(empty($escrows)): ?>
+        <div class="kbf-table-empty" style="margin-bottom:18px;">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.4fr 1fr .9fr .9fr .9fr;">
+            <span>Fund</span>
+            <span>Funder</span>
+            <span>Status</span>
+            <span>Requested</span>
+            <span>Actions</span>
+          </div>
+          <div class="kbf-table-empty-body">No escrow release requests.</div>
+        </div>
+      <?php else: ?>
+      <div class="kbf-table-wrap" style="margin-bottom:18px;">
+        <table class="kbf-table">
+          <thead><tr><th>Fund</th><th>Funder</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead>
+          <tbody>
+          <?php foreach($escrows as $e): ?>
+            <tr>
+              <td><strong><?php echo esc_html(wp_trim_words($e->fund_title,5)); ?></strong></td>
+              <td class="kbf-meta"><?php echo esc_html($e->funder_display ?: '-'); ?></td>
+              <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($e->status); ?>"><?php echo ucfirst($e->status); ?></span></td>
+              <td class="kbf-meta"><?php echo date('M d, Y',strtotime($e->requested_at)); ?></td>
+              <td>
+                <?php if($e->status==='pending'): ?>
+                <div class="kbf-btn-group" style="justify-content:center;">
+                  <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfProcessEscrowRequest(<?php echo (int)$e->id; ?>,'approve')">Approve</button>
+                  <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfProcessEscrowRequest(<?php echo (int)$e->id; ?>,'reject')">Reject</button>
+                </div>
+                <?php else: ?>
+                  <span class="kbf-meta">—</span>
+                <?php endif; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?php endif; ?>
+
       <h3 class="kbf-section-title">Withdrawal Requests</h3>
       <?php if(empty($rows)): ?>
         <div class="kbf-table-empty">

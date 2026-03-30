@@ -110,6 +110,56 @@ function bntm_ajax_kbf_cancel_fund() {
     wp_send_json_success(['message'=>'Fund cancelled.']);
 }
 
+function bntm_ajax_kbf_trash_fund() {
+    check_ajax_referer('kbf_cancel_fund','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;
+    $t = $wpdb->prefix.'kbf_funds';
+    $id = intval($_POST['fund_id']);
+    $biz = get_current_user_id();
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
+    if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
+    if($fund->status !== 'cancelled') wp_send_json_error(['message'=>'Only cancelled funds can be trashed.']);
+
+    // Clean related records to avoid orphans.
+    $wpdb->delete($wpdb->prefix.'kbf_sponsorships', ['fund_id'=>$id], ['%d']);
+    $wpdb->delete($wpdb->prefix.'kbf_withdrawals', ['fund_id'=>$id], ['%d']);
+    $wpdb->delete($wpdb->prefix.'kbf_reports', ['fund_id'=>$id], ['%d']);
+    $wpdb->delete($wpdb->prefix.'kbf_appeals', ['fund_id'=>$id], ['%d']);
+    $wpdb->delete($wpdb->prefix.'kbf_saved_funds', ['fund_id'=>$id], ['%d']);
+
+    $res = $wpdb->delete($t, ['id'=>$id, 'business_id'=>$biz], ['%d','%d']);
+    if($res) wp_send_json_success(['message'=>'Fund trashed.']);
+    wp_send_json_error(['message'=>'Unable to trash fund.']);
+}
+
+function bntm_ajax_kbf_request_escrow() {
+    check_ajax_referer('kbf_request_escrow','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;
+    $ft = $wpdb->prefix.'kbf_funds';
+    $et = $wpdb->prefix.'kbf_escrow_requests';
+    $id = intval($_POST['fund_id']);
+    $biz = get_current_user_id();
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND business_id=%d",$id,$biz));
+    if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
+    if($fund->status !== 'active') wp_send_json_error(['message'=>'Only active funds can request escrow.']);
+    if(!$fund->deadline || strtotime($fund->deadline) > time()) wp_send_json_error(['message'=>'Escrow requests are allowed only after the deadline.']);
+    if($fund->raised_amount >= $fund->goal_amount) wp_send_json_error(['message'=>'Goal already met. Escrow release is handled normally.']);
+    if($fund->escrow_status !== 'holding') wp_send_json_error(['message'=>'Escrow is already released or refunded.']);
+
+    $pending = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$et} WHERE fund_id=%d AND status='pending'",$id));
+    if($pending > 0) wp_send_json_error(['message'=>'An escrow request is already pending review.']);
+
+    $res = $wpdb->insert($et, [
+        'fund_id' => $id,
+        'business_id' => $biz,
+        'status' => 'pending'
+    ], ['%d','%d','%s']);
+    if($res) wp_send_json_success(['message'=>'Escrow request submitted for review.']);
+    wp_send_json_error(['message'=>'Unable to submit request.']);
+}
+
 function bntm_ajax_kbf_mark_fund_complete() {
     check_ajax_referer('kbf_cancel_fund','nonce');
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }

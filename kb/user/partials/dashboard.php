@@ -34,6 +34,7 @@ function bntm_shortcode_kbf_dashboard() {
     $nonce_wd     = wp_create_nonce('kbf_withdrawal');
     $nonce_extend = wp_create_nonce('kbf_extend');
     $nonce_appeal = wp_create_nonce('kbf_appeal');
+    $nonce_escrow = wp_create_nonce('kbf_request_escrow');
     $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
 
     if ($payment_state === 'success') {

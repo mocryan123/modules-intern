@@ -165,63 +165,85 @@
         <div class="kbf-modal-body">
           <form id="kbf-edit-fund-form" enctype="multipart/form-data">
             <input type="hidden" name="fund_id" id="edit-fund-id">
-            <div class="kbf-form-group">
-              <label>Title</label>
-              <input type="text" name="title" id="edit-fund-title" maxlength="150" required>
-              <small class="kbf-title-counter">0 / 150</small>
-              <div class="kbf-field-error"></div>
+            <div class="kbf-stepper" aria-label="Edit fund steps">
+              <div class="kbf-step is-active" data-step="1"><span>1</span> Details</div>
+              <div class="kbf-step" data-step="2"><span>2</span> Location</div>
             </div>
-            <div class="kbf-form-group">
-              <label>Description</label>
-              <textarea name="description" id="edit-fund-desc" rows="10" maxlength="800" required></textarea>
-              <small class="kbf-desc-counter">0 / 800</small>
-              <div class="kbf-field-error"></div>
+
+            <div class="kbf-step-content is-active" data-step="1">
+              <div class="kbf-step-note">Step 1: Update title, description, and photos.</div>
+              <div class="kbf-form-group">
+                <label>Title</label>
+                <input type="text" name="title" id="edit-fund-title" maxlength="150" required>
+                <small class="kbf-title-counter">0 / 150</small>
+                <div class="kbf-field-error"></div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Description</label>
+                <textarea name="description" id="edit-fund-desc" rows="10" maxlength="800" required></textarea>
+                <small class="kbf-desc-counter">0 / 800</small>
+                <div class="kbf-field-error"></div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Add Photos (up to 5)</label>
+                <input type="file" id="kbf-edit-photos" name="photos[]" accept="image/*" multiple style="display:none;">
+                <small></small>
+                <div class="kbf-field-error"></div>
+                <div class="kbf-photo-previews" id="kbf-edit-photo-previews">
+                  <button class="kbf-photo-add" type="button" id="kbf-edit-photo-add" aria-label="Add photos">+</button>
+                </div>
+              </div>
             </div>
-            <div class="kbf-form-group">
-              <label>Province</label>
-              <select id="kbf-edit-province" required>
-                <option value="">Select Province</option>
-                <?php foreach (kbf_get_provinces() as $p): ?>
-                  <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
-                <?php endforeach; ?>
-              </select>
-              <small>Select your province first.</small>
-              <div class="kbf-field-error"></div>
-            </div>
-            <div class="kbf-form-group">
-              <label>Municipality</label>
-              <select id="kbf-edit-municipality" required disabled>
-                <option value="">Select Municipality</option>
-              </select>
-              <small>Municipality list will load based on province.</small>
-              <div class="kbf-field-error"></div>
-            </div>
-            <div class="kbf-form-group">
-              <label>Barangay</label>
-              <select id="kbf-edit-barangay" required disabled>
-                <option value="">Select Barangay</option>
-              </select>
-              <small>Barangay list will load based on municipality.</small>
-              <div class="kbf-field-error"></div>
-            </div>
-            <div class="kbf-form-group">
-              <label>Deadline</label>
-              <input type="date" name="deadline" id="edit-fund-deadline">
-              <small>Optional — update the end date.</small>
-            </div>
-            <div class="kbf-form-group">
-              <label class="kbf-checkbox-row">
-                <input type="checkbox" name="auto_return" id="edit-fund-auto-return" value="1">
-                Auto-return funds to sponsors if goal not met by deadline
-              </label>
+
+            <div class="kbf-step-content" data-step="2">
+              <div class="kbf-step-note">Step 2: Update location and deadline.</div>
+              <div class="kbf-form-group">
+                <label>Province</label>
+                <select id="kbf-edit-province" required>
+                  <option value="">Select Province</option>
+                  <?php foreach (kbf_get_provinces() as $p): ?>
+                    <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
+                  <?php endforeach; ?>
+                </select>
+                <small>Select your province first.</small>
+                <div class="kbf-field-error"></div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Municipality</label>
+                <select id="kbf-edit-municipality" required disabled>
+                  <option value="">Select Municipality</option>
+                </select>
+                <small>Municipality list will load based on province.</small>
+                <div class="kbf-field-error"></div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Barangay</label>
+                <select id="kbf-edit-barangay" required disabled>
+                  <option value="">Select Barangay</option>
+                </select>
+                <small>Barangay list will load based on municipality.</small>
+                <div class="kbf-field-error"></div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Deadline</label>
+                <input type="date" name="deadline" id="edit-fund-deadline">
+                <small>Optional — update the end date.</small>
+              </div>
+              <div class="kbf-form-group">
+                <label class="kbf-checkbox-row">
+                  <input type="checkbox" name="auto_return" id="edit-fund-auto-return" value="1">
+                  Auto-return funds to sponsors if goal not met by deadline
+                </label>
+              </div>
             </div>
             <input type="hidden" name="location" id="edit-fund-location-hidden">
             <div id="kbf-edit-msg"></div>
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="kbfCloseModal('kbf-modal-edit')">Cancel</button>
-          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitEdit()">Save Changes</button>
+          <button class="kbf-btn kbf-btn-secondary" id="kbf-edit-prev" type="button">Back</button>
+          <button class="kbf-btn kbf-btn-primary" id="kbf-edit-next" type="button">Next</button>
+          <button class="kbf-btn kbf-btn-primary" id="kbf-edit-submit" type="button" style="display:none;" onclick="kbfSubmitEdit()">Save Changes</button>
         </div>
       </div>
     </div>
@@ -308,4 +330,42 @@
       </div>
     </div>
 
+    <!-- ===== MODAL: Trash Fund ===== -->
+    <div id="kbf-modal-trash-fund" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal kbf-modal-sm">
+        <div class="kbf-modal-header">
+          <h3 id="kbf-trash-title">Trash?</h3>
+          <button class="kbf-modal-close" type="button" onclick="kbfCloseModal('kbf-modal-trash-fund')">&times;</button>
+        </div>
+        <div class="kbf-modal-body">
+          <p id="kbf-trash-message" style="margin:0;color:var(--kbf-slate);font-size:13px;">
+            This will move the fundraiser to cancelled status and it won’t be visible to sponsors.
+            Are you sure you want to continue?
+          </p>
+        </div>
+        <div class="kbf-modal-footer">
+          <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfCloseModal('kbf-modal-trash-fund')">No</button>
+          <button class="kbf-btn kbf-btn-primary" type="button" onclick="kbfConfirmTrashFund()">Yes</button>
+        </div>
+      </div>
+    </div>
 
+    <!-- ===== MODAL: Request Escrow ===== -->
+    <div id="kbf-modal-escrow-request" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal kbf-modal-sm">
+        <div class="kbf-modal-header">
+          <h3>Request Escrow?</h3>
+          <button class="kbf-modal-close" type="button" onclick="kbfCloseModal('kbf-modal-escrow-request')">&times;</button>
+        </div>
+        <div class="kbf-modal-body">
+          <p style="margin:0;color:var(--kbf-slate);font-size:13px;">
+            The fundraiser deadline has passed and the goal wasn’t met. Your request will be reviewed by admin.
+            Continue?
+          </p>
+        </div>
+        <div class="kbf-modal-footer">
+          <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfCloseModal('kbf-modal-escrow-request')">No</button>
+          <button class="kbf-btn kbf-btn-primary" type="button" onclick="kbfConfirmEscrowRequest()">Yes</button>
+        </div>
+      </div>
+    </div>

@@ -535,7 +535,7 @@ function kbf_dashboard_profile_tab($business_id) {
                 </div>
                 <div class="kbf-stat kbf-stat-card">
                   <div class="kbf-stat-icon">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="16" height="16">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="" width="16" height="16">
                   </div>
                   <div>
                     <div class="kbf-stat-label">TOTAL SPONSORS</div>
@@ -688,11 +688,186 @@ window.kbfTogglePayoutInputs = function(){
     numEl.disabled = !enabled;
 };
 
+function kbfProfileTitleCase(str){
+    return String(str).toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});
+}
+function kbfProfileSetMuniOptions(muniEl, list){
+    if (!muniEl) return;
+    muniEl.innerHTML = '<option value="">Select Municipality</option>';
+    for (var i=0;i<list.length;i++){
+        var opt = document.createElement('option');
+        opt.value = list[i].label;
+        opt.textContent = list[i].label;
+        muniEl.appendChild(opt);
+    }
+}
+function kbfProfileSetBrgyOptions(brgyEl, list){
+    if (!brgyEl) return;
+    brgyEl.innerHTML = '<option value="">Select Barangay</option>';
+    for (var i=0;i<list.length;i++){
+        var opt = document.createElement('option');
+        opt.value = list[i];
+        opt.textContent = list[i];
+        brgyEl.appendChild(opt);
+    }
+}
+var kbfProfilePsgcData = null;
+var kbfProfilePsgcLoading = false;
+function kbfProfileEnsurePsgc(cb){
+    if (kbfProfilePsgcData){ cb(); return; }
+    if (kbfProfilePsgcLoading) return;
+    kbfProfilePsgcLoading = true;
+    fetch('<?php echo esc_url(BNTM_KBF_URL . 'data/psgc_2016.json'); ?>')
+      .then(function(r){ return r.json(); })
+      .then(function(j){ kbfProfilePsgcData = j; cb(); })
+      .catch(function(){ kbfProfilePsgcData = null; })
+      .finally(function(){ kbfProfilePsgcLoading = false; });
+}
+function kbfProfileBuildMunicipalities(provinceUpper){
+    var out = [];
+    if (!kbfProfilePsgcData) return out;
+    for (var regionKey in kbfProfilePsgcData){
+        if (!kbfProfilePsgcData.hasOwnProperty(regionKey)) continue;
+        var provList = kbfProfilePsgcData[regionKey].province_list || {};
+        if (provList[provinceUpper]) {
+            var munList = provList[provinceUpper].municipality_list || [];
+            for (var i=0;i<munList.length;i++){
+                var obj = munList[i];
+                for (var muniName in obj){
+                    if (obj.hasOwnProperty(muniName)){
+                        var barangays = obj[muniName].barangay_list || [];
+                        var brgyList = [];
+                        for (var b=0;b<barangays.length;b++){
+                            brgyList.push(kbfProfileTitleCase(barangays[b]));
+                        }
+                        out.push({ key: muniName, label: kbfProfileTitleCase(muniName), barangays: brgyList });
+                    }
+                }
+            }
+            break;
+        }
+    }
+    return out;
+}
+function kbfProfileInitLocationPicker(provinceEl, muniEl, brgyEl, hiddenEl){
+    if (!provinceEl || !muniEl || !brgyEl) return;
+    var muniData = [];
+    function updateHidden(){
+        if (!hiddenEl) return;
+        var prov = provinceEl.value || '';
+        var muni = muniEl.value || '';
+        var brgy = brgyEl.value || '';
+        var parts = [];
+        if (brgy) parts.push(brgy);
+        if (muni) parts.push(muni);
+        if (prov) parts.push(prov);
+        hiddenEl.value = parts.join(', ');
+    }
+    function handleProvinceChange(){
+        var val = provinceEl.value || '';
+        if (!val){
+            muniEl.disabled = true;
+            brgyEl.disabled = true;
+            kbfProfileSetMuniOptions(muniEl, []);
+            kbfProfileSetBrgyOptions(brgyEl, []);
+            updateHidden();
+            return;
+        }
+        muniEl.disabled = true;
+        brgyEl.disabled = true;
+        kbfProfileSetMuniOptions(muniEl, []);
+        kbfProfileSetBrgyOptions(brgyEl, []);
+        kbfProfileEnsurePsgc(function(){
+            muniData = kbfProfileBuildMunicipalities(String(val).toUpperCase());
+            kbfProfileSetMuniOptions(muniEl, muniData);
+            muniEl.disabled = muniData.length === 0;
+        });
+        updateHidden();
+    }
+    function handleMunicipalityChange(){
+        var val = muniEl.value || '';
+        if (!val){
+            brgyEl.disabled = true;
+            kbfProfileSetBrgyOptions(brgyEl, []);
+            updateHidden();
+            return;
+        }
+        var upperVal = String(val).toUpperCase();
+        var found = null;
+        for (var i=0;i<muniData.length;i++){
+            if (muniData[i].key === upperVal){
+                found = muniData[i];
+                break;
+            }
+        }
+        if (!found){
+            brgyEl.disabled = true;
+            kbfProfileSetBrgyOptions(brgyEl, []);
+            updateHidden();
+            return;
+        }
+        kbfProfileSetBrgyOptions(brgyEl, found.barangays);
+        brgyEl.disabled = found.barangays.length === 0;
+        updateHidden();
+    }
+    provinceEl.addEventListener('change', handleProvinceChange);
+    muniEl.addEventListener('change', handleMunicipalityChange);
+    brgyEl.addEventListener('change', updateHidden);
+    handleProvinceChange();
+    return { handleProvinceChange: handleProvinceChange, handleMunicipalityChange: handleMunicipalityChange };
+}
+function kbfProfileApplyLocationSelection(provinceEl, muniEl, brgyEl, loc){
+    if (!provinceEl || !muniEl || !brgyEl) return;
+    var parts = String(loc || '').split(',').map(function(p){ return p.trim(); }).filter(Boolean);
+    var barangay = parts.length > 0 ? parts[0] : '';
+    var municipality = parts.length > 1 ? parts[1] : '';
+    var province = parts.length > 2 ? parts[2] : (parts.length === 1 ? parts[0] : (parts.length === 2 ? parts[1] : ''));
+    provinceEl.value = province;
+    if (!province) {
+        muniEl.disabled = true; brgyEl.disabled = true;
+        kbfProfileSetMuniOptions(muniEl, []); kbfProfileSetBrgyOptions(brgyEl, []);
+        return;
+    }
+    kbfProfileEnsurePsgc(function(){
+        var muniData = kbfProfileBuildMunicipalities(String(province).toUpperCase());
+        kbfProfileSetMuniOptions(muniEl, muniData);
+        muniEl.disabled = muniData.length === 0;
+        if (municipality) muniEl.value = municipality;
+        var upperVal = String(muniEl.value || '').toUpperCase();
+        var found = null;
+        for (var i=0;i<muniData.length;i++){
+            if (muniData[i].key === upperVal){
+                found = muniData[i];
+                break;
+            }
+        }
+        if (found){
+            kbfProfileSetBrgyOptions(brgyEl, found.barangays);
+            brgyEl.disabled = found.barangays.length === 0;
+            if (barangay) brgyEl.value = barangay;
+        } else {
+            brgyEl.disabled = true;
+            kbfProfileSetBrgyOptions(brgyEl, []);
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function(){
     const typeSel = document.getElementById('kbf-payout-type');
     if (typeSel) {
         typeSel.addEventListener('change', kbfTogglePayoutInputs);
         kbfTogglePayoutInputs();
+    }
+
+    var prov = document.getElementById('kbf-profile-province');
+    var muni = document.getElementById('kbf-profile-municipality');
+    var brgy = document.getElementById('kbf-profile-barangay');
+    var addr = document.getElementById('kbf-profile-address');
+    if (prov && muni && brgy) {
+        kbfProfileInitLocationPicker(prov, muni, brgy, addr);
+        if (addr && addr.value) {
+            kbfProfileApplyLocationSelection(prov, muni, brgy, addr.value);
+        }
     }
 });
 

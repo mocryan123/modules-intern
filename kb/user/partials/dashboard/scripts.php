@@ -113,6 +113,43 @@
     }
     window.kbfSetCreateStep = kbfSetCreateStep;
 
+    function kbfSetEditStep(step) {
+        var form = document.getElementById('kbf-edit-fund-form');
+        if (!form) return;
+        var n = parseInt(step || '1', 10);
+        if (isNaN(n)) n = 1;
+        n = Math.min(2, Math.max(1, n));
+        var steps = form.querySelectorAll('.kbf-step');
+        for (var i=0;i<steps.length;i++) {
+            var s = steps[i];
+            var sStep = parseInt(s.getAttribute('data-step') || '0', 10);
+            if (sStep === n) s.classList.add('is-active');
+            else s.classList.remove('is-active');
+        }
+        var panels = form.querySelectorAll('.kbf-step-content');
+        for (var j=0;j<panels.length;j++) {
+            var p = panels[j];
+            var pStep = parseInt(p.getAttribute('data-step') || '0', 10);
+            if (pStep === n) p.classList.add('is-active');
+            else p.classList.remove('is-active');
+        }
+        var prev = document.getElementById('kbf-edit-prev');
+        var next = document.getElementById('kbf-edit-next');
+        var submit = document.getElementById('kbf-edit-submit');
+        if (prev) {
+            prev.dataset.step = String(n);
+            prev.disabled = n === 1;
+        }
+        if (next) {
+            next.dataset.step = String(n);
+            next.style.display = n === 2 ? 'none' : '';
+        }
+        if (submit) {
+            submit.style.display = n === 2 ? '' : 'none';
+        }
+    }
+    window.kbfSetEditStep = kbfSetEditStep;
+
     var kbfPsgcData = null;
     var kbfPsgcLoading = false;
     function kbfTitleCase(str){
@@ -264,6 +301,9 @@
         var next = document.getElementById('kbf-create-next');
         var submit = document.getElementById('kbf-create-submit');
         var createForm = document.getElementById('kbf-create-fund-form');
+        var editPrev = document.getElementById('kbf-edit-prev');
+        var editNext = document.getElementById('kbf-edit-next');
+        var editSubmit = document.getElementById('kbf-edit-submit');
         var photoInput = document.getElementById('kbf-create-photos');
         var photoWrap = document.getElementById('kbf-create-photo-previews');
         var kbfCreateFiles = [];
@@ -281,6 +321,19 @@
             kbfSetLoadingPage(true);
             kbfSetBtnLoading(submit, true, 'Submitting...');
             kbfSubmitCreate();
+        });
+        if (editPrev) editPrev.addEventListener('click', function(){
+            var step = parseInt(editPrev.dataset.step || '1', 10);
+            kbfSetEditStep(Math.max(1, step - 1));
+        });
+        if (editNext) editNext.addEventListener('click', function(){
+            var step = parseInt(editNext.dataset.step || '1', 10);
+            if (!kbfValidateEditStep(step)) return;
+            kbfSetEditStep(Math.min(2, step + 1));
+        });
+        if (editSubmit) editSubmit.addEventListener('click', function(){
+            if (!kbfValidateEditStep(2)) return;
+            kbfSubmitEdit();
         });
         function kbfSyncCreateFiles(){
             if (!photoInput) return;
@@ -358,6 +411,26 @@
             });
             return closest.element;
         }
+        function kbfEnsurePlaceholder(container){
+            var ph = container.querySelector('.kbf-photo-placeholder');
+            if (!ph) {
+                ph = document.createElement('div');
+                ph.className = 'kbf-photo-placeholder';
+            }
+            return ph;
+        }
+        function kbfGetDragAfterElement(container, x, y){
+            var items = [].slice.call(container.querySelectorAll('.kbf-photo-thumb:not(.is-dragging)'));
+            var closest = { offset: Number.NEGATIVE_INFINITY, element: null };
+            items.forEach(function(child){
+                var box = child.getBoundingClientRect();
+                var offset = (x - box.left) - box.width / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    closest = { offset: offset, element: child };
+                }
+            });
+            return closest.element;
+        }
         function kbfEnsurePlaceholder(){
             var ph = photoWrap.querySelector('.kbf-photo-placeholder');
             if (!ph) {
@@ -371,7 +444,7 @@
                 ev.preventDefault();
                 ev.dataTransfer.dropEffect = 'move';
                 var afterEl = kbfGetDragAfterElement(photoWrap, ev.clientX, ev.clientY);
-                var ph = kbfEnsurePlaceholder();
+                var ph = kbfEnsurePlaceholder(photoWrap);
                 if (afterEl == null) {
                     photoWrap.insertBefore(ph, photoWrap.querySelector('.kbf-photo-add'));
                 } else {
@@ -404,6 +477,132 @@
                 kbfRenderCreateThumbs();
             });
         }
+
+        var editPhotoInput = document.getElementById('kbf-edit-photos');
+        var editPhotoWrap = document.getElementById('kbf-edit-photo-previews');
+        var kbfEditFiles = [];
+        function kbfSyncEditFiles(){
+            if (!editPhotoInput) return;
+            var dt = new DataTransfer();
+            kbfEditFiles.forEach(function(f){ dt.items.add(f); });
+            editPhotoInput.files = dt.files;
+        }
+        function kbfRenderEditThumbs(){
+            if (!editPhotoWrap) return;
+            editPhotoWrap.innerHTML = '';
+            kbfEditFiles.forEach(function(file, idx){
+                if (!file.type || file.type.indexOf('image/') !== 0) return;
+                var reader = new FileReader();
+                reader.onload = function(e){
+                    var thumb = document.createElement('div');
+                    thumb.className = 'kbf-photo-thumb';
+                    thumb.setAttribute('draggable','true');
+                    thumb.setAttribute('data-index', String(idx));
+                    var badge = document.createElement('div');
+                    badge.className = 'kbf-photo-order';
+                    badge.textContent = String(idx + 1);
+                    var handle = document.createElement('div');
+                    handle.className = 'kbf-photo-handle';
+                    handle.setAttribute('aria-label','Drag to reorder');
+                    handle.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.3"/><circle cx="4" cy="8" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="10" cy="4" r="1.3"/><circle cx="10" cy="8" r="1.3"/><circle cx="10" cy="12" r="1.3"/></svg>';
+                    var img = document.createElement('img');
+                    img.alt = '';
+                    img.src = e.target.result;
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'kbf-photo-remove';
+                    btn.innerHTML = '&times;';
+                    btn.addEventListener('click', function(){
+                        kbfEditFiles.splice(idx, 1);
+                        kbfSyncEditFiles();
+                        kbfRenderEditThumbs();
+                    });
+                    thumb.appendChild(img);
+                    thumb.appendChild(badge);
+                    thumb.appendChild(handle);
+                    thumb.appendChild(btn);
+                    thumb.addEventListener('dragstart', function(ev){
+                        thumb.classList.add('is-dragging');
+                        ev.dataTransfer.setData('text/plain', String(idx));
+                        ev.dataTransfer.effectAllowed = 'move';
+                        try { ev.dataTransfer.setDragImage(thumb, 20, 20); } catch(e) {}
+                    });
+                    thumb.addEventListener('dragend', function(){
+                        thumb.classList.remove('is-dragging');
+                        var ph = editPhotoWrap.querySelector('.kbf-photo-placeholder');
+                        if (ph) ph.remove();
+                    });
+                    editPhotoWrap.appendChild(thumb);
+                };
+                reader.readAsDataURL(file);
+            });
+            if (kbfEditFiles.length < 5) {
+                var addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.className = 'kbf-photo-add';
+                addBtn.setAttribute('aria-label', 'Add photos');
+                addBtn.innerHTML = '+';
+                editPhotoWrap.appendChild(addBtn);
+            }
+        }
+        if (editPhotoInput && editPhotoWrap) {
+            editPhotoWrap.addEventListener('click', function(e){
+                if (!e.target || !e.target.classList.contains('kbf-photo-add')) return;
+                e.preventDefault();
+                editPhotoInput.click();
+            });
+            editPhotoInput.addEventListener('change', function(){
+                var incoming = Array.from(editPhotoInput.files || []);
+                if (!incoming.length) return;
+                kbfEditFiles = kbfEditFiles.concat(incoming).slice(0, 5);
+                kbfSyncEditFiles();
+                kbfRenderEditThumbs();
+            });
+            editPhotoWrap.addEventListener('dragover', function(ev){
+                ev.preventDefault();
+                ev.dataTransfer.dropEffect = 'move';
+                var afterEl = kbfGetDragAfterElement(editPhotoWrap, ev.clientX, ev.clientY);
+                var ph = kbfEnsurePlaceholder(editPhotoWrap);
+                if (afterEl == null) {
+                    editPhotoWrap.insertBefore(ph, editPhotoWrap.querySelector('.kbf-photo-add'));
+                } else {
+                    editPhotoWrap.insertBefore(ph, afterEl);
+                }
+            });
+            editPhotoWrap.addEventListener('dragleave', function(ev){
+                if (ev.target === editPhotoWrap) {
+                    var ph = editPhotoWrap.querySelector('.kbf-photo-placeholder');
+                    if (ph) ph.remove();
+                }
+            });
+            editPhotoWrap.addEventListener('drop', function(ev){
+                ev.preventDefault();
+                var from = parseInt(ev.dataTransfer.getData('text/plain') || '-1', 10);
+                if (isNaN(from) || from < 0) return;
+                var ph = editPhotoWrap.querySelector('.kbf-photo-placeholder');
+                var thumbs = [].slice.call(editPhotoWrap.querySelectorAll('.kbf-photo-thumb'));
+                var to = thumbs.length;
+                if (ph) {
+                    to = thumbs.indexOf(ph.nextElementSibling);
+                    if (to < 0) to = thumbs.length;
+                    ph.remove();
+                }
+                if (from === to || from + 1 === to) return;
+                var moved = kbfEditFiles.splice(from, 1)[0];
+                if (to > from) to -= 1;
+                kbfEditFiles.splice(to, 0, moved);
+                kbfSyncEditFiles();
+                kbfRenderEditThumbs();
+            });
+            kbfRenderEditThumbs();
+        }
+        window.kbfResetEditPhotos = function(){
+            kbfEditFiles = [];
+            if (editPhotoInput) {
+                kbfSyncEditFiles();
+            }
+            if (editPhotoWrap) kbfRenderEditThumbs();
+        };
         if (photoInput && photoWrap) {
             photoWrap.addEventListener('click', function(e){
                 if (!e.target || !e.target.classList.contains('kbf-photo-add')) return;
@@ -717,6 +916,45 @@
     }
     window.kbfValidateCreateStep = kbfValidateCreateStep;
 
+    function kbfValidateEditStep(step) {
+        var form = document.getElementById('kbf-edit-fund-form');
+        if (!form) return true;
+        var n = parseInt(step || '1', 10);
+        if (isNaN(n)) n = 1;
+        var panel = form.querySelector('.kbf-step-content[data-step="'+n+'"]');
+        if (!panel) return true;
+        var fields = panel.querySelectorAll('input, select, textarea');
+        var firstInvalid = null;
+        for (var i=0; i<fields.length; i++) {
+            var f = fields[i];
+            if (f.disabled) continue;
+            if (f.hasAttribute('required')) {
+                var valid = true;
+                if (f.type === 'file') {
+                    valid = f.files && f.files.length > 0;
+                } else if (f.type === 'checkbox') {
+                    valid = f.checked;
+                } else {
+                    valid = String(f.value || '').trim() !== '';
+                }
+                if (!valid) {
+                    if (!firstInvalid) firstInvalid = f;
+                    kbfSetFieldError(f, 'This field is required.');
+                } else {
+                    kbfClearFieldError(f);
+                }
+            } else {
+                kbfClearFieldError(f);
+            }
+        }
+        if (firstInvalid) {
+            firstInvalid.focus();
+            return false;
+        }
+        return true;
+    }
+    window.kbfValidateEditStep = kbfValidateEditStep;
+
     function kbfSetLoadingPage(on) {
         var el = document.getElementById('kbf-loading-overlay');
         if (!el) return;
@@ -939,6 +1177,7 @@
         document.getElementById('edit-fund-id').value = id;
         document.getElementById('edit-fund-title').value = title;
         document.getElementById('edit-fund-desc').value = desc;
+        if (window.kbfResetEditPhotos) window.kbfResetEditPhotos();
         var hiddenLoc = document.getElementById('edit-fund-location-hidden');
         if (hiddenLoc) hiddenLoc.value = loc || '';
         var titleCounter = document.getElementById('edit-fund-title').parentNode.querySelector('.kbf-title-counter');
@@ -955,6 +1194,7 @@
         );
         var counter = document.getElementById('edit-fund-desc').parentNode.querySelector('.kbf-desc-counter');
         if (counter) counter.textContent = (desc || '').length + ' / 800';
+        if (typeof kbfSetEditStep === 'function') kbfSetEditStep(1);
         kbfOpenModal('kbf-modal-edit');
     };
 
@@ -982,6 +1222,118 @@
         fd.append('action','kbf_cancel_fund'); fd.append('fund_id',fundId);
         fd.append('nonce','<?php echo $nonce_cancel; ?>');
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{alert(j.data.message);if(j.success)location.reload();});
+    };
+
+    var kbfTrashFundId = null;
+    var kbfTrashMode = 'cancel';
+    var kbfTrashInFlight = false;
+    window.kbfOpenTrashFund = function(fundId, title, mode){
+        kbfTrashFundId = fundId || null;
+        kbfTrashMode = (mode === 'trash') ? 'trash' : 'cancel';
+        var titleEl = document.getElementById('kbf-trash-title');
+        var msgEl = document.getElementById('kbf-trash-message');
+        if (kbfTrashMode === 'trash') {
+            if (titleEl) titleEl.textContent = 'Trash?';
+            if (msgEl) msgEl.textContent = 'This will permanently delete the fundraiser and its records. This cannot be undone. Are you sure you want to continue?';
+        } else {
+            if (titleEl) titleEl.textContent = 'Trash?';
+            if (msgEl) msgEl.textContent = 'This will move the fundraiser to cancelled status and it won’t be visible to sponsors. Are you sure you want to continue?';
+        }
+        kbfOpenModal('kbf-modal-trash-fund');
+    };
+    window.kbfConfirmTrashFund = function(){
+        if (!kbfTrashFundId) return;
+        if (kbfTrashInFlight) return;
+        console.log('kbfConfirmTrashFund: confirmed', kbfTrashFundId);
+        if (typeof window.ajaxurl === 'undefined' || !window.ajaxurl) {
+            console.error('kbfConfirmTrashFund: ajaxurl is not defined');
+            alert('Request failed: ajaxurl is not defined.');
+            return;
+        }
+        kbfTrashInFlight = true;
+        console.log('kbfConfirmTrashFund: ajaxurl', ajaxurl);
+        const fd = new FormData();
+        fd.append('action', kbfTrashMode === 'trash' ? 'kbf_trash_fund' : 'kbf_cancel_fund');
+        fd.append('fund_id', kbfTrashFundId);
+        fd.append('nonce','<?php echo $nonce_cancel; ?>');
+        console.log('kbfConfirmTrashFund: payload', {
+            action: kbfTrashMode === 'trash' ? 'kbf_trash_fund' : 'kbf_cancel_fund',
+            fund_id: kbfTrashFundId,
+            nonce: '<?php echo $nonce_cancel; ?>'
+        });
+        kbfCloseModal('kbf-modal-trash-fund');
+        kbfSetLoadingPage(true);
+        fetch(ajaxurl,{method:'POST',body:fd})
+          .then(function(r){
+              console.log('kbfConfirmTrashFund: response status', r.status, r.ok);
+              return r.text().then(function(t){ return { ok: r.ok, status: r.status, text: t }; });
+          })
+          .then(function(res){
+              var j = null;
+              var cleaned = String(res.text || '').replace(/^\uFEFF/, '').trim();
+              try { j = JSON.parse(cleaned); } catch(e) {}
+              if (j && j.success) {
+                  location.reload();
+                  return;
+              }
+              kbfSetLoadingPage(false);
+              kbfTrashInFlight = false;
+              if (!j) {
+                  console.error('kbfConfirmTrashFund: non-JSON response', res.status, res.text);
+                  alert('Request failed. Please try again.');
+                  return;
+              }
+              console.error('kbfConfirmTrashFund: error payload', j);
+              alert((j.data && j.data.message) ? j.data.message : 'Unable to trash fund.');
+          })
+          .catch(function(err){
+              kbfSetLoadingPage(false);
+              kbfTrashInFlight = false;
+              console.error('kbfConfirmTrashFund: request failed', err);
+              alert('Request failed. Please try again.');
+          });
+    };
+
+    var kbfEscrowFundId = null;
+    var kbfEscrowInFlight = false;
+    window.kbfOpenEscrowRequest = function(fundId){
+        kbfEscrowFundId = fundId || null;
+        kbfOpenModal('kbf-modal-escrow-request');
+    };
+    window.kbfConfirmEscrowRequest = function(){
+        if (!kbfEscrowFundId) return;
+        if (kbfEscrowInFlight) return;
+        if (typeof window.ajaxurl === 'undefined' || !window.ajaxurl) {
+            alert('Request failed: ajaxurl is not defined.');
+            return;
+        }
+        kbfEscrowInFlight = true;
+        kbfCloseModal('kbf-modal-escrow-request');
+        kbfSetLoadingPage(true);
+        const fd = new FormData();
+        fd.append('action','kbf_request_escrow');
+        fd.append('fund_id', kbfEscrowFundId);
+        fd.append('nonce','<?php echo $nonce_escrow; ?>');
+        fetch(ajaxurl,{method:'POST',body:fd})
+          .then(function(r){ return r.text().then(function(t){ return { ok:r.ok, status:r.status, text:t }; }); })
+          .then(function(res){
+              var j = null;
+              var cleaned = String(res.text || '').replace(/^\uFEFF/, '').trim();
+              try { j = JSON.parse(cleaned); } catch(e) {}
+              if (j && j.success) {
+                  location.reload();
+                  return;
+              }
+              kbfSetLoadingPage(false);
+              kbfEscrowInFlight = false;
+              if (!j) { alert('Request failed. Please try again.'); return; }
+              alert((j.data && j.data.message) ? j.data.message : 'Unable to submit request.');
+          })
+          .catch(function(){
+              kbfSetLoadingPage(false);
+              kbfEscrowInFlight = false;
+              alert('Request failed. Please try again.');
+          });
     };
 
     window.kbfExtendDeadline = function(fundId) {

@@ -35,6 +35,14 @@
     $total_raised   = (float)$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(raised_amount),0) FROM {$ft} WHERE business_id=%d",$business_id));
     $total_sponsors = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$business_id));
     $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
+    $escrow_requests = [];
+    $er = $wpdb->prefix.'kbf_escrow_requests';
+    $escrow_rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$er} WHERE business_id=%d ORDER BY requested_at DESC",$business_id));
+    foreach ((array)$escrow_rows as $erow) {
+        if (!isset($escrow_requests[$erow->fund_id])) {
+            $escrow_requests[$erow->fund_id] = $erow;
+        }
+    }
     $find_funds_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
     $nonce_save = wp_create_nonce('kbf_save_fund');
     $saved_ids = [];
@@ -366,7 +374,7 @@
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
           </div>
           <div><div class="kbf-stat-label">Total Sponsors</div><div class="kbf-stat-value"><?php echo $total_sponsors; ?></div></div>
         </div>
@@ -532,11 +540,29 @@
             $wd_block = $last_wd && in_array($last_wd->status, ['pending','approved','released']);
           ?>
             <div class="kbf-card-actions">
+              <?php
+                $deadline_passed = $f->deadline && strtotime($f->deadline) <= time();
+                $escrow_req = isset($escrow_requests[$f->id]) ? $escrow_requests[$f->id] : null;
+                $escrow_pending = $escrow_req && $escrow_req->status === 'pending';
+                $escrow_rejected = $escrow_req && $escrow_req->status === 'rejected';
+              ?>
               <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : ''; ?>
               <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
                 View Details
               </a>
+              <?php if($f->status==='active' && $f->escrow_status==='holding' && $deadline_passed && $f->raised_amount < $f->goal_amount): ?>
+                <?php if($escrow_pending): ?>
+                  <span class="kbf-badge kbf-badge-pending">Escrow Request Pending</span>
+                <?php else: ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEscrowRequest(<?php echo $f->id; ?>)">
+                    Request Escrow
+                  </button>
+                <?php endif; ?>
+                <?php if($escrow_rejected): ?>
+                  <span class="kbf-badge kbf-badge-cancelled">Escrow Request Rejected</span>
+                <?php endif; ?>
+              <?php endif; ?>
               <?php if(in_array($f->status,['active','completed']) && !$wd_block && $f->escrow_status==='released'): ?>
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
@@ -565,11 +591,17 @@
                   Share
                 </button>
                 <?php if(!in_array($f->status,['cancelled','completed'])): ?>
-                <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfCancelFund(<?php echo $f->id; ?>)">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(82%) saturate(5110%) hue-rotate(344deg) brightness(100%) contrast(97%);">
-                  Cancel
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','cancel')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/trash-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Trash
                 </button>
-                <?php endif; ?>
+            <?php endif; ?>
+            <?php if($f->status==='cancelled'): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/trash-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Trash
+                </button>
+            <?php endif; ?>
               </div>
             </div>
           </div>
