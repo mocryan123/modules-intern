@@ -178,28 +178,64 @@ function ch_render_post_media_preview($media_urls, $context = 'feed') {
     $media = ch_get_media_urls($media_urls);
     if (empty($media)) return '';
 
+    $images = [];
+    $other_media = [];
+
+    foreach ($media as $url) {
+        $kind = ch_media_kind_from_url($url);
+        if ($kind === 'image') {
+            $images[] = $url;
+        } else {
+            $other_media[] = [
+                'url'  => $url,
+                'kind' => $kind,
+            ];
+        }
+    }
+
     ob_start(); ?>
-    <div class="ch-post-media-preview ch-post-media-preview-<?php echo esc_attr($context); ?>">
-        <?php foreach ($media as $index => $url):
-            $kind = ch_media_kind_from_url($url);
-            if ($kind === 'image'): ?>
-                <a href="<?php echo esc_url($url); ?>" class="ch-post-media-thumb" target="_blank" rel="noopener">
-                    <img src="<?php echo esc_url($url); ?>" alt="Post image <?php echo (int)($index + 1); ?>" class="ch-post-media-thumb-img">
-                </a>
-            <?php elseif ($kind === 'video'): ?>
-                <div class="ch-post-media-thumb">
-                    <video controls preload="metadata" class="ch-post-media-thumb-video">
-                        <source src="<?php echo esc_url($url); ?>">
-                    </video>
-                </div>
-            <?php elseif ($kind === 'audio'): ?>
-                <div class="ch-post-media-audio-wrap">
-                    <audio controls class="ch-post-media-audio-inline">
-                        <source src="<?php echo esc_url($url); ?>">
-                    </audio>
-                </div>
-            <?php endif;
-        endforeach; ?>
+    <div class="ch-post-media ch-post-media-<?php echo esc_attr($context); ?>">
+        <?php if (!empty($images)):
+            $image_count = count($images);
+            $visible_count = min($image_count, 4);
+            $gallery_class = 'ch-post-media-gallery-' . ($image_count >= 4 ? '4' : $image_count);
+            ?>
+            <div class="ch-post-media-preview ch-post-media-preview-<?php echo esc_attr($context); ?> ch-post-media-gallery <?php echo esc_attr($gallery_class); ?><?php echo $image_count > 4 ? ' ch-post-media-gallery-more' : ''; ?>" data-ch-gallery-items="<?php echo esc_attr(wp_json_encode(array_values($images))); ?>">
+                <?php foreach ($images as $index => $url):
+                    if ($index >= $visible_count) {
+                        break;
+                    }
+                    $remaining = $image_count - 4;
+                    ?>
+                    <button type="button" class="ch-post-media-thumb ch-post-media-thumb-button" data-ch-gallery-index="<?php echo (int)$index; ?>" aria-label="View image <?php echo (int)($index + 1); ?> of <?php echo (int)$image_count; ?>">
+                        <img src="<?php echo esc_url($url); ?>" alt="Post image <?php echo (int)($index + 1); ?>" class="ch-post-media-thumb-img">
+                        <?php if ($image_count > 4 && $index === 3): ?>
+                            <span class="ch-post-media-more">+<?php echo (int)$remaining; ?></span>
+                        <?php endif; ?>
+                    </button>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($other_media)): ?>
+            <div class="ch-post-media-preview ch-post-media-preview-<?php echo esc_attr($context); ?> ch-post-media-preview-mixed">
+                <?php foreach ($other_media as $item): ?>
+                    <?php if ($item['kind'] === 'video'): ?>
+                        <div class="ch-post-media-thumb">
+                            <video controls preload="metadata" class="ch-post-media-thumb-video">
+                                <source src="<?php echo esc_url($item['url']); ?>">
+                            </video>
+                        </div>
+                    <?php elseif ($item['kind'] === 'audio'): ?>
+                        <div class="ch-post-media-audio-wrap">
+                            <audio controls class="ch-post-media-audio-inline">
+                                <source src="<?php echo esc_url($item['url']); ?>">
+                            </audio>
+                        </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
     <?php
     return ob_get_clean();
@@ -4027,6 +4063,82 @@ function bntm_shortcode_ch_feed() {
             <button class="ch-welcome-skip" onclick="chCloseWelcome()">Browse as guest</button>
         </div>
     </div>
+
+    <div id="ch-onboarding-modal" class="ch-modal-overlay" style="display:none;">
+        <div class="ch-modal ch-onboarding-modal">
+            <div class="ch-modal-header">
+                <h3>Getting Started</h3>
+                <button type="button" class="ch-modal-close" onclick="chCloseOnboardingWalkthrough()" aria-label="Close">&times;</button>
+            </div>
+            <div class="ch-modal-body">
+                <div class="ch-onboarding-progress" aria-hidden="true">
+                    <div class="ch-onboarding-progress-bar" data-step-bar="0"><span></span></div>
+                    <div class="ch-onboarding-progress-bar" data-step-bar="1"><span></span></div>
+                    <div class="ch-onboarding-progress-bar" data-step-bar="2"><span></span></div>
+                </div>
+
+                <div class="ch-onboarding-slide is-active" data-step="0">
+                    <div class="ch-onboarding-stage-label">Step 1 of 3</div>
+                    <div class="ch-onboarding-hero">
+                        <div class="ch-onboarding-hero-icon">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.9"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        </div>
+                        <div>
+                            <h4>Explore conversations first</h4>
+                            <p>Browse categories and active discussions to quickly see what your community is already talking about.</p>
+                        </div>
+                    </div>
+                    <div class="ch-onboarding-checklist">
+                        <div class="ch-onboarding-point"><span class="ch-onboarding-dot"></span><div><strong>Use categories to focus</strong><span>Open the category list to jump into topics like safety, infrastructure, and local updates.</span></div></div>
+                        <div class="ch-onboarding-point"><span class="ch-onboarding-dot"></span><div><strong>Check the feed for context</strong><span>Reading a few recent posts helps you avoid duplicate posts and find the right thread faster.</span></div></div>
+                    </div>
+                </div>
+
+                <div class="ch-onboarding-slide" data-step="1">
+                    <div class="ch-onboarding-stage-label">Step 2 of 3</div>
+                    <div class="ch-onboarding-hero">
+                        <div class="ch-onboarding-hero-icon">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.9"><path d="M12 5v14M5 12h14"/></svg>
+                        </div>
+                        <div>
+                            <h4>Share clearly and visually</h4>
+                            <p>Create posts with a clear title, helpful details, and media that supports your report without overwhelming the feed.</p>
+                        </div>
+                    </div>
+                    <div class="ch-onboarding-checklist">
+                        <div class="ch-onboarding-point"><span class="ch-onboarding-dot"></span><div><strong>Pick the right category</strong><span>Choosing the closest category makes your post easier for the right people to discover.</span></div></div>
+                        <div class="ch-onboarding-point"><span class="ch-onboarding-dot"></span><div><strong>Add only useful media</strong><span>Keep uploads focused so your post stays clean and readable on both desktop and mobile.</span></div></div>
+                    </div>
+                </div>
+
+                <div class="ch-onboarding-slide" data-step="2">
+                    <div class="ch-onboarding-stage-label">Step 3 of 3</div>
+                    <div class="ch-onboarding-hero">
+                        <div class="ch-onboarding-hero-icon">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.9"><path d="M12 12c2.761 0 5-2.239 5-5S14.761 2 12 2 7 4.239 7 7s2.239 5 5 5Z"/><path d="M4 22a8 8 0 0 1 16 0"/></svg>
+                        </div>
+                        <div>
+                            <h4>Participate at your own pace</h4>
+                            <p>You can keep browsing as a guest, or join later when you want to post, save updates, and personalize your profile.</p>
+                        </div>
+                    </div>
+                    <div class="ch-onboarding-checklist">
+                        <div class="ch-onboarding-point"><span class="ch-onboarding-dot"></span><div><strong>Browse without pressure</strong><span>Guests can read discussions, explore categories, and understand the community before signing up.</span></div></div>
+                        <div class="ch-onboarding-point"><span class="ch-onboarding-dot"></span><div><strong>Join when you are ready</strong><span>Create an account later if you want to post, bookmark threads, and get notified about replies.</span></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ch-modal-footer ch-onboarding-footer">
+                <div class="ch-onboarding-footer-left">
+                    <button type="button" class="ch-btn ch-btn-secondary" onclick="chCloseOnboardingWalkthrough()">Skip</button>
+                </div>
+                <div class="ch-onboarding-footer-right">
+                    <button type="button" class="ch-btn ch-btn-secondary" id="ch-onboarding-back" onclick="chAdvanceOnboarding(-1)" style="display:none;">Back</button>
+                    <button type="button" class="ch-btn ch-btn-primary" id="ch-onboarding-next" onclick="chAdvanceOnboarding(1)">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <?php endif; ?>
 
     <!-- ===== SETTINGS MODAL (logged-in users) ===== -->
@@ -4152,6 +4264,86 @@ function bntm_shortcode_ch_feed() {
             popup.addEventListener('click', function(e) {
                 if (e.target === popup) chCloseWelcome();
             });
+        }
+
+        // ---- First-time onboarding walkthrough ----
+        const onboardingModal = document.getElementById('ch-onboarding-modal');
+        const onboardingSlides = onboardingModal ? Array.from(onboardingModal.querySelectorAll('.ch-onboarding-slide')) : [];
+        const onboardingBars = onboardingModal ? Array.from(onboardingModal.querySelectorAll('[data-step-bar]')) : [];
+        const onboardingBack = document.getElementById('ch-onboarding-back');
+        const onboardingNext = document.getElementById('ch-onboarding-next');
+        const onboardingKey = 'ch_guest_onboarding_seen_v1';
+        const isGuestUser = <?php echo $user_id ? 'false' : 'true'; ?>;
+        window.chOnboardingStep = 0;
+
+        function chRenderOnboardingStep(step) {
+            if (!onboardingModal || !onboardingSlides.length) return;
+            const clampedStep = Math.max(0, Math.min(step, onboardingSlides.length - 1));
+            window.chOnboardingStep = clampedStep;
+
+            onboardingSlides.forEach((slide, index) => {
+                slide.classList.toggle('is-active', index === clampedStep);
+            });
+            onboardingBars.forEach((bar, index) => {
+                bar.classList.toggle('is-active', index === clampedStep);
+                bar.classList.toggle('is-done', index < clampedStep);
+            });
+
+            if (onboardingBack) {
+                onboardingBack.style.display = clampedStep === 0 ? 'none' : 'inline-flex';
+            }
+            if (onboardingNext) {
+                onboardingNext.textContent = clampedStep === onboardingSlides.length - 1 ? 'Finish' : 'Next';
+            }
+        }
+
+        window.chCloseOnboardingWalkthrough = function(markSeen) {
+            if (!onboardingModal) return;
+            onboardingModal.style.display = 'none';
+            document.body.style.overflow = '';
+            if (markSeen !== false) {
+                try { localStorage.setItem(onboardingKey, '1'); } catch(e) {}
+            }
+        };
+
+        window.chOpenOnboardingWalkthrough = function(forceOpen) {
+            if (!onboardingModal) return;
+            chRenderOnboardingStep(0);
+            onboardingModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            if (forceOpen === true) {
+                onboardingModal.dataset.manual = '1';
+            } else {
+                onboardingModal.dataset.manual = '0';
+            }
+        };
+
+        window.chAdvanceOnboarding = function(direction) {
+            if (!onboardingModal || !onboardingSlides.length) return;
+            const nextStep = window.chOnboardingStep + (direction > 0 ? 1 : -1);
+            if (nextStep >= onboardingSlides.length) {
+                window.chCloseOnboardingWalkthrough(true);
+                return;
+            }
+            chRenderOnboardingStep(nextStep);
+        };
+
+        if (onboardingModal) {
+            onboardingModal.addEventListener('click', function(e) {
+                if (e.target === onboardingModal) {
+                    window.chCloseOnboardingWalkthrough(true);
+                }
+            });
+
+            try {
+                const hasSeenOnboarding = localStorage.getItem(onboardingKey) === '1';
+                const isCommunitySurface = document.querySelector('.ch-feed-wrap, .ch-post-view-wrap, .ch-my-feed-wrap, .ch-public-profile-wrap, .ch-mf-page-wrap');
+                if (isGuestUser && !hasSeenOnboarding && isCommunitySurface) {
+                    setTimeout(() => {
+                        window.chOpenOnboardingWalkthrough(false);
+                    }, 700);
+                }
+            } catch(e) {}
         }
 
         // ---- Settings modal ----
@@ -4366,26 +4558,7 @@ function bntm_shortcode_ch_post_view() {
                         <?php echo wp_kses_post(nl2br($post->content)); ?>
                     </div>
 
-                    <?php if ($post->media_urls): ?>
-                    <div class="ch-post-media">
-                        <?php foreach (ch_get_media_urls($post->media_urls) as $url): ?>
-                        <div class="ch-media-item">
-                            <?php $kind = ch_media_kind_from_url($url); ?>
-                            <?php if ($kind === 'image'): ?>
-                            <img src="<?php echo esc_url($url); ?>" alt="Media" class="ch-media-image">
-                            <?php elseif ($kind === 'video'): ?>
-                            <video controls class="ch-media-video">
-                                <source src="<?php echo esc_url($url); ?>">
-                            </video>
-                            <?php elseif ($kind === 'audio'): ?>
-                            <audio controls class="ch-media-audio">
-                                <source src="<?php echo esc_url($url); ?>">
-                            </audio>
-                            <?php endif; ?>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php endif; ?>
+                    <?php echo ch_render_post_media_preview($post->media_urls ?? '', 'post'); ?>
 
                     <?php if ($post->tags): ?>
                     <div class="ch-post-tags">
