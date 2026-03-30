@@ -285,7 +285,11 @@ function ch_guest_landing_page() {
         var chFeedUrl = '<?php echo esc_js(remove_query_arg('view_post')); ?>';
     </script>
 
-    <nav class="ch-top-nav">
+    <nav class="ch-top-nav" style="position: relative;">
+        <!-- Burger Menu Toggle -->
+        <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '.ch-nav-links', '.ch-user-bar');">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
         <div class="ch-nav-links">
             <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link active">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -477,7 +481,10 @@ function bntm_shortcode_ch() {
     <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
     <div class="ch-dashboard-wrap">
         <div class="ch-sidebar">
-            <div class="ch-sidebar-header">
+            <div class="ch-sidebar-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '.ch-nav');" style="margin-right: 12px;">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </button>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
@@ -2907,6 +2914,9 @@ function bntm_shortcode_ch_feed() {
     ?>
     <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>'; var chFeedUrl = '<?php echo esc_js($feed_url); ?>';</script>
     <nav class="ch-top-nav">
+        <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '.ch-nav-links', '.ch-user-bar');">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
         <div class="ch-nav-links">
             <?php if ($user_id): ?>
             <a href="?tab=my_feed" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>">

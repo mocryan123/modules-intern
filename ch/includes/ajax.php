@@ -88,23 +88,70 @@ function bntm_ajax_ch_edit_category() {
 
     $is_private = (int)(!empty($_POST['is_private']));
     $require_post_approval = (int)(!empty($_POST['require_post_approval']));
-    $result = $wpdb->update("{$wpdb->prefix}ch_categories",
-        [
-            'name' => $name,
-            'description' => $desc,
-            'color' => $color,
-            'slug' => sanitize_title($name),
-            'is_private' => $is_private,
-            'require_post_approval' => $require_post_approval
-        ],
-        ['id' => $id], ['%s','%s','%s','%s','%d','%d'], ['%d']
+    $table = "{$wpdb->prefix}ch_categories";
+    $columns = $wpdb->get_col("DESC {$table}", 0);
+    $has_post_approval_col = in_array('require_post_approval', $columns, true);
+
+    $select_fields = ['name', 'description', 'color', 'slug', 'is_private'];
+    if ($has_post_approval_col) {
+        $select_fields[] = 'require_post_approval';
+    }
+
+    $existing = $wpdb->get_row($wpdb->prepare(
+        "SELECT " . implode(', ', $select_fields) . " FROM {$table} WHERE id = %d",
+        $id
+    ));
+
+    if (!$existing) {
+        wp_send_json_error(['message' => 'Category not found']);
+    }
+
+    $update_data = [];
+    $update_format = [];
+    $next_slug = sanitize_title($name);
+
+    if ((string)$existing->name !== (string)$name) {
+        $update_data['name'] = $name;
+        $update_format[] = '%s';
+    }
+    if ((string)($existing->description ?? '') !== (string)$desc) {
+        $update_data['description'] = $desc;
+        $update_format[] = '%s';
+    }
+    if (strtoupper((string)$existing->color) !== strtoupper((string)$color)) {
+        $update_data['color'] = $color;
+        $update_format[] = '%s';
+    }
+    if ((string)$existing->slug !== (string)$next_slug) {
+        $update_data['slug'] = $next_slug;
+        $update_format[] = '%s';
+    }
+    if ((int)$existing->is_private !== $is_private) {
+        $update_data['is_private'] = $is_private;
+        $update_format[] = '%d';
+    }
+    if ($has_post_approval_col && (int)($existing->require_post_approval ?? 0) !== $require_post_approval) {
+        $update_data['require_post_approval'] = $require_post_approval;
+        $update_format[] = '%d';
+    }
+
+    if (empty($update_data)) {
+        wp_send_json_error(['message' => 'No changes made']);
+    }
+
+    $result = $wpdb->update(
+        $table,
+        $update_data,
+        ['id' => $id],
+        $update_format,
+        ['%d']
     );
 
     if ($result !== false) {
         ch_log_activity('edit_category', 'category', $id, "Updated category: $name");
         wp_send_json_success(['message' => 'Category updated!']);
     } else {
-        wp_send_json_error(['message' => 'No changes made']);
+        wp_send_json_error(['message' => $wpdb->last_error ?: 'Failed to update category']);
     }
 }
 
