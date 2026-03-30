@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF Sign In page.
  */
@@ -158,8 +158,8 @@ function bntm_kbf_render_signin() {
         <div class="kbf-auth-card">
           <div class="kbf-auth-left">
             <div class="kbf-auth-brand">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag">
-              ambag
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora">
+              fundora
             </div>
             <h2 class="kbf-auth-title">Sign In</h2>
             <p class="kbf-auth-sub">Welcome back. Access your dashboard, monitor fundraising progress, and support campaigns.</p>
@@ -180,7 +180,7 @@ function bntm_kbf_render_signin() {
                 <label>Password</label>
                 <div class="kbf-auth-input">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lock-fill.svg" alt="">
-                  <input type="password" name="user_password" placeholder="••••••••" required>
+                  <input type="password" name="user_password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
                 </div>
               </div>
               <div class="kbf-auth-actions">
@@ -192,16 +192,16 @@ function bntm_kbf_render_signin() {
               <div class="kbf-auth-cta">
                 <button class="kbf-btn kbf-btn-primary" type="submit">Sign In</button>
               </div>
-              <div class="kbf-auth-footer">Don’t have an account? <a href="<?php echo esc_url($signup_url); ?>">Sign Up</a></div>
+              <div class="kbf-auth-footer">Donâ€™t have an account? <a href="<?php echo esc_url($signup_url); ?>">Sign Up</a></div>
             </form>
           </div>
           <div class="kbf-auth-right">
             <h3>Glad to see you!</h3>
             <p>One account gives you access to fundraising tools, donor insights, and campaign updates.</p>
             <div class="kbf-auth-points">
-              <div class="kbf-auth-point"><span>✓</span> Track donations in real time</div>
-              <div class="kbf-auth-point"><span>✓</span> Share your campaign in one click</div>
-              <div class="kbf-auth-point"><span>✓</span> Message your supporters</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Track donations in real time</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Share your campaign in one click</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Message your supporters</div>
             </div>
           </div>
         </div>

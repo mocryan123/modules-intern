@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF Sign Up page.
  */
@@ -119,8 +119,8 @@ function bntm_kbf_render_signup() {
         <div class="kbf-auth-card">
           <div class="kbf-auth-left">
             <div class="kbf-auth-brand">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag">
-              ambag
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora">
+              fundora
             </div>
             <h2 class="kbf-auth-title">Sign Up</h2>
             <p class="kbf-auth-sub">Create your account to support fundraisers or launch your own in minutes.</p>
@@ -159,9 +159,9 @@ function bntm_kbf_render_signup() {
             <h3>Build impact faster</h3>
             <p>Launch fundraisers, share updates, and grow a trusted supporter base.</p>
             <div class="kbf-auth-points">
-              <div class="kbf-auth-point"><span>✓</span> Verified profiles build trust</div>
-              <div class="kbf-auth-point"><span>✓</span> Seamless donation tracking</div>
-              <div class="kbf-auth-point"><span>✓</span> Transparent progress updates</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Verified profiles build trust</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Seamless donation tracking</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Transparent progress updates</div>
             </div>
           </div>
         </div>

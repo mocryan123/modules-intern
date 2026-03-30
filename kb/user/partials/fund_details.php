@@ -918,7 +918,7 @@ function bntm_shortcode_kbf_fund_details() {
                       <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="">
                     <?php endif; ?>
                   </div>
-                  <div class="kbf-poster-brand-name">ambag</div>
+                  <div class="kbf-poster-brand-name">fundora</div>
                 </div>
                 <div class="kbf-poster-cover">
                   <?php if($poster_img): ?>

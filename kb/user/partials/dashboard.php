@@ -906,8 +906,8 @@ function bntm_shortcode_kbf_dashboard() {
     <div class="kbf-mobile-menu" id="kbf-mobile-menu">
       <div class="kbf-mobile-menu-header">
         <div class="kbf-brand">
-          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
-          <span class="kbf-brand-text">ambag</span>
+          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
+          <span class="kbf-brand-text">fundora</span>
         </div>
         <button class="kbf-hamburger" type="button" onclick="kbfCloseMobileMenu()">
           <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="">
@@ -926,8 +926,8 @@ function bntm_shortcode_kbf_dashboard() {
     <div class="kbf-topbar">
       <div class="kbf-topbar-left">
         <div class="kbf-brand">
-          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
-          <span class="kbf-brand-text">ambag</span>
+          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
+          <span class="kbf-brand-text">fundora</span>
         </div>
         <nav class="kbf-nav">
           <a href="?kbf_tab=overview" class="<?php echo $tab==='overview'?'active':''; ?>">Home</a>

@@ -178,10 +178,7 @@ function bntm_kbf_render_landing() {
         width: 100%;
         margin-bottom: 34px;
         position: relative;
-        background:
-            radial-gradient(880px 680px at -8% 110%, rgba(111,182,255,0.24) 0%, rgba(111,182,255,0.08) 55%, transparent 100%),
-            radial-gradient(860px 640px at 108% -10%, rgba(111,182,255,0.22) 0%, rgba(111,182,255,0.07) 55%, transparent 100%),
-            #ffffff;
+        background:#ffffff;
         border-radius: 22px;
         padding: 44px;
         border: 1px solid #dce8f8;
@@ -192,7 +189,22 @@ function bntm_kbf_render_landing() {
         content: '';
         position: absolute;
         inset: 0;
+        background-image: url('<?php echo esc_url(BNTM_KBF_URL . 'assets/hero.jpg'); ?>');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.42;
         pointer-events: none;
+    }
+    .kbf-hero::after{
+        content:'';
+        position:absolute;
+        inset:0;
+        background:
+            linear-gradient(120deg, rgba(231,241,255,0.72) 0%, rgba(255,255,255,0.58) 45%, rgba(231,241,255,0.45) 100%),
+            radial-gradient(880px 680px at -8% 110%, rgba(111,182,255,0.22) 0%, rgba(111,182,255,0.08) 55%, transparent 100%),
+            radial-gradient(860px 640px at 108% -10%, rgba(111,182,255,0.20) 0%, rgba(111,182,255,0.06) 55%, transparent 100%);
+        pointer-events:none;
     }
     .kbf-hero-inner {
         display: flex;
@@ -202,6 +214,7 @@ function bntm_kbf_render_landing() {
         gap: 40px;
         padding: 48px 0 32px;
         position: relative;
+        z-index: 1;
     }
 
     /* Left */
@@ -822,8 +835,7 @@ function bntm_kbf_render_landing() {
         <div class="kbf-topbar kbf-reveal">
           <div class="kbf-topbar-left">
             <div class="kbf-brand">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
-              <span class="kbf-brand-text" style="font-weight: 00;">ambag</span>
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:25px;object-fit:contain;border-radius:6px;">
             </div>
             <nav class="kbf-nav">
               <a href="#kbf-home" onclick="return kbfScrollTo('kbf-home')">Home</a>
@@ -842,8 +854,8 @@ function bntm_kbf_render_landing() {
               <div class="kbf-mobile-menu" id="kbf-mobile-menu">
           <div class="kbf-mobile-menu-header">
             <div class="kbf-brand">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:24px;height:24px;object-fit:contain;border-radius:6px;">
-              <span class="kbf-brand-text" style="font-weight:800;">ambag</span>
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:24px;height:24px;object-fit:contain;border-radius:6px;">
+              <span class="kbf-brand-text" style="font-weight:800;">fundora</span>
             </div>
             <button class="kbf-hamburger" onclick="document.getElementById('kbf-hamburger-btn').click()" aria-label="Close menu" style="display:inline-flex;">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="Close">
@@ -876,7 +888,7 @@ function bntm_kbf_render_landing() {
               </h1>
 
               <p class="kbf-hero-desc">
-                Ambag gives Filipino families a proper place to raise support — with real transparency, real updates, and real accountability.
+                fundora gives Filipino families a proper place to raise support — with real transparency, real updates, and real accountability.
               </p>
 
 
@@ -972,7 +984,7 @@ function bntm_kbf_render_landing() {
             <div class="kbf-about-card">
               <h2 style="font-size: 1.5em; font-weight: 400;">Why we built this</h2>
               <p>We've all seen it — a family posting their GCash number on Facebook after a flood, a hospitalization, a fire. It works sometimes. But it's chaotic, untracked, and exhausting for the family asking.</p>
-              <p style="margin-top:10px;">Ambag started because Filipinos don't need convincing to help each other. Bayanihan is already in our culture. We just needed to build something worthy of it.</p>
+              <p style="margin-top:10px;">fundora started because Filipinos don't need convincing to help each other. Bayanihan is already in our culture. We just needed to build something worthy of it.</p>
             </div>
           </div>
 
@@ -1032,7 +1044,7 @@ function bntm_kbf_render_landing() {
             <p>Designed for trust</p>
             <h3 style="font-weight: 300;">Safe & Trusted</h3>
             <p>Reviewed. Verified. Transparent.</p>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($join_url); ?>">Join Ambag — it's free</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($join_url); ?>">Join fundora — it's free</a>
           </div>
         </div>
 
@@ -1090,11 +1102,11 @@ function bntm_kbf_render_landing() {
         <footer class="kbf-footer kbf-reveal delay-3" style="margin-top:80px;">
           <div>
             <div class="kbf-brand" style="margin-bottom:8px;">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="ambag" style="width:20px;height:20px;object-fit:contain;border-radius:6px;">
-              <span class="kbf-brand-text" style="font-weight: 600;">ambag</span>
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:20px;height:20px;object-fit:contain;border-radius:6px;">
+              <span class="kbf-brand-text" style="font-weight: 600;">fundora</span>
             </div>
             <p>Community fundraising rooted in bayanihan.</p>
-            <small>© Ambag. All rights reserved.</small>
+            <small>© fundora. All rights reserved.</small>
           </div>
           <div class="kbf-social">
             <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
