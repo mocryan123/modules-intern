@@ -430,6 +430,8 @@
         $pct = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
         $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
         $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
+        $photo_list = $f->photos ? json_decode($f->photos, true) : [];
+        $photo_json = wp_json_encode(array_values(array_filter(is_array($photo_list) ? $photo_list : [])));
         $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status, admin_notes FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1",$f->id));
         $is_saved = in_array((int)$f->id, $saved_ids, true);
         $save_icon = $is_saved ? 'bookmark-check-fill' : 'bookmark';
@@ -575,7 +577,7 @@
                 </button>
                 <div class="kbf-card-more-menu" id="kbf-home-more-<?php echo esc_attr($f->id); ?>">
                 <?php if(in_array($f->status,['active','pending'])): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>)">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>')">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/pencil-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
                   Edit
                 </button>
@@ -590,13 +592,13 @@
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
                   Share
                 </button>
-                <?php if(!in_array($f->status,['cancelled','completed'])): ?>
+                <?php if($f->status==='pending'): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','cancel')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/trash-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-                  Trash
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Cancel
                 </button>
-            <?php endif; ?>
-            <?php if($f->status==='cancelled'): ?>
+                <?php endif; ?>
+                <?php if(in_array($f->status,['cancelled','suspended'])): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/trash-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
                   Trash

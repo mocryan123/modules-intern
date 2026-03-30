@@ -331,7 +331,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             </div>
           </div>
           <?php if(is_user_logged_in() && !$has_reviewed): ?>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="margin-bottom:10px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Score</button>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="margin-bottom:10px;padding:6px 12px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Score</button>
           <?php elseif(is_user_logged_in() && $has_reviewed): ?>
             <span class="kbf-meta" style="font-size:11.5px;display:block;margin-bottom:10px;">Already scored</span>
           <?php else: ?>

@@ -481,6 +481,7 @@
         var editPhotoInput = document.getElementById('kbf-edit-photos');
         var editPhotoWrap = document.getElementById('kbf-edit-photo-previews');
         var kbfEditFiles = [];
+        var kbfEditExistingUrls = [];
         function kbfSyncEditFiles(){
             if (!editPhotoInput) return;
             var dt = new DataTransfer();
@@ -490,6 +491,22 @@
         function kbfRenderEditThumbs(){
             if (!editPhotoWrap) return;
             editPhotoWrap.innerHTML = '';
+            var existingCount = 0;
+            kbfEditExistingUrls.forEach(function(src, idx){
+                if (!src) return;
+                var thumb = document.createElement('div');
+                thumb.className = 'kbf-photo-thumb kbf-photo-thumb-existing';
+                var badge = document.createElement('div');
+                badge.className = 'kbf-photo-order';
+                badge.textContent = String(idx + 1);
+                var img = document.createElement('img');
+                img.alt = '';
+                img.src = src;
+                thumb.appendChild(img);
+                thumb.appendChild(badge);
+                editPhotoWrap.appendChild(thumb);
+                existingCount++;
+            });
             kbfEditFiles.forEach(function(file, idx){
                 if (!file.type || file.type.indexOf('image/') !== 0) return;
                 var reader = new FileReader();
@@ -500,7 +517,7 @@
                     thumb.setAttribute('data-index', String(idx));
                     var badge = document.createElement('div');
                     badge.className = 'kbf-photo-order';
-                    badge.textContent = String(idx + 1);
+                    badge.textContent = String(existingCount + idx + 1);
                     var handle = document.createElement('div');
                     handle.className = 'kbf-photo-handle';
                     handle.setAttribute('aria-label','Drag to reorder');
@@ -536,7 +553,7 @@
                 };
                 reader.readAsDataURL(file);
             });
-            if (kbfEditFiles.length < 5) {
+            if (existingCount + kbfEditFiles.length < 5) {
                 var addBtn = document.createElement('button');
                 addBtn.type = 'button';
                 addBtn.className = 'kbf-photo-add';
@@ -554,7 +571,8 @@
             editPhotoInput.addEventListener('change', function(){
                 var incoming = Array.from(editPhotoInput.files || []);
                 if (!incoming.length) return;
-                kbfEditFiles = kbfEditFiles.concat(incoming).slice(0, 5);
+                var maxNew = Math.max(0, 5 - kbfEditExistingUrls.length);
+                kbfEditFiles = kbfEditFiles.concat(incoming).slice(0, maxNew);
                 kbfSyncEditFiles();
                 kbfRenderEditThumbs();
             });
@@ -598,9 +616,15 @@
         }
         window.kbfResetEditPhotos = function(){
             kbfEditFiles = [];
+            kbfEditExistingUrls = [];
             if (editPhotoInput) {
                 kbfSyncEditFiles();
             }
+            if (editPhotoWrap) kbfRenderEditThumbs();
+        };
+        window.kbfSetEditExistingPhotos = function(urls){
+            if (!Array.isArray(urls)) urls = [];
+            kbfEditExistingUrls = urls.filter(function(u){ return !!u; });
             if (editPhotoWrap) kbfRenderEditThumbs();
         };
         if (photoInput && photoWrap) {
@@ -1112,6 +1136,7 @@
         }
         kbfSetBtnLoading(btn, true, 'Saving...');
         kbfSetSkeleton(msg, true);
+        kbfSetLoadingPage(true);
         const fd = new FormData(form);
         var eProv = document.getElementById('kbf-edit-province');
         var eMuni = document.getElementById('kbf-edit-municipality');
@@ -1133,7 +1158,12 @@
             if(json.success) {
                 kbfCloseModal('kbf-modal-edit');
             } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
-        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
+            kbfSetLoadingPage(false);
+        }).catch(()=>{ 
+            kbfSetBtnLoading(btn,false); 
+            kbfSetSkeleton(msg,false); 
+            kbfSetLoadingPage(false);
+        });
     }
 
     function kbfSubmitWd() {
@@ -1173,11 +1203,18 @@
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
 
-    window.kbfOpenEdit = function(id, title, desc, loc, deadline, autoReturn) {
+    window.kbfOpenEdit = function(id, title, desc, loc, deadline, autoReturn, photosJson) {
         document.getElementById('edit-fund-id').value = id;
         document.getElementById('edit-fund-title').value = title;
         document.getElementById('edit-fund-desc').value = desc;
         if (window.kbfResetEditPhotos) window.kbfResetEditPhotos();
+        if (window.kbfSetEditExistingPhotos) {
+            var existing = [];
+            try {
+                existing = photosJson ? JSON.parse(photosJson) : [];
+            } catch(e) { existing = []; }
+            window.kbfSetEditExistingPhotos(existing);
+        }
         var hiddenLoc = document.getElementById('edit-fund-location-hidden');
         if (hiddenLoc) hiddenLoc.value = loc || '';
         var titleCounter = document.getElementById('edit-fund-title').parentNode.querySelector('.kbf-title-counter');

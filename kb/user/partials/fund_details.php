@@ -275,7 +275,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-photo-main::after{
         content:'Click to expand';
         position:absolute;
-        bottom:10px;
+        bottom:44px;
         right:12px;
         font-size:11px;
         font-weight:600;
@@ -572,7 +572,7 @@ function bntm_shortcode_kbf_fund_details() {
         <!-- Photo gallery -->
         <?php if(!empty($photos)): ?>
         <div class="kbf-photo-gallery kbf-section-photo">
-          <div class="kbf-photo-main" id="kbf-photo-main">
+          <div class="kbf-photo-main" id="kbf-photo-main" data-photos='<?php echo esc_attr(wp_json_encode(array_values($photos))); ?>'>
             <img src="<?php echo esc_url($photos[0]); ?>" alt="<?php echo esc_attr($fund->title); ?>">
             <?php if(count($photos)>1): ?>
               <button type="button" class="kbf-photo-nav kbf-photo-prev" id="kbf-photo-prev" aria-label="Previous photo">
@@ -980,6 +980,13 @@ function bntm_shortcode_kbf_fund_details() {
 
         var thumbs = Array.prototype.slice.call(document.querySelectorAll('.kbf-photo-thumb img'));
         var sources = [];
+        var dataPhotos = [];
+        if (mainWrap && mainWrap.dataset && mainWrap.dataset.photos) {
+            try {
+                var parsed = JSON.parse(mainWrap.dataset.photos);
+                if (Array.isArray(parsed)) dataPhotos = parsed;
+            } catch (e) {}
+        }
         var currentIndex = 0;
 
         function pushSrc(src){
@@ -992,6 +999,9 @@ function bntm_shortcode_kbf_fund_details() {
             thumbs.forEach(function(img){
                 pushSrc(img.getAttribute('data-full') || img.getAttribute('src'));
             });
+            if (!sources.length && dataPhotos.length) {
+                dataPhotos.forEach(function(src){ pushSrc(src); });
+            }
             if (!sources.length) pushSrc(mainImg.getAttribute('src'));
         }
 
@@ -1221,11 +1231,23 @@ function bntm_shortcode_kbf_fund_details() {
         const msg=document.getElementById('kbf-rpt-msg');
         kbfSetBtnLoading(btn,true,'Submitting...');
         kbfSetSkeleton(msg,true);
+        kbfSetLoadingPage(true);
         const fd=new FormData(form);fd.append('action','kbf_report_fund');fd.append('nonce',nonce);
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
             msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
-            if(j.success)setTimeout(()=>{document.getElementById('kbf-modal-report').style.display='none';},1800);else{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
-        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
+            if(j.success){
+                document.getElementById('kbf-modal-report').style.display='none';
+                if(form) form.reset();
+            } else {
+                kbfSetBtnLoading(btn,false); 
+                kbfSetSkeleton(msg,false);
+            }
+            kbfSetLoadingPage(false);
+        }).catch(()=>{ 
+            kbfSetBtnLoading(btn,false); 
+            kbfSetSkeleton(msg,false);
+            kbfSetLoadingPage(false);
+        });
     };
     window.kbfCreatePoster = function(token, title){
         var modal = document.getElementById('kbf-modal-poster');

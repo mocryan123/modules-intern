@@ -41,15 +41,15 @@ function bntm_kbf_render_landing() {
     $site_url  = home_url('/');
     $page_url  = function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : $site_url;
     $logo_url  = esc_url(BNTM_KBF_URL . 'assets/branding/logo.png');
-    $seo_title = 'fundora — Community-Powered Fundraising in the Philippines';
-    $seo_desc  = 'Start or support verified fundraisers with transparency, real updates, and community trust. Built for bayanihan, designed for Filipinos.';
+    $seo_title = 'Fundora: The Filipino Crowdfunding Platform Built on Bayanihan | Transparent, Trusted, Free';
+    $seo_desc  = 'Fundora is a community-powered crowdfunding platform built for Filipinos with verified campaigns, transparent fund tracking, and zero platform fees during beta. Start or support a fundraiser today.';
     $faq_schema = [
         [
             'question' => 'How can I sponsor a fundraiser?',
             'answer' => 'Browse active campaigns, choose a cause, and sponsor using the available payment options.'
         ],
         [
-            'question' => 'Is my sponsorship taxdeductible?',
+            'question' => 'Is my sponsorship tax-deductible?',
             'answer' => 'Tax benefits depend on organizer accreditation and local regulations. Please check with the organizer first.'
         ],
         [
@@ -165,7 +165,7 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
-    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 76px 22px 0; }
+    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 62px 22px 0; }
     .kbf-landing a { color: inherit; text-decoration: none; }
     .kbf-brand-text{ color:#3d8ef0; font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif; }
         .kbf-divider {
@@ -186,25 +186,25 @@ function bntm_kbf_render_landing() {
         align-items: center;
         justify-content: space-between;
         gap: 18px;
-        padding: 10px 16px;
-        min-height: 56px;
+        padding: 12px 20px;
+        min-height: 60px;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         z-index: 1000;
-        background: rgba(255, 255, 255, 0.75);
+        background: rgba(255, 255, 255, 0.86);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid transparent;
-        transition: border-color .2s ease, box-shadow .2s ease;
+        transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
         margin: 0;
         width: 100%;
         box-sizing: border-box;
     }
     .kbf-topbar.kbf-topbar-scrolled {
         border-bottom-color: var(--kbf-border);
-        box-shadow: 0 4px 24px rgba(15, 40, 80, 0.06);
+        box-shadow: 0 6px 28px rgba(15, 40, 80, 0.10);
     }
     .kbf-topbar-left { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
     .kbf-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
@@ -226,20 +226,20 @@ function bntm_kbf_render_landing() {
     .kbf-actions { display: flex; gap: 10px; align-items: center; }
     .kbf-btn {
         display: inline-flex; align-items: center; justify-content: center;
-        padding: 9px 18px; border-radius: 999px;
-        font-weight: 400; font-size: 12.5px;
+        padding: 10px 18px; border-radius: 999px;
+        font-weight: 500; font-size: 12.5px;
         border: 1px solid transparent;
         transition: transform .3s ease, box-shadow .3s ease, background .3s ease, filter .3s ease;
     }
     .kbf-btn.kbf-btn-primary {
-        background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 50%, #2070e0 100%);
+        background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 55%, #1f6fe0 100%);
         color: #ffffff;
         box-shadow:
             0 1px 2px rgba(32, 112, 224, 0.20),
             0 4px 14px rgba(42, 120, 220, 0.28),
             0 0 0 0px rgba(111, 182, 255, 0),
             inset 0 1px 0 rgba(255, 255, 255, 0.18);
-        font-weight: 500;
+        font-weight: 600;
         letter-spacing: 0.01em;
         position: relative;
         isolation: isolate;
@@ -289,10 +289,10 @@ function bntm_kbf_render_landing() {
         margin-bottom: 34px;
         position: relative;
         background:#ffffff;
-        border-radius: 22px;
+        border-radius: 24px;
         padding: 44px;
-        border: 1px solid #dce8f8;
-        box-shadow: var(--kbf-shadow-lg);
+        border: 1px solid #dfe9f7;
+        box-shadow: 0 18px 40px rgba(15, 40, 80, 0.10);
         overflow: hidden;
     }
     .kbf-hero::before {
@@ -446,8 +446,8 @@ function bntm_kbf_render_landing() {
         background: #6fb6ff; display: inline-block; flex-shrink: 0;
     }
     .kbf-hero-heading {
-        font-size: clamp(40px, 5.5vw, 64px);
-        font-weight: 800; line-height: 1.05;
+        font-size: clamp(40px, 5.6vw, 64px);
+        font-weight: 700; line-height: 1.04;
         color: #0d1a2e; letter-spacing: -1.5px; margin: 0;
     }
     .kbf-hero-highlight {
@@ -456,8 +456,13 @@ function bntm_kbf_render_landing() {
         border-radius: 8px; padding: 2px 14px; font-style: normal;
     }
     .kbf-hero-desc {
-        font-size: 14px; font-weight: 300;
+        font-size: 14.5px; font-weight: 400;
         color: var(--kbf-muted); line-height: 1.7; margin: 0;
+    }
+    .kbf-hero-sub {
+        font-size: 12.5px;
+        color: #6a7b92;
+        letter-spacing: 0.02em;
     }
     
     .kbf-hero-cta-btn { width: fit-content; padding: 12px 22px; gap: 10px; }
@@ -498,9 +503,30 @@ function bntm_kbf_render_landing() {
         transform-origin: top left;
     }
     .kbf-pcard {
-        position: absolute; border-radius: 22px; overflow: hidden;
-        background: #fff; border: 1px solid #ddeaf8;
-        box-shadow: var(--kbf-shadow);
+        position: absolute; border-radius: 24px; overflow: hidden;
+        background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+        border: 1px solid #d7e5fb;
+        box-shadow:
+            0 18px 40px rgba(15, 40, 80, 0.18),
+            0 2px 10px rgba(15, 40, 80, 0.08),
+            inset 0 1px 0 rgba(255,255,255,0.8),
+            inset 0 -1px 0 rgba(13, 26, 46, 0.05);
+    }
+    .kbf-pcard::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 46%);
+        pointer-events: none;
+    }
+    .kbf-pcard::after {
+        content: '';
+        position: absolute;
+        inset: 10px 10px auto 10px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(61, 142, 240, 0.18), transparent);
+        opacity: 0.7;
+        pointer-events: none;
     }
     /* Main card — tall, center-left, highest z */
     .kbf-pcard-main {
@@ -531,30 +557,45 @@ function bntm_kbf_render_landing() {
     @keyframes kbfFloatTL   { 0%,100%{transform:translateY(-50%) rotate(-1.5deg) translateY(0px)} 50%{transform:translateY(calc(-50% - 6px)) rotate(-1.5deg)} }
 
     .kbf-pcard-img {
-        width: 100%; height: calc(100% - 48px);
+        width: 100%; height: calc(100% - 50px);
         display: flex; align-items: center; justify-content: center;
+        position: relative;
     }
-    .kbf-pimg-1 { background: linear-gradient(160deg, #daeeff 0%, #b8d8f8 100%); }
-    .kbf-pimg-2 { background: linear-gradient(160deg, #c8e4ff 0%, #93c8f8 100%); }
-    .kbf-pimg-3 { background: linear-gradient(160deg, #d4edff 0%, #a8d8fa 100%); }
-    .kbf-pimg-4 { background: linear-gradient(160deg, #e0f0ff 0%, #b4d4f5 100%); }
+    .kbf-pcard-img::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(240px 160px at 18% 12%, rgba(255,255,255,0.75), transparent 62%),
+            radial-gradient(240px 200px at 80% 10%, rgba(255,255,255,0.35), transparent 70%);
+        pointer-events: none;
+    }
+    .kbf-pimg-1 { background: linear-gradient(160deg, #eff6ff 0%, #c9e3ff 100%); }
+    .kbf-pimg-2 { background: linear-gradient(160deg, #e0f0ff 0%, #a8d4ff 100%); }
+    .kbf-pimg-3 { background: linear-gradient(160deg, #e9f4ff 0%, #c1e0ff 100%); }
+    .kbf-pimg-4 { background: linear-gradient(160deg, #f1f7ff 0%, #cfe4ff 100%); }
     .kbf-pcard-icon {
-        width: 38px;
-        height: 38px;
-        opacity: 0.85;
+        width: 36px;
+        height: 36px;
+        opacity: 0.9;
         display: block;
-        filter: invert(22%) sepia(25%) saturate(1200%) hue-rotate(185deg) brightness(0.9);
+        filter: invert(22%) sepia(25%) saturate(1200%) hue-rotate(185deg) brightness(0.92);
     }
     .kbf-pcard-bar {
-        padding: 7px 9px; background: #fff;
-        display: flex; align-items: center; gap: 6px;
-        border-top: 1px solid #edf2f8; height: 48px;
+        padding: 7px 12px; background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
+        display: flex; align-items: center; gap: 8px;
+        border-top: 1px solid #e3edf9; height: 50px;
+        box-shadow:
+            inset 0 1px 0 rgba(255,255,255,0.85),
+            inset 0 -1px 0 rgba(13, 26, 46, 0.04);
     }
     .kbf-pcard-av {
         width: 22px; height: 22px; border-radius: 50%;
-        background: #e7f1ff;
+        background: linear-gradient(180deg, #ffffff 0%, #e3efff 100%);
         display: flex; align-items: center; justify-content: center;
         font-size: 11px; flex-shrink: 0;
+        border: 1px solid #d6e5fb;
+        box-shadow: 0 4px 10px rgba(61, 142, 240, 0.18);
     }
     .kbf-pcard-av img {
         width: 12px;
@@ -565,10 +606,13 @@ function bntm_kbf_render_landing() {
     .kbf-pcard-name { font-size: 9px; font-weight: 600; color: #0d1a2e; line-height: 1.3; }
     .kbf-pcard-sub  { font-size: 8px; color: #8aa0b8; }
     .kbf-pcard-play {
-        margin-left: auto; width: 18px; height: 18px;
-        background: #e7f1ff; border-radius: 50%;
+        margin-left: auto; width: 20px; height: 20px;
+        background: linear-gradient(180deg, #ffffff 0%, #e3efff 100%);
+        border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         font-size: 8px; color: #2a6aad; flex-shrink: 0;
+        border: 1px solid #d6e5fb;
+        box-shadow: 0 4px 10px rgba(61, 142, 240, 0.2);
     }
     .kbf-pcard-play img {
         width: 8px;
@@ -589,21 +633,102 @@ function bntm_kbf_render_landing() {
     /* SECTIONS */
     .kbf-section { margin-top: 54px; scroll-margin-top: calc(var(--kbf-topbar-h, 64px) + 16px); }
     .kbf-section:first-of-type { margin-top: 32px; }
-    .kbf-section h2 { font-size: 22px; margin: 0 0 6px; }
-    .kbf-section p { color: var(--kbf-muted); margin: 0; font-size: 13.5px; }
+    .kbf-section h2 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.2px; }
+    .kbf-section p { color: var(--kbf-muted); margin: 0; font-size: 13.5px; line-height: 1.7; }
+    .kbf-section p + p { margin-top: 10px; }
+    .kbf-section .kbf-lead { font-size: 14px; line-height: 1.7; margin-top: 8px; }
+    .kbf-article-list {
+        margin: 16px 0 0;
+        padding: 18px;
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 22px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .kbf-article-list li {
+        font-size: 12.8px;
+        color: #3a4b63;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: #f7fbff;
+        border: 1px solid #e8f0fb;
+    }
+    .kbf-article-list li span {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7ec4ff 0%, #3d8ef0 70%);
+        box-shadow: 0 4px 10px rgba(61, 142, 240, 0.25);
+        flex-shrink: 0;
+        position: relative;
+    }
+    .kbf-article-list li span::after {
+        content: '';
+        position: absolute;
+        inset: 5px;
+        border-radius: 50%;
+        background: #ffffff;
+        opacity: 0.9;
+    }
+    .kbf-two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+    .kbf-list { margin: 12px 0 0; padding: 0; color: var(--kbf-muted); font-size: 14px; line-height: 1.65; list-style: none; }
+    .kbf-list li {
+        position: relative;
+        padding-left: 22px;
+        margin: 8px 0;
+        color: #46566b;
+    }
+    .kbf-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 7px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7ec4ff 0%, #3d8ef0 80%);
+        box-shadow: 0 4px 10px rgba(61, 142, 240, 0.25);
+    }
+    .kbf-compare-table { margin-top: 18px; border: 1px solid var(--kbf-border); border-radius: 18px; overflow: hidden; background: #fff; box-shadow: var(--kbf-shadow); }
+    .kbf-compare-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--kbf-border); font-size: 12.5px; }
+    .kbf-compare-row strong { color: #0d1a2e; font-weight: 600; }
+    .kbf-compare-row:last-child { border-bottom: none; }
+    .kbf-compare-head { background: #f3f7ff; font-weight: 600; color: #1a3a66; }
+    .kbf-compare-row:nth-child(even):not(.kbf-compare-head) { background: #fbfdff; }
 
     .kbf-feature-grid { margin-top: 24px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; }
     .kbf-feature-grid .kbf-card { grid-column: span 2; }
     .kbf-feature-grid .kbf-card:nth-child(4),
     .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 3; }
+    .kbf-feature-grid.kbf-feature-grid--two { grid-template-columns: repeat(2, 1fr); }
+    .kbf-feature-grid.kbf-feature-grid--two .kbf-card { grid-column: auto; min-height: 140px; }
+    .kbf-feature-grid.kbf-feature-grid--two .kbf-card:nth-child(4),
+    .kbf-feature-grid.kbf-feature-grid--two .kbf-card:nth-child(5) { grid-column: auto; }
     .kbf-card {
-        background: var(--kbf-surface); border: 1px solid var(--kbf-border);
-        border-radius: 18px; padding: 16px;
-        box-shadow: var(--kbf-shadow);
-        transition: transform .2s ease, box-shadow .2s ease;
-        position: relative; overflow: hidden;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid #e0e9f7;
+        border-radius: 18px;
+        padding: 16px;
+        box-shadow: 0 10px 24px rgba(15, 40, 80, 0.08);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        position: relative;
+        overflow: hidden;
     }
-    .kbf-card:hover { transform: translateY(-3px); box-shadow: var(--kbf-shadow-lg); }
+    .kbf-card::before { display: none; }
+    .kbf-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 32px rgba(15, 40, 80, 0.12);
+        border-color: #cfe0f6;
+    }
     .kbf-card::after {
         content: '';
         position: absolute;
@@ -617,6 +742,8 @@ function bntm_kbf_render_landing() {
         pointer-events: none;
     }
     .kbf-card:hover::after { opacity: 1; transform: translate(10px, -10px); }
+    .kbf-card::after,
+    .kbf-card::before { pointer-events: none; }
     .kbf-card .kbf-chip {
         transition: 0.3s ease;
         width: 30px; height: 30px; border-radius: 12px;
@@ -633,6 +760,97 @@ function bntm_kbf_render_landing() {
     }
     .kbf-card h4 { margin: 12px 0 6px; font-size: 14px; }
     .kbf-card p { font-size: 12.5px; }
+
+    /* Trust strip */
+    .kbf-trust-strip {
+        margin-top: 18px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid #e3ecf7;
+        background: #fbfdff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 12px;
+        color: #1a3a66;
+        box-shadow: 0 10px 20px rgba(15, 40, 80, 0.06);
+    }
+    .kbf-trust-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #f3f7ff;
+        border: 1px solid #e1ebf7;
+        font-weight: 600;
+    }
+
+    /* Card variants for visual variety */
+    .kbf-card--soft {
+        background: linear-gradient(180deg, #ffffff 0%, #f4f9ff 100%);
+        border-color: #e1ebf7;
+    }
+    .kbf-card--glass {
+        background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(247,250,255,0.85) 100%);
+        border-color: rgba(210,226,247,0.9);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    .kbf-card--outline {
+        background: #ffffff;
+        border: 1px solid #d9e6f7;
+        box-shadow: 0 6px 18px rgba(15, 40, 80, 0.06);
+    }
+    .kbf-card--split {
+        background: linear-gradient(180deg, #f7fbff 0%, #ffffff 65%);
+        border-color: #dfe9f7;
+    }
+    .kbf-card--tint {
+        background: linear-gradient(180deg, #ffffff 0%, #f1f7ff 100%);
+        border-color: #dbe7f7;
+    }
+
+    /* Shine hover effect (targeted) */
+    .kbf-card--shine {
+        position: relative;
+        overflow: hidden;
+    }
+    .kbf-card--shine::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 0%, rgba(111,182,255,0.18) 40%, rgba(111,182,255,0.4) 52%, rgba(111,182,255,0.18) 64%, transparent 100%);
+        transform: translateX(-120%) skewX(-12deg);
+        opacity: 0;
+        transition: opacity .55s ease, transform .55s ease;
+        pointer-events: none;
+    }
+    .kbf-card--shine:hover::after {
+        opacity: 1;
+        transform: translateX(150%) skewX(-12deg);
+    }
+
+    .kbf-about-values .kbf-about-value {
+        background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+        border-color: #e3ecf7;
+        box-shadow: var(--kbf-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+    .kbf-about-values .kbf-about-value::after {
+        content: '';
+        position: absolute;
+        width: 120px;
+        height: 120px;
+        right: -60px;
+        top: -60px;
+        background: radial-gradient(circle at center, rgba(111,182,255,0.35), rgba(111,182,255,0) 70%);
+        opacity: 0.5;
+        pointer-events: none;
+    }
 
     .kbf-urgent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 24px; }
     .kbf-urgent-card {
@@ -680,6 +898,18 @@ function bntm_kbf_render_landing() {
         width: 90px; height: 110px; border-radius: 18px;
         object-fit: cover; filter: grayscale(100%);
         box-shadow: var(--kbf-shadow); position: absolute;
+        animation: kbfFloatPic 6s ease-in-out infinite;
+        will-change: transform;
+        transition: transform .2s ease, box-shadow .2s ease;
+        translate: 0 0;
+    }
+    .kbf-stat .kbf-photo-grid img:nth-child(1) { animation-delay: 0s; }
+    .kbf-stat .kbf-photo-grid img:nth-child(2) { animation-delay: 1s; }
+    .kbf-stat .kbf-photo-grid img:nth-child(3) { animation-delay: 2s; }
+    .kbf-stat .kbf-photo-grid img:nth-child(4) { animation-delay: 3s; }
+    @keyframes kbfFloatPic {
+        0%, 100% { translate: 0 0; }
+        50% { translate: 0 -8px; }
     }
     .kbf-stat .kbf-photo-grid img:nth-child(1) { left: 4%; top: 6%; }
     .kbf-stat .kbf-photo-grid img:nth-child(2) { right: 4%; top: 6%; }
@@ -920,6 +1150,8 @@ function bntm_kbf_render_landing() {
         .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
         .kbf-urgent-grid { grid-template-columns: 1fr; }
         .kbf-about-grid { grid-template-columns: 1fr; }
+        .kbf-two-col { grid-template-columns: 1fr; }
+        .kbf-article-list { grid-template-columns: 1fr; }
         .kbf-about-photo { height: 320px; }
         .kbf-stat .kbf-photo-grid { display: none; }
         .kbf-stat h3 { font-size: 56px; }
@@ -932,6 +1164,7 @@ function bntm_kbf_render_landing() {
         .kbf-footer p { order: 2; }
         .kbf-footer .kbf-social { order: 3; }
         .kbf-footer small { order: 4; }
+        .kbf-trust-strip { border-radius: 16px; }
     }
     @media (max-width: 830px) {
         .kbf-hero { padding: 28px 24px; }
@@ -1003,6 +1236,7 @@ function bntm_kbf_render_landing() {
         .kbf-about-photo { height: 240px; }
         .kbf-section h2 { font-size: 18px; }
         .kbf-section p { font-size: 13px; }
+        .kbf-compare-row { grid-template-columns: 1fr; gap: 6px; }
         .kbf-stat h3 { font-size: 40px; }
         .kbf-stat p { font-size: 13px; }
         .kbf-faq summary { font-size: 13px; }
@@ -1072,29 +1306,30 @@ function bntm_kbf_render_landing() {
         </div>
 
         <!-- HERO -->
-        <div id="kbf-home" class="kbf-hero" style="margin-top: 45px; margin-bottom: 45px;">
+        <div id="kbf-home" class="kbf-hero" style="margin-top: 14px; margin-bottom: 90px;">
           <div class="kbf-hero-inner">
 
             <!-- Left: Text -->
             <div class="kbf-hero-left">
               <div class="kbf-eyebrow">
                 <span class="kbf-eyebrow-dot"></span>
-                Community‑Powered Fundraising
+                Filipino Crowdfunding Platform
               </div>
 
-              <h1 class="kbf-hero-heading" style="font-weight: 400;">
-                Crowdfunding<br>
-                Built For
-                Bayanihan.
+              <h1 class="kbf-hero-heading" style="font-weight: 600;">
+                Fundora: Community<br>
+                Fundraising Built<br>
+                for Bayanihan
               </h1>
 
               <p class="kbf-hero-desc">
-                fundora gives Filipino families a proper place to raise support — with real transparency, real updates, and real accountability.
+                Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
               </p>
+              <div class="kbf-hero-sub">Crowdfunding Philippines • Online Fundraising • Zero Fees (Beta)</div>
 
 
               <a class="kbf-btn kbf-btn-primary kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
-                Start Supporting
+                Get Started on Fundora
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-up-right.svg" alt="">
 
               </a>
@@ -1132,48 +1367,87 @@ function bntm_kbf_render_landing() {
           </div>
         </div>
 
+        <!-- IN THIS ARTICLE -->
+        <div class="kbf-section delay-1" style="margin-top: 60px;">
+          <h2 style="font-size: 1.4em; font-weight: 500;">In this article</h2>
+          <ul class="kbf-article-list">
+            <li><span></span>The Problem with Fundraising on Social Media</li>
+            <li><span></span>What Is Fundora?</li>
+            <li><span></span>How Fundora Works</li>
+            <li><span></span>Key Features That Build Trust</li>
+            <li><span></span>Fundora vs. Social Media Fundraising</li>
+            <li><span></span>Who Should Use Fundora?</li>
+            <li><span></span>Free During Beta — Why Now Is the Right Time</li>
+            <li><span></span>The Future of Filipino Crowdfunding</li>
+          </ul>
+        </div>
+
         <!-- FEATURES -->
         <div id="kbf-how" class="kbf-section kbf-reveal delay-1" style="margin-top: 80px;">
-          <h2 style="font-size: 1.5em; font-weight: 400;">Hindi lang pera — tiwala.</h2>
-          <p>Raising funds online is easy. Getting people to actually trust your campaign — that's the hard part. Here's how we make it easier.</p>
+          <h2 style="font-size: 1.5em; font-weight: 400;">Key features that build trust</h2>
+          <p class="kbf-lead">The biggest barrier to online fundraising in the Philippines is not generosity. It is trust. Fundora is built so every campaign is verifiable and every organizer is accountable.</p>
           <div class="kbf-feature-grid">
-            <div class="kbf-card">
+            <div class="kbf-card kbf-card--soft">
                 <div class="kbf-chip" aria-hidden="true">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/book-half.svg" alt="">
                 </div>
-               <h4 style="font-weight: 500;">Tell Your Real Story</h4>
-               <p>Write it the way you'd explain it to a neighbor. Honest campaigns — even messy ones — raise more than polished ones. We help you write it right.</p>
+               <h4 style="font-weight: 500;">Verified account profiles</h4>
+               <p>Anyone raising funds completes ID verification before going live. A visible checkmark builds instant donor confidence.</p>
             </div>
-            <div class="kbf-card">
+            <div class="kbf-card kbf-card--glass">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/megaphone-fill.svg" alt="">
               </div>
-                <h4 style="font-weight: 500;">Spread Through Your Network</h4>
-               <p>Share your link to group chats, barangay pages, barkadas. Your first wave of donors is already in your contacts — we just make the ask easier.</p>
+                <h4 style="font-weight: 500;">Transparent fund tracking</h4>
+               <p>Every peso is logged. Organizers post receipts, photos, and spending breakdowns that donors can view anytime.</p>
             </div>
-            <div class="kbf-card">
+            <div class="kbf-card kbf-card--outline">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" alt="">
               </div>
-                <h4 style="font-weight: 500;">Donors Can Trust You</h4>
-               <p>Verified organizers, ID-checked accounts, and a public update log. When donors see the checkmark, they know their money won't disappear.</p>
+                <h4 style="font-weight: 500;">Public update log</h4>
+               <p>Updates are timestamped on the campaign page so supporters see progress, receipts, and outcomes in one place.</p>
             </div>
-            <div class="kbf-card">
+            <div class="kbf-card kbf-card--split">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/transparency.svg" alt="">
               </div>
-                <h4 style="font-weight: 500;">Show Where the Money Goes</h4>
-               <p>Post receipts, photos, milestones. Not because we force you to — but because campaigns that show proof raise 3x more. Transparency works.</p>
+                <h4 style="font-weight: 500;">Campaign reporting system</h4>
+               <p>Suspicious activity can be flagged directly. Reports are reviewed by the Fundora team to protect donors.</p>
             </div>
-            <div class="kbf-card">
+            <div class="kbf-card kbf-card--tint">
               <div class="kbf-chip" aria-hidden="true">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/capslock-fill.svg" alt="">
               </div>
-                <h4 style="font-weight: 500;">Build a Track Record</h4>
-               <p>Every campaign you complete, every update you post — it all builds your profile. Future campaigns get funded faster because your reputation speaks first.</p>
+                <h4 style="font-weight: 500;">Credibility index</h4>
+               <p>Organizers build a visible track record across campaigns that makes future fundraising faster and more trusted.</p>
             </div>
           </div>
         </div>
+
+                  <div class="kbf-section" style="margin-top:18px;">
+            <h2 style="font-size: 1.4em; font-weight: 500;">How Fundora works</h2>
+            <div class="kbf-two-col">
+              <div class="kbf-card kbf-card--soft kbf-card--shine">
+                <h4 style="font-weight: 600; margin: 0 0 6px;">For Anyone Starting a Campaign</h4>
+                <ul class="kbf-list">
+                  <li>Create a campaign for yourself, someone else, or a cause.</li>
+                  <li>Share your link to group chats and social media.</li>
+                  <li>Post updates with receipts and milestones.</li>
+                  <li>Receive funds after verification.</li>
+                </ul>
+              </div>
+              <div class="kbf-card kbf-card--glass kbf-card--shine">
+                <h4 style="font-weight: 600; margin: 0 0 6px;">For donors and supporters</h4>
+                <ul class="kbf-list">
+                  <li>Browse campaigns by cause, location, or urgency.</li>
+                  <li>Check verified status, updates, and progress.</li>
+                  <li>Donate using GCash or bank transfer.</li>
+                  <li>Get confirmation and follow updates.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
         <!-- ABOUT US -->
         <div class="kbf-divider"></div>
@@ -1183,9 +1457,54 @@ function bntm_kbf_render_landing() {
               <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Battle_of_Leyte_Filipino_volunteers.jpg" alt="Filipino volunteers">
             </div>
             <div class="kbf-about-card">
-              <h2 style="font-size: 1.5em; font-weight: 400;">Why we built this</h2>
-              <p>We've all seen it — a family posting their GCash number on Facebook after a flood, a hospitalization, a fire. It works sometimes. But it's chaotic, untracked, and exhausting for the family asking.</p>
-              <p style="margin-top:10px;">fundora started because Filipinos don't need convincing to help each other. Bayanihan is already in our culture. We just needed to build something worthy of it.</p>
+              <h2 style="font-size: 1.5em; font-weight: 400;">The problem with fundraising on Social Media</h2>
+              <p>Every Filipino has seen it: a relative posts their GCash number after a hospitalization. A neighbor shares a donation link after a house fire. The intention is real. The response is generous. But the system is broken.</p>
+              <p style="margin-top:10px;">There is no way to confirm how much was raised or whether help arrived. Posts get buried. Families keep waiting. This is not a generosity problem. It is an infrastructure problem — and that is exactly what Fundora was built to solve.</p>
+            </div>
+          </div>
+
+          <div class="kbf-about-card" style="margin-top:18px;">
+            <h2 style="font-size: 1.4em; font-weight: 500;">What is Fundora?</h2>
+            <p>Fundora is a community-powered crowdfunding platform built for Filipino families, organizations, and communities. It supports local payment methods, Taglish-friendly language, and the cultural value of bayanihan.</p>
+            <p style="margin-top:10px;">Instead of informal posts, organizers get a dedicated campaign page with progress tracking, proof uploads, and an update log. Donors get confidence that their money is reaching the right person, for the right reason.</p>
+          </div>
+
+
+
+          <div class="kbf-section" style="margin-top:18px;">
+            <h2 style="font-size: 1.4em; font-weight: 500;">Fundora vs. Social Media Fundraising</h2>
+            <p>Social media was built for connection. Fundora was built for community fundraising in the Philippines.</p>
+            <div class="kbf-compare-table" style="text-align:left;">
+              <div class="kbf-compare-row kbf-compare-head">
+                <div>Factor</div>
+                <div>Social Media donation posts</div>
+                <div>Fundora</div>
+              </div>
+              <div class="kbf-compare-row">
+                <strong>Campaign visibility</strong>
+                <div>Posts get buried within days</div>
+                <div>Permanent, shareable campaign page</div>
+              </div>
+              <div class="kbf-compare-row">
+                <strong>Funds tracking</strong>
+                <div>Manual tracking and receipts</div>
+                <div>Automatic progress tracking and logs</div>
+              </div>
+              <div class="kbf-compare-row">
+                <strong>Account verification</strong>
+                <div>None</div>
+                <div>ID-verified with credibility index</div>
+              </div>
+              <div class="kbf-compare-row">
+                <strong>Update history</strong>
+                <div>Scattered across posts</div>
+                <div>Timestamped update log</div>
+              </div>
+              <div class="kbf-compare-row">
+                <strong>Platform fee</strong>
+                <div>Free</div>
+                <div>Free during beta</div>
+              </div>
             </div>
           </div>
 
@@ -1193,7 +1512,11 @@ function bntm_kbf_render_landing() {
           <div class="kbf-about-stats">
             <div class="kbf-about-stat">
               <div class="kbf-about-stat-num">₱0</div>
-              <div class="kbf-about-stat-label">Platform fee during beta</div>
+              <div class="kbf-about-stat-label">Platform fee during beta — 100% to the person raising funds</div>
+            </div>
+            <div class="kbf-about-stat">
+              <div class="kbf-about-stat-num">3×</div>
+              <div class="kbf-about-stat-label">More raised with proof updates</div>
             </div>
             <div class="kbf-about-stat">
               <div class="kbf-about-stat-num">48h</div>
@@ -1201,11 +1524,7 @@ function bntm_kbf_render_landing() {
             </div>
             <div class="kbf-about-stat">
               <div class="kbf-about-stat-num">100%</div>
-              <div class="kbf-about-stat-label">Funds go directly to organizer</div>
-            </div>
-            <div class="kbf-about-stat">
-              <div class="kbf-about-stat-num">3x</div>
-              <div class="kbf-about-stat-label">More raised with proof updates</div>
+              <div class="kbf-about-stat-label">Donations go directly to the person raising funds</div>
             </div>
           </div>
 
@@ -1232,9 +1551,11 @@ function bntm_kbf_render_landing() {
           </div>
         </div>
 
-        <!-- STATS / COMMUNITY -->
+        
+
+        <!-- WHO SHOULD USE FUNDORA -->
         <div class="kbf-divider"></div>
-        <div id="kbf-about" class="kbf-section kbf-stat kbf-reveal delay-2">
+        <div class="kbf-section kbf-stat kbf-reveal delay-2">
           <div class="kbf-photo-grid" aria-hidden="true">
             <img src="<?php echo esc_url($bw_1); ?>" alt="">
             <img src="<?php echo esc_url($bw_2); ?>" alt="">
@@ -1246,6 +1567,31 @@ function bntm_kbf_render_landing() {
             <h3 style="font-weight: 300;">Safe & Trusted</h3>
             <p>Reviewed. Verified. Transparent.</p>
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($join_url); ?>">Join fundora — it's free</a>
+          </div>
+        </div>
+
+        <!-- WHO SHOULD USE FUNDORA -->
+        <div class="kbf-divider"></div>
+        <div class="kbf-section kbf-reveal delay-2">
+          <h2 style="font-size: 1.5em; font-weight: 400;">Who should use Fundora?</h2>
+          <p class="kbf-lead">Fundora is built for anyone who needs to raise money from a Filipino community — and for donors who want confidence before giving.</p>
+          <div class="kbf-feature-grid kbf-feature-grid--two" style="margin-top:18px;">
+            <div class="kbf-card kbf-card--outline">
+              <h4 style="font-weight: 600;">Families facing medical or emergency costs</h4>
+              <p>Hospital bills, rehabilitation, and funeral expenses deserve a dignified, organized way to get support.</p>
+            </div>
+            <div class="kbf-card kbf-card--soft">
+              <h4 style="font-weight: 600;">School organizations and community groups</h4>
+              <p>Raise funds for events, scholarships, and barangay projects with full transparency for members.</p>
+            </div>
+            <div class="kbf-card kbf-card--glass">
+              <h4 style="font-weight: 600;">NGOs and social enterprises</h4>
+              <p>Verified campaigns and public updates add the credibility informal posts cannot provide.</p>
+            </div>
+            <div class="kbf-card kbf-card--tint">
+              <h4 style="font-weight: 600;">OFWs supporting families back home</h4>
+              <p>Verification gives confidence that support reaches the right people for the right reason.</p>
+            </div>
           </div>
         </div>
 
@@ -1327,6 +1673,10 @@ function bntm_kbf_render_landing() {
     <!-- ================== JS ================== -->
     <script>
     (function () {
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
         // Page load: mark immediately so hero animations fire
         requestAnimationFrame(function () {
             document.documentElement.classList.add('kbf-page-loaded');
@@ -1520,5 +1870,6 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
+
 
 

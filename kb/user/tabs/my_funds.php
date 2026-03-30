@@ -37,6 +37,8 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
         $pct = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
         $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
         $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
+        $photo_list = $f->photos ? json_decode($f->photos, true) : [];
+        $photo_json = wp_json_encode(array_values(array_filter(is_array($photo_list) ? $photo_list : [])));
         ?>
         <div class="kbf-card">
           <?php if($f->status === 'pending'): ?>
@@ -80,7 +82,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
           </div>
           <div class="kbf-btn-group" style="margin-top:12px;">
             <?php if(in_array($f->status,['active','pending'])): ?>
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>)">Edit</button>
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>')">Edit</button>
             <?php endif; ?>
             <?php if(in_array($f->status,['active','completed']) && $f->raised_amount>0): ?>
               <button class="kbf-btn kbf-btn-primary kbf-btn-sm" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
@@ -95,8 +97,17 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
               <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
               Share
             </button>
-            <?php if(!in_array($f->status,['cancelled','completed'])): ?>
-              <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfCancelFund(<?php echo $f->id; ?>)">Cancel</button>
+            <?php if($f->status === 'pending'): ?>
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfCancelFund(<?php echo $f->id; ?>)">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                Cancel
+              </button>
+            <?php endif; ?>
+            <?php if(in_array($f->status,['cancelled','suspended'])): ?>
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/trash-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                Trash
+              </button>
             <?php endif; ?>
           </div>
           <?php
