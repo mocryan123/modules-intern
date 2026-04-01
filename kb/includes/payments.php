@@ -215,7 +215,8 @@ function bntm_ajax_kbf_create_checkout() {
 
     if (isset($result['error'])) {
         $wpdb->delete($st, ['id' => $sponsorship_id], ['%d']);
-        wp_send_json_error(['message' => 'Payment gateway error: ' . $result['error']]);
+        error_log('[KBF][Maya] Checkout create failed: ' . $result['error']);
+        wp_send_json_error(['message' => 'Payment gateway error. Please try again later.']);
     }
 
     $checkout_url = $result['redirectUrl'] ?? '';
@@ -223,7 +224,7 @@ function bntm_ajax_kbf_create_checkout() {
 
     if (empty($checkout_url)) {
         $wpdb->delete($st, ['id' => $sponsorship_id], ['%d']);
-        wp_send_json_error(['message' => 'Could not create payment session. Please try again.']);
+        wp_send_json_error(['message' => 'Unable to start payment session. Please try again.']);
     }
 
     // Store Maya checkout ID for webhook matching / status polling
@@ -249,6 +250,13 @@ function bntm_ajax_kbf_create_checkout() {
  */
 function kbf_maya_webhook_handler(WP_REST_Request $request) {
     global $wpdb;
+
+    if (strtoupper($request->get_method()) === 'GET') {
+        return new WP_REST_Response([
+            'ok'      => true,
+            'message' => 'Fundora Maya webhook endpoint. Send POST requests from Maya here.'
+        ], 200);
+    }
 
     $raw_body = $request->get_body();
     $payload  = json_decode($raw_body, true);

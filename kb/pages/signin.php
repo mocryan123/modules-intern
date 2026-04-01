@@ -6,13 +6,17 @@
 if (!defined('ABSPATH')) exit;
 
 function bntm_kbf_render_signin() {
-    kbf_global_assets();
     $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : '#';
     if (is_user_logged_in()) {
         $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('home') : home_url('/');
-        wp_safe_redirect($home);
-        exit;
+        if (!headers_sent()) {
+            wp_safe_redirect($home);
+            exit;
+        }
+        // Fallback when headers are already sent (shortcode context).
+        return '<script>window.location.href=' . wp_json_encode($home) . ';</script><noscript><meta http-equiv="refresh" content="0;url=' . esc_url($home) . '"></noscript>';
     }
+    kbf_global_assets();
     $login_error = '';
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action']) && $_POST['kbf_auth_action'] === 'signin') {
         $nonce_ok = isset($_POST['kbf_auth_nonce']) && wp_verify_nonce($_POST['kbf_auth_nonce'], 'kbf_auth_signin');
@@ -208,6 +212,7 @@ function bntm_kbf_render_signin() {
       </div>
     </div>
     <?php
-    return ob_get_clean();
+    <script>\n      console.log('[KBF] Sign In page loaded');\n    </script>\n    return ob_get_clean();
 }\r\n\r\n?>\r\n
+
 

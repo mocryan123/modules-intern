@@ -16,6 +16,28 @@ function bntm_kbf_get_pages() {
     ];
 }
 
+function bntm_kbf_get_page_slug_map() {
+    return [
+        'Fundora: Landing' => 'fundora',
+        'Fundora: User'    => 'fundora-user',
+        'Fundora: Terms'   => 'fundora-terms',
+        'Fundora: Admin'   => 'fundora-admin',
+        'Fundora: Sign In' => 'fundora-sign-in',
+        'Fundora: Sign Up' => 'fundora-sign-up',
+    ];
+}
+
+function bntm_kbf_get_shortcode_slug_map() {
+    return [
+        'kbf_landing'  => 'fundora',
+        'kbf_dashboard'=> 'fundora-user',
+        'kbf_terms'    => 'fundora-terms',
+        'kbf_admin'    => 'fundora-admin',
+        'kbf_signin'   => 'fundora-sign-in',
+        'kbf_signup'   => 'fundora-sign-up',
+    ];
+}
+
 function bntm_kbf_should_use_fullwidth_template($title) {
     return in_array($title, ['Fundora: User', 'Fundora: Admin'], true);
 }
@@ -44,6 +66,10 @@ function bntm_kbf_ensure_pages() {
             if ($page->post_title !== $title) {
                 wp_update_post(['ID' => $page->ID, 'post_title' => $title]);
             }
+            $slug_map = bntm_kbf_get_page_slug_map();
+            if (isset($slug_map[$title]) && $page->post_name !== $slug_map[$title]) {
+                wp_update_post(['ID' => $page->ID, 'post_name' => $slug_map[$title]]);
+            }
             if ($page->post_status !== 'publish') {
                 wp_update_post(['ID' => $page->ID, 'post_status' => 'publish']);
             }
@@ -59,6 +85,10 @@ function bntm_kbf_ensure_pages() {
             $content = $title_page->post_content;
             if (!has_shortcode($content, $shortcode_tag) && trim(wp_strip_all_tags($content)) === '') {
                 wp_update_post(['ID' => $title_page->ID, 'post_content' => $shortcode]);
+            }
+            $slug_map = bntm_kbf_get_page_slug_map();
+            if (isset($slug_map[$title]) && $title_page->post_name !== $slug_map[$title]) {
+                wp_update_post(['ID' => $title_page->ID, 'post_name' => $slug_map[$title]]);
             }
             if ($title_page->post_status !== 'publish') {
                 wp_update_post(['ID' => $title_page->ID, 'post_status' => 'publish']);
@@ -76,11 +106,62 @@ function bntm_kbf_ensure_pages() {
             'post_status'  => 'publish',
             'post_type'    => 'page',
         ]);
+        $slug_map = bntm_kbf_get_page_slug_map();
+        if (!is_wp_error($new_id) && isset($slug_map[$title])) {
+            wp_update_post(['ID' => $new_id, 'post_name' => $slug_map[$title]]);
+        }
         if ($force_fullwidth && !is_wp_error($new_id)) {
             update_post_meta($new_id, '_wp_page_template', 'kbf-fullwidth.php');
         }
     }
 }
+
+// One-time slug migration for existing pages that still use old slugs (e.g., konekbayan-*)
+add_action('init', function() {
+    if (!current_user_can('manage_options')) return;
+    $flag = get_option('kbf_slug_migration_fundora_v2', '');
+    if ($flag === 'done') return;
+
+    $legacy_slug_map = [
+        'konekbayan'          => ['shortcode' => 'kbf_landing',  'new_slug' => 'fundora',         'title' => 'Fundora: Landing'],
+        'konekbayan-landing'  => ['shortcode' => 'kbf_landing',  'new_slug' => 'fundora',         'title' => 'Fundora: Landing'],
+        'konekbayan-user'     => ['shortcode' => 'kbf_dashboard','new_slug' => 'fundora-user',    'title' => 'Fundora: User'],
+        'konekbayan-terms'    => ['shortcode' => 'kbf_terms',    'new_slug' => 'fundora-terms',   'title' => 'Fundora: Terms'],
+        'konekbayan-admin'    => ['shortcode' => 'kbf_admin',    'new_slug' => 'fundora-admin',   'title' => 'Fundora: Admin'],
+        'konekbayan-sign-in'  => ['shortcode' => 'kbf_signin',   'new_slug' => 'fundora-sign-in', 'title' => 'Fundora: Sign In'],
+        'konekbayan-sign-up'  => ['shortcode' => 'kbf_signup',   'new_slug' => 'fundora-sign-up', 'title' => 'Fundora: Sign Up'],
+    ];
+    foreach ($legacy_slug_map as $old_slug => $meta) {
+        $p = get_page_by_path($old_slug);
+        if ($p) {
+            if ($p->post_title !== $meta['title']) {
+                wp_update_post(['ID' => $p->ID, 'post_title' => $meta['title']]);
+            }
+            if ($p->post_name !== $meta['new_slug']) {
+                wp_update_post(['ID' => $p->ID, 'post_name' => $meta['new_slug']]);
+            }
+            if (!has_shortcode($p->post_content, $meta['shortcode'])) {
+                wp_update_post(['ID' => $p->ID, 'post_content' => '[' . $meta['shortcode'] . ']']);
+            }
+        }
+    }
+
+    $map = bntm_kbf_get_shortcode_slug_map();
+    foreach ($map as $shortcode => $slug) {
+        $pages = get_posts([
+            'post_type'   => 'page',
+            'post_status' => ['publish','draft','private'],
+            'numberposts' => -1,
+            's'           => '[' . $shortcode . ']',
+        ]);
+        foreach ($pages as $p) {
+            if (has_shortcode($p->post_content, $shortcode) && $p->post_name !== $slug) {
+                wp_update_post(['ID' => $p->ID, 'post_name' => $slug]);
+            }
+        }
+    }
+    update_option('kbf_slug_migration_fundora_v2', 'done');
+});
 
 // Register custom full-width page template from the plugin.
 add_filter('theme_page_templates', function($templates){

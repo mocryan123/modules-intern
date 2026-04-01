@@ -218,6 +218,22 @@ function kbf_get_provinces() {
 function kbf_get_page_url($page_key) {
     static $cache = [];
     if(isset($cache[$page_key])) return $cache[$page_key];
+    $slug_by_key = [
+        'landing'   => 'fundora',
+        'dashboard' => 'fundora-user',
+        'terms'     => 'fundora-terms',
+        'admin'     => 'fundora-admin',
+        'signin'    => 'fundora-sign-in',
+        'signup'    => 'fundora-sign-up',
+    ];
+    if (isset($slug_by_key[$page_key])) {
+        $p = get_page_by_path($slug_by_key[$page_key]);
+        if ($p && $p->ID) {
+            $url = get_permalink($p->ID);
+            $cache[$page_key] = $url;
+            return $url;
+        }
+    }
     $dashboard_tabs = [
         'browse'            => 'find_funds',
         'fund_details'      => 'fund_details',
@@ -239,7 +255,10 @@ function kbf_get_page_url($page_key) {
     $shortcode = $shortcode_map[$page_key] ?? $page_key;
     // Try bntm framework page setting first
     $stored_url = bntm_get_setting('kbf_page_' . $page_key);
-    if($stored_url) { $cache[$page_key] = $stored_url; return $stored_url; }
+    if($stored_url && stripos($stored_url, 'konekbayan') === false) {
+        $cache[$page_key] = $stored_url;
+        return $stored_url;
+    }
     // Fall back: search all pages for the shortcode
     $pages = get_posts(['post_type'=>'page','post_status'=>'publish','numberposts'=>-1,'s'=>'['.$shortcode.']']);
     foreach($pages as $p) {

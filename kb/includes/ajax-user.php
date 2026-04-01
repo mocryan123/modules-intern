@@ -536,7 +536,7 @@ function bntm_ajax_kbf_get_fund_details() {
 }
 
 function bntm_ajax_kbf_get_organizer_profile() {
-    // Public endpoint: no nonce required -- returns only public profile data
+    check_ajax_referer('kbf_sponsor','nonce');
     if (!kbf_rate_limit_ok('organizer_profile', 80, 60)) {
         wp_send_json_error(['message' => 'Too many requests. Please slow down.']);
     }
@@ -601,6 +601,9 @@ function bntm_ajax_kbf_get_organizer_profile() {
 
 function bntm_ajax_kbf_submit_rating() {
     check_ajax_referer('kbf_rating','nonce');
+    if (!kbf_rate_limit_ok('submit_rating', 15, 300)) {
+        wp_send_json_error(['message' => 'Too many requests. Please wait and try again.']);
+    }
     global $wpdb;$rt=$wpdb->prefix.'kbf_ratings';$pt=$wpdb->prefix.'kbf_organizer_profiles';
     $org_id=intval($_POST['organizer_id']);$rating=min(5,max(1,intval($_POST['rating'])));
     $email=sanitize_email($_POST['sponsor_email']??'');

@@ -618,7 +618,7 @@ function kbf_global_assets() {
         z-index:999;
         border-radius:0;
         margin-top:0;
-        transform:translateY(-110%);
+        transform:translateY(-115%);
         transition:transform .3s cubic-bezier(.4,0,.2,1);
         display:flex;
         flex-direction:column;

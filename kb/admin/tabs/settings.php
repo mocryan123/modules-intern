@@ -97,18 +97,6 @@ function kbf_admin_settings_tab() {
             <?php endif; ?>
           </div>
         </div>
-        <?php if($demo_mode): ?>
-        <div class="kbf-alert kbf-alert-warning kbf-alert-noicon kbf-alert-compact kbf-alert-block" style="margin-top:12px;">
-          <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/>
-            </svg>
-          </span>
-          <div><strong>Demo Mode is active.</strong> Configure your Maya API keys below, then switch to Live.</div>
-        </div>
-        <?php else: ?>
-        <div class="kbf-alert kbf-alert-success kbf-alert-noicon kbf-alert-compact kbf-alert-block" style="margin-top:12px;"><span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM12.03 5.97a.75.75 0 0 0-1.06-1.06L7.5 8.44 5.53 6.47a.75.75 0 1 0-1.06 1.06L6.97 10a.75.75 0 0 0 1.06 0l4-4z"/></svg></span><div><strong>Live Mode active.</strong> Maya Checkout processes all payments. Sandbox keys used for testing.</div></div>
-        <?php endif; ?>
       </div>
 
       <!-- Maya API Keys -->
@@ -120,7 +108,7 @@ function kbf_admin_settings_tab() {
 
         <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--kbf-text-sm);line-height:1.7;">
           <strong style="color:var(--kbf-navy);">Where to find your keys:</strong><br>
-          Maya Business Manager â†’ Developers â†’ API Keys. Copy Public Key &amp; Secret Key for both Sandbox and Live environments.
+          Maya Business Manager -> Developers -> API Keys. Copy Public Key &amp; Secret Key for both Sandbox and Live environments.
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
@@ -129,11 +117,13 @@ function kbf_admin_settings_tab() {
             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-accent);margin-bottom:10px;">Sandbox (Testing)</div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Sandbox Public Key</label>
-              <input type="text" id="sb-pub" value="<?php echo esc_attr($sb_pub); ?>" placeholder="pk-sandbox-..." style="font-family:monospace;font-size:12px;">
+              <input type="text" id="sb-pub" value="" placeholder="pk-sandbox-..." style="font-family:monospace;font-size:12px;">
+              <small style="color:var(--kbf-slate);">Leave blank to keep existing key.</small>
             </div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Sandbox Secret Key</label>
-              <input type="password" id="sb-sec" value="<?php echo esc_attr($sb_sec); ?>" placeholder="sk-sandbox-..." style="font-family:monospace;font-size:12px;">
+              <input type="password" id="sb-sec" value="" placeholder="sk-sandbox-..." style="font-family:monospace;font-size:12px;">
+              <small style="color:var(--kbf-slate);">Stored: <?php echo $sb_sec ? 'Yes' : 'No'; ?></small>
             </div>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveMayaKeys('sandbox')">Save Sandbox Keys</button>
           </div>
@@ -142,11 +132,13 @@ function kbf_admin_settings_tab() {
             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-green);margin-bottom:10px;">Live (Production)</div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Live Public Key</label>
-              <input type="text" id="lv-pub" value="<?php echo esc_attr($lv_pub); ?>" placeholder="pk-live-..." style="font-family:monospace;font-size:12px;">
+              <input type="text" id="lv-pub" value="" placeholder="pk-live-..." style="font-family:monospace;font-size:12px;">
+              <small style="color:var(--kbf-slate);">Leave blank to keep existing key.</small>
             </div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Live Secret Key</label>
-              <input type="password" id="lv-sec" value="<?php echo esc_attr($lv_sec); ?>" placeholder="sk-live-..." style="font-family:monospace;font-size:12px;">
+              <input type="password" id="lv-sec" value="" placeholder="sk-live-..." style="font-family:monospace;font-size:12px;">
+              <small style="color:var(--kbf-slate);">Stored: <?php echo $lv_sec ? 'Yes' : 'No'; ?></small>
             </div>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveMayaKeys('live')">Save Live Keys</button>
           </div>
@@ -159,9 +151,12 @@ function kbf_admin_settings_tab() {
             <strong>Your Webhook URL -- copy this into Maya Business Manager:</strong><br>
             <code style="font-size:12px;word-break:break-all;color:var(--kbf-navy);background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin:6px 0;"><?php echo esc_html(rest_url('kbf/v1/maya-webhook')); ?></code><br>
             <small style="color:var(--kbf-slate);">
-              Maya Business Manager â†’ Developers â†’ Webhooks â†’ Add Webhook URL.<br>
+              Maya Business Manager -> Developers -> Webhooks -> Add Webhook URL.<br>
               Subscribe to events: <strong>CHECKOUT_SUCCESS</strong> and <strong>PAYMENT_SUCCESS</strong>.<br>
-              Optional: add a webhook secret below for signature verification.
+              Optional: add a webhook secret below for signature verification.<br>
+              <a href="https://sandbox-manager.paymaya.com" target="_blank" rel="noopener noreferrer">Open Maya Webhooks</a>
+              &nbsp;|&nbsp;
+              <a href="<?php echo esc_url(rest_url('kbf/v1/maya-webhook')); ?>" target="_blank" rel="noopener noreferrer">Open Fundora Webhook Endpoint</a>
             </small>
           </div>
 
@@ -170,9 +165,10 @@ function kbf_admin_settings_tab() {
             <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
               <div class="kbf-form-group" style="margin:0;">
                 <label style="font-size:12.5px;">Maya Webhook Secret</label>
-                <input type="password" id="wh-secret" value="<?php echo esc_attr($wh_secret); ?>" placeholder="webhook-secret-..." style="font-family:monospace;font-size:12px;">
+                <input type="password" id="wh-secret" value="" placeholder="webhook-secret-..." style="font-family:monospace;font-size:12px;">
+                <small style="color:var(--kbf-slate);">Stored: <?php echo $wh_secret ? 'Yes' : 'No'; ?></small>
               </div>
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveSetting('kbf_maya_webhook_secret', document.getElementById('wh-secret').value, '<?php echo $nonce; ?>')">Save Secret</button>
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveWebhookSecret()">Save Secret</button>
             </div>
             <small style="color:var(--kbf-slate);display:block;margin-top:6px;">
               When set, Fundora verifies incoming webhook signatures before updating payments.
@@ -239,6 +235,7 @@ function kbf_admin_settings_tab() {
                ['kbf_maya_live_secret', document.getElementById('lv-sec').value]];
         let done = 0;
         pairs.forEach(([key, val]) => {
+            if (!val) return;
             const fd = new FormData();
             fd.append('action', 'kbf_save_setting');
             fd.append('_ajax_nonce', nonce);
@@ -252,6 +249,14 @@ function kbf_admin_settings_tab() {
                 }
             });
         });
+    };
+    window.kbfSaveWebhookSecret = function() {
+        const val = document.getElementById('wh-secret').value;
+        if (!val) {
+            alert('Enter a new secret to update. Leave blank to keep existing.');
+            return;
+        }
+        kbfSaveSetting('kbf_maya_webhook_secret', val, '<?php echo $nonce; ?>');
     };
     </script>
     <?php return ob_get_clean();
