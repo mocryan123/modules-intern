@@ -6,7 +6,11 @@
 function kbf_admin_reports_tab() {
     global $wpdb;$rt=$wpdb->prefix.'kbf_reports';$ft=$wpdb->prefix.'kbf_funds';
     $fund_details_url = kbf_get_page_url('fund_details');
-    $rows=$wpdb->get_results("SELECT r.*,f.title as fund_title FROM {$rt} r JOIN {$ft} f ON r.fund_id=f.id ORDER BY FIELD(r.status,'open','dismissed'),r.created_at DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('r.created_at', $params);
+    $sql = "SELECT r.*,f.title as fund_title FROM {$rt} r JOIN {$ft} f ON r.fund_id=f.id {$where} ORDER BY FIELD(r.status,'open','dismissed'),r.created_at DESC";
+    $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     ob_start();
     ?>
     <!-- ================== HTML ================== -->

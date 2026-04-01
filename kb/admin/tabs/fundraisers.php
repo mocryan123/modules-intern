@@ -5,7 +5,11 @@
 
 function kbf_admin_all_funds_tab() {
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
-    $funds=$wpdb->get_results("SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID ORDER BY f.created_at DESC LIMIT 200"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('f.created_at', $params);
+    $sql = "SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY f.created_at DESC LIMIT 200";
+    $funds = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     ob_start();
     ?>
     <!-- ================== HTML ================== -->

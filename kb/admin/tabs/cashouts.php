@@ -5,8 +5,17 @@
 
 function kbf_admin_withdrawals_tab() {
     global $wpdb;$wt=$wpdb->prefix.'kbf_withdrawals';$ft=$wpdb->prefix.'kbf_funds';$et=$wpdb->prefix.'kbf_escrow_requests';
-    $rows=$wpdb->get_results("SELECT w.*,f.title as fund_title,u.display_name as funder_display FROM {$wt} w LEFT JOIN {$ft} f ON w.fund_id=f.id LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID ORDER BY w.requested_at DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
-    $escrows=$wpdb->get_results("SELECT e.*,f.title as fund_title,u.display_name as funder_display FROM {$et} e LEFT JOIN {$ft} f ON e.fund_id=f.id LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID ORDER BY e.requested_at DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('w.requested_at', $params);
+    $sql = "SELECT w.*,f.title as fund_title,u.display_name as funder_display FROM {$wt} w LEFT JOIN {$ft} f ON w.fund_id=f.id LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY w.requested_at DESC";
+    $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('e.requested_at', $params);
+    $sql = "SELECT e.*,f.title as fund_title,u.display_name as funder_display FROM {$et} e LEFT JOIN {$ft} f ON e.fund_id=f.id LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY e.requested_at DESC";
+    $escrows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     ob_start();
     ?>
     <!-- ================== HTML ================== -->

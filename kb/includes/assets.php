@@ -130,6 +130,78 @@ function kbf_global_assets() {
         color:var(--kbf-slate);
         font-size:13px;
     }
+    .kbf-table-tools{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        flex-wrap:nowrap;
+        margin:8px 0 12px;
+    }
+    .kbf-table-tools-left{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-wrap:nowrap;
+        min-width:0;
+        flex:1;
+    }
+    .kbf-table-tools .kbf-form-group{
+        margin:0;
+        min-width:auto;
+    }
+    .kbf-table-date-range{
+        min-width:auto;
+    }
+    .kbf-table-tools .kbf-form-group input,
+    .kbf-table-tools .kbf-form-group select{
+        padding:8px 12px;
+        font-size:12.5px;
+    }
+    .kbf-table-search{width:190px;}
+    .kbf-table-status{width:150px;}
+    .kbf-table-range{width:150px;}
+    .kbf-table-refresh{
+        padding:6px 12px;
+        min-width:34px;
+        justify-content:center;
+    }
+    .kbf-table-tools .kbf-btn.kbf-table-apply,
+    .kbf-table-tools .kbf-btn.kbf-table-clear{
+        padding:6px 16px !important;
+        height:auto !important;
+    }
+    .kbf-table-refresh .kbf-refresh-icon{
+        width:14px;
+        height:14px;
+        display:block;
+        filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);
+    }
+    .kbf-table-tools-right{
+        margin-left:auto;
+        flex-wrap:nowrap;
+    }
+    .kbf-table-refresh.is-loading .kbf-refresh-icon{
+        animation:kbfRotate .8s linear infinite;
+    }
+    @keyframes kbfRotate{
+        from{ transform:rotate(0deg); }
+        to{ transform:rotate(360deg); }
+    }
+    @media (max-width: 980px){
+        .kbf-table-tools{
+            flex-wrap:wrap;
+            align-items:flex-start;
+        }
+        .kbf-table-tools-left{
+            flex-wrap:wrap;
+        }
+    }
+    .kbf-table-tools-right{
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
     .kbf-admin-wrap,
     .kbf-admin-wrap.kbf-wrap{ padding:0 !important; margin:0 !important; background:#f8fafc; }
     .kbf-admin-wrap .kbf-admin-layout{ margin:0; }
@@ -908,6 +980,36 @@ function kbf_global_assets() {
     }
     .kbf-table-pager-left,
     .kbf-table-pager-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .kbf-table-pager-right .kbf-pager-pages{
+        display:flex;
+        align-items:center;
+        gap:6px;
+        flex-wrap:wrap;
+    }
+    .kbf-table-pager-right .kbf-page-btn{
+        border:1px solid #dbe3ef;
+        background:#fff;
+        color:var(--kbf-navy);
+        padding:6px 9px;
+        border-radius:8px;
+        font-size:12px;
+        font-weight:600;
+        cursor:pointer;
+        transition:all .15s ease;
+        min-width:32px;
+        text-align:center;
+    }
+    .kbf-table-pager-right .kbf-page-btn:hover{border-color:#bcd2f3;background:#f8fafc;}
+    .kbf-table-pager-right .kbf-page-btn.is-active{
+        background:#e7f1ff;
+        border-color:#cfe1ff;
+        color:#1f2a44;
+    }
+    .kbf-table-pager-right .kbf-page-gap{
+        padding:0 2px;
+        color:#94a3b8;
+        font-weight:600;
+    }
     .kbf-table-pager select{
         border:1px solid #e2e8f0;
         border-radius:8px;
@@ -1179,7 +1281,7 @@ function kbf_global_assets() {
                   '</div>' +
                   '<div class="kbf-table-pager-right">' +
                     '<button class="kbf-table-pager-btn kbf-table-prev" type="button">Prev</button>' +
-                    '<span class="kbf-table-pager-page">1 / 1</span>' +
+                    '<div class="kbf-pager-pages"></div>' +
                     '<button class="kbf-table-pager-btn kbf-table-next" type="button">Next</button>' +
                   '</div>';
                 wrap.insertAdjacentElement('afterend', pager);
@@ -1187,10 +1289,47 @@ function kbf_global_assets() {
                 var select = pager.querySelector('.kbf-table-rows');
                 var prevBtn = pager.querySelector('.kbf-table-prev');
                 var nextBtn = pager.querySelector('.kbf-table-next');
-                var pageLabel = pager.querySelector('.kbf-table-pager-page');
+                var pagesWrap = pager.querySelector('.kbf-pager-pages');
                 var page = 1;
                 var perPage = 10;
 
+                function buildPageModel(pages, current){
+                    var items = [];
+                    if(pages <= 7){
+                        for(var i=1;i<=pages;i++) items.push(i);
+                        return items;
+                    }
+                    items.push(1);
+                    if(current > 3) items.push('gap');
+                    var start = Math.max(2, current - 1);
+                    var end = Math.min(pages - 1, current + 1);
+                    for(var i=start;i<=end;i++) items.push(i);
+                    if(current < pages - 2) items.push('gap');
+                    items.push(pages);
+                    return items;
+                }
+                function renderPages(pages, current){
+                    if (!pagesWrap) return;
+                    pagesWrap.innerHTML = '';
+                    buildPageModel(pages, current).forEach(function(p){
+                        if(p === 'gap'){
+                            var span = document.createElement('span');
+                            span.className = 'kbf-page-gap';
+                            span.textContent = '…';
+                            pagesWrap.appendChild(span);
+                            return;
+                        }
+                        var btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'kbf-page-btn' + (p === current ? ' is-active' : '');
+                        btn.textContent = String(p);
+                        btn.addEventListener('click', function(){
+                            page = p;
+                            render();
+                        });
+                        pagesWrap.appendChild(btn);
+                    });
+                }
                 function render(){
                     var total = rows.length;
                     var pages = Math.max(1, Math.ceil(total / perPage));
@@ -1200,7 +1339,7 @@ function kbf_global_assets() {
                     rows.forEach(function(row, i){
                         row.style.display = (i >= start && i < end) ? '' : 'none';
                     });
-                    pageLabel.textContent = page + ' / ' + pages;
+                    renderPages(pages, page);
                     prevBtn.disabled = page <= 1;
                     nextBtn.disabled = page >= pages;
                     pager.style.display = total > 0 ? 'flex' : 'none';

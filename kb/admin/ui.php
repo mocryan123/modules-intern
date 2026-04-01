@@ -128,6 +128,13 @@ function bntm_shortcode_kbf_admin() {
     var kbfAdminAutoRefresh = <?php echo $tab === 'settings' ? 'false' : 'true'; ?>;
     var kbfAdminRefreshInterval = 25000;
     var kbfAdminRefreshTimer = null;
+    var kbfAdminDateFrom = '';
+    var kbfAdminDateTo = '';
+    try {
+        var _kbfParams = new URLSearchParams(window.location.search || '');
+        kbfAdminDateFrom = _kbfParams.get('date_from') || '';
+        kbfAdminDateTo = _kbfParams.get('date_to') || '';
+    } catch (e) {}
     function kbfAdminStartRefresh(){
         if (!kbfAdminAutoRefresh) return;
         if (kbfAdminRefreshTimer) clearInterval(kbfAdminRefreshTimer);
@@ -298,26 +305,167 @@ function bntm_shortcode_kbf_admin() {
             try { (new Function(code))(); } catch(e) { console.error('kbfAdmin inline script error:', e); }
         });
     }
+    function kbfAdminInitTableTools(scope){
+        var root = scope || document;
+        var targets = Array.prototype.slice.call(root.querySelectorAll('.kbf-table-wrap, .kbf-table-empty'));
+        if (targets.length === 0) return;
+        targets.forEach(function(target){
+            if (target.dataset.kbfToolsInit === '1') return;
+            target.dataset.kbfToolsInit = '1';
+
+            var tools = document.createElement('div');
+            tools.className = 'kbf-table-tools';
+            tools.innerHTML = '' +
+                '<div class="kbf-table-tools-left">' +
+                  '<div class="kbf-form-group kbf-table-filter">' +
+                    '<input type="text" class="kbf-table-search" placeholder="Search table...">' +
+                  '</div>' +
+                  '<div class="kbf-form-group kbf-table-filter">' +
+                    '<select class="kbf-table-status"><option value="">All statuses</option></select>' +
+                  '</div>' +
+                  '<div class="kbf-form-group kbf-table-filter">' +
+                    '<select class="kbf-table-range">' +
+                      '<option value="">Any time</option>' +
+                      '<option value="today">Today</option>' +
+                      '<option value="last7">Last 7 days</option>' +
+                      '<option value="last30">Last 30 days</option>' +
+                      '<option value="month">This month</option>' +
+                    '</select>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="kbf-table-tools-right">' +
+                  '<button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-table-apply">Apply</button>' +
+                  '<button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-table-clear">Clear</button>' +
+                  '<button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-table-refresh" aria-label="Refresh">' +
+                    '<img class="kbf-refresh-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-clockwise.svg" alt="">' +
+                  '</button>' +
+                '</div>';
+            target.parentNode.insertBefore(tools, target);
+
+            var table = target.querySelector('table');
+            var searchInput = tools.querySelector('.kbf-table-search');
+            var statusSelect = tools.querySelector('.kbf-table-status');
+            var rangeSelect = tools.querySelector('.kbf-table-range');
+            var applyBtn = tools.querySelector('.kbf-table-apply');
+            var clearBtn = tools.querySelector('.kbf-table-clear');
+            var refreshBtn = tools.querySelector('.kbf-table-refresh');
+
+            var statuses = {};
+            if (table) {
+                var rows = table.querySelectorAll('tbody tr');
+                rows.forEach(function(row){
+                    var badge = row.querySelector('.kbf-badge');
+                    if (!badge) return;
+                    var label = (badge.textContent || '').trim();
+                    if (!label) return;
+                    statuses[label] = true;
+                });
+            }
+            Object.keys(statuses).sort().forEach(function(label){
+                var opt = document.createElement('option');
+                opt.value = label;
+                opt.textContent = label;
+                statusSelect.appendChild(opt);
+            });
+            if (!Object.keys(statuses).length) {
+                statusSelect.setAttribute('disabled', 'disabled');
+            }
+
+            function applyFilter(){
+                if (!table) return;
+                var q = String(searchInput.value || '').toLowerCase().trim();
+                var statusVal = String(statusSelect.value || '').trim();
+                var rows = table.querySelectorAll('tbody tr');
+                rows.forEach(function(row){
+                    var text = row.textContent ? row.textContent.toLowerCase() : '';
+                    var matchText = !q || text.indexOf(q) !== -1;
+                    var matchStatus = true;
+                    if (statusVal) {
+                        var badge = row.querySelector('.kbf-badge');
+                        var label = badge ? (badge.textContent || '').trim() : '';
+                        matchStatus = label === statusVal;
+                    }
+                    row.style.display = (matchText && matchStatus) ? '' : 'none';
+                });
+            }
+            if (searchInput) searchInput.addEventListener('input', applyFilter);
+            if (statusSelect) statusSelect.addEventListener('change', applyFilter);
+            if (rangeSelect) rangeSelect.addEventListener('change', function(){
+                var val = String(rangeSelect.value || '');
+                var now = new Date();
+                function pad(n){ return String(n).padStart(2, '0'); }
+                function fmt(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+                var from = '';
+                var to = '';
+                if (val === 'today') {
+                    from = fmt(now);
+                    to = fmt(now);
+                } else if (val === 'last7') {
+                    var d7 = new Date(now);
+                    d7.setDate(d7.getDate() - 6);
+                    from = fmt(d7);
+                    to = fmt(now);
+                } else if (val === 'last30') {
+                    var d30 = new Date(now);
+                    d30.setDate(d30.getDate() - 29);
+                    from = fmt(d30);
+                    to = fmt(now);
+                } else if (val === 'month') {
+                    var start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    var end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    from = fmt(start);
+                    to = fmt(end);
+                }
+                kbfAdminDateFrom = from;
+                kbfAdminDateTo = to;
+                if (typeof kbfAdminRefreshTab === 'function') kbfAdminRefreshTab();
+            });
+            if (applyBtn) applyBtn.addEventListener('click', function(){
+                if (typeof kbfAdminRefreshTab === 'function') kbfAdminRefreshTab();
+            });
+            if (clearBtn) clearBtn.addEventListener('click', function(){
+                if (rangeSelect) rangeSelect.value = '';
+                kbfAdminDateFrom = '';
+                kbfAdminDateTo = '';
+                if (typeof kbfAdminRefreshTab === 'function') kbfAdminRefreshTab();
+            });
+            if (refreshBtn) refreshBtn.addEventListener('click', function(){
+                if (typeof kbfAdminRefreshTab === 'function') kbfAdminRefreshTab();
+            });
+        });
+    }
     function kbfAdminRefreshTab(){
         if (!kbfAdminAutoRefresh || document.hidden) return;
         if (window.kbfAdminRefreshing) return;
         window.kbfAdminRefreshing = true;
+        document.querySelectorAll('.kbf-table-refresh').forEach(function(btn){
+            btn.classList.add('is-loading');
+            btn.setAttribute('disabled', 'disabled');
+        });
         const fd = new FormData();
         fd.append('action','kbf_admin_refresh_tab');
         fd.append('_ajax_nonce', _kbfAdminNonce);
         fd.append('tab', kbfAdminTab);
+        if (kbfAdminDateFrom) fd.append('date_from', kbfAdminDateFrom);
+        if (kbfAdminDateTo) fd.append('date_to', kbfAdminDateTo);
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
             if (!j || !j.success || !j.data || !j.data.html) return;
             var container = document.querySelector('.kbf-tab-content');
             if (!container) return;
             container.innerHTML = j.data.html;
             kbfAdminRunInlineScripts(container);
+            kbfAdminInitTableTools(container);
+            if (window.kbfInitTablePager) window.kbfInitTablePager();
             if (j.data.counts) kbfAdminApplyCounts(j.data.counts);
             if (window.kbfInitTableDescriptions) window.kbfInitTableDescriptions();
         }).catch(function(err){
             console.error('kbfAdminRefreshTab error:', err);
         }).finally(function(){
             window.kbfAdminRefreshing = false;
+            document.querySelectorAll('.kbf-table-refresh').forEach(function(btn){
+                btn.classList.remove('is-loading');
+                btn.removeAttribute('disabled');
+            });
         });
     }
     window.kbfSetTableLoading = function(target, on){
@@ -456,14 +604,15 @@ window.kbfSubmitReject = function(){
         }
     });
 };
-document.addEventListener('change', function(e){
-    if (!e.target || e.target.id !== 'kbf-reject-template') return;
-    var notes = document.getElementById('kbf-reject-notes');
-    if (!notes) return;
-    var val = String(e.target.value || '').trim();
-    if (!val || val === 'Other') return;
-    notes.value = val;
-});
+    document.addEventListener('change', function(e){
+        if (!e.target || e.target.id !== 'kbf-reject-template') return;
+        var notes = document.getElementById('kbf-reject-notes');
+        if (!notes) return;
+        var val = String(e.target.value || '').trim();
+        if (!val || val === 'Other') return;
+        notes.value = val;
+    });
+    kbfAdminInitTableTools(document);
     window.kbfTriggerOnboarding=function(id){
         if(!confirm('Restart onboarding for this account?')) return;
         kbfAdmin('kbf_admin_trigger_onboarding',{business_id:id});

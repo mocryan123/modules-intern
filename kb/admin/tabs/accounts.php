@@ -5,7 +5,11 @@
 
 function kbf_admin_organizers_tab() {
     global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';
-    $rows=$wpdb->get_results("SELECT p.*,u.display_name,u.user_email FROM {$pt} p JOIN {$wpdb->users} u ON p.business_id=u.ID ORDER BY p.total_raised DESC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('u.user_registered', $params);
+    $sql = "SELECT p.*,u.display_name,u.user_email FROM {$pt} p JOIN {$wpdb->users} u ON p.business_id=u.ID {$where} ORDER BY p.total_raised DESC";
+    $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     $total_orgs = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$pt}"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     $new_orgs = (int)$wpdb->get_var($wpdb->prepare(
         "SELECT COUNT(*) FROM {$pt} p JOIN {$wpdb->users} u ON p.business_id=u.ID WHERE u.user_registered >= %s",

@@ -12,7 +12,11 @@ function kbf_admin_security_logs_tab() {
 
     global $wpdb;
     $table = $wpdb->prefix . 'kbf_security_logs';
-    $rows = $wpdb->get_results("SELECT * FROM {$table} ORDER BY created_at DESC LIMIT 200");
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('created_at', $params);
+    $sql = "SELECT * FROM {$table} {$where} ORDER BY created_at DESC LIMIT 200";
+    $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql);
 
     ob_start();
     ?>

@@ -5,7 +5,11 @@
 
 function kbf_admin_transactions_tab() {
     global $wpdb;$st=$wpdb->prefix.'kbf_sponsorships';$ft=$wpdb->prefix.'kbf_funds';
-    $rows=$wpdb->get_results("SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id ORDER BY s.created_at DESC LIMIT 300"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('s.created_at', $params);
+    $sql = "SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id {$where} ORDER BY s.created_at DESC LIMIT 300";
+    $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     ob_start();
     ?>
     <!-- ================== HTML ================== -->

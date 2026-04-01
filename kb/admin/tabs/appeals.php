@@ -7,7 +7,11 @@ function kbf_admin_appeals_tab() {
     global $wpdb;
     $at = $wpdb->prefix.'kbf_appeals';
     $ft = $wpdb->prefix.'kbf_funds';
-    $rows = $wpdb->get_results("SELECT a.*,f.title as fund_title FROM {$at} a JOIN {$ft} f ON a.fund_id=f.id ORDER BY FIELD(a.status,'open','reviewed','approved','rejected'),a.created_at DESC"); // phpcs:ignore
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('a.created_at', $params);
+    $sql = "SELECT a.*,f.title as fund_title FROM {$at} a JOIN {$ft} f ON a.fund_id=f.id {$where} ORDER BY FIELD(a.status,'open','reviewed','approved','rejected'),a.created_at DESC";
+    $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore
     ob_start();
     ?>
     <!-- ================== HTML ================== -->

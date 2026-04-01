@@ -5,7 +5,11 @@
 
 function kbf_admin_pending_tab() {
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
-    $funds=$wpdb->get_results("SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.status='pending' ORDER BY f.created_at ASC"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input, table name only
+    $params = [];
+    $where = "WHERE f.status='pending'";
+    $where .= kbf_admin_date_where('f.created_at', $params);
+    $sql = "SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY f.created_at ASC";
+    $funds = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input when params empty
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
