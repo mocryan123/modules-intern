@@ -37,6 +37,7 @@ function kbf_admin_pending_tab() {
           </div>
         </div>
       <?php endforeach; endif; ?>
+      <div class="kbf-table-desc">Shows fundraisers awaiting admin approval or rejection.</div>
     </div>
     <?php return ob_get_clean();
 }

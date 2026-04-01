@@ -64,6 +64,15 @@ function kbf_dashboard_profile_tab($business_id) {
 
       /* ── Cards ── */
       .kbf-profile-card { padding: 18px; border-radius: 18px; width: 100%; box-sizing: border-box; }
+      .kbf-profile-card.kbf-card{
+        box-shadow: none;
+        border: 1px solid var(--kbf-border);
+        transform: none;
+      }
+      .kbf-profile-card.kbf-card:hover{
+        box-shadow: none;
+        transform: none;
+      }
       .kbf-profile-card-left {
         display: flex;
         flex-direction: column;
@@ -128,6 +137,17 @@ function kbf_dashboard_profile_tab($business_id) {
       .kbf-profile-divider { height: 1px; background: var(--kbf-border); margin: 10px 0; }
       .kbf-profile-actions { display: flex; gap: 10px; align-items: center; width: 100%; }
       .kbf-profile-actions .kbf-btn { width: 100%; justify-content: center; }
+      .kbf-payout-desc{
+        margin-top:6px;
+        font-size:12px;
+        color:var(--kbf-slate);
+        line-height:1.5;
+      }
+      .kbf-payout-hint{
+        margin-top:8px;
+        font-size:12.5px;
+        color:var(--kbf-slate);
+      }
       .kbf-inline-preload{
         position:fixed;
         inset:0;
@@ -469,25 +489,26 @@ function kbf_dashboard_profile_tab($business_id) {
                 <div class="kbf-form-group">
                   <label>Account Type</label>
                   <select name="payout_type" id="kbf-payout-type" autocomplete="off">
-                    <option value="" <?php echo $payout_type===''?'selected':''; ?>>Select type</option>
-                    <option value="maya_wallet" <?php echo $payout_type==='maya_wallet'?'selected':''; ?>>Maya Wallet</option>
-                    <option value="gcash" <?php echo $payout_type==='gcash'?'selected':''; ?>>GCash</option>
-                    <option value="card" <?php echo $payout_type==='card'?'selected':''; ?>>Credit/Debit Card</option>
+                    <option value="" data-desc="Select a payout type to continue." <?php echo $payout_type===''?'selected':''; ?>>Select type</option>
+                    <option value="maya_wallet" data-desc="Maya Wallet payouts are sent to the mobile number linked to your Maya account." <?php echo $payout_type==='maya_wallet'?'selected':''; ?>>Maya Wallet</option>
+                    <option value="gcash" data-desc="GCash payouts are sent to the mobile number linked to your GCash account." <?php echo $payout_type==='gcash'?'selected':''; ?>>GCash</option>
+                    <option value="card" data-desc="Card payouts use your cardholder name and card number. Ensure the card can receive payouts." <?php echo $payout_type==='card'?'selected':''; ?>>Credit/Debit Card</option>
                   </select>
+                  <div class="kbf-payout-desc" id="kbf-payout-desc"></div>
                 </div>
                 <div class="kbf-form-group">
-                  <label>Account Name</label>
+                  <label id="kbf-payout-name-label">Account Name</label>
                   <input type="text" name="payout_name" id="kbf-payout-name" value="<?php echo esc_attr($payout_name); ?>" placeholder="Account name" autocomplete="off" autocapitalize="none" spellcheck="false" <?php echo $payout_type===''?'disabled':''; ?>>
                 </div>
                 <div class="kbf-form-group">
-                  <label>Account Number</label>
+                  <label id="kbf-payout-number-label">Account Number</label>
                   <div class="kbf-input-with-toggle">
                     <input type="password" name="payout_number" id="kbf-payout-number" value="<?php echo esc_attr($payout_number); ?>" placeholder="Account number" autocomplete="new-password" autocapitalize="none" spellcheck="false" <?php echo $payout_type===''?'disabled':''; ?>>
                     <button type="button" class="kbf-toggle-visibility" onclick="kbfTogglePayoutNumber()">Show</button>
                   </div>
                 </div>
               </div>
-              <div class="kbf-profile-meta" style="margin-top:8px;">We'll use this for Maya/GCash payouts. Double-check your details to avoid delays.</div>
+              <div class="kbf-payout-hint">We’ll use this for payouts. Double‑check your details to avoid delays.</div>
             </div>
 
             <!-- Address -->
@@ -682,10 +703,49 @@ window.kbfTogglePayoutInputs = function(){
     const typeSel = document.getElementById('kbf-payout-type');
     const nameEl = document.getElementById('kbf-payout-name');
     const numEl = document.getElementById('kbf-payout-number');
+    const nameLabel = document.getElementById('kbf-payout-name-label');
+    const numLabel = document.getElementById('kbf-payout-number-label');
+    const descEl = document.getElementById('kbf-payout-desc');
     if (!typeSel || !nameEl || !numEl) return;
     const enabled = !!typeSel.value;
+    const typeVal = typeSel.value || '';
     nameEl.disabled = !enabled;
     numEl.disabled = !enabled;
+
+    if (descEl) {
+        const opt = typeSel.options[typeSel.selectedIndex];
+        const desc = opt && opt.getAttribute('data-desc') ? opt.getAttribute('data-desc') : '';
+        descEl.textContent = desc;
+    }
+
+    if (!enabled) {
+        if (nameLabel) nameLabel.textContent = 'Account Name';
+        if (numLabel) numLabel.textContent = 'Account Number';
+        if (nameEl) nameEl.placeholder = 'Account name';
+        if (numEl) {
+            numEl.placeholder = 'Account number';
+            numEl.removeAttribute('inputmode');
+        }
+        return;
+    }
+
+    if (typeVal === 'card') {
+        if (nameLabel) nameLabel.textContent = 'Cardholder Name';
+        if (numLabel) numLabel.textContent = 'Card Number';
+        if (nameEl) nameEl.placeholder = 'Name on card';
+        if (numEl) {
+            numEl.placeholder = 'XXXX XXXX XXXX XXXX';
+            numEl.setAttribute('inputmode', 'numeric');
+        }
+    } else {
+        if (nameLabel) nameLabel.textContent = 'Account Name';
+        if (numLabel) numLabel.textContent = 'Mobile Number';
+        if (nameEl) nameEl.placeholder = 'Account name';
+        if (numEl) {
+            numEl.placeholder = '09XXXXXXXXX';
+            numEl.setAttribute('inputmode', 'numeric');
+        }
+    }
 };
 
 function kbfProfileTitleCase(str){

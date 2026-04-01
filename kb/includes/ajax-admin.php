@@ -199,6 +199,49 @@ function bntm_ajax_kbf_save_setting() {
     wp_send_json_success(['message'=>$msg]);
 }
 
+function bntm_ajax_kbf_admin_refresh_tab() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    $tab = sanitize_text_field(isset($_POST['tab']) ? $_POST['tab'] : 'pending');
+    $html = '';
+    if ($tab === 'pending') {
+        $html = kbf_admin_pending_tab();
+    } elseif ($tab === 'all_funds') {
+        $html = kbf_admin_all_funds_tab();
+    } elseif ($tab === 'transactions') {
+        $html = kbf_admin_transactions_tab();
+    } elseif ($tab === 'withdrawals') {
+        $html = kbf_admin_withdrawals_tab();
+    } elseif ($tab === 'reports') {
+        $html = kbf_admin_reports_tab();
+    } elseif ($tab === 'appeals') {
+        $html = kbf_admin_appeals_tab();
+    } elseif ($tab === 'organizers') {
+        $html = kbf_admin_organizers_tab();
+    } elseif ($tab === 'security') {
+        $html = kbf_admin_security_logs_tab();
+    } elseif ($tab === 'settings') {
+        $html = kbf_admin_settings_tab();
+    }
+
+    if ($html === '') {
+        $html = '<div class="kbf-empty"><p>Nothing to refresh.</p></div>';
+    }
+
+    global $wpdb;
+    $counts = [
+        'pending'     => (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        'reports'     => (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"),   // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        'withdrawals' => (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"), // phpcs:ignore
+        'appeals'     => (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_appeals WHERE status='open'"),  // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+    ];
+
+    wp_send_json_success([
+        'html'   => $html,
+        'counts' => $counts,
+    ]);
+}
+
 // ============================================================
 // HELPER FUNCTIONS
 // ============================================================

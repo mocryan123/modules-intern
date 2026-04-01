@@ -619,6 +619,39 @@ function bntm_ajax_kbf_submit_rating() {
     wp_send_json_success(['message'=>'Thank you for your score!']);
 }
 
+function bntm_ajax_kbf_user_refresh_tab() {
+    check_ajax_referer('kbf_user_refresh');
+    if (!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    $tab = sanitize_text_field(isset($_POST['tab']) ? $_POST['tab'] : 'overview');
+    $business_id = get_current_user_id();
+
+    $allowed = ['overview','sponsorships','withdrawals','sponsor_history','my_funds'];
+    if (!in_array($tab, $allowed, true)) {
+        wp_send_json_error(['message'=>'Refresh not allowed for this tab.']);
+    }
+
+    $html = '';
+    if ($tab === 'overview') {
+        $html = kbf_dashboard_overview_tab($business_id);
+    } elseif ($tab === 'sponsorships') {
+        $html = kbf_dashboard_sponsorships_tab($business_id);
+    } elseif ($tab === 'withdrawals') {
+        $html = kbf_dashboard_withdrawals_tab($business_id);
+    } elseif ($tab === 'sponsor_history') {
+        $html = bntm_shortcode_kbf_sponsor_history();
+    } elseif ($tab === 'my_funds') {
+        $nonce_cancel = wp_create_nonce('kbf_cancel_fund');
+        $nonce_extend = wp_create_nonce('kbf_extend');
+        $html = kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend);
+    }
+
+    if ($html === '') {
+        $html = '<div class="kbf-empty"><p>Nothing to refresh.</p></div>';
+    }
+
+    wp_send_json_success(['html' => $html]);
+}
+
 // ============================================================
 // ADMIN TAB: Settings
 // ============================================================

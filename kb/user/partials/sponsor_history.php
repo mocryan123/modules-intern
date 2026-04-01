@@ -39,7 +39,7 @@ function bntm_shortcode_kbf_sponsor_history() {
         <div class="kbf-empty"><p>Enter an email to view your donations.</p></div>
       <?php else: ?>
       <?php if(empty($rows)): ?>
-        <div class="kbf-table-empty">
+        <div class="kbf-table-empty" data-kbf-table-desc="Shows donations made with the email you entered, including status and method.">
           <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr 1fr .9fr .9fr 1fr .9fr;">
             <span>Fundraiser</span>
             <span>Sponsor</span>
@@ -51,7 +51,7 @@ function bntm_shortcode_kbf_sponsor_history() {
           <div class="kbf-table-empty-body">No donations found for this email.</div>
         </div>
       <?php else: ?>
-        <div class="kbf-table-wrap">
+        <div class="kbf-table-wrap" data-kbf-table-desc="Shows donations made with the email you entered, including status and method.">
           <table class="kbf-table">
             <thead><tr><th>Fundraiser</th><th>Sponsor</th><th>Amount</th><th>Status</th><th>Method</th><th>Date</th></tr></thead>
             <tbody>

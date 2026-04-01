@@ -613,7 +613,7 @@
           <details class="kbf-sponsor-details">
             <summary>View Sponsors (<?php echo $sc; ?>)</summary>
             <div class="kbf-sponsor-details-content">
-              <div class="kbf-table-wrap" style="margin-top:10px;">
+              <div class="kbf-table-wrap" style="margin-top:10px;" data-kbf-table-desc="Lists recent sponsors for this fundraiser and their contributions.">
               <table class="kbf-table">
                 <thead><tr><th>Sponsor</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead>
                 <tbody>

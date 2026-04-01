@@ -90,8 +90,8 @@ function kbf_admin_security_logs_tab() {
                 </div>
             <?php endif; ?>
         </div>
+        <div class="kbf-table-desc">Logs recent security-related events for auditing and review.</div>
     </div>
     <?php
     return ob_get_clean();
 }
-

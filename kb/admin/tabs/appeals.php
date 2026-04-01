@@ -37,6 +37,7 @@ function kbf_admin_appeals_tab() {
         <?php endforeach; ?>
       </div>
       <?php endif; ?>
+      <div class="kbf-table-desc">Lists organizer appeals against suspensions and their status.</div>
     </div>
     <script>
       (function(){

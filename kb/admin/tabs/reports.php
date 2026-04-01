@@ -47,6 +47,7 @@ function kbf_admin_reports_tab() {
         <?php endforeach; ?>
       </div>
       <?php endif; ?>
+      <div class="kbf-table-desc">Shows user-submitted reports that require moderation.</div>
     </div>
     <script>
       (function(){

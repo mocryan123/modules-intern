@@ -1427,6 +1427,60 @@
     };
     </script>
 
+    <script>
+      (function(){
+        if (!window.kbfIsLoggedIn) return;
+        var kbfUserTab = '<?php echo esc_js($tab); ?>';
+        var kbfUserRefreshNonce = '<?php echo esc_js($nonce_refresh); ?>';
+        var kbfUserRefreshTabs = ['overview','sponsorships','withdrawals','sponsor_history','my_funds'];
+        if (kbfUserRefreshTabs.indexOf(kbfUserTab) === -1) return;
+
+        var refreshInterval = 25000;
+        var refreshing = false;
+
+        function runInlineScripts(container){
+          if (!container) return;
+          var scripts = container.querySelectorAll('script');
+          scripts.forEach(function(script){
+            var code = script.textContent || '';
+            if (!code.trim()) return;
+            try { (new Function(code))(); } catch(e) { console.error('kbfUser inline script error:', e); }
+          });
+        }
+
+        function kbfUserRefreshTab(){
+          if (document.hidden) return;
+          if (refreshing) return;
+          if (document.documentElement.classList.contains('kbf-modal-lock') || document.body.classList.contains('kbf-modal-lock')) return;
+          refreshing = true;
+          var fd = new FormData();
+          fd.append('action','kbf_user_refresh_tab');
+          fd.append('_ajax_nonce', kbfUserRefreshNonce);
+          fd.append('tab', kbfUserTab);
+          fetch(ajaxurl,{method:'POST',body:fd})
+            .then(r=>r.json())
+            .then(function(j){
+              if (!j || !j.success || !j.data || !j.data.html) return;
+              var container = document.querySelector('.kbf-tab-content');
+              if (!container) return;
+              container.innerHTML = j.data.html;
+              runInlineScripts(container);
+              if (window.kbfInitTablePager) window.kbfInitTablePager();
+              if (window.kbfInitTableDescriptions) window.kbfInitTableDescriptions();
+            })
+            .catch(function(err){
+              console.error('kbfUserRefreshTab error:', err);
+            })
+            .finally(function(){ refreshing = false; });
+        }
+
+        setInterval(kbfUserRefreshTab, refreshInterval);
+        document.addEventListener('visibilitychange', function(){
+          if (!document.hidden) kbfUserRefreshTab();
+        });
+      })();
+    </script>
+
 
 
 

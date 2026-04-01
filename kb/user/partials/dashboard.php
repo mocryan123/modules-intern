@@ -50,6 +50,7 @@ function bntm_shortcode_kbf_dashboard() {
     $nonce_extend = wp_create_nonce('kbf_extend');
     $nonce_appeal = wp_create_nonce('kbf_appeal');
     $nonce_escrow = wp_create_nonce('kbf_request_escrow');
+    $nonce_refresh = wp_create_nonce('kbf_user_refresh');
     $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
 
     if ($is_logged_in && $payment_state === 'success') {

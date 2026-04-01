@@ -37,7 +37,7 @@ function kbf_dashboard_sponsorships_tab($business_id) {
       </div>
       <?php endif; ?>
       <?php if(empty($rows)): ?>
-        <div class="kbf-table-empty">
+        <div class="kbf-table-empty" data-kbf-table-desc="Shows all sponsorships received for your fundraisers, including amount and payment status.">
           <div class="kbf-table-empty-head" style="grid-template-columns:2fr 1.2fr .8fr .8fr 1.4fr .8fr;">
             <span>Fundraiser</span>
             <span>Supporter</span>
@@ -49,7 +49,7 @@ function kbf_dashboard_sponsorships_tab($business_id) {
           <div class="kbf-table-empty-body">No sponsorships yet.</div>
         </div>
       <?php else: ?>
-        <div class="kbf-table-wrap">
+        <div class="kbf-table-wrap" data-kbf-table-desc="Shows all sponsorships received for your fundraisers, including amount and payment status.">
           <table class="kbf-table kbf-supporters-table">
             <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>Note</th><th>Date</th></tr></thead>
             <tbody>

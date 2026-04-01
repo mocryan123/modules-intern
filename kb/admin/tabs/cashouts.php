@@ -13,7 +13,7 @@ function kbf_admin_withdrawals_tab() {
     <div class="kbf-section">
       <h3 class="kbf-section-title">Escrow Release Requests</h3>
       <?php if(empty($escrows)): ?>
-        <div class="kbf-table-empty" style="margin-bottom:18px;">
+        <div class="kbf-table-empty" style="margin-bottom:18px;" data-kbf-table-desc="Lists escrow release requests awaiting action.">
           <div class="kbf-table-empty-head" style="grid-template-columns:1.4fr 1fr .9fr .9fr .9fr;">
             <span>Fund</span>
             <span>Funder</span>
@@ -24,7 +24,7 @@ function kbf_admin_withdrawals_tab() {
           <div class="kbf-table-empty-body">No escrow release requests.</div>
         </div>
       <?php else: ?>
-      <div class="kbf-table-wrap" style="margin-bottom:18px;">
+      <div class="kbf-table-wrap" style="margin-bottom:18px;" data-kbf-table-desc="Lists escrow release requests awaiting action.">
         <table class="kbf-table">
           <thead><tr><th>Fund</th><th>Funder</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead>
           <tbody>
@@ -53,7 +53,7 @@ function kbf_admin_withdrawals_tab() {
 
       <h3 class="kbf-section-title">Withdrawal Requests</h3>
       <?php if(empty($rows)): ?>
-        <div class="kbf-table-empty">
+        <div class="kbf-table-empty" data-kbf-table-desc="Lists withdrawal requests and their processing status.">
           <div class="kbf-table-empty-head" style="grid-template-columns:1.3fr 1fr .8fr .9fr 1.2fr .8fr .8fr .8fr .8fr;">
             <span>Fund</span>
             <span>Funder</span>
@@ -68,7 +68,7 @@ function kbf_admin_withdrawals_tab() {
           <div class="kbf-table-empty-body">No withdrawal requests.</div>
         </div>
       <?php else: ?>
-      <div class="kbf-table-wrap">
+      <div class="kbf-table-wrap" data-kbf-table-desc="Lists withdrawal requests and their processing status.">
         <table class="kbf-table">
           <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Account Type</th><th>Account</th><th>Status</th><th>Requested</th><th>Released</th><th>Actions</th></tr></thead>
           <tbody>

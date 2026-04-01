@@ -16,7 +16,7 @@ function kbf_dashboard_withdrawals_tab($business_id) {
     <div class="kbf-section">
       <h3 class="kbf-section-title">Cashout History</h3>
       <?php if(empty($rows)): ?>
-        <div class="kbf-table-empty">
+        <div class="kbf-table-empty" data-kbf-table-desc="Tracks your cashout requests, payout account details, and release status.">
           <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr .9fr 1fr 1.6fr .9fr .9fr .9fr;">
             <span>Fundraiser</span>
             <span>Amount</span>
@@ -29,7 +29,7 @@ function kbf_dashboard_withdrawals_tab($business_id) {
           <div class="kbf-table-empty-body">No cashout requests yet.</div>
         </div>
       <?php else: ?>
-        <div class="kbf-table-wrap">
+        <div class="kbf-table-wrap" data-kbf-table-desc="Tracks your cashout requests, payout account details, and release status.">
           <table class="kbf-table kbf-cashout-table">
             <colgroup>
               <col><col><col><col><col><col><col>

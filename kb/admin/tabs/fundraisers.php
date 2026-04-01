@@ -12,7 +12,7 @@ function kbf_admin_all_funds_tab() {
     <div class="kbf-section">
       <h3 class="kbf-section-title">All Funds</h3>
       <?php if(empty($funds)): ?>
-        <div class="kbf-table-empty">
+        <div class="kbf-table-empty" data-kbf-table-desc="Lists all fundraisers and their current status for monitoring.">
           <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr 1fr .9fr .8fr .8fr .7fr .7fr 1fr;">
             <span>Fundraiser</span>
             <span>Organizer</span>
@@ -26,7 +26,7 @@ function kbf_admin_all_funds_tab() {
           <div class="kbf-table-empty-body">No funds found.</div>
         </div>
       <?php else: ?>
-      <div class="kbf-table-wrap">
+      <div class="kbf-table-wrap" data-kbf-table-desc="Lists all fundraisers and their current status for monitoring.">
         <table class="kbf-table">
           <thead><tr><th>Fundraiser</th><th>Organizer</th><th>Category</th><th>Goal</th><th>Raised</th><th>Status</th><th>Escrow</th><th>Actions</th></tr></thead>
           <tbody>

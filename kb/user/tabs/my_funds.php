@@ -115,7 +115,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
           if(!empty($sponsors)): ?>
           <details style="margin-top:14px;border-top:1px solid var(--kbf-border);padding-top:12px;">
             <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--kbf-navy);">View Sponsors (<?php echo $sc; ?>)</summary>
-            <div class="kbf-table-wrap" style="margin-top:10px;">
+            <div class="kbf-table-wrap" style="margin-top:10px;" data-kbf-table-desc="Lists top sponsors for this fundraiser and their contribution amounts.">
               <table class="kbf-table">
                 <thead><tr><th>Sponsor</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead>
                 <tbody>

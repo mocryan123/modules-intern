@@ -218,13 +218,18 @@ add_action('wp_head', function(){
     body.kbf-fullwidth-page .wp-block-group__inner-container,
     body.kbf-fullwidth-page .is-layout-constrained,
     body.kbf-fullwidth-page .wp-block-post-content,
+    body.kbf-fullwidth-page .entry-content,
+    body.kbf-fullwidth-page .site-content,
+    body.kbf-fullwidth-page .content-area,
     body.kbf-fullwidth-page .wp-site-blocks > * {
         width: 100% !important;
         max-width: none !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-top: 0 !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
+        padding-top: 0 !important;
     }
     body.kbf-fullwidth-page .bntm-container,
     body.kbf-fullwidth-page .bntm-content{
@@ -232,8 +237,10 @@ add_action('wp_head', function(){
         max-width: none !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
+        margin-top: 0 !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
+        padding-top: 0 !important;
     }
     </style>
     <?php

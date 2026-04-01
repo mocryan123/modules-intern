@@ -12,7 +12,7 @@ function kbf_admin_transactions_tab() {
     <div class="kbf-section">
       <h3 class="kbf-section-title">All Transactions</h3>
       <?php if(empty($rows)): ?>
-        <div class="kbf-table-empty">
+        <div class="kbf-table-empty" data-kbf-table-desc="Displays sponsorship transactions and payment status.">
           <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr 1.2fr .9fr .9fr .9fr;">
             <span>Fundraiser</span>
             <span>Supporter</span>
@@ -23,7 +23,7 @@ function kbf_admin_transactions_tab() {
           <div class="kbf-table-empty-body">No transactions found.</div>
         </div>
       <?php else: ?>
-      <div class="kbf-table-wrap">
+      <div class="kbf-table-wrap" data-kbf-table-desc="Displays sponsorship transactions and payment status.">
         <table class="kbf-table">
           <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>Date</th></tr></thead>
           <tbody>

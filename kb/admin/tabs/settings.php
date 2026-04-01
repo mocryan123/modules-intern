@@ -18,8 +18,12 @@ function kbf_admin_settings_tab() {
       <h3 class="kbf-section-title">Platform Settings</h3>
       <p style="color:var(--kbf-slate);font-size:13.5px;margin-bottom:24px;">Configure Fundora payments and live mode.</p>
       <?php if($demo_mode): ?>
-        <div style="margin-bottom:18px;border-radius:14px;border:1px solid #f59e0b;background:linear-gradient(90deg,#fff7ed 0%,#fff 70%);padding:14px 16px;box-shadow:0 10px 24px rgba(245,158,11,.12);display:flex;gap:12px;align-items:flex-start;">
-          <div style="width:36px;height:36px;border-radius:10px;background:#f59e0b;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;">!</div>
+        <div style="margin-bottom:18px;border-radius:14px;border:1px solid #f59e0b;background:linear-gradient(90deg,#fff7ed 0%,#fff 70%);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;overflow:hidden;">
+          <div style="width:36px;height:36px;border-radius:10px;color:#92400e;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+            </svg>
+          </div>
           <div>
             <div style="font-weight:700;color:#92400e;font-size:14.5px;margin-bottom:2px;">Demo Mode is ON — payments are auto‑confirmed</div>
             <div style="color:#92400e;font-size:13px;line-height:1.6;">
