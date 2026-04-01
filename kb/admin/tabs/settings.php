@@ -9,13 +9,25 @@ function kbf_admin_settings_tab() {
     $sb_sec    = kbf_get_setting('kbf_maya_sandbox_secret', '');
     $lv_pub    = kbf_get_setting('kbf_maya_live_public', '');
     $lv_sec    = kbf_get_setting('kbf_maya_live_secret', '');
+    $wh_secret = kbf_get_setting('kbf_maya_webhook_secret', '');
     $nonce     = wp_create_nonce('kbf_admin_action');
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <h3 class="kbf-section-title">Platform Settings</h3>
-      <p style="color:var(--kbf-slate);font-size:13.5px;margin-bottom:24px;">Configure KonekBayan payments and live mode.</p>
+      <p style="color:var(--kbf-slate);font-size:13.5px;margin-bottom:24px;">Configure Fundora payments and live mode.</p>
+      <?php if($demo_mode): ?>
+        <div style="margin-bottom:18px;border-radius:14px;border:1px solid #f59e0b;background:linear-gradient(90deg,#fff7ed 0%,#fff 70%);padding:14px 16px;box-shadow:0 10px 24px rgba(245,158,11,.12);display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:36px;height:36px;border-radius:10px;background:#f59e0b;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:800;">!</div>
+          <div>
+            <div style="font-weight:700;color:#92400e;font-size:14.5px;margin-bottom:2px;">Demo Mode is ON — payments are auto‑confirmed</div>
+            <div style="color:#92400e;font-size:13px;line-height:1.6;">
+              No real payment is required while Demo Mode is active. Switch to Live before launch.
+            </div>
+          </div>
+        </div>
+      <?php endif; ?>
       <style>
         .kbf-admin-preload{
           position:fixed;
@@ -149,7 +161,21 @@ function kbf_admin_settings_tab() {
             <small style="color:var(--kbf-slate);">
               Maya Business Manager â†’ Developers â†’ Webhooks â†’ Add Webhook URL.<br>
               Subscribe to events: <strong>CHECKOUT_SUCCESS</strong> and <strong>PAYMENT_SUCCESS</strong>.<br>
-              No webhook secret is required -- Maya authenticates via your API keys.
+              Optional: add a webhook secret below for signature verification.
+            </small>
+          </div>
+
+          <div style="margin-top:14px;">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:8px;">Webhook Secret (optional)</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
+              <div class="kbf-form-group" style="margin:0;">
+                <label style="font-size:12.5px;">Maya Webhook Secret</label>
+                <input type="password" id="wh-secret" value="<?php echo esc_attr($wh_secret); ?>" placeholder="webhook-secret-..." style="font-family:monospace;font-size:12px;">
+              </div>
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveSetting('kbf_maya_webhook_secret', document.getElementById('wh-secret').value, '<?php echo $nonce; ?>')">Save Secret</button>
+            </div>
+            <small style="color:var(--kbf-slate);display:block;margin-top:6px;">
+              When set, Fundora verifies incoming webhook signatures before updating payments.
             </small>
           </div>
         </div>

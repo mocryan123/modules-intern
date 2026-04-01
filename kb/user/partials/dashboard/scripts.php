@@ -1,6 +1,29 @@
 ﻿        <!-- ================== JS ================== -->
     <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <script>
+      window.kbfIsLoggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;
+      window.kbfOpenAuthModal = function(reason){
+        var modal = document.getElementById('kbf-auth-modal');
+        if (!modal) return;
+        var msg = document.getElementById('kbf-auth-reason');
+        if (msg && reason) msg.textContent = reason;
+        modal.style.display = 'flex';
+        document.documentElement.classList.add('kbf-modal-lock');
+        document.body.classList.add('kbf-modal-lock');
+      };
+      window.kbfCloseAuthModal = function(){
+        var modal = document.getElementById('kbf-auth-modal');
+        if (!modal) return;
+        modal.style.display = 'none';
+        document.documentElement.classList.remove('kbf-modal-lock');
+        document.body.classList.remove('kbf-modal-lock');
+      };
+      document.addEventListener('click', function(e){
+        var modal = document.getElementById('kbf-auth-modal');
+        if (modal && e.target === modal) window.kbfCloseAuthModal();
+      });
+    </script>
+    <script>
       (function(){
         var btn = document.getElementById('kbf-user-menu-btn');
         var dd = document.getElementById('kbf-user-dropdown');
@@ -55,6 +78,18 @@
           kbfCloseMobileMenu();
         }
       });
+
+      (function(){
+        if (window.kbfIsLoggedIn) return;
+        document.querySelectorAll('.kbf-auth-required').forEach(function(link){
+          link.addEventListener('click', function(e){
+            e.preventDefault();
+            var label = link.getAttribute('data-auth-tab') || 'this section';
+            if (window.kbfOpenAuthModal) window.kbfOpenAuthModal('Sign in to access ' + label + '.');
+            if (typeof kbfCloseMobileMenu === 'function') kbfCloseMobileMenu();
+          });
+        });
+      })();
 
     function kbfCloseModal(id) {
         document.getElementById(id).style.display = 'none';
@@ -1136,6 +1171,7 @@
         }
         kbfSetBtnLoading(btn, true, 'Saving...');
         kbfSetSkeleton(msg, true);
+        kbfCloseModal('kbf-modal-edit');
         kbfSetLoadingPage(true);
         const fd = new FormData(form);
         var eProv = document.getElementById('kbf-edit-province');

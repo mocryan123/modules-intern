@@ -1329,7 +1329,7 @@ function bntm_kbf_render_landing() {
 
 
               <a class="kbf-btn kbf-btn-primary kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
-                Get Started on Fundora
+                Start Supporting on Fundora
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-up-right.svg" alt="">
 
               </a>
@@ -1566,7 +1566,7 @@ function bntm_kbf_render_landing() {
             <p>Designed for trust</p>
             <h3 style="font-weight: 300;">Safe & Trusted</h3>
             <p>Reviewed. Verified. Transparent.</p>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($join_url); ?>">Join fundora — it's free</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($join_url); ?>">Join Fundora — it's free</a>
           </div>
         </div>
 

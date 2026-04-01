@@ -172,6 +172,20 @@ function bntm_kbf_get_tables() {
             INDEX idx_business (business_id),
             INDEX idx_status (status)
         ) {$charset};",
+
+        'kbf_security_logs' => "CREATE TABLE {$prefix}kbf_security_logs (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            event_type VARCHAR(100) NOT NULL,
+            user_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+            ip VARCHAR(64),
+            endpoint VARCHAR(255),
+            meta LONGTEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_event (event_type),
+            INDEX idx_user (user_id),
+            INDEX idx_ip (ip),
+            INDEX idx_created (created_at)
+        ) {$charset};",
     ];
 }
 
@@ -264,6 +278,64 @@ function bntm_kbf_ensure_withdrawal_columns() {
     }
 }
 add_action('init', 'bntm_kbf_ensure_withdrawal_columns');
+
+if (!function_exists('kbf_get_client_ip')) {
+    function kbf_get_client_ip() {
+        $keys = ['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_CLIENT_IP','REMOTE_ADDR'];
+        foreach ($keys as $key) {
+            if (empty($_SERVER[$key])) continue;
+            $value = sanitize_text_field($_SERVER[$key]);
+            $ip = trim(explode(',', $value)[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+        }
+        return '';
+    }
+}
+
+if (!function_exists('kbf_log_security_event')) {
+    function kbf_log_security_event($event_type, $meta = [], $endpoint = '') {
+        global $wpdb;
+        if (empty($event_type)) return false;
+        $table = $wpdb->prefix . 'kbf_security_logs';
+        $endpoint = $endpoint ?: (isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '');
+        if ($endpoint === '' && !empty($_SERVER['REQUEST_URI'])) {
+            $endpoint = sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']));
+        }
+        $data = [
+            'event_type' => sanitize_text_field($event_type),
+            'user_id'    => get_current_user_id(),
+            'ip'         => kbf_get_client_ip(),
+            'endpoint'   => $endpoint,
+            'meta'       => !empty($meta) ? wp_json_encode($meta) : null,
+            'created_at' => current_time('mysql'),
+        ];
+        $formats = ['%s','%d','%s','%s','%s','%s'];
+        $res = $wpdb->insert($table, $data, $formats);
+        if (!$res) {
+            error_log('[KBF][SecurityLog] Insert failed: ' . $wpdb->last_error);
+        }
+        return (bool)$res;
+    }
+}
+
+if (!function_exists('kbf_rate_limit_ok')) {
+    function kbf_rate_limit_ok($bucket, $limit = 60, $window = 60) {
+        $ip = kbf_get_client_ip();
+        if (!$ip) return true;
+        $key = 'kbf_rl_' . $bucket . '_' . md5($ip);
+        $count = (int) get_transient($key);
+        if ($count >= $limit) {
+            kbf_log_security_event('rate_limit_block', [
+                'bucket' => $bucket,
+                'limit'  => $limit,
+                'window' => $window
+            ]);
+            return false;
+        }
+        set_transient($key, $count + 1, $window);
+        return true;
+    }
+}
 
 function bntm_kbf_ensure_perf_indexes() {
     global $wpdb;
@@ -361,7 +433,7 @@ function bntm_kbf_ensure_saved_funds_table() {
 }
 add_action('init', 'bntm_kbf_maybe_update_db', 1);
 function bntm_kbf_maybe_update_db() {
-    $target = '2.0.3';
+    $target = '2.0.4';
     $installed = get_option('kbf_db_version');
     if ($installed !== $target) {
         bntm_kbf_create_tables();

@@ -21,10 +21,10 @@ function bntm_shortcode_kbf_admin() {
     $open_reports_count  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
     $pending_wd_count    = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
     $open_appeals_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_appeals WHERE status='open'"); // phpcs:ignore
-    $tabs=['pending'=>'For Review','all_funds'=>'Fundraisers','transactions'=>'Payments','withdrawals'=>'Cashouts','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Accounts','settings'=>'Settings'];
+    $tabs=['pending'=>'For Review','all_funds'=>'Fundraisers','transactions'=>'Payments','withdrawals'=>'Cashouts','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Accounts','security'=>'Security Logs','settings'=>'Settings'];
     $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
     ?>
-    <div class="kbf-dashboard-topbar">
+    <div class="kbf-dashboard-topbar kbf-admin-topbar">
       <div class="kbf-dashboard-brand">
         <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
         <span class="kbf-brand-text">fundora</span>
@@ -32,44 +32,54 @@ function bntm_shortcode_kbf_admin() {
       <button class="kbf-hamburger" type="button" onclick="kbfToggleMobileMenu()" aria-label="Toggle menu">
         <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="">
       </button>
-      <div class="kbf-dashboard-nav" id="kbf-admin-nav">
-        <?php foreach($tabs as $k=>$label): ?>
-        <?php $raw_count = !empty($counts[$k]) ? (int)$counts[$k] : 0; ?>
-        <?php $display_count = $raw_count >= 100 ? '99+' : (string)$raw_count; ?>
-        <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>">
-          <?php echo $label; ?>
-          <?php if($raw_count > 0): ?>
-            <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
-          <?php endif; ?>
-        </a>
-        <?php endforeach; ?>
-      </div>
     </div>
 
-    <div class="kbf-admin-shell">
-    <div class="kbf-page-header"><h2>fundora Admin Panel</h2><p>Moderate funds, manage escrow, review reports, and process withdrawals.</p></div>
-      <div class="kbf-tab-content">
-        <?php
-        if($tab==='pending')      echo kbf_admin_pending_tab();
-        elseif($tab==='all_funds')     echo kbf_admin_all_funds_tab();
-        elseif($tab==='transactions')  echo kbf_admin_transactions_tab();
-        elseif($tab==='withdrawals')   echo kbf_admin_withdrawals_tab();
-        elseif($tab==='reports')       echo kbf_admin_reports_tab();
-        elseif($tab==='appeals')       echo kbf_admin_appeals_tab();
-        elseif($tab==='organizers')    echo kbf_admin_organizers_tab();
-        elseif($tab==='settings')      echo kbf_admin_settings_tab();
-        ?>
-      </div>
-      </div>
+    <div class="kbf-admin-layout">
+      <aside class="kbf-admin-sidebar">
+        <div class="kbf-admin-sidebar-brand">
+          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora">
+          <span class="kbf-brand-text">fundora</span>
+        </div>
+        <div class="kbf-admin-sidebar-label">Admin Navigation</div>
+        <nav class="kbf-dashboard-nav kbf-admin-nav" id="kbf-admin-nav">
+          <?php foreach($tabs as $k=>$label): ?>
+          <?php $raw_count = !empty($counts[$k]) ? (int)$counts[$k] : 0; ?>
+          <?php $display_count = $raw_count >= 100 ? '99+' : (string)$raw_count; ?>
+          <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>">
+            <?php echo $label; ?>
+            <?php if($raw_count > 0): ?>
+              <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
+            <?php endif; ?>
+          </a>
+          <?php endforeach; ?>
+        </nav>
+        <div class="kbf-admin-sidebar-note">Fundora Admin</div>
+      </aside>
+
+      <main class="kbf-admin-main">
+        <div class="kbf-admin-shell">
+          <div class="kbf-page-header"><h2>fundora Admin Panel</h2><p>Moderate funds, manage escrow, review reports, and process withdrawals.</p></div>
+          <div class="kbf-tab-content">
+            <?php
+            if($tab==='pending')      echo kbf_admin_pending_tab();
+            elseif($tab==='all_funds')     echo kbf_admin_all_funds_tab();
+            elseif($tab==='transactions')  echo kbf_admin_transactions_tab();
+            elseif($tab==='withdrawals')   echo kbf_admin_withdrawals_tab();
+            elseif($tab==='reports')       echo kbf_admin_reports_tab();
+            elseif($tab==='appeals')       echo kbf_admin_appeals_tab();
+            elseif($tab==='organizers')    echo kbf_admin_organizers_tab();
+            elseif($tab==='security')      echo kbf_admin_security_logs_tab();
+            elseif($tab==='settings')      echo kbf_admin_settings_tab();
+            ?>
+          </div>
+        </div>
+      </main>
+    </div>
     </div>
     <div class="kbf-mobile-overlay" id="kbf-mobile-overlay"></div>
     <div class="kbf-mobile-menu" id="kbf-mobile-menu">
-      <div class="kbf-mobile-menu-header">
-        <div class="kbf-dashboard-brand">
-          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
-          <span class="kbf-brand-text">fundora</span>
-        </div>
-        <button class="kbf-hamburger" type="button" onclick="kbfCloseMobileMenu()">
+      <div class="kbf-mobile-menu-header" style="justify-content:flex-end;">
+        <button class="kbf-hamburger" type="button" onclick="kbfCloseMobileMenu()" aria-label="Close menu">
           <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="">
         </button>
       </div>
@@ -120,6 +130,19 @@ function bntm_shortcode_kbf_admin() {
             console.error('kbfAdmin error:', err);
             console.log('kbfAdmin action:', action, 'params:', params);
         });
+    };
+    window.kbfSetTableLoading = function(target, on){
+        var el = null;
+        if (typeof target === 'string') {
+            el = document.querySelector(target);
+        } else {
+            el = target;
+        }
+        if (!el) return;
+        var wrap = el.classList.contains('kbf-table-wrap') ? el : el.closest('.kbf-table-wrap');
+        if (!wrap) return;
+        if (on) wrap.classList.add('is-loading');
+        else wrap.classList.remove('is-loading');
     };
     window.kbfApprove=function(id){if(!confirm('Approve this fund?'))return;kbfAdmin('kbf_admin_approve_fund',{fund_id:id});};
     window.kbfReject=function(id){const r=prompt('Reason for rejection (optional):');if(r===null)return;kbfAdmin('kbf_admin_reject_fund',{fund_id:id,reason:r});};

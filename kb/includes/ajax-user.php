@@ -5,6 +5,42 @@
 
 if (!defined('ABSPATH')) exit;
 
+if (!function_exists('kbf_get_client_ip')) {
+    function kbf_get_client_ip() {
+        $keys = ['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_CLIENT_IP','REMOTE_ADDR'];
+        foreach ($keys as $key) {
+            if (empty($_SERVER[$key])) continue;
+            $value = sanitize_text_field($_SERVER[$key]);
+            $ip = trim(explode(',', $value)[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+        }
+        return '';
+    }
+}
+
+if (!function_exists('kbf_rate_limit_ok')) {
+    function kbf_rate_limit_ok($bucket, $limit = 60, $window = 60) {
+        $ip = kbf_get_client_ip();
+        if (!$ip) return true;
+        $key = 'kbf_rl_' . $bucket . '_' . md5($ip);
+        $count = (int) get_transient($key);
+        if ($count >= $limit) {
+            if (function_exists('kbf_log_security_event')) {
+                kbf_log_security_event('rate_limit_block', [
+                    'bucket' => $bucket,
+                    'limit'  => $limit,
+                    'window' => $window
+                ]);
+            } else {
+                error_log('[KBF][RateLimit] Blocked bucket=' . $bucket . ' ip=' . $ip);
+            }
+            return false;
+        }
+        set_transient($key, $count + 1, $window);
+        return true;
+    }
+}
+
 function bntm_ajax_kbf_create_fund() {
     check_ajax_referer('kbf_create_fund','nonce');
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
@@ -173,18 +209,11 @@ function bntm_ajax_kbf_mark_fund_complete() {
 
 function bntm_ajax_kbf_request_withdrawal() {
     check_ajax_referer('kbf_withdrawal','nonce');
+    if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Please log in to request a withdrawal.']); }
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$wt=$wpdb->prefix.'kbf_withdrawals';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();$amount=floatval($_POST['amount']);
-    $fund = $biz
-        ? $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND business_id=%d",$id,$biz))
-        : $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d",$id));
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
-    if(!$biz) {
-        $email = sanitize_email($_POST['funder_email']??'');
-        if(empty($email) || strcasecmp($email, (string)$fund->email) !== 0) {
-            wp_send_json_error(['message'=>'Unauthorized. Please use the funder email on record.']);
-        }
-    }
     if(!in_array($fund->status, ['active', 'completed'])) wp_send_json_error(['message'=>'Withdrawals are only available for active or completed fundraisers.']);
     if($fund->escrow_status === 'refunded') wp_send_json_error(['message'=>'Funds have been refunded and are no longer available for withdrawal.']);
     if($amount<=0) wp_send_json_error(['message'=>'Please enter a valid amount.']);
@@ -194,12 +223,8 @@ function bntm_ajax_kbf_request_withdrawal() {
     $pending=$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wt} WHERE fund_id=%d AND status='pending'",$id));
     if($pending>0) wp_send_json_error(['message'=>'You already have a pending withdrawal request for this fund. Please wait for admin to process it first.']);
     $funder_name = '';
-    if($biz) {
-        $user = get_userdata($biz);
-        $funder_name = $user ? $user->display_name : '';
-    } else {
-        $funder_name = sanitize_text_field($_POST['funder_name']??'');
-    }
+    $user = get_userdata($biz);
+    $funder_name = $user ? $user->display_name : '';
     if(!$funder_name && $fund->business_id) {
         $u = get_userdata($fund->business_id);
         $funder_name = $u ? $u->display_name : '';
@@ -339,6 +364,9 @@ function bntm_ajax_kbf_request_verification() {
 
 function bntm_ajax_kbf_sponsor_fund() {
     check_ajax_referer('kbf_sponsor','nonce');
+    if (!kbf_rate_limit_ok('sponsor_fund', 40, 60)) {
+        wp_send_json_error(['message'=>'Too many requests. Please try again shortly.']);
+    }
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$st=$wpdb->prefix.'kbf_sponsorships';
     $id=intval($_POST['fund_id']);$amount=floatval($_POST['amount']);
     if($amount<50) wp_send_json_error(['message'=>'Minimum sponsorship is ₱50.']);
@@ -409,6 +437,9 @@ function bntm_ajax_kbf_sponsor_fund() {
 
 function bntm_ajax_kbf_report_fund() {
     check_ajax_referer('kbf_report','nonce');
+    if (!kbf_rate_limit_ok('report_fund', 10, 300)) {
+        wp_send_json_error(['message'=>'Too many reports. Please wait a bit and try again.']);
+    }
     global $wpdb;$t=$wpdb->prefix.'kbf_reports';
     $id=intval($_POST['fund_id']);$reason=sanitize_text_field($_POST['reason']);$details=sanitize_textarea_field($_POST['details']);
     if(empty($reason)||empty($details)) wp_send_json_error(['message'=>'Please fill all required fields.']);
@@ -494,6 +525,9 @@ function bntm_ajax_kbf_submit_appeal() {
 
 function bntm_ajax_kbf_get_fund_details() {
     check_ajax_referer('kbf_sponsor','nonce');
+    if (!kbf_rate_limit_ok('fund_details', 120, 60)) {
+        wp_send_json_error(['message'=>'Too many requests. Please slow down.']);
+    }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);
     $f=$wpdb->get_row($wpdb->prepare("SELECT id,title,description,goal_amount,raised_amount,location,category FROM {$t} WHERE id=%d AND status='active'",$id));
@@ -503,6 +537,9 @@ function bntm_ajax_kbf_get_fund_details() {
 
 function bntm_ajax_kbf_get_organizer_profile() {
     // Public endpoint: no nonce required -- returns only public profile data
+    if (!kbf_rate_limit_ok('organizer_profile', 80, 60)) {
+        wp_send_json_error(['message' => 'Too many requests. Please slow down.']);
+    }
     global $wpdb;
     $biz=intval($_POST['business_id']??0);
     if(!$biz) wp_send_json_error(['message'=>'Not found.']);

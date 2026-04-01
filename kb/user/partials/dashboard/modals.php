@@ -156,6 +156,31 @@
       </div>
     </div>
 
+    <!-- ===== MODAL: Auth Required ===== -->
+    <div id="kbf-auth-modal" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal kbf-auth-modal">
+        <button class="kbf-modal-close" type="button" onclick="kbfCloseAuthModal()" aria-label="Close">&times;</button>
+        <div class="kbf-auth-grid">
+          <div class="kbf-auth-side">
+            <div class="kbf-auth-side-inner">
+              <div class="kbf-auth-chip">Fundora Access</div>
+              <div class="kbf-auth-quote">“Bayanihan works best when people can see real progress.”</div>
+              <div class="kbf-auth-sub">Sign in to save campaigns, manage funds, and support with confidence.</div>
+            </div>
+          </div>
+          <div class="kbf-auth-main">
+            <h3>Sign in required</h3>
+            <p id="kbf-auth-reason">Please sign in to continue.</p>
+            <div class="kbf-auth-actions">
+              <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url(function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : home_url('/wp-login.php')); ?>">Sign in</a>
+              <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url(function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : home_url('/wp-login.php')); ?>">Create account</a>
+              <button class="kbf-btn kbf-btn-ghost" type="button" onclick="kbfCloseAuthModal()">Continue browsing</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== MODAL: Edit Fund ===== -->    <div id="kbf-modal-edit" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
         <div class="kbf-modal-header">

@@ -5,6 +5,41 @@
 
 if (!defined('ABSPATH')) exit;
 
+if (!function_exists('kbf_maya_webhook_secret')) {
+    function kbf_maya_webhook_secret() {
+        return (string) kbf_get_setting('kbf_maya_webhook_secret', '');
+    }
+}
+
+if (!function_exists('kbf_get_request_header')) {
+    function kbf_get_request_header($name) {
+        $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+        if (!empty($_SERVER[$key])) return sanitize_text_field($_SERVER[$key]);
+        foreach ($_SERVER as $k => $v) {
+            if (strcasecmp($k, $key) === 0) return sanitize_text_field($v);
+        }
+        return '';
+    }
+}
+
+if (!function_exists('kbf_verify_maya_signature')) {
+    function kbf_verify_maya_signature($raw_body) {
+        $secret = kbf_maya_webhook_secret();
+        if ($secret === '') {
+            return [true, 'no_secret'];
+        }
+        $sig = kbf_get_request_header('X-Maya-Signature');
+        if ($sig === '') $sig = kbf_get_request_header('X-Signature');
+        if ($sig === '') {
+            return [false, 'missing_signature'];
+        }
+        $expected = hash_hmac('sha256', $raw_body, $secret);
+        $sig_clean = preg_replace('/^sha256=/i', '', trim($sig));
+        $ok = hash_equals($expected, $sig_clean);
+        return [$ok, $ok ? 'ok' : 'mismatch'];
+    }
+}
+
 function kbf_maya_secret_key() {
     $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
     return $demo
@@ -74,6 +109,9 @@ function kbf_maya_request($endpoint, $payload = null, $method = 'POST', $use_sec
 
 function bntm_ajax_kbf_create_checkout() {
     check_ajax_referer('kbf_sponsor', 'nonce');
+    if (function_exists('kbf_rate_limit_ok') && !kbf_rate_limit_ok('checkout_create', 30, 60)) {
+        wp_send_json_error(['message' => 'Too many requests. Please try again shortly.']);
+    }
     global $wpdb;
     $ft = $wpdb->prefix . 'kbf_funds';
     $st = $wpdb->prefix . 'kbf_sponsorships';
@@ -118,29 +156,12 @@ function bntm_ajax_kbf_create_checkout() {
         'email'          => $email,
         'phone'          => $phone,
         'payment_method' => $method,
-        'payment_status' => 'completed',
+        'payment_status' => 'pending',
         'message'        => $message,
     ], ['%s','%d','%s','%d','%f','%s','%s','%s','%s','%s']);
     $sponsorship_id = $wpdb->insert_id;
 
-    // Auto-confirm immediately after online payment initiation (requested behavior)
-    if ($sponsorship_id) {
-        $wpdb->query($wpdb->prepare("UPDATE {$ft} SET raised_amount=raised_amount+%f WHERE id=%d", $amount, $fund_id));
-        $updated = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount FROM {$ft} WHERE id=%d", $fund_id));
-        if ($updated && $updated->goal_amount > 0 && $updated->raised_amount >= $updated->goal_amount) {
-            $wpdb->update($ft, ['status'=>'completed','escrow_status'=>'released'], ['id'=>$fund_id], ['%s','%s'], ['%d']);
-        }
-        $pt = $wpdb->prefix . 'kbf_organizer_profiles';
-        $total = $wpdb->get_var($wpdb->prepare(
-            "SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
-            $fund->business_id
-        ));
-        $cnt = (int)$wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
-            $fund->business_id
-        ));
-        $wpdb->update($pt, ['total_raised'=>$total,'total_sponsors'=>$cnt], ['business_id'=>$fund->business_id], ['%f','%d'], ['%d']);
-    }
+    // Payment is confirmed via webhook; do not update totals here.
 
     // Redirect URLs -- Maya sends buyer back after payment
     // Use a stable absolute URL (home_url) to avoid invalid redirectUrl errors in AJAX context.
@@ -232,6 +253,15 @@ function kbf_maya_webhook_handler(WP_REST_Request $request) {
     $raw_body = $request->get_body();
     $payload  = json_decode($raw_body, true);
 
+    list($sig_ok, $sig_state) = kbf_verify_maya_signature($raw_body);
+    if (!$sig_ok) {
+        if (function_exists('kbf_log_security_event')) {
+            kbf_log_security_event('webhook_sig_fail', ['state' => $sig_state], 'maya_webhook');
+        }
+        error_log('[KBF][Maya] Webhook rejected: ' . $sig_state);
+        return new WP_REST_Response(['error' => 'Unauthorized'], 401);
+    }
+
     if (!$payload) {
         return new WP_REST_Response(['error' => 'Invalid payload'], 400);
     }
@@ -271,6 +301,46 @@ function kbf_maya_webhook_handler(WP_REST_Request $request) {
 
     if (!$sponsorship || $sponsorship->payment_status === 'completed') {
         return new WP_REST_Response(['received' => true, 'note' => 'Already processed or not found'], 200);
+    }
+
+    // Verify amount + checkoutId match our stored sponsorship record.
+    $payload_amount = 0.0;
+    if (isset($payload['resource']['totalAmount']['value'])) {
+        $payload_amount = floatval($payload['resource']['totalAmount']['value']);
+    } elseif (isset($payload['totalAmount']['value'])) {
+        $payload_amount = floatval($payload['totalAmount']['value']);
+    } elseif (isset($payload['resource']['amount'])) {
+        $payload_amount = floatval($payload['resource']['amount']);
+    }
+
+    $gw = [];
+    if (!empty($sponsorship->gateway_payload)) {
+        $gw = json_decode($sponsorship->gateway_payload, true);
+        if (!is_array($gw)) $gw = [];
+    }
+    $stored_checkout_id = $gw['checkoutId'] ?? '';
+    $payload_checkout_id = $payload['resource']['checkoutId']
+        ?? ($payload['checkoutId'] ?? ($payload['resource']['id'] ?? ''));
+
+    $amount_ok = ($payload_amount > 0)
+        ? (abs(floatval($sponsorship->amount) - $payload_amount) <= 0.01)
+        : false;
+    $checkout_ok = ($stored_checkout_id !== '' && $payload_checkout_id !== '')
+        ? hash_equals((string)$stored_checkout_id, (string)$payload_checkout_id)
+        : false;
+
+    if (!$amount_ok || !$checkout_ok) {
+        if (function_exists('kbf_log_security_event')) {
+            kbf_log_security_event('webhook_mismatch', [
+                'amount_ok' => $amount_ok,
+                'checkout_ok' => $checkout_ok,
+                'expected_amount' => (float)$sponsorship->amount,
+                'payload_amount' => $payload_amount,
+                'expected_checkout' => (string)$stored_checkout_id,
+                'payload_checkout' => (string)$payload_checkout_id
+            ], 'maya_webhook');
+        }
+        return new WP_REST_Response(['error' => 'Verification failed'], 400);
     }
 
     // Extract Maya payment/transaction reference

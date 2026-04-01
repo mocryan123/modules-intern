@@ -756,6 +756,10 @@ function kbf_dashboard_find_funds_tab() {
     var kbfSavedOnly = '<?php echo $saved_only ? '1' : ''; ?>';
     if (typeof window.kbfSaveFund === 'undefined') {
         window.kbfSaveFund = function(id, btn){
+            if (window.kbfIsLoggedIn === false) {
+                if (window.kbfOpenAuthModal) window.kbfOpenAuthModal('Sign in to save fundraisers.');
+                return;
+            }
             if(!id) return;
             var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
             var fd = new FormData();
@@ -861,12 +865,20 @@ function kbf_dashboard_find_funds_tab() {
         fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
         fd.append('is_anonymous',document.getElementById('kbff-anon').checked?'1':'0');
+        console.log('KBF sponsor submit (explore): sending', {
+            fund_id: fd.get('fund_id'),
+            amount: fd.get('amount'),
+            email: fd.get('email'),
+            payment_method: fd.get('payment_method'),
+            is_anonymous: fd.get('is_anonymous')
+        });
         kbfFetchJson(ajaxurl, fd, (j)=>{
+            console.log('KBF checkout response (explore):', j);
             if(j.success){
-                console.log('KBF checkout response:', j);
                 if(j.data && j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';
-                    window.open(j.data.checkout_url, '_blank');
+                    var w = window.open(j.data.checkout_url, '_blank', 'noopener');
+                    if (w) { try { w.opener = null; } catch(e) {} }
                 } else {
                     msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
                     kbfSetBtnLoading(btn,false);
@@ -878,7 +890,7 @@ function kbf_dashboard_find_funds_tab() {
                 kbfSetSkeleton(msg,false);
             }
         }, (err)=>{
-            console.error('KBF checkout error:', err);
+            console.error('KBF checkout error (explore):', err);
             msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';
             kbfSetBtnLoading(btn,false);
             kbfSetSkeleton(msg,false);

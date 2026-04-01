@@ -7,17 +7,17 @@ if (!defined('ABSPATH')) exit;
 
 function bntm_kbf_get_pages() {
     return [
-        'KonekBayan: Landing' => '[kbf_landing]',
-        'KonekBayan: User'  => '[kbf_dashboard]',
-        'KonekBayan: Terms' => '[kbf_terms]',
-        'KonekBayan: Admin' => '[kbf_admin]',
-        'KonekBayan: Sign In' => '[kbf_signin]',
-        'KonekBayan: Sign Up' => '[kbf_signup]',
+        'Fundora: Landing' => '[kbf_landing]',
+        'Fundora: User'  => '[kbf_dashboard]',
+        'Fundora: Terms' => '[kbf_terms]',
+        'Fundora: Admin' => '[kbf_admin]',
+        'Fundora: Sign In' => '[kbf_signin]',
+        'Fundora: Sign Up' => '[kbf_signup]',
     ];
 }
 
 function bntm_kbf_should_use_fullwidth_template($title) {
-    return in_array($title, ['KonekBayan: User', 'KonekBayan: Admin'], true);
+    return in_array($title, ['Fundora: User', 'Fundora: Admin'], true);
 }
 
 // Ensure required pages exist and have the correct shortcodes.

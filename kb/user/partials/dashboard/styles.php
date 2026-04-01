@@ -94,6 +94,11 @@
         border:1px solid #e5e7eb;
         color:#334155;
     }
+    .kbf-user-ui .kbf-btn-ghost{
+        background:transparent;
+        border:1px dashed #d7e3f7;
+        color:#475569;
+    }
     .kbf-card-actions{
         display:flex;
         align-items:center;
@@ -584,6 +589,116 @@
     }
     .kbf-user-ui .kbf-modal-footer .kbf-btn-secondary{
         background:#fff;
+    }
+    .kbf-user-ui .kbf-auth-modal{
+        max-width:860px;
+        padding:0;
+    }
+    .kbf-user-ui .kbf-auth-modal .kbf-modal-close{
+        position:absolute;
+        top:18px;
+        right:18px;
+        z-index:3;
+    }
+    .kbf-user-ui .kbf-auth-grid{
+        display:grid;
+        grid-template-columns:1.05fr .95fr;
+        min-height:320px;
+    }
+    .kbf-user-ui .kbf-auth-side{
+        position:relative;
+        background:
+            linear-gradient(135deg, rgba(15, 23, 42, 0.15) 0%, rgba(15, 23, 42, 0.45) 100%),
+            url('<?php echo esc_url(BNTM_KBF_URL . 'assets/hero.jpg'); ?>') center/cover no-repeat;
+        color:#fff;
+        padding:28px;
+        display:flex;
+        align-items:flex-end;
+    }
+    .kbf-user-ui .kbf-auth-side::after{
+        content:'';
+        position:absolute;
+        inset:0;
+        background:linear-gradient(180deg, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.65) 100%);
+        pointer-events:none;
+    }
+    .kbf-user-ui .kbf-auth-side-inner{
+        position:relative;
+        z-index:2;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+    }
+    .kbf-user-ui .kbf-auth-chip{
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        background:rgba(255,255,255,0.16);
+        border:1px solid rgba(255,255,255,0.35);
+        border-radius:999px;
+        padding:6px 12px;
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:.12em;
+        font-weight:600;
+    }
+    .kbf-user-ui .kbf-auth-quote{
+        font-size:18px;
+        font-weight:600;
+        line-height:1.4;
+        text-shadow:0 12px 30px rgba(15,23,42,0.35);
+    }
+    .kbf-user-ui .kbf-auth-sub{
+        font-size:12.5px;
+        color:rgba(255,255,255,0.8);
+    }
+    .kbf-user-ui .kbf-auth-main{
+        padding:40px 36px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        gap:16px;
+    }
+    .kbf-user-ui .kbf-auth-main h3{
+        font-size:20px;
+        font-weight:700;
+        margin:0;
+        color:#0f172a;
+    }
+    .kbf-user-ui .kbf-auth-main p{
+        margin:0;
+        color:#4f5a6b;
+        font-size:13.5px;
+    }
+    .kbf-user-ui .kbf-auth-actions{
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        margin-top:8px;
+    }
+    .kbf-user-ui .kbf-auth-actions .kbf-btn{
+        width:100%;
+        justify-content:center;
+        min-height:44px;
+        border-radius:12px;
+    }
+    .kbf-user-ui .kbf-auth-side{
+        padding:32px;
+    }
+    .kbf-user-ui .kbf-auth-quote{
+        margin-top:2px;
+        margin-bottom:2px;
+    }
+    .kbf-user-ui .kbf-auth-sub{
+        margin-top:2px;
+    }
+    @media (max-width: 900px){
+        .kbf-user-ui .kbf-auth-grid{
+            grid-template-columns:1fr;
+        }
+        .kbf-user-ui .kbf-auth-side{
+            min-height:180px;
+        }
     }
     .kbf-user-ui .kbf-modal input,
     .kbf-user-ui .kbf-modal select,

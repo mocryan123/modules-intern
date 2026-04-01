@@ -13,6 +13,7 @@ require_once(BNTM_KBF_PATH . 'admin/tabs/reports.php');
 require_once(BNTM_KBF_PATH . 'admin/tabs/appeals.php');
 require_once(BNTM_KBF_PATH . 'admin/tabs/accounts.php');
 require_once(BNTM_KBF_PATH . 'admin/tabs/settings.php');
+require_once(BNTM_KBF_PATH . 'admin/tabs/security_logs.php');
 require_once(BNTM_KBF_PATH . 'admin/ui.php');
 require_once(BNTM_KBF_PATH . 'includes/ajax-admin.php');
 

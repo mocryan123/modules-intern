@@ -1,32 +1,47 @@
 ﻿<?php
 /* User dashboard shortcode */
 function bntm_shortcode_kbf_dashboard() {
-    if (!is_user_logged_in()) {
-        return '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-warning">Please log in to access your dashboard.</div></div>';
-    }
     kbf_global_assets();
-    $user        = wp_get_current_user();
+    $is_logged_in = is_user_logged_in();
+    $user         = $is_logged_in ? wp_get_current_user() : null;
     global $wpdb;
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
-    $nav_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url,is_verified FROM {$pt} WHERE business_id=%d", $user->ID));
-    $payout_profile = $wpdb->get_row($wpdb->prepare("SELECT payout_type, payout_name, payout_number FROM {$pt} WHERE business_id=%d", $user->ID));
+    $nav_profile = $is_logged_in
+        ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,is_verified FROM {$pt} WHERE business_id=%d", $user->ID))
+        : null;
+    $payout_profile = $is_logged_in
+        ? $wpdb->get_row($wpdb->prepare("SELECT payout_type, payout_name, payout_number FROM {$pt} WHERE business_id=%d", $user->ID))
+        : null;
     $payout_type = $payout_profile->payout_type ?? '';
     $payout_name = $payout_profile->payout_name ?? '';
     $payout_number = $payout_profile->payout_number ?? '';
-    $business_id = $user->ID;
-    $tab         = isset($_GET['kbf_tab']) ? sanitize_text_field($_GET['kbf_tab']) : 'overview';
-    if (!isset($_GET['kbf_tab'])) {
-        $current_url = '';
-        if (isset($_SERVER['REQUEST_URI'])) {
-            $current_url = home_url($_SERVER['REQUEST_URI']);
+    $business_id = $is_logged_in ? $user->ID : 0;
+    $tab         = isset($_GET['kbf_tab']) ? sanitize_text_field($_GET['kbf_tab']) : '';
+    $blocked_tab = '';
+
+    if (!$is_logged_in) {
+        $public_tabs = ['find_funds','fund_details','organizer_profile'];
+        if (!$tab) {
+            $tab = 'find_funds';
         }
-        if (!$current_url) {
-            $current_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        if (!in_array($tab, $public_tabs, true)) {
+            $blocked_tab = $tab;
+            $tab = 'find_funds';
         }
-        $current_url = remove_query_arg('kbf_tab', $current_url);
-        $target = add_query_arg('kbf_tab', 'overview', $current_url);
-        wp_safe_redirect($target);
-        exit;
+    } else {
+        if (!$tab) {
+            $current_url = '';
+            if (isset($_SERVER['REQUEST_URI'])) {
+                $current_url = home_url($_SERVER['REQUEST_URI']);
+            }
+            if (!$current_url) {
+                $current_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            }
+            $current_url = remove_query_arg('kbf_tab', $current_url);
+            $target = add_query_arg('kbf_tab', 'overview', $current_url);
+            wp_safe_redirect($target);
+            exit;
+        }
     }
     $nonce_create = wp_create_nonce('kbf_create_fund');
     $nonce_edit   = wp_create_nonce('kbf_update_fund');
@@ -37,7 +52,7 @@ function bntm_shortcode_kbf_dashboard() {
     $nonce_escrow = wp_create_nonce('kbf_request_escrow');
     $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
 
-    if ($payment_state === 'success') {
+    if ($is_logged_in && $payment_state === 'success') {
         $find_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
         ob_start();
     ?>
@@ -66,6 +81,24 @@ function bntm_shortcode_kbf_dashboard() {
     </div><!-- .kbf-user-ui -->
 
     <?php include __DIR__ . '/dashboard/scripts.php'; ?>
+    <?php if (!$is_logged_in && $blocked_tab): ?>
+      <?php
+        $blocked_labels = [
+          'overview' => 'Home',
+          'sponsorships' => 'Supporters',
+          'withdrawals' => 'Cashout',
+          'profile' => 'Profile',
+        ];
+        $blocked_label = $blocked_labels[$blocked_tab] ?? 'this section';
+      ?>
+      <script>
+        window.addEventListener('load', function(){
+          if (window.kbfOpenAuthModal) {
+            window.kbfOpenAuthModal('Sign in to access <?php echo esc_js($blocked_label); ?>.');
+          }
+        });
+      </script>
+    <?php endif; ?>
 
     <?php
     $content = ob_get_clean();
