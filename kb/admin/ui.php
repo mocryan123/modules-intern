@@ -128,6 +128,16 @@ function bntm_shortcode_kbf_admin() {
     var kbfAdminAutoRefresh = <?php echo $tab === 'settings' ? 'false' : 'true'; ?>;
     var kbfAdminRefreshInterval = 25000;
     var kbfAdminRefreshTimer = null;
+    function kbfAdminStartRefresh(){
+        if (!kbfAdminAutoRefresh) return;
+        if (kbfAdminRefreshTimer) clearInterval(kbfAdminRefreshTimer);
+        kbfAdminRefreshTimer = setInterval(kbfAdminRefreshTab, kbfAdminRefreshInterval);
+    }
+    function kbfAdminStopRefresh(){
+        if (!kbfAdminRefreshTimer) return;
+        clearInterval(kbfAdminRefreshTimer);
+        kbfAdminRefreshTimer = null;
+    }
     var kbfRejectState = { id: null, btn: null };
     var kbfAdminRejectState = { context: '', params: null };
     var kbfAdminRejectTemplates = {
@@ -459,9 +469,14 @@ document.addEventListener('change', function(e){
         kbfAdmin('kbf_admin_trigger_onboarding',{business_id:id});
     };
     if (kbfAdminAutoRefresh) {
-        kbfAdminRefreshTimer = setInterval(kbfAdminRefreshTab, kbfAdminRefreshInterval);
+        kbfAdminStartRefresh();
         document.addEventListener('visibilitychange', function(){
-            if (!document.hidden) kbfAdminRefreshTab();
+            if (document.hidden) {
+                kbfAdminStopRefresh();
+                return;
+            }
+            kbfAdminStartRefresh();
+            kbfAdminRefreshTab();
         });
     }
     </script>

@@ -1437,6 +1437,7 @@
 
         var refreshInterval = 25000;
         var refreshing = false;
+        var refreshTimer = null;
 
         function runInlineScripts(container){
           if (!container) return;
@@ -1474,9 +1475,23 @@
             .finally(function(){ refreshing = false; });
         }
 
-        setInterval(kbfUserRefreshTab, refreshInterval);
+        function startRefresh(){
+          if (refreshTimer) clearInterval(refreshTimer);
+          refreshTimer = setInterval(kbfUserRefreshTab, refreshInterval);
+        }
+        function stopRefresh(){
+          if (!refreshTimer) return;
+          clearInterval(refreshTimer);
+          refreshTimer = null;
+        }
+        startRefresh();
         document.addEventListener('visibilitychange', function(){
-          if (!document.hidden) kbfUserRefreshTab();
+          if (document.hidden) {
+            stopRefresh();
+            return;
+          }
+          startRefresh();
+          kbfUserRefreshTab();
         });
       })();
     </script>
