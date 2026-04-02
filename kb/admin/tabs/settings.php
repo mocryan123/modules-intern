@@ -50,11 +50,6 @@ function kbf_admin_settings_tab() {
           visibility:hidden;
           pointer-events:none;
         }
-        html.kbf-preload-lock,
-        body.kbf-preload-lock{
-          overflow:hidden !important;
-          height:100%;
-        }
         .kbf-admin-preload-mark{
           width:54px;
           height:54px;
@@ -73,6 +68,13 @@ function kbf_admin_settings_tab() {
         .kbf-admin-preload-mark img{
           width:26px;height:26px;object-fit:contain;display:block;
           filter:brightness(0) invert(1);
+        }
+        @keyframes kbfpreloadjump{
+          0%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
+          25%{transform:translateY(-14px) rotate(-8deg) scale(1.01); box-shadow:0 16px 28px rgba(61,142,240,.3);}
+          50%{transform:translateY(2px) rotate(6deg) scale(.99); box-shadow:0 6px 14px rgba(61,142,240,.18);}
+          75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
+          100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
         }
       </style>
 
@@ -240,8 +242,6 @@ function kbf_admin_settings_tab() {
     window.kbfTriggerAdminPreload = function(){
         if (document.getElementById('kbf-admin-preload')) return;
         var root = document.documentElement;
-        if (root) root.classList.add('kbf-preload-lock');
-        if (document.body) document.body.classList.add('kbf-preload-lock');
         var pre = document.createElement('div');
         pre.id = 'kbf-admin-preload';
         pre.className = 'kbf-admin-preload';
@@ -258,8 +258,6 @@ function kbf_admin_settings_tab() {
                 if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
             }, 300);
         }
-        if (root) root.classList.remove('kbf-preload-lock');
-        if (document.body) document.body.classList.remove('kbf-preload-lock');
     };
     window.kbfSaveMayaKeys = function(type) {
         const nonce = '<?php echo $nonce; ?>';

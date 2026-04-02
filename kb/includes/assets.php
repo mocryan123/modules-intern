@@ -858,7 +858,7 @@ function kbf_global_assets() {
     .kbf-form-group textarea:focus { outline: none; border-color: var(--kbf-navy-light); box-shadow: none; }
     .kbf-form-group small { display: block; color: var(--kbf-slate); font-size: 11.5px; margin-top: 4px; }
     .kbf-checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--kbf-text-sm); }
-    .kbf-checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--kbf-navy); }
+    .kbf-checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--kbf-blue); cursor: pointer; }
 
     /* Modals */
     .kbf-modal-overlay { position: fixed; inset: 0; background: rgba(10,16,32,.58); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(6px); }
