@@ -114,8 +114,8 @@ function kbf_dashboard_find_funds_tab() {
         border-radius:999px;
         font-size:10px;
         font-weight:700;
-        text-transform:uppercase;
-        letter-spacing:.4px;
+        text-transform:none;
+        letter-spacing:0;
         border:1px solid rgba(15,23,42,.25);
         backdrop-filter:blur(2px);
         text-shadow:0 1px 2px rgba(15,23,42,.35);
@@ -531,7 +531,7 @@ function kbf_dashboard_find_funds_tab() {
             <?php endif; ?>
           </div>
           <!-- Overlays -->
-          <div class="kbf-explore-chip"><?php echo esc_html($f->category); ?></div>
+            <div class="kbf-explore-chip"><?php echo esc_html(ucwords(strtolower((string)$f->category))); ?></div>
         </a>
 
         <!-- Card body -->

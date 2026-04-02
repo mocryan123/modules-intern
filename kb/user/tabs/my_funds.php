@@ -7,6 +7,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
     global $wpdb;
     $ft = $wpdb->prefix.'kbf_funds';
     $st = $wpdb->prefix.'kbf_sponsorships';
+    $wt = $wpdb->prefix.'kbf_withdrawals';
     $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
 
     ob_start();
@@ -39,6 +40,8 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
         $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
         $photo_list = $f->photos ? json_decode($f->photos, true) : [];
         $photo_json = wp_json_encode(array_values(array_filter(is_array($photo_list) ? $photo_list : [])));
+        $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1", $f->id));
+        $wd_block = $last_wd && $last_wd->status === 'pending';
         ?>
         <div class="kbf-card">
           <?php if($f->status === 'pending'): ?>
@@ -85,10 +88,17 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>')">Edit</button>
             <?php endif; ?>
             <?php if(in_array($f->status,['active','completed']) && $f->raised_amount>0): ?>
+              <?php if($wd_block): ?>
+              <button class="kbf-btn kbf-btn-primary kbf-btn-sm" disabled aria-disabled="true" title="Withdrawal pending">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Request Withdrawal
+              </button>
+              <?php else: ?>
               <button class="kbf-btn kbf-btn-primary kbf-btn-sm" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 Request Withdrawal
               </button>
+              <?php endif; ?>
             <?php endif; ?>
             <?php if($f->status==='active' && $f->raised_amount>=$f->goal_amount): ?>
               <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfMarkComplete(<?php echo $f->id; ?>)">Mark Complete</button>

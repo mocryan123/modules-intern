@@ -956,11 +956,6 @@
         50%{transform:translateY(-6px);}
     }
     html.kbf-modal-lock, body.kbf-modal-lock { overflow: hidden; }
+    .kbf-user-ui .kbf-modal-body p{font-weight:400;}
     </style>
-
-
-
-
-
-.kbf-user-ui .kbf-modal-body p{font-weight:400;}
 

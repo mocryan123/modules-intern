@@ -605,10 +605,10 @@ function bntm_shortcode_kbf_fund_details() {
         <!-- Title + Meta -->
         <div class="kbf-section-title" style="margin-bottom:20px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="kbf-category-pill">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="11" height="11" style="filter:invert(34%) sepia(8%) saturate(1386%) hue-rotate(182deg) brightness(93%) contrast(85%);">
-              <?php echo esc_html($fund->category); ?>
-            </span>
+              <span class="kbf-category-pill">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="11" height="11" style="filter:invert(34%) sepia(8%) saturate(1386%) hue-rotate(182deg) brightness(93%) contrast(85%);">
+                <?php echo esc_html(strtolower((string)$fund->category)); ?>
+              </span>
             <span class="kbf-badge kbf-badge-<?php echo $fund->status; ?>"><?php echo ucfirst($fund->status); ?></span>
           </div>
           <h1 style="font-size:24px;font-weight:600;color:var(--kbf-navy);margin:0 0 10px;line-height:1.3;"><?php echo esc_html($fund->title); ?></h1>

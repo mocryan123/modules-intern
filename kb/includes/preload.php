@@ -28,11 +28,6 @@ if (!function_exists('kbf_render_preload_screen')) {
               font-family:"Poppins", system-ui, -apple-system, sans-serif;
               color:#0f172a;
             }
-            html.kbf-preload-lock,
-            body.kbf-preload-lock{
-              overflow:hidden !important;
-              height:100%;
-            }
             .kbf-preload.kbf-preload-hide{
               opacity:0;
               visibility:hidden;
@@ -74,11 +69,6 @@ if (!function_exists('kbf_render_preload_screen')) {
           </div>
         </div>
         <script>
-        (function(){
-          var root = document.documentElement;
-          if (root) root.classList.add('kbf-preload-lock');
-          if (document.body) document.body.classList.add('kbf-preload-lock');
-        })();
         window.addEventListener('load', function(){
           var pre = document.getElementById('kbf-preload');
           if (!pre) return;
@@ -90,8 +80,6 @@ if (!function_exists('kbf_render_preload_screen')) {
           setTimeout(function(){
             pre.classList.add('kbf-preload-hide');
             setTimeout(function(){
-              document.documentElement.classList.remove('kbf-preload-lock');
-              if (document.body) document.body.classList.remove('kbf-preload-lock');
               if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
             }, 400);
           }, wait);

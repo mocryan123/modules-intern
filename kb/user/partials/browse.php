@@ -116,7 +116,7 @@ function bntm_shortcode_kbf_browse() {
     .kbf-fund-photo{width:100%;height:190px;object-fit:cover;background:linear-gradient(135deg,var(--kbf-navy),var(--kbf-navy-light));display:flex;align-items:center;justify-content:center;position:relative;}
     .kbf-fund-photo-placeholder{width:100%;height:190px;background:linear-gradient(135deg,#0f2044 0%,#243b78 100%);display:flex;align-items:center;justify-content:center;position:relative;}
     .kbf-fund-photo img{width:100%;height:190px;object-fit:cover;display:block;}
-    .kbf-fund-cat-badge{position:absolute;top:12px;left:12px;background:rgba(15,32,68,.85);backdrop-filter:blur(4px);color:var(--kbf-accent);padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+    .kbf-fund-cat-badge{position:absolute;top:12px;left:12px;background:rgba(15,32,68,.85);backdrop-filter:blur(4px);color:var(--kbf-accent);padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:700;text-transform:none;letter-spacing:0;}
     .kbf-fund-days-badge{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:800;}
     .kbf-filter-bar{background:#fff;border:1px solid var(--kbf-border);border-radius:var(--kbf-radius);padding:16px 18px;margin-bottom:18px;}
     .kbf-sort-pills{display:flex;gap:6px;flex-wrap:wrap;}
@@ -632,13 +632,13 @@ function bntm_shortcode_kbf_browse() {
           <?php if($cover): ?>
           <div class="kbf-fund-photo" style="position:relative;">
             <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($f->title); ?>" style="width:100%;height:190px;object-fit:cover;display:block;">
-            <div class="kbf-fund-cat-badge"><?php echo esc_html($f->category); ?></div>
+            <div class="kbf-fund-cat-badge"><?php echo esc_html(strtolower((string)$f->category)); ?></div>
             <?php if($days!==null): ?><div class="kbf-fund-days-badge" style="background:<?php echo $days_bg; ?>;color:<?php echo $days_color; ?>;backdrop-filter:blur(4px);"><?php echo $days; ?>d left</div><?php endif; ?>
           </div>
           <?php else: ?>
           <div class="kbf-fund-photo-placeholder" style="position:relative;">
             <svg width="48" height="48" fill="none" stroke="rgba(255,255,255,.2)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-            <div class="kbf-fund-cat-badge"><?php echo esc_html($f->category); ?></div>
+            <div class="kbf-fund-cat-badge"><?php echo esc_html(strtolower((string)$f->category)); ?></div>
             <?php if($days!==null): ?><div class="kbf-fund-days-badge" style="background:<?php echo $days_bg; ?>;color:<?php echo $days_color; ?>;"><?php echo $days; ?>d left</div><?php endif; ?>
           </div>
           <?php endif; ?>

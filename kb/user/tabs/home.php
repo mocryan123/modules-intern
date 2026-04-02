@@ -342,9 +342,13 @@
           display:block;
         }
       </style>
-      <div class="kbf-section-header">
-        <h3 class="kbf-section-title">Dashboard Overview</h3>
-      </div>
+        <div class="kbf-section-header">
+         <h3 class="kbf-section-title">Dashboard Overview</h3>
+         <button class="kbf-btn kbf-btn-primary kbf-btn-sm" style="padding:0 14px;" onclick="kbfOpenModal('kbf-modal-create')">
+           <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus-lg.svg" alt="" width="12" height="12" style="filter:invert(100%);">
+           Create Fund
+         </button>
+        </div>
       <?php if($pending_funds > 0): ?>
       <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;">
         <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
@@ -354,7 +358,7 @@
         </span>
         <div>
           <strong><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</strong>
-          Not visible to sponsors yet. Usually 24–48 hours. You’ll be notified after approval.
+          Not visible to sponsors yet. Usually 3–5 days. You’ll be notified after approval.
           <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
         </div>
       </div>
@@ -446,7 +450,7 @@
             </span>
             <div>
               <strong>Withdrawal Pending:</strong>
-              <span>Your request is being reviewed by admin.</span>
+              <span>Your request is being reviewed by admin (2–5 business days).</span>
             </div>
           </div>
           <?php endif; ?>
@@ -502,7 +506,7 @@
                 <div class="kbf-meta-row">
                   <span class="kbf-meta-item">
                     <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="">
-                    <?php echo esc_html($f->category); ?>
+                      <?php echo esc_html(ucwords(strtolower((string)$f->category))); ?>
                   </span>
                   <span class="kbf-meta-divider"></span>
                   <span class="kbf-meta-item">
@@ -565,12 +569,19 @@
                   <span class="kbf-badge kbf-badge-cancelled">Escrow Request Rejected</span>
                 <?php endif; ?>
               <?php endif; ?>
-              <?php if(in_array($f->status,['active','completed']) && !$wd_block && $f->escrow_status==='released'): ?>
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-                Request Withdrawal
-              </button>
-              <?php endif; ?>
+                <?php if(in_array($f->status,['active','completed']) && $f->escrow_status==='released'): ?>
+                  <?php if($wd_block): ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    Request Withdrawal
+                  </button>
+                  <?php else: ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    Request Withdrawal
+                  </button>
+                  <?php endif; ?>
+                <?php endif; ?>
               <div class="kbf-card-more-wrap">
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">

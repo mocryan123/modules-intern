@@ -17,6 +17,10 @@ function kbf_dashboard_profile_tab($business_id) {
     $nonce = wp_create_nonce('kbf_organizer_profile');
     $nonce_verify = wp_create_nonce('kbf_verify_account');
     $is_verified = ($profile && !empty($profile->is_verified));
+    $stats_total_raised = $profile && isset($profile->total_raised) ? (float) $profile->total_raised : 0;
+    $stats_total_sponsors = $profile && isset($profile->total_sponsors) ? (int) $profile->total_sponsors : 0;
+    $stats_rating = $profile && isset($profile->rating) ? (float) $profile->rating : 0;
+    $stats_rating_count = $profile && isset($profile->rating_count) ? (int) $profile->rating_count : 0;
 
     ob_start();
     ?>
@@ -543,7 +547,6 @@ function kbf_dashboard_profile_tab($business_id) {
             <!-- Profile Stats -->
             <div class="kbf-card kbf-profile-card">
               <div class="kbf-profile-card-title">Profile Stats</div>
-              <?php if ($profile): ?>
               <div class="kbf-stats kbf-stats-grid">
                 <div class="kbf-stat kbf-stat-card">
                   <div class="kbf-stat-icon">
@@ -551,7 +554,7 @@ function kbf_dashboard_profile_tab($business_id) {
                   </div>
                   <div>
                     <div class="kbf-stat-label">TOTAL RAISED</div>
-                    <div class="kbf-stat-value">&#8369;<?php echo number_format($profile->total_raised, 0); ?></div>
+                    <div class="kbf-stat-value">&#8369;<?php echo number_format($stats_total_raised, 0); ?></div>
                   </div>
                 </div>
                 <div class="kbf-stat kbf-stat-card">
@@ -560,7 +563,7 @@ function kbf_dashboard_profile_tab($business_id) {
                   </div>
                   <div>
                     <div class="kbf-stat-label">TOTAL SPONSORS</div>
-                    <div class="kbf-stat-value"><?php echo number_format($profile->total_sponsors); ?></div>
+                    <div class="kbf-stat-value"><?php echo number_format($stats_total_sponsors); ?></div>
                   </div>
                 </div>
                 <div class="kbf-stat kbf-stat-card">
@@ -569,11 +572,10 @@ function kbf_dashboard_profile_tab($business_id) {
                   </div>
                   <div>
                     <div class="kbf-stat-label">CREDIBILITY</div>
-                    <div class="kbf-stat-value"><?php echo number_format($profile->rating, 1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</div>
+                    <div class="kbf-stat-value"><?php echo number_format($stats_rating, 1); ?>/5 (<?php echo $stats_rating_count; ?>)</div>
                   </div>
                 </div>
               </div>
-              <?php endif; ?>
             </div>
 
             <!-- Social Links -->
@@ -1094,13 +1096,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 const preview = document.querySelector('.kbf-profile-photo');
                 if (preview) preview.src = URL.createObjectURL(blob);
                 backdrop.style.display = 'none';
-                const form = document.getElementById('kbf-profile-form');
-                if (form) {
-                    const nonce = form.getAttribute('data-nonce');
-                    if (nonce && window.kbfSaveProfile) {
-                        window.kbfSaveProfile(nonce);
-                    }
-                }
+                // Do not auto-save on photo change; wait for "Save Changes"
             }, 'image/jpeg', 0.92);
         });
     })();
@@ -1183,12 +1179,10 @@ document.addEventListener('DOMContentLoaded', function(){
               .then(function(j){
                   document.getElementById('kbf-profile-msg').innerHTML =
                       '<div class="kbf-alert kbf-alert-' + (j.success ? 'success' : 'error') + '">' + j.data.message + '</div>';
-              if (j && j.success) {
-                  if (window.kbfTriggerPreload) {
-                      window.kbfTriggerPreload();
-                  }
-              }
-              })
+                if (j && j.success) {
+                    setTimeout(function(){ location.reload(); }, 400);
+                }
+                })
             .catch(function(err){
                 console.error('kbfSaveProfile: request failed', err);
                 document.getElementById('kbf-profile-msg').innerHTML =
@@ -1199,26 +1193,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 btn.textContent = 'Save Changes';
             });
       };
-      window.kbfTriggerPreload = function(){
-          if (document.getElementById('kbf-inline-preload')) return;
-          var root = document.documentElement;
-          if (root) root.classList.add('kbf-preload-lock');
-          if (document.body) document.body.classList.add('kbf-preload-lock');
-          var pre = document.createElement('div');
-          pre.id = 'kbf-inline-preload';
-          pre.className = 'kbf-inline-preload';
-          var logo = '<?php echo defined('BNTM_KBF_URL') ? esc_url(BNTM_KBF_URL . 'assets/branding/logo.png') : ''; ?>';
-          pre.innerHTML = '<div class="kbf-inline-preload-mark">' + (logo ? '<img src="'+logo+'" alt="">' : 'BS') + '</div>';
-          document.body.appendChild(pre);
-          setTimeout(function(){
-              pre.classList.add('kbf-preload-hide');
-              setTimeout(function(){
-                  if (root) root.classList.remove('kbf-preload-lock');
-                  if (document.body) document.body.classList.remove('kbf-preload-lock');
-                  if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
-              }, 400);
-          }, 1200);
-      };
+        // Preloader intentionally disabled on profile page.
       </script>
     <?php return ob_get_clean();
 }
