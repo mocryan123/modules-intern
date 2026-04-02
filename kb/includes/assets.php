@@ -1395,6 +1395,64 @@ function kbf_global_assets() {
         };
         document.addEventListener('DOMContentLoaded', window.kbfInitTableDescriptions);
     }
+    // Listen for payment success from Maya redirect window.
+    window.addEventListener('message', function(ev){
+        try {
+            if (!ev || !ev.data || ev.data.type !== 'kbf_payment_success') return;
+            var modal = document.getElementById('kbf-modal-sponsor');
+            if (modal) modal.style.display = 'none';
+            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
+            setTimeout(function(){ location.reload(); }, 600);
+        } catch(e){}
+    });
+    // Fallback: listen for localStorage flag from other tabs/windows.
+    window.addEventListener('storage', function(ev){
+        try {
+            if (!ev || ev.key !== 'kbf_payment_success' || !ev.newValue) return;
+            var modal = document.getElementById('kbf-modal-sponsor');
+            if (modal) modal.style.display = 'none';
+            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
+            setTimeout(function(){ location.reload(); }, 600);
+            // Clear flag after consumption
+            try { localStorage.removeItem('kbf_payment_success'); } catch(e){}
+        } catch(e){}
+    });
+    // One-time check in case storage event was missed.
+    (function(){
+        try {
+            var payload = localStorage.getItem('kbf_payment_success');
+            if (!payload) return;
+            var modal = document.getElementById('kbf-modal-sponsor');
+            if (modal) modal.style.display = 'none';
+            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
+            setTimeout(function(){ location.reload(); }, 600);
+            localStorage.removeItem('kbf_payment_success');
+        } catch(e){}
+    })();
+    // Polling helper (used when storage events are blocked or missed).
+    window.kbfAwaitPaymentSuccess = function(timeoutMs){
+        var endAt = Date.now() + (timeoutMs || 180000);
+        if (window.__kbfPaymentPoll) return;
+        window.__kbfPaymentPoll = setInterval(function(){
+            try {
+                var payload = localStorage.getItem('kbf_payment_success');
+                if (payload) {
+                    var modal = document.getElementById('kbf-modal-sponsor');
+                    if (modal) modal.style.display = 'none';
+                    if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
+                    localStorage.removeItem('kbf_payment_success');
+                    clearInterval(window.__kbfPaymentPoll);
+                    window.__kbfPaymentPoll = null;
+                    setTimeout(function(){ location.reload(); }, 600);
+                    return;
+                }
+            } catch(e){}
+            if (Date.now() > endAt) {
+                clearInterval(window.__kbfPaymentPoll);
+                window.__kbfPaymentPoll = null;
+            }
+        }, 1000);
+    };
     </script>
 
     <!-- Global Share Modal -->

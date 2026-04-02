@@ -1216,11 +1216,12 @@ function bntm_shortcode_kbf_fund_details() {
                 btn.innerHTML='Redirecting to payment...';
                 var w = window.open(j.data.checkout_url, '_blank', 'noopener');
                 if (w) { try { w.opener = null; } catch(e) {} }
+                if (window.kbfAwaitPaymentSuccess) window.kbfAwaitPaymentSuccess();
             } else {
-                    msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
-                    kbfSetBtnLoading(btn,false);
-                    kbfSetSkeleton(msg,false);
-                }
+                msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
+                kbfSetBtnLoading(btn,false);
+                kbfSetSkeleton(msg,false);
+            }
             } else {
                 msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+j.data.message+'</div>';
                 kbfSetBtnLoading(btn,false);

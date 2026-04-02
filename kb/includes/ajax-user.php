@@ -41,6 +41,95 @@ if (!function_exists('kbf_rate_limit_ok')) {
     }
 }
 
+if (!function_exists('kbf_handle_image_upload')) {
+    function kbf_handle_image_upload($file, $args = []) {
+        $defaults = [
+            'max_bytes'    => 8 * 1024 * 1024,
+            'max_dim'      => 2500,
+            'quality'      => 78,
+            'allowed_exts' => ['jpg','jpeg','png','webp'],
+            'convert_webp' => true,
+        ];
+        $cfg = array_merge($defaults, is_array($args) ? $args : []);
+
+        if (empty($file) || empty($file['tmp_name'])) {
+            return ['error' => 'No image uploaded.'];
+        }
+        if (!empty($file['error']) && $file['error'] !== UPLOAD_ERR_OK) {
+            return ['error' => 'Upload failed. Please try again.'];
+        }
+        if (!empty($file['size']) && $file['size'] > $cfg['max_bytes']) {
+            return ['error' => 'Image too large. Max size is 8MB.'];
+        }
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $cfg['allowed_exts'], true)) {
+            return ['error' => 'Please upload a JPG, PNG, or WebP image.'];
+        }
+
+        $allowed_mimes = [
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png'  => 'image/png',
+            'webp' => 'image/webp',
+        ];
+        $check = wp_check_filetype_and_ext($file['tmp_name'], $file['name'], $allowed_mimes);
+        if (empty($check['ext']) || empty($check['type'])) {
+            return ['error' => 'Invalid image file.'];
+        }
+
+        if (!function_exists('wp_handle_upload')) {
+            require_once(ABSPATH.'wp-admin/includes/file.php');
+        }
+        $upload = wp_handle_upload($file, ['test_form' => false, 'mimes' => $allowed_mimes]);
+        if (!empty($upload['error'])) {
+            return ['error' => $upload['error']];
+        }
+
+        $path = $upload['file'];
+        $url  = $upload['url'];
+        $type = $upload['type'];
+
+        $editor = wp_get_image_editor($path);
+        if (!is_wp_error($editor)) {
+            $size = $editor->get_size();
+            if (!empty($size['width']) && !empty($size['height'])) {
+                $max_dim = (int) $cfg['max_dim'];
+                $largest = max($size['width'], $size['height']);
+                if ($largest > $max_dim) {
+                    $editor->resize($max_dim, $max_dim, false);
+                }
+            }
+            $editor->set_quality((int) $cfg['quality']);
+            $saved = $editor->save();
+            if (!is_wp_error($saved) && !empty($saved['path']) && !empty($saved['url'])) {
+                $path = $saved['path'];
+                $url  = $saved['url'];
+                $type = $saved['mime-type'];
+            }
+
+            if (!empty($cfg['convert_webp']) && method_exists($editor, 'supports_mime_type') && $editor->supports_mime_type('image/webp')) {
+                $editor->set_quality((int) $cfg['quality']);
+                $webp = $editor->save(null, 'image/webp');
+                if (!is_wp_error($webp) && !empty($webp['path']) && !empty($webp['url'])) {
+                    if ($webp['path'] !== $path && file_exists($path)) {
+                        @unlink($path);
+                    }
+                    $path = $webp['path'];
+                    $url  = $webp['url'];
+                    $type = $webp['mime-type'];
+                }
+            }
+        }
+
+        return [
+            'file' => $path,
+            'url'  => $url,
+            'type' => $type,
+        ];
+    }
+}
+
 function bntm_ajax_kbf_create_fund() {
     check_ajax_referer('kbf_create_fund','nonce');
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
@@ -62,11 +151,11 @@ function bntm_ajax_kbf_create_fund() {
     // Handle photos
     $photo_urls=[];
     if(!empty($_FILES['photos']['name'][0])) {
-        if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');
         $count=min(5,count($_FILES['photos']['name']));
         for($i=0;$i<$count;$i++) {
             $file=['name'=>$_FILES['photos']['name'][$i],'type'=>$_FILES['photos']['type'][$i],'tmp_name'=>$_FILES['photos']['tmp_name'][$i],'error'=>$_FILES['photos']['error'][$i],'size'=>$_FILES['photos']['size'][$i]];
-            $up=wp_handle_upload($file,['test_form'=>false]);
+            $up = kbf_handle_image_upload($file);
+            if(isset($up['error'])) wp_send_json_error(['message'=>$up['error']]);
             if(isset($up['url'])) $photo_urls[]=$up['url'];
         }
     }
@@ -117,13 +206,13 @@ function bntm_ajax_kbf_update_fund() {
     ];
     // New photos
     if(!empty($_FILES['photos']['name'][0])) {
-        if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');
         $existing=$fund->photos?json_decode($fund->photos,true):[];
         $count=min(5,count($_FILES['photos']['name']));
         for($i=0;$i<$count;$i++) {
             if(count($existing)>=5) break;
             $file=['name'=>$_FILES['photos']['name'][$i],'type'=>$_FILES['photos']['type'][$i],'tmp_name'=>$_FILES['photos']['tmp_name'][$i],'error'=>$_FILES['photos']['error'][$i],'size'=>$_FILES['photos']['size'][$i]];
-            $up=wp_handle_upload($file,['test_form'=>false]);
+            $up = kbf_handle_image_upload($file);
+            if(isset($up['error'])) wp_send_json_error(['message'=>$up['error']]);
             if(isset($up['url'])) $existing[]=$up['url'];
         }
         $data['photos']=json_encode($existing);
@@ -275,8 +364,8 @@ function bntm_ajax_kbf_save_organizer_profile() {
     global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';$biz=get_current_user_id();
     $avatar='';
     if(!empty($_FILES['avatar']['name'])) {
-        if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');
-        $up=wp_handle_upload($_FILES['avatar'],['test_form'=>false]);
+        $up = kbf_handle_image_upload($_FILES['avatar']);
+        if(isset($up['error'])) wp_send_json_error(['message'=>$up['error']]);
         if(isset($up['url'])) $avatar=$up['url'];
     }
     $socials=json_encode([
@@ -326,10 +415,9 @@ function bntm_ajax_kbf_request_verification() {
     if(empty($_FILES['verify_id_front']['name']) || empty($_FILES['verify_id_back']['name'])) {
         wp_send_json_error(['message'=>'Please upload both front and back of your ID.']);
     }
-    if(!function_exists('wp_handle_upload')) require_once(ABSPATH.'wp-admin/includes/file.php');
-    $front = wp_handle_upload($_FILES['verify_id_front'], ['test_form'=>false]);
+    $front = kbf_handle_image_upload($_FILES['verify_id_front']);
     if(isset($front['error'])) wp_send_json_error(['message'=>'Front ID upload failed: '.$front['error']]);
-    $back = wp_handle_upload($_FILES['verify_id_back'], ['test_form'=>false]);
+    $back = kbf_handle_image_upload($_FILES['verify_id_back']);
     if(isset($back['error'])) wp_send_json_error(['message'=>'Back ID upload failed: '.$back['error']]);
 
     global $wpdb; $pt = $wpdb->prefix.'kbf_organizer_profiles'; $biz = get_current_user_id();
@@ -445,14 +533,10 @@ function bntm_ajax_kbf_report_fund() {
     if(empty($reason)||empty($details)) wp_send_json_error(['message'=>'Please fill all required fields.']);
     $report_image = '';
     if (!empty($_FILES['report_image']['name'])) {
-        $file = $_FILES['report_image'];
-        $allowed = ['jpg','jpeg','png','webp'];
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, $allowed, true)) {
-            wp_send_json_error(['message'=>'Please upload a JPG, PNG, or WebP image.']);
+        $upload = kbf_handle_image_upload($_FILES['report_image']);
+        if (isset($upload['error'])) {
+            wp_send_json_error(['message'=>$upload['error']]);
         }
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        $upload = wp_handle_upload($file, ['test_form'=>false]);
         if (!empty($upload['url'])) {
             $report_image = esc_url_raw($upload['url']);
         } else {

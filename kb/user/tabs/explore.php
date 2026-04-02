@@ -872,23 +872,24 @@ function kbf_dashboard_find_funds_tab() {
             payment_method: fd.get('payment_method'),
             is_anonymous: fd.get('is_anonymous')
         });
-        kbfFetchJson(ajaxurl, fd, (j)=>{
-            console.log('KBF checkout response (explore):', j);
-            if(j.success){
+          kbfFetchJson(ajaxurl, fd, (j)=>{
+              console.log('KBF checkout response (explore):', j);
+              if(j.success){
                 if(j.data && j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';
                     var w = window.open(j.data.checkout_url, '_blank', 'noopener');
                     if (w) { try { w.opener = null; } catch(e) {} }
+                    if (window.kbfAwaitPaymentSuccess) window.kbfAwaitPaymentSuccess();
                 } else {
                     msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
                     kbfSetBtnLoading(btn,false);
                     kbfSetSkeleton(msg,false);
                 }
-            } else {
+              } else {
                 msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+j.data.message+'</div>';
                 kbfSetBtnLoading(btn,false);
                 kbfSetSkeleton(msg,false);
-            }
+              }
         }, (err)=>{
             console.error('KBF checkout error (explore):', err);
             msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';

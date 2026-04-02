@@ -1317,9 +1317,9 @@ function bntm_kbf_render_landing() {
               </div>
 
               <h1 class="kbf-hero-heading" style="font-weight: 600;">
-                Fundora: Community<br>
-                Fundraising Built<br>
-                for Bayanihan
+                Fundora: <br>
+                Start a fund, <br>
+                Change a Life.
               </h1>
 
               <p class="kbf-hero-desc">

@@ -54,6 +54,20 @@ function bntm_shortcode_kbf_dashboard() {
     $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
 
     if ($is_logged_in && $payment_state === 'success') {
+        $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
+        if ($demo_mode) {
+            $sid = isset($_GET['sid']) ? intval($_GET['sid']) : 0;
+            $ref = isset($_GET['ref']) ? sanitize_text_field($_GET['ref']) : '';
+            if ($sid > 0) {
+                kbf_mark_sponsorship_completed($sid);
+            } elseif ($ref !== '') {
+                $st = $wpdb->prefix . 'kbf_sponsorships';
+                $row = $wpdb->get_row($wpdb->prepare("SELECT id FROM {$st} WHERE rand_id=%s", $ref));
+                if ($row && isset($row->id)) {
+                    kbf_mark_sponsorship_completed((int)$row->id);
+                }
+            }
+        }
         $find_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
         ob_start();
     ?>
@@ -62,9 +76,27 @@ function bntm_shortcode_kbf_dashboard() {
           <div class="kbf-card" style="max-width:640px;margin:50px auto;padding:34px 30px;text-align:center;">
             <div style="font-size:26px;font-weight:800;color:var(--kbf-navy);margin-bottom:8px;">Thank You</div>
             <div style="font-size:14px;color:var(--kbf-slate);margin-bottom:22px;">Thank you for your donation or support.</div>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($find_url); ?>">Find Funds</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($find_url); ?>" onclick="window.close();return false;">Close Tab</a>
           </div>
         </div>
+        <script>
+          (function(){
+            try{
+              // Notify opener tab via localStorage (reliable across tabs)
+              try {
+                localStorage.setItem('kbf_payment_success', JSON.stringify({
+                  ts: Date.now(),
+                  sid: '<?php echo isset($_GET['sid']) ? esc_js($_GET['sid']) : ''; ?>',
+                  ref: '<?php echo isset($_GET['ref']) ? esc_js($_GET['ref']) : ''; ?>'
+                }));
+              } catch(e){}
+              if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({type:'kbf_payment_success', sid:'<?php echo isset($_GET['sid']) ? esc_js($_GET['sid']) : ''; ?>'}, '*');
+                setTimeout(function(){ window.close(); }, 400);
+              }
+            } catch(e){}
+          })();
+        </script>
         <?php
         return ob_get_clean();
     }

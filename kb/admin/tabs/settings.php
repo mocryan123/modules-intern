@@ -107,7 +107,7 @@ function kbf_admin_settings_tab() {
       <div class="kbf-card" style="margin-bottom:20px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
           <strong style="font-size:15px;color:var(--kbf-navy);">Maya API Keys</strong>
-          <a href="https://sandbox-manager.paymaya.com" target="_blank" style="font-size:12px;color:var(--kbf-blue);margin-left:auto;">Open Maya Business Manager</a>
+          <a href="https://developers.maya.ph/reference/sandbox-credentials-and-cards" target="_blank" style="font-size:12px;color:var(--kbf-blue);margin-left:auto;">Open Maya Business Manager</a>
         </div>
 
         <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--kbf-text-sm);line-height:1.7;">
@@ -121,7 +121,7 @@ function kbf_admin_settings_tab() {
             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-accent);margin-bottom:10px;">Sandbox (Testing)</div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Sandbox Public Key</label>
-              <input type="text" id="sb-pub" value="" placeholder="pk-sandbox-..." style="font-family:monospace;font-size:12px;">
+              <input type="text" id="sb-pub" value="<?php echo esc_attr($sb_pub); ?>" placeholder="pk-sandbox-..." style="font-family:monospace;font-size:12px;">
               <small style="color:var(--kbf-slate);">Leave blank to keep existing key.</small>
             </div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
@@ -136,7 +136,7 @@ function kbf_admin_settings_tab() {
             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-green);margin-bottom:10px;">Live (Production)</div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Live Public Key</label>
-              <input type="text" id="lv-pub" value="" placeholder="pk-live-..." style="font-family:monospace;font-size:12px;">
+              <input type="text" id="lv-pub" value="<?php echo esc_attr($lv_pub); ?>" placeholder="pk-live-..." style="font-family:monospace;font-size:12px;">
               <small style="color:var(--kbf-slate);">Leave blank to keep existing key.</small>
             </div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
@@ -164,16 +164,16 @@ function kbf_admin_settings_tab() {
             </small>
           </div>
 
-          <div style="margin-top:14px;">
+         <div style="margin-top:14px;">
             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:8px;">Webhook Secret (optional)</div>
-            <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
-              <div class="kbf-form-group" style="margin:0;">
-                <label style="font-size:12.5px;">Maya Webhook Secret</label>
-                <input type="password" id="wh-secret" value="" placeholder="webhook-secret-..." style="font-family:monospace;font-size:12px;">
-                <small style="color:var(--kbf-slate);">Stored: <?php echo $wh_secret ? 'Yes' : 'No'; ?></small>
-              </div>
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveWebhookSecret()">Save Secret</button>
+            
+            <label style="font-size:12.5px;display:block;margin-bottom:4px;">Maya Webhook Secret</label>
+            <div style="display:flex;flex-direction:row;align-items:center;gap:8px;">
+              <input type="password" id="wh-secret" value="" placeholder="webhook-secret-..." style="font-family:monospace;font-size:12px;">
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveWebhookSecret()" style="flex-shrink:0;white-space:nowrap;">Save Secret</button>
             </div>
+            <small style="color:var(--kbf-slate);display:block;margin-top:4px;">Stored: <?php echo $wh_secret ? 'Yes' : 'No'; ?></small>
+            
             <small style="color:var(--kbf-slate);display:block;margin-top:6px;">
               When set, Fundora verifies incoming webhook signatures before updating payments.
             </small>
@@ -181,6 +181,9 @@ function kbf_admin_settings_tab() {
         </div>
       </div>
 
+
+      <!--                 <input type="password" id="wh-secret" value="" placeholder="webhook-secret-..." style="font-family:monospace;font-size:12px;">
+ -->
       <div id="kbf-settings-msg" style="margin-top:12px;"></div>
     </div>
     <!-- ================== JS ================== -->
@@ -237,6 +240,14 @@ function kbf_admin_settings_tab() {
                ['kbf_maya_sandbox_secret', document.getElementById('sb-sec').value]]
             : [['kbf_maya_live_public', document.getElementById('lv-pub').value],
                ['kbf_maya_live_secret', document.getElementById('lv-sec').value]];
+        const toSave = pairs.filter(([key, val]) => !!val);
+        if (toSave.length === 0) {
+            if (msg) {
+                msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">Enter a key to save.</div>';
+                setTimeout(() => msg.innerHTML = '', 4000);
+            }
+            return;
+        }
         let done = 0;
         pairs.forEach(([key, val]) => {
             if (!val) return;
@@ -247,7 +258,14 @@ function kbf_admin_settings_tab() {
             fd.append('setting_val', val);
             fetch((window.ajaxurl || '<?php echo admin_url('admin-ajax.php'); ?>'), {method:'POST', body:fd})
             .then(r => r.json()).then(j => {
-                if (++done === pairs.length && msg) {
+                if (!j || !j.success) {
+                    if (msg) {
+                        msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">' + (j && j.data && j.data.message ? j.data.message : 'Failed to save key.') + '</div>';
+                        setTimeout(() => msg.innerHTML = '', 4000);
+                    }
+                    return;
+                }
+                if (++done === toSave.length && msg) {
                     msg.innerHTML = '<div class="kbf-alert kbf-alert-success kbf-alert-compact">' + (type==='sandbox'?'Sandbox':'Live') + ' keys saved successfully.</div>';
                     setTimeout(() => msg.innerHTML = '', 4000);
                 }

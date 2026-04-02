@@ -55,6 +55,56 @@ function kbf_maya_public_key() {
 }
 
 /**
+ * Mark a sponsorship as completed and update fund + organizer stats.
+ */
+function kbf_mark_sponsorship_completed($sponsorship_id, $payment_reference = '') {
+    global $wpdb;
+    $st = $wpdb->prefix . 'kbf_sponsorships';
+    $ft = $wpdb->prefix . 'kbf_funds';
+
+    $sponsorship = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$st} WHERE id=%d", $sponsorship_id));
+    if (!$sponsorship) return false;
+    if ($sponsorship->payment_status === 'completed') return true;
+
+    $wpdb->update($st, [
+        'payment_status'    => 'completed',
+        'payment_reference' => $payment_reference ?: $sponsorship->payment_reference,
+        'notified'          => 1,
+    ], ['id' => $sponsorship->id], ['%s','%s','%d'], ['%d']);
+
+    // Update fund raised_amount
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d", $sponsorship->fund_id));
+    if ($fund) {
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$ft} SET raised_amount=raised_amount+%f WHERE id=%d",
+            $sponsorship->amount, $fund->id
+        ));
+        // Auto-complete if goal reached
+        $updated = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount FROM {$ft} WHERE id=%d", $fund->id));
+        if ($updated && $updated->goal_amount > 0 && $updated->raised_amount >= $updated->goal_amount) {
+            $wpdb->update($ft, ['status' => 'completed', 'escrow_status' => 'released'],
+                ['id' => $fund->id], ['%s','%s'], ['%d']);
+            do_action('kbf_fund_goal_reached', $fund->id);
+        }
+        // Update organizer stats
+        $pt = $wpdb->prefix . 'kbf_organizer_profiles';
+        $total = $wpdb->get_var($wpdb->prepare(
+            "SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            $fund->business_id
+        ));
+        $cnt = (int)$wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            $fund->business_id
+        ));
+        $wpdb->update($pt, ['total_raised' => $total, 'total_sponsors' => $cnt],
+            ['business_id' => $fund->business_id], ['%f','%d'], ['%d']);
+    }
+
+    do_action('kbf_payment_confirmed', $sponsorship->id);
+    return true;
+}
+
+/**
  * Maya API base URL -- sandbox vs production.
  */
 function kbf_maya_base_url() {
@@ -250,6 +300,13 @@ function bntm_ajax_kbf_create_checkout() {
  */
 function kbf_maya_webhook_handler(WP_REST_Request $request) {
     global $wpdb;
+
+    if ((bool)kbf_get_setting('kbf_demo_mode', true)) {
+        return new WP_REST_Response([
+            'received' => true,
+            'note'     => 'Demo mode enabled. Webhook processing is disabled.'
+        ], 200);
+    }
 
     if (strtoupper($request->get_method()) === 'GET') {
         return new WP_REST_Response([
