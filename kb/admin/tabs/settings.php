@@ -5,6 +5,7 @@
 
 function kbf_admin_settings_tab() {
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
+    $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false);
     $sb_pub    = kbf_get_setting('kbf_maya_sandbox_public', '');
     $sb_sec    = kbf_get_setting('kbf_maya_sandbox_secret', '');
     $lv_pub    = kbf_get_setting('kbf_maya_live_public', '');
@@ -98,6 +99,34 @@ function kbf_admin_settings_tab() {
               </button>
             <?php else: ?>
               <button class="kbf-btn kbf-btn-accent" onclick="kbfSaveSetting('kbf_demo_mode','1','<?php echo $nonce; ?>', true)">Switch to Demo</button>
+            <?php endif; ?>
+          </div>
+        </div>
+      </div>
+
+      <!-- Platform Fee Toggle -->
+      <div class="kbf-card" style="margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <strong style="font-size:15px;color:var(--kbf-navy);">Platform Fee</strong>
+              <span class="kbf-badge <?php echo $fee_disabled?'kbf-badge-active':'kbf-badge-holding'; ?>">
+                <?php echo $fee_disabled?'DISABLED (0%)':'ENABLED (5%)'; ?>
+              </span>
+            </div>
+            <p style="margin:0 0 10px;font-size:13.5px;color:var(--kbf-text-sm);line-height:1.6;">
+              <strong>Enabled:</strong> Platform fee is shown in goal preview (5%).<br>
+              <strong>Disabled:</strong> Platform fee is 0% and hidden from goal preview.
+            </p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
+            <?php if($fee_disabled): ?>
+              <button class="kbf-btn kbf-btn-accent" onclick="kbfSaveSetting('kbf_disable_platform_fee','0','<?php echo $nonce; ?>', true)">Enable Fee</button>
+            <?php else: ?>
+              <button class="kbf-btn kbf-btn-success" onclick="kbfSaveSetting('kbf_disable_platform_fee','1','<?php echo $nonce; ?>', true)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Disable Fee
+              </button>
             <?php endif; ?>
           </div>
         </div>

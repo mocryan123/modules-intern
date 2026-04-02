@@ -1,4 +1,5 @@
-﻿    <!-- ===== MODAL: Create Fund ===== -->
+﻿<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
+    <!-- ===== MODAL: Create Fund ===== -->
     <div id="kbf-modal-create" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
         <div class="kbf-modal-header">
@@ -53,7 +54,9 @@
                 <div class="kbf-form-group">
                   <label>Goal Amount (PHP) *</label>
                   <input type="number" name="goal_amount" id="kbf-goal-amount" placeholder="0.00" min="100" step="0.01" required>
-                  <small class="kbf-text-sm" id="kbf-fee-note">Platform fee: 5% per transaction.</small>
+                  <small class="kbf-text-sm" id="kbf-fee-note">
+                    <?php echo $fee_disabled ? 'Platform fee: 0% (disabled).' : 'Platform fee: 5% per transaction.'; ?>
+                  </small>
                   <div class="kbf-meta" id="kbf-fee-preview" style="margin-top:6px;">
                     Platform cut: ₱0.00 &nbsp;•&nbsp; Net goal: ₱0.00
                   </div>
@@ -394,3 +397,6 @@
         </div>
       </div>
     </div>
+
+
+

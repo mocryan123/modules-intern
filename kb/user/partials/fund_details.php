@@ -123,7 +123,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-detail-wrap{max-width:1000px;margin:0 auto;}
     .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;}
    .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
-.kbf-detail-left{display:flex;flex-direction:column;padding-bottom:24px;justify-content:flex-end;min-height:0;}
+ .kbf-detail-left{display:flex;flex-direction:column;padding-bottom:24px;justify-content:flex-start;min-height:0;}
 .kbf-detail-right{display:flex;flex-direction:column;}
 .kbf-detail-sticky{display:flex;flex-direction:column;gap:14px;flex:1;padding-bottom:40px;box-sizing:border-box;}
     .kbf-detail-sticky > *{margin-top:0 !important;margin-bottom:0 !important;}
@@ -182,8 +182,8 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-save-btn.is-saved img{
       filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
     }
-.kbf-leaderboard-card{flex:1;display:flex;flex-direction:column;justify-content:flex-end;}
-    .kbf-leaderboard-body{flex:1;display:flex;flex-direction:column;}
+      .kbf-leaderboard-card{flex:1;display:flex;flex-direction:column;justify-content:flex-end;max-height:360px;}
+      .kbf-leaderboard-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto;padding-right:6px;}
     .kbf-leaderboard-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);}
     .kbf-leaderboard-title{display:flex;align-items:center;gap:10px;min-width:0;}
     .kbf-leaderboard-icon{width:28px;height:28px;border-radius:8px;background:#eef4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -225,6 +225,7 @@ function bntm_shortcode_kbf_fund_details() {
         border-radius:999px;
         z-index:2;
     }
+    .kbf-photo-main.is-lightbox-open .kbf-photo-count{display:none;}
     .kbf-photo-main img.is-sliding{transform:translateX(18px);}
     .kbf-photo-thumbs-wrap{
         display:flex;
@@ -484,9 +485,8 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
             <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
-            <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="16" height="16" style="flex-shrink:0;margin-top:1px;filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%);">
-              <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
+            <div class="kbf-alert kbf-alert-warning kbf-alert-block" style="margin-top:6px;">
+              <span><strong style="text-transform:uppercase;letter-spacing:.12em;background:rgba(146,64,14,.12);padding:2px 6px;border-radius:6px;">Demo Mode</strong> — Payments are simulated for testing.</span>
             </div>
             <?php endif; ?>
             <div id="kbf-spd-msg" style="margin-top:10px;"></div>
@@ -776,9 +776,8 @@ function bntm_shortcode_kbf_fund_details() {
 
           <?php if($fund->status==='active' && (!$is_owner || $demo_mode)): ?>
           <?php if($demo_mode): ?>
-          <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#92400e;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="14" height="14" style="filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%);">
-            <span><strong>Demo Mode</strong> -- no real payment processed</span>
+          <div class="kbf-alert kbf-alert-warning kbf-alert-block" style="margin-bottom:14px;">
+            <span><strong style="text-transform:uppercase;letter-spacing:.12em;background:rgba(146,64,14,.12);padding:2px 6px;border-radius:6px;">Demo Mode</strong> — Payments are simulated for testing.</span>
           </div>
           <?php endif; ?>
           <button class="kbf-btn kbf-btn-primary" style="width:100%;padding:13px;font-size:15px;font-weight:700;margin-bottom:10px;" onclick="document.getElementById('kbf-modal-sponsor').style.display='flex'">
@@ -1072,14 +1071,32 @@ function bntm_shortcode_kbf_fund_details() {
         if (mainNext) mainNext.addEventListener('click', function(e){ e.stopPropagation(); goNext(); });
 
         var autoTimer = null;
-        function startAutoRotate(){
-            if (autoTimer || sources.length < 2) return;
-            autoTimer = setInterval(function(){ goNext(); }, 5000);
-        }
-        function stopAutoRotate(){
+        var autoPaused = false;
+        function clearAutoTimer(){
             if (!autoTimer) return;
-            clearInterval(autoTimer);
+            clearTimeout(autoTimer);
             autoTimer = null;
+        }
+        function scheduleAuto(){
+            if (sources.length < 2 || autoPaused) return;
+            clearAutoTimer();
+            autoTimer = setTimeout(function(){
+                if (autoPaused) return;
+                goNext();
+                scheduleAuto();
+            }, 5000);
+        }
+        function pauseAuto(){
+            autoPaused = true;
+            clearAutoTimer();
+        }
+        function resumeAuto(){
+            autoPaused = false;
+            scheduleAuto();
+        }
+        function resetAuto(){
+            if (autoPaused) return;
+            scheduleAuto();
         }
 
         function openLightbox(){
@@ -1090,12 +1107,14 @@ function bntm_shortcode_kbf_fund_details() {
             lightImg.src = src;
             lightbox.classList.add('open');
             lightbox.setAttribute('aria-hidden','false');
-            stopAutoRotate();
+            if (mainWrap) mainWrap.classList.add('is-lightbox-open');
+            pauseAuto();
         }
         function closeLightbox(){
             lightbox.classList.remove('open');
             lightbox.setAttribute('aria-hidden','true');
-            startAutoRotate();
+            if (mainWrap) mainWrap.classList.remove('is-lightbox-open');
+            resumeAuto();
         }
         function goNext(){
             syncMainByIndex(currentIndex + 1);
@@ -1106,22 +1125,22 @@ function bntm_shortcode_kbf_fund_details() {
             lightImg.src = mainImg.getAttribute('src');
         }
         mainWrap.addEventListener('click', openLightbox);
-        mainWrap.addEventListener('mouseenter', stopAutoRotate);
-        mainWrap.addEventListener('mouseleave', startAutoRotate);
+        mainWrap.addEventListener('mouseenter', function(){ pauseAuto(); });
+        mainWrap.addEventListener('mouseleave', function(){ resumeAuto(); });
         if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
-        if (prevBtn) prevBtn.addEventListener('click', goPrev);
-        if (nextBtn) nextBtn.addEventListener('click', goNext);
+        if (prevBtn) prevBtn.addEventListener('click', function(){ goPrev(); resetAuto(); });
+        if (nextBtn) nextBtn.addEventListener('click', function(){ goNext(); resetAuto(); });
         lightbox.addEventListener('click', function(e){
             if (e.target === lightbox) closeLightbox();
         });
         document.addEventListener('keydown', function(e){
             if (e.key === 'Escape') closeLightbox();
             if (!lightbox.classList.contains('open')) return;
-            if (e.key === 'ArrowRight') goNext();
-            if (e.key === 'ArrowLeft') goPrev();
+            if (e.key === 'ArrowRight') { goNext(); }
+            if (e.key === 'ArrowLeft') { goPrev(); }
         });
 
-        startAutoRotate();
+        scheduleAuto();
         kbfSyncDetailPanels();
         window.addEventListener('resize', kbfSyncDetailPanels);
     });

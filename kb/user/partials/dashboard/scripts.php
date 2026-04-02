@@ -1066,7 +1066,7 @@
             var input = document.getElementById('kbf-goal-amount');
             var out = document.getElementById('kbf-fee-preview');
             if(!input || !out) return;
-            var rate = 0.05;
+              var rate = <?php echo (bool)kbf_get_setting('kbf_disable_platform_fee', false) ? '0' : '0.05'; ?>;
             function fmt(n){
                 return n.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
             }
