@@ -1,30 +1,45 @@
 ﻿<?php
 /* Fund details shortcode */
+if (!function_exists('kbf_fund_details_load_fund')) {
+    function kbf_fund_details_load_fund($wpdb, $ft, $current_user_id) {
+        if(!empty($_GET['fund'])) {
+            $f_token = sanitize_text_field($_GET['fund']);
+            return $wpdb->get_row($wpdb->prepare(
+                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.fund_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d)",
+                $f_token, $current_user_id
+            ));
+        }
+        if(!empty($_GET['fund_id'])) {
+            $fid = intval($_GET['fund_id']);
+            return $wpdb->get_row($wpdb->prepare(
+                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.id=%d AND (f.status IN ('active','completed') OR f.business_id=%d)",
+                $fid, $current_user_id
+            ));
+        }
+        if(!empty($_GET['kbf_share'])) {
+            $token = sanitize_text_field($_GET['kbf_share']);
+            return $wpdb->get_row($wpdb->prepare(
+                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.share_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d)",
+                $token, $current_user_id
+            ));
+        }
+        return null;
+    }
+}
+
+if (!function_exists('kbf_fund_details_share_url')) {
+    function kbf_fund_details_share_url($fund_details_url, $fund) {
+        return add_query_arg('kbf_share', $fund->share_token, $fund_details_url);
+    }
+}
+
 function bntm_shortcode_kbf_fund_details() {
     kbf_global_assets();
     global $wpdb;
     $ft = $wpdb->prefix.'kbf_funds';
     $fund = null;
     $current_user_id = get_current_user_id();
-    if(!empty($_GET['fund'])) {
-        $f_token = sanitize_text_field($_GET['fund']);
-        $fund = $wpdb->get_row($wpdb->prepare(
-            "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.fund_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d)",
-            $f_token, $current_user_id
-        ));
-    } elseif(!empty($_GET['fund_id'])) {
-        $fid = intval($_GET['fund_id']);
-        $fund = $wpdb->get_row($wpdb->prepare(
-            "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.id=%d AND (f.status IN ('active','completed') OR f.business_id=%d)",
-            $fid, $current_user_id
-        ));
-    } elseif(!empty($_GET['kbf_share'])) {
-        $token = sanitize_text_field($_GET['kbf_share']);
-        $fund = $wpdb->get_row($wpdb->prepare(
-            "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.share_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d)",
-            $token, $current_user_id
-        ));
-    }
+    $fund = kbf_fund_details_load_fund($wpdb, $ft, $current_user_id);
     $is_owner = $fund && $current_user_id && $fund->business_id == $current_user_id;
     if(!$fund) return bntm_universal_container('Fund Details', '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Fund not found or no longer active.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
 
@@ -59,7 +74,7 @@ function bntm_shortcode_kbf_fund_details() {
         ? kbf_get_or_create_fund_token($fund->id)
         : '';
     $fund_details_url = kbf_get_page_url('fund_details');
-    $share_url = add_query_arg('kbf_share', $fund->share_token, $fund_details_url);
+    $share_url = kbf_fund_details_share_url($fund_details_url, $fund);
     $profile_url = $fund
         ? add_query_arg(
             [

@@ -211,10 +211,6 @@ function kbf_admin_settings_tab() {
           </div>
         </div>
       </div>
-
-
-      <!--                 <input type="password" id="wh-secret" value="" placeholder="webhook-secret-..." style="font-family:monospace;font-size:12px;">
- -->
       <div id="kbf-settings-msg" style="margin-top:12px;"></div>
     </div>
     <!-- ================== JS ================== -->

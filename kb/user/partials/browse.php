@@ -1,5 +1,26 @@
 ﻿<?php
 /* Public browse shortcode */
+if (!function_exists('kbf_browse_get_fund_token')) {
+    function kbf_browse_get_fund_token($fund_id) {
+        return function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($fund_id) : '';
+    }
+}
+
+if (!function_exists('kbf_browse_fund_detail_url')) {
+    function kbf_browse_fund_detail_url($fund_id, $fund_details_url) {
+        $token = kbf_browse_get_fund_token($fund_id);
+        return esc_url(add_query_arg('fund', $token ?: $fund_id, $fund_details_url));
+    }
+}
+
+if (!function_exists('kbf_browse_organizer_url')) {
+    function kbf_browse_organizer_url($business_id) {
+        $org_token = function_exists('kbf_get_or_create_organizer_token') ? kbf_get_or_create_organizer_token($business_id) : '';
+        $params = $org_token ? ['organizer'=>$org_token] : ['organizer_id'=>$business_id];
+        return esc_url(add_query_arg($params, kbf_get_page_url('organizer_profile')));
+    }
+}
+
 function bntm_shortcode_kbf_browse() {
     kbf_global_assets();
     global $wpdb;
@@ -621,8 +642,7 @@ function bntm_shortcode_kbf_browse() {
         $days  = $f->deadline ? max(0,ceil((strtotime($f->deadline)-time())/86400)) : null;
         $photos = $f->photos ? json_decode($f->photos,true) : [];
         $cover  = !empty($photos[0]) ? $photos[0] : null;
-        $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : '';
-        $detail_url = esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url));
+        $detail_url = kbf_browse_fund_detail_url($f->id, $fund_details_url);
         $days_color = $days!==null&&$days<7 ? '#fca5a5' : 'rgba(255,255,255,.85)';
         $days_bg    = $days!==null&&$days<7 ? 'rgba(220,38,38,.85)' : 'rgba(15,32,68,.7)';
       ?>
@@ -658,11 +678,8 @@ function bntm_shortcode_kbf_browse() {
               <?php echo esc_html($f->location); ?>
             </span>
             <button onclick="kbfViewOrganizer(<?php echo $f->business_id; ?>)" style="background:none;border:none;color:var(--kbf-blue);cursor:pointer;font-size:12px;padding:0;font-weight:600;">
-              <?php
-                $org_token = function_exists('kbf_get_or_create_organizer_token') ? kbf_get_or_create_organizer_token($f->business_id) : '';
-                $org_param = $org_token ? ['organizer'=>$org_token] : ['organizer_id'=>$f->business_id];
-              ?>
-              by <a href="<?php echo esc_url(add_query_arg($org_param, kbf_get_page_url('organizer_profile'))); ?>" style="color:inherit;text-decoration:none;font-weight:700;"><?php echo esc_html($f->organizer_name?:'Organizer'); ?></a>
+              <?php $org_url = kbf_browse_organizer_url($f->business_id); ?>
+              by <a href="<?php echo $org_url; ?>" style="color:inherit;text-decoration:none;font-weight:700;"><?php echo esc_html($f->organizer_name?:'Organizer'); ?></a>
             </button>
           </div>
 

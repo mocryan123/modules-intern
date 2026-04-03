@@ -6,11 +6,16 @@
 if (!defined('ABSPATH')) exit;
 
 // ================== PARTIALS ==================
-require_once __DIR__ . '/partials/dashboard.php';
-require_once __DIR__ . '/partials/admin_embed.php';
-require_once __DIR__ . '/partials/browse.php';
-require_once __DIR__ . '/partials/sponsor_history.php';
-require_once __DIR__ . '/partials/fund_details.php';
-require_once __DIR__ . '/partials/account_profile.php';
-require_once dirname(__DIR__) . '/includes/preload.php';
+$partials = [
+    __DIR__ . '/partials/dashboard.php',
+    __DIR__ . '/partials/admin_embed.php',
+    __DIR__ . '/partials/browse.php',
+    __DIR__ . '/partials/sponsor_history.php',
+    __DIR__ . '/partials/fund_details.php',
+    __DIR__ . '/partials/account_profile.php',
+    dirname(__DIR__) . '/includes/preload.php',
+];
+foreach ($partials as $partial) {
+    require_once $partial;
+}
 

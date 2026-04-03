@@ -1,5 +1,44 @@
 ﻿<?php
 /* Admin embed in user dashboard */
+if (!function_exists('kbf_admin_embed_tabs')) {
+    function kbf_admin_embed_tabs() {
+        return [
+            'pending'      => 'Pending Funds',
+            'all_funds'    => 'All Funds',
+            'transactions' => 'Transactions',
+            'withdrawals'  => 'Withdrawals',
+            'reports'      => 'Reports',
+            'appeals'      => 'Appeals',
+            'organizers'   => 'Organizers',
+            'settings'     => 'Settings',
+        ];
+    }
+}
+
+if (!function_exists('kbf_admin_embed_counts')) {
+    function kbf_admin_embed_counts($wpdb) {
+        $prefix = $wpdb->prefix;
+        $pending = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
+        $reports = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
+        $wd = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
+        return ['pending'=>$pending,'reports'=>$reports,'withdrawals'=>$wd];
+    }
+}
+
+if (!function_exists('kbf_admin_embed_render_tab')) {
+    function kbf_admin_embed_render_tab($adm_tab) {
+        if ($adm_tab === 'pending')      return kbf_admin_pending_tab();
+        if ($adm_tab === 'all_funds')    return kbf_admin_all_funds_tab();
+        if ($adm_tab === 'transactions') return kbf_admin_transactions_tab();
+        if ($adm_tab === 'withdrawals')  return kbf_admin_withdrawals_tab();
+        if ($adm_tab === 'reports')      return kbf_admin_reports_tab();
+        if ($adm_tab === 'appeals')      return kbf_admin_appeals_tab();
+        if ($adm_tab === 'organizers')   return kbf_admin_organizers_tab();
+        if ($adm_tab === 'settings')     return kbf_admin_settings_tab();
+        return '';
+    }
+}
+
 function kbf_dashboard_admin_embed() {
     if (!current_user_can('manage_options')) return '';
     // Reuse all admin tab functions directly -- they share the same JS
@@ -13,11 +52,8 @@ function kbf_dashboard_admin_embed() {
     ?>
 
     <?php
-    $pending_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
-    $reports_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
-    $wd_count      = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
-    $counts = ['pending'=>$pending_count,'reports'=>$reports_count,'withdrawals'=>$wd_count];
-    $adm_tabs = ['pending'=>'Pending Funds','all_funds'=>'All Funds','transactions'=>'Transactions','withdrawals'=>'Withdrawals','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Organizers','settings'=>'Settings'];
+    $counts = kbf_admin_embed_counts($wpdb);
+    $adm_tabs = kbf_admin_embed_tabs();
     ?>
 
     <!-- ================== HTML ================== -->
@@ -39,14 +75,7 @@ function kbf_dashboard_admin_embed() {
     </div>
     <div style="margin-top:24px;">
       <?php
-      if     ($adm_tab==='pending')      echo kbf_admin_pending_tab();
-      elseif ($adm_tab==='all_funds')    echo kbf_admin_all_funds_tab();
-      elseif ($adm_tab==='transactions') echo kbf_admin_transactions_tab();
-      elseif ($adm_tab==='withdrawals')  echo kbf_admin_withdrawals_tab();
-      elseif ($adm_tab==='reports')      echo kbf_admin_reports_tab();
-      elseif ($adm_tab==='appeals')      echo kbf_admin_appeals_tab();
-      elseif ($adm_tab==='organizers')   echo kbf_admin_organizers_tab();
-      elseif ($adm_tab==='settings')     echo kbf_admin_settings_tab();
+      echo kbf_admin_embed_render_tab($adm_tab);
       ?>
     </div>
 

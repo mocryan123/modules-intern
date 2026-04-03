@@ -32,102 +32,168 @@ if (!function_exists('bntm_kbf_landing_seo_meta')) {
     }
 }
 
+if (!function_exists('kbf_landing_get_urls')) {
+    function kbf_landing_get_urls() {
+        $site_url = home_url('/');
+        return [
+            'cta'   => function_exists('kbf_get_page_url') ? kbf_get_page_url('browse') : $site_url,
+            'login' => function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : '#',
+            'join'  => function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $site_url,
+            'page'  => function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : $site_url,
+            'site'  => $site_url,
+        ];
+    }
+}
+
+if (!function_exists('kbf_landing_get_faq_items')) {
+    function kbf_landing_get_faq_items() {
+        return [
+            [
+                'q' => 'How can I sponsor a fundraiser?',
+                'a' => 'Browse active campaigns, choose a cause, and sponsor using the available payment options.'
+            ],
+            [
+                'q' => 'Is my sponsorship tax‑deductible?',
+                'a' => 'Tax benefits depend on organizer accreditation and local regulations. Please check with the organizer first.'
+            ],
+            [
+                'q' => 'Can I sponsor in honor of someone?',
+                'a' => 'Yes. Organizers can add dedication notes in campaign updates and acknowledgments.'
+            ],
+            [
+                'q' => 'How will my sponsorship be used?',
+                'a' => 'Organizers share budgets and progress updates so sponsors can see how funds are allocated.'
+            ],
+            [
+                'q' => 'Can I set up recurring sponsorships?',
+                'a' => 'Recurring sponsorships are planned and will be available in a future update.'
+            ],
+            [
+                'q' => 'How do organizers receive the funds?',
+                'a' => 'Funds are released to organizers based on the platform’s payout schedule and verification steps.'
+            ],
+            [
+                'q' => 'What if a fundraiser looks suspicious?',
+                'a' => 'You can report the fundraiser and our team will review it promptly.'
+            ],
+        ];
+    }
+}
+
+if (!function_exists('kbf_landing_build_schema')) {
+    function kbf_landing_build_schema($site_name, $site_url, $logo_url, $faq_items) {
+        $faq_entities = array_map(function($item){
+            return [
+                '@type' => 'Question',
+                'name' => $item['q'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $item['a']
+                ]
+            ];
+        }, $faq_items);
+
+        return [
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'Organization',
+                    'name' => $site_name,
+                    'url' => $site_url,
+                    'logo' => $logo_url
+                ],
+                [
+                    '@type' => 'WebSite',
+                    'name' => $site_name,
+                    'url' => $site_url,
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => $site_url . '?s={search_term_string}',
+                        'query-input' => 'required name=search_term_string'
+                    ]
+                ],
+                [
+                    '@type' => 'FAQPage',
+                    'mainEntity' => $faq_entities
+                ]
+            ]
+        ];
+    }
+}
+
+if (!function_exists('kbf_landing_register_seo')) {
+    function kbf_landing_register_seo($seo) {
+        $GLOBALS['kbf_landing_seo'] = $seo;
+        if (!has_action('wp_head', 'bntm_kbf_landing_seo_meta')) {
+            add_action('wp_head', 'bntm_kbf_landing_seo_meta', 1);
+        }
+    }
+}
+
+if (!function_exists('kbf_landing_get_image_sets')) {
+    function kbf_landing_get_image_sets() {
+        return [
+            'urgent' => [
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Elderly_woman_gazing_at_art_%28Unsplash%29.jpg/1200px-Elderly_woman_gazing_at_art_%28Unsplash%29.jpg',
+                'https://upload.wikimedia.org/wikipedia/commons/1/1c/Womens_wheelchair_basketball_%28Unsplash%29.jpg',
+                'https://images.unsplash.com/photo-1642059893618-22daf30e92a2?auto=format&fit=crop&fm=jpg&q=80&w=1800',
+            ],
+            'bw' => [
+                'https://upload.wikimedia.org/wikipedia/commons/6/68/Filipino_family.jpg',
+                'https://upload.wikimedia.org/wikipedia/commons/b/b2/Filipino_family.JPG',
+                'https://upload.wikimedia.org/wikipedia/commons/1/1d/Filipino_family_Argao_cebu_1800%27s.jpg',
+                'https://upload.wikimedia.org/wikipedia/commons/a/a1/Battle_of_Leyte_Filipino_volunteers.jpg',
+            ],
+        ];
+    }
+}
+
+if (!function_exists('kbf_landing_render_faq')) {
+    function kbf_landing_render_faq($faq_items) {
+        foreach ($faq_items as $item) {
+            ?>
+            <details>
+              <summary><?php echo esc_html($item['q']); ?></summary>
+              <div class="kbf-faq-body"><div>
+                <p><?php echo esc_html($item['a']); ?></p>
+              </div></div>
+            </details>
+            <?php
+        }
+    }
+}
+
 function bntm_kbf_render_landing() {
-    $cta_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('browse') : home_url('/');
-    $login_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : '#';
-    $join_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $cta_url;
+    $urls = kbf_landing_get_urls();
+    $cta_url = $urls['cta'];
+    $login_url = $urls['login'];
+    $join_url = $urls['join'];
 
     $site_name = 'fundora';
-    $site_url  = home_url('/');
-    $page_url  = function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : $site_url;
+    $site_url  = $urls['site'];
+    $page_url  = $urls['page'];
     $logo_url  = esc_url(BNTM_KBF_URL . 'assets/branding/logo.png');
     $seo_title = 'Fundora: The Filipino Crowdfunding Platform Built on Bayanihan | Transparent, Trusted, Free';
     $seo_desc  = 'Fundora is a community-powered crowdfunding platform built for Filipinos with verified campaigns, transparent fund tracking, and zero platform fees during beta. Start or support a fundraiser today.';
-    $faq_schema = [
-        [
-            'question' => 'How can I sponsor a fundraiser?',
-            'answer' => 'Browse active campaigns, choose a cause, and sponsor using the available payment options.'
-        ],
-        [
-            'question' => 'Is my sponsorship tax-deductible?',
-            'answer' => 'Tax benefits depend on organizer accreditation and local regulations. Please check with the organizer first.'
-        ],
-        [
-            'question' => 'Can I sponsor in honor of someone?',
-            'answer' => 'Yes. Organizers can add dedication notes in campaign updates and acknowledgments.'
-        ],
-        [
-            'question' => 'How will my sponsorship be used?',
-            'answer' => 'Organizers share budgets and progress updates so sponsors can see how funds are allocated.'
-        ],
-        [
-            'question' => 'Can I set up recurring sponsorships?',
-            'answer' => 'Recurring sponsorships are planned and will be available in a future update.'
-        ],
-        [
-            'question' => 'How do organizers receive the funds?',
-            'answer' => 'Funds are released to organizers based on the platform’s payout schedule and verification steps.'
-        ],
-        [
-            'question' => 'What if a fundraiser looks suspicious?',
-            'answer' => 'You can report the fundraiser and our team will review it promptly.'
-        ],
-    ];
-    $faq_entities = array_map(function($item){
-        return [
-            '@type' => 'Question',
-            'name' => $item['question'],
-            'acceptedAnswer' => [
-                '@type' => 'Answer',
-                'text' => $item['answer']
-            ]
-        ];
-    }, $faq_schema);
-    $schema = [
-        '@context' => 'https://schema.org',
-        '@graph' => [
-            [
-                '@type' => 'Organization',
-                'name' => $site_name,
-                'url' => $site_url,
-                'logo' => $logo_url
-            ],
-            [
-                '@type' => 'WebSite',
-                'name' => $site_name,
-                'url' => $site_url,
-                'potentialAction' => [
-                    '@type' => 'SearchAction',
-                    'target' => $site_url . '?s={search_term_string}',
-                    'query-input' => 'required name=search_term_string'
-                ]
-            ],
-            [
-                '@type' => 'FAQPage',
-                'mainEntity' => $faq_entities
-            ]
-        ]
-    ];
-    $GLOBALS['kbf_landing_seo'] = [
+    $faq_items = kbf_landing_get_faq_items();
+    $schema = kbf_landing_build_schema($site_name, $site_url, $logo_url, $faq_items);
+    kbf_landing_register_seo([
         'title' => $seo_title,
         'desc' => $seo_desc,
         'url' => $page_url ?: $site_url,
         'site' => $site_name,
         'logo' => $logo_url,
         'schema' => $schema
-    ];
-    if (!has_action('wp_head', 'bntm_kbf_landing_seo_meta')) {
-        add_action('wp_head', 'bntm_kbf_landing_seo_meta', 1);
-    }
+    ]);
 
-    $urgent_1 = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Elderly_woman_gazing_at_art_%28Unsplash%29.jpg/1200px-Elderly_woman_gazing_at_art_%28Unsplash%29.jpg';
-    $urgent_2 = 'https://upload.wikimedia.org/wikipedia/commons/1/1c/Womens_wheelchair_basketball_%28Unsplash%29.jpg';
-    $urgent_3 = 'https://images.unsplash.com/photo-1642059893618-22daf30e92a2?auto=format&fit=crop&fm=jpg&q=80&w=1800';
-
-    $bw_1 = 'https://upload.wikimedia.org/wikipedia/commons/6/68/Filipino_family.jpg';
-    $bw_2 = 'https://upload.wikimedia.org/wikipedia/commons/b/b2/Filipino_family.JPG';
-    $bw_3 = 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Filipino_family_Argao_cebu_1800%27s.jpg';
-    $bw_4 = 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Battle_of_Leyte_Filipino_volunteers.jpg';
+    $images = kbf_landing_get_image_sets();
+    $urgent_1 = $images['urgent'][0];
+    $urgent_2 = $images['urgent'][1];
+    $urgent_3 = $images['urgent'][2];
+    $bw_1 = $images['bw'][0];
+    $bw_2 = $images['bw'][1];
+    $bw_3 = $images['bw'][2];
+    $bw_4 = $images['bw'][3];
 
     ob_start();
     ?>
@@ -1600,48 +1666,7 @@ function bntm_kbf_render_landing() {
         <div id="kbf-faq" class="kbf-section kbf-reveal delay-3">
           <h2 style="text-align: center; margin-bottom: 40px; font-size: 1.5em; font-weight: 400;">Questions people actually ask</h2>
           <div class="kbf-faq">
-            <details>
-              <summary>How can I sponsor a fundraiser?</summary>
-              <div class="kbf-faq-body"><div>
-                <p>Browse active campaigns, choose a cause, and sponsor using the available payment options.</p>
-              </div></div>
-            </details>
-            <details>
-              <summary>Is my sponsorship tax‑deductible?</summary>
-              <div class="kbf-faq-body"><div>
-                <p>Tax benefits depend on organizer accreditation and local regulations. Please check with the organizer first.</p>
-              </div></div>
-            </details>
-            <details>
-              <summary>Can I sponsor in honor of someone?</summary>
-              <div class="kbf-faq-body"><div>
-                <p>Yes. Organizers can add dedication notes in campaign updates and acknowledgments.</p>
-              </div></div>
-            </details>
-            <details>
-              <summary>How will my sponsorship be used?</summary>
-              <div class="kbf-faq-body"><div>
-                <p>Organizers share budgets and progress updates so sponsors can see how funds are allocated.</p>
-              </div></div>
-            </details>
-            <details>
-              <summary>Can I set up recurring sponsorships?</summary>
-              <div class="kbf-faq-body"><div>
-                <p>Recurring sponsorships are planned and will be available in a future update.</p>
-              </div></div>
-            </details>
-            <details>
-              <summary>How do organizers receive the funds?</summary>
-              <div class="kbf-faq-body"><div>
-                <p>Funds are released to organizers based on the platform’s payout schedule and verification steps.</p>
-              </div></div>
-            </details>
-            <details>
-              <summary>What if a fundraiser looks suspicious?</summary>
-              <div class="kbf-faq-body"><div>
-                <p>You can report the fundraiser and our team will review it promptly.</p>
-              </div></div>
-            </details>
+            <?php kbf_landing_render_faq($faq_items); ?>
           </div>
         </div>
 

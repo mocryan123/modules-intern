@@ -1,4 +1,13 @@
-﻿    <div id="kbf-loading-overlay">
+﻿    <?php
+      $landing_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : home_url('/');
+      $signin_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : home_url('/wp-login.php');
+      $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $signin_url;
+      $avatar_url = ($is_logged_in && $nav_profile && $nav_profile->avatar_url)
+        ? $nav_profile->avatar_url
+        : ($is_logged_in ? get_avatar_url($user->ID, ['size'=>64]) : '');
+      $logout_url = $is_logged_in ? wp_logout_url($landing_url) : '';
+    ?>
+    <div id="kbf-loading-overlay">
       <div class="kbf-loading-mark">
         <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora">
       </div>
@@ -48,13 +57,6 @@
           <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="">
         </button>
         <?php if($is_logged_in): ?>
-          <?php
-            $avatar_url = ($nav_profile && $nav_profile->avatar_url) ? $nav_profile->avatar_url : get_avatar_url($user->ID, ['size'=>64]);
-          ?>
-          <?php
-            $landing_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : home_url('/');
-            $logout_url = wp_logout_url($landing_url);
-          ?>
           <div class="kbf-user-menu" id="kbf-user-menu">
             <button class="kbf-dashboard-user" type="button" id="kbf-user-menu-btn" aria-haspopup="true" aria-expanded="false">
               <span class="kbf-dashboard-avatar-wrap">
@@ -71,10 +73,6 @@
             </div>
           </div>
         <?php else: ?>
-          <?php
-            $signin_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : home_url('/wp-login.php');
-            $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $signin_url;
-          ?>
           <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url($signin_url); ?>">Sign in</a>
           <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($signup_url); ?>">Create account</a>
         <?php endif; ?>

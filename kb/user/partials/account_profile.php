@@ -1,17 +1,51 @@
 ﻿<?php
 /* Organizer profile shortcode */
+if (!function_exists('kbf_account_profile_get_biz_id')) {
+    function kbf_account_profile_get_biz_id($wpdb) {
+        $biz_id = 0;
+        $org_token = !empty($_GET['organizer']) ? sanitize_text_field($_GET['organizer']) : '';
+        if ($org_token) {
+            $pt = $wpdb->prefix.'kbf_organizer_profiles';
+            $biz_id = (int)$wpdb->get_var($wpdb->prepare("SELECT business_id FROM {$pt} WHERE organizer_token=%s", $org_token));
+        }
+        if(!$biz_id && isset($_GET['organizer_id'])) {
+            $biz_id = intval($_GET['organizer_id']);
+        }
+        return $biz_id;
+    }
+}
+
+if (!function_exists('kbf_account_profile_get_back_link')) {
+    function kbf_account_profile_get_back_link($fund_details_url, $browse_url) {
+        $back_url = $browse_url;
+        $back_label = 'Back to Browse';
+        if (!empty($_GET['fund'])) {
+            $back_url = add_query_arg('fund', sanitize_text_field($_GET['fund']), $fund_details_url);
+            $back_label = 'Back to Fund Details';
+        } elseif (!empty($_GET['fund_id'])) {
+            $back_url = add_query_arg('fund_id', intval($_GET['fund_id']), $fund_details_url);
+            $back_label = 'Back to Fund Details';
+        } elseif (!empty($_GET['kbf_share'])) {
+            $back_url = add_query_arg('kbf_share', sanitize_text_field($_GET['kbf_share']), $fund_details_url);
+            $back_label = 'Back to Fund Details';
+        }
+        return [$back_url, $back_label];
+    }
+}
+
+if (!function_exists('kbf_account_profile_get_fund_tokens')) {
+    function kbf_account_profile_get_fund_tokens($fund_ids) {
+        if (!empty($fund_ids) && function_exists('kbf_get_fund_tokens')) {
+            return kbf_get_fund_tokens($fund_ids);
+        }
+        return [];
+    }
+}
+
 function bntm_shortcode_kbf_organizer_profile() {
     kbf_global_assets();
     global $wpdb;
-    $biz_id = 0;
-    $org_token = !empty($_GET['organizer']) ? sanitize_text_field($_GET['organizer']) : '';
-    if ($org_token) {
-        $pt = $wpdb->prefix.'kbf_organizer_profiles';
-        $biz_id = (int)$wpdb->get_var($wpdb->prepare("SELECT business_id FROM {$pt} WHERE organizer_token=%s", $org_token));
-    }
-    if(!$biz_id && isset($_GET['organizer_id'])) {
-        $biz_id = intval($_GET['organizer_id']);
-    }
+    $biz_id = kbf_account_profile_get_biz_id($wpdb);
     if(!$biz_id) return bntm_universal_container('Organizer Profile','<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Organizer not found.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
     $pt=$wpdb->prefix.'kbf_organizer_profiles';
     $ft=$wpdb->prefix.'kbf_funds';
@@ -35,24 +69,10 @@ function bntm_shortcode_kbf_organizer_profile() {
             }
         }
     }
-    $fund_tokens = [];
-    if (!empty($fund_ids) && function_exists('kbf_get_fund_tokens')) {
-        $fund_tokens = kbf_get_fund_tokens($fund_ids);
-    }
+    $fund_tokens = kbf_account_profile_get_fund_tokens($fund_ids);
     $fund_details_url = kbf_get_page_url('fund_details');
     $browse_url = kbf_get_page_url('browse');
-    $back_url = $browse_url;
-    $back_label = 'Back to Browse';
-    if (!empty($_GET['fund'])) {
-        $back_url = add_query_arg('fund', sanitize_text_field($_GET['fund']), $fund_details_url);
-        $back_label = 'Back to Fund Details';
-    } elseif (!empty($_GET['fund_id'])) {
-        $back_url = add_query_arg('fund_id', intval($_GET['fund_id']), $fund_details_url);
-        $back_label = 'Back to Fund Details';
-    } elseif (!empty($_GET['kbf_share'])) {
-        $back_url = add_query_arg('kbf_share', sanitize_text_field($_GET['kbf_share']), $fund_details_url);
-        $back_label = 'Back to Fund Details';
-    }
+    list($back_url, $back_label) = kbf_account_profile_get_back_link($fund_details_url, $browse_url);
     $socials=$profile&&$profile->social_links?json_decode($profile->social_links,true):[];
     $nonce_rating = wp_create_nonce('kbf_rating');
     $current_user = wp_get_current_user();

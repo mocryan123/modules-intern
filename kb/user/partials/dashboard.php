@@ -1,5 +1,74 @@
 ﻿<?php
 /* User dashboard shortcode */
+if (!function_exists('kbf_dashboard_public_tabs')) {
+    function kbf_dashboard_public_tabs() {
+        return ['find_funds','fund_details','organizer_profile'];
+    }
+}
+
+if (!function_exists('kbf_dashboard_default_tab')) {
+    function kbf_dashboard_default_tab() {
+        return 'find_funds';
+    }
+}
+
+if (!function_exists('kbf_dashboard_get_current_url')) {
+    function kbf_dashboard_get_current_url() {
+        if (isset($_SERVER['REQUEST_URI'])) {
+            return home_url($_SERVER['REQUEST_URI']);
+        }
+        return function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+    }
+}
+
+if (!function_exists('kbf_dashboard_build_nonces')) {
+    function kbf_dashboard_build_nonces() {
+        return [
+            'create'  => wp_create_nonce('kbf_create_fund'),
+            'edit'    => wp_create_nonce('kbf_update_fund'),
+            'cancel'  => wp_create_nonce('kbf_cancel_fund'),
+            'wd'      => wp_create_nonce('kbf_withdrawal'),
+            'extend'  => wp_create_nonce('kbf_extend'),
+            'appeal'  => wp_create_nonce('kbf_appeal'),
+            'escrow'  => wp_create_nonce('kbf_request_escrow'),
+            'refresh' => wp_create_nonce('kbf_user_refresh'),
+        ];
+    }
+}
+
+if (!function_exists('kbf_dashboard_get_blocked_label')) {
+    function kbf_dashboard_get_blocked_label($tab) {
+        $labels = [
+            'overview' => 'Home',
+            'sponsorships' => 'Supporters',
+            'withdrawals' => 'Cashout',
+            'profile' => 'Profile',
+        ];
+        return $labels[$tab] ?? 'this section';
+    }
+}
+
+if (!function_exists('kbf_dashboard_handle_payment_success')) {
+    function kbf_dashboard_handle_payment_success($payment_state, $user_id) {
+        if ($payment_state !== 'success' || !$user_id) return false;
+        $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
+        if (!$demo_mode) return true;
+        $sid = isset($_GET['sid']) ? intval($_GET['sid']) : 0;
+        $ref = isset($_GET['ref']) ? sanitize_text_field($_GET['ref']) : '';
+        if ($sid > 0) {
+            kbf_mark_sponsorship_completed($sid);
+        } elseif ($ref !== '') {
+            global $wpdb;
+            $st = $wpdb->prefix . 'kbf_sponsorships';
+            $row = $wpdb->get_row($wpdb->prepare("SELECT id FROM {$st} WHERE rand_id=%s", $ref));
+            if ($row && isset($row->id)) {
+                kbf_mark_sponsorship_completed((int)$row->id);
+            }
+        }
+        return true;
+    }
+}
+
 function bntm_shortcode_kbf_dashboard() {
     kbf_global_assets();
     $is_logged_in = is_user_logged_in();
@@ -20,54 +89,34 @@ function bntm_shortcode_kbf_dashboard() {
     $blocked_tab = '';
 
     if (!$is_logged_in) {
-        $public_tabs = ['find_funds','fund_details','organizer_profile'];
+        $public_tabs = kbf_dashboard_public_tabs();
         if (!$tab) {
-            $tab = 'find_funds';
+            $tab = kbf_dashboard_default_tab();
         }
         if (!in_array($tab, $public_tabs, true)) {
             $blocked_tab = $tab;
-            $tab = 'find_funds';
+            $tab = kbf_dashboard_default_tab();
         }
     } else {
         if (!$tab) {
-            $current_url = '';
-            if (isset($_SERVER['REQUEST_URI'])) {
-                $current_url = home_url($_SERVER['REQUEST_URI']);
-            }
-            if (!$current_url) {
-                $current_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
-            }
-            $current_url = remove_query_arg('kbf_tab', $current_url);
+            $current_url = remove_query_arg('kbf_tab', kbf_dashboard_get_current_url());
             $target = add_query_arg('kbf_tab', 'overview', $current_url);
             wp_safe_redirect($target);
             exit;
         }
     }
-    $nonce_create = wp_create_nonce('kbf_create_fund');
-    $nonce_edit   = wp_create_nonce('kbf_update_fund');
-    $nonce_cancel = wp_create_nonce('kbf_cancel_fund');
-    $nonce_wd     = wp_create_nonce('kbf_withdrawal');
-    $nonce_extend = wp_create_nonce('kbf_extend');
-    $nonce_appeal = wp_create_nonce('kbf_appeal');
-    $nonce_escrow = wp_create_nonce('kbf_request_escrow');
-    $nonce_refresh = wp_create_nonce('kbf_user_refresh');
+    $nonces = kbf_dashboard_build_nonces();
+    $nonce_create = $nonces['create'];
+    $nonce_edit   = $nonces['edit'];
+    $nonce_cancel = $nonces['cancel'];
+    $nonce_wd     = $nonces['wd'];
+    $nonce_extend = $nonces['extend'];
+    $nonce_appeal = $nonces['appeal'];
+    $nonce_escrow = $nonces['escrow'];
+    $nonce_refresh = $nonces['refresh'];
     $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
 
-    if ($is_logged_in && $payment_state === 'success') {
-        $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
-        if ($demo_mode) {
-            $sid = isset($_GET['sid']) ? intval($_GET['sid']) : 0;
-            $ref = isset($_GET['ref']) ? sanitize_text_field($_GET['ref']) : '';
-            if ($sid > 0) {
-                kbf_mark_sponsorship_completed($sid);
-            } elseif ($ref !== '') {
-                $st = $wpdb->prefix . 'kbf_sponsorships';
-                $row = $wpdb->get_row($wpdb->prepare("SELECT id FROM {$st} WHERE rand_id=%s", $ref));
-                if ($row && isset($row->id)) {
-                    kbf_mark_sponsorship_completed((int)$row->id);
-                }
-            }
-        }
+    if ($is_logged_in && kbf_dashboard_handle_payment_success($payment_state, $business_id)) {
         $find_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
         ob_start();
     ?>
@@ -116,13 +165,7 @@ function bntm_shortcode_kbf_dashboard() {
     <?php include __DIR__ . '/dashboard/scripts.php'; ?>
     <?php if (!$is_logged_in && $blocked_tab): ?>
       <?php
-        $blocked_labels = [
-          'overview' => 'Home',
-          'sponsorships' => 'Supporters',
-          'withdrawals' => 'Cashout',
-          'profile' => 'Profile',
-        ];
-        $blocked_label = $blocked_labels[$blocked_tab] ?? 'this section';
+        $blocked_label = kbf_dashboard_get_blocked_label($blocked_tab);
       ?>
       <script>
         window.addEventListener('load', function(){
