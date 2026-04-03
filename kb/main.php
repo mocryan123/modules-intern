@@ -47,6 +47,14 @@ if (!defined('KBF_AUTH_RATE_WINDOW')) {
 if (!defined('KBF_EMAIL_VERIFY_TTL')) {
     define('KBF_EMAIL_VERIFY_TTL', DAY_IN_SECONDS);
 }
+if (!defined('KBF_AUTH_SIGNUP_LIMIT')) {
+    define('KBF_AUTH_SIGNUP_LIMIT', 5);
+}
+if (!defined('KBF_AUTH_SIGNUP_WINDOW')) {
+    define('KBF_AUTH_SIGNUP_WINDOW', HOUR_IN_SECONDS);
+}
+
+// TODO: Add rate limiting for AI generation endpoints when implemented.
 
 function kbf_auth_get_ip() {
     if (!empty($_SERVER['REMOTE_ADDR'])) {
@@ -100,6 +108,41 @@ function kbf_auth_register_failed_login($login, $ip) {
 function kbf_auth_clear_failed_login($login, $ip) {
     if (!$login) return;
     delete_transient(kbf_auth_rate_limit_key($login, $ip));
+}
+
+function kbf_auth_signup_rate_limit_key($ip) {
+    return 'kbf_signup_' . md5((string) $ip);
+}
+
+function kbf_auth_is_signup_rate_limited($ip, &$retry_after = 0) {
+    $key = kbf_auth_signup_rate_limit_key($ip);
+    $state = get_transient($key);
+    if (!is_array($state) || empty($state['count']) || empty($state['expires'])) {
+        return false;
+    }
+    if ($state['count'] < KBF_AUTH_SIGNUP_LIMIT) {
+        return false;
+    }
+    $retry_after = max(0, (int) $state['expires'] - time());
+    return $retry_after > 0;
+}
+
+function kbf_auth_register_signup_attempt($ip) {
+    if (!$ip) return;
+    $key = kbf_auth_signup_rate_limit_key($ip);
+    $state = get_transient($key);
+    if (!$state) {
+        $state = [
+            'count' => 1,
+            'expires' => time() + KBF_AUTH_SIGNUP_WINDOW,
+        ];
+    } else {
+        $state['count'] = (int) $state['count'] + 1;
+        if (empty($state['expires']) || $state['expires'] < time()) {
+            $state['expires'] = time() + KBF_AUTH_SIGNUP_WINDOW;
+        }
+    }
+    set_transient($key, $state, KBF_AUTH_SIGNUP_WINDOW);
 }
 
 add_filter('authenticate', function($user, $username, $password) {

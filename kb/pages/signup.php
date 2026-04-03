@@ -15,6 +15,15 @@ function bntm_kbf_render_signup() {
         if (!$nonce_ok) {
             $signup_error = 'Security check failed. Please try again.';
         } else {
+            $ip = function_exists('kbf_auth_get_ip') ? kbf_auth_get_ip() : '';
+            $retry_after = 0;
+            if ($ip && function_exists('kbf_auth_is_signup_rate_limited') && kbf_auth_is_signup_rate_limited($ip, $retry_after)) {
+                $mins = max(1, (int) ceil($retry_after / 60));
+                $signup_error = 'Too many sign up attempts. Try again in ' . $mins . ' minute(s).';
+            }
+            if (!$signup_error && function_exists('kbf_auth_register_signup_attempt')) {
+                kbf_auth_register_signup_attempt($ip);
+            }
             $full_name = isset($_POST['full_name']) ? sanitize_text_field(wp_unslash($_POST['full_name'])) : '';
             $email = isset($_POST['user_email']) ? sanitize_email(wp_unslash($_POST['user_email'])) : '';
             $password = isset($_POST['user_password']) ? (string) wp_unslash($_POST['user_password']) : '';

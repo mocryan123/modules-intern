@@ -132,6 +132,9 @@ if (!function_exists('kbf_handle_image_upload')) {
 
 function bntm_ajax_kbf_create_fund() {
     check_ajax_referer('kbf_create_fund','nonce');
+    if (!kbf_rate_limit_ok('create_fund', 8, 60)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$table=$wpdb->prefix.'kbf_funds';
     $biz=get_current_user_id();
@@ -191,6 +194,9 @@ function bntm_ajax_kbf_create_fund() {
 
 function bntm_ajax_kbf_update_fund() {
     check_ajax_referer('kbf_update_fund','nonce');
+    if (!kbf_rate_limit_ok('update_fund', 20, 60)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
@@ -224,6 +230,9 @@ function bntm_ajax_kbf_update_fund() {
 
 function bntm_ajax_kbf_cancel_fund() {
     check_ajax_referer('kbf_cancel_fund','nonce');
+    if (!kbf_rate_limit_ok('cancel_fund', 10, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
@@ -237,6 +246,9 @@ function bntm_ajax_kbf_cancel_fund() {
 
 function bntm_ajax_kbf_trash_fund() {
     check_ajax_referer('kbf_cancel_fund','nonce');
+    if (!kbf_rate_limit_ok('trash_fund', 6, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;
     $t = $wpdb->prefix.'kbf_funds';
@@ -260,6 +272,9 @@ function bntm_ajax_kbf_trash_fund() {
 
 function bntm_ajax_kbf_request_escrow() {
     check_ajax_referer('kbf_request_escrow','nonce');
+    if (!kbf_rate_limit_ok('request_escrow', 6, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;
     $ft = $wpdb->prefix.'kbf_funds';
@@ -287,6 +302,9 @@ function bntm_ajax_kbf_request_escrow() {
 
 function bntm_ajax_kbf_mark_fund_complete() {
     check_ajax_referer('kbf_cancel_fund','nonce');
+    if (!kbf_rate_limit_ok('mark_complete', 6, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
@@ -298,6 +316,9 @@ function bntm_ajax_kbf_mark_fund_complete() {
 
 function bntm_ajax_kbf_request_withdrawal() {
     check_ajax_referer('kbf_withdrawal','nonce');
+    if (!kbf_rate_limit_ok('withdrawal', 6, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Please log in to request a withdrawal.']); }
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$wt=$wpdb->prefix.'kbf_withdrawals';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();$amount=floatval($_POST['amount']);
@@ -337,6 +358,9 @@ function bntm_ajax_kbf_request_withdrawal() {
 
 function bntm_ajax_kbf_extend_deadline() {
     check_ajax_referer('kbf_extend','nonce');
+    if (!kbf_rate_limit_ok('extend_deadline', 10, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
@@ -349,6 +373,9 @@ function bntm_ajax_kbf_extend_deadline() {
 
 function bntm_ajax_kbf_toggle_auto_return() {
     check_ajax_referer('kbf_cancel_fund','nonce');
+    if (!kbf_rate_limit_ok('auto_return', 12, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();$val=intval($_POST['auto_return']);
@@ -360,6 +387,9 @@ function bntm_ajax_kbf_toggle_auto_return() {
 
 function bntm_ajax_kbf_save_organizer_profile() {
     check_ajax_referer('kbf_organizer_profile','nonce');
+    if (!kbf_rate_limit_ok('save_profile', 12, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';$biz=get_current_user_id();
     $avatar='';
@@ -402,6 +432,9 @@ function bntm_ajax_kbf_save_organizer_profile() {
 
 function bntm_ajax_kbf_dismiss_onboarding() {
     check_ajax_referer('kbf_onboarding','nonce');
+    if (!kbf_rate_limit_ok('dismiss_onboarding', 10, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     $biz = get_current_user_id();
     delete_user_meta($biz, 'kbf_show_onboarding');
@@ -411,6 +444,9 @@ function bntm_ajax_kbf_dismiss_onboarding() {
 
 function bntm_ajax_kbf_request_verification() {
     check_ajax_referer('kbf_verify_account','nonce');
+    if (!kbf_rate_limit_ok('verify_account', 6, 600)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     if(empty($_FILES['verify_id_front']['name']) || empty($_FILES['verify_id_back']['name'])) {
         wp_send_json_error(['message'=>'Please upload both front and back of your ID.']);
@@ -561,6 +597,9 @@ function bntm_ajax_kbf_report_fund() {
 
 function bntm_ajax_kbf_toggle_save_fund() {
     check_ajax_referer('kbf_save_fund','nonce');
+    if (!kbf_rate_limit_ok('toggle_save', 40, 60)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Please log in to save funds.']); }
     global $wpdb;
     $sf = $wpdb->prefix.'kbf_saved_funds';
@@ -587,6 +626,9 @@ function bntm_ajax_kbf_toggle_save_fund() {
 
 function bntm_ajax_kbf_submit_appeal() {
     check_ajax_referer('kbf_appeal','nonce');
+    if (!kbf_rate_limit_ok('submit_appeal', 6, 600)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if (!is_user_logged_in()) wp_send_json_error(['message'=>'Please log in to submit an appeal.']);
     global $wpdb;
     $ft = $wpdb->prefix.'kbf_funds';
@@ -714,6 +756,9 @@ function bntm_ajax_kbf_submit_rating() {
 
 function bntm_ajax_kbf_user_refresh_tab() {
     check_ajax_referer('kbf_user_refresh');
+    if (!kbf_rate_limit_ok('user_refresh', 60, 60)) {
+        wp_send_json_error(['message'=>'Too many requests. Please slow down.']);
+    }
     if (!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     $tab = sanitize_text_field(isset($_POST['tab']) ? $_POST['tab'] : 'overview');
     $business_id = get_current_user_id();

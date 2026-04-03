@@ -7,7 +7,26 @@ if (!defined('ABSPATH')) exit;
 
 if (!function_exists('kbf_maya_webhook_secret')) {
     function kbf_maya_webhook_secret() {
+        $env = kbf_get_env_secret('KBF_MAYA_WEBHOOK_SECRET');
+        if ($env !== '') return $env;
+        // TODO: Migrate stored secrets to environment variables and remove DB storage.
         return (string) kbf_get_setting('kbf_maya_webhook_secret', '');
+    }
+}
+
+if (!function_exists('kbf_get_env_secret')) {
+    function kbf_get_env_secret($key) {
+        $env = getenv($key);
+        if ($env !== false && $env !== '') {
+            return trim((string) $env);
+        }
+        if (defined($key)) {
+            $val = constant($key);
+            if ($val !== '' && $val !== null) {
+                return trim((string) $val);
+            }
+        }
+        return '';
     }
 }
 
@@ -42,16 +61,30 @@ if (!function_exists('kbf_verify_maya_signature')) {
 
 function kbf_maya_secret_key() {
     $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
-    return $demo
-        ? kbf_get_setting('kbf_maya_sandbox_secret', '')
-        : kbf_get_setting('kbf_maya_live_secret', '');
+    if ($demo) {
+        $env = kbf_get_env_secret('KBF_MAYA_SANDBOX_SECRET');
+        if ($env !== '') return $env;
+        // TODO: Migrate stored secrets to environment variables and remove DB storage.
+        return kbf_get_setting('kbf_maya_sandbox_secret', '');
+    }
+    $env = kbf_get_env_secret('KBF_MAYA_LIVE_SECRET');
+    if ($env !== '') return $env;
+    // TODO: Migrate stored secrets to environment variables and remove DB storage.
+    return kbf_get_setting('kbf_maya_live_secret', '');
 }
 
 function kbf_maya_public_key() {
     $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
-    return $demo
-        ? kbf_get_setting('kbf_maya_sandbox_public', '')
-        : kbf_get_setting('kbf_maya_live_public', '');
+    if ($demo) {
+        $env = kbf_get_env_secret('KBF_MAYA_SANDBOX_PUBLIC');
+        if ($env !== '') return $env;
+        // TODO: Migrate stored keys to environment variables and remove DB storage.
+        return kbf_get_setting('kbf_maya_sandbox_public', '');
+    }
+    $env = kbf_get_env_secret('KBF_MAYA_LIVE_PUBLIC');
+    if ($env !== '') return $env;
+    // TODO: Migrate stored keys to environment variables and remove DB storage.
+    return kbf_get_setting('kbf_maya_live_public', '');
 }
 
 /**
