@@ -4,7 +4,8 @@
  */
 
 function kbf_admin_organizers_tab() {
-    global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';
+    global $wpdb;
+    $pt = $wpdb->prefix.'kbf_organizer_profiles';
     $params = [];
     $where = "WHERE 1=1";
     $where .= kbf_admin_date_where('u.user_registered', $params);
@@ -16,6 +17,9 @@ function kbf_admin_organizers_tab() {
         gmdate('Y-m-d H:i:s', strtotime('-7 days'))
     ));
     $pending_verify = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$pt} WHERE verify_status='pending'"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $format_number = function($value, $decimals = 0) {
+        return number_format((float)$value, $decimals);
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -126,12 +130,14 @@ function kbf_admin_organizers_tab() {
       </div>
       <?php if(empty($rows)): ?>
         <div class="kbf-table-empty" data-kbf-table-desc="Shows organizer accounts and verification status.">
-          <div class="kbf-table-empty-head" style="grid-template-columns:1.2fr 1.4fr .7fr .7fr 1fr 1.1fr .9fr .7fr;">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.2fr 1.4fr .7fr .7fr 1fr .8fr .9fr 1.1fr .9fr .7fr;">
             <span>Account</span>
             <span>Email</span>
             <span>Raised</span>
             <span>Supporters</span>
             <span>Credibility</span>
+            <span>Didit Status</span>
+            <span>Didit Verified</span>
             <span>ID Verification</span>
             <span>Verify</span>
             <span>Onboarding</span>
@@ -141,7 +147,7 @@ function kbf_admin_organizers_tab() {
       <?php else: ?>
       <div class="kbf-table-wrap" data-kbf-table-desc="Shows organizer accounts and verification status.">
         <table class="kbf-table kbf-table-accounts">
-          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Credibility Score</th><th>ID Verification</th><th>Verify</th><th>Onboarding</th></tr></thead>
+          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Credibility Score</th><th>Didit Status</th><th>Didit Verified</th><th>ID Verification</th><th>Verify</th><th>Onboarding</th></tr></thead>
           <tbody>
           <?php foreach($rows as $p): ?>
             <?php $onboarding_active = !empty(get_user_meta($p->business_id, 'kbf_show_onboarding', true)); ?>
@@ -150,6 +156,8 @@ function kbf_admin_organizers_tab() {
               $is_approved = ($verify_status === 'approved') || !empty($p->is_verified);
               $is_rejected = ($verify_status === 'rejected');
               $is_locked = $is_approved || $is_rejected;
+              $didit_status = get_user_meta($p->business_id, 'kbf_didit_status', true);
+              $didit_verified_at = get_user_meta($p->business_id, 'kbf_didit_verified_at', true);
             ?>
             <tr>
               <td>
@@ -162,9 +170,11 @@ function kbf_admin_organizers_tab() {
               <td class="kbf-meta" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 <?php echo esc_html($p->user_email); ?>
               </td>
-              <td><strong>₱<?php echo number_format($p->total_raised,0); ?></strong></td>
-              <td><?php echo number_format($p->total_sponsors); ?></td>
-            <td><?php echo number_format($p->rating,1); ?>/5 (<?php echo $p->rating_count; ?>)</td>
+              <td><strong>₱<?php echo $format_number($p->total_raised, 0); ?></strong></td>
+              <td><?php echo $format_number($p->total_sponsors); ?></td>
+            <td><?php echo $format_number($p->rating, 1); ?>/5 (<?php echo $p->rating_count; ?>)</td>
+            <td class="kbf-meta"><?php echo esc_html($didit_status ? ucfirst($didit_status) : '—'); ?></td>
+            <td class="kbf-meta"><?php echo esc_html($didit_verified_at ? date('M d, Y', strtotime($didit_verified_at)) : '—'); ?></td>
             <td class="kbf-verify-cell">
               <?php if(!empty($p->verify_id_front) || !empty($p->verify_id_back)): ?>
                 <div class="kbf-btn-group kbf-verify-stack">

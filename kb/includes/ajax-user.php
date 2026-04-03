@@ -448,6 +448,64 @@ function bntm_ajax_kbf_request_verification() {
         wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
     }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    $biz = get_current_user_id();
+    if (function_exists('kbf_didit_is_enabled') && kbf_didit_is_enabled()) {
+        $cfg = kbf_didit_config();
+        $callback = add_query_arg(['kbf_tab' => 'profile', 'didit' => 'done'], kbf_get_page_url('dashboard'));
+        $user = get_userdata($biz);
+        $payload = [
+            'workflow_id' => $cfg['workflow_id'],
+            'callback' => $callback,
+            'vendor_data' => (string) $biz,
+            'contact_details' => [
+                'email' => $user ? $user->user_email : '',
+                'phone' => get_user_meta($biz, 'kbf_phone', true),
+            ],
+        ];
+        $resp = wp_remote_post('https://verification.didit.me/v3/session/', [
+            'headers' => [
+                'x-api-key' => $cfg['api_key'],
+                'Content-Type' => 'application/json',
+            ],
+            'body' => wp_json_encode($payload),
+            'timeout' => 20,
+        ]);
+        if (is_wp_error($resp)) {
+            wp_send_json_error(['message'=>'Verification service unavailable. Please try again later.']);
+        }
+        $code = wp_remote_retrieve_response_code($resp);
+        $body = wp_remote_retrieve_body($resp);
+        $data = json_decode($body, true);
+        if ($code < 200 || $code >= 300 || !is_array($data)) {
+            wp_send_json_error(['message'=>'Unable to start verification. Please check Didit settings.']);
+        }
+        $session_id = $data['session_id'] ?? ($data['sessionId'] ?? ($data['session_token'] ?? ''));
+        $verification_url = $data['verification_url'] ?? ($data['url'] ?? '');
+        if (!$session_id || !$verification_url) {
+            wp_send_json_error(['message'=>'Verification session could not be created.']);
+        }
+        update_user_meta($biz, 'kbf_didit_session_id', $session_id);
+        update_user_meta($biz, 'kbf_didit_status', 'pending');
+        update_user_meta($biz, 'kbf_didit_verified_at', '');
+        update_user_meta($biz, 'kbf_didit_raw', wp_json_encode($data));
+
+        global $wpdb; $pt = $wpdb->prefix.'kbf_organizer_profiles';
+        $data_row = [
+            'verify_status'       => 'pending',
+            'verify_submitted_at' => current_time('mysql'),
+        ];
+        $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d", $biz));
+        if($exists) {
+            $wpdb->update($pt, $data_row, ['business_id'=>$biz], ['%s','%s'], ['%d']);
+        } else {
+            $data_row['business_id'] = $biz;
+            $wpdb->insert($pt, $data_row, ['%s','%s','%d']);
+        }
+        wp_send_json_success([
+            'message' => 'Redirecting to ID verification...',
+            'verification_url' => $verification_url,
+        ]);
+    }
     if(empty($_FILES['verify_id_front']['name']) || empty($_FILES['verify_id_back']['name'])) {
         wp_send_json_error(['message'=>'Please upload both front and back of your ID.']);
     }
@@ -456,7 +514,7 @@ function bntm_ajax_kbf_request_verification() {
     $back = kbf_handle_image_upload($_FILES['verify_id_back']);
     if(isset($back['error'])) wp_send_json_error(['message'=>'Back ID upload failed: '.$back['error']]);
 
-    global $wpdb; $pt = $wpdb->prefix.'kbf_organizer_profiles'; $biz = get_current_user_id();
+    global $wpdb; $pt = $wpdb->prefix.'kbf_organizer_profiles';
     $data = [
         'verify_id_front'     => $front['url'],
         'verify_id_back'      => $back['url'],

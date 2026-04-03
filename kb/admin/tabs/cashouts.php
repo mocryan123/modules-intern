@@ -4,7 +4,10 @@
  */
 
 function kbf_admin_withdrawals_tab() {
-    global $wpdb;$wt=$wpdb->prefix.'kbf_withdrawals';$ft=$wpdb->prefix.'kbf_funds';$et=$wpdb->prefix.'kbf_escrow_requests';
+    global $wpdb;
+    $wt = $wpdb->prefix.'kbf_withdrawals';
+    $ft = $wpdb->prefix.'kbf_funds';
+    $et = $wpdb->prefix.'kbf_escrow_requests';
     $params = [];
     $where = "WHERE 1=1";
     $where .= kbf_admin_date_where('w.requested_at', $params);
@@ -16,6 +19,15 @@ function kbf_admin_withdrawals_tab() {
     $where .= kbf_admin_date_where('e.requested_at', $params);
     $sql = "SELECT e.*,f.title as fund_title,u.display_name as funder_display FROM {$et} e LEFT JOIN {$ft} f ON e.fund_id=f.id LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY e.requested_at DESC";
     $escrows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $format_date = function($value) {
+        return $value ? date('M d, Y', strtotime($value)) : '—';
+    };
+    $format_account_type = function($value) {
+        return $value ? ucwords(str_replace('_', ' ', $value)) : '—';
+    };
+    $format_amount = function($value, $decimals = 2) {
+        return number_format((float)$value, $decimals);
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -42,7 +54,7 @@ function kbf_admin_withdrawals_tab() {
               <td><strong><?php echo esc_html(wp_trim_words($e->fund_title,5)); ?></strong></td>
               <td class="kbf-meta"><?php echo esc_html($e->funder_display ?: '-'); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($e->status); ?>"><?php echo ucfirst($e->status); ?></span></td>
-              <td class="kbf-meta"><?php echo date('M d, Y',strtotime($e->requested_at)); ?></td>
+              <td class="kbf-meta"><?php echo $format_date($e->requested_at); ?></td>
               <td>
                 <?php if($e->status==='pending'): ?>
                 <div class="kbf-btn-group" style="justify-content:center;">
@@ -97,13 +109,12 @@ function kbf_admin_withdrawals_tab() {
                   <div class="kbf-cell-spacer"></div>
                 </div>
               </td>
-              <td><strong>PHP <?php echo number_format($w->amount,2); ?></strong></td>
-              <?php $type_label = $w->account_type ? ucwords(str_replace('_',' ', $w->account_type)) : '—'; ?>
-              <td class="kbf-meta"><?php echo esc_html($type_label); ?></td>
+              <td><strong>PHP <?php echo $format_amount($w->amount, 2); ?></strong></td>
+              <td class="kbf-meta"><?php echo esc_html($format_account_type($w->account_type)); ?></td>
               <td class="kbf-meta"><?php echo esc_html($w->account_name); ?><br><?php echo esc_html($w->account_number); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
-              <td class="kbf-meta"><?php echo date('M d, Y',strtotime($w->requested_at)); ?></td>
-              <td class="kbf-meta"><?php echo $w->processed_at ? date('M d, Y',strtotime($w->processed_at)) : '—'; ?></td>
+              <td class="kbf-meta"><?php echo $format_date($w->requested_at); ?></td>
+              <td class="kbf-meta"><?php echo $format_date($w->processed_at); ?></td>
               <td>
                 <?php if($w->status==='pending'): ?>
                 <div class="kbf-btn-group" style="justify-content:center;">

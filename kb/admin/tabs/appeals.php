@@ -12,6 +12,9 @@ function kbf_admin_appeals_tab() {
     $where .= kbf_admin_date_where('a.created_at', $params);
     $sql = "SELECT a.*,f.title as fund_title FROM {$at} a JOIN {$ft} f ON a.fund_id=f.id {$where} ORDER BY FIELD(a.status,'open','reviewed','approved','rejected'),a.created_at DESC";
     $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore
+    $format_date = function($value) {
+        return $value ? date('M d, Y H:i', strtotime($value)) : '—';
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -26,7 +29,7 @@ function kbf_admin_appeals_tab() {
             <div>
               <strong style="font-size:14px;">Fund: <?php echo esc_html($a->fund_title); ?></strong>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:6px 0 0;"><?php echo esc_html($a->message); ?></p>
-              <div class="kbf-meta" style="margin-top:6px;">Appeal ID: <?php echo esc_html($a->rand_id); ?> &bull; <?php echo date('M d, Y H:i',strtotime($a->created_at)); ?></div>
+              <div class="kbf-meta" style="margin-top:6px;">Appeal ID: <?php echo esc_html($a->rand_id); ?> &bull; <?php echo $format_date($a->created_at); ?></div>
               <?php if($a->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><strong>Admin Note:</strong> <?php echo esc_html($a->admin_notes); ?></div><?php endif; ?>
             </div>
             <span class="kbf-badge kbf-badge-<?php echo $a->status; ?>"><?php echo ucfirst($a->status); ?></span>

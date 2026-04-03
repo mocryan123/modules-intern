@@ -222,6 +222,7 @@ function kbf_global_assets() {
         position:sticky;
         top:0;
         height:100vh;
+        height:stretch;
         box-shadow: inset -1px 0 0 rgba(15,23,42,0.02);
     }
     .kbf-admin-sidebar-brand{
@@ -503,13 +504,15 @@ function kbf_global_assets() {
     }
     .kbf-btn-accent    { background: #ecfdf3; color: #166534; border-color: #bbf7d0; }
     .kbf-btn-accent:hover:not(:disabled) { background: #dcfce7; border-color: #86efac; }
+    .kbf-btn-warning   { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    .kbf-btn-warning:hover:not(:disabled) { background: #fde68a; border-color: #fbbf24; }
     .kbf-btn-secondary { background: #f8fafc; color: #334155; border-color: #e5e7eb; }
     .kbf-btn-secondary:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
     .kbf-btn-danger    { background: #fff1f2; color: #9f1239; border-color: #fecdd3; }
     .kbf-btn-danger:hover:not(:disabled) { background: #ffe4e6; border-color: #fda4af; }
     .kbf-btn-success   { background: #ecfdf3; color: #166534; border-color: #bbf7d0; }
     .kbf-btn-success:hover:not(:disabled) { background: #dcfce7; border-color: #86efac; }
-    .kbf-btn-sm { height: 32px; padding: 0; font-size: 12px; }
+    .kbf-btn-sm { height: 32px; padding: 0 10px; font-size: 12px; }
     .kbf-btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
     .kbf-verify-stack{
         display:flex;
@@ -531,7 +534,11 @@ function kbf_global_assets() {
     .kbf-table-accounts th:nth-child(6),
     .kbf-table-accounts td:nth-child(6),
     .kbf-table-accounts th:nth-child(7),
-    .kbf-table-accounts td:nth-child(7){
+    .kbf-table-accounts td:nth-child(7),
+    .kbf-table-accounts th:nth-child(8),
+    .kbf-table-accounts td:nth-child(8),
+    .kbf-table-accounts th:nth-child(9),
+    .kbf-table-accounts td:nth-child(9){
         width:140px;
         text-align:center;
         white-space:nowrap;

@@ -9,20 +9,53 @@ function bntm_shortcode_kbf_admin() {
     if(!current_user_can('manage_options')) return '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Access denied.</div></div>';
     kbf_global_assets();
     global $wpdb;
-    $tab = isset($_GET['adm_tab'])?sanitize_text_field($_GET['adm_tab']):'pending';
+    $get_param = function($key, $default = '') {
+        return isset($_GET[$key]) ? sanitize_text_field($_GET[$key]) : $default;
+    };
+    $tab = $get_param('adm_tab', 'pending');
     $nonce = wp_create_nonce('kbf_admin_action');
+    $count_query = function($table, $where) use ($wpdb) {
+        return (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}{$table} WHERE {$where}"); // phpcs:ignore
+    };
+    $format_nav_count = function($raw) {
+        return $raw >= 100 ? '99+' : (string)$raw;
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
     <?php if(false): ?><div></div><?php endif; ?>
     <div class="kbf-wrap kbf-admin-wrap">
     <?php
-    $pending_count_admin = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_funds WHERE status='pending'"); // phpcs:ignore
-    $open_reports_count  = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_reports WHERE status='open'"); // phpcs:ignore
-    $pending_wd_count    = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_withdrawals WHERE status='pending'"); // phpcs:ignore
-    $open_appeals_count = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}kbf_appeals WHERE status='open'"); // phpcs:ignore
+    $pending_count_admin = $count_query('kbf_funds', "status='pending'");
+    $open_reports_count  = $count_query('kbf_reports', "status='open'");
+    $pending_wd_count    = $count_query('kbf_withdrawals', "status='pending'");
+    $open_appeals_count  = $count_query('kbf_appeals', "status='open'");
     $tabs=['pending'=>'For Review','all_funds'=>'Fundraisers','transactions'=>'Payments','withdrawals'=>'Cashouts','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Accounts','security'=>'Security Logs','settings'=>'Settings'];
     $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
+    $render_nav_link = function($key, $label) use ($tab, $counts, $format_nav_count) {
+        $raw_count = !empty($counts[$key]) ? (int)$counts[$key] : 0;
+        $display_count = $format_nav_count($raw_count);
+        ?>
+        <a href="?adm_tab=<?php echo $key; ?>" class="<?php echo $tab===$key?'active':''; ?>" data-kbf-adm-tab="<?php echo esc_attr($key); ?>">
+          <?php echo $label; ?>
+          <?php if($raw_count > 0): ?>
+            <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
+          <?php endif; ?>
+        </a>
+        <?php
+    };
+    $render_mobile_link = function($key, $label) use ($tab, $counts, $format_nav_count) {
+        $raw_count = !empty($counts[$key]) ? (int)$counts[$key] : 0;
+        $display_count = $format_nav_count($raw_count);
+        ?>
+        <a href="?adm_tab=<?php echo $key; ?>" class="<?php echo $tab===$key?'active':''; ?>" data-kbf-adm-tab="<?php echo esc_attr($key); ?>" onclick="kbfCloseMobileMenu()">
+          <?php echo $label; ?>
+          <?php if($raw_count > 0): ?>
+            <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
+          <?php endif; ?>
+        </a>
+        <?php
+    };
     ?>
     <div class="kbf-dashboard-topbar kbf-admin-topbar">
       <div class="kbf-dashboard-brand">
@@ -43,14 +76,7 @@ function bntm_shortcode_kbf_admin() {
         <div class="kbf-admin-sidebar-label">Admin Navigation</div>
         <nav class="kbf-dashboard-nav kbf-admin-nav" id="kbf-admin-nav">
           <?php foreach($tabs as $k=>$label): ?>
-          <?php $raw_count = !empty($counts[$k]) ? (int)$counts[$k] : 0; ?>
-          <?php $display_count = $raw_count >= 100 ? '99+' : (string)$raw_count; ?>
-          <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>" data-kbf-adm-tab="<?php echo esc_attr($k); ?>">
-            <?php echo $label; ?>
-            <?php if($raw_count > 0): ?>
-              <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
-            <?php endif; ?>
-          </a>
+            <?php $render_nav_link($k, $label); ?>
           <?php endforeach; ?>
         </nav>
         <div class="kbf-admin-sidebar-note">Fundora Admin</div>
@@ -84,14 +110,7 @@ function bntm_shortcode_kbf_admin() {
         </button>
       </div>
       <?php foreach($tabs as $k=>$label): ?>
-        <?php $raw_count = !empty($counts[$k]) ? (int)$counts[$k] : 0; ?>
-        <?php $display_count = $raw_count >= 100 ? '99+' : (string)$raw_count; ?>
-        <a href="?adm_tab=<?php echo $k; ?>" class="<?php echo $tab===$k?'active':''; ?>" data-kbf-adm-tab="<?php echo esc_attr($k); ?>" onclick="kbfCloseMobileMenu()">
-          <?php echo $label; ?>
-          <?php if($raw_count > 0): ?>
-            <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
-          <?php endif; ?>
-        </a>
+        <?php $render_mobile_link($k, $label); ?>
       <?php endforeach; ?>
     </div>
     <div class="kbf-modal-overlay kbf-admin-reject-modal" id="kbf-admin-reject-modal" style="display:none;">

@@ -4,12 +4,16 @@
  */
 
 function kbf_admin_all_funds_tab() {
-    global $wpdb;$t=$wpdb->prefix.'kbf_funds';
+    global $wpdb;
+    $t = $wpdb->prefix.'kbf_funds';
     $params = [];
     $where = "WHERE 1=1";
     $where .= kbf_admin_date_where('f.created_at', $params);
     $sql = "SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY f.created_at DESC LIMIT 200";
     $funds = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $format_currency = function($amount, $decimals = 0) {
+        return number_format((float)$amount, $decimals);
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -52,8 +56,8 @@ function kbf_admin_all_funds_tab() {
                 </div>
               </td>
               <td><?php echo esc_html($f->category); ?></td>
-              <td>₱<?php echo number_format($f->goal_amount,0); ?></td>
-              <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($f->raised_amount,0); ?></strong></td>
+              <td>₱<?php echo $format_currency($f->goal_amount, 0); ?></td>
+              <td><strong style="color:var(--kbf-green);">₱<?php echo $format_currency($f->raised_amount, 0); ?></strong></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>"><?php echo ucfirst($f->escrow_status); ?></span></td>
               <td>

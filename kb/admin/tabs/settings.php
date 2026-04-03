@@ -4,35 +4,39 @@
  */
 
 function kbf_admin_settings_tab() {
-    $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
-    $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false);
-    $sb_pub    = kbf_get_setting('kbf_maya_sandbox_public', '');
-    $sb_sec    = kbf_get_setting('kbf_maya_sandbox_secret', '');
-    $lv_pub    = kbf_get_setting('kbf_maya_live_public', '');
-    $lv_sec    = kbf_get_setting('kbf_maya_live_secret', '');
-    $wh_secret = kbf_get_setting('kbf_maya_webhook_secret', '');
+    $get_setting = function($key, $default = '') {
+        return kbf_get_setting($key, $default);
+    };
+    $demo_mode = (bool)$get_setting('kbf_demo_mode', true);
+    $fee_disabled = (bool)$get_setting('kbf_disable_platform_fee', false);
+    $sb_pub    = $get_setting('kbf_maya_sandbox_public', '');
+    $sb_sec    = $get_setting('kbf_maya_sandbox_secret', '');
+    $lv_pub    = $get_setting('kbf_maya_live_public', '');
+    $lv_sec    = $get_setting('kbf_maya_live_secret', '');
+    $wh_secret = $get_setting('kbf_maya_webhook_secret', '');
+    $didit_sb_key = $get_setting('kbf_didit_sandbox_api_key', '');
+    $didit_sb_sec = $get_setting('kbf_didit_sandbox_api_secret', '');
+    $didit_lv_key = $get_setting('kbf_didit_live_api_key', $get_setting('kbf_didit_api_key', ''));
+    $didit_lv_sec = $get_setting('kbf_didit_live_api_secret', $get_setting('kbf_didit_api_secret', ''));
+    $didit_sb_wf = $get_setting('kbf_didit_sandbox_workflow_id', '');
+    $didit_lv_wf = $get_setting('kbf_didit_live_workflow_id', '');
+    $didit_wh_secret = $get_setting('kbf_didit_webhook_secret', '');
     $nonce     = wp_create_nonce('kbf_admin_action');
+    $webhook_url = rest_url('kbf/v1/maya-webhook');
+    $didit_webhook_url = rest_url('kbf/v1/didit-webhook');
+    $admin_ajax_url = admin_url('admin-ajax.php');
+    $logo_url = defined('BNTM_KBF_URL') ? esc_url(BNTM_KBF_URL . 'assets/branding/logo.png') : '';
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
-      <h3 class="kbf-section-title">Platform Settings</h3>
-      <p style="color:var(--kbf-slate);font-size:13.5px;margin-bottom:24px;">Configure Fundora payments and live mode.</p>
-      <?php if($demo_mode): ?>
-        <div style="margin-bottom:18px;border-radius:14px;border:1px solid #f59e0b;background:linear-gradient(90deg,#fff7ed 0%,#fff 70%);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;overflow:hidden;">
-          <div style="width:36px;height:36px;border-radius:10px;color:#92400e;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-            </svg>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#92400e;font-size:14.5px;margin-bottom:2px;">Demo Mode is ON — payments are auto‑confirmed</div>
-            <div style="color:#92400e;font-size:13px;line-height:1.6;">
-              No real payment is required while Demo Mode is active. Switch to Live before launch.
-            </div>
-          </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+        <div>
+          <h3 class="kbf-section-title" style="margin-bottom:6px;">Platform Settings</h3>
+          <p style="color:var(--kbf-slate);font-size:13.5px;margin:0;">Configure Fundora payments and live mode.</p>
         </div>
-      <?php endif; ?>
+        <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfAdminReloadSettings()">Save Changes</button>
+      </div>
       <style>
         .kbf-admin-preload{
           position:fixed;
@@ -76,8 +80,31 @@ function kbf_admin_settings_tab() {
           75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
           100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
         }
+        .kbf-section .kbf-card{
+          box-shadow:none;
+          border:1px solid var(--kbf-border);
+          transform:none;
+        }
+        .kbf-section .kbf-card:hover{
+          box-shadow:none;
+          transform:none;
+        }
       </style>
-
+      <?php if($demo_mode): ?>
+        <div style="margin-bottom:18px;border-radius:14px;border:1px solid #f59e0b;background:linear-gradient(90deg,#fff7ed 0%,#fff 70%);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;overflow:hidden;">
+          <div style="width:36px;height:36px;border-radius:10px;color:#92400e;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-weight:700;color:#92400e;font-size:14.5px;margin-bottom:2px;">Demo Mode is ON — payments are auto‑confirmed</div>
+            <div style="color:#92400e;font-size:13px;line-height:1.6;">
+              No real payment is required while Demo Mode is active. Switch to Live before launch.
+            </div>
+          </div>
+        </div>
+      <?php endif; ?>
       <!-- Demo / Live Mode Toggle -->
         <div class="kbf-card" style="margin-bottom:20px;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
@@ -95,12 +122,12 @@ function kbf_admin_settings_tab() {
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
             <?php if($demo_mode): ?>
-              <button class="kbf-btn kbf-btn-success" onclick="kbfSaveSetting('kbf_demo_mode','0','<?php echo $nonce; ?>', true)">
+              <button class="kbf-btn kbf-btn-success" onclick="kbfSaveSetting('kbf_demo_mode','0','<?php echo $nonce; ?>', false)">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 Switch to Live
               </button>
             <?php else: ?>
-              <button class="kbf-btn kbf-btn-accent" onclick="kbfSaveSetting('kbf_demo_mode','1','<?php echo $nonce; ?>', true)">Switch to Demo</button>
+              <button class="kbf-btn kbf-btn-warning" onclick="kbfSaveSetting('kbf_demo_mode','1','<?php echo $nonce; ?>', false)">Switch to Demo</button>
             <?php endif; ?>
           </div>
         </div>
@@ -112,7 +139,7 @@ function kbf_admin_settings_tab() {
           <div style="flex:1;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
               <strong style="font-size:15px;color:var(--kbf-navy);">Platform Fee</strong>
-              <span class="kbf-badge <?php echo $fee_disabled?'kbf-badge-active':'kbf-badge-holding'; ?>">
+              <span class="kbf-badge <?php echo $fee_disabled?'kbf-badge-cancelled':'kbf-badge-active'; ?>">
                 <?php echo $fee_disabled?'DISABLED (0%)':'ENABLED (5%)'; ?>
               </span>
             </div>
@@ -123,9 +150,9 @@ function kbf_admin_settings_tab() {
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
             <?php if($fee_disabled): ?>
-              <button class="kbf-btn kbf-btn-accent" onclick="kbfSaveSetting('kbf_disable_platform_fee','0','<?php echo $nonce; ?>', true)">Enable Fee</button>
+              <button class="kbf-btn kbf-btn-accent" onclick="kbfSaveSetting('kbf_disable_platform_fee','0','<?php echo $nonce; ?>', false)">Enable Fee</button>
             <?php else: ?>
-              <button class="kbf-btn kbf-btn-success" onclick="kbfSaveSetting('kbf_disable_platform_fee','1','<?php echo $nonce; ?>', true)">
+              <button class="kbf-btn kbf-btn-danger" onclick="kbfSaveSetting('kbf_disable_platform_fee','1','<?php echo $nonce; ?>', false)">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 Disable Fee
               </button>
@@ -184,14 +211,14 @@ function kbf_admin_settings_tab() {
           <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:10px;">Webhook URL (for automatic payment confirmation)</div>
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;font-size:13px;line-height:1.8;">
             <strong>Your Webhook URL -- copy this into Maya Business Manager:</strong><br>
-            <code style="font-size:12px;word-break:break-all;color:var(--kbf-navy);background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin:6px 0;"><?php echo esc_html(rest_url('kbf/v1/maya-webhook')); ?></code><br>
+            <code style="font-size:12px;word-break:break-all;color:var(--kbf-navy);background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin:6px 0;"><?php echo esc_html($webhook_url); ?></code><br>
             <small style="color:var(--kbf-slate);">
               Maya Business Manager -> Developers -> Webhooks -> Add Webhook URL.<br>
               Subscribe to events: <strong>CHECKOUT_SUCCESS</strong> and <strong>PAYMENT_SUCCESS</strong>.<br>
               Optional: add a webhook secret below for signature verification.<br>
               <a href="https://sandbox-manager.paymaya.com" target="_blank" rel="noopener noreferrer">Open Maya Webhooks</a>
               &nbsp;|&nbsp;
-              <a href="<?php echo esc_url(rest_url('kbf/v1/maya-webhook')); ?>" target="_blank" rel="noopener noreferrer">Open Fundora Webhook Endpoint</a>
+              <a href="<?php echo esc_url($webhook_url); ?>" target="_blank" rel="noopener noreferrer">Open Fundora Webhook Endpoint</a>
             </small>
           </div>
 
@@ -199,8 +226,8 @@ function kbf_admin_settings_tab() {
             <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:8px;">Webhook Secret (optional)</div>
             
             <label style="font-size:12.5px;display:block;margin-bottom:4px;">Maya Webhook Secret</label>
-            <div style="display:flex;flex-direction:row;align-items:center;gap:8px;">
-              <input type="password" id="wh-secret" value="" placeholder="webhook-secret-..." style="font-family:monospace;font-size:12px;">
+            <div class="kbf-form-group" style="display:flex;flex-direction:row;align-items:center;gap:8px;">
+              <input type="password" id="wh-secret" value="" placeholder="webhook-secret-...">
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveWebhookSecret()" style="flex-shrink:0;white-space:nowrap;">Save Secret</button>
             </div>
             <small style="color:var(--kbf-slate);display:block;margin-top:4px;">Stored: <?php echo $wh_secret ? 'Yes' : 'No'; ?></small>
@@ -210,6 +237,74 @@ function kbf_admin_settings_tab() {
             </small>
           </div>
         </div>
+      </div>
+      <!-- Didit API Keys -->
+      <div class="kbf-card" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <strong style="font-size:15px;color:var(--kbf-navy);">Didit ID Verification</strong>
+          <a href="https://docs.didit.me/core-technology/id-verification/overview" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:var(--kbf-blue);margin-left:auto;">Open Didit Docs</a>
+        </div>
+        <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--kbf-text-sm);line-height:1.7;">
+          <strong style="color:var(--kbf-navy);">API setup:</strong><br>
+          Add your Didit API keys and workflow IDs for sandbox and live environments.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px;">
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-accent);margin-bottom:10px;">Sandbox</div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Sandbox API Key</label>
+              <input type="text" id="didit-sb-key" value="<?php echo esc_attr($didit_sb_key); ?>" placeholder="didit-sandbox-key-...">
+              <small style="color:var(--kbf-slate);">Leave blank to keep existing key.</small>
+            </div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Sandbox API Secret</label>
+              <input type="password" id="didit-sb-secret" value="" placeholder="didit-sandbox-secret-...">
+              <small style="color:var(--kbf-slate);">Stored: <?php echo $didit_sb_sec ? 'Yes' : 'No'; ?></small>
+            </div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Sandbox Workflow ID</label>
+              <input type="text" id="didit-sb-workflow" value="<?php echo esc_attr($didit_sb_wf); ?>" placeholder="workflow-id-...">
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-green);margin-bottom:10px;">Live</div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Live API Key</label>
+              <input type="text" id="didit-lv-key" value="<?php echo esc_attr($didit_lv_key); ?>" placeholder="didit-live-key-...">
+              <small style="color:var(--kbf-slate);">Leave blank to keep existing key.</small>
+            </div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Live API Secret</label>
+              <input type="password" id="didit-lv-secret" value="" placeholder="didit-live-secret-...">
+              <small style="color:var(--kbf-slate);">Stored: <?php echo $didit_lv_sec ? 'Yes' : 'No'; ?></small>
+            </div>
+            <div class="kbf-form-group" style="margin-bottom:10px;">
+              <label style="font-size:12.5px;">Live Workflow ID</label>
+              <input type="text" id="didit-lv-workflow" value="<?php echo esc_attr($didit_lv_wf); ?>" placeholder="workflow-id-...">
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid var(--kbf-border);padding-top:16px;">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:10px;">Webhook URL</div>
+          <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;font-size:13px;line-height:1.8;">
+            <strong>Your Didit Webhook URL:</strong><br>
+            <code style="font-size:12px;word-break:break-all;color:var(--kbf-navy);background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin:6px 0;"><?php echo esc_html($didit_webhook_url); ?></code><br>
+            <small style="color:var(--kbf-slate);">Add this URL to your Didit webhook settings.</small>
+          </div>
+
+          <div style="margin-top:14px;">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:8px;">Webhook Secret</div>
+            <label style="font-size:12.5px;display:block;margin-bottom:4px;">Didit Webhook Secret</label>
+            <div class="kbf-form-group" style="display:flex;flex-direction:row;align-items:center;gap:8px;">
+              <input type="password" id="didit-wh-secret" value="" placeholder="webhook-secret-...">
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveDiditWebhookSecret()" style="flex-shrink:0;white-space:nowrap;">Save Secret</button>
+            </div>
+            <small style="color:var(--kbf-slate);display:block;margin-top:4px;">Stored: <?php echo $didit_wh_secret ? 'Yes' : 'No'; ?></small>
+          </div>
+        </div>
+
+        <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveDiditKeys()">Save Didit Settings</button>
       </div>
       <div id="kbf-settings-msg" style="margin-top:12px;"></div>
     </div>
@@ -221,39 +316,11 @@ function kbf_admin_settings_tab() {
         fd.append('_ajax_nonce', nonce);
         fd.append('setting_key', key);
         fd.append('setting_val', val);
-        if (reloadOnSuccess && window.kbfTriggerAdminPreload) window.kbfTriggerAdminPreload();
-        if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
-        fetch((window.ajaxurl||'<?php echo admin_url('admin-ajax.php'); ?>'),{method:'POST',body:fd})
+        fetch((window.ajaxurl||'<?php echo $admin_ajax_url; ?>'),{method:'POST',body:fd})
         .then(r=>r.json()).then(j=>{
             alert(j.data&&j.data.message?j.data.message:(j.success?'Setting saved!':'Failed to save.'));
-            if(j.success && reloadOnSuccess) location.reload();
-            if(!reloadOnSuccess && window.kbfSetLoadingPage) window.kbfSetLoadingPage(false);
-            if(!reloadOnSuccess && window.kbfHideAdminPreload) window.kbfHideAdminPreload();
-            if(reloadOnSuccess && !j.success && window.kbfHideAdminPreload) window.kbfHideAdminPreload();
         }).catch(()=>{
-            if(window.kbfSetLoadingPage) window.kbfSetLoadingPage(false);
-            if(window.kbfHideAdminPreload) window.kbfHideAdminPreload();
         });
-    };
-    window.kbfTriggerAdminPreload = function(){
-        if (document.getElementById('kbf-admin-preload')) return;
-        var root = document.documentElement;
-        var pre = document.createElement('div');
-        pre.id = 'kbf-admin-preload';
-        pre.className = 'kbf-admin-preload';
-        var logo = '<?php echo defined('BNTM_KBF_URL') ? esc_url(BNTM_KBF_URL . 'assets/branding/logo.png') : ''; ?>';
-        pre.innerHTML = '<div class="kbf-admin-preload-mark">' + (logo ? '<img src="'+logo+'" alt="">' : 'BS') + '</div>';
-        document.body.appendChild(pre);
-    };
-    window.kbfHideAdminPreload = function(){
-        var pre = document.getElementById('kbf-admin-preload');
-        var root = document.documentElement;
-        if (pre) {
-            pre.classList.add('kbf-preload-hide');
-            setTimeout(function(){
-                if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
-            }, 300);
-        }
     };
     window.kbfSaveMayaKeys = function(type) {
         const nonce = '<?php echo $nonce; ?>';
@@ -279,7 +346,7 @@ function kbf_admin_settings_tab() {
             fd.append('_ajax_nonce', nonce);
             fd.append('setting_key', key);
             fd.append('setting_val', val);
-            fetch((window.ajaxurl || '<?php echo admin_url('admin-ajax.php'); ?>'), {method:'POST', body:fd})
+            fetch((window.ajaxurl || '<?php echo $admin_ajax_url; ?>'), {method:'POST', body:fd})
             .then(r => r.json()).then(j => {
                 if (!j || !j.success) {
                     if (msg) {
@@ -302,6 +369,69 @@ function kbf_admin_settings_tab() {
             return;
         }
         kbfSaveSetting('kbf_maya_webhook_secret', val, '<?php echo $nonce; ?>');
+    };
+    window.kbfSaveDiditKeys = function() {
+        const msg = document.getElementById('kbf-settings-msg');
+        const nonce = '<?php echo $nonce; ?>';
+        const pairs = [
+            ['kbf_didit_sandbox_api_key', document.getElementById('didit-sb-key').value],
+            ['kbf_didit_sandbox_api_secret', document.getElementById('didit-sb-secret').value],
+            ['kbf_didit_sandbox_workflow_id', document.getElementById('didit-sb-workflow').value],
+            ['kbf_didit_live_api_key', document.getElementById('didit-lv-key').value],
+            ['kbf_didit_live_api_secret', document.getElementById('didit-lv-secret').value],
+            ['kbf_didit_live_workflow_id', document.getElementById('didit-lv-workflow').value]
+        ];
+        const toSave = pairs.filter(([_, val]) => !!val);
+        if (toSave.length === 0) {
+            if (msg) {
+                msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">Enter a key, secret, or workflow ID to save.</div>';
+                setTimeout(() => msg.innerHTML = '', 4000);
+            }
+            return;
+        }
+        let done = 0;
+        toSave.forEach(([key, val]) => {
+            const fd = new FormData();
+            fd.append('action', 'kbf_save_setting');
+            fd.append('_ajax_nonce', nonce);
+            fd.append('setting_key', key);
+            fd.append('setting_val', val);
+            fetch((window.ajaxurl || '<?php echo $admin_ajax_url; ?>'), {method:'POST', body:fd})
+            .then(r => r.json()).then(j => {
+                if (!j || !j.success) {
+                    if (msg) {
+                        msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">' + (j && j.data && j.data.message ? j.data.message : 'Failed to save Didit settings.') + '</div>';
+                        setTimeout(() => msg.innerHTML = '', 4000);
+                    }
+                    return;
+                }
+                if (++done === toSave.length && msg) {
+                    msg.innerHTML = '<div class="kbf-alert kbf-alert-success kbf-alert-compact">Didit settings saved successfully.</div>';
+                    setTimeout(() => msg.innerHTML = '', 4000);
+                }
+            });
+        });
+    };
+    window.kbfSaveDiditWebhookSecret = function() {
+        const val = document.getElementById('didit-wh-secret').value;
+        if (!val) {
+            alert('Enter a new secret to update. Leave blank to keep existing.');
+            return;
+        }
+        kbfSaveSetting('kbf_didit_webhook_secret', val, '<?php echo $nonce; ?>');
+    };
+    window.kbfAdminReloadSettings = function(){
+        if (document.getElementById('kbf-admin-preload')) {
+            location.reload();
+            return;
+        }
+        var pre = document.createElement('div');
+        pre.id = 'kbf-admin-preload';
+        pre.className = 'kbf-admin-preload';
+        var logo = '<?php echo $logo_url; ?>';
+        pre.innerHTML = '<div class="kbf-admin-preload-mark">' + (logo ? '<img src="'+logo+'" alt="">' : 'BS') + '</div>';
+        document.body.appendChild(pre);
+        setTimeout(function(){ location.reload(); }, 150);
     };
     </script>
     <?php return ob_get_clean();

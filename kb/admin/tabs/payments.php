@@ -4,12 +4,20 @@
  */
 
 function kbf_admin_transactions_tab() {
-    global $wpdb;$st=$wpdb->prefix.'kbf_sponsorships';$ft=$wpdb->prefix.'kbf_funds';
+    global $wpdb;
+    $st = $wpdb->prefix.'kbf_sponsorships';
+    $ft = $wpdb->prefix.'kbf_funds';
     $params = [];
     $where = "WHERE 1=1";
     $where .= kbf_admin_date_where('s.created_at', $params);
     $sql = "SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id {$where} ORDER BY s.created_at DESC LIMIT 300";
     $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $format_currency = function($amount, $decimals = 2) {
+        return number_format((float)$amount, $decimals);
+    };
+    $format_date = function($value) {
+        return $value ? date('M d, Y', strtotime($value)) : '—';
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -35,9 +43,9 @@ function kbf_admin_transactions_tab() {
             <tr>
               <td><strong><?php echo esc_html(wp_trim_words($s->fund_title,5)); ?></strong></td>
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?></td>
-              <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($s->amount,2); ?></strong></td>
+              <td><strong style="color:var(--kbf-green);">₱<?php echo $format_currency($s->amount, 2); ?></strong></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
-              <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>
+              <td class="kbf-meta"><?php echo $format_date($s->created_at); ?></td>
             </tr>
           <?php endforeach; ?>
           </tbody>

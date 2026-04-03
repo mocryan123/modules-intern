@@ -4,13 +4,21 @@
  */
 
 function kbf_admin_reports_tab() {
-    global $wpdb;$rt=$wpdb->prefix.'kbf_reports';$ft=$wpdb->prefix.'kbf_funds';
+    global $wpdb;
+    $rt = $wpdb->prefix.'kbf_reports';
+    $ft = $wpdb->prefix.'kbf_funds';
     $fund_details_url = kbf_get_page_url('fund_details');
     $params = [];
     $where = "WHERE 1=1";
     $where .= kbf_admin_date_where('r.created_at', $params);
     $sql = "SELECT r.*,f.title as fund_title FROM {$rt} r JOIN {$ft} f ON r.fund_id=f.id {$where} ORDER BY FIELD(r.status,'open','dismissed'),r.created_at DESC";
     $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $format_date = function($value) {
+        return $value ? date('M d, Y H:i', strtotime($value)) : '—';
+    };
+    $reporter_label = function($email) {
+        return $email ? esc_html($email) : 'Anonymous reporter';
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -31,7 +39,7 @@ function kbf_admin_reports_tab() {
                   <img src="<?php echo esc_url($r->report_image); ?>" alt="Report attachment" style="width:120px;height:auto;border-radius:8px;border:1px solid var(--kbf-border);">
                 </a>
               <?php endif; ?>
-              <div class="kbf-meta" style="margin-top:6px;"><?php echo $r->reporter_email?esc_html($r->reporter_email):'Anonymous reporter'; ?> &bull; <?php echo date('M d, Y H:i',strtotime($r->created_at)); ?></div>
+              <div class="kbf-meta" style="margin-top:6px;"><?php echo $reporter_label($r->reporter_email); ?> &bull; <?php echo $format_date($r->created_at); ?></div>
               <?php if($r->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><strong>Admin Note:</strong> <?php echo esc_html($r->admin_notes); ?></div><?php endif; ?>
             </div>
             <span class="kbf-badge kbf-badge-<?php echo $r->status; ?>"><?php echo ucfirst($r->status); ?></span>

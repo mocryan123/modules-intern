@@ -17,6 +17,19 @@ function kbf_admin_security_logs_tab() {
     $where .= kbf_admin_date_where('created_at', $params);
     $sql = "SELECT * FROM {$table} {$where} ORDER BY created_at DESC LIMIT 200";
     $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql);
+    $format_user_label = function($user_id) {
+        if (!$user_id) return 'Guest';
+        $user = get_userdata((int)$user_id);
+        return $user ? $user->display_name . ' (#' . $user_id . ')' : 'User #' . $user_id;
+    };
+    $format_meta = function($meta) {
+        if (empty($meta)) return '';
+        $decoded = json_decode($meta, true);
+        return wp_json_encode($decoded);
+    };
+    $fallback = function($value, $default = '-') {
+        return $value ? $value : $default;
+    };
 
     ob_start();
     ?>
@@ -52,12 +65,8 @@ function kbf_admin_security_logs_tab() {
                         <tbody>
                         <?php foreach ($rows as $r): ?>
                             <?php
-                                $user = $r->user_id ? get_userdata((int)$r->user_id) : null;
-                                $user_label = $user ? $user->display_name . ' (#' . $r->user_id . ')' : ($r->user_id ? 'User #' . $r->user_id : 'Guest');
-                                $meta = '';
-                                if (!empty($r->meta)) {
-                                    $meta = wp_json_encode(json_decode($r->meta, true));
-                                }
+                                $user_label = $format_user_label($r->user_id);
+                                $meta = $format_meta($r->meta);
                             ?>
                             <tr>
                                 <td style="padding:10px 12px;border-bottom:1px solid var(--kbf-border);white-space:nowrap;">
@@ -72,10 +81,10 @@ function kbf_admin_security_logs_tab() {
                                     <?php echo esc_html($user_label); ?>
                                 </td>
                                 <td style="padding:10px 12px;border-bottom:1px solid var(--kbf-border);">
-                                    <?php echo esc_html($r->ip ?: '-'); ?>
+                                    <?php echo esc_html($fallback($r->ip)); ?>
                                 </td>
                                 <td style="padding:10px 12px;border-bottom:1px solid var(--kbf-border);">
-                                    <?php echo esc_html($r->endpoint ?: '-'); ?>
+                                    <?php echo esc_html($fallback($r->endpoint)); ?>
                                 </td>
                                 <td style="padding:10px 12px;border-bottom:1px solid var(--kbf-border);max-width:320px;">
                                     <?php if (!empty($meta)): ?>

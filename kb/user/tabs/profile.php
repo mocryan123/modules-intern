@@ -23,6 +23,8 @@ function kbf_dashboard_profile_tab($business_id) {
     $is_verified = ($profile && !empty($profile->is_verified));
     $is_pending = ($verify_status === 'pending');
     $is_rejected = ($verify_status === 'rejected');
+    $didit_enabled = function_exists('kbf_didit_is_enabled') ? kbf_didit_is_enabled() : false;
+    $didit_env = function_exists('kbf_didit_env') ? kbf_didit_env() : 'live';
     $stats_total_raised = (float) $profile_value('total_raised', 0);
     $stats_total_sponsors = (int) $profile_value('total_sponsors', 0);
     $stats_rating = (float) $profile_value('rating', 0);
@@ -661,7 +663,13 @@ function kbf_dashboard_profile_tab($business_id) {
                 <li>Use blurry or cropped photos</li>
               </ul>
             </div>
+            <?php if($didit_enabled): ?>
+            <div style="background:#eef4ff;border:1px solid #dbe7ff;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#1f2a44;margin-bottom:12px;">
+              You’ll be redirected to Didit for <?php echo $didit_env === 'sandbox' ? 'sandbox' : 'live'; ?> ID verification. No file upload is required here.
+            </div>
+            <?php endif; ?>
             <form id="kbf-verify-form" enctype="multipart/form-data" onsubmit="return false;">
+              <?php if(!$didit_enabled): ?>
               <div class="kbf-form-group">
                 <label>Valid ID (Front) *</label>
                 <input type="file" name="verify_id_front" accept="image/*" required>
@@ -670,6 +678,7 @@ function kbf_dashboard_profile_tab($business_id) {
                 <label>Valid ID (Back) *</label>
                 <input type="file" name="verify_id_back" accept="image/*" required>
               </div>
+              <?php endif; ?>
             </form>
             <div id="kbf-verify-msg" style="margin-top:8px;"></div>
           </div>
@@ -1132,6 +1141,9 @@ document.addEventListener('DOMContentLoaded', function(){
                 if (btn) { btn.disabled = true; btn.textContent = 'Pending'; }
                 var tag = document.querySelector('.kbf-profile-verify-tag');
                 if (tag) { tag.textContent = 'Pending Review'; }
+                if (j.data && j.data.verification_url) {
+                    window.open(j.data.verification_url, '_blank', 'noopener');
+                }
                 kbfCloseVerifyModal();
             }
         }).catch(function(){

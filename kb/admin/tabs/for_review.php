@@ -4,12 +4,22 @@
  */
 
 function kbf_admin_pending_tab() {
-    global $wpdb;$t=$wpdb->prefix.'kbf_funds';
+    global $wpdb;
+    $t = $wpdb->prefix.'kbf_funds';
     $params = [];
     $where = "WHERE f.status='pending'";
     $where .= kbf_admin_date_where('f.created_at', $params);
     $sql = "SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY f.created_at ASC";
     $funds = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input when params empty
+    $format_currency = function($amount, $decimals = 2) {
+        return number_format((float)$amount, $decimals);
+    };
+    $format_date = function($value) {
+        return $value ? date('M d, Y', strtotime($value)) : 'None';
+    };
+    $format_funder_type = function($value) {
+        return ucwords(str_replace('_', ' ', (string)$value));
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -21,11 +31,11 @@ function kbf_admin_pending_tab() {
           <div class="kbf-card-header">
             <div>
               <strong style="font-size:15px;"><?php echo esc_html($f->title); ?></strong>
-              <div class="kbf-meta" style="margin-top:4px;">by <?php echo esc_html($f->organizer); ?> &bull; <?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?> &bull; <?php echo ucwords(str_replace('_',' ',$f->funder_type)); ?></div>
+              <div class="kbf-meta" style="margin-top:4px;">by <?php echo esc_html($f->organizer); ?> &bull; <?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?> &bull; <?php echo $format_funder_type($f->funder_type); ?></div>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:8px 0 0;"><?php echo esc_html(wp_trim_words(wp_unslash($f->description),40)); ?></p>
               <div style="display:flex;gap:20px;margin-top:10px;font-size:12.5px;color:var(--kbf-slate);flex-wrap:wrap;">
-                <span><strong>Goal:</strong> ₱<?php echo number_format($f->goal_amount,2); ?></span>
-                <span><strong>Deadline:</strong> <?php echo $f->deadline?date('M d, Y',strtotime($f->deadline)):'None'; ?></span>
+                <span><strong>Goal:</strong> ₱<?php echo $format_currency($f->goal_amount,2); ?></span>
+                <span><strong>Deadline:</strong> <?php echo $format_date($f->deadline); ?></span>
                 <span><strong>Email:</strong> <?php echo esc_html($f->email); ?></span>
                 <span><strong>Phone:</strong> <?php echo esc_html($f->phone); ?></span>
               </div>            </div>
