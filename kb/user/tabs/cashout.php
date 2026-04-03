@@ -5,11 +5,18 @@
 
 function kbf_dashboard_withdrawals_tab($business_id) {
     global $wpdb;
-    $ft=$wpdb->prefix.'kbf_funds';$wt=$wpdb->prefix.'kbf_withdrawals';
+    $ft = $wpdb->prefix . 'kbf_funds';
+    $wt = $wpdb->prefix . 'kbf_withdrawals';
     $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT w.*,f.title as fund_title FROM {$wt} w LEFT JOIN {$ft} f ON w.fund_id=f.id WHERE f.business_id=%d ORDER BY w.requested_at DESC",
         $business_id
     ));
+    $format_date = function($value) {
+        return $value ? date('M d, Y', strtotime($value)) : '—';
+    };
+    $format_account_type = function($type) {
+        return $type ? ucwords(str_replace('_', ' ', $type)) : '—';
+    };
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -40,12 +47,11 @@ function kbf_dashboard_withdrawals_tab($business_id) {
               <tr>
                 <td><strong class="kbf-cashout-title"><?php echo esc_html($w->fund_title); ?></strong></td>
                 <td><strong>₱<?php echo number_format($w->amount,2); ?></strong></td>
-                <?php $type_label = $w->account_type ? ucwords(str_replace('_',' ', $w->account_type)) : '—'; ?>
-                <td class="kbf-meta"><?php echo esc_html($type_label); ?></td>
+                <td class="kbf-meta"><?php echo esc_html($format_account_type($w->account_type)); ?></td>
                 <td class="kbf-meta"><?php echo esc_html($w->account_name); ?> &bull; <?php echo esc_html($w->account_number); ?></td>
                 <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
-                <td class="kbf-meta"><?php echo date('M d, Y',strtotime($w->requested_at)); ?></td>
-                <td class="kbf-meta"><?php echo $w->processed_at?date('M d, Y',strtotime($w->processed_at)):'—'; ?></td>
+                <td class="kbf-meta"><?php echo $format_date($w->requested_at); ?></td>
+                <td class="kbf-meta"><?php echo $format_date($w->processed_at); ?></td>
               </tr>
             <?php endforeach; ?>
             </tbody>

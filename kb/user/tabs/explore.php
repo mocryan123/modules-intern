@@ -7,18 +7,31 @@ function kbf_dashboard_find_funds_tab() {
     global $wpdb;
     $ft = $wpdb->prefix.'kbf_funds';
     $current_user_id = get_current_user_id();
+    $get_param = function($key, $default = '') {
+        return isset($_GET[$key]) ? sanitize_text_field($_GET[$key]) : $default;
+    };
+    $build_like = function($value) use ($wpdb) {
+        return '%' . $wpdb->esc_like($value) . '%';
+    };
+    $format_currency = function($amount, $decimals = 0) {
+        return number_format((float)$amount, $decimals);
+    };
 
     // Filters from GET
-    $q    = isset($_GET['ff_q'])   ? sanitize_text_field($_GET['ff_q'])   : '';
-    $cat  = isset($_GET['ff_cat']) ? sanitize_text_field($_GET['ff_cat']) : '';
-    $sort = isset($_GET['ff_sort'])? sanitize_text_field($_GET['ff_sort']): 'newest';
-    $saved_only = isset($_GET['ff_saved']) ? sanitize_text_field($_GET['ff_saved']) : '';
+    $q = $get_param('ff_q', '');
+    $cat = $get_param('ff_cat', '');
+    $sort = $get_param('ff_sort', 'newest');
+    $saved_only = $get_param('ff_saved', '');
 
     $where = "WHERE f.status='active'"; $params = [];
     if($saved_only) {
         $where = "WHERE f.status IN ('active','completed')";
     }
-    if($q)  { $where .= " AND (f.title LIKE %s OR f.description LIKE %s OR f.location LIKE %s OR u.display_name LIKE %s)"; $params[] = "%".$wpdb->esc_like($q)."%"; $params[] = "%".$wpdb->esc_like($q)."%"; $params[] = "%".$wpdb->esc_like($q)."%"; $params[] = "%".$wpdb->esc_like($q)."%"; }
+    if($q)  {
+        $like = $build_like($q);
+        $where .= " AND (f.title LIKE %s OR f.description LIKE %s OR f.location LIKE %s OR u.display_name LIKE %s)";
+        $params[] = $like; $params[] = $like; $params[] = $like; $params[] = $like;
+    }
     if($cat){ $where .= " AND f.category=%s"; $params[] = $cat; }
     $order = $sort === 'most_funded' ? 'f.raised_amount DESC' : ($sort === 'ending_soon' ? 'f.deadline ASC' : 'f.created_at DESC');
     $join = '';
@@ -46,7 +59,7 @@ function kbf_dashboard_find_funds_tab() {
     if($current_user_id) {
         $sf = $wpdb->prefix.'kbf_saved_funds';
         $saved_ids = $wpdb->get_col($wpdb->prepare("SELECT fund_id FROM {$sf} WHERE user_id=%d", $current_user_id));
-    $saved_ids = array_map('intval', $saved_ids);
+        $saved_ids = array_map('intval', $saved_ids);
     }
 
     ob_start();
@@ -566,7 +579,7 @@ function kbf_dashboard_find_funds_tab() {
           <!-- Progress -->
           <div class="kbf-explore-progress"><span style="width:<?php echo $pct; ?>%"></span></div>
           <div class="kbf-explore-footer">
-            <span><span class="kbf-explore-amount">₱<?php echo number_format($f->raised_amount,0); ?></span> · <?php echo round($pct); ?>%</span>
+            <span><span class="kbf-explore-amount">₱<?php echo $format_currency($f->raised_amount, 0); ?></span> · <?php echo round($pct); ?>%</span>
           </div>
 
           <!-- Action buttons -->

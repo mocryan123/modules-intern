@@ -5,14 +5,20 @@
 
 function kbf_dashboard_sponsorships_tab($business_id) {
     global $wpdb;
-    $ft=$wpdb->prefix.'kbf_funds';$st=$wpdb->prefix.'kbf_sponsorships';
+    $ft = $wpdb->prefix . 'kbf_funds';
+    $st = $wpdb->prefix . 'kbf_sponsorships';
     $rows = $wpdb->get_results($wpdb->prepare(
         "SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d ORDER BY s.created_at DESC",
         $business_id
     ));
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
     $pending_count = 0;
-    foreach ((array)$rows as $s) { if ($s->payment_status === 'pending') { $pending_count++; } }
+    foreach ((array)$rows as $s) {
+        if ($s->payment_status === 'pending') { $pending_count++; }
+    }
+    $format_date = function($value) {
+        return $value ? date('M d, Y', strtotime($value)) : '—';
+    };
     ob_start();
     ?>
     
@@ -65,7 +71,7 @@ function kbf_dashboard_sponsorships_tab($business_id) {
                 <td class="kbf-meta" style="font-style:italic;max-width:200px;">
                   <span class="kbf-clamp-2"><?php echo esc_html($s->message?:' -- '); ?></span>
                 </td>
-                <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>
+                <td class="kbf-meta"><?php echo $format_date($s->created_at); ?></td>
               </tr>
             <?php endforeach; ?>
             </tbody>

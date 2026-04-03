@@ -9,18 +9,24 @@ function kbf_dashboard_profile_tab($business_id) {
     $profile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$business_id));
     $user = get_userdata($business_id);
     $socials = $profile && $profile->social_links ? json_decode($profile->social_links,true) : [];
-    $payout_type = $profile->payout_type ?? '';
-    $payout_name = $profile->payout_name ?? '';
-    $payout_number = $profile->payout_number ?? '';
+    $profile_value = function($key, $default = '') use ($profile) {
+        return ($profile && isset($profile->$key)) ? $profile->$key : $default;
+    };
+    $payout_type = $profile_value('payout_type', '');
+    $payout_name = $profile_value('payout_name', '');
+    $payout_number = $profile_value('payout_number', '');
     $phone = get_user_meta($business_id, 'kbf_phone', true);
     $address = get_user_meta($business_id, 'kbf_address', true);
     $nonce = wp_create_nonce('kbf_organizer_profile');
     $nonce_verify = wp_create_nonce('kbf_verify_account');
+    $verify_status = ($profile && !empty($profile->verify_status)) ? $profile->verify_status : '';
     $is_verified = ($profile && !empty($profile->is_verified));
-    $stats_total_raised = $profile && isset($profile->total_raised) ? (float) $profile->total_raised : 0;
-    $stats_total_sponsors = $profile && isset($profile->total_sponsors) ? (int) $profile->total_sponsors : 0;
-    $stats_rating = $profile && isset($profile->rating) ? (float) $profile->rating : 0;
-    $stats_rating_count = $profile && isset($profile->rating_count) ? (int) $profile->rating_count : 0;
+    $is_pending = ($verify_status === 'pending');
+    $is_rejected = ($verify_status === 'rejected');
+    $stats_total_raised = (float) $profile_value('total_raised', 0);
+    $stats_total_sponsors = (int) $profile_value('total_sponsors', 0);
+    $stats_rating = (float) $profile_value('rating', 0);
+    $stats_rating_count = (int) $profile_value('rating_count', 0);
 
     ob_start();
     ?>
@@ -426,11 +432,11 @@ function kbf_dashboard_profile_tab($business_id) {
             <input id="kbf-avatar" class="kbf-file-input" type="file" name="avatar" accept="image/*">
             <div class="kbf-profile-meta kbf-profile-note">Recommended 800x800px JPG or PNG.</div>
             <div class="kbf-profile-verify-wrap" style="margin-bottom:20px">
-              <?php if($profile && $profile->is_verified): ?>
+              <?php if($is_verified): ?>
                 <div class="kbf-profile-verify-tag kbf-verified">Verified</div>
-              <?php elseif($profile && !empty($profile->verify_status) && $profile->verify_status==='pending'): ?>
+              <?php elseif($is_pending): ?>
                 <div class="kbf-profile-verify-tag kbf-not-verified">Pending Review</div>
-              <?php elseif($profile && !empty($profile->verify_status) && $profile->verify_status==='rejected'): ?>
+              <?php elseif($is_rejected): ?>
                 <div class="kbf-profile-verify-tag kbf-not-verified">Rejected</div>
               <?php else: ?>
                 <div class="kbf-profile-verify-tag kbf-not-verified">Not Verified</div>
@@ -459,12 +465,12 @@ function kbf_dashboard_profile_tab($business_id) {
               <input type="text" name="phone" value="<?php echo esc_attr($phone); ?>" placeholder="+63 9XX XXX XXXX">
             </div>
 
-            <?php if($profile && !empty($profile->verify_status) && $profile->verify_status==='pending'): ?>
+            <?php if($is_pending): ?>
               <div class="kbf-alert kbf-alert-warning kbf-alert-compact kbf-alert-center kbf-alert-block" style="margin:6px 0;">
                 Pending.
               </div>
             <?php endif; ?>
-            <?php if($profile && !empty($profile->verify_status) && $profile->verify_status==='rejected' && !empty($profile->verify_notes)): ?>
+            <?php if($is_rejected && !empty($profile->verify_notes)): ?>
               <div class="kbf-alert kbf-alert-error kbf-alert-noicon kbf-alert-compact kbf-alert-center kbf-alert-block" style="margin:6px 0;">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="14" height="14" style="filter:invert(21%) sepia(70%) saturate(4683%) hue-rotate(342deg) brightness(88%) contrast(101%);">
                 Verification rejected: <?php echo esc_html($profile->verify_notes); ?>
@@ -472,10 +478,6 @@ function kbf_dashboard_profile_tab($business_id) {
             <?php endif; ?>
             <div class="kbf-profile-divider"></div>
             <div class="kbf-profile-actions">
-              <?php
-                $is_pending = ($profile && !empty($profile->verify_status) && $profile->verify_status==='pending');
-                $is_verified = ($profile && !empty($profile->is_verified));
-              ?>
               <button type="button" class="kbf-btn kbf-btn-secondary" <?php echo ($is_pending || $is_verified) ? 'disabled' : ''; ?> onclick="if(!this.disabled) kbfOpenVerifyModal()">
                 <?php echo $is_verified ? 'Already Verified' : ($is_pending ? 'Pending' : 'Verify Account'); ?>
               </button>

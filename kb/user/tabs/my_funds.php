@@ -9,6 +9,17 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
     $st = $wpdb->prefix.'kbf_sponsorships';
     $wt = $wpdb->prefix.'kbf_withdrawals';
     $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
+    $format_currency = function($amount, $decimals = 2) {
+        return number_format((float)$amount, $decimals);
+    };
+    $calc_days_left = function($deadline) {
+        return $deadline ? max(0, ceil((strtotime($deadline) - time()) / 86400)) : null;
+    };
+    $format_payment_method = function($method) {
+        if ($method === 'online_payment') return 'Online Payment';
+        if ($method === 'bank_payment') return 'Bank Payment';
+        return ucfirst(str_replace('_', ' ', isset($method) ? $method : '--'));
+    };
 
     ob_start();
     ?>
@@ -24,7 +35,9 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
       </div>
       <?php
       $pending_count = 0;
-      foreach ($funds as $f) { if ($f->status === 'pending') { $pending_count++; } }
+      foreach ($funds as $f) {
+          if ($f->status === 'pending') { $pending_count++; }
+      }
       if($pending_count > 0): ?>
       <div class="kbf-alert kbf-alert-info" style="margin-bottom:20px;">
         <strong>How fund approval works:</strong> After you submit a fund, our admin team reviews it (usually within 24â€“48 hours).
@@ -37,7 +50,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
       <?php else: foreach($funds as $f):
         $pct = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
         $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
-        $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
+        $days_left = $calc_days_left($f->deadline);
         $photo_list = $f->photos ? json_decode($f->photos, true) : [];
         $photo_json = wp_json_encode(array_values(array_filter(is_array($photo_list) ? $photo_list : [])));
         $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1", $f->id));
@@ -79,8 +92,8 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
           </div>
           <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div class="kbf-fund-amounts">
-            <span><strong>₱<?php echo number_format($f->raised_amount,2); ?></strong>raised</span>
-            <span><strong>₱<?php echo number_format($f->goal_amount,2); ?></strong>goal</span>
+            <span><strong>₱<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
+            <span><strong>₱<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
             <span><strong><?php echo round($pct); ?>%</strong>funded</span>
           </div>
           <div class="kbf-btn-group" style="margin-top:12px;">
@@ -132,8 +145,8 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
                 <?php foreach($sponsors as $sp): ?>
                   <tr>
                     <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
-                    <td><strong style="color:var(--kbf-green);">₱<?php echo number_format($sp->amount,2); ?></strong></td>
-                    <td><?php echo esc_html($sp->payment_method==='online_payment'?'Online Payment':($sp->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',isset($sp->payment_method) ? $sp->payment_method : '--')))); ?></td>
+                    <td><strong style="color:var(--kbf-green);">₱<?php echo $format_currency($sp->amount); ?></strong></td>
+                    <td><?php echo esc_html($format_payment_method($sp->payment_method)); ?></td>
                     <td class="kbf-meta"><?php echo date('M d, Y',strtotime($sp->created_at)); ?></td>
                   </tr>
                 <?php endforeach; ?>
