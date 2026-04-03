@@ -16,14 +16,18 @@ if (!defined('ABSPATH')) exit;
 
 define('BNTM_KBF_PATH', dirname(__FILE__) . '/');
 define('BNTM_KBF_URL', plugin_dir_url(__FILE__));
+if (!defined('KB_PATH')) {
+    define('KB_PATH', BNTM_KBF_PATH);
+}
 
 require_once(BNTM_KBF_PATH . 'user.php');
 require_once(BNTM_KBF_PATH . 'admin.php');
 require_once(BNTM_KBF_PATH . 'includes/pages.php');
 require_once(BNTM_KBF_PATH . 'includes/shortcodes.php');
+require_once(BNTM_KBF_PATH . 'pages/verification-complete.php');
 require_once(BNTM_KBF_PATH . 'includes/db.php');
 require_once(BNTM_KBF_PATH . 'includes/ajax-hooks.php');
-require_once(BNTM_KBF_PATH . 'includes/didit.php');
+require_once KB_PATH . 'includes/didit.php';
 require_once(BNTM_KBF_PATH . 'includes/cron.php');
 require_once(BNTM_KBF_PATH . 'includes/assets.php');
 

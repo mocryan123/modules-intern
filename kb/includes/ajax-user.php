@@ -532,6 +532,27 @@ function bntm_ajax_kbf_request_verification() {
 }
 
 // ============================================================
+// DIDIT VERIFICATION (DEMO: POLLING ONLY)
+// ============================================================
+
+function fundora_ajax_start_verification() {
+    check_ajax_referer('fundora_didit_nonce', 'nonce');
+    $user_id = get_current_user_id();
+    if (!$user_id) {
+        wp_send_json_error(['message' => 'not_logged_in']);
+    }
+    $result = fundora_didit_create_session($user_id);
+    if (is_wp_error($result)) {
+        wp_send_json_error(['message' => $result->get_error_message()]);
+    }
+    $url = isset($result['url']) ? $result['url'] : '';
+    if (!$url) {
+        wp_send_json_error(['message' => 'Verification URL not returned.']);
+    }
+    wp_send_json_success(['url' => esc_url_raw($url)]);
+}
+
+// ============================================================
 // AJAX HANDLERS -- SPONSOR / PUBLIC
 // ============================================================
 

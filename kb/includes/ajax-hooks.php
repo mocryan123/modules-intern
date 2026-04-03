@@ -49,15 +49,12 @@ add_action('wp_ajax_kbf_save_setting',               'bntm_ajax_kbf_save_setting
 add_action('wp_ajax_kbf_admin_refresh_tab',          'bntm_ajax_kbf_admin_refresh_tab');
 add_action('wp_ajax_kbf_create_checkout',            'bntm_ajax_kbf_create_checkout');
 add_action('wp_ajax_nopriv_kbf_create_checkout',     'bntm_ajax_kbf_create_checkout');
+add_action('wp_ajax_fundora_start_verification',     'fundora_ajax_start_verification');
+add_action('wp_ajax_nopriv_fundora_start_verification', 'fundora_ajax_start_verification');
 add_action('rest_api_init', function() {
     register_rest_route('kbf/v1', '/maya-webhook', [
         'methods'             => ['POST','GET'],
         'callback'            => 'kbf_maya_webhook_handler',
-        'permission_callback' => '__return_true',
-    ]);
-    register_rest_route('kbf/v1', '/didit-webhook', [
-        'methods'             => ['POST'],
-        'callback'            => 'kbf_didit_webhook_handler',
         'permission_callback' => '__return_true',
     ]);
 });

@@ -15,9 +15,9 @@ function kbf_admin_settings_tab() {
     $lv_sec    = $get_setting('kbf_maya_live_secret', '');
     $wh_secret = $get_setting('kbf_maya_webhook_secret', '');
     $didit_sb_key = $get_setting('kbf_didit_sandbox_api_key', '');
-    $didit_sb_sec = $get_setting('kbf_didit_sandbox_api_secret', '');
+    $didit_sb_app = $get_setting('kbf_didit_sandbox_app_id', $get_setting('kbf_didit_sandbox_api_secret', ''));
     $didit_lv_key = $get_setting('kbf_didit_live_api_key', $get_setting('kbf_didit_api_key', ''));
-    $didit_lv_sec = $get_setting('kbf_didit_live_api_secret', $get_setting('kbf_didit_api_secret', ''));
+    $didit_lv_app = $get_setting('kbf_didit_live_app_id', $get_setting('kbf_didit_live_api_secret', $get_setting('kbf_didit_api_secret', '')));
     $didit_sb_wf = $get_setting('kbf_didit_sandbox_workflow_id', '');
     $didit_lv_wf = $get_setting('kbf_didit_live_workflow_id', '');
     $didit_wh_secret = $get_setting('kbf_didit_webhook_secret', '');
@@ -246,7 +246,7 @@ function kbf_admin_settings_tab() {
         </div>
         <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--kbf-text-sm);line-height:1.7;">
           <strong style="color:var(--kbf-navy);">API setup:</strong><br>
-          Add your Didit API keys and workflow IDs for sandbox and live environments.
+          Add your Didit App ID, API key, and workflow IDs for sandbox and live environments.
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px;">
           <div>
@@ -257,9 +257,8 @@ function kbf_admin_settings_tab() {
               <small style="color:var(--kbf-slate);">Leave blank to keep existing key.</small>
             </div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
-              <label style="font-size:12.5px;">Sandbox API Secret</label>
-              <input type="password" id="didit-sb-secret" value="" placeholder="didit-sandbox-secret-...">
-              <small style="color:var(--kbf-slate);">Stored: <?php echo $didit_sb_sec ? 'Yes' : 'No'; ?></small>
+              <label style="font-size:12.5px;">Sandbox App ID</label>
+              <input type="text" id="didit-sb-app-id" value="<?php echo esc_attr($didit_sb_app); ?>" placeholder="didit-sandbox-app-id-...">
             </div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Sandbox Workflow ID</label>
@@ -274,9 +273,8 @@ function kbf_admin_settings_tab() {
               <small style="color:var(--kbf-slate);">Leave blank to keep existing key.</small>
             </div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
-              <label style="font-size:12.5px;">Live API Secret</label>
-              <input type="password" id="didit-lv-secret" value="" placeholder="didit-live-secret-...">
-              <small style="color:var(--kbf-slate);">Stored: <?php echo $didit_lv_sec ? 'Yes' : 'No'; ?></small>
+              <label style="font-size:12.5px;">Live App ID</label>
+              <input type="text" id="didit-lv-app-id" value="<?php echo esc_attr($didit_lv_app); ?>" placeholder="didit-live-app-id-...">
             </div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Live Workflow ID</label>
@@ -375,10 +373,10 @@ function kbf_admin_settings_tab() {
         const nonce = '<?php echo $nonce; ?>';
         const pairs = [
             ['kbf_didit_sandbox_api_key', document.getElementById('didit-sb-key').value],
-            ['kbf_didit_sandbox_api_secret', document.getElementById('didit-sb-secret').value],
+            ['kbf_didit_sandbox_app_id', document.getElementById('didit-sb-app-id').value],
             ['kbf_didit_sandbox_workflow_id', document.getElementById('didit-sb-workflow').value],
             ['kbf_didit_live_api_key', document.getElementById('didit-lv-key').value],
-            ['kbf_didit_live_api_secret', document.getElementById('didit-lv-secret').value],
+            ['kbf_didit_live_app_id', document.getElementById('didit-lv-app-id').value],
             ['kbf_didit_live_workflow_id', document.getElementById('didit-lv-workflow').value]
         ];
         const toSave = pairs.filter(([_, val]) => !!val);

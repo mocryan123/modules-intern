@@ -23,8 +23,7 @@ function kbf_dashboard_profile_tab($business_id) {
     $is_verified = ($profile && !empty($profile->is_verified));
     $is_pending = ($verify_status === 'pending');
     $is_rejected = ($verify_status === 'rejected');
-    $didit_enabled = function_exists('kbf_didit_is_enabled') ? kbf_didit_is_enabled() : false;
-    $didit_env = function_exists('kbf_didit_env') ? kbf_didit_env() : 'live';
+    $didit_status = get_user_meta($business_id, 'fundora_didit_verification_status', true);
     $stats_total_raised = (float) $profile_value('total_raised', 0);
     $stats_total_sponsors = (int) $profile_value('total_sponsors', 0);
     $stats_rating = (float) $profile_value('rating', 0);
@@ -433,20 +432,18 @@ function kbf_dashboard_profile_tab($business_id) {
             </label>
             <input id="kbf-avatar" class="kbf-file-input" type="file" name="avatar" accept="image/*">
             <div class="kbf-profile-meta kbf-profile-note">Recommended 800x800px JPG or PNG.</div>
-            <div class="kbf-profile-verify-wrap" style="margin-bottom:20px">
-              <?php if($is_verified): ?>
-                <div class="kbf-profile-verify-tag kbf-verified">Verified</div>
-              <?php elseif($is_pending): ?>
-                <div class="kbf-profile-verify-tag kbf-not-verified">Pending Review</div>
-              <?php elseif($is_rejected): ?>
-                <div class="kbf-profile-verify-tag kbf-not-verified">Rejected</div>
-              <?php else: ?>
-                <div class="kbf-profile-verify-tag kbf-not-verified">Not Verified</div>
-              <?php endif; ?>
-            </div>
-           
-
-            <div class="kbf-form-group">
+              <div class="kbf-profile-verify-wrap" style="margin-bottom:20px">
+                <?php if($didit_status === 'Approved'): ?>
+                  <div class="kbf-profile-verify-tag kbf-verified">Verified</div>
+                <?php elseif($didit_status === 'In Review'): ?>
+                  <div class="kbf-profile-verify-tag kbf-not-verified">Pending Verification</div>
+                <?php elseif($didit_status === 'Declined'): ?>
+                  <div class="kbf-profile-verify-tag kbf-not-verified">Verification Failed</div>
+                <?php else: ?>
+                  <div class="kbf-profile-verify-tag kbf-not-verified">Not Verified</div>
+                <?php endif; ?>
+              </div>
+              <div class="kbf-form-group">
               <label>Display Name</label>
               <input type="text" value="<?php echo esc_attr($user->display_name); ?>" disabled style="background:var(--kbf-slate-lt);">
             </div>
@@ -479,13 +476,18 @@ function kbf_dashboard_profile_tab($business_id) {
               </div>
             <?php endif; ?>
             <div class="kbf-profile-divider"></div>
-            <div class="kbf-profile-actions">
-              <button type="button" class="kbf-btn kbf-btn-secondary" <?php echo ($is_pending || $is_verified) ? 'disabled' : ''; ?> onclick="if(!this.disabled) kbfOpenVerifyModal()">
-                <?php echo $is_verified ? 'Already Verified' : ($is_pending ? 'Pending' : 'Verify Account'); ?>
-              </button>
-              <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSaveProfile('<?php echo $nonce; ?>')">Save Changes</button>
+              <div class="kbf-profile-actions">
+                <?php if($didit_status === 'Approved'): ?>
+                  <button type="button" class="kbf-btn kbf-btn-secondary" disabled>Verified</button>
+                <?php elseif($didit_status === 'In Review'): ?>
+                  <button type="button" class="kbf-btn kbf-btn-secondary" disabled>Pending Verification</button>
+                <?php else: ?>
+                  <button type="button" class="kbf-btn kbf-btn-secondary" id="fundora-didit-start">Verify Account</button>
+                <?php endif; ?>
+                <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSaveProfile('<?php echo $nonce; ?>')">Save Changes</button>
+              </div>
+              <div id="fundora-didit-msg" style="margin-top:10px;"></div>
             </div>
-          </div>
 
           <!-- ══ RIGHT STACK ══ -->
           <div class="kbf-profile-stack">
@@ -641,56 +643,16 @@ function kbf_dashboard_profile_tab($business_id) {
 
       </form>
 
-      <!-- Verify Account Modal -->
-      <div id="kbf-modal-verify-account" class="kbf-modal-overlay" style="display:none;">
-        <div class="kbf-modal kbf-modal-sm">
-          <div class="kbf-modal-header">
-            <h3 class="kbf-section-title">Verify Account</h3>
-            <button type="button" class="kbf-modal-close" onclick="kbfCloseVerifyModal()">&times;</button>
-          </div>
-          <div class="kbf-modal-body">
-            <div style="background:var(--kbf-slate-lt);border-radius:10px;padding:12px 14px;font-size:12.5px;color:var(--kbf-text-sm);margin-bottom:12px;">
-              <div style="font-weight:700;color:var(--kbf-navy);margin-bottom:6px;">ID Photo Guidelines</div>
-              <div>Do:</div>
-              <ul style="margin:6px 0 8px 18px;padding:0;">
-                <li>Use good lighting (not too dark or too bright)</li>
-                <li>Make sure all corners are visible</li>
-                <li>Text and photo must be readable</li>
-              </ul>
-              <div>Don’t:</div>
-              <ul style="margin:6px 0 0 18px;padding:0;">
-                <li>Cover any part of the ID</li>
-                <li>Use blurry or cropped photos</li>
-              </ul>
-            </div>
-            <?php if($didit_enabled): ?>
-            <div style="background:#eef4ff;border:1px solid #dbe7ff;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#1f2a44;margin-bottom:12px;">
-              You’ll be redirected to Didit for <?php echo $didit_env === 'sandbox' ? 'sandbox' : 'live'; ?> ID verification. No file upload is required here.
-            </div>
-            <?php endif; ?>
-            <form id="kbf-verify-form" enctype="multipart/form-data" onsubmit="return false;">
-              <?php if(!$didit_enabled): ?>
-              <div class="kbf-form-group">
-                <label>Valid ID (Front) *</label>
-                <input type="file" name="verify_id_front" accept="image/*" required>
-              </div>
-              <div class="kbf-form-group">
-                <label>Valid ID (Back) *</label>
-                <input type="file" name="verify_id_back" accept="image/*" required>
-              </div>
-              <?php endif; ?>
-            </form>
-            <div id="kbf-verify-msg" style="margin-top:8px;"></div>
-          </div>
-          <div class="kbf-modal-footer">
-            <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfCloseVerifyModal()">Cancel</button>
-            <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSubmitVerification('<?php echo $nonce_verify; ?>')">Submit Verification</button>
-          </div>
-        </div>
-      </div>
     </div>    
     
-    <!-- ================== JS ================== -->    <script>
+      <!-- ================== JS ================== -->    <?php ?>
+      <script>
+      window.fundoraDidit = {
+          ajaxurl: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
+          nonce: '<?php echo esc_js(wp_create_nonce('fundora_didit_nonce')); ?>'
+      };
+      </script>
+    <script>
     if (typeof ajaxurl === 'undefined') {
         var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
     }
@@ -1151,6 +1113,56 @@ document.addEventListener('DOMContentLoaded', function(){
             msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Upload failed. Please try again.</div>';
         });
     };
+
+    (function(){
+        var btn = document.getElementById('fundora-didit-start');
+        var msg = document.getElementById('fundora-didit-msg');
+        if (!btn) return;
+        btn.addEventListener('click', function(){
+            if (!window.fundoraDidit || !window.fundoraDidit.ajaxurl || !window.fundoraDidit.nonce) {
+                if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Verification is not configured.</div>';
+                return;
+            }
+            var fd = new FormData();
+            fd.append('action', 'fundora_start_verification');
+            fd.append('nonce', window.fundoraDidit.nonce);
+            btn.disabled = true;
+            btn.textContent = 'Starting...';
+            fetch(window.fundoraDidit.ajaxurl, { method: 'POST', body: fd })
+                .then(function(r){
+                    return r.text().then(function(text){
+                        var cleaned = (text || '').replace(/^\uFEFF/, '').trim();
+                        if (!r.ok) {
+                            console.error('fundora_didit: HTTP error', r.status, cleaned);
+                        }
+                        try {
+                            return JSON.parse(cleaned);
+                        } catch (e) {
+                            console.error('fundora_didit: JSON parse failed', e, cleaned);
+                            throw e;
+                        }
+                    });
+                })
+                .then(function(j){
+                    console.log('fundora_didit: response', j);
+                    if (j && j.success && j.data && j.data.url) {
+                        window.open(j.data.url, '_blank', 'noopener');
+                        btn.textContent = 'Pending Verification';
+                        return;
+                    }
+                    var message = (j && j.data && j.data.message) ? j.data.message : 'Unable to start verification.';
+                    if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">' + message + '</div>';
+                })
+                .catch(function(e){
+                    console.error('fundora_didit: request failed', e);
+                    if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Unable to start verification.</div>';
+                })
+                .finally(function(){
+                    btn.disabled = false;
+                    btn.textContent = 'Verify Account';
+                });
+        });
+    })();
 
       window.kbfSaveProfile = function(nonce) {
         const form = document.getElementById('kbf-profile-form');
