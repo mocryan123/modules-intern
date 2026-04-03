@@ -34,6 +34,146 @@ function kbf_mark_first_login($user_id) {
 }
 add_action('user_register', 'kbf_mark_first_login', 10, 1);
 
+// ============================================================
+// AUTH HARDENING
+// ============================================================
+
+if (!defined('KBF_AUTH_RATE_LIMIT')) {
+    define('KBF_AUTH_RATE_LIMIT', 5);
+}
+if (!defined('KBF_AUTH_RATE_WINDOW')) {
+    define('KBF_AUTH_RATE_WINDOW', 15 * MINUTE_IN_SECONDS);
+}
+if (!defined('KBF_EMAIL_VERIFY_TTL')) {
+    define('KBF_EMAIL_VERIFY_TTL', DAY_IN_SECONDS);
+}
+
+function kbf_auth_get_ip() {
+    if (!empty($_SERVER['REMOTE_ADDR'])) {
+        return preg_replace('/[^0-9a-fA-F:\.]/', '', (string) $_SERVER['REMOTE_ADDR']);
+    }
+    // TODO: If using a reverse proxy, validate and use trusted forwarded headers.
+    return '0.0.0.0';
+}
+
+function kbf_auth_rate_limit_key($login, $ip) {
+    $login = strtolower((string) $login);
+    return 'kbf_auth_fail_' . md5($login . '|' . $ip);
+}
+
+function kbf_auth_get_rate_state($login, $ip) {
+    $key = kbf_auth_rate_limit_key($login, $ip);
+    $state = get_transient($key);
+    return is_array($state) ? $state : null;
+}
+
+function kbf_auth_is_rate_limited($login, $ip, &$retry_after = 0) {
+    $state = kbf_auth_get_rate_state($login, $ip);
+    if (!$state || empty($state['count']) || empty($state['expires'])) {
+        return false;
+    }
+    if ($state['count'] < KBF_AUTH_RATE_LIMIT) {
+        return false;
+    }
+    $retry_after = max(0, (int) $state['expires'] - time());
+    return $retry_after > 0;
+}
+
+function kbf_auth_register_failed_login($login, $ip) {
+    if (!$login) return;
+    $key = kbf_auth_rate_limit_key($login, $ip);
+    $state = kbf_auth_get_rate_state($login, $ip);
+    if (!$state) {
+        $state = [
+            'count' => 1,
+            'expires' => time() + KBF_AUTH_RATE_WINDOW,
+        ];
+    } else {
+        $state['count'] = (int) $state['count'] + 1;
+        if (empty($state['expires']) || $state['expires'] < time()) {
+            $state['expires'] = time() + KBF_AUTH_RATE_WINDOW;
+        }
+    }
+    set_transient($key, $state, KBF_AUTH_RATE_WINDOW);
+}
+
+function kbf_auth_clear_failed_login($login, $ip) {
+    if (!$login) return;
+    delete_transient(kbf_auth_rate_limit_key($login, $ip));
+}
+
+add_filter('authenticate', function($user, $username, $password) {
+    if (is_wp_error($user)) {
+        return $user;
+    }
+    $ip = kbf_auth_get_ip();
+    $retry_after = 0;
+    if ($username && kbf_auth_is_rate_limited($username, $ip, $retry_after)) {
+        $mins = max(1, (int) ceil($retry_after / 60));
+        return new WP_Error('kbf_rate_limited', 'Too many login attempts. Try again in ' . $mins . ' minute(s).');
+    }
+    if ($user instanceof WP_User) {
+        if (!user_can($user, 'manage_options')) {
+            $verified = get_user_meta($user->ID, 'kbf_email_verified', true);
+            if ($verified !== '' && $verified !== '1') {
+                return new WP_Error('kbf_email_unverified', 'Please verify your email before signing in.');
+            }
+        }
+    }
+    return $user;
+}, 30, 3);
+
+add_action('wp_login_failed', function($username) {
+    $ip = kbf_auth_get_ip();
+    kbf_auth_register_failed_login($username, $ip);
+});
+
+add_action('wp_login', function($user_login) {
+    $ip = kbf_auth_get_ip();
+    kbf_auth_clear_failed_login($user_login, $ip);
+}, 10, 1);
+
+add_filter('auth_cookie_expiration', function($seconds, $user_id, $remember) {
+    if ($remember) {
+        return 14 * DAY_IN_SECONDS;
+    }
+    return 8 * HOUR_IN_SECONDS;
+}, 10, 3);
+
+add_filter('password_reset_expiration', function($seconds) {
+    return DAY_IN_SECONDS;
+});
+
+function kbf_auth_make_verify_hash($token) {
+    return hash_hmac('sha256', (string) $token, wp_salt('auth'));
+}
+
+function kbf_handle_email_verification() {
+    if (is_admin()) return;
+    if (empty($_GET['kbf_verify']) || empty($_GET['uid'])) return;
+    $token = sanitize_text_field(wp_unslash($_GET['kbf_verify']));
+    $user_id = absint($_GET['uid']);
+    if (!$user_id || !$token) return;
+    $user = get_user_by('id', $user_id);
+    if (!$user) return;
+    $hash = get_user_meta($user_id, 'kbf_email_verify_hash', true);
+    $expires = (int) get_user_meta($user_id, 'kbf_email_verify_expires', true);
+    $valid = $hash && hash_equals($hash, kbf_auth_make_verify_hash($token)) && $expires && time() <= $expires;
+    if ($valid) {
+        update_user_meta($user_id, 'kbf_email_verified', '1');
+        delete_user_meta($user_id, 'kbf_email_verify_hash');
+        delete_user_meta($user_id, 'kbf_email_verify_expires');
+        $target = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url();
+        wp_safe_redirect(add_query_arg('verified', '1', $target));
+        exit;
+    }
+    // TODO: Add resend verification flow for expired/invalid tokens.
+    $fallback = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : home_url('/');
+    wp_safe_redirect(add_query_arg('verify', 'failed', $fallback));
+    exit;
+}
+add_action('init', 'kbf_handle_email_verification', 9);
+
 
 // ============================================================
 // SHARE META TAGS (Open Graph / Twitter)

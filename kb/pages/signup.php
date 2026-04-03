@@ -8,6 +8,63 @@ if (!defined('ABSPATH')) exit;
 function bntm_kbf_render_signup() {
     kbf_global_assets();
     $signin_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : '#';
+    $signup_error = '';
+    $signup_success = '';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action']) && $_POST['kbf_auth_action'] === 'signup') {
+        $nonce_ok = isset($_POST['kbf_auth_nonce']) && wp_verify_nonce($_POST['kbf_auth_nonce'], 'kbf_auth_signup');
+        if (!$nonce_ok) {
+            $signup_error = 'Security check failed. Please try again.';
+        } else {
+            $full_name = isset($_POST['full_name']) ? sanitize_text_field(wp_unslash($_POST['full_name'])) : '';
+            $email = isset($_POST['user_email']) ? sanitize_email(wp_unslash($_POST['user_email'])) : '';
+            $password = isset($_POST['user_password']) ? (string) wp_unslash($_POST['user_password']) : '';
+            if (!$full_name || !$email || !$password) {
+                $signup_error = 'Please complete all required fields.';
+            } elseif (!is_email($email)) {
+                $signup_error = 'Please enter a valid email address.';
+            } elseif (strlen($password) < 8) {
+                $signup_error = 'Password must be at least 8 characters.';
+                // TODO: Consider enforcing stronger password policy (complexity/strength meter).
+            } elseif (email_exists($email)) {
+                $signup_error = 'An account with that email already exists.';
+            } else {
+                $base_login = sanitize_user(current(explode('@', $email)), true);
+                if (!$base_login) {
+                    $base_login = 'user';
+                }
+                $login = $base_login;
+                $suffix = 1;
+                while (username_exists($login)) {
+                    $login = $base_login . $suffix;
+                    $suffix++;
+                }
+                $user_id = wp_insert_user([
+                    'user_login' => $login,
+                    'user_email' => $email,
+                    'user_pass' => $password,
+                    'display_name' => $full_name,
+                    'first_name' => $full_name,
+                    'role' => 'subscriber',
+                ]);
+                if (is_wp_error($user_id)) {
+                    $signup_error = 'Unable to create account. Please try again.';
+                } else {
+                    $token = wp_generate_password(32, false, false);
+                    update_user_meta($user_id, 'kbf_email_verified', '0');
+                    update_user_meta($user_id, 'kbf_email_verify_hash', kbf_auth_make_verify_hash($token));
+                    update_user_meta($user_id, 'kbf_email_verify_expires', time() + KBF_EMAIL_VERIFY_TTL);
+                    $verify_url = add_query_arg([
+                        'kbf_verify' => $token,
+                        'uid' => $user_id,
+                    ], function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url());
+                    $subject = 'Verify your Fundora account';
+                    $message = "Hi {$full_name},\n\nPlease verify your email by clicking the link below:\n{$verify_url}\n\nThis link expires in 24 hours.\n\nIf you did not create this account, you can ignore this email.";
+                    wp_mail($email, $subject, $message);
+                    $signup_success = 'Account created. Please check your email to verify before signing in.';
+                }
+            }
+        }
+    }
     ob_start();
     ?>
     <style>
@@ -124,33 +181,42 @@ function bntm_kbf_render_signup() {
             </div>
             <h2 class="kbf-auth-title">Sign Up</h2>
             <p class="kbf-auth-sub">Create your account to support fundraisers or launch your own in minutes.</p>
-            <form class="kbf-auth-form" onsubmit="return false;">
+            <form class="kbf-auth-form" method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
+              <?php if ($signup_error): ?>
+                <div class="kbf-alert kbf-alert-error kbf-alert-compact" style="margin-bottom:12px;"><?php echo esc_html($signup_error); ?></div>
+              <?php elseif ($signup_success): ?>
+                <div class="kbf-alert kbf-alert-success kbf-alert-compact" style="margin-bottom:12px;"><?php echo esc_html($signup_success); ?></div>
+              <?php elseif (!empty($_GET['verify']) && $_GET['verify'] === 'failed'): ?>
+                <div class="kbf-alert kbf-alert-error kbf-alert-compact" style="margin-bottom:12px;">Verification link is invalid or expired. Please sign up again or request a new link. TODO: add resend verification.</div>
+              <?php endif; ?>
+              <input type="hidden" name="kbf_auth_action" value="signup">
+              <input type="hidden" name="kbf_auth_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_signup')); ?>">
               <div class="kbf-form-group">
                 <label>Name</label>
                 <div class="kbf-auth-input">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="">
-                  <input type="text" placeholder="Full name" required>
+                  <input type="text" name="full_name" placeholder="Full name" required>
                 </div>
               </div>
               <div class="kbf-form-group">
                 <label>Email</label>
                 <div class="kbf-auth-input">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/envelope-fill.svg" alt="">
-                  <input type="email" placeholder="you@example.com" required>
+                  <input type="email" name="user_email" placeholder="you@example.com" required>
                 </div>
               </div>
               <div class="kbf-form-group">
                 <label>Password</label>
                 <div class="kbf-auth-input">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lock-fill.svg" alt="">
-                  <input type="password" placeholder="Create a password" required>
+                  <input type="password" name="user_password" placeholder="Create a password" required>
                 </div>
               </div>
               <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--kbf-slate);margin-top:2px;">
                 <input type="checkbox" style="width:14px;height:14px;" required> I agree to the Terms & Conditions
               </label>
               <div class="kbf-auth-cta">
-                <button class="kbf-btn kbf-btn-primary" type="button">Create Account</button>
+                <button class="kbf-btn kbf-btn-primary" type="submit">Create Account</button>
               </div>
               <div class="kbf-auth-footer">Already have an account? <a href="<?php echo esc_url($signin_url); ?>">Sign In</a></div>
             </form>

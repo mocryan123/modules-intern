@@ -18,6 +18,10 @@ function bntm_kbf_render_signin() {
     }
     kbf_global_assets();
     $login_error = '';
+    $login_notice = '';
+    if (!empty($_GET['verified']) && $_GET['verified'] === '1') {
+        $login_notice = 'Email verified. You can now sign in.';
+    }
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action']) && $_POST['kbf_auth_action'] === 'signin') {
         $nonce_ok = isset($_POST['kbf_auth_nonce']) && wp_verify_nonce($_POST['kbf_auth_nonce'], 'kbf_auth_signin');
         if (!$nonce_ok) {
@@ -31,21 +35,33 @@ function bntm_kbf_render_signin() {
                     $login = $user_by_email->user_login;
                 }
             }
+            $retry_after = 0;
+            if ($login && function_exists('kbf_auth_is_rate_limited') && kbf_auth_is_rate_limited($login, kbf_auth_get_ip(), $retry_after)) {
+                $mins = max(1, (int) ceil($retry_after / 60));
+                $login_error = 'Too many login attempts. Try again in ' . $mins . ' minute(s).';
+            }
             $creds = [
                 'user_login'    => $login,
                 'user_password' => isset($_POST['user_password']) ? (string) wp_unslash($_POST['user_password']) : '',
                 'remember'      => !empty($_POST['rememberme']),
             ];
-            $user = wp_signon($creds, is_ssl());
-            if (is_wp_error($user)) {
-                $login_error = $user->get_error_message();
-                if (!$login_error) {
+            if (!$login_error) {
+                $user = wp_signon($creds, is_ssl());
+                if (is_wp_error($user)) {
+                    if (function_exists('kbf_auth_register_failed_login')) {
+                        kbf_auth_register_failed_login($login, kbf_auth_get_ip());
+                    }
                     $login_error = 'Invalid login details. Please try again.';
+                    if ($user->get_error_code() === 'kbf_email_unverified') {
+                        $login_error = 'Please verify your email before signing in.';
+                    } elseif ($user->get_error_code() === 'kbf_rate_limited') {
+                        $login_error = $user->get_error_message();
+                    }
+                } else {
+                    $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('home') : home_url('/');
+                    wp_safe_redirect($home);
+                    exit;
                 }
-            } else {
-                $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('home') : home_url('/');
-                wp_safe_redirect($home);
-                exit;
             }
         }
     }
@@ -170,6 +186,8 @@ function bntm_kbf_render_signin() {
             <form class="kbf-auth-form" method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
               <?php if ($login_error): ?>
                 <div class="kbf-alert kbf-alert-error kbf-alert-compact" style="margin-bottom:12px;"><?php echo esc_html($login_error); ?></div>
+              <?php elseif ($login_notice): ?>
+                <div class="kbf-alert kbf-alert-success kbf-alert-compact" style="margin-bottom:12px;"><?php echo esc_html($login_notice); ?></div>
               <?php endif; ?>
               <input type="hidden" name="kbf_auth_action" value="signin">
               <input type="hidden" name="kbf_auth_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_signin')); ?>">
@@ -191,7 +209,7 @@ function bntm_kbf_render_signin() {
                 <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--kbf-slate);">
                   <input type="checkbox" name="rememberme" value="1" style="width:14px;height:14px;"> Remember me
                 </label>
-                <a class="kbf-auth-link" href="#">Forgot password?</a>
+                <a class="kbf-auth-link" href="<?php echo esc_url(wp_lostpassword_url()); ?>">Forgot password?</a>
               </div>
               <div class="kbf-auth-cta">
                 <button class="kbf-btn kbf-btn-primary" type="submit">Sign In</button>
@@ -212,7 +230,7 @@ function bntm_kbf_render_signin() {
       </div>
     </div>
     <?php
-    <script>\n      console.log('[KBF] Sign In page loaded');\n    </script>\n    return ob_get_clean();
-}\r\n\r\n?>\r\n
+    return ob_get_clean();
+}
 
 
