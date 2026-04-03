@@ -528,9 +528,11 @@ function bntm_ajax_kbf_report_fund() {
     if (!kbf_rate_limit_ok('report_fund', 10, 300)) {
         wp_send_json_error(['message'=>'Too many reports. Please wait a bit and try again.']);
     }
-    global $wpdb;$t=$wpdb->prefix.'kbf_reports';
+    global $wpdb;$t=$wpdb->prefix.'kbf_reports';$ft=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$reason=sanitize_text_field($_POST['reason']);$details=sanitize_textarea_field($_POST['details']);
     if(empty($reason)||empty($details)) wp_send_json_error(['message'=>'Please fill all required fields.']);
+    $fund_exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$ft} WHERE id=%d", $id));
+    if(!$fund_exists) wp_send_json_error(['message'=>'Fund not found.']);
     $report_image = '';
     if (!empty($_FILES['report_image']['name'])) {
         $upload = kbf_handle_image_upload($_FILES['report_image']);
@@ -688,14 +690,21 @@ function bntm_ajax_kbf_submit_rating() {
     if (!kbf_rate_limit_ok('submit_rating', 15, 300)) {
         wp_send_json_error(['message' => 'Too many requests. Please wait and try again.']);
     }
-    global $wpdb;$rt=$wpdb->prefix.'kbf_ratings';$pt=$wpdb->prefix.'kbf_organizer_profiles';
+    global $wpdb;$rt=$wpdb->prefix.'kbf_ratings';$pt=$wpdb->prefix.'kbf_organizer_profiles';$ft=$wpdb->prefix.'kbf_funds';
     $org_id=intval($_POST['organizer_id']);$rating=min(5,max(1,intval($_POST['rating'])));
     $email=sanitize_email($_POST['sponsor_email']??'');
     if(empty($email)) wp_send_json_error(['message'=>'Email required to submit a score.']);
+    $fund_id = intval($_POST['fund_id']??0);
+    if ($fund_id) {
+        $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id FROM {$ft} WHERE id=%d", $fund_id));
+        if (!$fund || (int)$fund->business_id !== $org_id) {
+            wp_send_json_error(['message'=>'Invalid organizer/fund combination.']);
+        }
+    }
     // Prevent duplicate rating per email per organizer
     $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$rt} WHERE organizer_id=%d AND sponsor_email=%s",$org_id,$email));
     if($exists) wp_send_json_error(['message'=>'You have already submitted a score for this organizer.']);
-    $wpdb->insert($rt,['rand_id'=>bntm_rand_id(),'organizer_id'=>$org_id,'sponsor_email'=>$email,'rating'=>$rating,'review'=>sanitize_textarea_field($_POST['review']??''),'fund_id'=>intval($_POST['fund_id']??0)],['%s','%d','%s','%d','%s','%d']);
+    $wpdb->insert($rt,['rand_id'=>bntm_rand_id(),'organizer_id'=>$org_id,'sponsor_email'=>$email,'rating'=>$rating,'review'=>sanitize_textarea_field($_POST['review']??''),'fund_id'=>$fund_id],['%s','%d','%s','%d','%s','%d']);
     // Recalculate average
     $avg=$wpdb->get_var($wpdb->prepare("SELECT AVG(rating) FROM {$rt} WHERE organizer_id=%d",$org_id));
     $cnt=$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$rt} WHERE organizer_id=%d",$org_id));

@@ -5,8 +5,19 @@ function bntm_shortcode_kbf_sponsor_history() {
     global $wpdb;
     $st = $wpdb->prefix.'kbf_sponsorships';
     $ft = $wpdb->prefix.'kbf_funds';
+    $current_user = wp_get_current_user();
+    $current_email = $current_user && !empty($current_user->user_email) ? $current_user->user_email : '';
     $email = sanitize_email(isset($_GET['email']) ? $_GET['email'] : '');
     $rows = [];
+    if (!is_user_logged_in()) {
+        return bntm_universal_container('Donation History', '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Please sign in to view your donation history.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
+    }
+    if (!$email) {
+        $email = $current_email;
+    }
+    if ($email && !current_user_can('manage_options') && $current_email && strtolower($email) !== strtolower($current_email)) {
+        return bntm_universal_container('Donation History', '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Unauthorized access.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
+    }
     if ($email) {
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT s.*,f.title as fund_title FROM {$st} s LEFT JOIN {$ft} f ON s.fund_id=f.id WHERE s.email=%s ORDER BY s.created_at DESC",
