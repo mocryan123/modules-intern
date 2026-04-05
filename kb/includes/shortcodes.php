@@ -10,6 +10,8 @@ function bntm_kbf_get_shortcodes() {
         'kbf_organizer_profile'  => 'bntm_shortcode_kbf_organizer_profile',
         'kbf_sponsor_history'    => 'bntm_shortcode_kbf_sponsor_history',
         'kbf_terms'              => 'bntm_shortcode_kbf_terms',
+        'kbf_privacy'            => 'bntm_shortcode_kbf_privacy',
+        'kbf_refund'             => 'bntm_shortcode_kbf_refund',
         'kbf_admin'              => 'bntm_shortcode_kbf_admin',
         'kbf_signin'             => 'bntm_shortcode_kbf_signin',
         'kbf_signup'             => 'bntm_shortcode_kbf_signup',
@@ -24,7 +26,24 @@ function bntm_shortcode_kbf_landing() {
 }
 
 function bntm_shortcode_kbf_terms() {
-    return '<div class="kbf-wrap"></div>';
+    if (file_exists(BNTM_KBF_PATH . 'pages/terms.php')) {
+        require_once BNTM_KBF_PATH . 'pages/terms.php';
+    }
+    return function_exists('bntm_kbf_render_terms') ? bntm_kbf_render_terms() : '';
+}
+
+function bntm_shortcode_kbf_privacy() {
+    if (file_exists(BNTM_KBF_PATH . 'pages/privacy.php')) {
+        require_once BNTM_KBF_PATH . 'pages/privacy.php';
+    }
+    return function_exists('bntm_kbf_render_privacy') ? bntm_kbf_render_privacy() : '';
+}
+
+function bntm_shortcode_kbf_refund() {
+    if (file_exists(BNTM_KBF_PATH . 'pages/refund.php')) {
+        require_once BNTM_KBF_PATH . 'pages/refund.php';
+    }
+    return function_exists('bntm_kbf_render_refund') ? bntm_kbf_render_refund() : '';
 }
 
 function bntm_shortcode_kbf_signin() {

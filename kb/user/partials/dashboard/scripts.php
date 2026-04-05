@@ -105,7 +105,7 @@
             document.documentElement.classList.add('kbf-modal-lock');
             document.body.classList.add('kbf-modal-lock');
             kbfSetCreateStep(1);
-            if (window.kbfApplyCreateDraft) window.kbfApplyCreateDraft();
+            if (window.kbfApplyCreateDraft) window.kbfApplyCreateDraft(true);
         }
     }
     window.kbfOpenModal = kbfOpenModal;
@@ -385,18 +385,15 @@
                 reader.onload = function(e){
                     var thumb = document.createElement('div');
                     thumb.className = 'kbf-photo-thumb';
-                    thumb.setAttribute('draggable','true');
                     thumb.setAttribute('data-index', String(idx));
-                    var badge = document.createElement('div');
-                    badge.className = 'kbf-photo-order';
-                    badge.textContent = String(idx + 1);
-                    var handle = document.createElement('div');
-                    handle.className = 'kbf-photo-handle';
-                    handle.setAttribute('aria-label','Drag to reorder');
-                    handle.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.3"/><circle cx="4" cy="8" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="10" cy="4" r="1.3"/><circle cx="10" cy="8" r="1.3"/><circle cx="10" cy="12" r="1.3"/></svg>';
                     var img = document.createElement('img');
                     img.alt = '';
                     img.src = e.target.result;
+                    var editBtn = document.createElement('button');
+                    editBtn.type = 'button';
+                    editBtn.className = 'kbf-photo-edit';
+                    editBtn.setAttribute('aria-label', 'Edit photo');
+                    editBtn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>';
                     var btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'kbf-photo-remove';
@@ -406,21 +403,16 @@
                         kbfSyncCreateFiles();
                         kbfRenderCreateThumbs();
                     });
+                    editBtn.addEventListener('click', function(e){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (typeof kbfOpenPhotoEditor === 'function') {
+                            kbfOpenPhotoEditor(file, 'create', idx);
+                        }
+                    });
                     thumb.appendChild(img);
-                    thumb.appendChild(badge);
-                    thumb.appendChild(handle);
+                    thumb.appendChild(editBtn);
                     thumb.appendChild(btn);
-                    thumb.addEventListener('dragstart', function(ev){
-                        thumb.classList.add('is-dragging');
-                        ev.dataTransfer.setData('text/plain', String(idx));
-                        ev.dataTransfer.effectAllowed = 'move';
-                        try { ev.dataTransfer.setDragImage(thumb, 20, 20); } catch(e) {}
-                    });
-                    thumb.addEventListener('dragend', function(){
-                        thumb.classList.remove('is-dragging');
-                        var ph = photoWrap.querySelector('.kbf-photo-placeholder');
-                        if (ph) ph.remove();
-                    });
                     photoWrap.appendChild(thumb);
                 };
                 reader.readAsDataURL(file);
@@ -433,85 +425,11 @@
                 addBtn.innerHTML = '+';
                 photoWrap.appendChild(addBtn);
             }
-        }
-        function kbfGetDragAfterElement(container, x, y){
-            var items = [].slice.call(container.querySelectorAll('.kbf-photo-thumb:not(.is-dragging)'));
-            var closest = { offset: Number.NEGATIVE_INFINITY, element: null };
-            items.forEach(function(child){
-                var box = child.getBoundingClientRect();
-                var offset = (x - box.left) - box.width / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    closest = { offset: offset, element: child };
-                }
-            });
-            return closest.element;
-        }
-        function kbfEnsurePlaceholder(container){
-            var ph = container.querySelector('.kbf-photo-placeholder');
-            if (!ph) {
-                ph = document.createElement('div');
-                ph.className = 'kbf-photo-placeholder';
+            if (photoInput) {
+                photoInput.disabled = (kbfCreateFiles.length >= 5);
             }
-            return ph;
         }
-        function kbfGetDragAfterElement(container, x, y){
-            var items = [].slice.call(container.querySelectorAll('.kbf-photo-thumb:not(.is-dragging)'));
-            var closest = { offset: Number.NEGATIVE_INFINITY, element: null };
-            items.forEach(function(child){
-                var box = child.getBoundingClientRect();
-                var offset = (x - box.left) - box.width / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    closest = { offset: offset, element: child };
-                }
-            });
-            return closest.element;
-        }
-        function kbfEnsurePlaceholder(){
-            var ph = photoWrap.querySelector('.kbf-photo-placeholder');
-            if (!ph) {
-                ph = document.createElement('div');
-                ph.className = 'kbf-photo-placeholder';
-            }
-            return ph;
-        }
-        if (photoWrap) {
-            photoWrap.addEventListener('dragover', function(ev){
-                ev.preventDefault();
-                ev.dataTransfer.dropEffect = 'move';
-                var afterEl = kbfGetDragAfterElement(photoWrap, ev.clientX, ev.clientY);
-                var ph = kbfEnsurePlaceholder(photoWrap);
-                if (afterEl == null) {
-                    photoWrap.insertBefore(ph, photoWrap.querySelector('.kbf-photo-add'));
-                } else {
-                    photoWrap.insertBefore(ph, afterEl);
-                }
-            });
-            photoWrap.addEventListener('dragleave', function(ev){
-                if (ev.target === photoWrap) {
-                    var ph = photoWrap.querySelector('.kbf-photo-placeholder');
-                    if (ph) ph.remove();
-                }
-            });
-            photoWrap.addEventListener('drop', function(ev){
-                ev.preventDefault();
-                var from = parseInt(ev.dataTransfer.getData('text/plain') || '-1', 10);
-                if (isNaN(from) || from < 0) return;
-                var ph = photoWrap.querySelector('.kbf-photo-placeholder');
-                var thumbs = [].slice.call(photoWrap.querySelectorAll('.kbf-photo-thumb'));
-                var to = thumbs.length;
-                if (ph) {
-                    to = thumbs.indexOf(ph.nextElementSibling);
-                    if (to < 0) to = thumbs.length;
-                    ph.remove();
-                }
-                if (from === to || from + 1 === to) return;
-                var moved = kbfCreateFiles.splice(from, 1)[0];
-                if (to > from) to -= 1;
-                kbfCreateFiles.splice(to, 0, moved);
-                kbfSyncCreateFiles();
-                kbfRenderCreateThumbs();
-            });
-        }
+        if (photoWrap) {}
 
         var editPhotoInput = document.getElementById('kbf-edit-photos');
         var editPhotoWrap = document.getElementById('kbf-edit-photo-previews');
@@ -531,14 +449,10 @@
                 if (!src) return;
                 var thumb = document.createElement('div');
                 thumb.className = 'kbf-photo-thumb kbf-photo-thumb-existing';
-                var badge = document.createElement('div');
-                badge.className = 'kbf-photo-order';
-                badge.textContent = String(idx + 1);
                 var img = document.createElement('img');
                 img.alt = '';
                 img.src = src;
                 thumb.appendChild(img);
-                thumb.appendChild(badge);
                 editPhotoWrap.appendChild(thumb);
                 existingCount++;
             });
@@ -548,18 +462,15 @@
                 reader.onload = function(e){
                     var thumb = document.createElement('div');
                     thumb.className = 'kbf-photo-thumb';
-                    thumb.setAttribute('draggable','true');
                     thumb.setAttribute('data-index', String(idx));
-                    var badge = document.createElement('div');
-                    badge.className = 'kbf-photo-order';
-                    badge.textContent = String(existingCount + idx + 1);
-                    var handle = document.createElement('div');
-                    handle.className = 'kbf-photo-handle';
-                    handle.setAttribute('aria-label','Drag to reorder');
-                    handle.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.3"/><circle cx="4" cy="8" r="1.3"/><circle cx="4" cy="12" r="1.3"/><circle cx="10" cy="4" r="1.3"/><circle cx="10" cy="8" r="1.3"/><circle cx="10" cy="12" r="1.3"/></svg>';
                     var img = document.createElement('img');
                     img.alt = '';
                     img.src = e.target.result;
+                    var editBtn = document.createElement('button');
+                    editBtn.type = 'button';
+                    editBtn.className = 'kbf-photo-edit';
+                    editBtn.setAttribute('aria-label', 'Edit photo');
+                    editBtn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>';
                     var btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'kbf-photo-remove';
@@ -569,32 +480,31 @@
                         kbfSyncEditFiles();
                         kbfRenderEditThumbs();
                     });
+                    editBtn.addEventListener('click', function(e){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (typeof kbfOpenPhotoEditor === 'function') {
+                            kbfOpenPhotoEditor(file, 'edit', idx);
+                        }
+                    });
                     thumb.appendChild(img);
-                    thumb.appendChild(badge);
-                    thumb.appendChild(handle);
+                    thumb.appendChild(editBtn);
                     thumb.appendChild(btn);
-                    thumb.addEventListener('dragstart', function(ev){
-                        thumb.classList.add('is-dragging');
-                        ev.dataTransfer.setData('text/plain', String(idx));
-                        ev.dataTransfer.effectAllowed = 'move';
-                        try { ev.dataTransfer.setDragImage(thumb, 20, 20); } catch(e) {}
-                    });
-                    thumb.addEventListener('dragend', function(){
-                        thumb.classList.remove('is-dragging');
-                        var ph = editPhotoWrap.querySelector('.kbf-photo-placeholder');
-                        if (ph) ph.remove();
-                    });
                     editPhotoWrap.appendChild(thumb);
                 };
                 reader.readAsDataURL(file);
             });
-            if (existingCount + kbfEditFiles.length < 5) {
+            var totalCount = existingCount + kbfEditFiles.length;
+            if (totalCount < 5) {
                 var addBtn = document.createElement('button');
                 addBtn.type = 'button';
                 addBtn.className = 'kbf-photo-add';
                 addBtn.setAttribute('aria-label', 'Add photos');
                 addBtn.innerHTML = '+';
                 editPhotoWrap.appendChild(addBtn);
+            }
+            if (editPhotoInput) {
+                editPhotoInput.disabled = (totalCount >= 5);
             }
         }
         if (editPhotoInput && editPhotoWrap) {
@@ -611,43 +521,325 @@
                 kbfSyncEditFiles();
                 kbfRenderEditThumbs();
             });
-            editPhotoWrap.addEventListener('dragover', function(ev){
-                ev.preventDefault();
-                ev.dataTransfer.dropEffect = 'move';
-                var afterEl = kbfGetDragAfterElement(editPhotoWrap, ev.clientX, ev.clientY);
-                var ph = kbfEnsurePlaceholder(editPhotoWrap);
-                if (afterEl == null) {
-                    editPhotoWrap.insertBefore(ph, editPhotoWrap.querySelector('.kbf-photo-add'));
-                } else {
-                    editPhotoWrap.insertBefore(ph, afterEl);
-                }
-            });
-            editPhotoWrap.addEventListener('dragleave', function(ev){
-                if (ev.target === editPhotoWrap) {
-                    var ph = editPhotoWrap.querySelector('.kbf-photo-placeholder');
-                    if (ph) ph.remove();
-                }
-            });
-            editPhotoWrap.addEventListener('drop', function(ev){
-                ev.preventDefault();
-                var from = parseInt(ev.dataTransfer.getData('text/plain') || '-1', 10);
-                if (isNaN(from) || from < 0) return;
-                var ph = editPhotoWrap.querySelector('.kbf-photo-placeholder');
-                var thumbs = [].slice.call(editPhotoWrap.querySelectorAll('.kbf-photo-thumb'));
-                var to = thumbs.length;
-                if (ph) {
-                    to = thumbs.indexOf(ph.nextElementSibling);
-                    if (to < 0) to = thumbs.length;
-                    ph.remove();
-                }
-                if (from === to || from + 1 === to) return;
-                var moved = kbfEditFiles.splice(from, 1)[0];
-                if (to > from) to -= 1;
-                kbfEditFiles.splice(to, 0, moved);
-                kbfSyncEditFiles();
-                kbfRenderEditThumbs();
-            });
             kbfRenderEditThumbs();
+        }
+        var editorBackdrop = document.getElementById('kbf-photo-editor');
+        var editorImg = document.getElementById('kbf-photo-editor-img');
+        var editorClose = document.getElementById('kbf-photo-editor-close');
+        var editorCancel = document.getElementById('kbf-photo-editor-cancel');
+        var editorApply = document.getElementById('kbf-photo-editor-apply');
+        var editorRotateLeft = document.getElementById('kbf-photo-rotate-left');
+        var editorRotateRight = document.getElementById('kbf-photo-rotate-right');
+        var editorFlipX = document.getElementById('kbf-photo-flip-x');
+        var editorFlipY = document.getElementById('kbf-photo-flip-y');
+        var editorReset = document.getElementById('kbf-photo-reset');
+        var editorZoom = document.getElementById('kbf-photo-zoom');
+        var editorZoomMin = 1;
+        var editorCrop = document.getElementById('kbf-photo-editor-crop');
+        var editorState = {
+            mode: null,
+            index: -1,
+            file: null,
+            rotation: 0,
+            flipX: 1,
+            flipY: 1,
+            zoom: 1,
+            baseScale: 1,
+            offsetX: 0,
+            offsetY: 0,
+            stageW: 0,
+            stageH: 0,
+            crop: { x: 0, y: 0, w: 0, h: 0 }
+        };
+
+        function kbfClosePhotoEditor(){
+            if (editorBackdrop) editorBackdrop.style.display = 'none';
+            if (editorImg) editorImg.src = '';
+            editorState.mode = null;
+            editorState.index = -1;
+            editorState.file = null;
+            editorState.rotation = 0;
+            editorState.flipX = 1;
+            editorState.flipY = 1;
+            editorState.zoom = 1;
+            editorState.baseScale = 1;
+            editorState.offsetX = 0;
+            editorState.offsetY = 0;
+        }
+
+        function kbfUpdatePhotoEditorPreview(){
+            if (!editorImg) return;
+            var scale = editorState.baseScale * Math.max(editorZoomMin, editorState.zoom);
+            editorImg.style.transform =
+                'translate(-50%, -50%) translate(' + editorState.offsetX + 'px,' + editorState.offsetY + 'px) rotate(' +
+                editorState.rotation + 'deg) scale(' + (editorState.flipX * scale) + ',' + (editorState.flipY * scale) + ')';
+        }
+
+        function kbfClampPhotoEditorOffset(){
+            if (!editorBackdrop || !editorImg || !editorCrop) return;
+            var stage = editorBackdrop.querySelector('.kbf-photo-editor-stage');
+            if (!stage) return;
+            var cropRect = editorCrop.getBoundingClientRect();
+            var imgRect = editorImg.getBoundingClientRect();
+            if (!cropRect.width || !cropRect.height || !imgRect.width || !imgRect.height) return;
+            var dx = 0;
+            var dy = 0;
+            if (imgRect.left > cropRect.left) dx -= (imgRect.left - cropRect.left);
+            if (imgRect.top > cropRect.top) dy -= (imgRect.top - cropRect.top);
+            if (imgRect.right < cropRect.right) dx += (cropRect.right - imgRect.right);
+            if (imgRect.bottom < cropRect.bottom) dy += (cropRect.bottom - imgRect.bottom);
+            if (dx || dy) {
+                editorState.offsetX += dx;
+                editorState.offsetY += dy;
+            }
+        }
+
+        function kbfLayoutPhotoCropBox(){
+            if (!editorBackdrop || !editorCrop) return;
+            var stage = editorBackdrop.querySelector('.kbf-photo-editor-stage');
+            if (!stage) return;
+            var pad = 22;
+            var stageW = stage.clientWidth || 0;
+            var stageH = stage.clientHeight || 0;
+            if (!stageW || !stageH) return;
+            var maxW = Math.max(40, stageW - pad * 2);
+            var maxH = Math.max(40, stageH - pad * 2);
+            var cropW = Math.min(maxW, maxH * 16 / 9);
+            var cropH = cropW * 9 / 16;
+            if (cropH > maxH) {
+                cropH = maxH;
+                cropW = cropH * 16 / 9;
+            }
+            var cropX = Math.max(0, (stageW - cropW) / 2);
+            var cropY = Math.max(0, (stageH - cropH) / 2);
+            editorState.crop = { x: cropX, y: cropY, w: cropW, h: cropH };
+            editorState.stageW = stageW;
+            editorState.stageH = stageH;
+            editorCrop.style.left = cropX + 'px';
+            editorCrop.style.top = cropY + 'px';
+            editorCrop.style.width = cropW + 'px';
+            editorCrop.style.height = cropH + 'px';
+            return editorState.crop;
+        }
+
+        window.kbfOpenPhotoEditor = function(file, mode, index){
+            if (!editorBackdrop || !editorImg || !file) return;
+            editorState.mode = mode;
+            editorState.index = index;
+            editorState.file = file;
+            editorState.rotation = 0;
+            editorState.flipX = 1;
+            editorState.flipY = 1;
+            editorState.zoom = 1;
+            editorState.offsetX = 0;
+            editorState.offsetY = 0;
+            if (editorZoom) editorZoom.value = '1';
+            var reader = new FileReader();
+            reader.onload = function(e){
+                editorImg.src = e.target.result;
+                editorImg.onload = function(){
+                    editorBackdrop.style.display = 'flex';
+                    requestAnimationFrame(function(){
+                        var stage = editorBackdrop.querySelector('.kbf-photo-editor-stage');
+                        var stageW = stage ? stage.clientWidth : 0;
+                        var stageH = stage ? stage.clientHeight : 0;
+                        if (!stageW || !stageH) {
+                            stageW = 520;
+                            stageH = 280;
+                        }
+                        var w = editorImg.naturalWidth || 1;
+                        var h = editorImg.naturalHeight || 1;
+                    var crop = kbfLayoutPhotoCropBox();
+                    var targetW = (crop && crop.w) ? crop.w : stageW;
+                    var targetH = (crop && crop.h) ? crop.h : stageH;
+                    editorState.baseScale = Math.max(targetW / w, targetH / h) || 1;
+                    editorZoomMin = 1;
+                    if (editorZoom) {
+                        editorZoom.min = '1';
+                        editorZoom.value = '1';
+                    }
+                    kbfUpdatePhotoEditorPreview();
+                    kbfClampPhotoEditorOffset();
+                    kbfUpdatePhotoEditorPreview();
+                });
+                };
+            };
+            reader.readAsDataURL(file);
+        };
+
+        function kbfApplyPhotoEditor(){
+            if (!editorState.file || !editorImg || !editorImg.src) return;
+            var stage = editorBackdrop ? editorBackdrop.querySelector('.kbf-photo-editor-stage') : null;
+            if (!stage) return;
+            var stageW = stage.clientWidth || 1;
+            var stageH = stage.clientHeight || 1;
+            var crop = editorState.crop || { x: 0, y: 0, w: stageW, h: stageH };
+            var img = new Image();
+            img.onload = function(){
+                var rotation = ((editorState.rotation % 360) + 360) % 360;
+                var sx = editorState.flipX;
+                var sy = editorState.flipY;
+                var w = img.naturalWidth || 1;
+                var h = img.naturalHeight || 1;
+                var scale = editorState.baseScale * editorState.zoom;
+                var render = document.createElement('canvas');
+                render.width = stageW;
+                render.height = stageH;
+                var rctx = render.getContext('2d');
+                rctx.translate(stageW / 2 + editorState.offsetX, stageH / 2 + editorState.offsetY);
+                rctx.rotate(rotation * Math.PI / 180);
+                rctx.scale(sx * scale, sy * scale);
+                rctx.drawImage(img, -w / 2, -h / 2);
+                var out = document.createElement('canvas');
+                out.width = Math.max(1, Math.round(crop.w));
+                out.height = Math.max(1, Math.round(crop.h));
+                var octx = out.getContext('2d');
+                octx.drawImage(render, crop.x, crop.y, crop.w, crop.h, 0, 0, out.width, out.height);
+                function kbfNormalizeFileMeta(file){
+                    var type = (file && file.type) ? file.type : 'image/jpeg';
+                    if (type === 'image/jpg') type = 'image/jpeg';
+                    var name = (file && file.name) ? file.name : 'photo.jpg';
+                    var ext = name.indexOf('.') !== -1 ? name.split('.').pop().toLowerCase() : '';
+                    var expectedExt = (type === 'image/png') ? 'png' : (type === 'image/webp' ? 'webp' : 'jpg');
+                    if (!ext || ext === name.toLowerCase()) {
+                        name = name.replace(/\.+$/, '') + '.' + expectedExt;
+                    } else if (!['jpg','jpeg','png','webp'].includes(ext)) {
+                        name = name + '.' + expectedExt;
+                    }
+                    return { name: name, type: type };
+                }
+                function kbfDataUrlToBlob(dataUrl){
+                    var parts = dataUrl.split(',');
+                    if (parts.length < 2) return null;
+                    var mimeMatch = parts[0].match(/data:([^;]+);base64/);
+                    var mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+                    var bin = atob(parts[1]);
+                    var len = bin.length;
+                    var bytes = new Uint8Array(len);
+                    for (var i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+                    return new Blob([bytes], { type: mime });
+                }
+                var meta = kbfNormalizeFileMeta(editorState.file);
+                out.toBlob(function(blob){
+                    if (!blob) {
+                        var fallback = kbfDataUrlToBlob(out.toDataURL(meta.type, 0.95));
+                        if (!fallback) return;
+                        blob = fallback;
+                    }
+                    var nextFile = new File([blob], meta.name, { type: meta.type });
+                    if (editorState.mode === 'create') {
+                        kbfCreateFiles[editorState.index] = nextFile;
+                        kbfSyncCreateFiles();
+                        kbfRenderCreateThumbs();
+                    } else if (editorState.mode === 'edit') {
+                        kbfEditFiles[editorState.index] = nextFile;
+                        kbfSyncEditFiles();
+                        kbfRenderEditThumbs();
+                    }
+                    kbfClosePhotoEditor();
+                }, editorState.file.type || 'image/jpeg', 0.95);
+            };
+            img.src = editorImg.src;
+        }
+
+        if (editorBackdrop) {
+            editorBackdrop.addEventListener('click', function(e){
+                if (e.target === editorBackdrop) kbfClosePhotoEditor();
+            });
+        }
+        if (editorClose) editorClose.addEventListener('click', kbfClosePhotoEditor);
+        if (editorCancel) editorCancel.addEventListener('click', kbfClosePhotoEditor);
+        if (editorApply) editorApply.addEventListener('click', kbfApplyPhotoEditor);
+        if (editorRotateLeft) editorRotateLeft.addEventListener('click', function(){
+            editorState.rotation -= 90;
+            kbfUpdatePhotoEditorPreview();
+            kbfClampPhotoEditorOffset();
+            kbfUpdatePhotoEditorPreview();
+        });
+        if (editorRotateRight) editorRotateRight.addEventListener('click', function(){
+            editorState.rotation += 90;
+            kbfUpdatePhotoEditorPreview();
+            kbfClampPhotoEditorOffset();
+            kbfUpdatePhotoEditorPreview();
+        });
+        if (editorFlipX) editorFlipX.addEventListener('click', function(){
+            editorState.flipX = editorState.flipX * -1;
+            kbfUpdatePhotoEditorPreview();
+            kbfClampPhotoEditorOffset();
+            kbfUpdatePhotoEditorPreview();
+        });
+        if (editorFlipY) editorFlipY.addEventListener('click', function(){
+            editorState.flipY = editorState.flipY * -1;
+            kbfUpdatePhotoEditorPreview();
+            kbfClampPhotoEditorOffset();
+            kbfUpdatePhotoEditorPreview();
+        });
+        if (editorReset) editorReset.addEventListener('click', function(){
+            editorState.rotation = 0;
+            editorState.flipX = 1;
+            editorState.flipY = 1;
+            editorState.zoom = 1;
+            editorState.offsetX = 0;
+            editorState.offsetY = 0;
+            if (editorZoom) editorZoom.value = '1';
+            kbfUpdatePhotoEditorPreview();
+            kbfClampPhotoEditorOffset();
+            kbfUpdatePhotoEditorPreview();
+        });
+        if (editorZoom) editorZoom.addEventListener('input', function(){
+            editorState.zoom = parseFloat(editorZoom.value || '1') || 1;
+            kbfUpdatePhotoEditorPreview();
+            kbfClampPhotoEditorOffset();
+            kbfUpdatePhotoEditorPreview();
+        });
+        if (editorBackdrop) {
+            var stage = editorBackdrop.querySelector('.kbf-photo-editor-stage');
+            if (stage) {
+                var dragging = false;
+                var startX = 0;
+                var startY = 0;
+                var startOffsetX = 0;
+                var startOffsetY = 0;
+                stage.addEventListener('pointerdown', function(e){
+                    var rect = stage.getBoundingClientRect();
+                    var x = e.clientX - rect.left;
+                    var y = e.clientY - rect.top;
+                    var crop = editorState.crop;
+                    if (!crop || x < crop.x || x > (crop.x + crop.w) || y < crop.y || y > (crop.y + crop.h)) {
+                        return;
+                    }
+                    dragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startOffsetX = editorState.offsetX;
+                    startOffsetY = editorState.offsetY;
+                    if (stage.setPointerCapture) stage.setPointerCapture(e.pointerId);
+                    e.preventDefault();
+                });
+                stage.addEventListener('pointermove', function(e){
+                    if (!dragging) return;
+                    editorState.offsetX = startOffsetX + (e.clientX - startX);
+                    editorState.offsetY = startOffsetY + (e.clientY - startY);
+                    kbfUpdatePhotoEditorPreview();
+                    kbfClampPhotoEditorOffset();
+                    kbfUpdatePhotoEditorPreview();
+                    e.preventDefault();
+                });
+                stage.addEventListener('pointerup', function(e){
+                    dragging = false;
+                    if (stage.releasePointerCapture) stage.releasePointerCapture(e.pointerId);
+                });
+                stage.addEventListener('pointercancel', function(e){
+                    dragging = false;
+                    if (stage.releasePointerCapture) stage.releasePointerCapture(e.pointerId);
+                });
+            }
+            window.addEventListener('resize', function(){
+                if (editorBackdrop.style.display !== 'flex') return;
+                kbfLayoutPhotoCropBox();
+                kbfClampPhotoEditorOffset();
+                kbfUpdatePhotoEditorPreview();
+            });
         }
         window.kbfResetEditPhotos = function(){
             kbfEditFiles = [];

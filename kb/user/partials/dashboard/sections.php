@@ -4,7 +4,7 @@
       $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $signin_url;
       $avatar_url = ($is_logged_in && $nav_profile && $nav_profile->avatar_url)
         ? $nav_profile->avatar_url
-        : ($is_logged_in ? get_avatar_url($user->ID, ['size'=>64]) : '');
+        : '';
       $logout_url = $is_logged_in ? wp_logout_url($landing_url) : '';
     ?>
     <div id="kbf-loading-overlay">
@@ -60,7 +60,13 @@
           <div class="kbf-user-menu" id="kbf-user-menu">
             <button class="kbf-dashboard-user" type="button" id="kbf-user-menu-btn" aria-haspopup="true" aria-expanded="false">
               <span class="kbf-dashboard-avatar-wrap">
-                <img class="kbf-dashboard-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="User avatar" id="kbf-navbar-avatar">
+                <?php if($avatar_url): ?>
+                  <img class="kbf-dashboard-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="User avatar" id="kbf-navbar-avatar">
+                <?php else: ?>
+                  <span class="kbf-dashboard-avatar-fallback" aria-hidden="true">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="">
+                  </span>
+                <?php endif; ?>
                 <?php if($nav_profile && !empty($nav_profile->is_verified)): ?>
                   <span class="kbf-dashboard-verified" aria-hidden="true"></span>
                 <?php endif; ?>

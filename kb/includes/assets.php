@@ -856,13 +856,24 @@ function kbf_global_assets() {
     .kbf-form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--kbf-text-sm); margin-bottom: 6px; }
     .kbf-form-group input,
     .kbf-form-group select,
-    .kbf-form-group textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--kbf-border); border-radius: 7px; font-size: 13.5px; color: var(--kbf-text); background: #fff; transition: border-color .15s; font-family: inherit; }
+    .kbf-form-group textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--kbf-border); border-radius: 7px; font-size: 13.5px; color: var(--kbf-text); background: #fff; transition: border-color .15s, box-shadow .15s; font-family: inherit; }
+    .kbf-form-group select{
+        appearance:none;
+        -webkit-appearance:none;
+        -moz-appearance:none;
+        padding-right:36px;
+        margin-top:2px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364758b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        background-repeat:no-repeat;
+        background-position:right 12px center;
+        background-size:14px;
+    }
     .kbf-form-group input::placeholder,
     .kbf-form-group textarea::placeholder { color: #8aa0b8; font-weight: 400; font-family: inherit; }
     .kbf-form-group input[type="date"] { font-family: inherit; color: var(--kbf-text); }
     .kbf-form-group input:focus,
     .kbf-form-group select:focus,
-    .kbf-form-group textarea:focus { outline: none; border-color: var(--kbf-navy-light); box-shadow: none; }
+    .kbf-form-group textarea:focus { outline: none; border-color: var(--kbf-navy-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
     .kbf-form-group small { display: block; color: var(--kbf-slate); font-size: 11.5px; margin-top: 4px; }
     .kbf-checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--kbf-text-sm); }
     .kbf-checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--kbf-blue); cursor: pointer; }

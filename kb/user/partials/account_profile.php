@@ -113,6 +113,13 @@ function bntm_shortcode_kbf_organizer_profile() {
           width:70px;height:70px;border-radius:50%;object-fit:cover;display:block;
           border:3px solid rgba(255,255,255,.3);
         }
+        .kbf-org-avatar > .kbf-org-avatar-fallback{
+          background: var(--kbf-navy);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+        .kbf-org-avatar > .kbf-org-avatar-fallback img{width:28px;height:28px;filter:invert(100%);}
         .kbf-org-verified{
           position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;
           background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #fff;
@@ -175,8 +182,8 @@ function bntm_shortcode_kbf_organizer_profile() {
           <?php if($profile&&$profile->avatar_url): ?>
             <img src="<?php echo esc_url($profile->avatar_url); ?>" alt="">
           <?php else: ?>
-            <div class="kbf-org-avatar-fallback" style="background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;">
-              <svg width="32" height="32" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <div class="kbf-org-avatar-fallback" aria-hidden="true">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="">
             </div>
           <?php endif; ?>
           <?php if($profile && (int)$profile->is_verified === 1): ?>

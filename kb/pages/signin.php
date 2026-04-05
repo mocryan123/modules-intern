@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF Sign In page.
  */
@@ -13,7 +13,6 @@ function bntm_kbf_render_signin() {
             wp_safe_redirect($home);
             exit;
         }
-        // Fallback when headers are already sent (shortcode context).
         return '<script>window.location.href=' . wp_json_encode($home) . ';</script><noscript><meta http-equiv="refresh" content="0;url=' . esc_url($home) . '"></noscript>';
     }
     kbf_global_assets();
@@ -66,7 +65,7 @@ function bntm_kbf_render_signin() {
         }
     }
     ob_start();
-?>
+    ?>
     <style>
       html,body{margin:0 !important;padding:0;width:100%;height:100%;overflow:hidden;}
       html,body{margin-top:0 !important;}
@@ -139,7 +138,7 @@ function bntm_kbf_render_signin() {
         transition:max-width .3s ease,width .3s ease,transform .3s ease,box-shadow .3s ease;
         backdrop-filter:blur(4px);
       }
-      .kbf-auth-card:hover{transform:translateY(-2px);box-shadow:0 40px 100px rgba(15,23,42,.18), 0 10px 26px rgba(37,99,235,.12);}
+      .kbf-auth-card:hover{transform:none;box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);}
       .kbf-auth-left{padding:40px 42px 44px;}
       .kbf-auth-right{background:linear-gradient(160deg,#eef6ff 0%, #dfeeff 55%, #c7defc 100%);color:#0f172a;padding:36px 34px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;gap:14px;border-left:1px solid rgba(37,99,235,.12);}
       .kbf-auth-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--kbf-auth-ink);font-size:15px;margin-bottom:14px;letter-spacing:.2px;}
@@ -151,15 +150,13 @@ function bntm_kbf_render_signin() {
       .kbf-auth-input input{background:#ffffff;}
       .kbf-auth-input img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-input input{border:0;background:transparent;outline:none;font-size:13.5px;width:100%;}
-      .kbf-auth-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;}
-      .kbf-auth-link{font-size:12.5px;color:var(--kbf-blue);text-decoration:none;font-weight:600;}
-      .kbf-auth-cta{margin-top:18px;}
+      .kbf-auth-cta{margin-top:14px;}
       .kbf-auth-right h3{font-size:20px;margin:0;font-weight:700;color:#0f172a;}
       .kbf-auth-right p{font-size:13px;margin:0;color:#475569;line-height:1.7;}
       .kbf-auth-points{display:grid;gap:10px;margin-top:6px;}
       .kbf-auth-point{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#1f2a44;}
       .kbf-auth-point span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#e0edff;color:#1d4ed8;font-size:12px;font-weight:700;}
-      .kbf-auth-footer{margin-top:16px;font-size:12.5px;color:var(--kbf-slate);}
+      .kbf-auth-footer{margin-top:14px;font-size:12.5px;color:var(--kbf-slate);}
       .kbf-auth-footer a{color:var(--kbf-blue);font-weight:600;text-decoration:none;}
       @media (max-width: 900px){
         .kbf-auth-card{grid-template-columns:1fr;}
@@ -202,28 +199,25 @@ function bntm_kbf_render_signin() {
                 <label>Password</label>
                 <div class="kbf-auth-input">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lock-fill.svg" alt="">
-                  <input type="password" name="user_password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
+                  <input type="password" name="user_password" placeholder="Enter your password" required>
                 </div>
               </div>
-              <div class="kbf-auth-actions">
-                <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--kbf-slate);">
-                  <input type="checkbox" name="rememberme" value="1" style="width:14px;height:14px;"> Remember me
-                </label>
-                <a class="kbf-auth-link" href="<?php echo esc_url(wp_lostpassword_url()); ?>">Forgot password?</a>
-              </div>
+              <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--kbf-slate);margin-top:2px;">
+                <input type="checkbox" name="rememberme" style="width:14px;height:14px;"> Keep me signed in
+              </label>
               <div class="kbf-auth-cta">
                 <button class="kbf-btn kbf-btn-primary" type="submit">Sign In</button>
               </div>
-              <div class="kbf-auth-footer">Donâ€™t have an account? <a href="<?php echo esc_url($signup_url); ?>">Sign Up</a></div>
+              <div class="kbf-auth-footer">Don't have an account? <a href="<?php echo esc_url($signup_url); ?>">Sign Up</a></div>
             </form>
           </div>
           <div class="kbf-auth-right">
-            <h3>Glad to see you!</h3>
-            <p>One account gives you access to fundraising tools, donor insights, and campaign updates.</p>
+            <h3>Build impact faster</h3>
+            <p>Launch fundraisers, share updates, and grow a trusted supporter base.</p>
             <div class="kbf-auth-points">
-              <div class="kbf-auth-point"><span>âœ“</span> Track donations in real time</div>
-              <div class="kbf-auth-point"><span>âœ“</span> Share your campaign in one click</div>
-              <div class="kbf-auth-point"><span>âœ“</span> Message your supporters</div>
+              <div class="kbf-auth-point"><span>✓</span> Verified profiles build trust</div>
+              <div class="kbf-auth-point"><span>✓</span> Seamless donation tracking</div>
+              <div class="kbf-auth-point"><span>✓</span> Transparent progress updates</div>
             </div>
           </div>
         </div>
@@ -232,5 +226,3 @@ function bntm_kbf_render_signin() {
     <?php
     return ob_get_clean();
 }
-
-

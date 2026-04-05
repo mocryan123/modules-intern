@@ -62,11 +62,28 @@ if (!defined('KBF_AUTH_SIGNUP_WINDOW')) {
 // TODO: Add rate limiting for AI generation endpoints when implemented.
 
 function kbf_auth_get_ip() {
-    if (!empty($_SERVER['REMOTE_ADDR'])) {
-        return preg_replace('/[^0-9a-fA-F:\.]/', '', (string) $_SERVER['REMOTE_ADDR']);
+    $remote_addr = isset($_SERVER['REMOTE_ADDR']) ? preg_replace('/[^0-9a-fA-F:\.]/', '', (string) $_SERVER['REMOTE_ADDR']) : '';
+    if ($remote_addr === '') {
+        return '0.0.0.0';
     }
-    // TODO: If using a reverse proxy, validate and use trusted forwarded headers.
-    return '0.0.0.0';
+
+    // Only trust forwarded headers if behind a known proxy.
+    $trusted_proxies = ['127.0.0.1'];
+    if (!in_array($remote_addr, $trusted_proxies, true)) {
+        return $remote_addr;
+    }
+
+    foreach (['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_CLIENT_IP'] as $key) {
+        if (empty($_SERVER[$key])) {
+            continue;
+        }
+        $value = sanitize_text_field($_SERVER[$key]);
+        $ip = trim(explode(',', $value)[0]);
+        if (filter_var($ip, FILTER_VALIDATE_IP)) {
+            return $ip;
+        }
+    }
+    return $remote_addr;
 }
 
 function kbf_auth_rate_limit_key($login, $ip) {
@@ -410,6 +427,8 @@ function kbf_get_page_url($page_key) {
         'landing'   => 'fundora',
         'dashboard' => 'fundora-user',
         'terms'     => 'fundora-terms',
+        'privacy'   => 'fundora-privacy',
+        'refund'    => 'fundora-refund',
         'admin'     => 'fundora-admin',
         'signin'    => 'fundora-sign-in',
         'signup'    => 'fundora-sign-up',
@@ -439,6 +458,9 @@ function kbf_get_page_url($page_key) {
         'admin'             => 'kbf_admin',
         'signin'            => 'kbf_signin',
         'signup'            => 'kbf_signup',
+        'terms'             => 'kbf_terms',
+        'privacy'           => 'kbf_privacy',
+        'refund'            => 'kbf_refund',
     ];
     $shortcode = $shortcode_map[$page_key] ?? $page_key;
     // Try bntm framework page setting first

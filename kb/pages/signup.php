@@ -148,7 +148,7 @@ function bntm_kbf_render_signup() {
         transition:max-width .3s ease,width .3s ease,transform .3s ease,box-shadow .3s ease;
         backdrop-filter:blur(4px);
       }
-      .kbf-auth-card:hover{transform:translateY(-2px);box-shadow:0 40px 100px rgba(15,23,42,.18), 0 10px 26px rgba(37,99,235,.12);}
+      .kbf-auth-card:hover{transform:none;box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);}
       .kbf-auth-left{padding:40px 42px 44px;}
       .kbf-auth-right{background:linear-gradient(160deg,#eef6ff 0%, #dfeeff 55%, #c7defc 100%);color:#0f172a;padding:36px 34px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;gap:14px;border-left:1px solid rgba(37,99,235,.12);}
       .kbf-auth-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--kbf-auth-ink);font-size:15px;margin-bottom:14px;letter-spacing:.2px;}
@@ -234,9 +234,9 @@ function bntm_kbf_render_signup() {
             <h3>Build impact faster</h3>
             <p>Launch fundraisers, share updates, and grow a trusted supporter base.</p>
             <div class="kbf-auth-points">
-              <div class="kbf-auth-point"><span>âœ“</span> Verified profiles build trust</div>
-              <div class="kbf-auth-point"><span>âœ“</span> Seamless donation tracking</div>
-              <div class="kbf-auth-point"><span>âœ“</span> Transparent progress updates</div>
+              <div class="kbf-auth-point"><span>&#10003;</span> Verified profiles build trust</div>
+              <div class="kbf-auth-point"><span>&#10003;</span> Seamless donation tracking</div>
+              <div class="kbf-auth-point"><span>&#10003;</span> Transparent progress updates</div>
             </div>
           </div>
         </div>

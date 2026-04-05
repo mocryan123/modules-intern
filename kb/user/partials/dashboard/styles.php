@@ -274,6 +274,14 @@
 
     .kbf-dashboard-avatar-wrap{position:relative;width:34px;height:34px;flex-shrink:0;}
     .kbf-dashboard-avatar-wrap .kbf-dashboard-avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--kbf-border);object-fit:cover;box-shadow:0 8px 18px #1018281f;display:block;}
+    .kbf-dashboard-avatar-fallback{
+        width:34px;height:34px;border-radius:50%;
+        border:1px solid var(--kbf-border);
+        background:var(--kbf-navy);
+        display:inline-flex;align-items:center;justify-content:center;
+        box-shadow:0 8px 18px #1018281f;
+    }
+    .kbf-dashboard-avatar-fallback img{width:16px;height:16px;filter:invert(100%);}
     .kbf-dashboard-verified{position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #fff;}
     .kbf-dashboard-verified::before{content:'';width:10px;height:10px;background:#1d4ed8;display:block;
         -webkit-mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;
@@ -813,13 +821,14 @@
         align-items:center;
         justify-content:center;
         transition:border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+        order: 999;
     }
     .kbf-user-ui .kbf-photo-add:hover{
         cursor:pointer;
-        border-color:#9aa3b2;
-        color:#111827;
-        box-shadow:0 10px 20px #1018281f;
-        transform: translateY(-1px);
+        border-color:#d9dde6;
+        color:#6b7280;
+        box-shadow:none;
+        transform:none;
     }
     .kbf-user-ui .kbf-photo-thumb{
         width:120px;height:86px;
@@ -827,35 +836,9 @@
         border:1px solid #e2e8f0;
         overflow:hidden;
         position:relative;
-        cursor:grab;
+        cursor:default;
         user-select:none;
-    }
-    .kbf-user-ui .kbf-photo-thumb:active{
-        cursor:grabbing;
-    }
-    .kbf-user-ui .kbf-photo-thumb.is-dragging{
-        opacity:.7;
-        transform:scale(.98);
-        box-shadow:0 10px 22px #0f172a29;
-        z-index:2;
-    }
-    .kbf-user-ui .kbf-photo-thumb.is-drop-target{
-        outline:2px dashed #2563eb80;
-        outline-offset:2px;
-    }
-    .kbf-user-ui .kbf-photo-placeholder{
-        width:3px;
-        height:86px;
-        border-radius:999px;
-        background:#2563eba6;;
-        box-shadow:0 0 0 1px #2563eb26;
-        pointer-events:none;
-    }
-    @media (max-width: 820px){
-        .kbf-user-ui .kbf-photo-placeholder{
-            width:3px;
-            height:100px;
-        }
+        order: 1;
     }
     .kbf-user-ui .kbf-photo-order{
         position:absolute;
@@ -870,23 +853,6 @@
         align-items:center;
         justify-content:center;
         padding:0 5px;
-    }
-    .kbf-user-ui .kbf-photo-handle{
-        position:absolute;
-        bottom:6px;left:6px;
-        width:22px;height:22px;
-        border-radius:8px;
-        background:#ffffffe6;
-        color:#475569;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        box-shadow:0 6px 12px #0f172a1f;
-        border:1px solid #94a3b859;
-        cursor:grab;
-    }
-    .kbf-user-ui .kbf-photo-thumb:active .kbf-photo-handle{
-        cursor:grabbing;
     }
     @media (max-width: 820px){
         .kbf-user-ui .kbf-photo-thumb,
@@ -917,12 +883,147 @@
         transition:opacity .15s ease, transform .15s ease, background .15s ease;
         cursor:pointer;
     }
+    .kbf-user-ui .kbf-photo-edit{
+        position:absolute;
+        top:6px;right:34px;
+        width:22px;height:22px;
+        border-radius:50%;
+        border:none;
+        background:#0f172abf;
+        color:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        opacity:0;
+        transform:scale(.9);
+        transition:opacity .15s ease, transform .15s ease, background .15s ease;
+        cursor:pointer;
+        padding:0;
+    }
+    .kbf-user-ui .kbf-photo-edit svg{
+        width:12px;height:12px;display:block;
+    }
     .kbf-user-ui .kbf-photo-thumb:hover .kbf-photo-remove{
+        opacity:1;
+        transform:scale(1);
+    }
+    .kbf-user-ui .kbf-photo-thumb:hover .kbf-photo-edit{
         opacity:1;
         transform:scale(1);
     }
     .kbf-user-ui .kbf-photo-remove:hover{
         background:#dc2626e6;
+    }
+    .kbf-user-ui .kbf-photo-edit:hover{
+        background:#2563eb;
+    }
+    .kbf-user-ui .kbf-photo-editor-modal{
+        max-width:560px;
+    }
+    .kbf-user-ui .kbf-photo-editor-stage{
+        position:relative;
+        height:280px;
+        border-radius:14px;
+        border:1px solid #e2e8f0;
+        background:#f8fafc;
+        overflow:hidden;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        touch-action:none;
+    }
+    .kbf-user-ui .kbf-photo-editor-crop{
+        position:absolute;
+        border:2px solid #ffffff;
+        border-radius:12px;
+        box-shadow:0 0 0 2000px rgba(12, 18, 32, 0.45);
+        pointer-events:none;
+    }
+    .kbf-user-ui .kbf-photo-editor-stage img{
+        position:absolute;
+        max-width:none;
+        max-height:none;
+        left:50%;
+        top:50%;
+        transform:translate(-50%, -50%);
+        transform-origin:center;
+    }
+    .kbf-user-ui .kbf-photo-editor-controls{
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+        margin-top:14px;
+        flex-direction:column;
+        align-items:stretch;
+    }
+    .kbf-user-ui .kbf-photo-editor-zoom{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        width:100%;
+    }
+    .kbf-user-ui .kbf-photo-editor-zoom label{
+        font-size:11.5px;
+        font-weight:600;
+        color:#64748b;
+    }
+    .kbf-user-ui .kbf-photo-editor-zoom input[type="range"]{
+        width:100%;
+    }
+    #kbf-photo-zoom{
+        accent-color:#3b82f6;
+    }
+    #kbf-photo-zoom::-webkit-slider-thumb{
+        background:#3b82f6;
+        border:2px solid #dbeafe;
+    }
+    #kbf-photo-zoom::-moz-range-thumb{
+        background:#3b82f6;
+        border:2px solid #dbeafe;
+    }
+    .kbf-user-ui .kbf-photo-editor-actions{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        justify-content:center;
+        width:100%;
+    }
+    .kbf-user-ui .kbf-photo-editor-icon-btn{
+        width:38px;
+        height:38px;
+        border-radius:12px;
+        border:1px solid #e2e8f0;
+        background:#fff;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        box-shadow:0 4px 10px rgba(15,23,42,.06);
+        transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+        padding:0;
+    }
+    .kbf-user-ui .kbf-photo-editor-icon-btn img{
+        width:16px;
+        height:16px;
+        display:block;
+        filter: invert(32%) sepia(8%) saturate(1427%) hue-rotate(182deg) brightness(96%) contrast(93%);
+    }
+    .kbf-user-ui .kbf-photo-editor-icon-btn:hover{
+        transform:translateY(-1px);
+        border-color:#cbd5f5;
+        box-shadow:0 6px 14px rgba(59,130,246,.15);
+    }
+    .kbf-user-ui .kbf-photo-editor-reset{
+        min-height:38px;
+        padding:0 14px;
+        font-size:12.5px;
+        font-weight:600;
+        border-radius:12px;
+    }
+    .kbf-user-ui .kbf-photo-editor-controls .kbf-btn{
+        min-height:34px;
+        padding:6px 12px;
+        font-size:12px;
     }
     .kbf-user-ui #kbf-loading-overlay{
         position:fixed;

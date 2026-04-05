@@ -123,7 +123,7 @@
               <div class="kbf-form-group">
                 <label class="kbf-checkbox-row">
                   <input type="checkbox" name="agree_terms" id="kbf-agree-terms" required>
-                  I agree to the <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>" target="_blank" rel="noopener noreferrer">Terms &amp; Agreement</a>.
+                  I agree to the <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>" target="_blank" rel="noopener noreferrer">Terms &amp; Agreement</a> and <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>" target="_blank" rel="noopener noreferrer">Refund Policy</a>.
                 </label>
                 <div class="kbf-field-error"></div>
               </div>
@@ -272,6 +272,49 @@
           <button class="kbf-btn kbf-btn-secondary" id="kbf-edit-prev" type="button">Back</button>
           <button class="kbf-btn kbf-btn-primary" id="kbf-edit-next" type="button">Next</button>
           <button class="kbf-btn kbf-btn-primary" id="kbf-edit-submit" type="button" style="display:none;" onclick="kbfSubmitEdit()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: Photo Editor ===== -->
+    <div id="kbf-photo-editor" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal kbf-photo-editor-modal">
+        <div class="kbf-modal-header">
+          <h3>Edit Photo</h3>
+          <button class="kbf-modal-close" type="button" id="kbf-photo-editor-close">&times;</button>
+        </div>
+        <div class="kbf-modal-body">
+          <div class="kbf-photo-editor-stage">
+            <img id="kbf-photo-editor-img" alt="Photo preview">
+            <div class="kbf-photo-editor-crop" id="kbf-photo-editor-crop" aria-hidden="true"></div>
+          </div>
+          <div class="kbf-photo-editor-controls">
+            <div class="kbf-photo-editor-zoom">
+              <label for="kbf-photo-zoom">Zoom</label>
+              <input type="range" id="kbf-photo-zoom" min="1" max="2.5" step="0.01" value="1">
+            </div>
+            <div class="kbf-photo-editor-actions">
+              <button type="button" class="kbf-photo-editor-icon-btn" id="kbf-photo-rotate-left" aria-label="Rotate left" title="Rotate Left" data-tooltip="Rotate Left">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-counterclockwise.svg" alt="">
+              </button>
+              <button type="button" class="kbf-photo-editor-icon-btn" id="kbf-photo-rotate-right" aria-label="Rotate right" title="Rotate Right" data-tooltip="Rotate Right">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-clockwise.svg" alt="">
+              </button>
+              <button type="button" class="kbf-photo-editor-icon-btn" id="kbf-photo-flip-x" aria-label="Flip horizontal" title="Flip Horizontal" data-tooltip="Flip Horizontal">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/symmetry-vertical.svg" alt="">
+              </button>
+              <button type="button" class="kbf-photo-editor-icon-btn" id="kbf-photo-flip-y" aria-label="Flip vertical" title="Flip Vertical" data-tooltip="Flip Vertical">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/symmetry-horizontal.svg" alt="">
+              </button>
+              <button type="button" class="kbf-btn kbf-btn-secondary kbf-photo-editor-reset" id="kbf-photo-reset" aria-label="Reset" title="Reset" data-tooltip="Reset">
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="kbf-modal-footer">
+          <button class="kbf-btn kbf-btn-secondary" type="button" id="kbf-photo-editor-cancel">Cancel</button>
+          <button class="kbf-btn kbf-btn-primary" type="button" id="kbf-photo-editor-apply">Apply</button>
         </div>
       </div>
     </div>

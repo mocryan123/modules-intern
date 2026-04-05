@@ -249,8 +249,8 @@ function kbf_admin_settings_tab() {
           Add your Didit App ID, API key, and workflow IDs for sandbox and live environments.
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px;">
-          <div>
-            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-accent);margin-bottom:10px;">Sandbox</div>
+            <div>
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-accent);margin-bottom:10px;">Sandbox</div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Sandbox API Key</label>
               <input type="text" id="didit-sb-key" value="<?php echo esc_attr($didit_sb_key); ?>" placeholder="didit-sandbox-key-...">
@@ -260,13 +260,14 @@ function kbf_admin_settings_tab() {
               <label style="font-size:12.5px;">Sandbox App ID</label>
               <input type="text" id="didit-sb-app-id" value="<?php echo esc_attr($didit_sb_app); ?>" placeholder="didit-sandbox-app-id-...">
             </div>
-            <div class="kbf-form-group" style="margin-bottom:10px;">
-              <label style="font-size:12.5px;">Sandbox Workflow ID</label>
-              <input type="text" id="didit-sb-workflow" value="<?php echo esc_attr($didit_sb_wf); ?>" placeholder="workflow-id-...">
+              <div class="kbf-form-group" style="margin-bottom:10px;">
+                <label style="font-size:12.5px;">Sandbox Workflow ID</label>
+                <input type="text" id="didit-sb-workflow" value="<?php echo esc_attr($didit_sb_wf); ?>" placeholder="workflow-id-...">
+              </div>
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveDiditKeys('sandbox')">Save Sandbox Keys</button>
             </div>
-          </div>
-          <div>
-            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-green);margin-bottom:10px;">Live</div>
+            <div>
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-green);margin-bottom:10px;">Live</div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Live API Key</label>
               <input type="text" id="didit-lv-key" value="<?php echo esc_attr($didit_lv_key); ?>" placeholder="didit-live-key-...">
@@ -276,33 +277,42 @@ function kbf_admin_settings_tab() {
               <label style="font-size:12.5px;">Live App ID</label>
               <input type="text" id="didit-lv-app-id" value="<?php echo esc_attr($didit_lv_app); ?>" placeholder="didit-live-app-id-...">
             </div>
-            <div class="kbf-form-group" style="margin-bottom:10px;">
-              <label style="font-size:12.5px;">Live Workflow ID</label>
-              <input type="text" id="didit-lv-workflow" value="<?php echo esc_attr($didit_lv_wf); ?>" placeholder="workflow-id-...">
+              <div class="kbf-form-group" style="margin-bottom:10px;">
+                <label style="font-size:12.5px;">Live Workflow ID</label>
+                <input type="text" id="didit-lv-workflow" value="<?php echo esc_attr($didit_lv_wf); ?>" placeholder="workflow-id-...">
+              </div>
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveDiditKeys('live')">Save Live Keys</button>
             </div>
           </div>
-        </div>
 
         <div style="border-top:1px solid var(--kbf-border);padding-top:16px;">
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:10px;">Webhook URL</div>
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:10px;">Webhook URL (for automatic verification)</div>
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;font-size:13px;line-height:1.8;">
             <strong>Your Didit Webhook URL:</strong><br>
             <code style="font-size:12px;word-break:break-all;color:var(--kbf-navy);background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin:6px 0;"><?php echo esc_html($didit_webhook_url); ?></code><br>
-            <small style="color:var(--kbf-slate);">Add this URL to your Didit webhook settings.</small>
+            <small style="color:var(--kbf-slate);">
+              Didit Dashboard -> API &amp; Webhooks -> Add Webhook URL.<br>
+              Optional: add a webhook secret below for signature verification.<br>
+              <a href="https://docs.didit.me/core-technology/id-verification/overview" target="_blank" rel="noopener noreferrer">Open Didit Docs</a>
+              &nbsp;|&nbsp;
+              <a href="<?php echo esc_url($didit_webhook_url); ?>" target="_blank" rel="noopener noreferrer">Open Fundora Webhook Endpoint</a>
+            </small>
           </div>
 
           <div style="margin-top:14px;">
-            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:8px;">Webhook Secret</div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:8px;">Webhook Secret (optional)</div>
             <label style="font-size:12.5px;display:block;margin-bottom:4px;">Didit Webhook Secret</label>
             <div class="kbf-form-group" style="display:flex;flex-direction:row;align-items:center;gap:8px;">
               <input type="password" id="didit-wh-secret" value="" placeholder="webhook-secret-...">
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveDiditWebhookSecret()" style="flex-shrink:0;white-space:nowrap;">Save Secret</button>
             </div>
             <small style="color:var(--kbf-slate);display:block;margin-top:4px;">Stored: <?php echo $didit_wh_secret ? 'Yes' : 'No'; ?></small>
+            <small style="color:var(--kbf-slate);display:block;margin-top:6px;">
+              When set, Fundora verifies incoming webhook signatures before updating verification status.
+            </small>
           </div>
         </div>
 
-        <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveDiditKeys()">Save Didit Settings</button>
       </div>
       <div id="kbf-settings-msg" style="margin-top:12px;"></div>
     </div>
@@ -368,21 +378,24 @@ function kbf_admin_settings_tab() {
         }
         kbfSaveSetting('kbf_maya_webhook_secret', val, '<?php echo $nonce; ?>');
     };
-    window.kbfSaveDiditKeys = function() {
+    window.kbfSaveDiditKeys = function(type) {
         const msg = document.getElementById('kbf-settings-msg');
         const nonce = '<?php echo $nonce; ?>';
-        const pairs = [
-            ['kbf_didit_sandbox_api_key', document.getElementById('didit-sb-key').value],
-            ['kbf_didit_sandbox_app_id', document.getElementById('didit-sb-app-id').value],
-            ['kbf_didit_sandbox_workflow_id', document.getElementById('didit-sb-workflow').value],
-            ['kbf_didit_live_api_key', document.getElementById('didit-lv-key').value],
-            ['kbf_didit_live_app_id', document.getElementById('didit-lv-app-id').value],
-            ['kbf_didit_live_workflow_id', document.getElementById('didit-lv-workflow').value]
-        ];
+        const pairs = type === 'sandbox'
+            ? [
+                ['kbf_didit_sandbox_api_key', document.getElementById('didit-sb-key').value],
+                ['kbf_didit_sandbox_app_id', document.getElementById('didit-sb-app-id').value],
+                ['kbf_didit_sandbox_workflow_id', document.getElementById('didit-sb-workflow').value]
+            ]
+            : [
+                ['kbf_didit_live_api_key', document.getElementById('didit-lv-key').value],
+                ['kbf_didit_live_app_id', document.getElementById('didit-lv-app-id').value],
+                ['kbf_didit_live_workflow_id', document.getElementById('didit-lv-workflow').value]
+            ];
         const toSave = pairs.filter(([_, val]) => !!val);
         if (toSave.length === 0) {
             if (msg) {
-                msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">Enter a key, secret, or workflow ID to save.</div>';
+                msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">Enter a key, app ID, or workflow ID to save.</div>';
                 setTimeout(() => msg.innerHTML = '', 4000);
             }
             return;
@@ -404,7 +417,7 @@ function kbf_admin_settings_tab() {
                     return;
                 }
                 if (++done === toSave.length && msg) {
-                    msg.innerHTML = '<div class="kbf-alert kbf-alert-success kbf-alert-compact">Didit settings saved successfully.</div>';
+                    msg.innerHTML = '<div class="kbf-alert kbf-alert-success kbf-alert-compact">' + (type === 'sandbox' ? 'Sandbox' : 'Live') + ' Didit keys saved successfully.</div>';
                     setTimeout(() => msg.innerHTML = '', 4000);
                 }
             });

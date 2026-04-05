@@ -1003,20 +1003,35 @@ function bntm_kbf_render_landing() {
     .kbf-faq details[open] .kbf-faq-body { grid-template-rows: 1fr; }
 
     .kbf-footer {
-        margin-top: 48px; 
+        margin-top: 44px; 
         background: #0c0f14; 
         color: #b9c0cc;
-        margin-bottom:48px;
-        border-radius: 26px; padding: 26px 28px;
-        display: flex; flex-direction: row;
-        justify-content: space-between; align-items: center;
-        flex-wrap: wrap; gap: 18px;
+        margin-bottom:40px;
+        border-radius: 22px; padding: 20px 22px;
+        display: grid; grid-template-columns: 1fr auto;
+        align-items: center; gap: 14px;
     }
-    .kbf-footer h5 { margin: 0 0 8px; color: #fff; }
-    .kbf-footer small { color: #8590a6; }
+    .kbf-footer-left{ display:flex; flex-direction:column; gap:6px; }
+    .kbf-footer h5 { margin: 0 0 6px; color: #fff; }
+    .kbf-footer p { font-size: 12px; line-height: 1.6; }
+    .kbf-footer small { color: #8590a6; font-size: 11.5px; }
+    .kbf-footer .kbf-footer-links{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:0;
+    }
+    .kbf-footer .kbf-footer-links a{
+      color:#cbd5f5;
+      font-size:12px;
+      text-decoration:none;
+    }
+    .kbf-footer .kbf-footer-links a:hover{
+      color:#ffffff;
+    }
     .kbf-footer .kbf-social { display: flex; gap: 8px; }
     .kbf-footer .kbf-social a {
-        width: 34px; height: 34px; border-radius: 50%;
+        width: 32px; height: 32px; border-radius: 50%;
         border: 1px solid rgba(255,255,255,.18);
         display: inline-flex; align-items: center; justify-content: center;
         color: #fff; font-size: 12px;
@@ -1222,14 +1237,9 @@ function bntm_kbf_render_landing() {
         .kbf-stat .kbf-photo-grid { display: none; }
         .kbf-stat h3 { font-size: 56px; }
         .kbf-divider { margin-top: 56px; margin-bottom: 56px; }
-        .kbf-footer { flex-direction: column; align-items: center; text-align: center; margin: 20px auto; }
-        .kbf-footer .kbf-social { justify-content: center; }
-        .kbf-footer .kbf-brand { justify-content: center; }
-        .kbf-footer > div:first-child { display: contents; }
-        .kbf-footer .kbf-brand { order: 1; }
-        .kbf-footer p { order: 2; }
-        .kbf-footer .kbf-social { order: 3; }
-        .kbf-footer small { order: 4; }
+        .kbf-footer { grid-template-columns: 1fr; text-align: left; margin: 18px auto; }
+        .kbf-footer .kbf-social { justify-content: flex-start; }
+        .kbf-footer .kbf-brand { justify-content: flex-start; }
         .kbf-trust-strip { border-radius: 16px; }
     }
     @media (max-width: 830px) {
@@ -1274,9 +1284,9 @@ function bntm_kbf_render_landing() {
         .kbf-section h2 { font-size: 20px; }
         .kbf-stat h3 { font-size: 48px; }
         .kbf-divider { margin-top: 44px; margin-bottom: 44px; }
-        .kbf-footer { flex-direction: column; align-items: center; text-align: center; margin: 20px auto; }
-        .kbf-footer .kbf-social { justify-content: center; }
-        .kbf-footer .kbf-brand { justify-content: center; }
+        .kbf-footer { grid-template-columns: 1fr; text-align: left; margin: 18px auto; }
+        .kbf-footer .kbf-social { justify-content: flex-start; }
+        .kbf-footer .kbf-brand { justify-content: flex-start; }
     }
 
     @media (max-width: 480px) {
@@ -1672,12 +1682,17 @@ function bntm_kbf_render_landing() {
 
         <!-- FOOTER -->
         <footer class="kbf-footer kbf-reveal delay-3" style="margin-top:80px;">
-          <div>
+          <div class="kbf-footer-left">
             <div class="kbf-brand" style="margin-bottom:8px;">
               <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:20px;height:20px;object-fit:contain;border-radius:6px;">
               <span class="kbf-brand-text" style="font-weight: 600;">fundora</span>
             </div>
             <p>Community fundraising rooted in bayanihan.</p>
+            <div class="kbf-footer-links">
+              <a href="<?php echo esc_url(kbf_get_page_url('privacy')); ?>">Privacy Policy</a>
+              <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>">Terms of Service</a>
+              <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>">Refund Policy</a>
+            </div>
             <small>© fundora. All rights reserved.</small>
           </div>
           <div class="kbf-social">

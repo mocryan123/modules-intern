@@ -18,11 +18,6 @@ function kbf_dashboard_profile_tab($business_id) {
     $phone = get_user_meta($business_id, 'kbf_phone', true);
     $address = get_user_meta($business_id, 'kbf_address', true);
     $nonce = wp_create_nonce('kbf_organizer_profile');
-    $nonce_verify = wp_create_nonce('kbf_verify_account');
-    $verify_status = ($profile && !empty($profile->verify_status)) ? $profile->verify_status : '';
-    $is_verified = ($profile && !empty($profile->is_verified));
-    $is_pending = ($verify_status === 'pending');
-    $is_rejected = ($verify_status === 'rejected');
     $didit_status = get_user_meta($business_id, 'fundora_didit_verification_status', true);
     $stats_total_raised = (float) $profile_value('total_raised', 0);
     $stats_total_sponsors = (int) $profile_value('total_sponsors', 0);
@@ -100,43 +95,96 @@ function kbf_dashboard_profile_tab($business_id) {
       .kbf-profile-photo {
         width: 190px;
         height: 190px;
-        border-radius: 28px;
+        border-radius: 50%;
         object-fit: cover;
         border: 1px solid var(--kbf-border);
         background: #fff;
+        position: relative;
+        z-index: 1;
       }
+      .kbf-profile-photo-fallback{
+        width: 190px;
+        height: 190px;
+        border-radius: 50%;
+        border: 1px solid var(--kbf-border);
+        background: var(--kbf-navy);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+      }
+      .kbf-profile-photo-fallback img{filter:invert(100%);width:40px;height:40px;}
       .kbf-photo-wrap {
         position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        border-radius: 50%;
+        overflow: hidden;
       }
       .kbf-photo-overlay {
         position: absolute;
         inset: 0;
-        border-radius: 28px;
+        border-radius: 50%;
         background: rgba(15,23,42,.45);
         opacity: 0;
+        visibility: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: opacity .2s ease;
+        transition: opacity .2s ease, visibility .2s ease;
         pointer-events: none;
+        z-index: 2;
+        text-align: center;
       }
-      .kbf-photo-wrap:hover .kbf-photo-overlay { opacity: 1; }
-      .kbf-photo-edit {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg,#60a5fa,#3b82f6);
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 8px 18px rgba(59,130,246,.35);
+      .kbf-photo-wrap:hover .kbf-photo-overlay,
+      .kbf-photo-wrap:focus-within .kbf-photo-overlay { opacity: 1; visibility: visible; }
+      .kbf-photo-edit{
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:6px;
+        color:#fff;
+        opacity:0;
+        transform: scale(0.98);
+        transition: opacity .2s ease, transform .2s ease;
+        padding:0 10px;
+        width:100%;
+        text-align:center;
+        position:absolute;
+        left:50%;
+        top:50%;
+        transform: translate(-50%, -50%) scale(0.98);
       }
-      .kbf-photo-edit img { filter: invert(100%); }
+      .kbf-photo-edit-icon{
+        width:36px;height:36px;border-radius:50%;
+        background: transparent;
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:none;
+      }
+      .kbf-photo-edit-icon img{display:block;width:18px;height:18px;filter:invert(100%);}
+      .kbf-photo-edit-text{
+        font-size:12px;
+        font-weight:600;
+        letter-spacing:.01em;
+        text-transform:none;
+      }
+      .kbf-photo-wrap:hover .kbf-photo-edit,
+      .kbf-photo-wrap:focus-within .kbf-photo-edit { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      .kbf-user-ui .kbf-profile-card-left .kbf-photo-edit{
+        left:50% !important;
+        top:50% !important;
+        right:auto !important;
+        bottom:auto !important;
+        transform: translate(-50%, -50%) scale(0.98) !important;
+      }
+      .kbf-user-ui .kbf-profile-card-left .kbf-photo-wrap:hover .kbf-photo-edit,
+      .kbf-user-ui .kbf-profile-card-left .kbf-photo-wrap:focus-within .kbf-photo-edit{
+        transform: translate(-50%, -50%) scale(1) !important;
+      }
 
       /* ── Meta / misc ── */
       .kbf-profile-meta { font-size: 13px; color: var(--kbf-slate); }
@@ -420,13 +468,22 @@ function kbf_dashboard_profile_tab($business_id) {
             </div>
 
             <?php
-              $avatar = $profile && $profile->avatar_url ? $profile->avatar_url : get_avatar_url($user->ID, ['size'=>240]);
-    ?>
+              $avatar = $profile && $profile->avatar_url ? $profile->avatar_url : '';
+            ?>
             <label class="kbf-photo-wrap" for="kbf-avatar" id="kbf-photo-wrap">
-              <img src="<?php echo esc_url($avatar); ?>" alt="Profile photo" class="kbf-profile-photo">
+              <?php if($avatar): ?>
+                <img src="<?php echo esc_url($avatar); ?>" alt="Profile photo" class="kbf-profile-photo">
+              <?php else: ?>
+                <div class="kbf-profile-photo-fallback" aria-hidden="true">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="">
+                </div>
+              <?php endif; ?>
               <div class="kbf-photo-overlay">
-                <div class="kbf-photo-edit">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/pencil-fill.svg" alt="Edit" width="16" height="16">
+                <div class="kbf-photo-edit" aria-hidden="true">
+                  <div class="kbf-photo-edit-icon">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/camera-fill.svg" alt="">
+                  </div>
+                  <div class="kbf-photo-edit-text">Change Photo</div>
                 </div>
               </div>
             </label>
@@ -464,18 +521,7 @@ function kbf_dashboard_profile_tab($business_id) {
               <input type="text" name="phone" value="<?php echo esc_attr($phone); ?>" placeholder="+63 9XX XXX XXXX">
             </div>
 
-            <?php if($is_pending): ?>
-              <div class="kbf-alert kbf-alert-warning kbf-alert-compact kbf-alert-center kbf-alert-block" style="margin:6px 0;">
-                Pending.
-              </div>
-            <?php endif; ?>
-            <?php if($is_rejected && !empty($profile->verify_notes)): ?>
-              <div class="kbf-alert kbf-alert-error kbf-alert-noicon kbf-alert-compact kbf-alert-center kbf-alert-block" style="margin:6px 0;">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="14" height="14" style="filter:invert(21%) sepia(70%) saturate(4683%) hue-rotate(342deg) brightness(88%) contrast(101%);">
-                Verification rejected: <?php echo esc_html($profile->verify_notes); ?>
-              </div>
-            <?php endif; ?>
-            <div class="kbf-profile-divider"></div>
+              <div class="kbf-profile-divider"></div>
               <div class="kbf-profile-actions">
                 <?php if($didit_status === 'Approved'): ?>
                   <button type="button" class="kbf-btn kbf-btn-secondary" disabled>Verified</button>
@@ -506,11 +552,11 @@ function kbf_dashboard_profile_tab($business_id) {
                   </select>
                   <div class="kbf-payout-desc" id="kbf-payout-desc"></div>
                 </div>
-                <div class="kbf-form-group">
+                <div class="kbf-form-group" id="kbf-payout-name-group">
                   <label id="kbf-payout-name-label">Account Name</label>
                   <input type="text" name="payout_name" id="kbf-payout-name" value="<?php echo esc_attr($payout_name); ?>" placeholder="Account name" autocomplete="off" autocapitalize="none" spellcheck="false" <?php echo $payout_type===''?'disabled':''; ?>>
                 </div>
-                <div class="kbf-form-group">
+                <div class="kbf-form-group" id="kbf-payout-number-group">
                   <label id="kbf-payout-number-label">Account Number</label>
                   <div class="kbf-input-with-toggle">
                     <input type="password" name="payout_number" id="kbf-payout-number" value="<?php echo esc_attr($payout_number); ?>" placeholder="Account number" autocomplete="new-password" autocapitalize="none" spellcheck="false" <?php echo $payout_type===''?'disabled':''; ?>>
@@ -1073,46 +1119,6 @@ document.addEventListener('DOMContentLoaded', function(){
             }, 'image/jpeg', 0.92);
         });
     })();
-
-    
-    window.kbfOpenVerifyModal = function(){
-        var m = document.getElementById('kbf-modal-verify-account');
-        if(m) m.style.display = 'flex';
-    };
-    window.kbfCloseVerifyModal = function(){
-        var m = document.getElementById('kbf-modal-verify-account');
-        if(m) m.style.display = 'none';
-    };
-    window.kbfSubmitVerification = function(nonce){
-        var form = document.getElementById('kbf-verify-form');
-        var msg = document.getElementById('kbf-verify-msg');
-        if(!form) return;
-        var fd = new FormData(form);
-        fd.append('action','kbf_request_verification');
-        fd.append('nonce',nonce);
-        console.log('kbfSubmitVerification: posting to', ajaxurl);
-        fetch(ajaxurl,{method:'POST',body:fd}).then(async function(r){
-            const text = await r.text();
-            console.log('kbfSubmitVerification: raw response', text);
-            const cleaned = text.replace(/^\uFEFF/, '').trim();
-            try { return JSON.parse(cleaned); } catch(e){ console.error('kbfSubmitVerification: JSON parse failed', e, cleaned); throw e; }
-        }).then(function(j){
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-' + (j.success?'success':'error') + '">' + j.data.message + '</div>';
-            if(j.success){
-                var btn = document.querySelector('.kbf-profile-actions .kbf-btn-secondary');
-                if (btn) { btn.disabled = true; btn.textContent = 'Pending'; }
-                var tag = document.querySelector('.kbf-profile-verify-tag');
-                if (tag) { tag.textContent = 'Pending Review'; }
-                if (j.data && j.data.verification_url) {
-                    window.open(j.data.verification_url, '_blank', 'noopener');
-                }
-                kbfCloseVerifyModal();
-            }
-        }).catch(function(){
-            console.error('kbfSubmitVerification: request failed');
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Upload failed. Please try again.</div>';
-        });
-    };
 
     (function(){
         var btn = document.getElementById('fundora-didit-start');
