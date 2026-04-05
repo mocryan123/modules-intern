@@ -291,8 +291,8 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-photo-main::after{
         content:'Click to expand';
         position:absolute;
-        bottom:44px;
-        right:12px;
+        bottom:10px;
+        left:12px;
         font-size:11px;
         font-weight:600;
         color:#f8fafc;
@@ -323,10 +323,11 @@ function bntm_shortcode_kbf_fund_details() {
         pointer-events:auto;
     }
     .kbf-photo-lightbox img{
-        max-width:min(860px,90vw);
-        max-height:80vh;
-        width:auto;
+        width:min(96vw, 1400px);
+        max-width:96vw;
+        max-height:90vh;
         height:auto;
+        object-fit:contain;
         border-radius:16px;
         box-shadow:0 24px 60px rgba(0,0,0,0.45);
         background:#fff;
@@ -479,7 +480,7 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- Sponsor Modal -->
     <div id="kbf-modal-sponsor" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
-        <div class="kbf-modal-header"><h3>Sponsor "<?php echo esc_html(wp_trim_words($fund->title,6)); ?>"</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-sponsor').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-header"><h3>Sponsor "<?php echo esc_html(wp_trim_words($fund->title,6)); ?>"</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-sponsor')">&times;</button></div>
         <div class="kbf-modal-body">
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:12px 16px;margin-bottom:18px;display:flex;justify-content:space-between;font-size:13px;">
             <span><strong style="color:var(--kbf-green);">₱<?php echo number_format($fund->raised_amount,2); ?></strong> raised</span>
@@ -517,7 +518,7 @@ function bntm_shortcode_kbf_fund_details() {
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbf-modal-sponsor').style.display='none'">Cancel</button>
+          <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-sponsor')">Cancel</button>
           <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSpdSponsor('<?php echo $nonce_sponsor; ?>')">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="14" height="14" style="filter:invert(100%);">
             Confirm Sponsorship
@@ -529,7 +530,7 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- Report Modal -->
     <div id="kbf-modal-report" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3>Report This Fund</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-report').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-header"><h3>Report This Fund</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-report')">&times;</button></div>
         <div class="kbf-modal-body">
           <form id="kbf-report-form">
             <input type="hidden" name="fund_id" value="<?php echo $fund->id; ?>">
@@ -541,7 +542,7 @@ function bntm_shortcode_kbf_fund_details() {
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbf-modal-report').style.display='none'">Cancel</button>
+          <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-report')">Cancel</button>
           <button class="kbf-btn kbf-btn-danger" onclick="kbfSpdReport('<?php echo $nonce_report; ?>')">Submit Report</button>
         </div>
       </div>
@@ -550,7 +551,7 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- Rating Modal -->
     <div id="kbf-modal-rating" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3>Credibility Score</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-rating').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-header"><h3>Credibility Score</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-rating')">&times;</button></div>
         <div class="kbf-modal-body">
           <form id="kbf-rating-form">
             <input type="hidden" name="organizer_id" value="<?php echo $fund->business_id; ?>">
@@ -569,7 +570,7 @@ function bntm_shortcode_kbf_fund_details() {
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbf-modal-rating').style.display='none'">Cancel</button>
+          <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-rating')">Cancel</button>
           <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitRating('<?php echo $nonce_rating; ?>')">Submit Score</button>
         </div>
       </div>
@@ -655,12 +656,6 @@ function bntm_shortcode_kbf_fund_details() {
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="13" height="13" style="filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
                 View Full Profile
               </a>
-              <?php if(!$is_owner): ?>
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="font-size:12px;padding:6px 10px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" alt="" width="12" height="12" style="filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);">
-                Credibility Score
-              </button>
-              <?php endif; ?>
             </div>
           </div>
           <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none;color:inherit;" title="View organizer profile">
@@ -683,10 +678,6 @@ function bntm_shortcode_kbf_fund_details() {
   $rating_round = round($rating_val);
   $rating_count = (int)($organizer ? $organizer->rating_count : 0);
 ?>
-<div style="display:flex;align-items:center;gap:4px;margin-top:6px;flex-wrap:wrap;">
-  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" width="12" height="12" alt="" style="filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);">
-  <span style="font-size:11.5px;color:var(--kbf-slate);margin-left:4px;">Credibility <?php echo number_format($rating_val,1); ?>/5 (<?php echo $rating_count; ?>)</span>
-</div>
             </div>
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chevron-right.svg" alt="" width="16" height="16" style="flex-shrink:0;opacity:.7;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
           </a>
@@ -804,7 +795,7 @@ function bntm_shortcode_kbf_fund_details() {
             <span><strong style="text-transform:uppercase;letter-spacing:.12em;background:rgba(146,64,14,.12);padding:2px 6px;border-radius:6px;">Demo Mode</strong> — Payments are simulated for testing.</span>
           </div>
           <?php endif; ?>
-          <button class="kbf-btn kbf-btn-primary" style="width:100%;padding:13px;font-size:15px;font-weight:700;margin-bottom:10px;" onclick="document.getElementById('kbf-modal-sponsor').style.display='flex'">
+          <button class="kbf-btn kbf-btn-primary" style="width:100%;padding:13px;font-size:15px;font-weight:700;margin-bottom:10px;" onclick="kbfShowModal('kbf-modal-sponsor')">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="16" height="16" style="filter:invert(100%);">
             <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Fund'; ?>
           </button>
@@ -830,9 +821,9 @@ function bntm_shortcode_kbf_fund_details() {
               </button>
               <div class="kbf-more-menu" id="kbf-more-menu">
                 <?php if(!$is_owner): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" alt="" width="12" height="12" style="filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);">
-                  Score
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Share
                 </button>
                 <?php else: ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">
@@ -844,7 +835,7 @@ function bntm_shortcode_kbf_fund_details() {
                   Create Poster
                 </button>
                 <?php endif; ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="document.getElementById('kbf-modal-report').style.display='flex'">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShowModal('kbf-modal-report')">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
                   Report Abuse
                 </button>
@@ -916,7 +907,7 @@ function bntm_shortcode_kbf_fund_details() {
       <div class="kbf-modal">
         <div class="kbf-modal-header">
           <h3>Create a fundraiser poster</h3>
-          <button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-poster').style.display='none'">&times;</button>
+          <button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-poster')">&times;</button>
         </div>
         <div class="kbf-modal-body">
           <div class="kbf-poster-grid">
@@ -1287,10 +1278,10 @@ function bntm_shortcode_kbf_fund_details() {
         const fd=new FormData(form);fd.append('action','kbf_report_fund');fd.append('nonce',nonce);
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
             msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
-            if(j.success){
-                document.getElementById('kbf-modal-report').style.display='none';
-                if(form) form.reset();
-            } else {
+        if(j.success){
+            kbfHideModal('kbf-modal-report');
+            if(form) form.reset();
+        } else {
                 kbfSetBtnLoading(btn,false); 
                 kbfSetSkeleton(msg,false);
             }
@@ -1304,7 +1295,7 @@ function bntm_shortcode_kbf_fund_details() {
     window.kbfCreatePoster = function(token, title){
         var modal = document.getElementById('kbf-modal-poster');
         if (!modal) return;
-        modal.style.display = 'flex';
+        kbfShowModal(modal);
         kbfPosterSync();
         kbfPosterRenderQr();
     };
@@ -1417,8 +1408,8 @@ function bntm_shortcode_kbf_fund_details() {
         btn.disabled=true;btn.textContent='Submitting...';
         const fd=new FormData(form);fd.append('action','kbf_submit_rating');fd.append('nonce',nonce);
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
-            document.getElementById('kbf-rate-msg').innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
-            if(j.success)setTimeout(()=>{document.getElementById('kbf-modal-rating').style.display='none';},1800);else{btn.disabled=false;btn.textContent='Submit Score';}
+        document.getElementById('kbf-rate-msg').innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
+        if(j.success)setTimeout(()=>{kbfHideModal('kbf-modal-rating');},1800);else{btn.disabled=false;btn.textContent='Submit Score';}
         });
     };
     window.kbfToggleMoreMenu=function(e){

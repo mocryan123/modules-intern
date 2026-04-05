@@ -52,6 +52,10 @@ if (!defined('KBF_AUTH_RATE_WINDOW')) {
 if (!defined('KBF_EMAIL_VERIFY_TTL')) {
     define('KBF_EMAIL_VERIFY_TTL', DAY_IN_SECONDS);
 }
+if (!defined('KBF_EMAIL_VERIFY_DISABLED')) {
+    // Temporarily disable email verification checks and emails.
+    define('KBF_EMAIL_VERIFY_DISABLED', true);
+}
 if (!defined('KBF_AUTH_SIGNUP_LIMIT')) {
     define('KBF_AUTH_SIGNUP_LIMIT', 5);
 }
@@ -177,7 +181,7 @@ add_filter('authenticate', function($user, $username, $password) {
         $mins = max(1, (int) ceil($retry_after / 60));
         return new WP_Error('kbf_rate_limited', 'Too many login attempts. Try again in ' . $mins . ' minute(s).');
     }
-    if ($user instanceof WP_User) {
+    if ($user instanceof WP_User && !KBF_EMAIL_VERIFY_DISABLED) {
         if (!user_can($user, 'manage_options')) {
             $verified = get_user_meta($user->ID, 'kbf_email_verified', true);
             if ($verified !== '' && $verified !== '1') {
@@ -215,6 +219,7 @@ function kbf_auth_make_verify_hash($token) {
 
 function kbf_handle_email_verification() {
     if (is_admin()) return;
+    if (KBF_EMAIL_VERIFY_DISABLED) return;
     if (empty($_GET['kbf_verify']) || empty($_GET['uid'])) return;
     $token = sanitize_text_field(wp_unslash($_GET['kbf_verify']));
     $user_id = absint($_GET['uid']);

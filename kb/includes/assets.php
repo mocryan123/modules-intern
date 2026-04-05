@@ -975,11 +975,64 @@ function kbf_global_assets() {
     .kbf-form-group select:focus,
     .kbf-form-group textarea:focus { outline: none; border-color: var(--kbf-navy-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
     .kbf-form-group small { display: block; color: var(--kbf-slate); font-size: 11.5px; margin-top: 4px; }
-    .kbf-checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--kbf-text-sm); }
-    .kbf-checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--kbf-blue); cursor: pointer; }
+    .kbf-checkbox-row{
+        position:relative;
+        display:block;
+        cursor:pointer;
+        font-size:13px;
+        font-weight:600;
+        color:var(--kbf-text-sm);
+        line-height:1.45;
+        padding-left:28px;
+    }
+    .kbf-checkbox-row input[type="checkbox"]{
+        position:absolute;
+        left:0;
+        top:2px;
+        width:18px;
+        height:18px;
+        margin:0;
+        opacity:0;
+        cursor:pointer;
+    }
+    .kbf-checkbox-row::before{
+        content:'';
+        position:absolute;
+        left:0;
+        top:2px;
+        width:18px;
+        height:18px;
+        border:1.5px solid #cbd5e1;
+        border-radius:5px;
+        background:#fff;
+        box-sizing:border-box;
+        transition:border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .08s ease;
+    }
+    .kbf-checkbox-row:has(input[type="checkbox"]:hover)::before{
+        border-color:#94a3b8;
+    }
+    .kbf-checkbox-row:has(input[type="checkbox"]:focus-visible)::before{
+        box-shadow:0 0 0 3px rgba(59,130,246,0.18);
+    }
+    .kbf-checkbox-row:has(input[type="checkbox"]:checked)::before{
+        background:var(--kbf-blue);
+        border-color:var(--kbf-blue);
+    }
+    .kbf-checkbox-row:has(input[type="checkbox"]:checked)::after{
+        content:'';
+        position:absolute;
+        left:3px;
+        top:5px;
+        width:12px;
+        height:12px;
+        background:#fff;
+        -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M6.173 12.727 2.4 8.955l1.273-1.273 2.5 2.5 5.954-5.954 1.273 1.273z'/%3E%3C/svg%3E") no-repeat center / contain;
+        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='white' d='M6.173 12.727 2.4 8.955l1.273-1.273 2.5 2.5 5.954-5.954 1.273 1.273z'/%3E%3C/svg%3E") no-repeat center / contain;
+    }
 
     /* Modals */
-    .kbf-modal-overlay { position: fixed; inset: 0; background: rgba(10,16,32,.58); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(6px); }
+    .kbf-modal-overlay { position: fixed; inset: 0; background: rgba(10,16,32,.58); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(6px); opacity:0; visibility:hidden; pointer-events:none; transition:opacity .22s ease, visibility .22s ease; }
+    .kbf-modal-overlay.is-open{ opacity:1; visibility:visible; pointer-events:auto; }
     .kbf-modal {
         position: relative;
         background: #fff;
@@ -992,14 +1045,17 @@ function kbf_global_assets() {
         box-shadow: 0 24px 60px rgba(15,23,42,.18), 0 8px 20px rgba(15,23,42,.12);
         display: flex;
         flex-direction: column;
+        transform: translateY(8px) scale(0.98);
+        transition: transform .22s ease;
     }
+    .kbf-modal-overlay.is-open .kbf-modal{ transform: translateY(0) scale(1); }
     .kbf-modal-sm { max-width: 460px; }
-    .kbf-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 16px; border-bottom: 1px solid #e7eef8; background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%); border-radius: 18px 18px 0 0; }
+    .kbf-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 16px; border-bottom: 1px solid #e7eef8; background: #ffffff; border-radius: 18px 18px 0 0; }
     .kbf-modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; font-family: inherit; }
     .kbf-modal-close { background: #f1f5ff; border: 1px solid #dbe7ff; color: #2a5bd7; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: background .15s, transform .15s, box-shadow .15s; }
     .kbf-modal-close:hover { background: #e7efff; box-shadow: 0 4px 10px rgba(42,91,215,.18); transform: translateY(-1px); }
     .kbf-modal-body { padding: 24px; flex: 1; }
-    .kbf-modal-footer { padding: 16px 24px; border-top: 1px solid #e7eef8; background: #f7f9fd; border-radius: 0 0 18px 18px; display: flex; justify-content: flex-end; gap: 10px; }
+    .kbf-modal-footer { padding: 16px 24px; border-top: 1px solid #e7eef8; background: #ffffff; border-radius: 0 0 18px 18px; display: flex; justify-content: flex-end; gap: 10px; }
 
     /* Tables */
     .kbf-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid #e9eef6; background: #fff; position: relative; }
@@ -1354,6 +1410,20 @@ function kbf_global_assets() {
     if (typeof window.kbfSetSkeleton === 'undefined') {
         // Skeletons removed: keep a no-op to avoid breaking callers.
         window.kbfSetSkeleton = function(el, on) { return; };
+    }
+    if (typeof window.kbfShowModal === 'undefined') {
+        window.kbfShowModal = function(id){
+            var el = typeof id === 'string' ? document.getElementById(id) : id;
+            if (!el) return;
+            el.style.display = 'flex';
+            requestAnimationFrame(function(){ el.classList.add('is-open'); });
+        };
+        window.kbfHideModal = function(id){
+            var el = typeof id === 'string' ? document.getElementById(id) : id;
+            if (!el) return;
+            el.classList.remove('is-open');
+            setTimeout(function(){ el.style.display = 'none'; }, 220);
+        };
     }
     if (typeof window.kbfInitSelects === 'undefined') {
         window.kbfInitSelects = function(root){

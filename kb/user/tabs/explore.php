@@ -265,7 +265,7 @@ function kbf_dashboard_find_funds_tab() {
         gap:8px;
       }
       .kbf-explore-actions.is-own{ grid-template-columns:1fr auto auto; }
-      .kbf-explore-actions.is-public{ grid-template-columns:1fr auto auto auto; }
+      .kbf-explore-actions.is-public{ grid-template-columns:1fr auto auto; }
       .kbf-explore-card .kbf-btn-primary{
         box-shadow:
           0 1px 2px rgba(32, 112, 224, 0.18),
@@ -626,13 +626,7 @@ function kbf_dashboard_find_funds_tab() {
           </div>
           <?php else: ?>
           <div class="kbf-explore-actions is-public">
-            <button class="kbf-btn kbf-btn-primary" style="font-size:12.5px;" onclick="kbffOpenSponsor(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>',<?php echo $f->goal_amount; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js(isset($cover) ? $cover : ''); ?>')">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="12" height="12" style="filter:invert(100%);">
-              Sponsor
-            </button>
-            <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-secondary kbf-btn-sm" title="View full details">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-            </a>
+            <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-primary" style="font-size:12.5px;text-align:center;">View Campaign</a>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" title="<?php echo esc_attr($save_title); ?>" data-tooltip="<?php echo esc_attr($save_title); ?>">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($save_icon); ?>.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
               </button>
@@ -970,6 +964,32 @@ function kbf_dashboard_find_funds_tab() {
         }
         setTip();
         setInterval(setTip, 180000);
+    })();
+    // Refresh explore when a fund is edited elsewhere (e.g., dashboard edit modal).
+    (function(){
+        function consumeFlag(){
+            try {
+                var flag = localStorage.getItem('kbf_fund_updated');
+                if (!flag) return;
+                localStorage.removeItem('kbf_fund_updated');
+                location.reload();
+            } catch(e){}
+        }
+        window.addEventListener('storage', function(ev){
+            try {
+                if (!ev || ev.key !== 'kbf_fund_updated' || !ev.newValue) return;
+                localStorage.removeItem('kbf_fund_updated');
+                location.reload();
+            } catch(e){}
+        });
+        consumeFlag();
+        document.addEventListener('visibilitychange', function(){
+            if (!document.hidden) consumeFlag();
+        });
+        window.addEventListener('pageshow', function(e){
+            if (e && e.persisted) consumeFlag();
+        });
+        setInterval(consumeFlag, 6000);
     })();
     </script>
     <?php

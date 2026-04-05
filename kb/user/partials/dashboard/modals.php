@@ -48,12 +48,12 @@
               </div>
             </div>
 
-            <div class="kbf-step-content" data-step="2">
+            <div class="kbf-step-content kbf-step-content-flex" data-step="2">
               <div class="kbf-step-note">Step 2: Set amount, deadline, and photos.</div>
               <div class="kbf-form-row">
                 <div class="kbf-form-group">
                   <label>Goal Amount (PHP) *</label>
-                  <input type="number" name="goal_amount" id="kbf-goal-amount" placeholder="0.00" min="100" step="0.01" required>
+                  <input type="text" name="goal_amount" id="kbf-goal-amount" placeholder="0.00" inputmode="decimal" autocomplete="off" required>
                   <small class="kbf-text-sm" id="kbf-fee-note">
                     <?php echo $fee_disabled ? 'Platform fee: 0% (disabled).' : 'Platform fee: 5% per transaction.'; ?>
                   </small>
@@ -74,6 +74,17 @@
                 <div class="kbf-field-error"></div>
                 <div class="kbf-photo-previews" id="kbf-create-photo-previews">
                   <button class="kbf-photo-add" type="button" id="kbf-create-photo-add" aria-label="Add photos">+</button>
+                </div>
+              </div>
+              <div class="kbf-photo-tips kbf-photo-tips-bottom">
+                <div class="kbf-photo-tips-title">
+                  <span class="kbf-photo-tips-icon">i</span>
+                  Photo tips checklist
+                </div>
+                <div class="kbf-photo-tips-list">
+                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">✓</span> Use clear, well-lit images (avoid blur).</div>
+                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">✓</span> Add at least 2 photos to build trust.</div>
+                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">✓</span> Show the cause, not just text graphics.</div>
                 </div>
               </div>
             </div>
@@ -172,12 +183,13 @@
             </div>
           </div>
           <div class="kbf-auth-main">
-            <h3>Sign in required</h3>
-            <p id="kbf-auth-reason">Please sign in to continue.</p>
-            <div class="kbf-auth-actions">
-              <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url(function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : home_url('/wp-login.php')); ?>">Sign in</a>
-              <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url(function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : home_url('/wp-login.php')); ?>">Create account</a>
-              <button class="kbf-btn kbf-btn-ghost" type="button" onclick="kbfCloseAuthModal()">Continue browsing</button>
+            <div class="kbf-auth-main-inner">
+              <h3>Sign in required</h3>
+              <p id="kbf-auth-reason">Please sign in to continue.</p>
+              <div class="kbf-auth-actions">
+                <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url(function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : home_url('/wp-login.php')); ?>">Sign in</a>
+                <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url(function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : home_url('/wp-login.php')); ?>">Create account</a>
+              </div>
             </div>
           </div>
         </div>

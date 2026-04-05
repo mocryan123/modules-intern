@@ -410,9 +410,7 @@ function bntm_shortcode_kbf_browse() {
         align-items:center;
         justify-content:space-between;
         padding:18px 20px;
-        background:
-            radial-gradient(520px 200px at 10% -40%, rgba(111,182,255,0.25), transparent 70%),
-            #f8fbff;
+        background:#f8fbff;
         border-bottom:1px solid #edf0f4;
     }
     .kbf-user-ui .kbf-modal-header h3{

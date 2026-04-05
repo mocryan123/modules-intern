@@ -8,7 +8,10 @@ if (!defined('ABSPATH')) exit;
 function bntm_kbf_render_signin() {
     $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : '#';
     if (is_user_logged_in()) {
-        $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('home') : home_url('/');
+        $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        if ($home) {
+            $home = add_query_arg('kbf_tab', 'overview', $home);
+        }
         if (!headers_sent()) {
             wp_safe_redirect($home);
             exit;
@@ -57,8 +60,15 @@ function bntm_kbf_render_signin() {
                         $login_error = $user->get_error_message();
                     }
                 } else {
-                    $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('home') : home_url('/');
-                    wp_safe_redirect($home);
+                    $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+                    if ($home) {
+                        $home = add_query_arg('kbf_tab', 'overview', $home);
+                    }
+                    if (!headers_sent()) {
+                        wp_safe_redirect($home);
+                        exit;
+                    }
+                    echo '<script>window.location.href=' . wp_json_encode($home) . ';</script><noscript><meta http-equiv="refresh" content="0;url=' . esc_url($home) . '"></noscript>';
                     exit;
                 }
             }
@@ -140,10 +150,21 @@ function bntm_kbf_render_signin() {
       }
       .kbf-auth-card:hover{transform:none;box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);}
       .kbf-auth-left{padding:40px 42px 44px;}
-      .kbf-auth-right{background:linear-gradient(160deg,#eef6ff 0%, #dfeeff 55%, #c7defc 100%);color:#0f172a;padding:36px 34px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;gap:14px;border-left:1px solid rgba(37,99,235,.12);}
+      .kbf-auth-right{
+        background: linear-gradient(135deg, #4a98ff 0%, #2f7bdc 100%);
+        color:#ffffff;
+        padding:36px 34px;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:flex-start;
+        text-align:left;
+        gap:14px;
+        border-left:1px solid rgba(255,255,255,.2);
+      }
       .kbf-auth-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--kbf-auth-ink);font-size:15px;margin-bottom:14px;letter-spacing:.2px;}
-      .kbf-auth-brand img{width:26px;height:26px;border-radius:8px;object-fit:contain;}
-      .kbf-auth-title{font-size:30px;font-weight:800;color:var(--kbf-auth-ink);margin:0 0 8px;}
+      .kbf-auth-brand img{width:140px;height:auto;max-height:36px;object-fit:contain;}
+      .kbf-auth-title{font-size:30px;font-weight:600;color:var(--kbf-auth-ink);margin:0 0 8px;}
       .kbf-auth-sub{font-size:13.5px;color:var(--kbf-slate);margin:0 0 26px;line-height:1.8;max-width:440px;}
       .kbf-auth-form .kbf-form-group{margin-bottom:14px;}
       .kbf-auth-input{display:flex;align-items:center;gap:10px;background:#ffffff;border:1.5px solid #dbe8ff;border-radius:14px;padding:12px 14px;box-shadow:0 6px 16px rgba(30,64,175,.06);}
@@ -151,11 +172,11 @@ function bntm_kbf_render_signin() {
       .kbf-auth-input img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-input input{border:0;background:transparent;outline:none;font-size:13.5px;width:100%;}
       .kbf-auth-cta{margin-top:14px;}
-      .kbf-auth-right h3{font-size:20px;margin:0;font-weight:700;color:#0f172a;}
-      .kbf-auth-right p{font-size:13px;margin:0;color:#475569;line-height:1.7;}
+      .kbf-auth-right h3{font-size:20px;margin:0;font-weight:600;color:#ffffff;}
+      .kbf-auth-right p{font-size:13px;margin:0;color:rgba(255,255,255,.85);line-height:1.7;}
       .kbf-auth-points{display:grid;gap:10px;margin-top:6px;}
-      .kbf-auth-point{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#1f2a44;}
-      .kbf-auth-point span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#e0edff;color:#1d4ed8;font-size:12px;font-weight:700;}
+      .kbf-auth-point{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#ffffff;}
+      .kbf-auth-point span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.2);color:#ffffff;font-size:12px;font-weight:700;}
       .kbf-auth-footer{margin-top:14px;font-size:12.5px;color:var(--kbf-slate);}
       .kbf-auth-footer a{color:var(--kbf-blue);font-weight:600;text-decoration:none;}
       @media (max-width: 900px){
@@ -175,8 +196,7 @@ function bntm_kbf_render_signin() {
         <div class="kbf-auth-card">
           <div class="kbf-auth-left">
             <div class="kbf-auth-brand">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora">
-              fundora
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora">
             </div>
             <h2 class="kbf-auth-title">Sign In</h2>
             <p class="kbf-auth-sub">Welcome back. Access your dashboard, monitor fundraising progress, and support campaigns.</p>

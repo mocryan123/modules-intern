@@ -2,22 +2,22 @@
     <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <script>
       window.kbfIsLoggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;
-      window.kbfOpenAuthModal = function(reason){
+    window.kbfOpenAuthModal = function(reason){
         var modal = document.getElementById('kbf-auth-modal');
         if (!modal) return;
         var msg = document.getElementById('kbf-auth-reason');
         if (msg && reason) msg.textContent = reason;
         modal.style.display = 'flex';
-        document.documentElement.classList.add('kbf-modal-lock');
-        document.body.classList.add('kbf-modal-lock');
-      };
-      window.kbfCloseAuthModal = function(){
+        requestAnimationFrame(function(){ modal.classList.add('is-open'); });
+        // keep page scroll enabled
+    };
+    window.kbfCloseAuthModal = function(){
         var modal = document.getElementById('kbf-auth-modal');
         if (!modal) return;
-        modal.style.display = 'none';
-        document.documentElement.classList.remove('kbf-modal-lock');
-        document.body.classList.remove('kbf-modal-lock');
-      };
+        modal.classList.remove('is-open');
+        setTimeout(function(){ modal.style.display = 'none'; }, 220);
+        // keep page scroll enabled
+    };
       document.addEventListener('click', function(e){
         var modal = document.getElementById('kbf-auth-modal');
         if (modal && e.target === modal) window.kbfCloseAuthModal();
@@ -92,18 +92,19 @@
       })();
 
     function kbfCloseModal(id) {
-        document.getElementById(id).style.display = 'none';
-        if (id === 'kbf-modal-create') {
-            document.documentElement.classList.remove('kbf-modal-lock');
-            document.body.classList.remove('kbf-modal-lock');
-        }
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('is-open');
+        setTimeout(function(){ el.style.display = 'none'; }, 220);
+        // keep page scroll enabled
     }
     function kbfOpenModal(id)  {
         
-        document.getElementById(id).style.display = 'flex';
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = 'flex';
+        requestAnimationFrame(function(){ el.classList.add('is-open'); });
         if (id === 'kbf-modal-create') {
-            document.documentElement.classList.add('kbf-modal-lock');
-            document.body.classList.add('kbf-modal-lock');
             kbfSetCreateStep(1);
             if (window.kbfApplyCreateDraft) window.kbfApplyCreateDraft(true);
         }
@@ -402,14 +403,14 @@
             photoWrap.innerHTML = '';
             kbfCreateFiles.forEach(function(file, idx){
                 if (!file.type || file.type.indexOf('image/') !== 0) return;
-                var reader = new FileReader();
-                reader.onload = function(e){
+                function buildThumb(src){
+                    if (!src) return;
                     var thumb = document.createElement('div');
                     thumb.className = 'kbf-photo-thumb';
                     thumb.setAttribute('data-index', String(idx));
                     var img = document.createElement('img');
                     img.alt = '';
-                    img.src = e.target.result;
+                    img.src = src;
                     var editBtn = document.createElement('button');
                     editBtn.type = 'button';
                     editBtn.className = 'kbf-photo-edit';
@@ -435,6 +436,15 @@
                     thumb.appendChild(editBtn);
                     thumb.appendChild(btn);
                     photoWrap.appendChild(thumb);
+                }
+                if (file._kbfDataUrl) {
+                    buildThumb(file._kbfDataUrl);
+                    return;
+                }
+                var reader = new FileReader();
+                reader.onload = function(e){
+                    file._kbfDataUrl = e && e.target ? e.target.result : '';
+                    buildThumb(file._kbfDataUrl);
                 };
                 reader.readAsDataURL(file);
             });
@@ -614,7 +624,10 @@
         };
 
         function kbfClosePhotoEditor(){
-            if (editorBackdrop) editorBackdrop.style.display = 'none';
+            if (editorBackdrop) {
+                editorBackdrop.classList.remove('is-open');
+                setTimeout(function(){ editorBackdrop.style.display = 'none'; }, 220);
+            }
             if (editorImg) editorImg.src = '';
             editorState.mode = null;
             editorState.index = -1;
@@ -701,6 +714,7 @@
                 editorImg.onload = function(){
                     editorBackdrop.style.display = 'flex';
                     requestAnimationFrame(function(){
+                        editorBackdrop.classList.add('is-open');
                         var stage = editorBackdrop.querySelector('.kbf-photo-editor-stage');
                         var stageW = stage ? stage.clientWidth : 0;
                         var stageH = stage ? stage.clientHeight : 0;
@@ -964,7 +978,16 @@
         function kbfSetCreateDraft(data){
             if (!kbfDraftStorageOk()) return;
             if (!data) { localStorage.removeItem(kbfDraftKey); return; }
-            localStorage.setItem(kbfDraftKey, JSON.stringify(data));
+            try {
+                localStorage.setItem(kbfDraftKey, JSON.stringify(data));
+            } catch(e) {
+                if (data.photos && data.photos.length) {
+                    try {
+                        var safe = Object.assign({}, data, { photos: [] });
+                        localStorage.setItem(kbfDraftKey, JSON.stringify(safe));
+                    } catch(e2) {}
+                }
+            }
         }
         function kbfCreateHasValue(){
             if (!createForm) return false;
@@ -999,7 +1022,35 @@
                 if (f.type === 'checkbox') data.fields[f.name] = !!f.checked;
                 else data.fields[f.name] = f.value;
             }
+            if (Array.isArray(kbfCreateFiles) && kbfCreateFiles.length) {
+                data.photos = kbfCreateFiles.map(function(file){
+                    return {
+                        dataUrl: file._kbfDataUrl || '',
+                        name: file.name || 'photo.jpg',
+                        type: file.type || 'image/jpeg'
+                    };
+                }).filter(function(p){ return !!p.dataUrl; });
+            }
             return data;
+        }
+        function kbfDataUrlToBlob(dataUrl){
+            if (!dataUrl || dataUrl.indexOf('data:') !== 0) return null;
+            var parts = dataUrl.split(',');
+            if (parts.length < 2) return null;
+            var meta = parts[0] || '';
+            var base64 = parts[1] || '';
+            var mime = (meta.match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+            var binary = atob(base64);
+            var len = binary.length;
+            var bytes = new Uint8Array(len);
+            for (var i=0;i<len;i++) bytes[i] = binary.charCodeAt(i);
+            return new Blob([bytes], { type: mime });
+        }
+        function kbfDataUrlToFile(dataUrl, name){
+            var blob = kbfDataUrlToBlob(dataUrl);
+            if (!blob) return null;
+            var fname = name || ('photo-' + Date.now() + '.jpg');
+            return new File([blob], fname, { type: blob.type || 'image/jpeg' });
         }
         function kbfApplyDraftToForm(draft){
             if (!draft || !draft.fields || !createForm) return false;
@@ -1010,6 +1061,18 @@
                 if (f.type === 'file') continue;
                 if (f.type === 'checkbox') f.checked = !!draft.fields[f.name];
                 else f.value = draft.fields[f.name];
+            }
+            if (draft.photos && Array.isArray(draft.photos) && draft.photos.length) {
+                kbfCreateFiles = [];
+                draft.photos.slice(0,5).forEach(function(p){
+                    var file = kbfDataUrlToFile(p.dataUrl, p.name);
+                    if (file) {
+                        file._kbfDataUrl = p.dataUrl;
+                        kbfCreateFiles.push(file);
+                    }
+                });
+                kbfSyncCreateFiles();
+                kbfRenderCreateThumbs();
             }
             var provEl = document.getElementById('kbf-province');
             var muniEl = document.getElementById('kbf-municipality');
@@ -1043,24 +1106,27 @@
         window.kbfClearCreateDraft = function(){
             kbfSetCreateDraft(null);
         };
-        window.kbfRequestCloseCreate = function(){
-            var createModal = document.getElementById('kbf-modal-create');
-            if (kbfCreateHasValue()) {
-                if (createModal) createModal.style.display = 'none';
-                kbfOpenModal('kbf-modal-draft');
-                return;
-            }
-            kbfCloseModal('kbf-modal-create');
-        };
-        window.kbfCancelDraftPrompt = function(){
-            kbfCloseModal('kbf-modal-draft');
-            var createModal = document.getElementById('kbf-modal-create');
+    window.kbfRequestCloseCreate = function(){
+        var createModal = document.getElementById('kbf-modal-create');
+        if (kbfCreateHasValue()) {
             if (createModal) {
-                createModal.style.display = 'flex';
-                document.documentElement.classList.add('kbf-modal-lock');
-                document.body.classList.add('kbf-modal-lock');
+                createModal.classList.remove('is-open');
+                setTimeout(function(){ createModal.style.display = 'none'; }, 220);
             }
-        };
+            kbfOpenModal('kbf-modal-draft');
+            return;
+        }
+        kbfCloseModal('kbf-modal-create');
+    };
+    window.kbfCancelDraftPrompt = function(){
+        kbfCloseModal('kbf-modal-draft');
+        var createModal = document.getElementById('kbf-modal-create');
+        if (createModal) {
+            createModal.style.display = 'flex';
+            requestAnimationFrame(function(){ createModal.classList.add('is-open'); });
+            // keep page scroll enabled
+        }
+    };
         window.kbfSaveCreateDraft = function(){
             var data = kbfBuildCreateDraft();
             if (data) kbfSetCreateDraft(data);
@@ -1178,6 +1244,16 @@
                     valid = f.checked;
                 } else {
                     valid = String(f.value || '').trim() !== '';
+                }
+                if (valid && f.id === 'kbf-goal-amount') {
+                    var raw = (f.dataset.kbfRaw || f.value || '').replace(/,/g, '');
+                    var num = parseFloat(raw);
+                    valid = !isNaN(num) && num >= 100;
+                    if (!valid) {
+                        kbfSetFieldError(f, 'Minimum goal amount is 100.');
+                        if (!firstInvalid) firstInvalid = f;
+                        continue;
+                    }
                 }
                 if (!valid) {
                     if (!firstInvalid) firstInvalid = f;
@@ -1323,17 +1399,48 @@
             var out = document.getElementById('kbf-fee-preview');
             if(!input || !out) return;
               var rate = <?php echo (bool)kbf_get_setting('kbf_disable_platform_fee', false) ? '0' : '0.05'; ?>;
+            function sanitizeMoney(value){
+                var v = String(value || '').replace(/[^\d.]/g, '');
+                var parts = v.split('.');
+                var intPart = parts[0] || '';
+                var decPart = parts.slice(1).join('');
+                if (decPart.length > 2) decPart = decPart.slice(0, 2);
+                if (intPart === '' && decPart) intPart = '0';
+                return { intPart: intPart, decPart: decPart };
+            }
+            function formatWithCommas(intPart){
+                return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+            function formatMoneyInput(value){
+                var s = sanitizeMoney(value);
+                var intPart = s.intPart.replace(/^0+(?=\d)/, '');
+                if (intPart === '') intPart = '0';
+                var formatted = formatWithCommas(intPart);
+                if (s.decPart) formatted += '.' + s.decPart;
+                var raw = intPart + (s.decPart ? '.' + s.decPart : '');
+                return { formatted: formatted, raw: raw };
+            }
+            function parseMoney(value){
+                var raw = String(value || '').replace(/,/g, '');
+                var num = parseFloat(raw);
+                return isNaN(num) ? 0 : num;
+            }
             function fmt(n){
                 return n.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
             }
             function render(){
-                var val = parseFloat(input.value || '0');
-                if(isNaN(val)) val = 0;
+                var val = parseMoney(input.dataset.kbfRaw || input.value);
                 var cut = val * rate;
                 var net = Math.max(0, val - cut);
                 out.innerHTML = 'Platform cut: ₱' + fmt(cut) + ' &nbsp;•&nbsp; Net goal: ₱' + fmt(net);
             }
-            input.addEventListener('input', render);
+            input.addEventListener('input', function(){
+                var before = input.value;
+                var fm = formatMoneyInput(before);
+                input.value = fm.formatted;
+                input.dataset.kbfRaw = fm.raw;
+                render();
+            });
             render();
         })();
     })();
@@ -1395,14 +1502,16 @@
                     msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Submission failed. Please try again.</div>';
                 }
             }
-            if(ok) {
-                if (window.kbfClearCreateDraft) window.kbfClearCreateDraft();
-                kbfCloseModal('kbf-modal-create');
-                var modal = document.getElementById('kbf-modal-create');
-                if (modal) modal.style.display = 'none';
-                document.documentElement.classList.remove('kbf-modal-lock');
-                document.body.classList.remove('kbf-modal-lock');
-                var dashUrl = '<?php echo esc_url(add_query_arg('kbf_tab','overview', function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/'))); ?>';
+        if(ok) {
+            if (window.kbfClearCreateDraft) window.kbfClearCreateDraft();
+            kbfCloseModal('kbf-modal-create');
+            var modal = document.getElementById('kbf-modal-create');
+            if (modal) {
+                modal.classList.remove('is-open');
+                setTimeout(function(){ modal.style.display = 'none'; }, 220);
+            }
+            // keep page scroll enabled
+            var dashUrl = '<?php echo esc_url(add_query_arg('kbf_tab','overview', function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/'))); ?>';
                 setTimeout(function(){ window.location.href = dashUrl; }, 600);
             } else {
                 kbfSetLoadingPage(false);
@@ -1427,9 +1536,13 @@
         }
         kbfSetBtnLoading(btn, true, 'Saving...');
         kbfSetSkeleton(msg, true);
-        kbfCloseModal('kbf-modal-edit');
         kbfSetLoadingPage(true);
         const fd = new FormData(form);
+        var goalInput = document.getElementById('kbf-goal-amount');
+        if (goalInput) {
+            var goalRaw = (goalInput.dataset.kbfRaw || goalInput.value || '').replace(/,/g, '');
+            fd.set('goal_amount', goalRaw);
+        }
         var removedInput = document.getElementById('kbf-edit-removed-photos');
         if (removedInput && removedInput.value) {
             fd.set('remove_photos', removedInput.value);
@@ -1461,6 +1574,7 @@
             m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
             if(json.success) {
                 kbfCloseModal('kbf-modal-edit');
+                try { localStorage.setItem('kbf_fund_updated', String(Date.now())); } catch(e){}
             } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
             kbfSetLoadingPage(false);
         }).catch(()=>{ 
@@ -1511,6 +1625,12 @@
         document.getElementById('edit-fund-id').value = id;
         document.getElementById('edit-fund-title').value = title;
         document.getElementById('edit-fund-desc').value = desc;
+        var editBtn = document.getElementById('kbf-edit-submit');
+        if (editBtn) {
+            editBtn.disabled = false;
+            editBtn.innerHTML = 'Save Changes';
+            if (editBtn.dataset) delete editBtn.dataset.kbfLabel;
+        }
         if (window.kbfResetEditPhotos) window.kbfResetEditPhotos();
         if (window.kbfSetEditExistingPhotos) {
             var existing = [];
@@ -1727,7 +1847,13 @@
           fd.append('_ajax_nonce', kbfUserRefreshNonce);
           fd.append('tab', kbfUserTab);
           fetch(ajaxurl,{method:'POST',body:fd})
-            .then(r=>r.json())
+            .then(function(r){ return r.text(); })
+            .then(function(text){
+              var cleaned = String(text || '').replace(/^\uFEFF+/, '').trim();
+              if (!cleaned) return null;
+              try { return JSON.parse(cleaned); }
+              catch(e){ throw e; }
+            })
             .then(function(j){
               if (!j || !j.success || !j.data || !j.data.html) return;
               var container = document.querySelector('.kbf-tab-content');
