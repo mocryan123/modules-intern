@@ -439,10 +439,19 @@ function bntm_shortcode_kbf_fund_details() {
         box-shadow:var(--kbf-shadow);
         padding:6px;
         min-width:170px;
-        display:none;
         z-index:20;
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+        transform:translateY(-6px) scale(0.98);
+        transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
     }
-    .kbf-more-menu.open{display:block;}
+    .kbf-more-menu.open{
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
+        transform:translateY(0) scale(1);
+    }
     .kbf-more-menu button{
         width:100%;
         justify-content:center;

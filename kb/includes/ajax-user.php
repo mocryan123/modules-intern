@@ -225,9 +225,19 @@ function bntm_ajax_kbf_update_fund() {
         'deadline'=>!empty($_POST['deadline']) ? sanitize_text_field($_POST['deadline']) : null,
         'auto_return'=>isset($_POST['auto_return']) ? 1 : 0
     ];
+    $existing=$fund->photos?json_decode($fund->photos,true):[];
+    if (!is_array($existing)) $existing = [];
+    // Remove photos
+    if (!empty($_POST['remove_photos'])) {
+        $remove_list = json_decode(stripslashes((string)$_POST['remove_photos']), true);
+        if (is_array($remove_list) && !empty($remove_list)) {
+            $existing = array_values(array_filter($existing, function($u) use ($remove_list){
+                return !in_array($u, $remove_list, true);
+            }));
+        }
+    }
     // New photos
     if(!empty($_FILES['photos']['name'][0])) {
-        $existing=$fund->photos?json_decode($fund->photos,true):[];
         $count=min(5,count($_FILES['photos']['name']));
         for($i=0;$i<$count;$i++) {
             if(count($existing)>=5) break;
@@ -236,7 +246,9 @@ function bntm_ajax_kbf_update_fund() {
             if(isset($up['error'])) wp_send_json_error(['message'=>$up['error']]);
             if(isset($up['url'])) $existing[]=$up['url'];
         }
-        $data['photos']=json_encode($existing);
+    }
+    if (!empty($_POST['remove_photos']) || !empty($_FILES['photos']['name'][0])) {
+        $data['photos']=!empty($existing) ? json_encode($existing) : null;
     }
     $res=$wpdb->update($t,$data,['id'=>$id],array_fill(0,count($data),'%s'),['%d']);
     if($res!==false) wp_send_json_success(['message'=>'Fund updated successfully!']);

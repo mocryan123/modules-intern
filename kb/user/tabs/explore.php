@@ -67,6 +67,17 @@ function kbf_dashboard_find_funds_tab() {
 
     <!-- ================== CSS ================== -->
     <style>
+      #kbff-search-form select,
+      #kbff-search-form .kbf-select-display{
+        height:38px;
+        min-height:38px;
+        padding:0 36px 0 12px;
+        line-height:38px;
+        white-space:nowrap;
+      }
+      #kbff-search-form .kbf-select-display{
+        padding-right:36px;
+      }
       .kbf-explore-grid{
         display:grid;
         grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
@@ -279,10 +290,19 @@ function kbf_dashboard_find_funds_tab() {
         box-shadow:var(--kbf-shadow);
         padding:6px;
         min-width:150px;
-        display:none;
         z-index:50;
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+        transform:translateY(-6px) scale(0.98);
+        transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
       }
-      .kbf-explore-more-menu.open{display:block;}
+      .kbf-explore-more-menu.open{
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
+        transform:translateY(0) scale(1);
+      }
       .kbf-explore-actions .kbf-btn-sm{
         width:38px;
         height:38px;
@@ -450,7 +470,7 @@ function kbf_dashboard_find_funds_tab() {
     <!-- Header -->
     <div style="background:#fff;border:none;border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:none;">
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-        <form method="GET" style="display:flex;gap:8px;flex-wrap:nowrap;flex:1;align-items:center;min-width:0;overflow-x:auto;overflow-y:hidden;" id="kbff-search-form">
+        <form method="GET" style="display:flex;gap:8px;flex-wrap:nowrap;flex:1;align-items:center;min-width:0;overflow:visible;" id="kbff-search-form">
           <input type="hidden" name="kbf_tab" value="find_funds">
           <?php if($cat): ?><input type="hidden" name="ff_cat" value="<?php echo esc_attr($cat); ?>"><?php endif; ?>
           <?php if($sort && $sort!=='newest'): ?><input type="hidden" name="ff_sort" value="<?php echo esc_attr($sort); ?>"><?php endif; ?>
@@ -488,7 +508,7 @@ function kbf_dashboard_find_funds_tab() {
             </select>
           </div>
 
-          <input type="text" name="ff_q" id="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer..." style="flex:1 1 220px;min-width:200px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
+          <input type="text" name="ff_q" id="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer..." style="flex:1 1 220px;min-width:200px;height:38px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
           <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;min-width:38px;width:38px;padding:0;" aria-label="Near Me">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
           </button>

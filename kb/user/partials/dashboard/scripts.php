@@ -199,6 +199,7 @@
             opt.textContent = list[i].label;
             muniEl.appendChild(opt);
         }
+        if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
     }
     function kbfSetBrgyOptions(brgyEl, list){
         if (!brgyEl) return;
@@ -209,6 +210,7 @@
             opt.textContent = list[i];
             brgyEl.appendChild(opt);
         }
+        if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
     }
     function kbfBuildMunicipalities(provinceUpper){
         var out = [];
@@ -256,16 +258,25 @@
                 brgyEl.disabled = true;
                 kbfSetMuniOptions(muniEl, []);
                 kbfSetBrgyOptions(brgyEl, []);
+                if (typeof window.kbfRefreshSelect === 'function') {
+                    window.kbfRefreshSelect(muniEl);
+                    window.kbfRefreshSelect(brgyEl);
+                }
                 return;
             }
             muniEl.disabled = true;
             brgyEl.disabled = true;
             kbfSetMuniOptions(muniEl, []);
             kbfSetBrgyOptions(brgyEl, []);
+            if (typeof window.kbfRefreshSelect === 'function') {
+                window.kbfRefreshSelect(muniEl);
+                window.kbfRefreshSelect(brgyEl);
+            }
             kbfEnsurePsgc(function(){
                 muniData = kbfBuildMunicipalities(String(val).toUpperCase());
                 kbfSetMuniOptions(muniEl, muniData);
                 muniEl.disabled = muniData.length === 0;
+                if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
             });
         }
         function handleMunicipalityChange(){
@@ -273,6 +284,7 @@
             if (!val){
                 brgyEl.disabled = true;
                 kbfSetBrgyOptions(brgyEl, []);
+                if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
                 return;
             }
             var upperVal = String(val).toUpperCase();
@@ -286,10 +298,12 @@
             if (!found){
                 brgyEl.disabled = true;
                 kbfSetBrgyOptions(brgyEl, []);
+                if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
                 return;
             }
             kbfSetBrgyOptions(brgyEl, found.barangays);
             brgyEl.disabled = found.barangays.length === 0;
+            if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
         }
         provinceEl.addEventListener('change', handleProvinceChange);
         muniEl.addEventListener('change', handleMunicipalityChange);
@@ -306,12 +320,17 @@
         if (!province) {
             muniEl.disabled = true; brgyEl.disabled = true;
             kbfSetMuniOptions(muniEl, []); kbfSetBrgyOptions(brgyEl, []);
+            if (typeof window.kbfRefreshSelect === 'function') {
+                window.kbfRefreshSelect(muniEl);
+                window.kbfRefreshSelect(brgyEl);
+            }
             return;
         }
         kbfEnsurePsgc(function(){
             var muniData = kbfBuildMunicipalities(String(province).toUpperCase());
             kbfSetMuniOptions(muniEl, muniData);
             muniEl.disabled = muniData.length === 0;
+            if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
             if (municipality) muniEl.value = municipality;
             var upperVal = String(muniEl.value || '').toUpperCase();
             var found = null;
@@ -325,9 +344,11 @@
                 kbfSetBrgyOptions(brgyEl, found.barangays);
                 brgyEl.disabled = found.barangays.length === 0;
                 if (barangay) brgyEl.value = barangay;
+                if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
             } else {
                 brgyEl.disabled = true;
                 kbfSetBrgyOptions(brgyEl, []);
+                if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
             }
         });
     }
@@ -435,6 +456,7 @@
         var editPhotoWrap = document.getElementById('kbf-edit-photo-previews');
         var kbfEditFiles = [];
         var kbfEditExistingUrls = [];
+        var kbfEditRemovedUrls = [];
         function kbfSyncEditFiles(){
             if (!editPhotoInput) return;
             var dt = new DataTransfer();
@@ -453,6 +475,45 @@
                 img.alt = '';
                 img.src = src;
                 thumb.appendChild(img);
+                var editBtn = document.createElement('button');
+                editBtn.type = 'button';
+                editBtn.className = 'kbf-photo-edit';
+                editBtn.setAttribute('aria-label', 'Edit photo');
+                editBtn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>';
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'kbf-photo-remove';
+                btn.innerHTML = '&times;';
+                btn.addEventListener('click', function(){
+                    kbfEditRemovedUrls.push(src);
+                    kbfEditExistingUrls.splice(idx, 1);
+                    var removedInput = document.getElementById('kbf-edit-removed-photos');
+                    if (removedInput) removedInput.value = JSON.stringify(kbfEditRemovedUrls);
+                    kbfRenderEditThumbs();
+                });
+                editBtn.addEventListener('click', function(e){
+                    e.preventDefault();
+                    if (!window.kbfOpenPhotoEditor) return;
+                    fetch(src)
+                    .then(function(r){ return r.blob(); })
+                    .then(function(blob){
+                        var ext = (blob.type || 'image/jpeg').split('/')[1] || 'jpg';
+                        var file = new File([blob], 'edit-' + Date.now() + '.' + ext, { type: blob.type || 'image/jpeg' });
+                        var maxNew = Math.max(0, 5 - kbfEditExistingUrls.length);
+                        if (kbfEditFiles.length >= maxNew) return;
+                        kbfEditRemovedUrls.push(src);
+                        var removedInput = document.getElementById('kbf-edit-removed-photos');
+                        if (removedInput) removedInput.value = JSON.stringify(kbfEditRemovedUrls);
+                        kbfEditExistingUrls.splice(idx, 1);
+                        kbfEditFiles.push(file);
+                        kbfSyncEditFiles();
+                        kbfRenderEditThumbs();
+                        kbfOpenPhotoEditor(file, 'edit', kbfEditFiles.length - 1);
+                    })
+                    .catch(function(){});
+                });
+                thumb.appendChild(editBtn);
+                thumb.appendChild(btn);
                 editPhotoWrap.appendChild(thumb);
                 existingCount++;
             });
@@ -852,6 +913,9 @@
         window.kbfSetEditExistingPhotos = function(urls){
             if (!Array.isArray(urls)) urls = [];
             kbfEditExistingUrls = urls.filter(function(u){ return !!u; });
+            kbfEditRemovedUrls = [];
+            var removedInput = document.getElementById('kbf-edit-removed-photos');
+            if (removedInput) removedInput.value = '';
             if (editPhotoWrap) kbfRenderEditThumbs();
         };
         if (photoInput && photoWrap) {
@@ -1366,12 +1430,24 @@
         kbfCloseModal('kbf-modal-edit');
         kbfSetLoadingPage(true);
         const fd = new FormData(form);
+        var removedInput = document.getElementById('kbf-edit-removed-photos');
+        if (removedInput && removedInput.value) {
+            fd.set('remove_photos', removedInput.value);
+        }
         var eProv = document.getElementById('kbf-edit-province');
         var eMuni = document.getElementById('kbf-edit-municipality');
         var eBrgy = document.getElementById('kbf-edit-barangay');
         var eProvVal = eProv ? eProv.value : '';
         var eMuniVal = eMuni ? eMuni.value : '';
         var eBrgyVal = eBrgy ? eBrgy.value : '';
+        var editLocParts = [];
+        if (eBrgyVal) editLocParts.push(eBrgyVal);
+        if (eMuniVal) editLocParts.push(eMuniVal);
+        if (eProvVal) editLocParts.push(eProvVal);
+        var editLocFull = editLocParts.join(', ');
+        var hiddenLoc = document.getElementById('edit-fund-location-hidden');
+        if (hiddenLoc) hiddenLoc.value = editLocFull;
+        fd.set('location', editLocFull);
         var eParts = [];
         if (eBrgyVal) eParts.push(eBrgyVal);
         if (eMuniVal) eParts.push(eMuniVal);

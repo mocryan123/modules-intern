@@ -380,7 +380,7 @@ function kbf_global_assets() {
 
     /* Progress */
     .kbf-progress-wrap { background: #eef2f7; border-radius: 999px; height: 8px; overflow: hidden; }
-    .kbf-progress-bar { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #60a5fa, #3b82f6); transition: width .6s ease; }
+    .kbf-progress-bar { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #60a5fa, #3b82f6); transitio  n: width .6s ease; }
 
     /* Badges / Status */
     .kbf-badge{
@@ -882,6 +882,8 @@ function kbf_global_assets() {
         border-radius:7px;
         font-size:13.5px;
         color:var(--kbf-text);
+        line-height:1;
+        min-height:38px;
         background:#fff;
         display:flex;
         align-items:center;
@@ -890,6 +892,16 @@ function kbf_global_assets() {
         cursor:pointer;
         transition:border-color .15s, box-shadow .15s, transform .12s;
         box-sizing:border-box;
+    }
+    .kbf-select.is-placeholder .kbf-select-display,
+    .kbf-select.is-disabled .kbf-select-display{
+        color:var(--kbf-text-sm);
+    }
+    .kbf-form-group select:invalid:not(#kbf-province):not(#kbf-municipality):not(#kbf-barangay):not(#kbf-edit-province):not(#kbf-edit-municipality):not(#kbf-edit-barangay):not(#kbf-profile-province):not(#kbf-profile-municipality):not(#kbf-profile-barangay){
+        color:var(--kbf-text-sm);
+    }
+    .kbf-form-group select option{
+        color:var(--kbf-text);
     }
     .kbf-select .kbf-select-display:focus{
         outline:none;
@@ -1400,6 +1412,11 @@ function kbf_global_assets() {
                     items.forEach(function(it){
                         it.classList.toggle('is-selected', it.dataset.value === select.value);
                     });
+                    if (select && (select.id === 'kbf-province' || select.id === 'kbf-municipality' || select.id === 'kbf-barangay' || select.id === 'kbf-edit-province' || select.id === 'kbf-edit-municipality' || select.id === 'kbf-edit-barangay' || select.id === 'kbf-profile-province' || select.id === 'kbf-profile-municipality' || select.id === 'kbf-profile-barangay')) {
+                        wrapper.classList.remove('is-placeholder');
+                    } else {
+                        wrapper.classList.toggle('is-placeholder', !select.value);
+                    }
                 }
 
                 var typeBuffer = '';
@@ -1537,6 +1554,13 @@ function kbf_global_assets() {
             var wrapper = select._kbfWrapper || select.closest('.kbf-select');
             var display = select._kbfDisplay;
             if (wrapper) wrapper.classList.toggle('is-disabled', !!select.disabled);
+            if (wrapper) {
+                if (select && (select.id === 'kbf-province' || select.id === 'kbf-municipality' || select.id === 'kbf-barangay' || select.id === 'kbf-edit-province' || select.id === 'kbf-edit-municipality' || select.id === 'kbf-edit-barangay' || select.id === 'kbf-profile-province' || select.id === 'kbf-profile-municipality' || select.id === 'kbf-profile-barangay')) {
+                    wrapper.classList.remove('is-placeholder');
+                } else {
+                    wrapper.classList.toggle('is-placeholder', !select.value);
+                }
+            }
             if (display) display.setAttribute('tabindex', select.disabled ? '-1' : '0');
         };
         document.addEventListener('click', function(e){

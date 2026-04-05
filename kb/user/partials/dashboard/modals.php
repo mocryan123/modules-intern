@@ -265,6 +265,7 @@
               </div>
             </div>
             <input type="hidden" name="location" id="edit-fund-location-hidden">
+            <input type="hidden" name="remove_photos" id="kbf-edit-removed-photos">
             <div id="kbf-edit-msg"></div>
           </form>
         </div>

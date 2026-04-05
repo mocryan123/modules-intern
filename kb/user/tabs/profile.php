@@ -46,6 +46,13 @@ function kbf_dashboard_profile_tab($business_id) {
         margin:0 0 6px;
         line-height:1.35;
       }
+      .kbf-profile-card .kbf-select-display span{
+        display:block;
+        min-width:0;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
 
       /* ── Main two-column grid ── */
       .kbf-profile-grid {
