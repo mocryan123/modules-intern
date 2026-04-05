@@ -31,7 +31,7 @@ function kbf_dashboard_profile_tab($business_id) {
       .kbf-section {
         width: 100%;
         box-sizing: border-box;
-        overflow: hidden;
+        overflow: visible;
       }
       .kbf-section form {
         width: 100%;
@@ -781,6 +781,7 @@ function kbfProfileSetMuniOptions(muniEl, list){
         opt.textContent = list[i].label;
         muniEl.appendChild(opt);
     }
+    if (window.kbfRefreshSelect) window.kbfRefreshSelect(muniEl);
 }
 function kbfProfileSetBrgyOptions(brgyEl, list){
     if (!brgyEl) return;
@@ -791,6 +792,7 @@ function kbfProfileSetBrgyOptions(brgyEl, list){
         opt.textContent = list[i];
         brgyEl.appendChild(opt);
     }
+    if (window.kbfRefreshSelect) window.kbfRefreshSelect(brgyEl);
 }
 var kbfProfilePsgcData = null;
 var kbfProfilePsgcLoading = false;
@@ -851,6 +853,7 @@ function kbfProfileInitLocationPicker(provinceEl, muniEl, brgyEl, hiddenEl){
             brgyEl.disabled = true;
             kbfProfileSetMuniOptions(muniEl, []);
             kbfProfileSetBrgyOptions(brgyEl, []);
+            if (window.kbfRefreshSelect) { window.kbfRefreshSelect(muniEl); window.kbfRefreshSelect(brgyEl); }
             updateHidden();
             return;
         }
@@ -858,10 +861,12 @@ function kbfProfileInitLocationPicker(provinceEl, muniEl, brgyEl, hiddenEl){
         brgyEl.disabled = true;
         kbfProfileSetMuniOptions(muniEl, []);
         kbfProfileSetBrgyOptions(brgyEl, []);
+        if (window.kbfRefreshSelect) { window.kbfRefreshSelect(muniEl); window.kbfRefreshSelect(brgyEl); }
         kbfProfileEnsurePsgc(function(){
             muniData = kbfProfileBuildMunicipalities(String(val).toUpperCase());
             kbfProfileSetMuniOptions(muniEl, muniData);
             muniEl.disabled = muniData.length === 0;
+            if (window.kbfRefreshSelect) window.kbfRefreshSelect(muniEl);
         });
         updateHidden();
     }
@@ -870,6 +875,7 @@ function kbfProfileInitLocationPicker(provinceEl, muniEl, brgyEl, hiddenEl){
         if (!val){
             brgyEl.disabled = true;
             kbfProfileSetBrgyOptions(brgyEl, []);
+            if (window.kbfRefreshSelect) window.kbfRefreshSelect(brgyEl);
             updateHidden();
             return;
         }
@@ -884,11 +890,13 @@ function kbfProfileInitLocationPicker(provinceEl, muniEl, brgyEl, hiddenEl){
         if (!found){
             brgyEl.disabled = true;
             kbfProfileSetBrgyOptions(brgyEl, []);
+            if (window.kbfRefreshSelect) window.kbfRefreshSelect(brgyEl);
             updateHidden();
             return;
         }
         kbfProfileSetBrgyOptions(brgyEl, found.barangays);
         brgyEl.disabled = found.barangays.length === 0;
+        if (window.kbfRefreshSelect) window.kbfRefreshSelect(brgyEl);
         updateHidden();
     }
     provinceEl.addEventListener('change', handleProvinceChange);
@@ -907,12 +915,14 @@ function kbfProfileApplyLocationSelection(provinceEl, muniEl, brgyEl, loc){
     if (!province) {
         muniEl.disabled = true; brgyEl.disabled = true;
         kbfProfileSetMuniOptions(muniEl, []); kbfProfileSetBrgyOptions(brgyEl, []);
+        if (window.kbfRefreshSelect) { window.kbfRefreshSelect(muniEl); window.kbfRefreshSelect(brgyEl); }
         return;
     }
     kbfProfileEnsurePsgc(function(){
         var muniData = kbfProfileBuildMunicipalities(String(province).toUpperCase());
         kbfProfileSetMuniOptions(muniEl, muniData);
         muniEl.disabled = muniData.length === 0;
+        if (window.kbfRefreshSelect) window.kbfRefreshSelect(muniEl);
         if (municipality) muniEl.value = municipality;
         var upperVal = String(muniEl.value || '').toUpperCase();
         var found = null;
@@ -925,10 +935,12 @@ function kbfProfileApplyLocationSelection(provinceEl, muniEl, brgyEl, loc){
         if (found){
             kbfProfileSetBrgyOptions(brgyEl, found.barangays);
             brgyEl.disabled = found.barangays.length === 0;
+            if (window.kbfRefreshSelect) window.kbfRefreshSelect(brgyEl);
             if (barangay) brgyEl.value = barangay;
         } else {
             brgyEl.disabled = true;
             kbfProfileSetBrgyOptions(brgyEl, []);
+            if (window.kbfRefreshSelect) window.kbfRefreshSelect(brgyEl);
         }
     });
 }

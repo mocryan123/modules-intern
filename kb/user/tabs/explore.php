@@ -450,13 +450,13 @@ function kbf_dashboard_find_funds_tab() {
     <!-- Header -->
     <div style="background:#fff;border:none;border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:none;">
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-        <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;align-items:center;" id="kbff-search-form">
+        <form method="GET" style="display:flex;gap:8px;flex-wrap:nowrap;flex:1;align-items:center;min-width:0;overflow-x:auto;overflow-y:hidden;" id="kbff-search-form">
           <input type="hidden" name="kbf_tab" value="find_funds">
           <?php if($cat): ?><input type="hidden" name="ff_cat" value="<?php echo esc_attr($cat); ?>"><?php endif; ?>
           <?php if($sort && $sort!=='newest'): ?><input type="hidden" name="ff_sort" value="<?php echo esc_attr($sort); ?>"><?php endif; ?>
           <?php if($saved_only): ?><input type="hidden" name="ff_saved" value="<?php echo esc_attr($saved_only); ?>"><?php endif; ?>
 
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:140px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="14" height="14">
             </span>
@@ -467,7 +467,7 @@ function kbf_dashboard_find_funds_tab() {
               <?php endforeach; ?>
             </select>
           </div>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:130px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/funnel-fill.svg" alt="" width="14" height="14">
             </span>
@@ -478,7 +478,7 @@ function kbf_dashboard_find_funds_tab() {
             </select>
           </div>
 
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:130px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="14" height="14">
             </span>
@@ -488,10 +488,9 @@ function kbf_dashboard_find_funds_tab() {
             </select>
           </div>
 
-          <input type="text" name="ff_q" id="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer..." style="flex:0 0 220px;min-width:200px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
-          <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="" width="14" height="14" style="margin-right:6px;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-            Near Me
+          <input type="text" name="ff_q" id="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer..." style="flex:1 1 220px;min-width:200px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
+          <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;min-width:38px;width:38px;padding:0;" aria-label="Near Me">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
           </button>
           <button type="submit" class="kbf-btn kbf-btn-primary">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/search.svg" alt="" width="14" height="14" style="filter:invert(100%);margin-right:6px;">
