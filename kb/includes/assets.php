@@ -254,7 +254,7 @@ function kbf_global_assets() {
     }
     .kbf-admin-main{
         flex:1;
-        padding:0 28px 40px;
+        padding:28px 28px 40px;
         box-sizing:border-box;
     }
     .kbf-admin-shell{

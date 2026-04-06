@@ -1226,7 +1226,8 @@
         color:#fff;
         font-weight:800;
         letter-spacing:.6px;
-        box-shadow:0 8px 18px #3d8ef033;
+        box-shadow:0 8px 18px rgba(61,142,240,.2);
+        overflow:hidden;
         animation:kbfpreloadjump 1.2s cubic-bezier(.34,1.2,.64,1) infinite;
     }
     .kbf-user-ui .kbf-loading-mark img{
@@ -1234,8 +1235,11 @@
         filter:brightness(0) invert(1);
     }
     @keyframes kbfpreloadjump{
-        0%,100%{transform:translateY(0);}
-        50%{transform:translateY(-6px);}
+        0%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
+        25%{transform:translateY(-14px) rotate(-8deg) scale(1.01); box-shadow:0 16px 28px rgba(61,142,240,.3);}
+        50%{transform:translateY(2px) rotate(6deg) scale(.99); box-shadow:0 6px 14px rgba(61,142,240,.18);}
+        75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
+        100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
     }
 html.kbf-modal-lock, body.kbf-modal-lock { overflow: auto !important; }
     .kbf-user-ui .kbf-modal-body p{font-weight:400;}

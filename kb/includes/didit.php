@@ -16,11 +16,19 @@ function kbf_didit_resolve_config() {
     $demo_mode = (bool) kbf_get_setting('kbf_demo_mode', true);
 
     if ($demo_mode) {
-        $api_key = (string) getenv('KBF_DIDIT_SANDBOX_API_KEY');
-        $workflow_id = (string) getenv('KBF_DIDIT_SANDBOX_WORKFLOW_ID');
+        $api_key = (string) kbf_get_setting('kbf_didit_sandbox_api_key', '');
+        $workflow_id = (string) kbf_get_setting('kbf_didit_sandbox_workflow_id', '');
+        if ($api_key === '' || $workflow_id === '') {
+            $api_key = (string) getenv('KBF_DIDIT_SANDBOX_API_KEY');
+            $workflow_id = (string) getenv('KBF_DIDIT_SANDBOX_WORKFLOW_ID');
+        }
     } else {
-        $api_key = (string) getenv('KBF_DIDIT_LIVE_API_KEY');
-        $workflow_id = (string) getenv('KBF_DIDIT_LIVE_WORKFLOW_ID');
+        $api_key = (string) kbf_get_setting('kbf_didit_live_api_key', '');
+        $workflow_id = (string) kbf_get_setting('kbf_didit_live_workflow_id', '');
+        if ($api_key === '' || $workflow_id === '') {
+            $api_key = (string) getenv('KBF_DIDIT_LIVE_API_KEY');
+            $workflow_id = (string) getenv('KBF_DIDIT_LIVE_WORKFLOW_ID');
+        }
     }
 
     $api_key = trim($api_key);

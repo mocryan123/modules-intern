@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF admin AJAX handlers (approvals, escrow, reports, settings).
  */

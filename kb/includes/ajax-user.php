@@ -154,6 +154,13 @@ function bntm_ajax_kbf_create_fund() {
     global $wpdb;$table=$wpdb->prefix.'kbf_funds';
     $biz=get_current_user_id();
     $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? $_POST['location_full'] : (isset($_POST['location']) ? $_POST['location'] : '');
+    if (empty($location_full)) {
+        $parts = [];
+        if (!empty($_POST['barangay'])) $parts[] = sanitize_text_field($_POST['barangay']);
+        if (!empty($_POST['municipality'])) $parts[] = sanitize_text_field($_POST['municipality']);
+        if (!empty($_POST['province'])) $parts[] = sanitize_text_field($_POST['province']);
+        if (!empty($parts)) $location_full = implode(', ', $parts);
+    }
     foreach(['title','description','goal_amount','email','phone','category','funder_type','deadline'] as $f) {
         if(empty($_POST[$f])) wp_send_json_error(['message'=>'Please fill all required fields.']);
     }

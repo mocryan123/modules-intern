@@ -239,7 +239,7 @@
               <div class="kbf-step-note">Step 2: Update location and deadline.</div>
               <div class="kbf-form-group">
                 <label>Province</label>
-                <select id="kbf-edit-province" required>
+                <select id="kbf-edit-province" name="province" required>
                   <option value="">Select Province</option>
                   <?php foreach (kbf_get_provinces() as $p): ?>
                     <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
@@ -250,7 +250,7 @@
               </div>
               <div class="kbf-form-group">
                 <label>Municipality</label>
-                <select id="kbf-edit-municipality" required disabled>
+                <select id="kbf-edit-municipality" name="municipality" required disabled>
                   <option value="">Select Municipality</option>
                 </select>
                 <small>Municipality list will load based on province.</small>
@@ -258,7 +258,7 @@
               </div>
               <div class="kbf-form-group">
                 <label>Barangay</label>
-                <select id="kbf-edit-barangay" required disabled>
+                <select id="kbf-edit-barangay" name="barangay" required disabled>
                   <option value="">Select Barangay</option>
                 </select>
                 <small>Barangay list will load based on municipality.</small>

@@ -1143,7 +1143,81 @@ document.addEventListener('DOMContentLoaded', function(){
         var btn = document.getElementById('fundora-didit-start');
         var msg = document.getElementById('fundora-didit-msg');
         if (!btn) return;
+        var COOLDOWN_MAX_ATTEMPTS = 3;
+        var COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+        var COOLDOWN_KEY = 'kbf_verify_cooldown';
+        var COOLDOWN_COUNT_KEY = 'kbf_verify_attempts';
+        var cooldownTimer = null;
+
+        function getCooldownUntil(){
+            var raw = localStorage.getItem(COOLDOWN_KEY);
+            var val = raw ? parseInt(raw, 10) : 0;
+            return isNaN(val) ? 0 : val;
+        }
+        function setCooldownUntil(ts){
+            localStorage.setItem(COOLDOWN_KEY, String(ts));
+        }
+        function getAttempts(){
+            var raw = localStorage.getItem(COOLDOWN_COUNT_KEY);
+            var val = raw ? parseInt(raw, 10) : 0;
+            return isNaN(val) ? 0 : val;
+        }
+        function setAttempts(n){
+            localStorage.setItem(COOLDOWN_COUNT_KEY, String(n));
+        }
+        function clearAttempts(){
+            localStorage.removeItem(COOLDOWN_COUNT_KEY);
+        }
+        function formatTime(ms){
+            var total = Math.max(0, Math.ceil(ms / 1000));
+            var m = Math.floor(total / 60);
+            var s = total % 60;
+            return m + ':' + (s < 10 ? '0' + s : s);
+        }
+        function applyCooldownUI(untilTs){
+            var now = Date.now();
+            if (untilTs <= now) {
+                btn.disabled = false;
+                btn.textContent = 'Verify Account';
+                clearAttempts();
+                if (cooldownTimer) { clearInterval(cooldownTimer); cooldownTimer = null; }
+                return;
+            }
+            btn.disabled = true;
+            var remaining = untilTs - now;
+            btn.textContent = 'Try again in ' + formatTime(remaining);
+            if (!cooldownTimer) {
+                cooldownTimer = setInterval(function(){
+                    var left = getCooldownUntil() - Date.now();
+                    if (left <= 0) {
+                        applyCooldownUI(0);
+                    } else {
+                        btn.textContent = 'Try again in ' + formatTime(left);
+                    }
+                }, 1000);
+            }
+        }
+
+        // Initialize cooldown state on load
+        applyCooldownUI(getCooldownUntil());
+
         btn.addEventListener('click', function(){
+            var now = Date.now();
+            var until = getCooldownUntil();
+            if (until > now) {
+                applyCooldownUI(until);
+                if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-warning">Too many attempts. Please wait before trying again.</div>';
+                return;
+            }
+            var attempts = getAttempts() + 1;
+            setAttempts(attempts);
+            if (attempts >= COOLDOWN_MAX_ATTEMPTS) {
+                var lockUntil = Date.now() + COOLDOWN_MS;
+                setCooldownUntil(lockUntil);
+                applyCooldownUI(lockUntil);
+                if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-warning">Too many attempts. Please wait before trying again.</div>';
+                return;
+            }
             if (!window.fundoraDidit || !window.fundoraDidit.ajaxurl || !window.fundoraDidit.nonce) {
                 if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Verification is not configured.</div>';
                 return;

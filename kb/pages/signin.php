@@ -171,6 +171,17 @@ function bntm_kbf_render_signin() {
       .kbf-auth-input input{background:#ffffff;}
       .kbf-auth-input img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-input input{border:0;background:transparent;outline:none;font-size:13.5px;width:100%;}
+      .kbf-auth-input input:focus{outline:none;box-shadow:none;}
+      .kbf-auth-input input:-webkit-autofill,
+      .kbf-auth-input input:-webkit-autofill:hover,
+      .kbf-auth-input input:-webkit-autofill:focus,
+      .kbf-auth-input input:-webkit-autofill:active{
+        -webkit-text-fill-color:#0b1a33;
+        transition: background-color 9999s ease-in-out 0s;
+        box-shadow:0 0 0 1000px #ffffff inset;
+      }
+      .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+      .kbf-auth-toggle img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-cta{margin-top:14px;}
       .kbf-auth-right h3{font-size:20px;margin:0;font-weight:600;color:#ffffff;}
       .kbf-auth-right p{font-size:13px;margin:0;color:rgba(255,255,255,.85);line-height:1.7;}
@@ -215,13 +226,16 @@ function bntm_kbf_render_signin() {
                   <input type="text" name="user_login" placeholder="you@example.com" required>
                 </div>
               </div>
-              <div class="kbf-form-group">
-                <label>Password</label>
-                <div class="kbf-auth-input">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lock-fill.svg" alt="">
-                  <input type="password" name="user_password" placeholder="Enter your password" required>
+                <div class="kbf-form-group">
+                  <label>Password</label>
+                  <div class="kbf-auth-input">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lock-fill.svg" alt="">
+                    <input type="password" id="kbf-signin-password" name="user_password" placeholder="Enter your password" required>
+                    <button type="button" class="kbf-auth-toggle" data-target="kbf-signin-password" aria-label="Show password">
+                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye.svg" alt="">
+                    </button>
+                  </div>
                 </div>
-              </div>
               <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--kbf-slate);margin-top:2px;">
                 <input type="checkbox" name="rememberme" style="width:14px;height:14px;"> Keep me signed in
               </label>
@@ -242,6 +256,26 @@ function bntm_kbf_render_signin() {
           </div>
         </div>
       </div>
+      <script>
+        (function(){
+          document.querySelectorAll('.kbf-auth-toggle').forEach(function(btn){
+            btn.addEventListener('click', function(){
+              var id = btn.getAttribute('data-target');
+              var input = id ? document.getElementById(id) : null;
+              if (!input) return;
+              var isHidden = input.getAttribute('type') === 'password';
+              input.setAttribute('type', isHidden ? 'text' : 'password');
+              var img = btn.querySelector('img');
+              if (img) {
+                img.src = isHidden
+                  ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-slash.svg'
+                  : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye.svg';
+              }
+              btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+            });
+          });
+        })();
+      </script>
     </div>
     <?php
     return ob_get_clean();

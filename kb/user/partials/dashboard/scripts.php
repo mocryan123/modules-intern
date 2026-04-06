@@ -188,6 +188,7 @@
 
     var kbfPsgcData = null;
     var kbfPsgcLoading = false;
+    var kbfPsgcQueue = [];
     function kbfTitleCase(str){
         return String(str).toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});
     }
@@ -240,14 +241,23 @@
         return out;
     }
     function kbfEnsurePsgc(cb){
+        if (typeof cb !== 'function') cb = function(){};
         if (kbfPsgcData){ cb(); return; }
-        if (kbfPsgcLoading) return;
+        if (kbfPsgcLoading) { kbfPsgcQueue.push(cb); return; }
         kbfPsgcLoading = true;
         fetch('<?php echo esc_url(BNTM_KBF_URL . 'data/psgc_2016.json'); ?>')
           .then(function(r){ return r.json(); })
-          .then(function(j){ kbfPsgcData = j; cb(); })
+          .then(function(j){ kbfPsgcData = j; })
           .catch(function(){ kbfPsgcData = null; })
-          .finally(function(){ kbfPsgcLoading = false; });
+          .finally(function(){
+              kbfPsgcLoading = false;
+              var queue = kbfPsgcQueue.slice();
+              kbfPsgcQueue = [];
+              queue.push(cb);
+              for (var i=0;i<queue.length;i++){
+                  try { queue[i](); } catch(e){}
+              }
+          });
     }
     function kbfInitLocationPicker(provinceEl, muniEl, brgyEl){
         if (!provinceEl || !muniEl || !brgyEl) return;
@@ -314,10 +324,45 @@
     function kbfApplyLocationSelection(provinceEl, muniEl, brgyEl, loc){
         if (!provinceEl || !muniEl || !brgyEl) return;
         var parts = String(loc || '').split(',').map(function(p){ return p.trim(); }).filter(Boolean);
-        var barangay = parts.length > 0 ? parts[0] : '';
-        var municipality = parts.length > 1 ? parts[1] : '';
-        var province = parts.length > 2 ? parts[2] : (parts.length === 1 ? parts[0] : (parts.length === 2 ? parts[1] : ''));
+        var province = '';
+        var municipality = '';
+        var barangay = '';
+
+        function findOptionMatch(el, value){
+            if (!el || !value) return '';
+            var target = String(value).toLowerCase();
+            for (var i=0;i<el.options.length;i++){
+                var optVal = String(el.options[i].value || '');
+                if (!optVal) continue;
+                if (optVal.toLowerCase() === target) return optVal;
+            }
+            return '';
+        }
+
+        // Detect province by matching option values first.
+        var provinceIdx = -1;
+        for (var p=0;p<parts.length;p++){
+            if (findOptionMatch(provinceEl, parts[p])) {
+                provinceIdx = p;
+                break;
+            }
+        }
+        if (provinceIdx >= 0) {
+            province = findOptionMatch(provinceEl, parts[provinceIdx]);
+            parts.splice(provinceIdx, 1);
+        } else if (parts.length >= 3) {
+            province = findOptionMatch(provinceEl, parts[parts.length - 1]) || parts[parts.length - 1];
+            parts = parts.slice(0, -1);
+        } else if (parts.length === 2) {
+            var maybeProv = findOptionMatch(provinceEl, parts[1]);
+            if (maybeProv) {
+                province = maybeProv;
+                parts = [parts[0]];
+            }
+        }
+
         provinceEl.value = province;
+        if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(provinceEl);
         if (!province) {
             muniEl.disabled = true; brgyEl.disabled = true;
             kbfSetMuniOptions(muniEl, []); kbfSetBrgyOptions(brgyEl, []);
@@ -327,12 +372,62 @@
             }
             return;
         }
+
         kbfEnsurePsgc(function(){
             var muniData = kbfBuildMunicipalities(String(province).toUpperCase());
             kbfSetMuniOptions(muniEl, muniData);
             muniEl.disabled = muniData.length === 0;
             if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
-            if (municipality) muniEl.value = municipality;
+
+            if (parts.length) {
+                // Try match municipality from remaining parts.
+                var muniMatch = '';
+                for (var i=0;i<parts.length;i++){
+                    var candidate = String(parts[i] || '').trim();
+                    if (!candidate) continue;
+                    for (var m=0;m<muniData.length;m++){
+                        if (String(muniData[m].label).toLowerCase() === candidate.toLowerCase()){
+                            muniMatch = muniData[m].label;
+                            parts.splice(i,1);
+                            break;
+                        }
+                    }
+                    if (muniMatch) break;
+                }
+                if (!muniMatch && parts.length >= 2) {
+                    muniMatch = parts[parts.length - 1];
+                    parts = parts.slice(0, -1);
+                }
+                if (muniMatch) municipality = muniMatch;
+            }
+
+            // If municipality is still missing but we have a barangay candidate,
+            // derive municipality by searching PSGC barangay lists.
+            if (!municipality && parts.length === 1) {
+                var brgyCandidate = String(parts[0] || '').trim();
+                if (brgyCandidate) {
+                    var brgyLower = brgyCandidate.toLowerCase();
+                    for (var mi=0; mi<muniData.length; mi++){
+                        var bList = muniData[mi].barangays || [];
+                        for (var bi=0; bi<bList.length; bi++){
+                            if (String(bList[bi]).toLowerCase() === brgyLower){
+                                municipality = muniData[mi].label;
+                                break;
+                            }
+                        }
+                        if (municipality) break;
+                    }
+                    if (municipality) {
+                        barangay = brgyCandidate;
+                        parts = [];
+                    }
+                }
+            }
+
+            if (municipality) {
+                muniEl.value = municipality;
+                if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
+            }
             var upperVal = String(muniEl.value || '').toUpperCase();
             var found = null;
             for (var i=0;i<muniData.length;i++){
@@ -344,8 +439,11 @@
             if (found){
                 kbfSetBrgyOptions(brgyEl, found.barangays);
                 brgyEl.disabled = found.barangays.length === 0;
-                if (barangay) brgyEl.value = barangay;
-                if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
+                if (!barangay && parts.length) barangay = parts[0];
+                if (barangay) {
+                    brgyEl.value = barangay;
+                    if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
+                }
             } else {
                 brgyEl.disabled = true;
                 kbfSetBrgyOptions(brgyEl, []);
@@ -1534,9 +1632,54 @@
             invalid.focus();
             return;
         }
+        var eProv = document.getElementById('kbf-edit-province');
+        var eMuni = document.getElementById('kbf-edit-municipality');
+        var eBrgy = document.getElementById('kbf-edit-barangay');
+        function kbfGetSelectValueOrLabel(sel){
+            if (!sel) return '';
+            var val = String(sel.value || '').trim();
+            if (val) return val;
+            var labelEl = sel._kbfLabel || (sel._kbfDisplay ? sel._kbfDisplay.querySelector('span') : null);
+            var label = labelEl ? String(labelEl.textContent || '').trim() : '';
+            if (!label) return '';
+            if (/^select\s+/i.test(label)) return '';
+            return label;
+        }
+        var eProvVal = kbfGetSelectValueOrLabel(eProv);
+        var eMuniVal = kbfGetSelectValueOrLabel(eMuni);
+        var eBrgyVal = kbfGetSelectValueOrLabel(eBrgy);
+
+        // If municipality is missing but we have province + barangay, derive it from PSGC before submit.
+        if (!eMuniVal && eProvVal && eBrgyVal && typeof kbfEnsurePsgc === 'function' && !window.__kbfEditLocResolving) {
+            window.__kbfEditLocResolving = true;
+            kbfEnsurePsgc(function(){
+                try {
+                    var muniData = kbfBuildMunicipalities(String(eProvVal).toUpperCase());
+                    var brgyLower = String(eBrgyVal).toLowerCase();
+                    var muniFound = '';
+                    for (var mi=0; mi<muniData.length; mi++){
+                        var bList = muniData[mi].barangays || [];
+                        for (var bi=0; bi<bList.length; bi++){
+                            if (String(bList[bi]).toLowerCase() === brgyLower){
+                                muniFound = muniData[mi].label;
+                                break;
+                            }
+                        }
+                        if (muniFound) break;
+                    }
+                    if (muniFound && eMuni) {
+                        eMuni.value = muniFound;
+                        if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(eMuni);
+                    }
+                } catch(e){}
+                window.__kbfEditLocResolving = false;
+                kbfSubmitEdit();
+            });
+            return;
+        }
+
         kbfSetBtnLoading(btn, true, 'Saving...');
         kbfSetSkeleton(msg, true);
-        kbfSetLoadingPage(true);
         const fd = new FormData(form);
         var goalInput = document.getElementById('kbf-goal-amount');
         if (goalInput) {
@@ -1547,12 +1690,9 @@
         if (removedInput && removedInput.value) {
             fd.set('remove_photos', removedInput.value);
         }
-        var eProv = document.getElementById('kbf-edit-province');
-        var eMuni = document.getElementById('kbf-edit-municipality');
-        var eBrgy = document.getElementById('kbf-edit-barangay');
-        var eProvVal = eProv ? eProv.value : '';
-        var eMuniVal = eMuni ? eMuni.value : '';
-        var eBrgyVal = eBrgy ? eBrgy.value : '';
+        if (eProv) fd.set('province', eProvVal || '');
+        if (eMuni) fd.set('municipality', eMuniVal || '');
+        if (eBrgy) fd.set('barangay', eBrgyVal || '');
         var editLocParts = [];
         if (eBrgyVal) editLocParts.push(eBrgyVal);
         if (eMuniVal) editLocParts.push(eMuniVal);
@@ -1569,18 +1709,40 @@
         fd.append('action', 'kbf_update_fund');
         fd.append('nonce', '<?php echo $nonce_edit; ?>');
         fetch(ajaxurl, {method:'POST', body:fd})
-        .then(r=>r.json()).then(json=>{
+        .then(r=>r.text()).then(t=>{
+            var json = null;
+            try {
+                var cleaned = String(t || '').replace(/^\uFEFF/, '').trim();
+                var start = cleaned.indexOf('{');
+                var end = cleaned.lastIndexOf('}');
+                var payload = (start !== -1 && end !== -1 && end > start) ? cleaned.slice(start, end + 1) : cleaned;
+                json = JSON.parse(payload);
+            } catch(e) {
+                json = { success: false, data: { message: 'Invalid server response. Please try again.' } };
+            }
             const m = document.getElementById('kbf-edit-msg');
-            m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
+            if (m) {
+                if (json.success) {
+                    m.innerHTML = '';
+                } else {
+                    m.innerHTML = '<div class="kbf-alert kbf-alert-error">'+(json.data && json.data.message ? json.data.message : 'Update failed.')+'</div>';
+                }
+            }
             if(json.success) {
+                kbfSetBtnLoading(btn,false);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Save Changes';
+                    if (btn.dataset) delete btn.dataset.kbfLabel;
+                }
+                kbfSetSkeleton(msg,false);
                 kbfCloseModal('kbf-modal-edit');
                 try { localStorage.setItem('kbf_fund_updated', String(Date.now())); } catch(e){}
+                setTimeout(function(){ window.location.reload(); }, 200);
             } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
-            kbfSetLoadingPage(false);
         }).catch(()=>{ 
             kbfSetBtnLoading(btn,false); 
             kbfSetSkeleton(msg,false); 
-            kbfSetLoadingPage(false);
         });
     }
 
@@ -1629,8 +1791,11 @@
         if (editBtn) {
             editBtn.disabled = false;
             editBtn.innerHTML = 'Save Changes';
+            editBtn.classList.remove('is-loading');
             if (editBtn.dataset) delete editBtn.dataset.kbfLabel;
         }
+        var editMsg = document.getElementById('kbf-edit-msg');
+        if (editMsg) editMsg.innerHTML = '';
         if (window.kbfResetEditPhotos) window.kbfResetEditPhotos();
         if (window.kbfSetEditExistingPhotos) {
             var existing = [];
@@ -1656,6 +1821,13 @@
         var counter = document.getElementById('edit-fund-desc').parentNode.querySelector('.kbf-desc-counter');
         if (counter) counter.textContent = (desc || '').length + ' / 800';
         if (typeof kbfSetEditStep === 'function') kbfSetEditStep(1);
+        // Hard reset footer buttons to step 1 state
+        var editPrev = document.getElementById('kbf-edit-prev');
+        var editNext = document.getElementById('kbf-edit-next');
+        var editSubmit = document.getElementById('kbf-edit-submit');
+        if (editPrev) { editPrev.disabled = true; editPrev.dataset.step = '1'; }
+        if (editNext) { editNext.style.display = ''; editNext.dataset.step = '1'; }
+        if (editSubmit) { editSubmit.style.display = 'none'; }
         kbfOpenModal('kbf-modal-edit');
     };
 
