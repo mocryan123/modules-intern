@@ -326,11 +326,11 @@ function bntm_shortcode_kbf_fund_details() {
         width:min(96vw, 1400px);
         max-width:96vw;
         max-height:90vh;
-        height:auto;
-        object-fit:contain;
+        height:90vh;
+        object-fit:cover;
         border-radius:16px;
         box-shadow:0 24px 60px rgba(0,0,0,0.45);
-        background:#fff;
+        background:#111827;
         transform:scale(.98);
         transition:transform .3s ease;
     }

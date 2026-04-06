@@ -949,7 +949,7 @@ function kbf_dashboard_find_funds_tab() {
             'Tip: Use real photos to improve credibility.',
             'Tip: Thank early sponsors to build social proof.',
             'Tip: Post updates after big milestones.',
-            'Tip: Found a malicious fund post? Report it to us.'
+            'Tip: Found a malicious campaign? Report it to us.'
         ];
         function pickRandom(){
             return tips[Math.floor(Math.random()*tips.length)];
