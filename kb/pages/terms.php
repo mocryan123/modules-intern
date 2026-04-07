@@ -393,7 +393,7 @@ function bntm_kbf_render_terms() {
 
           <h2 id="verification">4. Identity Verification</h2>
           <p>Campaign organizers are required to complete identity verification through our third-party KYC (Know Your Customer) provider before launching a fundraising campaign. This process requires submission of a valid government-issued identification document and biometric verification.</p>
-          <p>Identity verification is used to reduce fraud, protect sponsors, and maintain the integrity of campaigns on the platform. Verification status is displayed on your public organizer profile.</p>
+          <p>Identity verification is used to reduce fraud, protect sponsors, and maintain the integrity of campaigns on the platform. Verification status is displayed on your public account profile.</p>
           <p>Fundora does not store identity documents directly. They are processed and retained according to our KYC provider's data retention and privacy policies.</p>
 
           <h2 id="rules">5. Campaign Rules and Prohibited Content</h2>
@@ -577,3 +577,4 @@ function bntm_kbf_render_terms() {
     <?php
     return ob_get_clean();
 }
+

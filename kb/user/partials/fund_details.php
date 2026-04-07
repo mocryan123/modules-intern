@@ -208,7 +208,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-leaderboard-pill{background:var(--kbf-accent);color:#fff;border-radius:99px;padding:3px 10px;font-size:10.5px;font-weight:800;flex-shrink:0;}
     .kbf-photo-gallery{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
     .kbf-photo-main{border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;}
-    .kbf-photo-main img{width:100%;height:360px;object-fit:cover;display:block;transition:transform .3s ease;transform:translateX(0);}
+    .kbf-photo-main img{width:100%;height:300px;object-fit:cover;display:block;transition:transform .3s ease;transform:translateX(0);}
     .kbf-photo-nav{
         position:absolute;
         top:50%;
@@ -223,9 +223,18 @@ function bntm_shortcode_kbf_fund_details() {
         align-items:center;
         justify-content:center;
         cursor:pointer;
-        z-index:2;
+        z-index:4;
+        opacity:.96;
     }
-    .kbf-photo-nav img{width:14px;height:14px;display:block;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);}
+    .kbf-photo-nav img{
+        width:14px;
+        height:14px;
+        min-width:14px;
+        min-height:14px;
+        display:block;
+        object-fit:contain;
+        filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);
+    }
     .kbf-photo-prev{left:12px;}
     .kbf-photo-next{right:12px;}
     .kbf-photo-count{
@@ -350,6 +359,7 @@ function bntm_shortcode_kbf_fund_details() {
         align-items:center;
         justify-content:center;
         cursor:pointer;
+        z-index:3;
     }
     .kbf-photo-lightbox-prev{left:18px;}
     .kbf-photo-lightbox-next{right:18px;}
@@ -434,11 +444,13 @@ function bntm_shortcode_kbf_fund_details() {
         position:absolute;
         right:0;
         top:calc(100% + 8px);
-        background:#fff;
-        border:1px solid var(--kbf-border);
-        border-radius:12px;
-        box-shadow:var(--kbf-shadow);
-        padding:6px;
+        background:rgba(255,255,255,0.98);
+        border:1px solid #e2e8f0;
+        border-radius:14px;
+        box-shadow:
+          0 14px 30px rgba(15,23,42,.12),
+          0 4px 10px rgba(15,23,42,.08);
+        padding:8px;
         min-width:170px;
         z-index:20;
         opacity:0;
@@ -446,6 +458,7 @@ function bntm_shortcode_kbf_fund_details() {
         pointer-events:none;
         transform:translateY(-6px) scale(0.98);
         transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
+        backdrop-filter:blur(10px);
     }
     .kbf-more-menu.open{
         opacity:1;
@@ -455,9 +468,37 @@ function bntm_shortcode_kbf_fund_details() {
     }
     .kbf-more-menu button{
         width:100%;
-        justify-content:center;
+        justify-content:flex-start !important;
         gap:8px;
         margin:4px 0;
+        border:0;
+        background:transparent;
+        padding:8px 10px;
+        border-radius:10px;
+        font-size:12.5px;
+        font-weight:600;
+        color:#0f172a;
+        text-align:left;
+        transition:background .15s ease, color .15s ease, transform .15s ease;
+    }
+    .kbf-more-menu .kbf-btn,
+    .kbf-more-menu .kbf-btn-secondary{
+        background:transparent !important;
+        border:0 !important;
+        box-shadow:none !important;
+    }
+    .kbf-more-menu button:hover,
+    .kbf-more-menu .kbf-btn:hover,
+    .kbf-more-menu .kbf-btn-secondary:hover{
+        background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
+        color:#0f172a !important;
+        transform:translateX(1px);
+        box-shadow:
+          inset 0 0 0 1px #bfdbfe,
+          0 8px 18px rgba(59,130,246,.16);
+    }
+    .kbf-more-menu button:active{
+        background:#e7f1ff;
     }
     @media(max-width:900px){
         .kbf-detail-panels{display:flex;flex-direction:column;gap:20px;}
@@ -470,8 +511,73 @@ function bntm_shortcode_kbf_fund_details() {
         .kbf-section-leaderboard{order:5;}
         .kbf-section-progress{order:6;}
         .kbf-detail-sticky{height:auto !important;}
-        .kbf-photo-main img{height:440px;}
+        .kbf-photo-main img{height:300px;}
         .kbf-photo-thumb img{height:80px;}
+        .kbf-photo-nav{
+            width:34px;
+            height:34px;
+        }
+        .kbf-photo-prev{left:10px;}
+        .kbf-photo-next{right:10px;}
+    }
+    @media (max-width: 680px){
+        .kbf-photo-lightbox{padding:12px;}
+        .kbf-photo-lightbox img{
+            width:100%;
+            max-width:100%;
+            height:auto;
+            max-height:86vh;
+            object-fit:contain;
+            border-radius:14px;
+        }
+        .kbf-photo-lightbox-nav{
+            width:32px;
+            height:32px;
+        }
+        .kbf-photo-lightbox-prev{left:8px;}
+        .kbf-photo-lightbox-next{right:8px;}
+        .kbf-photo-lightbox-close{
+            top:12px;
+            right:12px;
+            width:32px;
+            height:32px;
+        }
+        .kbf-photo-nav{
+            width:32px;
+            height:32px;
+        }
+        .kbf-photo-prev{left:8px;}
+        .kbf-photo-next{right:8px;}
+        .kbf-photo-nav img{
+            width:12px;
+            height:12px;
+            min-width:12px;
+            min-height:12px;
+        }
+    }
+    @media (max-width: 560px){
+        .kbf-account-header-row{
+            flex-wrap:wrap;
+            justify-content:flex-start;
+            align-items:flex-start;
+        }
+        .kbf-account-header-row .kbf-section-title{
+            width:100%;
+        }
+        .kbf-account-header-actions{
+            width:100%;
+        }
+    }
+    @media (max-width: 560px){
+        .kbf-account-header-row{
+            flex-direction:column;
+            align-items:flex-start;
+            gap:6px;
+        }
+        .kbf-account-header-actions{
+            width:100%;
+            justify-content:flex-start;
+        }
     }
  </style>
     <!-- ================== HTML ================== -->
@@ -649,16 +755,16 @@ function bntm_shortcode_kbf_fund_details() {
            <!-- Organizer card -->
         <?php if($fund->organizer_name): ?>
         <div class="kbf-card kbf-section-organizer">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);gap:10px;flex-wrap:wrap;">
+          <div class="kbf-account-header-row" style="display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);gap:10px;flex-wrap:nowrap;">
             <h3 class="kbf-section-title" style="margin:0;">About the Account</h3>
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="kbf-account-header-actions" style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;white-space:nowrap;">
               <a href="<?php echo esc_url($profile_url); ?>" style="background:none;border:none;color:var(--kbf-blue);cursor:pointer;font-size:12.5px;font-weight:600;padding:0;display:flex;align-items:center;gap:4px;text-decoration:none;">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="13" height="13" style="filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
                 View Full Profile
               </a>
             </div>
           </div>
-          <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none;color:inherit;" title="View organizer profile">
+          <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none;color:inherit;" title="View account profile">
             <div class="kbf-org-avatar">
               <?php if($organizer&&$organizer->avatar_url): ?>
                 <img src="<?php echo esc_url($organizer->avatar_url); ?>" style="border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--kbf-blue)'" onmouseout="this.style.borderColor='var(--kbf-border)'">
@@ -1106,6 +1212,7 @@ function bntm_shortcode_kbf_fund_details() {
             clearAutoTimer();
         }
         function resumeAuto(){
+            if (lightbox && lightbox.classList.contains('open')) return;
             autoPaused = false;
             scheduleAuto();
         }
@@ -1507,6 +1614,7 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 

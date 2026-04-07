@@ -253,7 +253,7 @@
                   <?php endif; ?>
                 </div>
                 <div class="kbf-onboard-badge">Onboarding</div>
-                <h4 id="kbf-onboard-title">Set up your organizer profile</h4>
+                <h4 id="kbf-onboard-title">Set up your account profile</h4>
                 <p>Complete a few essentials to unlock withdrawals and build supporter trust.</p>
                 <div class="kbf-onboard-progress">
                   <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/5</span></div>
@@ -328,6 +328,16 @@
         }
         .kbf-save-btn.is-saved img{
           filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
+        }
+        .kbf-card-more-menu button:hover,
+        .kbf-card-more-menu .kbf-btn:hover,
+        .kbf-card-more-menu .kbf-btn-secondary:hover{
+          background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
+          color:#0f172a !important;
+          transform:translateX(1px);
+          box-shadow:
+            inset 0 0 0 1px #bfdbfe,
+            0 8px 18px rgba(59,130,246,.16);
         }
       </style>
       <style>
@@ -861,6 +871,7 @@
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

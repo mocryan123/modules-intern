@@ -142,7 +142,7 @@ function kbf_admin_organizers_tab() {
             <span>Verify</span>
             <span>Onboarding</span>
           </div>
-          <div class="kbf-table-empty-body">No organizer profiles yet.</div>
+          <div class="kbf-table-empty-body">No account profiles yet.</div>
         </div>
       <?php else: ?>
       <div class="kbf-table-wrap" data-kbf-table-desc="Shows organizer accounts and verification status.">
@@ -235,6 +235,7 @@ function kbf_admin_organizers_tab() {
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

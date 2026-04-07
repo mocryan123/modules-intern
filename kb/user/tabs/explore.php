@@ -284,18 +284,21 @@ function kbf_dashboard_find_funds_tab() {
         position:absolute;
         right:0;
         top:calc(100% + 8px);
-        background:#fff;
-        border:1px solid var(--kbf-border);
-        border-radius:12px;
-        box-shadow:var(--kbf-shadow);
-        padding:6px;
-        min-width:150px;
+        background:rgba(255,255,255,0.98);
+        border:1px solid #e2e8f0;
+        border-radius:14px;
+        box-shadow:
+          0 14px 30px rgba(15,23,42,.12),
+          0 4px 10px rgba(15,23,42,.08);
+        padding:8px;
+        min-width:170px;
         z-index:50;
         opacity:0;
         visibility:hidden;
         pointer-events:none;
         transform:translateY(-6px) scale(0.98);
         transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
+        backdrop-filter:blur(10px);
       }
       .kbf-explore-more-menu.open{
         opacity:1;
@@ -316,8 +319,15 @@ function kbf_dashboard_find_funds_tab() {
         width:100%;
         min-width:0;
         height:auto;
-        padding:6px 10px;
+        padding:8px 10px;
         justify-content:flex-start;
+        border:0;
+        background:transparent;
+        border-radius:10px;
+        font-size:12.5px;
+        font-weight:600;
+        color:#0f172a;
+        transition:background .15s ease, color .15s ease, transform .15s ease;
       }
       .kbf-explore-actions .kbf-btn-sm img{margin:0;}
       .kbf-save-btn{
@@ -339,6 +349,33 @@ function kbf_dashboard_find_funds_tab() {
         justify-content:flex-start;
         gap:8px;
         margin:4px 0;
+        border:0;
+        background:transparent;
+        padding:8px 10px;
+        border-radius:10px;
+        font-size:12.5px;
+        font-weight:600;
+        color:#0f172a;
+        transition:background .15s ease, color .15s ease, transform .15s ease;
+      }
+      .kbf-explore-more-menu .kbf-btn,
+      .kbf-explore-more-menu .kbf-btn-secondary{
+        background:transparent !important;
+        border:0 !important;
+        box-shadow:none !important;
+      }
+      .kbf-explore-more-menu button:hover,
+      .kbf-explore-more-menu .kbf-btn:hover,
+      .kbf-explore-more-menu .kbf-btn-secondary:hover{
+        background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
+        color:#0f172a !important;
+        transform:translateX(1px);
+        box-shadow:
+          inset 0 0 0 1px #bfdbfe,
+          0 8px 18px rgba(59,130,246,.16);
+      }
+      .kbf-explore-more-menu button:active{
+        background:#e7f1ff;
       }
       .kbf-explore-pager{
         display:flex;

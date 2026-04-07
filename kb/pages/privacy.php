@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * Fundora public page: Privacy Policy
  */
@@ -340,7 +340,7 @@ function bntm_kbf_render_privacy() {
         </div>
       </div>
       <h1>Privacy Policy</h1>
-      <p class="kbf-legal-sub">FUNDORA — How Fundora collects, uses, and protects your data.</p>
+      <p class="kbf-legal-sub">FUNDORA â€” How Fundora collects, uses, and protects your data.</p>
       <div class="kbf-legal-grid">
         <aside class="kbf-legal-card kbf-legal-nav">
           <h4>Sections</h4>
@@ -405,7 +405,7 @@ function bntm_kbf_render_privacy() {
             <li>To create and manage your Fundora account.</li>
             <li>To verify your identity before allowing you to create campaigns.</li>
             <li>To process donations and withdrawals through our payment gateway.</li>
-            <li>To display your public organizer profile and campaign information.</li>
+            <li>To display your public account profile and campaign information.</li>
             <li>To send you transactional notifications related to your campaigns and donations.</li>
             <li>To investigate complaints and resolve disputes between users.</li>
             <li>To comply with applicable Philippine laws and regulations.</li>
@@ -416,29 +416,29 @@ function bntm_kbf_render_privacy() {
           <h2 id="share">4. Data Sharing with Third Parties</h2>
           <p>We share your personal information only with the following third parties, and only to the extent necessary to provide our services:</p>
           <ul>
-            <li>PayMongo or Maya — for payment processing. Your payment information is transmitted securely to our payment gateway provider to complete transactions. We do not store full card details on our servers.</li>
-            <li>Didit — for identity verification. Organizer ID documents and biometric data are processed by Didit according to their own privacy policy and data retention practices.</li>
+            <li>PayMongo or Maya â€” for payment processing. Your payment information is transmitted securely to our payment gateway provider to complete transactions. We do not store full card details on our servers.</li>
+            <li>Didit â€” for identity verification. Organizer ID documents and biometric data are processed by Didit according to their own privacy policy and data retention practices.</li>
           </ul>
           <p>We do not sell, rent, or trade your personal information to any third party for marketing purposes.</p>
 
           <h2 id="retain">5. Data Retention</h2>
           <p>We retain your personal data for as long as your account is active or as needed to provide you with our services. Specific retention periods are as follows:</p>
           <ul>
-            <li>Account data — retained for the duration of your account and for a period of five (5) years after account closure, as required by Philippine law.</li>
-            <li>Transaction records — retained for seven (7) years for financial audit and legal compliance purposes.</li>
-            <li>Identity verification data — retained according to Didit's data retention policy. Please refer to Didit's privacy policy for details.</li>
-            <li>Security logs — retained for twelve (12) months.</li>
+            <li>Account data â€” retained for the duration of your account and for a period of five (5) years after account closure, as required by Philippine law.</li>
+            <li>Transaction records â€” retained for seven (7) years for financial audit and legal compliance purposes.</li>
+            <li>Identity verification data â€” retained according to Didit's data retention policy. Please refer to Didit's privacy policy for details.</li>
+            <li>Security logs â€” retained for twelve (12) months.</li>
           </ul>
 
           <h2 id="rights">6. Your Rights as a Data Subject</h2>
           <p>Under the Data Privacy Act of 2012, you have the following rights with respect to your personal information:</p>
           <ul>
-            <li>Right to be informed — You have the right to know what personal data we collect and how we use it.</li>
-            <li>Right to access — You may request a copy of the personal data we hold about you.</li>
-            <li>Right to rectification — You may request correction of any inaccurate or incomplete data.</li>
-            <li>Right to erasure — You may request deletion of your personal data, subject to legal retention requirements.</li>
-            <li>Right to data portability — You may request your data in a structured, machine-readable format.</li>
-            <li>Right to object — You may object to the processing of your data in certain circumstances.</li>
+            <li>Right to be informed â€” You have the right to know what personal data we collect and how we use it.</li>
+            <li>Right to access â€” You may request a copy of the personal data we hold about you.</li>
+            <li>Right to rectification â€” You may request correction of any inaccurate or incomplete data.</li>
+            <li>Right to erasure â€” You may request deletion of your personal data, subject to legal retention requirements.</li>
+            <li>Right to data portability â€” You may request your data in a structured, machine-readable format.</li>
+            <li>Right to object â€” You may object to the processing of your data in certain circumstances.</li>
           </ul>
           <p>To exercise any of these rights, please contact us through the Fundora platform support channel.</p>
 
@@ -477,7 +477,7 @@ function bntm_kbf_render_privacy() {
           <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>">Terms of Service</a>
           <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>">Refund Policy</a>
         </div>
-        <small>© fundora. All rights reserved.</small>
+        <small>Â© fundora. All rights reserved.</small>
       </div>
       <div class="kbf-social">
         <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
@@ -557,3 +557,4 @@ function bntm_kbf_render_privacy() {
     <?php
     return ob_get_clean();
 }
+

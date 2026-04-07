@@ -272,7 +272,7 @@ function kbf_global_assets() {
     .kbf-tab:hover::after, .kbf-tab.active::after{ width:100%; }
     .kbf-tab:hover { color: #1f2a44; background: transparent; }
     .kbf-tab.active { color: #1f2a44; background: transparent; border: none; }
-    .kbf-tab-content { background: var(--kbf-surface); border: 1px solid var(--kbf-border); border-radius: 16px; padding: 26px; margin-top: 14px; box-shadow: var(--kbf-shadow); }
+    .kbf-tab-content { background: transparent; border: none; border-radius: 0; padding: 0; margin-top: 14px; box-shadow: none; }
 
     /* Cards & Sections */
     .kbf-section { margin-bottom: 30px; }
@@ -1342,7 +1342,7 @@ function kbf_global_assets() {
     @media(max-width:640px) {
         .kbf-form-row, .kbf-form-row-3 { grid-template-columns: 1fr; }
         .kbf-stats { grid-template-columns: 1fr 1fr; }
-        .kbf-tab-content { padding: 16px; }
+        .kbf-tab-content { padding: 0; }
         .kbf-modal-body { padding: 16px; }
     }
     /* Share modal */
