@@ -132,7 +132,7 @@
           0 14px 30px rgba(15,23,42,.12),
           0 4px 10px rgba(15,23,42,.08);
         padding:8px;
-        min-width:190px;
+        min-width:110px;
         z-index:50;
         opacity:0;
         visibility:hidden;
@@ -192,6 +192,12 @@
         margin:0 auto;
         padding:76px 22px 0;
         box-sizing:border-box;
+    }
+    @media (max-width: 620px){
+        .kbf-dashboard-shell{
+            padding-left:0;
+            padding-right:0;
+        }
     }
     .kbf-tab-content{
         margin-bottom:24px;
@@ -290,7 +296,7 @@
         border:1px solid var(--kbf-border);
         box-shadow:0 10px 26px #0f28502e;
     }
-    .kbf-mobile-menu.kbf-menu-open{transform:translateY(0);display:flex;}
+    .kbf-mobile-menu.kbf-menu-open{transform:translateY(56px);display:flex;}
     .kbf-mobile-menu-header{
         display:flex;align-items:center;justify-content:space-between;
         padding:14px 16px;border-bottom:1px solid var(--kbf-border);
@@ -469,6 +475,16 @@
         margin-bottom:0;
         width:100%;
         box-sizing:border-box;
+    }
+    @media (max-width: 620px){
+        .kbf-hero-banner{
+            padding-left:10px;
+            padding-right:10px;
+        }
+        .kbf-hero-wrap{
+            padding-left:20px;
+            padding-right:20px;
+        }
     }
     .kbf-user-ui,
     .kbf-hero-banner{
@@ -913,6 +929,11 @@
     @keyframes kbfStepPulse{
         0%{transform:scale(.92);opacity:.7;}
         100%{transform:scale(1);opacity:1;}
+    }
+    @media (max-width: 620px){
+        .kbf-user-ui .kbf-stepper .kbf-step{display:none;}
+        .kbf-user-ui .kbf-stepper .kbf-step.is-active{display:inline-flex;}
+        .kbf-user-ui .kbf-step::after{display:none;}
     }
     .kbf-user-ui .kbf-step-content{display:none;}
     .kbf-user-ui .kbf-step-content.is-active{

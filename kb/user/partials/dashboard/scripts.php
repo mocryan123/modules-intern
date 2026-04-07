@@ -57,15 +57,27 @@
       function kbfToggleMobileMenu(){
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
+        var icon = document.getElementById('kbf-mobile-menu-icon');
         if (!menu || !overlay) return;
         menu.classList.toggle('kbf-menu-open');
         overlay.classList.toggle('kbf-overlay-open');
+        if (icon) {
+          var isOpen = menu.classList.contains('kbf-menu-open');
+          var openSrc = icon.getAttribute('data-open');
+          var closeSrc = icon.getAttribute('data-close');
+          icon.src = isOpen ? openSrc : closeSrc;
+        }
       }
       function kbfCloseMobileMenu(){
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
+        var icon = document.getElementById('kbf-mobile-menu-icon');
         if (menu) menu.classList.remove('kbf-menu-open');
         if (overlay) overlay.classList.remove('kbf-overlay-open');
+        if (icon) {
+          var closeSrc = icon.getAttribute('data-close');
+          icon.src = closeSrc;
+        }
       }
       window.addEventListener('resize', function(){
         if (window.innerWidth > 900) kbfCloseMobileMenu();

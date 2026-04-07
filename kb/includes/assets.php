@@ -1339,11 +1339,16 @@ function kbf_global_assets() {
     .kbf-page-header h2 { margin: 0 0 4px; font-size: 22px; font-weight: 700; font-family: 'Poppins', system-ui, -apple-system, sans-serif; }
     .kbf-page-header p  { margin: 0; color: var(--kbf-text-sm); font-size: 13.5px; line-height: 1.6; }
 
+    @media(max-width:800px) {
+        .kbf-stats { grid-template-columns: 1fr 1fr; }
+    }
     @media(max-width:640px) {
         .kbf-form-row, .kbf-form-row-3 { grid-template-columns: 1fr; }
-        .kbf-stats { grid-template-columns: 1fr 1fr; }
         .kbf-tab-content { padding: 0; }
         .kbf-modal-body { padding: 16px; }
+    }
+    @media(max-width:620px){
+        .kbf-tab-content { padding-left:20px; padding-right:20px; }
     }
     /* Share modal */
     .kbf-share-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;}
@@ -1361,8 +1366,6 @@ function kbf_global_assets() {
     .kbf-table-empty,
     .kbf-tab-content,
     .kbf-modal,
-    .kbf-modal-header,
-    .kbf-modal-footer,
     .kbf-empty,
     .kbf-page-header,
     .kbf-cta-card,

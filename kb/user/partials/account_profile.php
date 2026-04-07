@@ -168,6 +168,87 @@ function bntm_shortcode_kbf_organizer_profile() {
         @media(max-width:900px){
           .kbf-profile-sidebar{position:static;top:auto;}
         }
+        @media(max-width:620px){
+          .kbf-page-header > div{
+            flex-direction:column !important;
+            align-items:center !important;
+            text-align:center;
+            justify-content:center;
+            width:100%;
+          }
+          .kbf-page-header .kbf-org-avatar{
+            display:block;
+            margin-left:auto !important;
+            margin-right:auto !important;
+            align-self:center;
+          }
+          .kbf-page-header .kbf-org-avatar > img,
+          .kbf-page-header .kbf-org-avatar > .kbf-org-avatar-fallback{
+            margin:0 auto;
+          }
+          .kbf-page-header > div > div{
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            text-align:center;
+            width:100%;
+          }
+          .kbf-page-header h2{margin-bottom:6px;}
+          .kbf-page-header .kbf-social-icons{
+            margin-top:10px !important;
+            justify-content:center;
+          }
+        }
+        @media(max-width:820px){
+          .kbf-page-header > div{
+            flex-direction:column;
+            align-items:flex-start;
+          }
+          .kbf-page-header > div > div{
+            width:100%;
+          }
+          .kbf-page-header h2{
+            font-size:20px;
+          }
+          .kbf-social-icons{
+            margin-top:10px !important;
+            flex-wrap:wrap;
+          }
+        }
+        @media(max-width:900px){
+          .kbf-profile-grid{
+            grid-template-columns:1fr !important;
+          }
+          .kbf-profile-sidebar{
+            order:2;
+          }
+          .kbf-inline-filters{
+            width:100%;
+            justify-content:flex-start !important;
+            gap:8px !important;
+          }
+          .kbf-inline-filters > div{
+            width:100%;
+          }
+          #kbf-filter-status,
+          #kbf-filter-escrow{
+            width:100%;
+            min-width:0 !important;
+          }
+        }
+        @media(max-width:520px){
+          .kbf-org-avatar{
+            width:56px;
+            height:56px;
+          }
+          .kbf-org-avatar > img,
+          .kbf-org-avatar > .kbf-org-avatar-fallback{
+            width:56px;
+            height:56px;
+          }
+          .kbf-org-avatar > .kbf-org-avatar-fallback img{width:24px;height:24px;}
+          .kbf-breadcrumb{font-size:12px;flex-wrap:wrap;}
+        }
       </style>
       <!-- Breadcrumb -->
       <div class="kbf-breadcrumb">
@@ -195,7 +276,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             <h2 style="margin:0 0 6px;"><?php echo esc_html($user->display_name); ?></h2>
             <?php if(trim($bio_text) !== ''): ?>
               <div style="color:#4f5a6b;font-size:13px;line-height:1.6;max-width:520px;">
-                <?php echo nl2br(esc_html($bio_text)); ?>
+                <?php echo nl2br(esc_html(str_replace('\\', '', wp_unslash($bio_text)))); ?>
               </div>
             <?php endif; ?>
             <?php if($account_address !== ''): ?>
@@ -236,11 +317,11 @@ function bntm_shortcode_kbf_organizer_profile() {
         <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;">
           <h3 class="kbf-section-title">Campaigns</h3>
           <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-            <div style="display:flex;align-items:center;gap:8px;">
+            <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="14" height="14">
               </span>
-              <select id="kbf-filter-status" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
+              <select id="kbf-filter-status">
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="pending">Pending</option>
@@ -249,11 +330,11 @@ function bntm_shortcode_kbf_organizer_profile() {
                 <option value="completed">Completed</option>
               </select>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
+            <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/funnel-fill.svg" alt="" width="14" height="14">
               </span>
-              <select id="kbf-filter-escrow" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
+              <select id="kbf-filter-escrow">
                 <option value="all">All Escrow</option>
                 <option value="holding">Holding</option>
                 <option value="released">Released</option>

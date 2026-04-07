@@ -664,6 +664,13 @@
         </div>
       <?php endforeach; ?>
       </div>
+      <div class="kbf-empty kbf-home-empty" style="display:none;padding:60px 20px;">
+        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        <p>No funds match your filters.</p>
+        <button class="kbf-btn kbf-btn-primary kbf-home-clear" type="button" style="margin-top:12px;">Clear Filters</button>
+      </div>
       <?php endif; ?>
       <div class="kbf-cta-card">
         <div>
@@ -720,6 +727,7 @@
           });
           if (window.kbfHomeRenderCards) window.kbfHomeRenderCards();
         }
+        window.kbfHomeApplyFilters = applyFilters;
         statusEl.addEventListener('change', applyFilters);
         escrowEl.addEventListener('change', applyFilters);
         applyFilters();
@@ -727,6 +735,10 @@
 
       (function(){
         var wrap = document.querySelector('.kbf-card-list[data-kbf-card-pager="home"]');
+        var emptyEl = document.querySelector('.kbf-home-empty');
+        var clearBtn = document.querySelector('.kbf-home-clear');
+        var statusEl = document.getElementById('kbf-filter-status');
+        var escrowEl = document.getElementById('kbf-filter-escrow');
         if(!wrap || wrap.dataset.kbfPager === 'on') return;
         var cards = Array.prototype.slice.call(wrap.querySelectorAll('.kbf-card[data-status]'));
         if(cards.length === 0) return;
@@ -754,6 +766,21 @@
         var pageLabel = pager.querySelector('.kbf-table-pager-page');
         var page = 1;
         var perPage = parseInt(select.value, 10) || 5;
+        if (clearBtn) {
+          clearBtn.addEventListener('click', function(){
+            if (statusEl) statusEl.value = 'all';
+            if (escrowEl) escrowEl.value = 'all';
+            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
+            setTimeout(function(){
+              if (typeof window.kbfHomeApplyFilters === 'function') {
+                window.kbfHomeApplyFilters();
+              } else if (window.kbfHomeRenderCards) {
+                window.kbfHomeRenderCards();
+              }
+              location.reload();
+            }, 200);
+          });
+        }
 
         function getFilteredCards(){
           return cards.filter(function(card){ return card.dataset.kbfFilterHidden !== '1'; });
@@ -789,6 +816,8 @@
           prevBtn.disabled = page <= 1;
           nextBtn.disabled = page >= pages;
           pager.style.display = total > 0 ? 'flex' : 'none';
+          if (emptyEl) emptyEl.style.display = total > 0 ? 'none' : 'flex';
+          if (wrap) wrap.style.display = total > 0 ? '' : 'none';
         }
         function setLoading(btn){
           btn.classList.add('is-loading');

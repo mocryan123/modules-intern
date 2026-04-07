@@ -169,6 +169,44 @@ function bntm_shortcode_kbf_fund_details() {
       .kbf-poster-grid{grid-template-columns:1fr;}
       .kbf-poster-right{order:-1;}
     }
+    @media (max-width: 620px){
+      .kbf-account-header-row{
+        display:flex !important;
+        flex-direction:row !important;
+        flex-wrap:nowrap !important;
+        align-items:center;
+        justify-content:flex-start;
+        gap:8px;
+      }
+      .kbf-section-organizer .kbf-organizer-row > img{
+        display:none;
+      }
+      .kbf-section-organizer .kbf-org-text{
+        text-align:center;
+      }
+      .kbf-account-header-row .kbf-section-title{
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .kbf-account-header-actions{
+        width:auto;
+        justify-content:flex-end;
+      }
+      .kbf-section-organizer .kbf-organizer-row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+      }
+      .kbf-section-organizer .kbf-organizer-row > img{
+        align-self:flex-start;
+      }
+      .kbf-account-profile-text{display:none;}
+    }
+    @media (max-width: 900px){
+      .kbf-account-header-row .kbf-section-title{order:1;}
+      .kbf-account-header-actions{order:2;}
+    }
     .kbf-category-pill{
         display:inline-flex;
         align-items:center;
@@ -557,25 +595,12 @@ function bntm_shortcode_kbf_fund_details() {
     }
     @media (max-width: 560px){
         .kbf-account-header-row{
-            flex-wrap:wrap;
+            flex-wrap:nowrap;
             justify-content:flex-start;
-            align-items:flex-start;
-        }
-        .kbf-account-header-row .kbf-section-title{
-            width:100%;
+            align-items:center;
         }
         .kbf-account-header-actions{
-            width:100%;
-        }
-    }
-    @media (max-width: 560px){
-        .kbf-account-header-row{
-            flex-direction:column;
-            align-items:flex-start;
-            gap:6px;
-        }
-        .kbf-account-header-actions{
-            width:100%;
+            width:auto;
             justify-content:flex-start;
         }
     }
@@ -758,13 +783,13 @@ function bntm_shortcode_kbf_fund_details() {
           <div class="kbf-account-header-row" style="display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);gap:10px;flex-wrap:nowrap;">
             <h3 class="kbf-section-title" style="margin:0;">About the Account</h3>
             <div class="kbf-account-header-actions" style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;white-space:nowrap;">
-              <a href="<?php echo esc_url($profile_url); ?>" style="background:none;border:none;color:var(--kbf-blue);cursor:pointer;font-size:12.5px;font-weight:600;padding:0;display:flex;align-items:center;gap:4px;text-decoration:none;">
+              <a href="<?php echo esc_url($profile_url); ?>" class="kbf-account-profile-link" style="background:none;border:none;color:var(--kbf-blue);cursor:pointer;font-size:12.5px;font-weight:600;padding:0;display:flex;align-items:center;gap:4px;text-decoration:none;">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="13" height="13" style="filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
-                View Full Profile
+                <span class="kbf-account-profile-text">View Full Profile</span>
               </a>
             </div>
           </div>
-          <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none;color:inherit;" title="View account profile">
+          <a href="<?php echo esc_url($profile_url); ?>" class="kbf-organizer-row" style="display:flex;align-items:center;gap:14px;cursor:pointer;text-decoration:none;color:inherit;" title="View account profile">
             <div class="kbf-org-avatar">
               <?php if($organizer&&$organizer->avatar_url): ?>
                 <img src="<?php echo esc_url($organizer->avatar_url); ?>" style="border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--kbf-blue)'" onmouseout="this.style.borderColor='var(--kbf-border)'">
@@ -776,9 +801,9 @@ function bntm_shortcode_kbf_fund_details() {
               <?php endif; ?>
             </div>
 
-            <div style="flex:1;">
+            <div class="kbf-org-text" style="flex:1;">
               <div style="font-weight:700;font-size:15px;color:var(--kbf-navy);"><?php echo esc_html($fund->organizer_name); ?></div>
-              <?php if($organizer&&$organizer->bio): ?><p style="font-size:13px;color:var(--kbf-text-sm);margin:4px 0 0;line-height:1.55;"><?php echo esc_html(wp_trim_words($organizer->bio,30)); ?></p><?php endif; ?>
+              <?php if($organizer&&$organizer->bio): ?><p style="font-size:13px;color:var(--kbf-text-sm);margin:4px 0 0;line-height:1.55;"><?php echo esc_html(wp_trim_words(str_replace('\\', '', wp_unslash($organizer->bio)),30)); ?></p><?php endif; ?>
               <?php
   $rating_val = ($organizer && $organizer->rating_count > 0) ? (float)$organizer->rating : 0;
   $rating_round = round($rating_val);

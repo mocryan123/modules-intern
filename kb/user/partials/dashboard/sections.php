@@ -15,15 +15,6 @@
     <!-- Topbar (Landing-style) -->
     <div class="kbf-mobile-overlay" id="kbf-mobile-overlay"></div>
     <div class="kbf-mobile-menu" id="kbf-mobile-menu">
-      <div class="kbf-mobile-menu-header">
-        <div class="kbf-brand">
-          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
-          <span class="kbf-brand-text">fundora</span>
-        </div>
-        <button class="kbf-hamburger" type="button" onclick="kbfCloseMobileMenu()">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="">
-        </button>
-      </div>
       <a href="?kbf_tab=overview" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Home" onclick="kbfCloseMobileMenu()">Home</a>
       <a href="?kbf_tab=sponsorships" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Supporters" onclick="kbfCloseMobileMenu()">Supporters</a>
       <a href="?kbf_tab=withdrawals" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Cashout" onclick="kbfCloseMobileMenu()">Cashout</a>
@@ -54,7 +45,11 @@
       </div>
       <div class="kbf-actions">
         <button class="kbf-hamburger" type="button" onclick="kbfToggleMobileMenu()">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="">
+          <img id="kbf-mobile-menu-icon"
+               src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg"
+               data-open="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg"
+               data-close="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg"
+               alt="">
         </button>
         <?php if($is_logged_in): ?>
           <div class="kbf-user-menu" id="kbf-user-menu">
