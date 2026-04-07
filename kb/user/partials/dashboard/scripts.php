@@ -106,6 +106,9 @@
     function kbfCloseModal(id) {
         var el = document.getElementById(id);
         if (!el) return;
+        if (typeof window.kbfCloseAllSelects === 'function') {
+            window.kbfCloseAllSelects();
+        }
         el.classList.remove('is-open');
         setTimeout(function(){ el.style.display = 'none'; }, 220);
         // keep page scroll enabled

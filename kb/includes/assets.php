@@ -1424,6 +1424,9 @@ function kbf_global_assets() {
         window.kbfHideModal = function(id){
             var el = typeof id === 'string' ? document.getElementById(id) : id;
             if (!el) return;
+            if (typeof window.kbfCloseAllSelects === 'function') {
+                window.kbfCloseAllSelects();
+            }
             el.classList.remove('is-open');
             setTimeout(function(){ el.style.display = 'none'; }, 220);
         };
@@ -1547,6 +1550,13 @@ function kbf_global_assets() {
                     });
                     document.querySelectorAll('.kbf-select-menu.is-open').forEach(function(menuEl){
                         menuEl.classList.remove('is-open');
+                    });
+                    document.querySelectorAll('select[data-kbf-enhanced="1"]').forEach(function(select){
+                        var menu = select._kbfMenu;
+                        var wrapper = select._kbfWrapper || select.closest('.kbf-select');
+                        if (menu && wrapper && menu.parentNode === document.body) {
+                            wrapper.appendChild(menu);
+                        }
                     });
                 };
 
