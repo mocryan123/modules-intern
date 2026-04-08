@@ -108,7 +108,7 @@ function kbf_dashboard_find_funds_tab() {
         padding:12px 12px 0;
       }
       .kbf-explore-media-frame{
-        border-radius:16px;
+        border-radius:8px;
         overflow:hidden;
       }
       .kbf-explore-media img{

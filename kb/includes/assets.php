@@ -32,10 +32,10 @@ function kbf_global_assets() {
         --kbf-text-sm:    #6f7785;
         --kbf-bg:         #ffffff;
         --kbf-surface:    #ffffff;
-        --kbf-radius:     14px;
-        --kbf-radius-sm:  10px;
-        --kbf-radius-md:  14px;
-        --kbf-radius-lg:  18px;
+        --kbf-radius:     12px;
+        --kbf-radius-sm:  8px;
+        --kbf-radius-md:  12px;
+        --kbf-radius-lg:  14px;
         --kbf-shadow:     rgba(0, 0, 0, 0.05) 0px 2px 4px -1px, rgba(0, 0, 0, 0.04) 0px 1px 2px -1px;
         --kbf-shadow-lg:  rgba(0, 0, 0, 0.06) 0px 6px 12px -3px, rgba(0, 0, 0, 0.05) 0px 3px 6px -2px;
         --kbf-brand-logo: url('<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>');

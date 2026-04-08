@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF landing page template (HTML/CSS/JS).
  */
@@ -212,7 +212,10 @@ function bntm_kbf_render_landing() {
         --kbf-lime-dark: #0f2a52;
         --kbf-shadow: rgba(0, 0, 0, 0.05) 0px 2px 4px -1px, rgba(0, 0, 0, 0.04) 0px 1px 2px -1px;
         --kbf-shadow-lg: rgba(0, 0, 0, 0.06) 0px 6px 12px -3px, rgba(0, 0, 0, 0.05) 0px 3px 6px -2px;
-        --kbf-radius: 26px;
+        --kbf-radius: 12px;
+        --kbf-radius-sm: 8px;
+        --kbf-radius-md: 12px;
+        --kbf-radius-lg: 14px;
     }
 
     .kbf-landing {
@@ -226,7 +229,7 @@ function bntm_kbf_render_landing() {
         max-width: 1240px;
         margin: 0 auto 18px;
         padding: 26px 22px 64px;
-        border-radius: 18px;
+        border-radius: var(--kbf-radius-lg);
         overflow: visible;
     }
 
@@ -554,19 +557,23 @@ function bntm_kbf_render_landing() {
 
     /* Right: floating phone cards */
     .kbf-hero-right {
-        flex: 0 0 420px; height: 500px;
+        flex: 0 0 clamp(280px, 40vw, 420px);
+        height: 500px;
         position: relative; z-index: 2;
+        display:flex;
+        align-items:center;
+        justify-content:center;
     }
      /* Cards wrap — fixed internal coordinate system */
     .kbf-cards-wrap {
-        position: absolute;
-        inset: 0;
+        position: relative;
         --cw: 420px;
         --ch: 500px;
+        --kbf-card-scale: clamp(0.6, calc(100vw / 1200), 1);
         width: var(--cw);
         height: var(--ch);
-        transform: scale(1.08);
-        transform-origin: top left;
+        transform: scale(var(--kbf-card-scale));
+        transform-origin: center;
     }
     .kbf-pcard {
         position: absolute; border-radius: 24px; overflow: hidden;
@@ -594,33 +601,52 @@ function bntm_kbf_render_landing() {
         opacity: 0.7;
         pointer-events: none;
     }
-    /* Main card — tall, center-left, highest z */
+    /* Main card — centered anchor */
     .kbf-pcard-main {
         width: 200px; height: 340px;
-        left: 80px; top: 50%;
-        transform: translateY(-50%);
+        left: 50%; top: 50%;
+        --pc-x: -50%;
+        --pc-y: -50%;
+        --pc-rot: 0deg;
+        transform: translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot));
         z-index: 4;
         animation: kbfFloatMain 5s ease-in-out infinite;
     }
-    /* Bottom-right card — shortest, sits bottom-right */
- .kbf-pcard-br {
+    /* Bottom-right card — sits to the right of the main card */
+    .kbf-pcard-br {
         width: 124px; height: 210px;
-        right: 15%; bottom: 30%;
-        z-index: 3; transform: translateY(-50%) rotate(1.5deg);
+        left: 50%; top: 50%;
+        --pc-x: calc(-50% + 150px);
+        --pc-y: -50%;
+        --pc-rot: 1.5deg;
+        transform: translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot));
+        z-index: 3;
         animation: kbfFloatBR 4.5s ease-in-out infinite;
     }
     /* Left card — partially hidden behind main, slight counter-tilt */
     .kbf-pcard-tl {
         width: 124px; height: 210px;
-        left: 0; top: 50%;
-        transform: translateY(-50%) rotate(-1.5deg);
+        left: 50%; top: 50%;
+        --pc-x: calc(-50% - 150px);
+        --pc-y: -50%;
+        --pc-rot: -1.5deg;
+        transform: translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot));
         z-index: 2;
         animation: kbfFloatTL 5.5s ease-in-out infinite;
     }
-    @keyframes kbfFloatMain { 0%,100%{transform:translateY(-50%)} 50%{transform:translateY(calc(-50% - 9px))} }
+    @keyframes kbfFloatMain {
+        0%,100%{transform:translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot))}
+        50%{transform:translate(var(--pc-x), calc(var(--pc-y) - 9px)) rotate(var(--pc-rot))}
+    }
     @keyframes kbfFloatTR   { 0%,100%{transform:rotate(1.5deg) translateY(0)} 50%{transform:rotate(1.5deg) translateY(-7px)} }
-    @keyframes kbfFloatBR   { 0%,100%{transform:rotate(1.5deg) translateY(0)} 50%{transform:rotate(1.5deg) translateY(-5px)} }
-    @keyframes kbfFloatTL   { 0%,100%{transform:translateY(-50%) rotate(-1.5deg) translateY(0px)} 50%{transform:translateY(calc(-50% - 6px)) rotate(-1.5deg)} }
+    @keyframes kbfFloatBR   {
+        0%,100%{transform:translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot))}
+        50%{transform:translate(var(--pc-x), calc(var(--pc-y) - 5px)) rotate(var(--pc-rot))}
+    }
+    @keyframes kbfFloatTL   {
+        0%,100%{transform:translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot))}
+        50%{transform:translate(var(--pc-x), calc(var(--pc-y) - 6px)) rotate(var(--pc-rot))}
+    }
 
     .kbf-pcard-img {
         width: 100%; height: calc(100% - 50px);
@@ -698,7 +724,7 @@ function bntm_kbf_render_landing() {
     /* SECTIONS */
     .kbf-section { margin-top: 54px; scroll-margin-top: calc(var(--kbf-topbar-h, 64px) + 16px); }
     .kbf-section:first-of-type { margin-top: 32px; }
-    .kbf-section h2 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.2px; }
+    .kbf-section h2 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.2px; font-weight: 400; }
     .kbf-section p { color: var(--kbf-muted); margin: 0; font-size: 13.5px; line-height: 1.7; }
     .kbf-section p + p { margin-top: 10px; }
     .kbf-section .kbf-lead { font-size: 14px; line-height: 1.7; margin-top: 8px; }
@@ -763,7 +789,7 @@ function bntm_kbf_render_landing() {
         background: linear-gradient(135deg, #7ec4ff 0%, #3d8ef0 80%);
         box-shadow: 0 4px 10px rgba(61, 142, 240, 0.25);
     }
-    .kbf-compare-table { margin-top: 18px; border: 1px solid var(--kbf-border); border-radius: 18px; overflow: hidden; background: #fff; box-shadow: var(--kbf-shadow); }
+    .kbf-compare-table { margin-top: 18px; border: 1px solid var(--kbf-border); border-radius: var(--kbf-radius-lg); overflow: hidden; background: #fff; box-shadow: var(--kbf-shadow); }
     .kbf-compare-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--kbf-border); font-size: 12.5px; }
     .kbf-compare-row strong { color: #0d1a2e; font-weight: 600; }
     .kbf-compare-row:last-child { border-bottom: none; }
@@ -781,7 +807,7 @@ function bntm_kbf_render_landing() {
     .kbf-card {
         background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
         border: 1px solid #e0e9f7;
-        border-radius: 18px;
+        border-radius: var(--kbf-radius-lg);
         padding: 16px;
         box-shadow: 0 10px 24px rgba(15, 40, 80, 0.08);
         transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
@@ -920,7 +946,7 @@ function bntm_kbf_render_landing() {
     .kbf-urgent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 24px; }
     .kbf-urgent-card {
         background: var(--kbf-surface); border: 1px solid var(--kbf-border);
-        border-radius: 18px; overflow: hidden; box-shadow: var(--kbf-shadow);
+        border-radius: var(--kbf-radius-lg); overflow: hidden; box-shadow: var(--kbf-shadow);
         transition: transform .2s ease, box-shadow .2s ease;
     }
     .kbf-urgent-card:hover { transform: translateY(-3px); box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12); }
@@ -935,14 +961,14 @@ function bntm_kbf_render_landing() {
     .kbf-about-card {
         background: var(--kbf-surface);
         border: 1px solid var(--kbf-border);
-        border-radius: 18px;
+        border-radius: var(--kbf-radius-lg);
         padding: 18px;
         box-shadow: var(--kbf-shadow);
     }
     .kbf-about-card h4 { margin: 0 0 8px; font-size: 16px; }
     .kbf-about-card p { margin: 0; color: var(--kbf-muted); font-size: 13.5px; line-height: 1.6; }
     .kbf-about-photo {
-        border-radius: 18px;
+        border-radius: var(--kbf-radius-lg);
         overflow: hidden;
         background: #e9eef6;
         border: 1px solid var(--kbf-border);
@@ -960,7 +986,7 @@ function bntm_kbf_render_landing() {
     .kbf-stat p { margin: 0 0 16px; color: var(--kbf-muted); }
     .kbf-stat .kbf-photo-grid { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
     .kbf-stat .kbf-photo-grid img {
-        width: 90px; height: 110px; border-radius: 18px;
+        width: 90px; height: 110px; border-radius: var(--kbf-radius-lg);
         object-fit: cover; filter: grayscale(100%);
         box-shadow: var(--kbf-shadow); position: absolute;
         animation: kbfFloatPic 6s ease-in-out infinite;
@@ -1049,7 +1075,7 @@ function bntm_kbf_render_landing() {
         gap: 1px;
         background: var(--kbf-border);
         border: 1px solid var(--kbf-border);
-        border-radius: 18px;
+        border-radius: var(--kbf-radius-lg);
         overflow: hidden;
         margin-top: 18px;
     }
@@ -1087,7 +1113,7 @@ function bntm_kbf_render_landing() {
         gap: 14px;
         background: var(--kbf-soft);
         border: 1px solid var(--kbf-border);
-        border-radius: 16px;
+        border-radius: var(--kbf-radius-md);
         padding: 18px;
     }
     .kbf-about-value-icon {
@@ -1209,10 +1235,9 @@ function bntm_kbf_render_landing() {
     
     /* Responsive */
    /* Large tablets / small desktops (≤1024px) */
-    @media (max-width: 1024px) {
+    @media (max-width: 1000px) {
         .kbf-hero-left { max-width: 420px; }
-        .kbf-hero-right { flex: 0 0 360px; height: 440px; }
-        .kbf-cards-wrap { transform: scale(calc(360 / 420)); }
+        .kbf-hero-right { flex: 0 0 clamp(280px, 34vw, 420px); height: clamp(320px, 45vw, 500px); }
     }
 
     @media (max-width: 900px) {
@@ -1222,8 +1247,7 @@ function bntm_kbf_render_landing() {
         .kbf-hamburger { display: inline-flex; margin-left: auto; }        
         .kbf-mobile-menu a { text-align: center; }
         .kbf-hero-heading { font-size: 38px; letter-spacing: -1px; }
-        .kbf-hero-right { flex: 0 0 300px; height: 380px; }
-        .kbf-cards-wrap { transform: scale(calc(300 / 420)); }
+        .kbf-hero-right { flex: 0 0 clamp(260px, 40vw, 360px); height: clamp(300px, 50vw, 440px); }
         .kbf-feature-grid { grid-template-columns: 1fr; }
         .kbf-feature-grid .kbf-card { grid-column: span 1; }
         .kbf-feature-grid .kbf-card:nth-child(4),
@@ -1239,9 +1263,9 @@ function bntm_kbf_render_landing() {
         .kbf-footer { grid-template-columns: 1fr; text-align: left; margin: 18px auto; }
         .kbf-footer .kbf-social { justify-content: flex-start; }
         .kbf-footer .kbf-brand { justify-content: flex-start; }
-        .kbf-trust-strip { border-radius: 16px; }
+    .kbf-trust-strip { border-radius: var(--kbf-radius-md); }
     }
-    @media (max-width: 830px) {
+    @media (max-width: 1200px) {
         .kbf-hero { padding: 28px 24px; }
         .kbf-hero-inner {
             flex-direction: column;
@@ -1262,14 +1286,6 @@ function bntm_kbf_render_landing() {
             position: relative;
             align-self: center;
         }
-        .kbf-cards-wrap {
-            left: 50%;
-            right: auto;
-            margin-left: auto;
-            margin-right: auto;
-            transform: translateX(-50%) scale(calc(320 / 500));
-            transform-origin: top center;
-        }
     }
 
     @media (max-width: 720px) {
@@ -1286,19 +1302,22 @@ function bntm_kbf_render_landing() {
         .kbf-footer { grid-template-columns: 1fr; text-align: left; margin: 18px auto; }
         .kbf-footer .kbf-social { justify-content: flex-start; }
         .kbf-footer .kbf-brand { justify-content: flex-start; }
+        .kbf-card--glass .kbf-list,
+        .kbf-card--glass .kbf-list li,
+        .kbf-card--soft .kbf-list,
+        .kbf-card--soft .kbf-list li{
+            text-align:left;
+        }
     }
 
     @media (max-width: 480px) {
         .kbf-landing { padding: 14px 10px 36px; }
-        .kbf-topbar { padding: 6px 0 14px; }
+        .kbf-topbar { padding: 10px 18px; }
         .kbf-brand-badge { width: 22px; height: 22px; font-size: 12px; }
-        .kbf-hero { padding: 20px 16px 28px; border-radius: 16px; }
+    .kbf-hero { padding: 20px 16px 28px; border-radius: var(--kbf-radius-md); }
         .kbf-hero-heading { font-size: 28px; letter-spacing: -0.5px; }
         .kbf-hero-desc { font-size: 13px; }
         .kbf-hero-right { height: 260px; }
-        .kbf-cards-wrap {
-            transform: translateX(-50%) scale(calc(260 / 500));
-        }
         .kbf-eyebrow { font-size: 9.5px; padding: 5px 10px; }
         .kbf-btn { font-size: 12px; padding: 8px 14px; }
         .kbf-actions .kbf-btn { width: auto; }
@@ -1316,7 +1335,7 @@ function bntm_kbf_render_landing() {
         .kbf-stat p { font-size: 13px; }
         .kbf-faq summary { font-size: 13px; }
         .kbf-faq details p { font-size: 12px; }
-        .kbf-footer { padding: 20px 18px; border-radius: 18px; gap: 14px; }
+    .kbf-footer { padding: 20px 18px; border-radius: var(--kbf-radius-lg); gap: 14px; }
         .kbf-footer p { font-size: 12px; }
         .kbf-divider { margin-top: 36px; margin-bottom: 36px; }
     }
@@ -1324,9 +1343,6 @@ function bntm_kbf_render_landing() {
     @media (max-width: 360px) {
         .kbf-hero-heading { font-size: 24px; }
         .kbf-hero-right { height: 220px; }
-        .kbf-cards-wrap {
-            transform: translateX(-50%) scale(calc(220 / 500));
-        }
         .kbf-stat h3 { font-size: 34px; }
         .kbf-btn.kbf-btn-primary { font-size: 11.5px; }
     }
@@ -1453,19 +1469,19 @@ function bntm_kbf_render_landing() {
           <h2 style="font-size: 1.4em; font-weight: 500;">Overview</h2>
           <ul class="kbf-article-list">
             <li><span></span>What Is Fundora?</li>
-            <li><span></span>The Problem with Fundraising on Social Media</li>
+            <li><span></span>Why Social Media Fundraising Fails</li>
             <li><span></span>How Fundora Works</li>
             <li><span></span>Key Features That Build Trust</li>
             <li><span></span>Fundora vs. Social Media Fundraising</li>
             <li><span></span>Who Should Use Fundora?</li>
-            <li><span></span>Free During Beta — Why Now Is the Right Time</li>
+            <li><span></span>No Platform Fee During Beta</li>
             <li><span></span>The Future of Filipino Crowdfunding</li>
           </ul>
         </div>
 
         <!-- FEATURES -->
         <div id="kbf-how" class="kbf-section kbf-reveal delay-1" style="margin-top: 80px;">
-          <h2 style="font-size: 1.5em; font-weight: 400;">Key features that build trust</h2>
+          <h2 style="font-size: 1.5em; font-weight: 500;">Key features that build trust</h2>
           <p class="kbf-lead">The biggest barrier to online fundraising in the Philippines is not generosity. It is trust. Fundora is built so every campaign is verifiable and every organizer is accountable.</p>
           <div class="kbf-feature-grid">
             <div class="kbf-card kbf-card--soft">
@@ -1510,7 +1526,7 @@ function bntm_kbf_render_landing() {
             <h2 style="font-size: 1.4em; font-weight: 500;">How Fundora works</h2>
             <div class="kbf-two-col">
               <div class="kbf-card kbf-card--soft kbf-card--shine">
-                <h4 style="font-weight: 600; margin: 0 0 6px;">For Anyone Starting a Campaign</h4>
+                <h4 style="font-weight: 500; margin: 0 0 6px;">For Anyone Starting a Campaign</h4>
                 <ul class="kbf-list">
                   <li>Create a campaign for yourself, someone else, or a cause.</li>
                   <li>Share your link to group chats and social media.</li>
@@ -1519,7 +1535,7 @@ function bntm_kbf_render_landing() {
                 </ul>
               </div>
               <div class="kbf-card kbf-card--glass kbf-card--shine">
-                <h4 style="font-weight: 600; margin: 0 0 6px;">For donors and supporters</h4>
+                <h4 style="font-weight: 500; margin: 0 0 6px;">For donors and supporters</h4>
                 <ul class="kbf-list">
                   <li>Browse campaigns by cause, location, or urgency.</li>
                   <li>Check verified status, updates, and progress.</li>
@@ -1545,7 +1561,7 @@ function bntm_kbf_render_landing() {
           </div>
 
           <div class="kbf-about-card" style="margin-top:18px;">
-            <h2 style="font-size: 1.4em; font-weight: 500;">The problem with fundraising on Social Media</h2>
+            <h2 style="font-size: 1.4em; font-weight: 500;">Why Social Media Fundraising Fails</h2>
             <p>Every Filipino has seen it: a relative posts their GCash number after a hospitalization. A neighbor shares a donation link after a house fire. The intention is real. The response is generous. But the system is broken.</p>
             <p style="margin-top:10px;">There is no way to confirm how much was raised or whether help arrived. Posts get buried. Families keep waiting. This is not a generosity problem. It is an infrastructure problem — and that is exactly what Fundora was built to solve.</p>
           </div>
@@ -1915,6 +1931,7 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
+
 
 
 

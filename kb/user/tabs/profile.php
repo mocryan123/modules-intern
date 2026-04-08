@@ -296,6 +296,7 @@ function kbf_dashboard_profile_tab($business_id) {
         color: var(--kbf-text);
         background: #fff;
         font-family: inherit;
+        resize: none;
       }
       .kbf-profile-bio textarea:focus{
         outline: none;
@@ -514,8 +515,8 @@ function kbf_dashboard_profile_tab($business_id) {
 
             <div class="kbf-profile-bio">
               <div class="kbf-profile-card-title">Bio / About</div>
-              <textarea id="kbf-profile-bio" name="bio" rows="4" maxlength="300" placeholder="Tell sponsors about yourself or your account..."><?php echo esc_textarea(isset($profile->bio) ? $profile->bio : ''); ?></textarea>
-              <div class="kbf-char-count" id="kbf-profile-bio-count">0 / 300</div>
+              <textarea id="kbf-profile-bio" name="bio" rows="10" maxlength="250" placeholder="Tell sponsors about yourself or your account..."><?php echo esc_textarea(isset($profile->bio) ? str_replace('\\', '', wp_unslash($profile->bio)) : ''); ?></textarea>
+              <div class="kbf-char-count" id="kbf-profile-bio-count">0 / 250</div>
             </div>
 
             <div class="kbf-form-group">
@@ -975,7 +976,7 @@ document.addEventListener('DOMContentLoaded', function(){
         var ta = document.getElementById('kbf-profile-bio');
         var out = document.getElementById('kbf-profile-bio-count');
         if (!ta || !out) return;
-        out.textContent = (ta.value || '').length + ' / 300';
+        out.textContent = (ta.value || '').length + ' / 250';
     };
 
     document.addEventListener('DOMContentLoaded', function(){
