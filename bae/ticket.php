@@ -1463,15 +1463,54 @@ function bntm_bae_ticket_screen() {
         width:min(1200px, calc(100% - 40px));
         margin:0 auto;
         display:grid;
-        grid-template-columns:1fr auto;
-        gap:12px;
+        grid-template-columns:minmax(0, 1fr) auto;
+        gap:18px;
         align-items:end;
         padding-top:18px;
         border-top:1px solid rgba(28,20,12,.08);
     }
     .baetk[data-theme="dark"] .baetk-footer-inner { border-top-color:rgba(255,255,255,.08); color:#6a667e; }
+    .baetk-footer-brand {
+        display:flex;
+        align-items:center;
+        gap:18px;
+        min-width:0;
+    }
+    .baetk-footer-logo {
+        width:72px;
+        flex-shrink:0;
+    }
+    .baetk-footer-logo .bae-brand-logo-img {
+        width:100%;
+        height:auto;
+        display:block;
+    }
+    .baetk[data-theme="light"] .baetk-footer-logo .bae-brand-logo-img { filter:invert(1); }
+    .baetk-footer-copy strong {
+        display:block;
+        font-size:13px;
+        color:inherit;
+        margin-bottom:4px;
+    }
+    .baetk-footer-copy span {
+        display:block;
+        max-width:44ch;
+    }
     .baetk-footer-links { display:flex; gap:14px; flex-wrap:wrap; justify-content:flex-end; }
     .baetk-footer-links a { color:inherit; text-decoration:none; }
+    .baetk-footer-links a:hover { color:inherit; opacity:.78; }
+    @media (max-width: 720px) {
+        .baetk-footer-inner {
+            grid-template-columns:1fr;
+            align-items:flex-start;
+        }
+        .baetk-footer-links {
+            justify-content:flex-start;
+        }
+        .baetk-footer-logo {
+            width:60px;
+        }
+    }
     #baetk-section-1 {
         background:linear-gradient(180deg, rgba(251,251,248,.2), rgba(247,244,237,.05));
         position:relative;
@@ -1701,13 +1740,17 @@ function bntm_bae_ticket_screen() {
 
             <footer class="baetk-footer">
                 <div class="baetk-footer-inner">
-                    <div>
-                        <strong style="display:block;font-size:13px;color:inherit;margin-bottom:4px;">Mothie</strong>
-                        <span>Brand Asset Engine for modular, optimized brand systems.</span>
+                    <div class="baetk-footer-brand">
+                        <div class="baetk-footer-logo"><?php echo bae_render_brand_mark(); ?></div>
+                        <div class="baetk-footer-copy">
+                            <strong>Mothie</strong>
+                            <span>Brand Asset Engine for modular, optimized brand systems.</span>
+                        </div>
                     </div>
                     <div class="baetk-footer-links">
                         <a href="javascript:void(0)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Top</a>
                         <a href="javascript:void(0)" onclick="_baeTkEl('baetk-f') && _baeTkEl('baetk-f').focus()">Enter ticket</a>
+                        <a href="<?php echo esc_url(bae_policy_url()); ?>">Policy</a>
                     </div>
                 </div>
             </footer>

@@ -22,6 +22,14 @@ function bae_module_logo_url() {
     return add_query_arg('ver', $ver, BNTM_BAE_URL . 'logo.png');
 }
 
+function bae_policy_url() {
+    if (function_exists('get_privacy_policy_url')) {
+        $url = get_privacy_policy_url();
+        if (!empty($url)) return $url;
+    }
+    return home_url('/privacy-policy');
+}
+
 function bae_render_brand_mark($class = '') {
     $classes = trim('bae-brand-mark ' . $class);
     return '<span class="' . esc_attr($classes) . '"><img class="bae-brand-logo-img" src="' . esc_url(bae_module_logo_url()) . '" alt="Mothie logo"></span>';
@@ -1705,17 +1713,6 @@ function bntm_shortcode_bae() {
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
-                <?php if ($onboarding_done): ?>
-                <div style="margin-left:auto;padding:0 8px 0 16px;flex-shrink:0;">
-                    <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
-                       style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--brand-soft);text-decoration:none;padding:7px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:8px;white-space:nowrap;transition:all .15s;"
-                       onmouseover="this.style.background='rgba(139,92,246,.18)'"
-                       onmouseout="this.style.background='rgba(139,92,246,.1)'">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="15" rx="1"/></svg>
-                        Dashboard
-                    </a>
-                </div>
-                <?php endif; ?>
             </div>
             <?php endif; ?>
             <div class="bae-header-right">
@@ -1860,27 +1857,6 @@ function bntm_shortcode_bae() {
         </div>
 
 
-
-        <?php if ($onboarding_done && $active_tab !== 'overview' && $active_tab !== 'assets' && $active_tab !== 'kit' && $active_tab !== 'startup'): ?>
-        <!-- Post-onboarding tool nav -->
-        <div style="display:flex;align-items:center;gap:8px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg-2);overflow-x:auto;scrollbar-width:none;">
-            <a href="<?php echo esc_url($base_url . '?tab=dashboard'); ?>" style="font-size:12px;color:var(--text-3);text-decoration:none;white-space:nowrap;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="m15 18-6-6 6-6"/></svg>
-                Dashboard
-            </a>
-            <span style="color:var(--border-2);">·</span>
-            <?php
-            $tool_tabs = ['brand_book'=>'Brand Book','settings'=>'Settings'];
-            foreach ($tool_tabs as $ts => $tl):
-                $is_cur = $active_tab === $ts;
-            ?>
-            <a href="<?php echo esc_url($base_url . '?tab=' . $ts); ?>"
-               style="font-size:12px;font-weight:<?php echo $is_cur ? '700' : '500'; ?>;color:<?php echo $is_cur ? 'var(--text)' : 'var(--text-3)'; ?>;text-decoration:none;white-space:nowrap;">
-                <?php echo esc_html($tl); ?>
-            </a>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
 
         <!-- Tab Content -->
         <div class="bae-tab-content">
@@ -2068,17 +2044,144 @@ function bntm_shortcode_bae() {
     .bae-wrap.bae-light .bae-brand-logo-img {
         filter: invert(1);
     }
+    .baetk-footer {
+        padding: 32px 28px 22px;
+        color: var(--text-3);
+        background:
+            radial-gradient(circle at 12% 18%, rgba(139,92,246,.06), transparent 24%),
+            radial-gradient(circle at 88% 12%, rgba(236,72,153,.05), transparent 22%),
+            var(--bg);
+        transition: background 0.5s, color 0.5s;
+    }
+    .baetk-footer-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: end;
+        padding-top: 22px;
+        border-top: 1px solid var(--border);
+        transition: border-color 0.5s;
+    }
+    .baetk-footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        min-width: 0;
+    }
+    .baetk-footer-logo {
+        width: 82px;
+        flex-shrink: 0;
+    }
+    .baetk-footer-logo .bae-brand-logo-img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .baetk-footer-copy strong {
+        display: block;
+        font-size: 14px;
+        color: var(--text);
+        margin-bottom: 4px;
+        transition: color 0.5s;
+    }
+    .baetk-footer-copy span {
+        display: block;
+        max-width: 44ch;
+        line-height: 1.7;
+    }
+    .baetk-footer-links {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .baetk-footer-links a {
+        color: inherit;
+        text-decoration: none;
+    }
+    .baetk-footer-links a:hover {
+        opacity: .78;
+    }
+    .bae-free-plan-tip {
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 16px;
+        background:linear-gradient(135deg,rgba(109,40,217,.1),rgba(236,72,153,.06));
+        border:1px solid rgba(139,92,246,.2);
+        border-radius:12px;
+        margin-bottom:20px;
+        flex-wrap:wrap;
+    }
+    .bae-free-plan-tip-copy {
+        font-size:13px;
+        color:var(--text-2);
+        flex:1;
+        min-width:220px;
+        line-height:1.55;
+    }
+    .bae-free-plan-tip .bae-btn {
+        white-space:nowrap;
+    }
+    @media (max-width: 720px) {
+        .baetk-footer {
+            padding: 18px;
+        }
+        .baetk-footer-inner {
+            grid-template-columns: 1fr;
+            align-items: flex-start;
+        }
+        .baetk-footer-links {
+            justify-content: flex-start;
+        }
+        .baetk-footer-logo {
+            width: 60px;
+        }
+        .bae-free-plan-tip {
+            align-items:flex-start;
+            gap:10px;
+            padding:10px 12px;
+        }
+        .bae-free-plan-tip svg {
+            width:14px;
+            height:14px;
+            flex-shrink:0;
+            margin-top:2px;
+        }
+        .bae-free-plan-tip-copy {
+            font-size:12px;
+            min-width:0;
+        }
+        .bae-free-plan-tip .bae-btn {
+            width:100%;
+            justify-content:center;
+        }
+    }
     .bae-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
 
     /* Stepper when placed inline inside the header */
     .bae-stepper-inline {
-        flex: 1;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
         justify-content: center;
         border-bottom: none !important;
         background: transparent !important;
         padding: 0 8px !important;
         min-height: unset !important;
         overflow: visible !important;
+        width: max-content;
+        max-width: calc(100% - 340px);
+    }
+    @media (max-width: 980px) {
+        .bae-stepper-inline {
+            position: static;
+            left: auto;
+            transform: none;
+            width: auto;
+            max-width: none;
+            flex: 1;
+        }
     }
 
     /* Theme toggle */
@@ -2178,12 +2281,12 @@ function bntm_shortcode_bae() {
 
     /* Done step */
     .bae-step-done .bae-step-node {
-        background: rgba(52,211,153,.12);
-        border-color: rgba(52,211,153,.4);
-        color: #34d399;
+        background: rgba(139,92,246,.12);
+        border-color: rgba(139,92,246,.35);
+        color: var(--brand-soft);
     }
     .bae-step-done .bae-step-label { color: var(--text-2); }
-    .bae-step-done:hover .bae-step-node { background: rgba(52,211,153,.2); border-color: #34d399; }
+    .bae-step-done:hover .bae-step-node { background: rgba(139,92,246,.18); border-color: var(--brand-soft); }
 
     /* Locked step */
     .bae-step-locked {
@@ -2203,7 +2306,7 @@ function bntm_shortcode_bae() {
         margin: 0 4px;
         transition: background .3s;
     }
-    .bae-step-line-done { background: rgba(52,211,153,.4); }
+    .bae-step-line-done { background: rgba(139,92,246,.35); }
 
     /* ── PRO BADGE on steps ── */
     .bae-tab-pro-badge {
@@ -2846,8 +2949,42 @@ function bntm_shortcode_bae() {
         .bae-stats-row { grid-template-columns: 1fr 1fr; }
         .bae-assets-grid { grid-template-columns: 1fr; }
         .bae-header { padding: 14px 18px; }
+        .bae-stepper-inline {
+            gap: 8px;
+            padding: 0 !important;
+        }
+        .bae-step-wrap {
+            gap: 0;
+        }
+        .bae-step-label,
+        .bae-step-line {
+            display: none !important;
+        }
+        .bae-step {
+            padding: 0;
+        }
+        .bae-step-node {
+            width: 28px;
+            height: 28px;
+        }
     }
     </style>
+
+    <footer class="baetk-footer">
+        <div class="baetk-footer-inner">
+            <div class="baetk-footer-brand">
+                <div class="baetk-footer-logo"><?php echo bae_render_brand_mark(); ?></div>
+                <div class="baetk-footer-copy">
+                    <strong>Mothie</strong>
+                    <span>Brand Asset Engine for modular, optimized brand systems.</span>
+                </div>
+            </div>
+            <div class="baetk-footer-links">
+                <a href="javascript:void(0)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Top</a>
+                <a href="<?php echo esc_url(bae_policy_url()); ?>">Policy</a>
+            </div>
+        </div>
+    </footer>
 
     <?php
     // CHANGED: Color picker sync JS is defined ONCE here at the top level — removed duplicate in bae_overview_tab
@@ -5083,10 +5220,10 @@ function bae_assets_tab($user_id, $profile) {
     </div>
 
     <?php if ($is_free): ?>
-    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(135deg,rgba(109,40,217,.1),rgba(236,72,153,.06));border:1px solid rgba(139,92,246,.2);border-radius:12px;margin-bottom:20px;flex-wrap:wrap;">
+    <div class="bae-free-plan-tip">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-        <span style="font-size:13px;color:var(--text-2);flex:1;"><strong>Free plan</strong> — click <strong>Generate</strong> on any card below to generate it free, once per asset. You also get <strong>1 free Custom AI generation</strong>. Assets are yours to keep. Upgrade for Generate All, unlimited regeneration, and unlimited Custom AI.</span>
-        <button class="bae-btn bae-btn-primary bae-btn-sm" onclick="baePricingOpen()" style="white-space:nowrap;">Upgrade Now ✦</button>
+        <span class="bae-free-plan-tip-copy"><strong>Free plan</strong> — click <strong>Generate</strong> on any card below to generate it free, once per asset. You also get <strong>1 free Custom AI generation</strong>. Assets are yours to keep. Upgrade for Generate All, unlimited regeneration, and unlimited Custom AI.</span>
+        <button class="bae-btn bae-btn-primary bae-btn-sm" onclick="baePricingOpen()">Upgrade Now ✦</button>
     </div>
     <?php endif; ?>
 
