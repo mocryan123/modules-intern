@@ -89,8 +89,14 @@ function bntm_ajax_ch_edit_category() {
     $is_private = (int)(!empty($_POST['is_private']));
     $require_post_approval = (int)(!empty($_POST['require_post_approval']));
     $table = "{$wpdb->prefix}ch_categories";
-    $columns = $wpdb->get_col("DESC {$table}", 0);
-    $has_post_approval_col = in_array('require_post_approval', $columns, true);
+    // Cache schema introspection — avoids DESC on every edit request
+    $has_post_approval_col = get_transient('ch_has_post_approval_col');
+    if ($has_post_approval_col === false) {
+        $columns = $wpdb->get_col("DESC {$table}", 0);
+        $has_post_approval_col = in_array('require_post_approval', $columns, true) ? '1' : '0';
+        set_transient('ch_has_post_approval_col', $has_post_approval_col, DAY_IN_SECONDS);
+    }
+    $has_post_approval_col = $has_post_approval_col === '1';
 
     $select_fields = ['name', 'description', 'color', 'slug', 'is_private'];
     if ($has_post_approval_col) {
@@ -207,6 +213,12 @@ function bntm_ajax_ch_toggle_category_status() {
 function bntm_ajax_ch_create_post() {
     global $wpdb;
     $user_id    = get_current_user_id();
+
+    // Verify nonce first for logged-in users before any DB work
+    if ($user_id) {
+        check_ajax_referer('ch_feed_nonce', 'nonce');
+    }
+
     $title      = sanitize_text_field($_POST['title'] ?? '');
     $content    = sanitize_textarea_field($_POST['content'] ?? '');
     $cat_input  = sanitize_text_field($_POST['category_id'] ?? '');
@@ -228,9 +240,8 @@ function bntm_ajax_ch_create_post() {
         wp_send_json_error(['message' => 'Title, content, and category are required']);
     }
 
-    // Nonce + ban check first for logged-in users, before any DB lookups
+    // Ban check for logged-in users
     if ($user_id) {
-        check_ajax_referer('ch_feed_nonce', 'nonce');
         $profile_row = $wpdb->get_row($wpdb->prepare(
             "SELECT status FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id
         ));
@@ -240,8 +251,14 @@ function bntm_ajax_ch_create_post() {
         ch_ensure_profile($user_id);
     }
 
-    $category_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories");
-    $has_post_approval_col = in_array('require_post_approval', $category_cols, true);
+    // Cache schema introspection — avoids SHOW COLUMNS on every post request
+    $has_post_approval_col = get_transient('ch_has_post_approval_col');
+    if ($has_post_approval_col === false) {
+        $category_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories");
+        $has_post_approval_col = in_array('require_post_approval', $category_cols, true) ? '1' : '0';
+        set_transient('ch_has_post_approval_col', $has_post_approval_col, DAY_IN_SECONDS);
+    }
+    $has_post_approval_col = $has_post_approval_col === '1';
     $category_select = $has_post_approval_col
         ? "SELECT id, is_private, require_post_approval, status FROM {$wpdb->prefix}ch_categories"
         : "SELECT id, is_private, 0 AS require_post_approval, status FROM {$wpdb->prefix}ch_categories";
@@ -425,11 +442,30 @@ function bntm_ajax_ch_get_posts() {
     $sort   = sanitize_text_field($_POST['sort'] ?? 'new');
     $page   = max(1, (int)($_POST['page'] ?? 1));
 
+    // Whitelist sort column — never interpolate user input into ORDER BY
     $order  = $sort === 'top' ? 'vote_count DESC' : 'created_at DESC';
     $offset = ($page - 1) * 15;
 
-    $where = $cat_id ? "AND category_id = $cat_id" : '';
-    $posts = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}ch_posts WHERE status='active' $where ORDER BY $order LIMIT 15 OFFSET $offset");
+    if ($cat_id > 0) {
+        $posts = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}ch_posts
+                 WHERE status = 'active' AND category_id = %d
+                 ORDER BY {$order} LIMIT 15 OFFSET %d",
+                $cat_id,
+                $offset
+            )
+        );
+    } else {
+        $posts = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}ch_posts
+                 WHERE status = 'active'
+                 ORDER BY {$order} LIMIT 15 OFFSET %d",
+                $offset
+            )
+        );
+    }
 
     wp_send_json_success(['posts' => $posts]);
 }
@@ -953,13 +989,17 @@ function bntm_ajax_ch_search() {
     $query = sanitize_text_field($_POST['query'] ?? '');
     if (strlen($query) < 2) wp_send_json_error(['message' => 'Query too short']);
 
-    $like = '%' . esc_sql($query) . '%';
+    $like = '%' . $wpdb->esc_like($query) . '%';
     $results = $wpdb->get_results(
-        "SELECT id, rand_id, title, LEFT(content,100) as excerpt, vote_count, comment_count, created_at
-         FROM {$wpdb->prefix}ch_posts
-         WHERE status='active' AND (title LIKE '$like' OR content LIKE '$like')
-         ORDER BY vote_count DESC
-         LIMIT 10"
+        $wpdb->prepare(
+            "SELECT id, rand_id, title, LEFT(content,100) as excerpt, vote_count, comment_count, created_at
+             FROM {$wpdb->prefix}ch_posts
+             WHERE status = 'active' AND (title LIKE %s OR content LIKE %s)
+             ORDER BY vote_count DESC
+             LIMIT 10",
+            $like,
+            $like
+        )
     );
 
     wp_send_json_success(['results' => $results]);
@@ -1024,13 +1064,19 @@ function bntm_ajax_ch_admin_stats() {
     if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Unauthorized']);
 
     global $wpdb;
-    $stats = [
-        'posts_today'    => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE DATE(created_at) = CURDATE()"),
-        'comments_today' => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE DATE(created_at) = CURDATE()"),
-        'new_users_week' => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"),
-    ];
 
-    wp_send_json_success($stats);
+    $row = $wpdb->get_row(
+        "SELECT
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE DATE(created_at) = CURDATE()) AS posts_today,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE DATE(created_at) = CURDATE()) AS comments_today,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) AS new_users_week"
+    );
+
+    wp_send_json_success([
+        'posts_today'    => (int)($row->posts_today    ?? 0),
+        'comments_today' => (int)($row->comments_today ?? 0),
+        'new_users_week' => (int)($row->new_users_week ?? 0),
+    ]);
 }
 
 function bntm_ajax_ch_live_stats() {
@@ -1069,6 +1115,39 @@ function ch_create_notification($user_id, $type, $actor_id, $post_id = 0, $comme
         'post_id'    => $post_id,
         'comment_id' => $comment_id,
     ], ['%s','%d','%s','%d','%d','%d']);
+}
+
+/**
+ * Insert announcement notifications for every user in a single bulk SQL query
+ * instead of looping get_users() + one INSERT per user.
+ * On a site with 1 000 users this is 1 query vs 1 001 queries.
+ */
+function ch_bulk_announcement_notifications($announcement_id, $actor_id) {
+    global $wpdb;
+    $rand_prefix = substr(md5(uniqid('', true)), 0, 8);
+    $wpdb->query(
+        $wpdb->prepare(
+            "INSERT INTO {$wpdb->prefix}ch_notifications
+                 (rand_id, user_id, type, actor_id, post_id, comment_id, created_at)
+             SELECT
+                 CONCAT(%s, LPAD(ID, 8, '0')),
+                 ID,
+                 'announcement',
+                 %d,
+                 %d,
+                 0,
+                 NOW()
+             FROM {$wpdb->users}
+             WHERE ID NOT IN (
+                 SELECT user_id FROM {$wpdb->prefix}ch_notifications
+                 WHERE type = 'announcement' AND post_id = %d
+             )",
+            $rand_prefix,
+            (int)$actor_id,
+            (int)$announcement_id,
+            (int)$announcement_id
+        )
+    );
 }
 
 function ch_extract_mentions($content) {
@@ -1126,13 +1205,16 @@ function bntm_ajax_ch_mention_search() {
 
 function ch_log_activity($action, $target_type = null, $target_id = 0, $details = '') {
     global $wpdb;
+    $raw_ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    // Validate as a real IP address; fall back to empty string if spoofed/malformed
+    $ip = filter_var($raw_ip, FILTER_VALIDATE_IP) ? $raw_ip : '';
     $wpdb->insert("{$wpdb->prefix}ch_activity_logs", [
         'admin_id'    => get_current_user_id(),
         'action'      => $action,
         'target_type' => $target_type,
         'target_id'   => $target_id,
         'details'     => $details,
-        'ip_address'  => $_SERVER['REMOTE_ADDR'] ?? '',
+        'ip_address'  => $ip,
     ], ['%d','%s','%s','%d','%s','%s']);
 }
 
@@ -1265,12 +1347,9 @@ function bntm_ajax_ch_create_announcement() {
 
     $announcement_id = $wpdb->insert_id;
 
-    // Create notifications for all users if published
+    // Bulk-insert notifications for all users — one query instead of N inserts
     if ($status == 1) {
-        $users = get_users(['fields' => 'ID']);
-        foreach ($users as $user_id) {
-            ch_create_notification($user_id, 'announcement', get_current_user_id(), $announcement_id);
-        }
+        ch_bulk_announcement_notifications($announcement_id, get_current_user_id());
     }
 
     wp_send_json_success(['message' => 'Announcement created successfully', 'id' => $announcement_id]);
@@ -1315,12 +1394,9 @@ function bntm_ajax_ch_edit_announcement() {
         return;
     }
 
-    // Create notifications if newly published
+    // Bulk-insert notifications if newly published
     if ($status == 1 && $current->is_active == 0) {
-        $users = get_users(['fields' => 'ID']);
-        foreach ($users as $user_id) {
-            ch_create_notification($user_id, 'announcement', get_current_user_id(), $announcement_id);
-        }
+        ch_bulk_announcement_notifications($announcement_id, get_current_user_id());
     }
 
     wp_send_json_success(['message' => 'Announcement updated successfully']);
@@ -1355,7 +1431,7 @@ function bntm_ajax_ch_delete_announcement() {
     $notifications_table = $wpdb->prefix . 'ch_notifications';
     $wpdb->delete($notifications_table, [
         'type' => 'announcement',
-        'target_id' => $announcement_id
+        'post_id' => $announcement_id
     ]);
 
     wp_send_json_success(['message' => 'Announcement deleted successfully']);
@@ -1387,12 +1463,9 @@ function bntm_ajax_ch_toggle_announcement() {
         return;
     }
 
-    // Create notifications if newly published
+    // Bulk-insert notifications if newly published
     if ($status == 1) {
-        $users = get_users(['fields' => 'ID']);
-        foreach ($users as $user_id) {
-            ch_create_notification($user_id, 'announcement', get_current_user_id(), $announcement_id);
-        }
+        ch_bulk_announcement_notifications($announcement_id, get_current_user_id());
     }
 
     wp_send_json_success(['message' => 'Announcement status updated successfully']);

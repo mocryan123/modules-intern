@@ -290,6 +290,9 @@ function ch_guest_landing_page() {
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '.ch-nav-links', '.ch-user-bar');">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
+        <div class="ch-top-nav-logo" style="margin: 0 16px 0 0; display: flex; align-items: center;">
+            <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo" style="height: 28px;">
+        </div>
         <div class="ch-nav-links">
             <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link active">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -485,9 +488,7 @@ function bntm_shortcode_ch() {
                 <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '.ch-nav');" style="margin-right: 12px;">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
                 </button>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
+                <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo">
                 <span>CivicHub</span>
             </div>
             <nav class="ch-nav">
@@ -560,12 +561,24 @@ function bntm_shortcode_ch() {
 function ch_admin_overview_tab($user_id, $is_admin) {
     global $wpdb;
 
-    $total_posts     = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status='active'");
-    $total_comments  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE status='active'");
-    $total_users     = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles");
-    $total_cats      = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_categories WHERE status='active'");
-    $pending_reports = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status='pending'");
-    $pending_posts   = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status='pending'");
+    // Keep this to one query, but use scalar subselects so MySQL can optimize
+    // each COUNT(*) independently instead of scanning a large UNION ALL set.
+    $counts = $wpdb->get_row(
+        "SELECT
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS total_posts,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE status = 'active') AS total_comments,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles) AS total_users,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_categories WHERE status = 'active') AS total_cats,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'pending') AS pending_posts"
+    );
+
+    $total_posts     = (int)($counts->total_posts     ?? 0);
+    $total_comments  = (int)($counts->total_comments  ?? 0);
+    $total_users     = (int)($counts->total_users     ?? 0);
+    $total_cats      = (int)($counts->total_cats      ?? 0);
+    $pending_reports = (int)($counts->pending_reports ?? 0);
+    $pending_posts   = (int)($counts->pending_posts   ?? 0);
 
     $recent_posts = $wpdb->get_results(
         "SELECT p.*, c.name as cat_name, c.color as cat_color,
@@ -781,16 +794,29 @@ function ch_admin_overview_tab($user_id, $is_admin) {
 
 function ch_update_live_stats() {
     global $wpdb;
-    $stats = [
-        'total_posts'     => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status='active'"),
-        'total_comments'  => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE status='active'"),
-        'total_users'     => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles"),
-        'pending_reports' => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status='pending'"),
-        'pending_posts'   => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status='pending'"),
-        'posts_today'     => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE DATE(created_at) = CURDATE()"),
-        'comments_today'  => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE DATE(created_at) = CURDATE()"),
+
+    // Single query with scalar subselects is typically faster here than UNION ALL
+    // across full tables, while still counting as one DB query for the request.
+    $row = $wpdb->get_row(
+        "SELECT
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS total_posts,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE status = 'active') AS total_comments,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles) AS total_users,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'pending') AS pending_posts,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE DATE(created_at) = CURDATE()) AS posts_today,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE DATE(created_at) = CURDATE()) AS comments_today"
+    );
+
+    return [
+        'total_posts'     => (int)($row->total_posts     ?? 0),
+        'total_comments'  => (int)($row->total_comments  ?? 0),
+        'total_users'     => (int)($row->total_users     ?? 0),
+        'pending_reports' => (int)($row->pending_reports ?? 0),
+        'pending_posts'   => (int)($row->pending_posts   ?? 0),
+        'posts_today'     => (int)($row->posts_today     ?? 0),
+        'comments_today'  => (int)($row->comments_today  ?? 0),
     ];
-    return $stats;
 }
 
 // ============================================================
@@ -1606,6 +1632,44 @@ function ch_reports_tab($user_id, $is_admin) {
     $feed_page = get_page_by_path('forum-feed');
     $feed_url  = $feed_page ? get_permalink($feed_page) : home_url('/forum-feed/');
 
+    // Pre-load target links in two bulk queries — eliminates N+1 inside the loop.
+    // Collect distinct post IDs and comment IDs from the report list.
+    $post_ids    = array_values(array_unique(array_map('intval',
+        array_column(array_filter((array)$reports, fn($r) => $r->target_type === 'post'),    'target_id')
+    )));
+    $comment_ids = array_values(array_unique(array_map('intval',
+        array_column(array_filter((array)$reports, fn($r) => $r->target_type === 'comment'), 'target_id')
+    )));
+
+    // Map post_id → rand_id
+    $post_rand_map = [];
+    if (!empty($post_ids)) {
+        $placeholders = implode(',', array_fill(0, count($post_ids), '%d'));
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT id, rand_id FROM {$wpdb->prefix}ch_posts WHERE id IN ($placeholders)",
+            ...$post_ids
+        ));
+        foreach ($rows as $row) {
+            $post_rand_map[(int)$row->id] = $row->rand_id;
+        }
+    }
+
+    // Map comment_id → parent post rand_id  (one extra join, still one query)
+    $comment_post_rand_map = [];
+    if (!empty($comment_ids)) {
+        $placeholders = implode(',', array_fill(0, count($comment_ids), '%d'));
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT c.id AS comment_id, p.rand_id
+             FROM {$wpdb->prefix}ch_comments c
+             JOIN {$wpdb->prefix}ch_posts p ON c.post_id = p.id
+             WHERE c.id IN ($placeholders)",
+            ...$comment_ids
+        ));
+        foreach ($rows as $row) {
+            $comment_post_rand_map[(int)$row->comment_id] = $row->rand_id;
+        }
+    }
+
     ob_start(); ?>
     <div class="ch-page-header">
         <div>
@@ -1640,20 +1704,12 @@ function ch_reports_tab($user_id, $is_admin) {
                     <?php if (empty($reports)): ?>
                     <tr><td colspan="6" class="ch-table-empty">No <?php echo esc_html($status); ?> reports found.</td></tr>
                     <?php else: foreach ($reports as $r):
+                        // Resolve target link using pre-fetched maps — zero extra queries
                         $target_link = '';
-                        if ($r->target_type === 'post') {
-                            $target_post = $wpdb->get_row($wpdb->prepare("SELECT rand_id FROM {$wpdb->prefix}ch_posts WHERE id = %d", $r->target_id));
-                            if ($target_post) {
-                                $target_link = add_query_arg('view_post', $target_post->rand_id, $feed_url);
-                            }
-                        } elseif ($r->target_type === 'comment') {
-                            $target_comment = $wpdb->get_row($wpdb->prepare("SELECT post_id FROM {$wpdb->prefix}ch_comments WHERE id = %d", $r->target_id));
-                            if ($target_comment) {
-                                $target_post = $wpdb->get_row($wpdb->prepare("SELECT rand_id FROM {$wpdb->prefix}ch_posts WHERE id = %d", $target_comment->post_id));
-                                if ($target_post) {
-                                    $target_link = add_query_arg('view_post', $target_post->rand_id, $feed_url);
-                                }
-                            }
+                        if ($r->target_type === 'post' && isset($post_rand_map[(int)$r->target_id])) {
+                            $target_link = add_query_arg('view_post', $post_rand_map[(int)$r->target_id], $feed_url);
+                        } elseif ($r->target_type === 'comment' && isset($comment_post_rand_map[(int)$r->target_id])) {
+                            $target_link = add_query_arg('view_post', $comment_post_rand_map[(int)$r->target_id], $feed_url);
                         }
                     ?>
                     <tr id="ch-report-row-<?php echo $r->id; ?>">
@@ -1871,13 +1927,22 @@ function ch_moderation_tab($user_id) {
         echo '<div class="bntm-notice bntm-notice-success">Moderation settings saved successfully!</div>';
     }
 
+    $stats_row = $wpdb->get_row(
+        "SELECT
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS active_posts,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'removed') AS removed_posts,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status = 'suspended') AS suspended_users,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status = 'banned') AS banned_users,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_votes) AS total_votes"
+    );
     $stats = [
-        'active_posts'      => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status='active'"),
-        'removed_posts'     => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status='removed'"),
-        'pending_reports'   => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status='pending'"),
-        'suspended_users'   => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status='suspended'"),
-        'banned_users'      => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status='banned'"),
-        'total_votes'       => $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}ch_votes"),
+        'active_posts'    => (int)($stats_row->active_posts    ?? 0),
+        'removed_posts'   => (int)($stats_row->removed_posts   ?? 0),
+        'pending_reports' => (int)($stats_row->pending_reports ?? 0),
+        'suspended_users' => (int)($stats_row->suspended_users ?? 0),
+        'banned_users'    => (int)($stats_row->banned_users    ?? 0),
+        'total_votes'     => (int)($stats_row->total_votes     ?? 0),
     ];
 
     $recent_removed = $wpdb->get_results(
@@ -2806,14 +2871,32 @@ function bntm_shortcode_ch_feed() {
         $location_filter = $wpdb->prepare(" AND up.location = %s", $location);
     }
 
+    $followed = [];
+    if ($user_id) {
+        $fids = $wpdb->get_col($wpdb->prepare("SELECT category_id FROM {$wpdb->prefix}ch_follows WHERE user_id = %d", $user_id));
+        $followed = array_flip($fids);
+    }
+
     $bookmark_filter = '';
-    if ($bookmarks && $user_id) {
-        $bookmark_filter = $wpdb->prepare(" AND p.id IN (SELECT post_id FROM {$wpdb->prefix}ch_bookmarks WHERE user_id = %d)", $user_id);
+    $user_bookmarks = [];
+    if ($user_id) {
+        $bms = $wpdb->get_col($wpdb->prepare("SELECT post_id FROM {$wpdb->prefix}ch_bookmarks WHERE user_id = %d", $user_id));
+        $user_bookmarks = array_flip($bms);
+        if ($bookmarks) {
+            $bookmark_ids = array_keys($user_bookmarks);
+            if (empty($bookmark_ids)) {
+                $bookmark_filter = " AND 1 = 0";
+            } else {
+                $placeholders = implode(',', array_fill(0, count($bookmark_ids), '%d'));
+                $bookmark_filter = $wpdb->prepare(" AND p.id IN ($placeholders)", ...$bookmark_ids);
+            }
+        }
     }
 
     $search_filter = '';
     if ($search) {
-        $search_filter = " AND (p.title LIKE '%" . esc_sql($search) . "%' OR p.content LIKE '%" . esc_sql($search) . "%')";
+        $search_like = '%' . $wpdb->esc_like($search) . '%';
+        $search_filter = $wpdb->prepare(" AND (p.title LIKE %s OR p.content LIKE %s)", $search_like, $search_like);
     }
 
     $order_by = match($sort) {
@@ -2879,19 +2962,15 @@ function bntm_shortcode_ch_feed() {
 
     // Get available locations for filtering
     $available_locations = $wpdb->get_col("SELECT DISTINCT location FROM {$wpdb->prefix}ch_user_profiles WHERE location != '' AND location IS NOT NULL ORDER BY location");
-    $current_profile = $user_id ? $wpdb->get_row($wpdb->prepare("SELECT display_name, avatar_url FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id)) : null;
-
-    $followed = [];
-    if ($user_id) {
-        $fids = $wpdb->get_col($wpdb->prepare("SELECT category_id FROM {$wpdb->prefix}ch_follows WHERE user_id = %d", $user_id));
-        $followed = array_flip($fids);
+    $current_profile = $user_id ? $wpdb->get_row($wpdb->prepare(
+        "SELECT display_name, avatar_url, karma_points FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d",
+        $user_id
+    )) : null;
+    $categories_by_id = [];
+    foreach ($categories as $category_row) {
+        $categories_by_id[(int)$category_row->id] = $category_row;
     }
 
-    $user_bookmarks = [];
-    if ($user_id) {
-        $bms = $wpdb->get_col($wpdb->prepare("SELECT post_id FROM {$wpdb->prefix}ch_bookmarks WHERE user_id = %d", $user_id));
-        $user_bookmarks = array_flip($bms);
-    }
 
     // Fetch current user's votes on the visible posts for active-up/active-down state
     $user_post_votes = [];
@@ -2917,6 +2996,9 @@ function bntm_shortcode_ch_feed() {
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '.ch-nav-links', '.ch-user-bar');">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
+        <div class="ch-top-nav-logo" style="margin: 0 16px 0 0; display: flex; align-items: center;">
+            <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo" style="height: 28px;">
+        </div>
         <div class="ch-nav-links">
             <?php if ($user_id): ?>
             <a href="?tab=my_feed" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>">
@@ -3263,9 +3345,7 @@ function bntm_shortcode_ch_feed() {
                 <?php
                 $cat_creation_on     = get_option('ch_user_category_creation', 0);
                 $cat_karma_threshold = (int)get_option('ch_category_creation_karma', 100);
-                $user_karma_pts      = $user_id ? (int)$wpdb->get_var($wpdb->prepare(
-                    "SELECT karma_points FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id
-                )) : 0;
+                $user_karma_pts      = (int)($current_profile->karma_points ?? 0);
                 $can_create_cat = $user_id && (
                     current_user_can('manage_options') ||
                     ($cat_creation_on && $user_karma_pts >= $cat_karma_threshold)
@@ -3287,7 +3367,7 @@ function bntm_shortcode_ch_feed() {
                     <h5 style="margin: 0 0 8px; font-size: 10.5px; font-weight: 700; color: var(--ch-text-subtle); text-transform: uppercase; letter-spacing: 0.8px;">Following</h5>
                     <div id="ch-followed-categories-list">
                     <?php foreach ($followed as $cat_id => $dummy): ?>
-                        <?php $cat = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}ch_categories WHERE id = %d", $cat_id)); ?>
+                        <?php $cat = $categories_by_id[(int)$cat_id] ?? null; ?>
                         <?php if ($cat): ?>
                         <a href="?cat=<?php echo esc_attr($cat->slug); ?>" class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>" style="font-size: 14px;" data-followed-cat-id="<?php echo (int)$cat->id; ?>">
                             <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
@@ -4483,16 +4563,23 @@ function bntm_shortcode_ch_post_view() {
     ));
 
     $replies_map = [];
-    foreach ($comments as $cm) {
-        $replies = $wpdb->get_results($wpdb->prepare(
+    if (!empty($comments)) {
+        $comment_ids = array_map(fn($c) => (int)$c->id, $comments);
+        $placeholders = implode(',', array_fill(0, count($comment_ids), '%d'));
+        $reply_rows = $wpdb->get_results($wpdb->prepare(
             "SELECT cm2.*, u.display_name as author_name
              FROM {$wpdb->prefix}ch_comments cm2
              LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON cm2.user_id = u.user_id
-             WHERE cm2.parent_id = %d AND cm2.status = 'active'
+             WHERE cm2.parent_id IN ($placeholders) AND cm2.status = 'active'
              ORDER BY cm2.created_at ASC",
-            $cm->id
+            ...$comment_ids
         ));
-        $replies_map[$cm->id] = $replies;
+        foreach ($comments as $cm) {
+            $replies_map[(int)$cm->id] = [];
+        }
+        foreach ($reply_rows as $reply) {
+            $replies_map[(int)$reply->parent_id][] = $reply;
+        }
     }
 
     $user_id = get_current_user_id();

@@ -92,13 +92,17 @@ function bntm_ch_get_compiled_callback_asset_url($callback, $type = 'js') {
     $dir = trailingslashit($upload['basedir']) . 'civichub-assets';
     if (!wp_mkdir_p($dir)) return '';
 
-    $filename = "{$callback}-{$hash}.js";
+    $filename = sanitize_file_name($callback) . "-{$hash}.js";
     $filepath = trailingslashit($dir) . $filename;
     if (!file_exists($filepath)) {
         file_put_contents($filepath, $content);
     }
 
     return trailingslashit($upload['baseurl']) . 'civichub-assets/' . $filename;
+}
+
+function bntm_ch_logo_url() {
+    return BNTM_CH_URL . 'assets/' . rawurlencode('Civichub Logo.png');
 }
 
 add_action('wp_enqueue_scripts', function() {
@@ -399,23 +403,65 @@ function bntm_ch_create_tables() {
     foreach ($tables as $sql) {
         dbDelta($sql);
     }
-    // Ensure new columns exist on existing installs
-    $cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories LIKE 'is_private'");
-    if (empty($cols)) {
-        $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_categories ADD COLUMN is_private TINYINT(1) DEFAULT 0 AFTER status");
+
+    // Column-migration guards — run only when the stored schema version is behind.
+    // This block is called exclusively from the activation hook and the
+    // admin upgrade routine, never on ordinary page loads.
+    $schema_version = (int)get_option('ch_schema_version', 0);
+
+    if ($schema_version < 1) {
+        $cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories LIKE 'is_private'");
+        $migration_ok = !empty($cols);
+        if (!$migration_ok) {
+            $migration_ok = $wpdb->query(
+                "ALTER TABLE {$wpdb->prefix}ch_categories ADD COLUMN is_private TINYINT(1) DEFAULT 0 AFTER status"
+            ) !== false;
+        }
+        if ($migration_ok) {
+            update_option('ch_schema_version', 1);
+            $schema_version = 1;
+        }
     }
-    $approval_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories LIKE 'require_post_approval'");
-    if (empty($approval_cols)) {
-        $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_categories ADD COLUMN require_post_approval TINYINT(1) DEFAULT 0 AFTER is_private");
+
+    if ($schema_version < 2) {
+        $approval_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_categories LIKE 'require_post_approval'");
+        $migration_ok = !empty($approval_cols);
+        if (!$migration_ok) {
+            $migration_ok = $wpdb->query(
+                "ALTER TABLE {$wpdb->prefix}ch_categories ADD COLUMN require_post_approval TINYINT(1) DEFAULT 0 AFTER is_private"
+            ) !== false;
+        }
+        if ($migration_ok) {
+            update_option('ch_schema_version', 2);
+            $schema_version = 2;
+        }
     }
-    $post_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_posts LIKE 'guest_name'");
-    if (empty($post_cols)) {
-        $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_posts ADD COLUMN guest_name VARCHAR(100) DEFAULT NULL AFTER is_anonymous");
+
+    if ($schema_version < 3) {
+        $post_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_posts LIKE 'guest_name'");
+        $post_migration_ok = !empty($post_cols);
+        if (!$post_migration_ok) {
+            $post_migration_ok = $wpdb->query(
+                "ALTER TABLE {$wpdb->prefix}ch_posts ADD COLUMN guest_name VARCHAR(100) DEFAULT NULL AFTER is_anonymous"
+            ) !== false;
+        }
+
+        $cm_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_comments LIKE 'guest_name'");
+        $comment_migration_ok = !empty($cm_cols);
+        if (!$comment_migration_ok) {
+            $comment_migration_ok = $wpdb->query(
+                "ALTER TABLE {$wpdb->prefix}ch_comments ADD COLUMN guest_name VARCHAR(100) DEFAULT NULL AFTER is_anonymous"
+            ) !== false;
+        }
+
+        if ($post_migration_ok && $comment_migration_ok) {
+            update_option('ch_schema_version', 3);
+        }
     }
-    $cm_cols = $wpdb->get_col("SHOW COLUMNS FROM {$wpdb->prefix}ch_comments LIKE 'guest_name'");
-    if (empty($cm_cols)) {
-        $wpdb->query("ALTER TABLE {$wpdb->prefix}ch_comments ADD COLUMN guest_name VARCHAR(100) DEFAULT NULL AFTER is_anonymous");
-    }
+
+    // Bust the cached schema flag so the next request re-checks the live column list
+    delete_transient('ch_has_post_approval_col');
+
     return count($tables);
 }
 
@@ -441,9 +487,7 @@ function bntm_shortcode_ch_auth() {
 
             <div class="ch-auth-brand">
                 <div class="ch-auth-logo">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
+                    <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo">
                 </div>
                 <div>
                     <div class="ch-auth-brand-name">CivicHub</div>
@@ -729,8 +773,8 @@ function bntm_shortcode_ch_auth() {
 // AJAX: LOGIN & REGISTER
 // ============================================================
 
-add_action('wp_ajax_nopriv_ch_login',    'bntm_ajax_ch_login');
-add_action('wp_ajax_nopriv_ch_register', 'bntm_ajax_ch_register');
+// NOTE: ch_login and ch_register nopriv hooks are registered via the
+// $ajax_actions registry loop above (admin_only = false). No duplicate needed.
 
 // ---- Open Graph meta tags for post sharing ----
 add_action('wp_head', 'bntm_ch_og_meta_tags');
@@ -906,6 +950,8 @@ function bntm_ajax_ch_register() {
 }
 
 $ajax_actions = [
+    'ch_login'               => ['bntm_ajax_ch_login', false],
+    'ch_register'            => ['bntm_ajax_ch_register', false],
     'ch_create_category'     => ['bntm_ajax_ch_create_category', true],
     'ch_edit_category'       => ['bntm_ajax_ch_edit_category', true],
     'ch_delete_category'     => ['bntm_ajax_ch_delete_category', true],

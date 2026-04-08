@@ -181,6 +181,15 @@ function ch_global_styles() {
         padding: 0 18px 18px; font-weight: 700; font-size: 15px; color: var(--ch-accent);
         border-bottom: 1px solid var(--ch-border-soft); margin-bottom: 10px; letter-spacing: -0.2px;
     }
+    .ch-brand-logo {
+        height: 32px;
+        width: auto;
+        max-width: 180px;
+        object-fit: contain;
+        display: block;
+        flex-shrink: 0;
+        filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08));
+    }
     .ch-main-content { flex: 1; min-width: 0; padding: 28px 32px 48px; background: linear-gradient(180deg, color-mix(in srgb, var(--ch-bg) 94%, var(--ch-accent-light) 6%) 0%, var(--ch-bg) 180px); }
     .ch-nav { display: flex; flex-direction: column; gap: 1px; padding: 0 10px; }
     .ch-nav-item {
@@ -801,7 +810,8 @@ function ch_global_styles() {
     .ch-auth-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; background: linear-gradient(135deg, var(--ch-surface), var(--ch-bg)); font-family: var(--ch-font); }
     .ch-auth-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 24px 80px rgba(17, 24, 39, 0.08); border: 1px solid var(--ch-border); padding: 42px; width: 100%; max-width: 460px; transition: transform 0.3s ease; }
     .ch-auth-brand { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; margin-bottom: 32px; padding-bottom: 0; border-bottom: none; }
-    .ch-auth-logo { width: 46px; height: 46px; border-radius: var(--ch-radius-lg); background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ch-auth-logo { width: auto; max-width: 180px; height: auto; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: 8px; }
+    .ch-auth-logo img { width: 100%; height: auto; max-height: 80px; object-fit: contain; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06)); }
     .ch-auth-brand-name    { font-size: 18px; font-weight: 800; color: var(--ch-text); letter-spacing: -0.3px; }
     .ch-auth-brand-tagline { font-size: 12px; color: var(--ch-text-subtle); margin-top: 1px; }
     .ch-auth-tabs { display: flex; background: var(--ch-bg); border-radius: var(--ch-radius); padding: 3px; margin-bottom: 20px; border: 1px solid var(--ch-border); }
@@ -1017,7 +1027,8 @@ function ch_global_styles() {
         .ch-nav { display: none; width: 100%; flex-direction: column; padding: 12px 16px; animation: ch-fade-up 0.2s ease; margin-top: 16px; border-top: 1px solid var(--ch-border-soft); gap: 4px; }
         .ch-nav-item { font-size: 14px; padding: 10px 16px; border-radius: var(--ch-radius); }
         .ch-nav-item.active { border-left: none; background: color-mix(in srgb, var(--ch-accent) 10%, transparent); color: var(--ch-accent); }
-        .ch-sidebar-header { padding: 8px 16px 12px; display: flex !important; justify-content: flex-start !important; align-items: center; gap: 8px; }
+    .ch-sidebar-header { padding: 8px 16px 12px; display: flex !important; justify-content: flex-start !important; align-items: center; gap: 8px; }
+    .ch-brand-logo { height: 28px; width: auto; max-width: 140px; object-fit: contain; display: block; flex-shrink: 0; }
         .ch-sidebar-header .ch-burger-menu-btn { order: 3; margin-left: auto; margin-right: 0 !important; }
         .ch-top-nav .ch-burger-menu-btn { display: flex; order: 3; margin-left: auto; }
         .ch-nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: var(--ch-bg); flex-direction: column; padding: 16px 20px; box-shadow: var(--ch-shadow-md); border-bottom: 1px solid var(--ch-border); }
@@ -3858,6 +3869,9 @@ function ch_announcements_tab() {
 
     <script>
     (function() {
+        // Define ajaxurl locally so this IIFE works regardless of whether
+        // ch_global_scripts() has already run (compiled asset vs inline order).
+        const ajaxUrl = window.chAjaxUrl || window.ajaxurl || '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';
         const nonce = '<?php echo wp_create_nonce('ch_announcements_nonce'); ?>';
 
         function post(action, data) {
@@ -3865,7 +3879,7 @@ function ch_announcements_tab() {
             fd.append('action', action);
             fd.append('nonce', nonce);
             Object.entries(data).forEach(([k,v]) => fd.append(k, v));
-            return fetch(chAjaxUrl, {method:'POST', body:fd}).then(r => r.json());
+            return fetch(ajaxUrl, {method:'POST', body:fd}).then(r => r.json());
         }
 
         function showMsg(elId, msg, ok) {
