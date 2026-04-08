@@ -84,7 +84,7 @@ function bntm_kbf_render_signup() {
     ob_start();
     ?>
     <style>
-      html,body{margin:0 !important;padding:0;width:100%;height:100%;overflow:hidden;}
+      html,body{margin:0 !important;padding:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;}
       html,body{margin-top:0 !important;}
       body.admin-bar{margin-top:0 !important;}
       #wpadminbar{display:none !important;}
