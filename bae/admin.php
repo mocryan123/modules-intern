@@ -511,35 +511,40 @@ function bae_admin_dashboard() {
     <style>
     .bae-adm {
         font-family: 'Geist', -apple-system, sans-serif;
-        --bg:       #07070d;
-        --bg-2:     #0e0e17;
-        --bg-3:     #13131e;
-        --surface:  #1a1a28;
-        --border:   rgba(255,255,255,.07);
-        --border-2: rgba(255,255,255,.12);
-        --text:     #ede9ff;
-        --text-2:   #9490b5;
-        --text-3:   #3d3a55;
+        --bg:       #0c0a16;
+        --bg-2:     rgba(17,14,28,.88);
+        --bg-3:     rgba(27,22,43,.92);
+        --surface:  rgba(255,255,255,.08);
+        --surface-2: rgba(255,255,255,.05);
+        --border:   rgba(255,255,255,.08);
+        --border-2: rgba(255,255,255,.16);
+        --text:     #f6f1ff;
+        --text-2:   #b2a9d3;
+        --text-3:   #6c6686;
         --brand:    #8b5cf6;
         --brand-d:  #6d28d9;
-        --brand-s:  #a78bfa;
+        --brand-s:  #c4b5fd;
         --pink:     #ec4899;
         --green:    #34d399;
         --yellow:   #fbbf24;
         --red:      #fb7185;
-        background: var(--bg);
+        min-height: 100vh;
+        padding: 34px 26px;
         color: var(--text);
-        border-radius: 20px;
-        overflow: hidden;
-        height: 100vh;
+        background:
+            radial-gradient(circle at 16% 16%, rgba(139,92,246,.16), transparent 24%),
+            radial-gradient(circle at 84% 82%, rgba(236,72,153,.10), transparent 22%),
+            linear-gradient(180deg, #0b0913 0%, #151120 100%);
         display: flex;
         flex-direction: column;
+        gap: 22px;
     }
     .bae-adm.bae-light {
         --bg:       #f7f4ed;
         --bg-2:     #ffffff;
         --bg-3:     #f5f1e8;
         --surface:  #ffffff;
+        --surface-2: #f7f0ff;
         --border:   rgba(28,20,12,.08);
         --border-2: rgba(28,20,12,.12);
         --text:     #1d1a16;
@@ -553,36 +558,215 @@ function bae_admin_dashboard() {
         --yellow:   #f59e0b;
         --red:      #ef4444;
         background:
-            radial-gradient(circle at top right, rgba(124,58,237,.08), transparent 32%),
-            radial-gradient(circle at 18% 20%, rgba(236,72,153,.05), transparent 24%),
-            linear-gradient(180deg, #f7f4ed 0%, #fbfaf6 100%);
+            radial-gradient(circle at top left, rgba(139,92,246,.10), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(236,72,153,.08), transparent 24%),
+            linear-gradient(180deg, #f3effb 0%, #faf8fc 100%);
         color: var(--text);
     }
 
     /* ── Layout ── */
-    .bae-adm-layout { display: flex; flex: 1; overflow: hidden; }
+    .bae-adm-shell {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        border-radius: 0;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+        overflow: hidden;
+    }
+    .bae-adm:not(.bae-light) .bae-adm-shell {
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+    }
+    .bae-adm.bae-light .bae-adm-shell {
+        background: transparent;
+        border-color: transparent;
+    }
+    .bae-adm-layout {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        padding: 16px;
+        gap: 14px;
+    }
+    .bae-adm-sidecluster {
+        width: 236px;
+        min-width: 236px;
+        flex-shrink: 0;
+        display: flex;
+        gap: 0;
+        padding: 10px 8px;
+        border-radius: 22px;
+        background: rgba(255,255,255,.74);
+        border: 1px solid rgba(124,58,237,.10);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+        overflow: hidden;
+        transition: width .24s ease, min-width .24s ease, padding .24s ease;
+    }
+    .bae-adm:not(.bae-light) .bae-adm-sidecluster {
+        background: rgba(18,15,30,.90);
+        border-color: rgba(255,255,255,.07);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .bae-adm.bae-light .bae-adm-sidecluster { background: rgba(255,255,255,.90); }
+    .bae-adm.is-collapsed .bae-adm-sidecluster {
+        width: 56px;
+        min-width: 56px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
 
     /* ── Sidebar ── */
-    .bae-adm-sidebar {
-        width: 210px;
-        min-width: 210px;
-        flex-shrink: 0;
-        background: var(--bg-2);
-        border-right: 1px solid var(--border);
+    .bae-adm-rail {
+        width: 0;
+        min-width: 0;
+        background: transparent;
+        border: none;
+        border-radius: 18px;
+        padding: 0;
         display: flex;
         flex-direction: column;
-        height: 100%;
+        align-items: center;
+        gap: 10px;
+        opacity: 0;
         overflow: hidden;
+        pointer-events: none;
+        transition: width .24s ease, min-width .24s ease, opacity .18s ease, padding .24s ease;
+    }
+    .bae-adm.bae-light .bae-adm-rail { background: transparent; }
+    .bae-adm.is-collapsed .bae-adm-rail {
+        width: 40px;
+        min-width: 40px;
+        padding: 0;
+        opacity: 1;
+        overflow: visible;
+        pointer-events: auto;
+    }
+    .bae-adm-rail-brand {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, rgba(139,92,246,.12), rgba(139,92,246,.03));
+        color: var(--brand-d);
+        margin-bottom: 4px;
+    }
+    .bae-adm:not(.bae-light) .bae-adm-rail-brand {
+        background: linear-gradient(180deg, rgba(139,92,246,.24), rgba(139,92,246,.08));
+        color: var(--brand-s);
+    }
+    .bae-adm-rail-brand img { width: 24px; height: auto; display: block; }
+    .bae-adm.bae-light .bae-adm-rail-brand img { filter: invert(1); }
+    .bae-adm-rail-toggle,
+    .bae-adm-rail-link {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: #746f8d;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .18s ease;
+    }
+    .bae-adm:not(.bae-light) .bae-adm-rail-toggle,
+    .bae-adm:not(.bae-light) .bae-adm-rail-link { color: #a59dc6; }
+    .bae-adm-rail-toggle:hover,
+    .bae-adm-rail-link:hover {
+        background: rgba(139,92,246,.10);
+        color: var(--brand-d);
+    }
+    .bae-adm:not(.bae-light) .bae-adm-rail-toggle:hover,
+    .bae-adm:not(.bae-light) .bae-adm-rail-link:hover {
+        color: var(--brand-s);
+        background: rgba(139,92,246,.18);
+    }
+    .bae-adm-rail-link.active {
+        background: linear-gradient(180deg, rgba(139,92,246,.14), rgba(139,92,246,.08));
+        color: var(--brand-d);
+        box-shadow: inset 3px 0 0 var(--brand);
+    }
+    .bae-adm-rail-link svg,
+    .bae-adm-rail-toggle svg { width: 18px; height: 18px; }
+    .bae-adm-rail-spacer { flex: 1; }
+
+    .bae-adm-sidebar {
+        width: 236px;
+        min-width: 236px;
+        flex-shrink: 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+        transition: width .24s ease, min-width .24s ease, opacity .18s ease, margin .24s ease, border-width .18s ease;
+    }
+    .bae-adm.bae-light .bae-adm-sidebar { background: transparent; }
+    .bae-adm.is-collapsed .bae-adm-sidebar {
+        width: 0;
+        min-width: 0;
+        opacity: 0;
+        margin-right: 0;
+        border-width: 0;
+        pointer-events: none;
     }
     .bae-adm-sidebar-logo {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 10px;
-        padding: 18px 16px;
+        padding: 18px 18px 16px;
         border-bottom: 1px solid var(--border);
         overflow: hidden;
         flex-shrink: 0;
     }
+    .bae-adm-sidebar-brand {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .bae-adm-sidebar-collapse {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+        border-radius: 10px;
+        border: 1px solid rgba(124,58,237,.10);
+        background: rgba(255,255,255,.72);
+        color: #746f8d;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all .18s ease;
+    }
+    .bae-adm:not(.bae-light) .bae-adm-sidebar-collapse {
+        background: rgba(255,255,255,.05);
+        border-color: rgba(255,255,255,.08);
+        color: #b7afd6;
+    }
+    .bae-adm-sidebar-collapse:hover {
+        color: var(--brand-d);
+        border-color: rgba(124,58,237,.18);
+        background: rgba(139,92,246,.08);
+    }
+    .bae-adm:not(.bae-light) .bae-adm-sidebar-collapse:hover {
+        color: var(--brand-s);
+        border-color: rgba(139,92,246,.30);
+        background: rgba(139,92,246,.16);
+    }
+    .bae-adm-sidebar-collapse svg { width: 16px; height: 16px; }
     .bae-adm-sidebar-icon {
         width: 44px; min-width: 44px;
         display: flex; align-items: center; justify-content: center;
@@ -641,24 +825,29 @@ function bae_admin_dashboard() {
     .bae-adm.bae-light .bae-adm-sidebar-icon img { filter: invert(1); }
 
     /* Search */
-    .bae-adm-sidebar-search { padding: 12px 12px 8px; flex-shrink: 0; }
+    .bae-adm-sidebar-search { padding: 14px 14px 10px; flex-shrink: 0; }
     .bae-adm-sidebar-search input {
         width: 100%; box-sizing: border-box;
-        background: var(--bg-3);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 7px 10px 7px 30px;
+        background: rgba(255,255,255,.78);
+        border: 1px solid rgba(124,58,237,.10);
+        border-radius: 10px;
+        padding: 9px 12px 9px 30px;
         font-size: 12px; color: var(--text-2);
         font-family: 'Geist', sans-serif;
         outline: none; transition: border-color .15s;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233d3a55' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
         background-repeat: no-repeat; background-position: 10px center;
     }
+    .bae-adm:not(.bae-light) .bae-adm-sidebar-search input {
+        background: rgba(255,255,255,.04);
+        border-color: rgba(255,255,255,.08);
+        color: var(--text);
+    }
     .bae-adm-sidebar-search input:focus { border-color: var(--brand); }
     .bae-adm-sidebar-search input::placeholder { color: var(--text-3); }
 
     /* Nav */
-    .bae-adm-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 8px 8px; }
+    .bae-adm-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 6px 10px 10px; }
     .bae-adm-nav::-webkit-scrollbar { width: 3px; }
     .bae-adm-nav::-webkit-scrollbar-track { background: transparent; }
     .bae-adm-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -670,7 +859,7 @@ function bae_admin_dashboard() {
     }
     .bae-adm-nav-item {
         display: flex; align-items: center; gap: 8px;
-        padding: 8px 10px; border-radius: 8px;
+        padding: 10px 12px; border-radius: 12px;
         font-size: 13px; font-weight: 500; color: var(--text-3);
         cursor: pointer; transition: all .15s;
         text-decoration: none; border: none; background: none;
@@ -678,23 +867,35 @@ function bae_admin_dashboard() {
         white-space: nowrap; overflow: hidden;
         box-sizing: border-box;
     }
-    .bae-adm-nav-item:hover { color: var(--text-2); background: rgba(255,255,255,.03); }
-    .bae-adm-nav-item.active { color: var(--text); background: rgba(139,92,246,.12); }
+    .bae-adm-nav-item:hover { color: var(--text-2); background: rgba(139,92,246,.06); }
+    .bae-adm-nav-item.active {
+        color: #241c3f;
+        background: linear-gradient(180deg, rgba(139,92,246,.14), rgba(139,92,246,.08));
+        box-shadow: inset 3px 0 0 var(--brand);
+    }
+    .bae-adm:not(.bae-light) .bae-adm-nav-item.active {
+        color: var(--text);
+        background: linear-gradient(180deg, rgba(139,92,246,.20), rgba(139,92,246,.12));
+    }
     .bae-adm-nav-item svg { width: 14px; height: 14px; min-width: 14px; opacity: .5; }
     .bae-adm-nav-item.active svg { opacity: 1; color: var(--brand-s); }
     .bae-adm-nav-item span.nav-label { overflow: hidden; text-overflow: ellipsis; flex: 1; }
     .bae-adm-nav-badge {
         margin-left: auto; flex-shrink: 0;
-        background: var(--surface); border-radius: 999px;
+        background: rgba(139,92,246,.10); border-radius: 999px;
         padding: 1px 6px; font-size: 10px; color: var(--text-3);
+    }
+    .bae-adm:not(.bae-light) .bae-adm-nav-item.active .bae-adm-nav-badge {
+        color: var(--text);
+        background: rgba(139,92,246,.18);
     }
 
     .bae-adm-sidebar-footer {
-        padding: 10px 8px; border-top: 1px solid var(--border); flex-shrink: 0;
+        padding: 12px 10px; border-top: 1px solid var(--border); flex-shrink: 0;
     }
     .bae-adm-signout {
         display: flex; align-items: center; gap: 8px;
-        padding: 8px 10px; border-radius: 8px;
+        padding: 10px 12px; border-radius: 12px;
         font-size: 13px; font-weight: 500; color: var(--red);
         cursor: pointer; transition: all .15s;
         border: none; background: none; width: 100%;
@@ -705,24 +906,51 @@ function bae_admin_dashboard() {
     .bae-adm-signout svg { width: 14px; height: 14px; min-width: 14px; }
 
     /* ── Main ── */
-    .bae-adm-main { flex: 1; overflow-y: auto; overflow-x: hidden; min-width: 0; }
+    .bae-adm-main {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        min-width: 0;
+        background: rgba(255,255,255,.86);
+        border: 1px solid rgba(124,58,237,.10);
+        border-radius: 22px;
+        display: flex;
+        flex-direction: column;
+    }
+    .bae-adm:not(.bae-light) .bae-adm-main {
+        background: rgba(14,12,23,.90);
+        border-color: rgba(255,255,255,.08);
+    }
+    .bae-adm.bae-light .bae-adm-main { background: rgba(255,255,255,.94); }
     .bae-adm-topbar {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 16px 24px; border-bottom: 1px solid var(--border);
-        background: var(--bg); position: sticky; top: 0; z-index: 10;
+        gap: 16px;
+        padding: 14px 18px; border-bottom: 1px solid var(--border);
+        background: rgba(255,255,255,.9); position: sticky; top: 0; z-index: 10;
     }
-    .bae-adm-topbar-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .bae-adm:not(.bae-light) .bae-adm-topbar {
+        background: rgba(20,16,32,.92);
+        border-bottom-color: rgba(255,255,255,.08);
+    }
+    .bae-adm-topbar-left { display:flex; align-items:center; gap:14px; min-width:0; flex:1; }
+    .bae-adm-topbar-title { font-size: 15px; font-weight: 700; color: #241c3f; }
+    .bae-adm:not(.bae-light) .bae-adm-topbar-title { color: var(--text); }
     .bae-adm-topbar-sub   { font-size: 11px; color: var(--text-3); margin-top: 1px; }
     .bae-adm-topbar-date  { font-size: 11px; color: var(--text-3); }
-    .bae-adm-topbar-right { display:flex; align-items:center; gap:12px; }
+    .bae-adm-topbar-right { display:flex; align-items:center; gap:10px; }
 
     .bae-adm-theme-btn {
         display:flex; align-items:center; gap:8px;
-        background:var(--surface); border:1px solid var(--border-2);
+        background:#fff; border:1px solid rgba(124,58,237,.10);
         border-radius:10px; padding:7px 14px;
         font-size:12px; font-weight:600; color:var(--text-2);
         cursor:pointer; font-family:'Geist',sans-serif;
         transition:all .2s, box-shadow .25s ease, transform .2s ease;
+    }
+    .bae-adm:not(.bae-light) .bae-adm-theme-btn {
+        background: rgba(255,255,255,.04);
+        border-color: rgba(255,255,255,.08);
+        color: var(--text-2);
     }
     .bae-adm-theme-btn:hover { color:var(--text); border-color:var(--brand-s); transform:translateY(-1px); }
     .bae-adm-theme-icon { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0; }
@@ -742,7 +970,20 @@ function bae_admin_dashboard() {
         box-shadow:0 1px 3px rgba(0,0,0,.3);
     }
     .bae-adm-toggle-track.on .bae-adm-toggle-thumb { transform:translateX(16px); }
-    .bae-adm-body { padding: 24px; }
+    .bae-adm-body { padding: 22px; background: transparent; }
+    .bae-adm-stat,
+    .bae-adm-table-wrap,
+    .bae-adm-form-section,
+    .bae-adm-donut-wrap,
+    .bae-adm-spark,
+    .bae-adm-asset-type-card,
+    .bae-adm-plan-card,
+    .bae-adm-sysinfo-item,
+    .bae-adm-conv-bar {
+        background: rgba(255,255,255,.82);
+        border-color: rgba(124,58,237,.10);
+        box-shadow: 0 10px 30px rgba(72,49,120,.05);
+    }
 
     /* ── Stats ── */
     .bae-adm-stats {
@@ -783,7 +1024,7 @@ function bae_admin_dashboard() {
     .bae-adm-filter:focus { border-color: var(--brand); }
 
     /* ── Table ── */
-    .bae-adm-table-wrap { background: var(--bg-2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .bae-adm-table-wrap { background: var(--bg-2); border: 1px solid var(--border); border-radius: 14px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
     .bae-adm-table { width: 100%; border-collapse: collapse; }
     .bae-adm-table th {
         font-size: 10px; font-weight: 700; color: var(--text-3);
@@ -911,7 +1152,114 @@ function bae_admin_dashboard() {
     #bae-adm-toast.error   { border-color: rgba(251,113,133,.3); color: var(--red); }
 
     @media (max-width: 700px) {
-        .bae-adm-sidebar { display: none; }
+        .bae-adm {
+            padding: 18px 12px;
+            gap: 14px;
+        }
+        .bae-adm-layout {
+            padding: 10px;
+            gap: 10px;
+        }
+        .bae-adm-sidecluster {
+            width: 48px;
+            min-width: 48px;
+            padding: 0;
+            position: relative;
+            overflow: visible;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+        }
+        .bae-adm-rail {
+            width: 48px;
+            min-width: 48px;
+            padding: 8px 6px;
+            opacity: 1;
+            pointer-events: auto;
+            overflow: visible;
+            background: rgba(255,255,255,.90);
+            border: 1px solid rgba(124,58,237,.10);
+            border-radius: 18px;
+            box-shadow: 0 14px 36px rgba(82,48,138,.10);
+        }
+        .bae-adm:not(.bae-light) .bae-adm-rail {
+            background: rgba(18,15,30,.92);
+            border-color: rgba(255,255,255,.08);
+            box-shadow: 0 14px 36px rgba(0,0,0,.28);
+        }
+        .bae-adm-sidebar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: auto;
+            width: 236px;
+            min-width: 236px;
+            z-index: 20;
+            background: rgba(255,255,255,.94);
+            border-radius: 20px;
+            box-shadow: 0 18px 50px rgba(31,26,51,.18);
+        }
+        .bae-adm:not(.bae-light) .bae-adm-sidebar {
+            background: rgba(18,15,30,.96);
+            box-shadow: 0 18px 50px rgba(0,0,0,.34);
+        }
+        .bae-adm:not(.is-collapsed) .bae-adm-rail {
+            width: 0;
+            min-width: 0;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+            padding: 0;
+            border-width: 0;
+            box-shadow: none;
+        }
+        .bae-adm.is-collapsed .bae-adm-sidebar {
+            transform: translateX(-10px);
+            pointer-events: none;
+        }
+        .bae-adm-topbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .bae-adm-topbar-left,
+        .bae-adm-topbar-right {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .bae-adm-stats,
+        .bae-adm-asset-grid,
+        .bae-adm-plan-cards,
+        .bae-adm-profile-grid,
+        .bae-adm-sysinfo,
+        .bae-adm-body > div[style*="grid-template-columns"],
+        .bae-adm-form-section > div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+        }
+        .bae-adm-table {
+            min-width: 760px;
+        }
+        .bae-adm-bar-chart,
+        .bae-adm-timeline,
+        .bae-adm-donut-wrap,
+        .bae-adm-spark,
+        .bae-pay-table-wrap {
+            min-width: 0;
+        }
+        .bae-adm-body > div[style*="display:grid"],
+        .bae-adm-form-section > div[style*="display:grid"] {
+            grid-template-columns: 1fr !important;
+        }
+        .bae-adm-conv-bar,
+        .bae-adm-donut-wrap,
+        .bae-adm-spark,
+        .bae-adm-table-wrap,
+        .bae-adm-form-section,
+        .bae-pay-wrap,
+        .bae-pay-table-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .bae-adm-body { padding: 16px; }
     }
 
@@ -1071,6 +1419,8 @@ function bae_admin_dashboard() {
 
     <div class="bae-adm" id="bae-adm-wrap">
 
+        <div class="bae-adm-shell">
+
         <!-- Confirm Modal -->
         <div class="bae-adm-confirm-overlay" id="bae-adm-confirm">
             <div class="bae-adm-confirm-modal">
@@ -1086,17 +1436,42 @@ function bae_admin_dashboard() {
         </div>
 
         <div class="bae-adm-layout">
+            <div class="bae-adm-sidecluster">
+            <div class="bae-adm-rail">
+                <div class="bae-adm-rail-brand">
+                    <img src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie logo">
+                </div>
+                <button type="button" class="bae-adm-rail-toggle" id="bae-adm-rail-toggle" onclick="baeAdmToggleSidebar()" aria-label="Toggle sidebar">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h16"/></svg>
+                </button>
+                <?php foreach ($nav_items as $key => $item): ?>
+                <a href="<?php echo esc_url($base_url . '&adm=' . $key); ?>"
+                   class="bae-adm-rail-link <?php echo $route === $key ? 'active' : ''; ?>"
+                   aria-label="<?php echo esc_attr($item['label']); ?>">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><?php echo $item['icon']; ?></svg>
+                </a>
+                <?php endforeach; ?>
+                <div class="bae-adm-rail-spacer"></div>
+                <button type="button" class="bae-adm-rail-link" onclick="baeAdmLogout()" aria-label="Sign out">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
 
             <!-- ── Sidebar ── -->
             <aside class="bae-adm-sidebar">
                 <div class="bae-adm-sidebar-logo">
-                    <div class="bae-adm-sidebar-icon">
-                        <img src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie logo">
+                    <div class="bae-adm-sidebar-brand">
+                        <div class="bae-adm-sidebar-icon">
+                            <img src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie logo">
+                        </div>
+                        <div>
+                            <div class="bae-adm-sidebar-name"><?php echo bae_render_brand_wordmark_merge(); ?></div>
+                            <div class="bae-adm-sidebar-sub">Brand Asset Engine</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="bae-adm-sidebar-name"><?php echo bae_render_brand_wordmark_merge(); ?></div>
-                        <div class="bae-adm-sidebar-sub">Brand Asset Engine</div>
-                    </div>
+                    <button type="button" class="bae-adm-sidebar-collapse" onclick="baeAdmToggleSidebar()" aria-label="Collapse sidebar">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
                 </div>
 
                 <div class="bae-adm-sidebar-search">
@@ -1137,11 +1512,14 @@ function bae_admin_dashboard() {
             </aside>
 
             <!-- ── Main ── -->
+            </div>
             <div class="bae-adm-main">
                 <div class="bae-adm-topbar">
-                    <div>
-                        <div class="bae-adm-topbar-title"><?php echo esc_html($route_titles[$route] ?? 'Overview'); ?></div>
-                        <div class="bae-adm-topbar-sub">Brand Asset Engine</div>
+                    <div class="bae-adm-topbar-left">
+                        <div>
+                            <div class="bae-adm-topbar-title"><?php echo esc_html($route_titles[$route] ?? 'Overview'); ?></div>
+                            <div class="bae-adm-topbar-sub">Dashboard / <?php echo esc_html($route_titles[$route] ?? 'Overview'); ?></div>
+                        </div>
                     </div>
                     <div class="bae-adm-topbar-right">
                         <div class="bae-adm-topbar-date"><?php echo date('M d, Y'); ?></div>
@@ -2042,6 +2420,7 @@ function bae_admin_dashboard() {
                 </div><!-- /body -->
             </div><!-- /main -->
         </div><!-- /layout -->
+        </div><!-- /shell -->
     </div><!-- /bae-adm -->
 
     <div id="bae-adm-toast"></div>
@@ -2216,8 +2595,26 @@ function bae_admin_dashboard() {
 
     // ── Theme toggle
     var baeAdmIsDark = (function() {
-        try { return localStorage.getItem('bae_theme') !== 'light'; } catch (e) { return true; }
+        try {
+            var saved = localStorage.getItem('bae_theme');
+            return saved ? saved !== 'light' : false;
+        } catch (e) { return false; }
     })();
+
+    function baeAdmApplySidebarState(collapsed) {
+        var root = document.getElementById('bae-adm-wrap');
+        var btn = document.getElementById('bae-adm-rail-toggle');
+        if (!root) return;
+        root.classList.toggle('is-collapsed', !!collapsed);
+        if (btn) btn.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+        try { localStorage.setItem('bae_admin_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+    }
+
+    function baeAdmToggleSidebar() {
+        var root = document.getElementById('bae-adm-wrap');
+        if (!root) return;
+        baeAdmApplySidebarState(!root.classList.contains('is-collapsed'));
+    }
 
     function baeAdmApplyTheme(dark, animate) {
         var root  = document.querySelector('.bae-adm');
@@ -2250,6 +2647,14 @@ function bae_admin_dashboard() {
     // ── Init
     document.addEventListener('DOMContentLoaded', function() {
         baeAdmApplyTheme(baeAdmIsDark, false);
+        var collapsed = false;
+        try {
+            var saved = localStorage.getItem('bae_admin_sidebar_collapsed');
+            collapsed = saved ? saved === '1' : window.innerWidth < 900;
+        } catch (e) {
+            collapsed = window.innerWidth < 900;
+        }
+        baeAdmApplySidebarState(collapsed);
         if (window.gsap) gsap.fromTo('.bae-adm-stat', {opacity:0,y:12}, {opacity:1,y:0,duration:.4,stagger:.05,ease:'power2.out',delay:.1});
     });
     </script>
