@@ -1307,9 +1307,12 @@ function bntm_kbf_render_landing() {
         .kbf-section h2 { font-size: 20px; }
         .kbf-stat h3 { font-size: 48px; }
         .kbf-divider { margin-top: 44px; margin-bottom: 44px; }
-        .kbf-footer { grid-template-columns: 1fr; text-align: left; margin: 18px auto; }
-        .kbf-footer .kbf-social { justify-content: flex-start; }
-        .kbf-footer .kbf-brand { justify-content: flex-start; }
+        #kbf-faq h2 { max-width: 250px; margin-left: auto; margin-right: auto; }
+        .kbf-footer { grid-template-columns: 1fr; text-align: center; margin: 18px auto; }
+        .kbf-footer-left { align-items: center; }
+        .kbf-footer .kbf-footer-links { justify-content: center; }
+        .kbf-footer .kbf-social { justify-content: center; }
+        .kbf-footer .kbf-brand { justify-content: center; }
         .kbf-card--glass .kbf-list,
         .kbf-card--glass .kbf-list li,
         .kbf-card--soft .kbf-list,

@@ -188,11 +188,41 @@ add_filter('template_include', function($template){
 
     $content = get_post_field('post_content', $page_id);
     if (!$content) return $template;
-    if (has_shortcode($content, 'kbf_dashboard') || has_shortcode($content, 'kbf_admin')) {
+    if (kbf_page_has_fullwidth_shortcode($content)) {
         return $custom;
     }
     return $template;
 });
+
+if (!function_exists('kbf_page_has_fullwidth_shortcode')) {
+    function kbf_page_has_fullwidth_shortcode($content) {
+        if (!$content) {
+            return false;
+        }
+        $shortcodes = function_exists('bntm_kbf_get_shortcodes')
+            ? array_keys(bntm_kbf_get_shortcodes())
+            : [
+                'kbf_landing',
+                'kbf_dashboard',
+                'kbf_browse',
+                'kbf_fund_details',
+                'kbf_organizer_profile',
+                'kbf_sponsor_history',
+                'kbf_terms',
+                'kbf_privacy',
+                'kbf_refund',
+                'kbf_admin',
+                'kbf_signin',
+                'kbf_signup',
+            ];
+        foreach ($shortcodes as $shortcode) {
+            if (has_shortcode($content, $shortcode)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
 
 add_filter('body_class', function($classes){
     if (!is_page()) return $classes;
@@ -200,7 +230,7 @@ add_filter('body_class', function($classes){
     if (!$page_id) return $classes;
     $content = get_post_field('post_content', $page_id);
     $tpl = get_page_template_slug($page_id);
-    if ($tpl === 'kbf-fullwidth.php' || has_shortcode($content, 'kbf_dashboard') || has_shortcode($content, 'kbf_admin')) {
+    if ($tpl === 'kbf-fullwidth.php' || kbf_page_has_fullwidth_shortcode($content)) {
         $classes[] = 'kbf-fullwidth-page';
     }
     return $classes;
@@ -212,7 +242,7 @@ add_action('wp_head', function(){
     if (!$page_id) return;
     $content = get_post_field('post_content', $page_id);
     $tpl = get_page_template_slug($page_id);
-    if ($tpl !== 'kbf-fullwidth.php' && !has_shortcode($content, 'kbf_dashboard') && !has_shortcode($content, 'kbf_admin')) {
+    if ($tpl !== 'kbf-fullwidth.php' && !kbf_page_has_fullwidth_shortcode($content)) {
         return;
     }
     ?>
@@ -244,9 +274,8 @@ add_action('wp_head', function(){
         margin-left: 0 !important;
         margin-right: 0 !important;
         margin-top: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        padding-top: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
     }
     </style>
     <?php

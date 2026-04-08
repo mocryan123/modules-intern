@@ -171,7 +171,7 @@ function bntm_kbf_render_refund() {
       .kbf-legal {
         max-width: 1040px;
         margin: 28px auto 60px;
-        padding: 80px 20px 0;
+        padding: 0;
         color: #0f172a;
         font-family: "Poppins", system-ui, -apple-system, sans-serif;
         overflow: visible;
@@ -290,18 +290,28 @@ function bntm_kbf_render_refund() {
         text-decoration:none;
       }
       .kbf-footer .kbf-footer-links a:hover{ color:#fff; }
+      .kbf-container {
+        overflow: visible;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 62px 22px 0;
+      }
       @media (max-width: 720px){
         .kbf-footer{
           grid-template-columns: 1fr;
-          text-align: left;
+          text-align: center;
           margin: 18px auto;
         }
-        .kbf-social{ justify-content:flex-start; }
+        .kbf-footer-left{ align-items:center; }
+        .kbf-footer .kbf-footer-links{ justify-content:center; }
+        .kbf-social{ justify-content:center; }
+        .kbf-brand{ justify-content:center; }
       }
     </style>
     <!-- ================== HTML ================== -->
     <section class="kbf-legal">
       <div class="kbf-mobile-overlay" id="kbf-mobile-overlay"></div>
+      <div class="kbf-container">
       <div class="kbf-topbar">
         <div class="kbf-topbar-left">
           <div class="kbf-brand">
@@ -424,8 +434,7 @@ function bntm_kbf_render_refund() {
           <p>Fundora | Maramag, Bukidnon, Philippines</p>
         </div>
       </div>
-    </section>
-    <footer class="kbf-footer">
+      <footer class="kbf-footer">
       <div class="kbf-footer-left">
         <div class="kbf-brand" style="margin-bottom:8px;">
           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:20px;height:20px;object-fit:contain;border-radius:6px;">
@@ -450,7 +459,9 @@ function bntm_kbf_render_refund() {
           <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/linkedin.svg" alt="">
         </a>
       </div>
-    </footer>
+      </footer>
+      </div>
+    </section>
     <script>
       (function(){
         var btn = document.getElementById('kbf-hamburger-btn');

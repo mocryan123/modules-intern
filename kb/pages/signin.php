@@ -87,15 +87,16 @@ function bntm_kbf_render_signin() {
       }
       .bntm-bg{position:fixed;inset:0;width:100vw;height:100vh;margin:0;padding:0;overflow:hidden;background:#ffffff;}
       .kbf-auth-wrap{
-        width:100%;
+        width:100vw;
         height:100vh;
         box-sizing:border-box;
-        margin:0 auto;
+        margin:0;
         padding:0 18px;
         display:flex;
         align-items:center;
         justify-content:center;
-        position:relative;
+        position:fixed;
+        inset:0;
         overflow:hidden;
         background:#ffffff;
       }
@@ -110,6 +111,7 @@ function bntm_kbf_render_signin() {
         pointer-events:none;
         animation:kbfOrbFloat 16s ease-in-out infinite, kbfOrbFade 12s ease-in-out infinite;
       }
+      .kbf-auth-wrap::after{ display:none; }
       .kbf-auth-wrap::before{top:-260px;left:-220px;}
       .kbf-auth-wrap::after{bottom:-280px;right:-240px;animation-delay:4s,1s;}
       .kbf-auth-orb{
@@ -194,6 +196,21 @@ function bntm_kbf_render_signin() {
         .kbf-auth-card{grid-template-columns:1fr;}
         .kbf-auth-right{order:-1;padding:24px 22px;}
       }
+      @media (max-width: 900px){
+        .kbf-auth-wrap{padding:0 14px;}
+        .kbf-auth-card{border-radius:20px;}
+        .kbf-auth-left{padding:26px 20px 28px;}
+        .kbf-auth-right{padding:20px;}
+        .kbf-auth-brand img{width:120px;}
+        .kbf-auth-title{font-size:24px;}
+        .kbf-auth-sub{font-size:12.5px;line-height:1.6;margin-bottom:18px;}
+        .kbf-auth-input{padding:10px 12px;border-radius:12px;}
+        .kbf-auth-point{font-size:12px;}
+      }
+      @media (max-width: 520px){
+        .kbf-auth-card{box-shadow:0 18px 50px rgba(15,23,42,.12), 0 6px 18px rgba(37,99,235,.08);}
+        .kbf-auth-right{display:none;}
+      }
       @media (max-height: 760px){
         .kbf-auth-wrap{padding:0 16px;}
       }
@@ -249,9 +266,9 @@ function bntm_kbf_render_signin() {
             <h3>Build impact faster</h3>
             <p>Launch fundraisers, share updates, and grow a trusted supporter base.</p>
             <div class="kbf-auth-points">
-              <div class="kbf-auth-point"><span>âœ“</span> Verified profiles build trust</div>
-              <div class="kbf-auth-point"><span>âœ“</span> Seamless donation tracking</div>
-              <div class="kbf-auth-point"><span>âœ“</span> Transparent progress updates</div>
+              <div class="kbf-auth-point"><span>&#10003;</span> Verified profiles build trust</div>
+              <div class="kbf-auth-point"><span>&#10003;</span> Seamless donation tracking</div>
+              <div class="kbf-auth-point"><span>&#10003;</span> Transparent progress updates</div>
             </div>
           </div>
         </div>

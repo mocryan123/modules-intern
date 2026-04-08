@@ -7,11 +7,9 @@
         : '';
       $logout_url = $is_logged_in ? wp_logout_url($landing_url) : '';
     ?>
-    <div id="kbf-loading-overlay">
-      <div class="kbf-loading-mark">
-        <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora">
-      </div>
-    </div>
+    <?php if (function_exists('kbf_render_loading_overlay')): ?>
+      <?php echo kbf_render_loading_overlay(); ?>
+    <?php endif; ?>
     <!-- Topbar (Landing-style) -->
     <div class="kbf-mobile-overlay" id="kbf-mobile-overlay"></div>
     <div class="kbf-mobile-menu" id="kbf-mobile-menu">

@@ -41,6 +41,46 @@ function kbf_global_assets() {
         --kbf-brand-logo: url('<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>');
     }
     .kbf-wrap { font-family: 'Poppins', system-ui, -apple-system, sans-serif; color: var(--kbf-text); background: var(--kbf-bg); padding: 18px; }    
+    /* Fundora preloader (module-wide) */
+    #kbf-loading-overlay{
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:#f8fafcbf;
+        backdrop-filter: blur(8px);
+    }
+    #kbf-loading-overlay .kbf-loading-mark{
+        width:54px;height:54px;
+        border-radius:14px;
+        background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:#fff;
+        font-weight:800;
+        letter-spacing:.6px;
+        box-shadow:0 8px 18px rgba(61,142,240,.2);
+        overflow:hidden;
+        animation:kbfpreloadjump 1.2s cubic-bezier(.34,1.2,.64,1) infinite;
+    }
+    #kbf-loading-overlay .kbf-loading-mark img{
+        width:26px;height:26px;object-fit:contain;display:block;
+        filter:brightness(0) invert(1);
+    }
+    @keyframes kbfpreloadjump{
+        0%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
+        25%{transform:translateY(-14px) rotate(-8deg) scale(1.01); box-shadow:0 16px 28px rgba(61,142,240,.3);}
+        50%{transform:translateY(2px) rotate(6deg) scale(.99); box-shadow:0 6px 14px rgba(61,142,240,.18);}
+        75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
+        100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
+    }
+    /* Remove WP admin-bar top offset so full-bleed auth pages don't show a white strip */
+    html{ margin-top:0 !important; }
+    body{ margin-top:0 !important; padding-top:0 !important; }
+    #wpadminbar{ display:none !important; }
     .bntm-bg{
         margin:0 !important;
         padding:0 !important;
@@ -2034,6 +2074,9 @@ function kbf_global_assets() {
     window.kbffNearMe = function() { kbfNearMe('kbff-loc-input','kbff-search-form'); };
     </script>
     <?php
+    if (function_exists('kbf_render_loading_overlay')) {
+        echo kbf_render_loading_overlay();
+    }
 }
 
 

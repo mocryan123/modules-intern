@@ -190,13 +190,12 @@
     .kbf-dashboard-shell{
         max-width:1120px;
         margin:0 auto;
-        padding:76px 22px 0;
+        padding:0;
         box-sizing:border-box;
     }
     @media (max-width: 620px){
         .kbf-dashboard-shell{
-            padding-left:0;
-            padding-right:0;
+            padding:0;
         }
     }
     .kbf-tab-content{
@@ -214,10 +213,10 @@
         left:0;
         right:0;
         z-index:1000;
-        background: #ffffffbf;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-bottom:1px solid transparent;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border-bottom:0;
         transition:border-color .2s ease, box-shadow .2s ease;
         margin:0;
         width:100%;
@@ -1281,7 +1280,7 @@
         position:fixed;
         inset:0;
         z-index:99999;
-        display:none;
+        display:flex;
         align-items:center;
         justify-content:center;
         background:#f8fafcbf;

@@ -20,6 +20,30 @@ if (!defined('KB_PATH')) {
     define('KB_PATH', BNTM_KBF_PATH);
 }
 
+// Minimal logging to help diagnose white screen issues.
+if (!function_exists('kbf_log')) {
+    function kbf_log($message, $context = []) {
+        $prefix = '[KBF] ';
+        if (!empty($context)) {
+            $message .= ' | ' . wp_json_encode($context);
+        }
+        error_log($prefix . $message);
+    }
+}
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if (!$error) {
+        return;
+    }
+    $fatal_types = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
+    if (in_array($error['type'], $fatal_types, true)) {
+        kbf_log('Fatal error', $error);
+    }
+});
+
+kbf_log('KBF bootstrap start', ['file' => __FILE__]);
+
 require_once(BNTM_KBF_PATH . 'user.php');
 require_once(BNTM_KBF_PATH . 'admin.php');
 require_once(BNTM_KBF_PATH . 'includes/pages.php');
@@ -29,7 +53,35 @@ require_once(BNTM_KBF_PATH . 'includes/db.php');
 require_once(BNTM_KBF_PATH . 'includes/ajax-hooks.php');
 require_once KB_PATH . 'includes/didit.php';
 require_once(BNTM_KBF_PATH . 'includes/cron.php');
+require_once(BNTM_KBF_PATH . 'includes/loading.php');
 require_once(BNTM_KBF_PATH . 'includes/assets.php');
+
+// Remove WP admin-bar top offset on KBF pages to avoid white strip.
+if (!function_exists('kbf_is_kbf_page')) {
+    function kbf_is_kbf_page() {
+        if (!is_singular()) {
+            return false;
+        }
+        $post = get_post();
+        if (!$post || empty($post->post_content) || !function_exists('bntm_kbf_get_shortcodes')) {
+            return false;
+        }
+        foreach (array_keys(bntm_kbf_get_shortcodes()) as $shortcode) {
+            if (has_shortcode($post->post_content, $shortcode)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+add_action('wp', function () {
+    if (!kbf_is_kbf_page()) {
+        return;
+    }
+    remove_action('wp_head', '_admin_bar_bump_cb');
+    add_filter('show_admin_bar', '__return_false');
+}, 0);
 
 // Mark new accounts to land on profile after first login.
 function kbf_mark_first_login($user_id) {
