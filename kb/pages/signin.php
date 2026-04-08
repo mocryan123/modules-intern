@@ -140,6 +140,7 @@ function bntm_kbf_render_signin() {
       .kbf-auth-card{
         width:100%;
         max-width:1100px;
+        margin:0 auto;
         background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
         border:1px solid rgba(37,99,235,.12);
         border-radius:26px;
