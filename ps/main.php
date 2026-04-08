@@ -295,7 +295,9 @@ function ps_overview_tab($business_id) {
     <div class="bntm-form-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <h3 style="margin:0;">Recent Orders</h3>
-            <a href="?tab=orders" class="bntm-btn-secondary" style="font-size:13px;">View All</a>
+            <a href="?page_id=14&tab=orders" class="bntm-btn-secondary" style="font-size:13px;">
+                View All
+            </a>
         </div>
         <div class="bntm-table-wrapper">
         <table class="bntm-table">
