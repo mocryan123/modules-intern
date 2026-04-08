@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF Sign In page.
  */
@@ -249,9 +249,9 @@ function bntm_kbf_render_signin() {
             <h3>Build impact faster</h3>
             <p>Launch fundraisers, share updates, and grow a trusted supporter base.</p>
             <div class="kbf-auth-points">
-              <div class="kbf-auth-point"><span>✓</span> Verified profiles build trust</div>
-              <div class="kbf-auth-point"><span>✓</span> Seamless donation tracking</div>
-              <div class="kbf-auth-point"><span>✓</span> Transparent progress updates</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Verified profiles build trust</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Seamless donation tracking</div>
+              <div class="kbf-auth-point"><span>âœ“</span> Transparent progress updates</div>
             </div>
           </div>
         </div>
@@ -280,3 +280,5 @@ function bntm_kbf_render_signin() {
     <?php
     return ob_get_clean();
 }
+
+

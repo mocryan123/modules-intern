@@ -296,3 +296,5 @@ function bntm_kbf_render_signup() {
     <?php
     return ob_get_clean();
 }
+
+

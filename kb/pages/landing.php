@@ -569,11 +569,12 @@ function bntm_kbf_render_landing() {
         position: relative;
         --cw: 420px;
         --ch: 500px;
-        --kbf-card-scale: clamp(0.6, calc(100vw / 1200), 1);
+        --kbf-card-scale: 1;
         width: var(--cw);
         height: var(--ch);
         transform: scale(var(--kbf-card-scale));
         transform-origin: center;
+        transition: transform 0.3s ease;
     }
     .kbf-pcard {
         position: absolute; border-radius: 24px; overflow: hidden;
@@ -1238,6 +1239,7 @@ function bntm_kbf_render_landing() {
     @media (max-width: 1000px) {
         .kbf-hero-left { max-width: 420px; }
         .kbf-hero-right { flex: 0 0 clamp(280px, 34vw, 420px); height: clamp(320px, 45vw, 500px); }
+        .kbf-cards-wrap { --kbf-card-scale: 0.9; }
     }
 
     @media (max-width: 900px) {
@@ -1248,6 +1250,7 @@ function bntm_kbf_render_landing() {
         .kbf-mobile-menu a { text-align: center; }
         .kbf-hero-heading { font-size: 38px; letter-spacing: -1px; }
         .kbf-hero-right { flex: 0 0 clamp(260px, 40vw, 360px); height: clamp(300px, 50vw, 440px); }
+        .kbf-cards-wrap { --kbf-card-scale: 0.85; }
         .kbf-feature-grid { grid-template-columns: 1fr; }
         .kbf-feature-grid .kbf-card { grid-column: span 1; }
         .kbf-feature-grid .kbf-card:nth-child(4),
@@ -1274,6 +1277,7 @@ function bntm_kbf_render_landing() {
             gap: 32px;
             text-align: center;
         }
+        .kbf-cards-wrap { --kbf-card-scale: 0.95; }
         .kbf-hero-left { align-items: center; }
         .kbf-hero-left .kbf-chip { margin-left: auto; margin-right: auto; }
         .kbf-hero-left .kbf-actions { justify-content: center; }
@@ -1292,7 +1296,9 @@ function bntm_kbf_render_landing() {
         .kbf-landing { padding: 20px 14px 48px; text-align: center; }
         .kbf-topbar { flex-wrap: wrap; gap: 12px; justify-content: center; }
         .kbf-actions { width: 100%; justify-content: center; gap: 8px; }
+        .kbf-cards-wrap { --kbf-card-scale: 0.75; }
         .kbf-feature-grid { grid-template-columns: 1fr; gap: 12px; }
+        .kbf-feature-grid.kbf-feature-grid--two { grid-template-columns: 1fr; }
         .kbf-feature-grid .kbf-card { grid-column: span 1; }
         .kbf-feature-grid .kbf-card:nth-child(4),
         .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
@@ -1318,6 +1324,7 @@ function bntm_kbf_render_landing() {
         .kbf-hero-heading { font-size: 28px; letter-spacing: -0.5px; }
         .kbf-hero-desc { font-size: 13px; }
         .kbf-hero-right { height: 260px; }
+        .kbf-cards-wrap { --kbf-card-scale: 0.65; }
         .kbf-eyebrow { font-size: 9.5px; padding: 5px 10px; }
         .kbf-btn { font-size: 12px; padding: 8px 14px; }
         .kbf-actions .kbf-btn { width: auto; }
@@ -1343,6 +1350,7 @@ function bntm_kbf_render_landing() {
     @media (max-width: 360px) {
         .kbf-hero-heading { font-size: 24px; }
         .kbf-hero-right { height: 220px; }
+        .kbf-cards-wrap { --kbf-card-scale: 0.58; }
         .kbf-stat h3 { font-size: 34px; }
         .kbf-btn.kbf-btn-primary { font-size: 11.5px; }
     }
