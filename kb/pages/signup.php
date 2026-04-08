@@ -95,7 +95,8 @@ function bntm_kbf_render_signup() {
       .bntm-bg{position:fixed;inset:0;width:100vw;height:100vh;margin:0;padding:0;overflow:hidden;background:#ffffff;}
       .kbf-auth-wrap{
         width:100vw;
-        height:100vh;
+        height:100dvh;
+        min-height:100dvh;
         box-sizing:border-box;
         margin:0;
         padding:0 18px;
@@ -106,6 +107,8 @@ function bntm_kbf_render_signup() {
         inset:0;
         overflow:hidden;
         background:#ffffff;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
       }
       .kbf-auth-wrap::before,
       .kbf-auth-wrap::after{
