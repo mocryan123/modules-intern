@@ -1096,6 +1096,7 @@ function bntm_ajax_ch_update_profile() {
 
     // $result is 0 when data is unchanged (not false), so treat both 0 and >0 as success
     if ($result !== false) {
+        ch_flush_overview_cache();
         wp_send_json_success(['message' => 'Profile updated!', 'avatar_url' => $update_data['avatar_url'] ?? '']);
     } else {
         wp_send_json_error(['message' => 'Failed to save profile. Please try again.']);
@@ -1154,6 +1155,8 @@ function ch_ensure_profile($user_id) {
 
 function ch_flush_overview_cache() {
     delete_transient('ch_overview_counts');
+    delete_transient('ch_moderation_stats');
+    delete_transient('ch_available_locations');
 }
 
 function ch_create_notification($user_id, $type, $actor_id, $post_id = 0, $comment_id = 0) {

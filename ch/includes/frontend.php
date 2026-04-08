@@ -782,6 +782,15 @@ function ch_update_live_stats() {
     return ch_get_overview_counts();
 }
 
+function ch_get_dashboard_day_bounds() {
+    $now = current_time('timestamp');
+
+    return [
+        wp_date('Y-m-d 00:00:00', $now),
+        wp_date('Y-m-d 00:00:00', strtotime('+1 day', $now)),
+    ];
+}
+
 function ch_get_overview_counts() {
     $counts = get_transient('ch_overview_counts');
     if ($counts !== false) {
@@ -789,16 +798,23 @@ function ch_get_overview_counts() {
     }
 
     global $wpdb;
+    [$day_start, $day_end] = ch_get_dashboard_day_bounds();
     $row = $wpdb->get_row(
-        "SELECT
+        $wpdb->prepare(
+            "SELECT
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS total_posts,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE status = 'active') AS total_comments,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles) AS total_users,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_categories WHERE status = 'active') AS total_cats,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'pending') AS pending_posts,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE DATE(created_at) = CURDATE()) AS posts_today,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE DATE(created_at) = CURDATE()) AS comments_today"
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE created_at >= %s AND created_at < %s) AS posts_today,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE created_at >= %s AND created_at < %s) AS comments_today",
+            $day_start,
+            $day_end,
+            $day_start,
+            $day_end
+        )
     );
 
     $counts = [
@@ -814,6 +830,54 @@ function ch_get_overview_counts() {
 
     set_transient('ch_overview_counts', $counts, 60);
     return $counts;
+}
+
+function ch_get_moderation_stats() {
+    $stats = get_transient('ch_moderation_stats');
+    if ($stats !== false) {
+        return $stats;
+    }
+
+    global $wpdb;
+    $stats_row = $wpdb->get_row(
+        "SELECT
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS active_posts,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'removed') AS removed_posts,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status = 'suspended') AS suspended_users,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status = 'banned') AS banned_users,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_votes) AS total_votes"
+    );
+
+    $stats = [
+        'active_posts'    => (int)($stats_row->active_posts ?? 0),
+        'removed_posts'   => (int)($stats_row->removed_posts ?? 0),
+        'pending_reports' => (int)($stats_row->pending_reports ?? 0),
+        'suspended_users' => (int)($stats_row->suspended_users ?? 0),
+        'banned_users'    => (int)($stats_row->banned_users ?? 0),
+        'total_votes'     => (int)($stats_row->total_votes ?? 0),
+    ];
+
+    set_transient('ch_moderation_stats', $stats, 60);
+    return $stats;
+}
+
+function ch_get_available_locations() {
+    $locations = get_transient('ch_available_locations');
+    if ($locations !== false) {
+        return $locations;
+    }
+
+    global $wpdb;
+    $locations = $wpdb->get_col(
+        "SELECT DISTINCT location
+         FROM {$wpdb->prefix}ch_user_profiles
+         WHERE location != '' AND location IS NOT NULL
+         ORDER BY location"
+    );
+
+    set_transient('ch_available_locations', $locations, 300);
+    return $locations;
 }
 
 // ============================================================
@@ -1918,23 +1982,7 @@ function ch_moderation_tab($user_id) {
         echo '<div class="bntm-notice bntm-notice-success">Moderation settings saved successfully!</div>';
     }
 
-    $stats_row = $wpdb->get_row(
-        "SELECT
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS active_posts,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'removed') AS removed_posts,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status = 'suspended') AS suspended_users,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status = 'banned') AS banned_users,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_votes) AS total_votes"
-    );
-    $stats = [
-        'active_posts'    => (int)($stats_row->active_posts    ?? 0),
-        'removed_posts'   => (int)($stats_row->removed_posts   ?? 0),
-        'pending_reports' => (int)($stats_row->pending_reports ?? 0),
-        'suspended_users' => (int)($stats_row->suspended_users ?? 0),
-        'banned_users'    => (int)($stats_row->banned_users    ?? 0),
-        'total_votes'     => (int)($stats_row->total_votes     ?? 0),
-    ];
+    $stats = ch_get_moderation_stats();
 
     $recent_removed = $wpdb->get_results(
         "SELECT p.*, u.display_name as author_name
@@ -2961,7 +3009,7 @@ function bntm_shortcode_ch_feed() {
     $total_pages = ceil($total / $per_page);
 
     // Get available locations for filtering
-    $available_locations = $wpdb->get_col("SELECT DISTINCT location FROM {$wpdb->prefix}ch_user_profiles WHERE location != '' AND location IS NOT NULL ORDER BY location");
+    $available_locations = ch_get_available_locations();
     $current_profile = $user_id ? $wpdb->get_row($wpdb->prepare(
         "SELECT display_name, avatar_url, karma_points FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d",
         $user_id

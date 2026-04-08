@@ -108,6 +108,176 @@ function bntm_ch_logo_url() {
     return BNTM_CH_URL . 'assets/' . rawurlencode('Civichub Logo.png');
 }
 
+function ch_get_email_verification_template_id() {
+    return (int) apply_filters('ch_email_verification_template_id', 2);
+}
+
+function ch_get_brevo_api_key() {
+    $api_key = trim((string) get_option('sib_api_key_v3', ''));
+    return $api_key;
+}
+
+function ch_is_user_email_verified($user) {
+    $user = $user instanceof WP_User ? $user : get_user_by('id', (int) $user);
+    if (!$user) return false;
+    if (user_can($user, 'manage_options')) return true;
+
+    $verified = get_user_meta($user->ID, 'ch_email_verified', true);
+    if ($verified === '') {
+        return true;
+    }
+
+    return $verified === '1';
+}
+
+function ch_set_user_email_verification($user_id, $verified) {
+    update_user_meta($user_id, 'ch_email_verified', $verified ? '1' : '0');
+    if ($verified) {
+        delete_user_meta($user_id, 'ch_email_verification_token_hash');
+        delete_user_meta($user_id, 'ch_email_verification_expires');
+    }
+}
+
+function ch_generate_email_verification_token($user_id) {
+    $token = wp_generate_password(48, false, false);
+    update_user_meta($user_id, 'ch_email_verification_token_hash', wp_hash_password($token));
+    update_user_meta($user_id, 'ch_email_verification_expires', time() + DAY_IN_SECONDS);
+    update_user_meta($user_id, 'ch_email_verification_sent_at', time());
+    update_user_meta($user_id, 'ch_email_verified', '0');
+    return $token;
+}
+
+function ch_get_email_verification_url($user_id, $token) {
+    return add_query_arg([
+        'tab' => 'login',
+        'verify_email' => rawurlencode($token),
+        'uid' => (int) $user_id,
+    ], ch_get_auth_url('login'));
+}
+
+function ch_send_email_verification($user_id, $email = '') {
+    $user = get_user_by('id', (int) $user_id);
+    if (!$user) {
+        return new WP_Error('ch_missing_user', 'Unable to find the new account.');
+    }
+
+    $api_key = ch_get_brevo_api_key();
+    if ($api_key === '') {
+        return new WP_Error('ch_missing_brevo_key', 'Brevo is not connected yet. Add your Brevo API key before enabling email verification.');
+    }
+
+    $token = ch_generate_email_verification_token($user->ID);
+    $email = $email !== '' ? $email : $user->user_email;
+    $verification_url = ch_get_email_verification_url($user->ID, $token);
+    $display_name = $user->display_name ?: $user->user_login;
+
+    $response = wp_remote_post('https://api.brevo.com/v3/smtp/email', [
+        'timeout' => 20,
+        'headers' => [
+            'accept' => 'application/json',
+            'content-type' => 'application/json',
+            'api-key' => $api_key,
+        ],
+        'body' => wp_json_encode([
+            'templateId' => ch_get_email_verification_template_id(),
+            'to' => [[
+                'email' => $email,
+                'name' => $display_name,
+            ]],
+            'params' => [
+                'user_name' => $display_name,
+                'verification_url' => $verification_url,
+                'expiry_text' => '24 hours',
+                'logo_url' => bntm_ch_logo_url(),
+                'site_name' => get_bloginfo('name') ?: 'CivicHub',
+            ],
+        ]),
+    ]);
+
+    if (is_wp_error($response)) {
+        return new WP_Error('ch_brevo_request_failed', 'Could not send the verification email. Please try again.');
+    }
+
+    $status_code = (int) wp_remote_retrieve_response_code($response);
+    if ($status_code < 200 || $status_code >= 300) {
+        return new WP_Error('ch_brevo_send_failed', 'Could not send the verification email. Please check your Brevo template and sender settings.');
+    }
+
+    return true;
+}
+
+function ch_verify_email_token($user_id, $token) {
+    $user = get_user_by('id', (int) $user_id);
+    if (!$user) {
+        return new WP_Error('ch_verify_missing_user', 'Invalid verification link.');
+    }
+
+    if (ch_is_user_email_verified($user)) {
+        return true;
+    }
+
+    $hash = (string) get_user_meta($user->ID, 'ch_email_verification_token_hash', true);
+    $expires = (int) get_user_meta($user->ID, 'ch_email_verification_expires', true);
+
+    if ($hash === '' || $expires <= 0) {
+        return new WP_Error('ch_verify_invalid', 'This verification link is no longer valid.');
+    }
+    if (time() > $expires) {
+        return new WP_Error('ch_verify_expired', 'This verification link has expired.');
+    }
+    if (!wp_check_password($token, $hash, $user->ID)) {
+        return new WP_Error('ch_verify_invalid', 'This verification link is invalid.');
+    }
+
+    ch_set_user_email_verification($user->ID, true);
+    return true;
+}
+
+function ch_get_auth_notice() {
+    $notice = ['type' => '', 'message' => '', 'email' => ''];
+
+    if (!empty($_GET['verify_email']) && !empty($_GET['uid'])) {
+        $result = ch_verify_email_token((int) $_GET['uid'], sanitize_text_field(wp_unslash($_GET['verify_email'])));
+        if (is_wp_error($result)) {
+            $notice['type'] = 'error';
+            $notice['message'] = $result->get_error_message();
+        } else {
+            $notice['type'] = 'success';
+            $notice['message'] = 'Your email has been verified. You can sign in now.';
+        }
+    } elseif (!empty($_GET['verification_pending'])) {
+        $notice['type'] = 'success';
+        $notice['message'] = 'Account created. Please verify your email before signing in.';
+    } elseif (!empty($_GET['verification_resent'])) {
+        $notice['type'] = 'success';
+        $notice['message'] = 'A new verification email has been sent.';
+    } elseif (!empty($_GET['verification_error'])) {
+        $notice['type'] = 'error';
+        $notice['message'] = sanitize_text_field(wp_unslash($_GET['verification_error']));
+    }
+
+    if (!empty($_GET['email'])) {
+        $notice['email'] = sanitize_email(wp_unslash($_GET['email']));
+    }
+
+    return $notice;
+}
+
+function ch_block_unverified_login($user, $username, $password) {
+    if ($user instanceof WP_Error || !($user instanceof WP_User)) {
+        return $user;
+    }
+    if ($password === '') {
+        return $user;
+    }
+    if (ch_is_user_email_verified($user)) {
+        return $user;
+    }
+
+    return new WP_Error('ch_email_unverified', 'Verify your email before signing in.');
+}
+add_filter('authenticate', 'ch_block_unverified_login', 30, 3);
+
 function ch_get_feed_url() {
     static $url = null;
 
@@ -291,6 +461,8 @@ function bntm_ch_get_tables() {
             INDEX idx_user (user_id),
             INDEX idx_category (category_id),
             INDEX idx_status (status),
+            INDEX idx_status_created (status, created_at),
+            INDEX idx_status_category_created (status, category_id, created_at),
             FULLTEXT idx_search (title, content)
         ) {$charset};",
 
@@ -311,7 +483,8 @@ function bntm_ch_get_tables() {
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_post (post_id),
             INDEX idx_user (user_id),
-            INDEX idx_parent (parent_id)
+            INDEX idx_parent (parent_id),
+            INDEX idx_post_status_parent_created (post_id, status, parent_id, created_at)
         ) {$charset};",
 
         'ch_votes' => "CREATE TABLE {$prefix}ch_votes (
@@ -353,7 +526,8 @@ function bntm_ch_get_tables() {
             is_read TINYINT(1) DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_user (user_id),
-            INDEX idx_read (user_id, is_read)
+            INDEX idx_read (user_id, is_read),
+            INDEX idx_user_created (user_id, created_at)
         ) {$charset};",
 
         'ch_announcements' => "CREATE TABLE {$prefix}ch_announcements (
@@ -380,7 +554,8 @@ function bntm_ch_get_tables() {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_status (status),
-            INDEX idx_target (target_type, target_id)
+            INDEX idx_target (target_type, target_id),
+            INDEX idx_status_created (status, created_at)
         ) {$charset};",
 
         'ch_user_profiles' => "CREATE TABLE {$prefix}ch_user_profiles (
@@ -399,7 +574,9 @@ function bntm_ch_get_tables() {
             ban_expires DATETIME DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            INDEX idx_user (user_id)
+            INDEX idx_user (user_id),
+            INDEX idx_status_created (status, created_at),
+            INDEX idx_location (location)
         ) {$charset};",
 
         'ch_activity_logs' => "CREATE TABLE {$prefix}ch_activity_logs (
@@ -486,6 +663,23 @@ function bntm_ch_create_tables() {
 
         if ($post_migration_ok && $comment_migration_ok) {
             update_option('ch_schema_version', 3);
+            $schema_version = 3;
+        }
+    }
+
+    if ($schema_version < 4) {
+        $index_migration_ok = true;
+        $index_migration_ok = bntm_ch_add_index_if_missing("{$wpdb->prefix}ch_posts", 'idx_status_created', 'INDEX idx_status_created (status, created_at)') && $index_migration_ok;
+        $index_migration_ok = bntm_ch_add_index_if_missing("{$wpdb->prefix}ch_posts", 'idx_status_category_created', 'INDEX idx_status_category_created (status, category_id, created_at)') && $index_migration_ok;
+        $index_migration_ok = bntm_ch_add_index_if_missing("{$wpdb->prefix}ch_comments", 'idx_post_status_parent_created', 'INDEX idx_post_status_parent_created (post_id, status, parent_id, created_at)') && $index_migration_ok;
+        $index_migration_ok = bntm_ch_add_index_if_missing("{$wpdb->prefix}ch_notifications", 'idx_user_created', 'INDEX idx_user_created (user_id, created_at)') && $index_migration_ok;
+        $index_migration_ok = bntm_ch_add_index_if_missing("{$wpdb->prefix}ch_reports", 'idx_status_created', 'INDEX idx_status_created (status, created_at)') && $index_migration_ok;
+        $index_migration_ok = bntm_ch_add_index_if_missing("{$wpdb->prefix}ch_user_profiles", 'idx_status_created', 'INDEX idx_status_created (status, created_at)') && $index_migration_ok;
+        $index_migration_ok = bntm_ch_add_index_if_missing("{$wpdb->prefix}ch_user_profiles", 'idx_location', 'INDEX idx_location (location)') && $index_migration_ok;
+
+        if ($index_migration_ok) {
+            update_option('ch_schema_version', 4);
+            $schema_version = 4;
         }
     }
 
@@ -495,11 +689,27 @@ function bntm_ch_create_tables() {
     return count($tables);
 }
 
+function bntm_ch_add_index_if_missing($table, $index_name, $index_sql) {
+    global $wpdb;
+
+    $existing_index = $wpdb->get_var(
+        $wpdb->prepare("SHOW INDEX FROM {$table} WHERE Key_name = %s", $index_name)
+    );
+
+    if ($existing_index) {
+        return true;
+    }
+
+    return $wpdb->query("ALTER TABLE {$table} ADD {$index_sql}") !== false;
+}
+
 // ============================================================
 // FRONTEND: LOGIN / REGISTER PAGE
 // ============================================================
 
 function bntm_shortcode_ch_auth() {
+    $notice = ch_get_auth_notice();
+
     // If already logged in, redirect to feed
     if (is_user_logged_in()) {
         wp_redirect(ch_get_feed_url());
@@ -531,6 +741,20 @@ function bntm_shortcode_ch_auth() {
             </div>
 
             <div id="ch-auth-msg"></div>
+            <?php if (!empty($notice['message'])): ?>
+                <div class="bntm-notice-<?php echo $notice['type'] === 'success' ? 'success' : 'error'; ?>" style="margin-bottom:14px;">
+                    <?php echo esc_html($notice['message']); ?>
+                </div>
+            <?php endif; ?>
+            <div class="ch-auth-resend" id="ch-auth-resend-wrap" <?php echo !empty($notice['email']) && $active === 'login' ? 'data-email="' . esc_attr($notice['email']) . '"' : 'style="display:none"'; ?>>
+                <?php if (!empty($notice['email']) && $active === 'login'): ?>
+                    <div class="ch-auth-resend-copy">Need another verification email for <strong><?php echo esc_html($notice['email']); ?></strong>?</div>
+                    <button type="button" class="ch-btn ch-btn-secondary ch-btn-full" id="ch-resend-verification-btn"
+                            onclick="chResendVerification('<?php echo wp_create_nonce('ch_auth_nonce'); ?>')">
+                        Resend Verification Email
+                    </button>
+                <?php endif; ?>
+            </div>
 
             <?php if ($active === 'login'): ?>
             <!-- LOGIN FORM -->
@@ -625,6 +849,8 @@ function bntm_shortcode_ch_auth() {
 
     <style>
     /* Auth page inherits ch_global_styles tokens */
+    .ch-auth-resend { margin-bottom: 14px; padding: 14px 16px; border: 1px solid var(--ch-border); border-radius: 14px; background: color-mix(in srgb, var(--ch-surface) 76%, var(--ch-bg) 24%); }
+    .ch-auth-resend-copy { font-size: 13px; color: var(--ch-text-muted); margin-bottom: 10px; line-height: 1.6; }
     @media (max-width: 500px) { .ch-auth-card { padding: 22px 16px; } }
     </style>
 
@@ -753,6 +979,132 @@ function bntm_shortcode_ch_auth() {
                 if (e.key === 'Enter') document.getElementById('ch-register-btn')?.click();
             });
         });
+    })();
+    </script>
+    <script>
+    (function(){
+        var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+
+        window.chSubmitLogin = function(nonce, redirect) {
+            const user     = document.getElementById('ch-login-user').value.trim();
+            const pass     = document.getElementById('ch-login-pass').value;
+            const remember = document.getElementById('ch-login-remember').checked ? 1 : 0;
+            const msgEl    = document.getElementById('ch-auth-msg');
+            const btn      = document.getElementById('ch-login-btn');
+
+            if (!user || !pass) { msgEl.innerHTML = '<div class="bntm-notice-error">Please fill in all fields.</div>'; return; }
+
+            btn.disabled = true; btn.textContent = 'Signing in...';
+            msgEl.innerHTML = '';
+
+            const fd = new FormData();
+            fd.append('action', 'ch_login');
+            fd.append('username', user);
+            fd.append('password', pass);
+            fd.append('remember', remember);
+            fd.append('redirect_to', redirect);
+            fd.append('nonce', nonce);
+
+            fetch(ajaxurl, {method:'POST', body:fd})
+            .then(r => r.json())
+            .then(json => {
+                if (json.success) {
+                    msgEl.innerHTML = '<div class="bntm-notice-success">Welcome back! Redirecting...</div>';
+                    setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 800);
+                } else {
+                    msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
+                    if (json.data?.requires_verification && json.data?.email) {
+                        const resendWrap = document.getElementById('ch-auth-resend-wrap');
+                        if (resendWrap) {
+                            resendWrap.dataset.email = json.data.email;
+                            resendWrap.style.display = 'block';
+                            resendWrap.innerHTML = '<div class="ch-auth-resend-copy">Need another verification email for <strong>' + json.data.email + '</strong>?</div><button type="button" class="ch-btn ch-btn-secondary ch-btn-full" id="ch-resend-verification-btn" onclick="chResendVerification(\'' + nonce + '\')">Resend Verification Email</button>';
+                        }
+                    }
+                    btn.disabled = false; btn.textContent = 'Sign In';
+                }
+            })
+            .catch(() => {
+                msgEl.innerHTML = '<div class="bntm-notice-error">Network error. Please try again.</div>';
+                btn.disabled = false; btn.textContent = 'Sign In';
+            });
+        };
+
+        window.chSubmitRegister = function(nonce, redirect) {
+            const username  = document.getElementById('ch-reg-username').value.trim();
+            const email     = document.getElementById('ch-reg-email').value.trim();
+            const pass      = document.getElementById('ch-reg-pass').value;
+            const firstname = document.getElementById('ch-reg-firstname').value.trim();
+            const lastname  = document.getElementById('ch-reg-lastname').value.trim();
+            const location  = document.getElementById('ch-reg-location').value.trim();
+            const terms     = document.getElementById('ch-reg-terms').checked;
+            const msgEl     = document.getElementById('ch-auth-msg');
+            const btn       = document.getElementById('ch-register-btn');
+
+            if (!username || !email || !pass) { msgEl.innerHTML = '<div class="bntm-notice-error">Username, email, and password are required.</div>'; return; }
+            if (!terms) { msgEl.innerHTML = '<div class="bntm-notice-error">Please agree to the Community Guidelines.</div>'; return; }
+            if (pass.length < 8) { msgEl.innerHTML = '<div class="bntm-notice-error">Password must be at least 8 characters.</div>'; return; }
+
+            btn.disabled = true; btn.textContent = 'Creating account...';
+            msgEl.innerHTML = '';
+
+            const fd = new FormData();
+            fd.append('action', 'ch_register');
+            fd.append('username', username);
+            fd.append('email', email);
+            fd.append('password', pass);
+            fd.append('first_name', firstname);
+            fd.append('last_name', lastname);
+            fd.append('location', location);
+            fd.append('redirect_to', redirect);
+            fd.append('nonce', nonce);
+
+            fetch(ajaxurl, {method:'POST', body:fd})
+            .then(r => r.json())
+            .then(json => {
+                if (json.success) {
+                    msgEl.innerHTML = '<div class="bntm-notice-success">' + (json.data?.message || 'Account created! Redirecting...') + '</div>';
+                    setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 1000);
+                } else {
+                    msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Registration failed. Please try again.') + '</div>';
+                    btn.disabled = false; btn.textContent = 'Create Account';
+                }
+            })
+            .catch(() => {
+                msgEl.innerHTML = '<div class="bntm-notice-error">Network error. Please try again.</div>';
+                btn.disabled = false; btn.textContent = 'Create Account';
+            });
+        };
+
+        window.chResendVerification = function(nonce) {
+            const resendWrap = document.getElementById('ch-auth-resend-wrap');
+            const email = resendWrap?.dataset?.email || document.getElementById('ch-reg-email')?.value.trim() || document.getElementById('ch-login-user')?.value.trim();
+            const msgEl = document.getElementById('ch-auth-msg');
+            const btn = document.getElementById('ch-resend-verification-btn');
+
+            if (!email) {
+                msgEl.innerHTML = '<div class="bntm-notice-error">Enter your email first so we know where to resend the verification link.</div>';
+                return;
+            }
+
+            if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+            const fd = new FormData();
+            fd.append('action', 'ch_resend_verification');
+            fd.append('email', email);
+            fd.append('nonce', nonce);
+
+            fetch(ajaxurl, {method:'POST', body:fd})
+            .then(r => r.json())
+            .then(json => {
+                msgEl.innerHTML = '<div class="bntm-notice-' + (json.success ? 'success' : 'error') + '">' + (json.data?.message || 'Unable to resend verification email.') + '</div>';
+                if (btn) { btn.disabled = false; btn.textContent = 'Resend Verification Email'; }
+            })
+            .catch(() => {
+                msgEl.innerHTML = '<div class="bntm-notice-error">Network error. Please try again.</div>';
+                if (btn) { btn.disabled = false; btn.textContent = 'Resend Verification Email'; }
+            });
+        };
     })();
     </script>
 
@@ -900,6 +1252,19 @@ function bntm_ajax_ch_login() {
     $user = wp_signon($credentials, is_ssl());
 
     if (is_wp_error($user)) {
+        if ($user->get_error_code() === 'ch_email_unverified') {
+            $blocked_user = get_user_by('login', $username);
+            if (!$blocked_user && is_email($username)) {
+                $blocked_user = get_user_by('email', $username);
+            }
+
+            wp_send_json_error([
+                'message' => 'Verify your email before signing in.',
+                'requires_verification' => true,
+                'email' => $blocked_user ? $blocked_user->user_email : (is_email($username) ? $username : ''),
+            ]);
+        }
+
         $msg = $user->get_error_code() === 'incorrect_password' || $user->get_error_code() === 'invalid_username'
             ? 'Incorrect username or password.'
             : $user->get_error_message();
@@ -942,6 +1307,9 @@ function bntm_ajax_ch_register() {
     if (email_exists($email)) {
         wp_send_json_error(['message' => 'An account with that email already exists.']);
     }
+    if (ch_get_brevo_api_key() === '') {
+        wp_send_json_error(['message' => 'Brevo is not connected yet. Add your Brevo API key before enabling email verification.']);
+    }
 
     // Create WordPress user
     $user_id = wp_create_user($username, $password, $email);
@@ -961,23 +1329,61 @@ function bntm_ajax_ch_register() {
         'location'     => $location,
         'status'       => 'active',
     ], ['%d', '%s', '%s', '%s']);
+    ch_flush_overview_cache();
 
-    // Auto-login
-    $credentials = ['user_login' => $username, 'user_password' => $password, 'remember' => true];
-    $user = wp_signon($credentials, is_ssl());
-    if (is_wp_error($user)) {
-        wp_send_json_error(['message' => 'Account created but login failed. Please sign in manually.']);
+    $verification_sent = ch_send_email_verification($user_id, $email);
+    if (is_wp_error($verification_sent)) {
+        require_once ABSPATH . 'wp-admin/includes/user.php';
+        $wpdb->delete("{$wpdb->prefix}ch_user_profiles", ['user_id' => $user_id], ['%d']);
+        wp_delete_user($user_id);
+        wp_send_json_error(['message' => $verification_sent->get_error_message()]);
     }
 
-    $default_url = ch_get_feed_url();
-    $redirect    = $redirect_to ?: $default_url;
+    $redirect = add_query_arg([
+        'tab' => 'login',
+        'verification_pending' => 1,
+        'email' => $email,
+    ], ch_get_auth_url('login', $redirect_to));
 
-    wp_send_json_success(['redirect' => $redirect]);
+    wp_send_json_success([
+        'message' => 'Account created. Check your email to verify your account before signing in.',
+        'redirect' => $redirect,
+    ]);
+}
+
+function bntm_ajax_ch_resend_verification() {
+    check_ajax_referer('ch_auth_nonce', 'nonce');
+
+    $email = sanitize_email($_POST['email'] ?? '');
+    if (!$email) {
+        wp_send_json_error(['message' => 'A valid email address is required.']);
+    }
+
+    $user = get_user_by('email', $email);
+    if (!$user) {
+        wp_send_json_error(['message' => 'No account was found for that email address.']);
+    }
+    if (ch_is_user_email_verified($user)) {
+        wp_send_json_error(['message' => 'That account is already verified. You can sign in now.']);
+    }
+
+    $last_sent = (int) get_user_meta($user->ID, 'ch_email_verification_sent_at', true);
+    if ($last_sent > 0 && (time() - $last_sent) < MINUTE_IN_SECONDS) {
+        wp_send_json_error(['message' => 'Please wait a moment before requesting another verification email.']);
+    }
+
+    $verification_sent = ch_send_email_verification($user->ID, $email);
+    if (is_wp_error($verification_sent)) {
+        wp_send_json_error(['message' => $verification_sent->get_error_message()]);
+    }
+
+    wp_send_json_success(['message' => 'A new verification email has been sent.']);
 }
 
 $ajax_actions = [
     'ch_login'               => ['bntm_ajax_ch_login', false],
     'ch_register'            => ['bntm_ajax_ch_register', false],
+    'ch_resend_verification' => ['bntm_ajax_ch_resend_verification', false],
     'ch_create_category'     => ['bntm_ajax_ch_create_category', true],
     'ch_edit_category'       => ['bntm_ajax_ch_edit_category', true],
     'ch_delete_category'     => ['bntm_ajax_ch_delete_category', true],
