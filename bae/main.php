@@ -618,9 +618,12 @@ function bae_wizard_shortcode($user_id) {
         display: inline-flex;
         align-items: flex-end;
         justify-content: center;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
+        transform: scale(.88);
+        transform-origin: center bottom;
     }
     .bae-wiz-brand .bae-brand-wordmark { color: inherit; }
+    .bae-wiz-brand .bae-brand-wordmark-logo { width: 1.7em; }
     .bae-wiz-wrap.bae-light .bae-brand-logo-img { filter: invert(1); }
     .bae-wiz-tiles {
         display: grid; grid-template-columns: 1fr 1fr;
@@ -713,7 +716,7 @@ function bae_wizard_shortcode($user_id) {
 
         <!-- Step 1: Name -->
         <div class="bae-wiz-screen" id="bae-step-1">
-            <div class="bae-wiz-brand"><?php echo bae_render_brand_wordmark(); ?></div>
+            <div class="bae-wiz-brand"><?php echo bae_render_brand_wordmark_merge(); ?></div>
             <div class="bae-wiz-question">What's your business name?</div>
             <div class="bae-wiz-hint">This will appear on all your brand assets.</div>
             <input type="text" class="bae-wiz-input" id="bae-wiz-name" placeholder="e.g. Dela Cruz Bakery" autocomplete="off">
@@ -2123,6 +2126,270 @@ function bntm_shortcode_bae() {
     .bae-free-plan-tip .bae-btn {
         white-space:nowrap;
     }
+    .bae-dash-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+    }
+    .bae-dash-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 20px 24px;
+        border-radius: 26px;
+        background:
+            linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,.22)),
+            radial-gradient(circle at 0% 0%, rgba(139,92,246,.08), transparent 28%),
+            var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: 0 18px 46px rgba(15, 23, 42, .06);
+    }
+    .bae-dash-user {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-width: 0;
+    }
+    .bae-dash-avatar {
+        width: 66px;
+        height: 66px;
+        border-radius: 22px;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(139,92,246,.12), rgba(236,72,153,.10));
+        border: 1px solid var(--border);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+    }
+    .bae-dash-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .bae-dash-avatar .bae-brand-mark {
+        width: 42px;
+    }
+    .bae-dash-copy {
+        min-width: 0;
+    }
+    .bae-dash-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(139,92,246,.08);
+        color: var(--brand-soft);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+    .bae-dash-title {
+        font-family: 'Instrument Serif', serif;
+        font-size: clamp(28px, 4vw, 36px);
+        line-height: .98;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+    .bae-dash-sub {
+        font-size: 14px;
+        line-height: 1.65;
+        color: var(--text-3);
+    }
+    .bae-dash-metrics {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    .bae-dash-metric {
+        min-width: 130px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255,255,255,.65);
+        border: 1px solid var(--border);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+    }
+    .bae-wrap.bae-light .bae-dash-metric {
+        background: rgba(255,255,255,.88);
+    }
+    .bae-dash-metric-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .bae-dash-metric-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+    .bae-dash-metric-value {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+    .bae-dash-metric-label {
+        font-size: 11px;
+        color: var(--text-3);
+        line-height: 1.35;
+    }
+    .bae-dash-tools {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scroll-snap-type: x proximity;
+        scrollbar-width: thin;
+    }
+    .bae-dash-tools::-webkit-scrollbar {
+        height: 8px;
+    }
+    .bae-dash-tools::-webkit-scrollbar-thumb {
+        background: rgba(139,92,246,.22);
+        border-radius: 999px;
+    }
+    .bae-dash-card {
+        min-width: 240px;
+        max-width: 240px;
+        min-height: 248px;
+        padding: 22px 20px 18px;
+        border-radius: 28px;
+        color: #fff;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        scroll-snap-align: start;
+        box-shadow: 0 22px 42px rgba(17,24,39,.16);
+        transition: transform .22s ease, box-shadow .22s ease;
+        isolation: isolate;
+    }
+    .bae-dash-card::before {
+        content: '';
+        position: absolute;
+        inset: -18% -12% auto auto;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.14);
+        filter: blur(10px);
+        opacity: .55;
+        z-index: 0;
+    }
+    .bae-dash-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at 22% 18%, rgba(255,255,255,.24), transparent 22%),
+            radial-gradient(circle at 82% 84%, rgba(255,255,255,.12), transparent 28%);
+        mix-blend-mode: screen;
+        opacity: .75;
+        z-index: 0;
+    }
+    .bae-dash-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 28px 58px rgba(17,24,39,.22);
+    }
+    .bae-dash-card-top,
+    .bae-dash-card-bottom {
+        position: relative;
+        z-index: 1;
+    }
+    .bae-dash-card-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,.12);
+        border: 1px solid rgba(255,255,255,.18);
+        margin-bottom: 18px;
+        backdrop-filter: blur(10px);
+    }
+    .bae-dash-card-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+    .bae-dash-card-title {
+        font-size: 26px;
+        line-height: 1.02;
+        letter-spacing: -.02em;
+        margin-bottom: 10px;
+        max-width: 8ch;
+    }
+    .bae-dash-card-desc {
+        font-size: 13px;
+        line-height: 1.6;
+        color: rgba(255,255,255,.82);
+        max-width: 17ch;
+    }
+    .bae-dash-card-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.86);
+    }
+    .bae-dash-card-kicker::after {
+        content: '';
+        width: 28px;
+        height: 1px;
+        background: rgba(255,255,255,.45);
+    }
+    .bae-dash-identity {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 16px 18px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+    }
+    .bae-dash-swatches {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .bae-dash-swatch {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        border: 1px solid rgba(0,0,0,.08);
+        flex-shrink: 0;
+    }
+    .bae-dash-fonts {
+        font-size: 13px;
+        color: var(--text-2);
+    }
+    .bae-dash-edit {
+        font-size: 12px;
+        color: var(--text-3);
+        text-decoration: none;
+        white-space: nowrap;
+    }
     @media (max-width: 720px) {
         .baetk-footer {
             padding: 18px;
@@ -2155,6 +2422,40 @@ function bntm_shortcode_bae() {
         .bae-free-plan-tip .bae-btn {
             width:100%;
             justify-content:center;
+        }
+        .bae-dash-hero {
+            padding: 18px;
+        }
+        .bae-dash-avatar {
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+        }
+        .bae-dash-title {
+            font-size: 26px;
+        }
+        .bae-dash-card {
+            min-width: 220px;
+            max-width: 220px;
+            min-height: 228px;
+        }
+    }
+    @media (max-width: 980px) {
+        .bae-dash-hero {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .bae-dash-metrics {
+            justify-content: flex-start;
+            width: 100%;
+        }
+        .bae-dash-metric {
+            min-width: calc(50% - 6px);
+            flex: 1 1 180px;
+        }
+        .bae-dash-identity {
+            flex-direction: column;
+            align-items: flex-start;
         }
     }
     .bae-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
@@ -10966,6 +11267,18 @@ function bae_home_dashboard($user_id, $profile) {
         "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
         $p['id']
     ));
+    $brand_name = trim((string)($p['business_name'] ?? 'Your brand'));
+    $tagline    = trim((string)($p['tagline'] ?? ''));
+    $logo_url   = trim((string)($p['logo_url'] ?? ''));
+    $greeting_hour = (int) current_time('G');
+    if ($greeting_hour < 12) {
+        $greeting = 'Good Morning';
+    } elseif ($greeting_hour < 18) {
+        $greeting = 'Good Afternoon';
+    } else {
+        $greeting = 'Good Evening';
+    }
+    $greeting_name = $brand_name ?: 'Builder';
 
     $tools = [
         ['slug'=>'overview',   'icon'=>'<path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 2H8l-2 5h12z"/>',     'label'=>'Brand Profile',   'desc'=>'Edit your brand details and colors', 'color'=>'var(--brand)'],
@@ -10975,55 +11288,104 @@ function bae_home_dashboard($user_id, $profile) {
         ['slug'=>'brand_book', 'icon'=>'<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h6M8 11h8"/>',                     'label'=>'Brand Book',      'desc'=>'50 professional templates',          'color'=>'#a78bfa'],
         ['slug'=>'settings',   'icon'=>'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>', 'label'=>'Settings',        'desc'=>'Plan, export, and account',          'color'=>'var(--text-3)'],
     ];
+    $quick_stats = [
+        [
+            'value' => $asset_count,
+            'label' => 'Assets generated',
+            'color' => '#38bdf8',
+            'bg'    => 'rgba(56,189,248,.12)',
+            'icon'  => '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+        ],
+        [
+            'value' => count($tools),
+            'label' => 'Workspace tools',
+            'color' => '#ec4899',
+            'bg'    => 'rgba(236,72,153,.12)',
+            'icon'  => '<rect width="16" height="16" x="4" y="4" rx="3"/><path d="M9 9h6M9 15h6M9 12h6"/><path d="M7 9h.01M7 12h.01M7 15h.01"/>',
+        ],
+        [
+            'value' => strtoupper(substr($plan, 0, 3)),
+            'label' => ucfirst($plan) . ' plan',
+            'color' => '#f59e0b',
+            'bg'    => 'rgba(245,158,11,.12)',
+            'icon'  => '<path d="M12 3l2.45 4.96 5.47.8-3.96 3.86.94 5.45L12 15.77 7.1 18.07l.94-5.45-3.96-3.86 5.47-.8L12 3z"/>',
+        ],
+    ];
+    $card_themes = [
+        'linear-gradient(135deg, #5b14d6 0%, #7c3aed 42%, #c026d3 100%)',
+        'linear-gradient(135deg, #f59e0b 0%, #fb923c 42%, #f97316 100%)',
+        'linear-gradient(135deg, #db2777 0%, #ec4899 45%, #7c3aed 100%)',
+        'linear-gradient(135deg, #22c55e 0%, #84cc16 45%, #16a34a 100%)',
+        'linear-gradient(135deg, #06b6d4 0%, #3b82f6 45%, #4f46e5 100%)',
+        'linear-gradient(135deg, #111827 0%, #374151 40%, #6d28d9 100%)',
+    ];
 
     ob_start(); ?>
-    <div style="margin-bottom:28px;">
-        <div style="font-family:'Instrument Serif',serif;font-size:28px;font-style:italic;color:var(--text);margin-bottom:6px;">
-            <?php echo esc_html($p['business_name']); ?>
-        </div>
-        <div style="font-size:14px;color:var(--text-3);">
-            <?php echo esc_html($p['tagline'] ?? ''); ?>
-            <span style="display:inline-flex;align-items:center;gap:5px;margin-left:10px;font-size:12px;font-weight:700;color:var(--brand-soft);background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);border-radius:999px;padding:2px 10px;">
-                <?php echo ucfirst($plan); ?> Plan
-            </span>
-        </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:28px;">
-        <?php foreach ($tools as $t): ?>
-        <a href="<?php echo esc_url($base . '?tab=' . $t['slug']); ?>"
-           style="display:flex;flex-direction:column;gap:12px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:16px;text-decoration:none;transition:all .2s;position:relative;overflow:hidden;"
-           onmouseover="this.style.borderColor='<?php echo esc_js($t['color']); ?>';this.style.transform='translateY(-2px)';"
-           onmouseout="this.style.borderColor='';this.style.transform='';">
-            <div style="width:38px;height:38px;border-radius:10px;background:<?php echo esc_attr($t['color']); ?>;opacity:.12;position:absolute;top:16px;left:16px;"></div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="<?php echo esc_attr($t['color']); ?>" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:1;"><?php echo $t['icon']; ?></svg>
-            <div style="position:relative;z-index:1;">
-                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;"><?php echo esc_html($t['label']); ?></div>
-                <div style="font-size:11px;color:var(--text-3);"><?php echo esc_html($t['desc']); ?></div>
-            </div>
-        </a>
-        <?php endforeach; ?>
-    </div>
-
     <?php
-    // Mini brand identity strip
     $pc = bae_safe_color($p['primary_color'], '#1a1a2e');
     $sc = bae_safe_color($p['secondary_color'], '#16213e');
     $ac = bae_safe_color($p['accent_color'], '#e94560');
     ?>
-    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;flex-wrap:wrap;">
-        <div style="display:flex;gap:6px;">
-            <?php foreach([$pc,$sc,$ac] as $c): ?>
-            <div style="width:24px;height:24px;border-radius:6px;background:<?php echo $c; ?>;border:1px solid rgba(0,0,0,.1);" title="<?php echo strtoupper($c); ?>"></div>
+    <div class="bae-dash-shell">
+        <div class="bae-dash-hero">
+            <div class="bae-dash-user">
+                <div class="bae-dash-avatar">
+                    <?php if (!empty($logo_url)): ?>
+                        <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($brand_name); ?> logo">
+                    <?php else: ?>
+                        <?php echo bae_render_brand_mark(); ?>
+                    <?php endif; ?>
+                </div>
+                <div class="bae-dash-copy">
+                    <div class="bae-dash-eyebrow"><?php echo esc_html(ucfirst($plan)); ?> plan</div>
+                    <div class="bae-dash-title"><?php echo esc_html($greeting . ', ' . $greeting_name); ?></div>
+                    <div class="bae-dash-sub"><?php echo esc_html($tagline ?: 'Let\'s shape your brand system, assets, and launch steps from one calm workspace.'); ?></div>
+                </div>
+            </div>
+            <div class="bae-dash-metrics">
+                <?php foreach ($quick_stats as $stat): ?>
+                <div class="bae-dash-metric">
+                    <span class="bae-dash-metric-icon" style="background:<?php echo esc_attr($stat['bg']); ?>;color:<?php echo esc_attr($stat['color']); ?>;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><?php echo $stat['icon']; ?></svg>
+                    </span>
+                    <span>
+                        <div class="bae-dash-metric-value"><?php echo esc_html((string)$stat['value']); ?></div>
+                        <div class="bae-dash-metric-label"><?php echo esc_html($stat['label']); ?></div>
+                    </span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <div class="bae-dash-tools">
+            <?php foreach ($tools as $index => $t): ?>
+            <a href="<?php echo esc_url($base . '?tab=' . $t['slug']); ?>" class="bae-dash-card" style="background:<?php echo esc_attr($card_themes[$index % count($card_themes)]); ?>;">
+                <div class="bae-dash-card-top">
+                    <span class="bae-dash-card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><?php echo $t['icon']; ?></svg>
+                    </span>
+                    <div class="bae-dash-card-title"><?php echo esc_html($t['label']); ?></div>
+                    <div class="bae-dash-card-desc"><?php echo esc_html($t['desc']); ?></div>
+                </div>
+                <div class="bae-dash-card-bottom">
+                    <span class="bae-dash-card-kicker">Open workspace</span>
+                </div>
+            </a>
             <?php endforeach; ?>
         </div>
-        <div style="font-size:13px;color:var(--text-2);">
-            <span style="font-family:'<?php echo esc_attr($p['font_heading']); ?>',sans-serif;font-weight:700;"><?php echo esc_html($p['font_heading']); ?></span>
-            <span style="color:var(--text-3);margin:0 6px;">+</span>
-            <span style="font-family:'<?php echo esc_attr($p['font_body']); ?>',sans-serif;"><?php echo esc_html($p['font_body']); ?></span>
-        </div>
-        <div style="margin-left:auto;">
-            <a href="<?php echo esc_url($base . '?tab=overview'); ?>" style="font-size:12px;color:var(--text-3);text-decoration:none;">Edit profile →</a>
+
+        <div class="bae-dash-identity">
+            <div class="bae-dash-swatches">
+                <?php foreach([$pc,$sc,$ac] as $c): ?>
+                <div class="bae-dash-swatch" style="background:<?php echo esc_attr($c); ?>;" title="<?php echo esc_attr(strtoupper($c)); ?>"></div>
+                <?php endforeach; ?>
+            </div>
+            <div class="bae-dash-fonts">
+                <span style="font-family:'<?php echo esc_attr($p['font_heading']); ?>',sans-serif;font-weight:700;"><?php echo esc_html($p['font_heading']); ?></span>
+                <span style="color:var(--text-3);margin:0 6px;">+</span>
+                <span style="font-family:'<?php echo esc_attr($p['font_body']); ?>',sans-serif;"><?php echo esc_html($p['font_body']); ?></span>
+            </div>
+            <a href="<?php echo esc_url($base . '?tab=overview'); ?>" class="bae-dash-edit">Edit profile →</a>
         </div>
     </div>
     <?php
