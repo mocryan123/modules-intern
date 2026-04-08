@@ -269,7 +269,7 @@ function bntm_kbf_render_signup() {
                     <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lock-fill.svg" alt="">
                     <input type="password" id="kbf-signup-password" name="user_password" placeholder="Create a password" required>
                     <button type="button" class="kbf-auth-toggle" data-target="kbf-signup-password" aria-label="Show password">
-                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye.svg" alt="">
+                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-slash.svg" alt="">
                     </button>
                   </div>
                 </div>
@@ -305,8 +305,8 @@ function bntm_kbf_render_signup() {
               var img = btn.querySelector('img');
               if (img) {
                 img.src = isHidden
-                  ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-slash.svg'
-                  : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye.svg';
+                  ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye.svg'
+                  : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-slash.svg';
               }
               btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
             });
