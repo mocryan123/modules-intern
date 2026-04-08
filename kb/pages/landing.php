@@ -1314,6 +1314,13 @@ function bntm_kbf_render_landing() {
         .kbf-card--soft .kbf-list li{
             text-align:left;
         }
+        .kbf-compare-table{
+            overflow-x:auto;
+            -webkit-overflow-scrolling:touch;
+        }
+        .kbf-compare-row{
+            min-width:680px;
+        }
     }
 
     @media (max-width: 480px) {
@@ -1337,7 +1344,7 @@ function bntm_kbf_render_landing() {
         .kbf-about-photo { height: 240px; }
         .kbf-section h2 { font-size: 18px; }
         .kbf-section p { font-size: 13px; }
-        .kbf-compare-row { grid-template-columns: 1fr; gap: 6px; }
+        .kbf-compare-row { gap: 6px; }
         .kbf-stat h3 { font-size: 40px; }
         .kbf-stat p { font-size: 13px; }
         .kbf-faq summary { font-size: 13px; }
@@ -1924,6 +1931,29 @@ function bntm_kbf_render_landing() {
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return false;
     };
+    // Scroll-jack compare table: horizontal scroll first, then resume vertical
+    (function() {
+        var table = document.querySelector('.kbf-compare-table');
+        if (!table) return;
+        function inView(el) {
+            var r = el.getBoundingClientRect();
+            return r.top < window.innerHeight && r.bottom > 0;
+        }
+        table.addEventListener('wheel', function(e) {
+            if (window.innerWidth >= 720) return;
+            if (!inView(table)) return;
+            var maxScroll = table.scrollWidth - table.clientWidth;
+            if (maxScroll <= 0) return;
+            var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+            var next = table.scrollLeft + delta;
+            var atStart = table.scrollLeft <= 0 && delta < 0;
+            var atEnd = table.scrollLeft >= maxScroll && delta > 0;
+            if (!atStart && !atEnd) {
+                e.preventDefault();
+                table.scrollLeft = Math.max(0, Math.min(maxScroll, next));
+            }
+        }, { passive: false });
+    })();
     function openMenu() {
             open = true;
             menu.classList.add('kbf-menu-open');

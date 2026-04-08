@@ -5,7 +5,7 @@
  * Description: Community crowdfunding and sponsorship platform for funders and sponsors.
  * Version: 2.0.0
  * Author: Barth Brayan D. Serceña
- * Icon: assets/branding/logo.png
+ * Icon: ./assets/branding/logo.png
  */
 /*
  * KBF module bootstrap: defines constants, shared helpers, DB/cron setup,
