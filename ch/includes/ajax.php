@@ -59,6 +59,7 @@ function bntm_ajax_ch_create_category() {
             "UPDATE {$wpdb->prefix}ch_categories SET follower_count = follower_count + 1 WHERE id = %d",
             $new_cat_id
         ));
+        ch_flush_overview_cache();
         ch_log_activity('create_category', 'category', $new_cat_id, "Created category: $name");
         wp_send_json_success(['message' => 'Category created successfully!', 'cat_id' => $new_cat_id]);
     } else {
@@ -154,6 +155,7 @@ function bntm_ajax_ch_edit_category() {
     );
 
     if ($result !== false) {
+        ch_flush_overview_cache();
         ch_log_activity('edit_category', 'category', $id, "Updated category: $name");
         wp_send_json_success(['message' => 'Category updated!']);
     } else {
@@ -182,6 +184,7 @@ function bntm_ajax_ch_delete_category() {
 
     $result = $wpdb->delete("{$wpdb->prefix}ch_categories", ['id' => $id], ['%d']);
     if ($result) {
+        ch_flush_overview_cache();
         ch_log_activity('delete_category', 'category', $id, 'Deleted category');
         wp_send_json_success(['message' => 'Category deleted']);
     } else {
@@ -203,6 +206,7 @@ function bntm_ajax_ch_toggle_category_status() {
 
     $updated = $wpdb->update("{$wpdb->prefix}ch_categories", ['status' => $new], ['id' => $id], ['%s'], ['%d']);
     if ($updated !== false) {
+        ch_flush_overview_cache();
         ch_log_activity('toggle_category_status', 'category', $id, "Status changed to $new");
         wp_send_json_success(['status' => $new]);
     } else {
@@ -333,6 +337,7 @@ function bntm_ajax_ch_create_post() {
             $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_user_profiles SET post_count = post_count + 1, karma_points = karma_points + 2 WHERE user_id = %d", $user_id));
         }
         $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_categories SET post_count = post_count + 1 WHERE id = %d", $cat_id));
+        ch_flush_overview_cache();
         $success_message = $status === 'pending'
             ? 'Post submitted for approval.'
             : 'Post created!';
@@ -402,6 +407,7 @@ function bntm_ajax_ch_edit_post() {
             }
         }
 
+        ch_flush_overview_cache();
         wp_send_json_success(['message' => 'Post updated!']);
     } else {
         wp_send_json_error(['message' => 'No changes made']);
@@ -433,6 +439,7 @@ function bntm_ajax_ch_delete_post() {
     if ($deleted === false) {
         wp_send_json_error(['message' => 'Failed to delete post']);
     }
+    ch_flush_overview_cache();
     wp_send_json_success(['message' => 'Post deleted']);
 }
 
@@ -564,6 +571,7 @@ function bntm_ajax_ch_add_comment() {
         if ($user_id) {
             $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_user_profiles SET comment_count = comment_count + 1, karma_points = karma_points + 1 WHERE user_id = %d", $user_id));
         }
+        ch_flush_overview_cache();
 
         // Process mentions
         $mentioned_users = ch_extract_mentions($content);
@@ -573,9 +581,8 @@ function bntm_ajax_ch_add_comment() {
             }
         }
 
-        // Notify post author
-        $post_row = $wpdb->get_row($wpdb->prepare("SELECT user_id FROM {$wpdb->prefix}ch_posts WHERE id = %d", $post_id));
-        if ($post_row && $post_row->user_id != $user_id) {
+        // Notify post author using the post row we already loaded above.
+        if ($post_row->user_id && $post_row->user_id != $user_id) {
             ch_create_notification($post_row->user_id, 'reply', $user_id, $post_id, $comment_id);
         }
 
@@ -599,6 +606,7 @@ function bntm_ajax_ch_delete_comment() {
 
     $wpdb->update("{$wpdb->prefix}ch_comments", ['status' => 'removed'], ['id' => $comment_id], ['%s'], ['%d']);
     $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_posts SET comment_count = GREATEST(0, comment_count - 1) WHERE id = %d", $cm->post_id));
+    ch_flush_overview_cache();
 
     wp_send_json_success(['message' => 'Comment deleted']);
 }
@@ -661,20 +669,21 @@ function bntm_ajax_ch_vote() {
     ));
 
     $table = $target_type === 'post' ? "{$wpdb->prefix}ch_posts" : "{$wpdb->prefix}ch_comments";
+    $current_count = (int) $wpdb->get_var($wpdb->prepare("SELECT vote_count FROM $table WHERE id = %d", $target_id));
 
     if ($existing) {
         if ($existing->value == $value) {
             // Remove vote (toggle off)
             $wpdb->delete("{$wpdb->prefix}ch_votes", ['id' => $existing->id], ['%d']);
             $wpdb->query($wpdb->prepare("UPDATE $table SET vote_count = vote_count - %d WHERE id = %d", $value, $target_id));
-            $new_count = (int) $wpdb->get_var($wpdb->prepare("SELECT vote_count FROM $table WHERE id = %d", $target_id));
+            $new_count = $current_count - $value;
             wp_send_json_success(['vote_count' => $new_count, 'action' => 'removed']);
         } else {
             // Change vote
             $wpdb->update("{$wpdb->prefix}ch_votes", ['value' => $value], ['id' => $existing->id], ['%d'], ['%d']);
             $diff = $value * 2;
             $wpdb->query($wpdb->prepare("UPDATE $table SET vote_count = vote_count + %d WHERE id = %d", $diff, $target_id));
-            $new_count = (int) $wpdb->get_var($wpdb->prepare("SELECT vote_count FROM $table WHERE id = %d", $target_id));
+            $new_count = $current_count + $diff;
             wp_send_json_success(['vote_count' => $new_count, 'action' => 'changed']);
         }
     } else {
@@ -682,7 +691,7 @@ function bntm_ajax_ch_vote() {
             'user_id' => $user_id, 'target_type' => $target_type, 'target_id' => $target_id, 'value' => $value
         ], ['%d', '%s', '%d', '%d']);
         $wpdb->query($wpdb->prepare("UPDATE $table SET vote_count = vote_count + %d WHERE id = %d", $value, $target_id));
-        $new_count = (int) $wpdb->get_var($wpdb->prepare("SELECT vote_count FROM $table WHERE id = %d", $target_id));
+        $new_count = $current_count + $value;
 
         // Award karma to author
         if ($value === 1 && $target_type === 'post') {
@@ -787,6 +796,7 @@ function bntm_ajax_ch_report() {
             // Log auto-hide action
             ch_log_activity('auto_hide', $target_type, $target_id, "Auto-hidden due to $current_reports reports");
         }
+        ch_flush_overview_cache();
 
         wp_send_json_success(['message' => 'Report submitted. Thank you for keeping the community safe.']);
     } else {
@@ -816,12 +826,14 @@ function bntm_ajax_ch_moderate_action() {
     switch ($action) {
         case 'approve_post':
             $wpdb->update("{$wpdb->prefix}ch_posts", ['status' => 'active'], ['id' => $target_id], ['%s'], ['%d']);
+            ch_flush_overview_cache();
             ch_log_activity('approve_post', 'post', $target_id, 'Post approved for publication');
             wp_send_json_success(['message' => 'Post approved']);
             break;
 
         case 'reject_post':
             $wpdb->update("{$wpdb->prefix}ch_posts", ['status' => 'removed'], ['id' => $target_id], ['%s'], ['%d']);
+            ch_flush_overview_cache();
             ch_log_activity('reject_post', 'post', $target_id, 'Post rejected');
             wp_send_json_success(['message' => 'Post rejected']);
             break;
@@ -831,36 +843,42 @@ function bntm_ajax_ch_moderate_action() {
                 wp_send_json_error(['message' => 'Reason is required when removing a post.']);
             }
             $wpdb->update("{$wpdb->prefix}ch_posts", ['status' => 'removed'], ['id' => $target_id], ['%s'], ['%d']);
+            ch_flush_overview_cache();
             ch_log_activity('remove_post', 'post', $target_id, 'Post removed by admin: ' . $reason);
             wp_send_json_success(['message' => 'Post removed']);
             break;
 
         case 'remove_comment':
             $wpdb->update("{$wpdb->prefix}ch_comments", ['status' => 'removed'], ['id' => $target_id], ['%s'], ['%d']);
+            ch_flush_overview_cache();
             ch_log_activity('remove_comment', 'comment', $target_id, 'Comment removed by admin');
             wp_send_json_success(['message' => 'Comment removed']);
             break;
 
         case 'restore_post':
             $wpdb->update("{$wpdb->prefix}ch_posts", ['status' => 'active'], ['id' => $target_id], ['%s'], ['%d']);
+            ch_flush_overview_cache();
             ch_log_activity('restore_post', 'post', $target_id, 'Post restored by admin');
             wp_send_json_success(['message' => 'Post restored']);
             break;
 
         case 'suspend_user':
             $wpdb->update("{$wpdb->prefix}ch_user_profiles", ['status' => 'suspended'], ['user_id' => $target_id], ['%s'], ['%d']);
+            ch_flush_overview_cache();
             ch_log_activity('suspend_user', 'user', $target_id, 'User suspended: ' . $reason);
             wp_send_json_success(['message' => 'User suspended']);
             break;
 
         case 'ban_user':
             $wpdb->update("{$wpdb->prefix}ch_user_profiles", ['status' => 'banned'], ['user_id' => $target_id], ['%s'], ['%d']);
+            ch_flush_overview_cache();
             ch_log_activity('ban_user', 'user', $target_id, 'User banned: ' . $reason);
             wp_send_json_success(['message' => 'User banned']);
             break;
 
         case 'unsuspend_user':
             $wpdb->update("{$wpdb->prefix}ch_user_profiles", ['status' => 'active'], ['user_id' => $target_id], ['%s'], ['%d']);
+            ch_flush_overview_cache();
             ch_log_activity('unsuspend_user', 'user', $target_id, 'User restored: ' . $reason);
             wp_send_json_success(['message' => 'User restored']);
             break;
@@ -874,6 +892,7 @@ function bntm_ajax_ch_moderate_action() {
                 ['status' => $resolution, 'reviewed_by' => $admin_id],
                 ['id' => $target_id], ['%s', '%d'], ['%d']
             );
+            ch_flush_overview_cache();
             ch_log_activity('resolve_report', 'report', $target_id, "Report $resolution");
             wp_send_json_success(['message' => "Report $resolution"]);
             break;
@@ -892,6 +911,7 @@ function bntm_ajax_ch_pin_post() {
     $pin     = (int)($_POST['pin'] ?? 0);
 
     $wpdb->update("{$wpdb->prefix}ch_posts", ['is_pinned' => $pin ? 1 : 0], ['id' => $post_id], ['%d'], ['%d']);
+    ch_flush_overview_cache();
     ch_log_activity($pin ? 'pin_post' : 'unpin_post', 'post', $post_id);
     wp_send_json_success(['message' => $pin ? 'Post pinned' : 'Post unpinned']);
 }
@@ -906,10 +926,10 @@ function bntm_ajax_ch_get_notifications() {
     $offset = ($page - 1) * $per_page;
 
     $notifications = $wpdb->get_results($wpdb->prepare(
-        "SELECT n.*, p.title as post_title, p.rand_id as post_rand_id, c.content as comment_content
+        "SELECT n.id, n.type, n.message, n.is_read, n.created_at, n.post_id, n.comment_id,
+                p.title as post_title, p.rand_id as post_rand_id
          FROM {$wpdb->prefix}ch_notifications n
          LEFT JOIN {$wpdb->prefix}ch_posts p ON n.post_id = p.id
-         LEFT JOIN {$wpdb->prefix}ch_comments c ON n.comment_id = c.id
          WHERE n.user_id = %d
          ORDER BY n.created_at DESC
          LIMIT %d OFFSET %d",
@@ -963,6 +983,21 @@ function bntm_ajax_ch_get_notifications() {
     ]);
 }
 
+function bntm_ajax_ch_get_notification_count() {
+    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
+
+    global $wpdb;
+    $user_id = get_current_user_id();
+    $unread_count = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}ch_notifications WHERE user_id = %d AND is_read = 0",
+        $user_id
+    ));
+
+    wp_send_json_success([
+        'unread_count' => $unread_count,
+    ]);
+}
+
 function bntm_ajax_ch_mark_notifications() {
     if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
 
@@ -989,16 +1024,23 @@ function bntm_ajax_ch_search() {
     $query = sanitize_text_field($_POST['query'] ?? '');
     if (strlen($query) < 2) wp_send_json_error(['message' => 'Query too short']);
 
-    $like = '%' . $wpdb->esc_like($query) . '%';
+    $terms = preg_split('/\s+/', trim($query));
+    $terms = array_filter(array_map(static function($term) {
+        $term = preg_replace('/[^\p{L}\p{N}_-]/u', '', $term);
+        return $term !== '' ? $term . '*' : '';
+    }, $terms));
+    $search_query = implode(' ', $terms);
+    if ($search_query === '') wp_send_json_error(['message' => 'Query too short']);
+
     $results = $wpdb->get_results(
         $wpdb->prepare(
             "SELECT id, rand_id, title, LEFT(content,100) as excerpt, vote_count, comment_count, created_at
              FROM {$wpdb->prefix}ch_posts
-             WHERE status = 'active' AND (title LIKE %s OR content LIKE %s)
+             WHERE status = 'active'
+               AND MATCH(title, content) AGAINST(%s IN BOOLEAN MODE)
              ORDER BY vote_count DESC
              LIMIT 10",
-            $like,
-            $like
+            $search_query
         )
     );
 
@@ -1064,18 +1106,15 @@ function bntm_ajax_ch_admin_stats() {
     if (!current_user_can('manage_options')) wp_send_json_error(['message' => 'Unauthorized']);
 
     global $wpdb;
-
-    $row = $wpdb->get_row(
-        "SELECT
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE DATE(created_at) = CURDATE()) AS posts_today,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE DATE(created_at) = CURDATE()) AS comments_today,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) AS new_users_week"
+    $stats = ch_get_overview_counts();
+    $new_users_week = (int) $wpdb->get_var(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
     );
 
     wp_send_json_success([
-        'posts_today'    => (int)($row->posts_today    ?? 0),
-        'comments_today' => (int)($row->comments_today ?? 0),
-        'new_users_week' => (int)($row->new_users_week ?? 0),
+        'posts_today'    => (int)($stats['posts_today'] ?? 0),
+        'comments_today' => (int)($stats['comments_today'] ?? 0),
+        'new_users_week' => $new_users_week,
     ]);
 }
 
@@ -1093,16 +1132,28 @@ function bntm_ajax_ch_live_stats() {
 // ============================================================
 
 function ch_ensure_profile($user_id) {
+    static $checked = [];
+
+    if (!$user_id) return false;
+    if (isset($checked[$user_id])) return true;
+
     global $wpdb;
     $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id));
     if (!$exists) {
         $user = get_userdata($user_id);
+        if (!$user) return false;
         $wpdb->insert("{$wpdb->prefix}ch_user_profiles", [
             'user_id'      => $user_id,
             'display_name' => $user->display_name ?: $user->user_login,
         ], ['%d','%s']);
+        ch_flush_overview_cache();
     }
+    $checked[$user_id] = true;
     return true;
+}
+
+function ch_flush_overview_cache() {
+    delete_transient('ch_overview_counts');
 }
 
 function ch_create_notification($user_id, $type, $actor_id, $post_id = 0, $comment_id = 0) {
@@ -1352,6 +1403,7 @@ function bntm_ajax_ch_create_announcement() {
         ch_bulk_announcement_notifications($announcement_id, get_current_user_id());
     }
 
+    ch_flush_overview_cache();
     wp_send_json_success(['message' => 'Announcement created successfully', 'id' => $announcement_id]);
 }
 
@@ -1399,6 +1451,7 @@ function bntm_ajax_ch_edit_announcement() {
         ch_bulk_announcement_notifications($announcement_id, get_current_user_id());
     }
 
+    ch_flush_overview_cache();
     wp_send_json_success(['message' => 'Announcement updated successfully']);
 }
 
@@ -1434,6 +1487,7 @@ function bntm_ajax_ch_delete_announcement() {
         'post_id' => $announcement_id
     ]);
 
+    ch_flush_overview_cache();
     wp_send_json_success(['message' => 'Announcement deleted successfully']);
 }
 
@@ -1468,6 +1522,7 @@ function bntm_ajax_ch_toggle_announcement() {
         ch_bulk_announcement_notifications($announcement_id, get_current_user_id());
     }
 
+    ch_flush_overview_cache();
     wp_send_json_success(['message' => 'Announcement status updated successfully']);
 }
 

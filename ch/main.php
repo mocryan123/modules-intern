@@ -48,10 +48,13 @@ function bntm_ch_extract_inline_asset($html, $type) {
 }
 
 function bntm_ch_get_inline_asset_content($type) {
+    static $cache = [];
     if (!in_array($type, ['css', 'js'], true)) return '';
     if (!function_exists('ch_global_styles') || !function_exists('ch_global_scripts')) return '';
+    if (array_key_exists($type, $cache)) return $cache[$type];
     $inline_html = $type === 'css' ? ch_global_styles() : ch_global_scripts();
-    return bntm_ch_extract_inline_asset($inline_html, $type);
+    $cache[$type] = bntm_ch_extract_inline_asset($inline_html, $type);
+    return $cache[$type];
 }
 
 function bntm_ch_get_compiled_asset_url($type) {
@@ -103,6 +106,33 @@ function bntm_ch_get_compiled_callback_asset_url($callback, $type = 'js') {
 
 function bntm_ch_logo_url() {
     return BNTM_CH_URL . 'assets/' . rawurlencode('Civichub Logo.png');
+}
+
+function ch_get_feed_url() {
+    static $url = null;
+
+    if ($url === null) {
+        $page = get_page_by_path('forum-feed');
+        $url = $page ? get_permalink($page) : home_url('/forum-feed/');
+    }
+
+    return $url;
+}
+
+function ch_get_auth_url($tab = 'login', $redirect_to = '') {
+    static $base = null;
+
+    if ($base === null) {
+        $page = get_page_by_path('login-register');
+        $base = $page ? get_permalink($page) : wp_login_url();
+    }
+
+    $args = ['tab' => $tab];
+    if ($redirect_to !== '') {
+        $args['redirect_to'] = $redirect_to;
+    }
+
+    return add_query_arg($args, $base);
 }
 
 add_action('wp_enqueue_scripts', function() {
@@ -472,9 +502,7 @@ function bntm_ch_create_tables() {
 function bntm_shortcode_ch_auth() {
     // If already logged in, redirect to feed
     if (is_user_logged_in()) {
-        $feed_page = get_page_by_path('forum-feed');
-        $feed_url  = $feed_page ? get_permalink($feed_page) : home_url('/forum-feed/');
-        wp_redirect($feed_url);
+        wp_redirect(ch_get_feed_url());
         exit;
     }
 
@@ -881,8 +909,7 @@ function bntm_ajax_ch_login() {
     // Ensure CivicHub profile exists
     ch_ensure_profile($user->ID);
 
-    $feed_page   = get_page_by_path('forum-feed');
-    $default_url = $feed_page ? get_permalink($feed_page) : home_url('/forum-feed/');
+    $default_url = ch_get_feed_url();
     $redirect    = $redirect_to ?: $default_url;
 
     wp_send_json_success(['redirect' => $redirect]);
@@ -942,8 +969,7 @@ function bntm_ajax_ch_register() {
         wp_send_json_error(['message' => 'Account created but login failed. Please sign in manually.']);
     }
 
-    $feed_page   = get_page_by_path('forum-feed');
-    $default_url = $feed_page ? get_permalink($feed_page) : home_url('/forum-feed/');
+    $default_url = ch_get_feed_url();
     $redirect    = $redirect_to ?: $default_url;
 
     wp_send_json_success(['redirect' => $redirect]);
@@ -970,6 +996,7 @@ $ajax_actions = [
     'ch_report'              => ['bntm_ajax_ch_report', false],
     'ch_update_profile'      => ['bntm_ajax_ch_update_profile', false],
     'ch_get_notifications'   => ['bntm_ajax_ch_get_notifications', false],
+    'ch_get_notification_count' => ['bntm_ajax_ch_get_notification_count', false],
     'ch_mark_notifications'  => ['bntm_ajax_ch_mark_notifications', false],
     'ch_moderate_action'     => ['bntm_ajax_ch_moderate_action', true],
     'ch_search'              => ['bntm_ajax_ch_search', false],

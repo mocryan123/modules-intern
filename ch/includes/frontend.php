@@ -244,13 +244,9 @@ function ch_render_post_media_preview($media_urls, $context = 'feed') {
 function ch_guest_landing_page() {
     global $wpdb;
 
-    $feed_page = get_page_by_path('forum-feed');
-    $feed_url  = $feed_page ? get_permalink($feed_page) : home_url('/');
-
-    $auth_page = get_page_by_path('login-register');
-    $auth_perm = $auth_page ? get_permalink($auth_page) : get_permalink();
-    $login_url = $auth_page ? add_query_arg('tab', 'login', $auth_perm) : wp_login_url($auth_perm);
-    $reg_url   = $auth_page ? add_query_arg('tab', 'register', $auth_perm) : wp_registration_url();
+    $feed_url  = ch_get_feed_url();
+    $login_url = ch_get_auth_url('login');
+    $reg_url   = ch_get_auth_url('register');
 
     // Preview data for guests
     $categories = $wpdb->get_results(
@@ -561,24 +557,14 @@ function bntm_shortcode_ch() {
 function ch_admin_overview_tab($user_id, $is_admin) {
     global $wpdb;
 
-    // Keep this to one query, but use scalar subselects so MySQL can optimize
-    // each COUNT(*) independently instead of scanning a large UNION ALL set.
-    $counts = $wpdb->get_row(
-        "SELECT
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS total_posts,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE status = 'active') AS total_comments,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles) AS total_users,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_categories WHERE status = 'active') AS total_cats,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'pending') AS pending_posts"
-    );
+    $counts = ch_get_overview_counts();
 
-    $total_posts     = (int)($counts->total_posts     ?? 0);
-    $total_comments  = (int)($counts->total_comments  ?? 0);
-    $total_users     = (int)($counts->total_users     ?? 0);
-    $total_cats      = (int)($counts->total_cats      ?? 0);
-    $pending_reports = (int)($counts->pending_reports ?? 0);
-    $pending_posts   = (int)($counts->pending_posts   ?? 0);
+    $total_posts     = (int)($counts['total_posts'] ?? 0);
+    $total_comments  = (int)($counts['total_comments'] ?? 0);
+    $total_users     = (int)($counts['total_users'] ?? 0);
+    $total_cats      = (int)($counts['total_cats'] ?? 0);
+    $pending_reports = (int)($counts['pending_reports'] ?? 0);
+    $pending_posts   = (int)($counts['pending_posts'] ?? 0);
 
     $recent_posts = $wpdb->get_results(
         "SELECT p.*, c.name as cat_name, c.color as cat_color,
@@ -793,30 +779,41 @@ function ch_admin_overview_tab($user_id, $is_admin) {
 // ============================================================
 
 function ch_update_live_stats() {
-    global $wpdb;
+    return ch_get_overview_counts();
+}
 
-    // Single query with scalar subselects is typically faster here than UNION ALL
-    // across full tables, while still counting as one DB query for the request.
+function ch_get_overview_counts() {
+    $counts = get_transient('ch_overview_counts');
+    if ($counts !== false) {
+        return $counts;
+    }
+
+    global $wpdb;
     $row = $wpdb->get_row(
         "SELECT
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS total_posts,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE status = 'active') AS total_comments,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles) AS total_users,
+            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_categories WHERE status = 'active') AS total_cats,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'pending') AS pending_posts,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE DATE(created_at) = CURDATE()) AS posts_today,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE DATE(created_at) = CURDATE()) AS comments_today"
     );
 
-    return [
-        'total_posts'     => (int)($row->total_posts     ?? 0),
-        'total_comments'  => (int)($row->total_comments  ?? 0),
-        'total_users'     => (int)($row->total_users     ?? 0),
+    $counts = [
+        'total_posts'     => (int)($row->total_posts ?? 0),
+        'total_comments'  => (int)($row->total_comments ?? 0),
+        'total_users'     => (int)($row->total_users ?? 0),
+        'total_cats'      => (int)($row->total_cats ?? 0),
         'pending_reports' => (int)($row->pending_reports ?? 0),
-        'pending_posts'   => (int)($row->pending_posts   ?? 0),
-        'posts_today'     => (int)($row->posts_today     ?? 0),
-        'comments_today'  => (int)($row->comments_today  ?? 0),
+        'pending_posts'   => (int)($row->pending_posts ?? 0),
+        'posts_today'     => (int)($row->posts_today ?? 0),
+        'comments_today'  => (int)($row->comments_today ?? 0),
     ];
+
+    set_transient('ch_overview_counts', $counts, 60);
+    return $counts;
 }
 
 // ============================================================
@@ -1483,6 +1480,7 @@ function ch_users_tab($user_id, $is_admin) {
 
     $nonce = wp_create_nonce('ch_moderate_nonce');
     $total_pages = ceil($total / $per_page);
+    $user_dashboard_base = ch_get_feed_url();
 
     ob_start(); ?>
     <div class="ch-page-header">
@@ -1544,13 +1542,7 @@ function ch_users_tab($user_id, $is_admin) {
                         <?php if ($is_admin && $u->user_id != $user_id): ?>
                         <td>
                             <div class="ch-actions-row">
-                                <a href="<?php
-                                    $feed_pg  = get_page_by_path('forum-feed');
-                                    $feed_base = $feed_pg ? get_permalink($feed_pg) : home_url('/forum-feed/');
-                                    $feed_pg_vd  = get_page_by_path('forum-feed');
-                                    $feed_base_vd = $feed_pg_vd ? get_permalink($feed_pg_vd) : home_url('/forum-feed/');
-                                    echo esc_url(add_query_arg(['tab' => 'user_profile', 'uid' => (int)$u->user_id], $feed_base_vd));
-                                ?>" target="_blank" class="ch-btn-xs ch-btn-secondary">View Dashboard</a>
+                                <a href="<?php echo esc_url(add_query_arg(['tab' => 'user_profile', 'uid' => (int)$u->user_id], $user_dashboard_base)); ?>" target="_blank" class="ch-btn-xs ch-btn-secondary">View Dashboard</a>
                                 <?php if ($u->status === 'active'): ?>
                                 <button class="ch-btn-xs ch-btn-warning" onclick="chModerateUser(<?php echo (int)$u->user_id; ?>, 'suspend_user', '<?php echo esc_attr($nonce); ?>')">Suspend</button>
                                 <button class="ch-btn-xs ch-btn-danger"  onclick="chModerateUser(<?php echo (int)$u->user_id; ?>, 'ban_user', '<?php echo esc_attr($nonce); ?>')">Ban</button>
@@ -1629,8 +1621,7 @@ function ch_reports_tab($user_id, $is_admin) {
     ));
 
     $nonce     = wp_create_nonce('ch_report_nonce');
-    $feed_page = get_page_by_path('forum-feed');
-    $feed_url  = $feed_page ? get_permalink($feed_page) : home_url('/forum-feed/');
+    $feed_url  = ch_get_feed_url();
 
     // Pre-load target links in two bulk queries — eliminates N+1 inside the loop.
     // Collect distinct post IDs and comment IDs from the report list.
@@ -2345,8 +2336,7 @@ function bntm_shortcode_ch_my_feed() {
 
     $display_name = $profile->display_name ?: $wp_user->display_name ?: 'Community Member';
     $joined       = $wp_user->user_registered ? date('F Y', strtotime($wp_user->user_registered)) : 'Unknown';
-    $feed_page    = get_page_by_path('forum-feed');
-    $feed_url     = $feed_page ? get_permalink($feed_page) : home_url('/forum-feed/');
+    $feed_url     = ch_get_feed_url();
     $subtab       = sanitize_text_field($_GET['subtab'] ?? 'posts');
 
     $user_posts = $wpdb->get_results($wpdb->prepare(
@@ -2656,21 +2646,32 @@ function ch_public_user_profile($view_uid) {
         $view_uid
     ));
 
-    $feed_page  = get_page_by_path('forum-feed');
-    $feed_url   = $feed_page ? get_permalink($feed_page) : home_url('/forum-feed/');
+    $feed_url   = ch_get_feed_url();
     $joined     = $wp_user->user_registered ? date('F Y', strtotime($wp_user->user_registered)) : 'Unknown';
 
     ob_start();
+    echo ch_global_styles();
+    echo ch_global_scripts();
     ?>
     <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
-    <div class="ch-public-profile-wrap">
-
-        <div class="ch-public-profile-header">
-            <a href="<?php echo esc_url($feed_url); ?>" class="ch-back-link">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                Back to Forum
-            </a>
-        </div>
+    <style>
+        html, body { background: var(--ch-bg); color: var(--ch-text); margin: 0; }
+        .ch-public-profile-shell { min-height: 100vh; background: var(--ch-bg); color: var(--ch-text); font-family: var(--ch-font); }
+        .ch-public-profile-shell .ch-top-nav { background: var(--ch-surface); border-bottom: 1px solid var(--ch-border); padding: 0 24px; height: 56px; display: flex; align-items: center; box-shadow: var(--ch-shadow-sm); }
+        .ch-public-profile-shell .ch-nav-links { display: flex; gap: 2px; height: 100%; align-items: center; }
+        .ch-public-profile-page { max-width: 980px; margin: 0 auto; padding: 26px 20px 40px; }
+    </style>
+    <div class="ch-public-profile-shell">
+        <nav class="ch-top-nav">
+            <div class="ch-nav-links">
+                <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                    Back to Forum
+                </a>
+            </div>
+        </nav>
+        <div class="ch-public-profile-page">
+            <div class="ch-public-profile-wrap">
 
         <div class="ch-public-profile-card">
             <div class="ch-public-profile-avatar">
@@ -2737,6 +2738,8 @@ function ch_public_user_profile($view_uid) {
             <?php endforeach; endif; ?>
         </div>
 
+            </div>
+        </div>
     </div>
     <?php
     return ob_get_clean();
@@ -2771,9 +2774,7 @@ function bntm_shortcode_ch_feed() {
     if ($tab === 'profile') {
         $user_id = get_current_user_id();
         if (!$user_id) {
-            $auth_page = get_page_by_path('login-register');
-            $auth_url  = $auth_page ? get_permalink($auth_page) : wp_login_url(get_permalink());
-            wp_redirect(add_query_arg('redirect_to', urlencode(get_permalink() . '?tab=profile'), $auth_url));
+            wp_redirect(ch_get_auth_url('login', get_permalink() . '?tab=profile'));
             exit;
         }
         // Inject dark mode class BEFORE the theme renders — eliminates flash of white
@@ -2784,8 +2785,7 @@ function bntm_shortcode_ch_feed() {
         echo ch_global_styles();
         echo ch_global_scripts();
         $current_profile_p = $wpdb->get_row($wpdb->prepare("SELECT avatar_url FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id));
-        $feed_pg_back  = get_page_by_path('forum-feed');
-        $feed_url_back = $feed_pg_back ? get_permalink($feed_pg_back) : home_url('/forum-feed/');
+        $feed_url_back = ch_get_feed_url();
         $current_display_p = wp_get_current_user()->display_name ?: 'U';
         $current_avatar_p = $current_profile_p->avatar_url ?? '';
         ?>
@@ -3070,9 +3070,8 @@ function bntm_shortcode_ch_feed() {
     <?php else: ?>
         <div class="ch-user-bar">
             <?php
-            $auth_page  = get_page_by_path('login-register');
-            $auth_url   = $auth_page ? get_permalink($auth_page) : wp_login_url(get_permalink());
-            $reg_url    = $auth_page ? add_query_arg('tab','register', get_permalink($auth_page)) : wp_registration_url();
+            $auth_url   = ch_get_auth_url('login');
+            $reg_url    = ch_get_auth_url('register');
             ?>
             <a href="<?php echo esc_url($auth_url); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
             <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
@@ -4121,9 +4120,7 @@ function bntm_shortcode_ch_feed() {
             <div class="ch-welcome-glow"></div>
             <button class="ch-welcome-close" onclick="chCloseWelcome()">&times;</button>
             <div class="ch-welcome-icon">
-                <svg width="36" height="36" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="1.8">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
+                <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-welcome-logo">
             </div>
             <h2 class="ch-welcome-title">Welcome to CivicHub!</h2>
             <p class="ch-welcome-subtitle">Your community's space to discuss, share, and connect with neighbors.</p>
@@ -4131,24 +4128,35 @@ function bntm_shortcode_ch_feed() {
                 <div class="ch-welcome-feature">
                     <span class="ch-welcome-feat-icon">💬</span>
                     <span>Join discussions on local issues</span>
+                    <div class="ch-welcome-feature-copy">
+                        <strong>Local Discussions</strong>
+                        <span>Discover neighborhood conversations, updates, and concerns in one place.</span>
+                    </div>
                 </div>
                 <div class="ch-welcome-feature">
                     <span class="ch-welcome-feat-icon">📌</span>
                     <span>Follow topics that matter to you</span>
+                    <div class="ch-welcome-feature-copy">
+                        <strong>Topic Following</strong>
+                        <span>Keep tabs on the issues you care about and return to them instantly.</span>
+                    </div>
                 </div>
                 <div class="ch-welcome-feature">
                     <span class="ch-welcome-feat-icon">🗳️</span>
                     <span>Vote and share your opinions</span>
+                    <div class="ch-welcome-feature-copy">
+                        <strong>Community Voting</strong>
+                        <span>Support the ideas that matter most and help useful posts rise to the top.</span>
+                    </div>
                 </div>
             </div>
             <div class="ch-welcome-actions">
                 <?php
-                $auth_pg = get_page_by_path('login-register');
-                $reg_link = $auth_pg ? add_query_arg('tab','register', get_permalink($auth_pg)) : wp_registration_url();
-                $login_link = $auth_pg ? get_permalink($auth_pg) : wp_login_url(get_permalink());
+                $reg_link = ch_get_auth_url('register');
+                $login_link = ch_get_auth_url('login');
                 ?>
-                <a href="<?php echo esc_url($reg_link); ?>" class="ch-btn ch-btn-primary" style="flex:1;justify-content:center;">Join Free</a>
-                <a href="<?php echo esc_url($login_link); ?>" class="ch-btn ch-btn-secondary" style="flex:1;justify-content:center;">Sign In</a>
+                <a href="<?php echo esc_url($reg_link); ?>" class="ch-welcome-btn ch-welcome-btn-primary">Join Free</a>
+                <a href="<?php echo esc_url($login_link); ?>" class="ch-welcome-btn ch-welcome-btn-secondary">Sign In</a>
             </div>
             <button class="ch-welcome-skip" onclick="chCloseWelcome()">Browse as guest</button>
         </div>
@@ -4528,7 +4536,7 @@ function bntm_shortcode_ch_post_view() {
         if ($cat_privacy) {
             $viewer = get_current_user_id();
             if (!$viewer) {
-                $auth_url = get_page_by_path('login-register') ? get_permalink(get_page_by_path('login-register')) : wp_login_url(get_permalink());
+                $auth_url = ch_get_auth_url('login');
                 return '<div style="padding:60px 20px;text-align:center;font-family:-apple-system,sans-serif;">
                     <svg width="48" height="48" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" style="display:block;margin:0 auto 16px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     <h3 style="color:var(--ch-text);margin:0 0 8px">Private Category</h3>

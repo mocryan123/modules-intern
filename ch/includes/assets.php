@@ -519,8 +519,8 @@ function ch_global_styles() {
 
     .ch-composer-trigger-card {
         display: flex; align-items: center; gap: 10px;
-        background: var(--ch-surface);
-        border: 1px solid var(--ch-border-soft);
+        background: linear-gradient(180deg, color-mix(in srgb, var(--ch-surface) 82%, var(--ch-bg) 18%) 0%, var(--ch-surface) 100%);
+        border: 1px solid var(--ch-border);
         border-radius: var(--ch-radius-lg);
         padding: 10px 14px;
         margin-bottom: 10px;
@@ -1158,13 +1158,17 @@ function ch_global_styles() {
         .ch-mf-stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .ch-mf-stat { min-width: unset; }
         .ch-mf-profile-card { padding: 16px 14px; }
-        .ch-welcome-card { padding: 22px 16px; border-radius: 16px; }
-        .ch-welcome-icon { width: 54px; height: 54px; border-radius: 14px; }
+        .ch-welcome-card { padding: 24px 18px 20px; border-radius: 24px; max-width: 360px; }
+        .ch-welcome-icon { width: auto; height: auto; margin-bottom: 14px; }
+        .ch-welcome-logo { width: 68px; height: 68px; }
         .ch-welcome-title { font-size: 17px; }
         .ch-welcome-subtitle { font-size: 12.5px; margin-bottom: 16px; }
-        .ch-welcome-feature { padding: 8px 10px; font-size: 12px; }
-        .ch-welcome-actions { flex-direction: column; gap: 6px; }
-        .ch-welcome-actions .ch-btn { width: 100%; justify-content: center; }
+        .ch-welcome-feature { padding: 12px; gap: 12px; }
+        .ch-welcome-feature::before { width: 44px; height: 44px; border-radius: 14px; }
+        .ch-welcome-feature-copy strong { font-size: 12.5px; }
+        .ch-welcome-feature-copy span { font-size: 11.5px; }
+        .ch-welcome-actions { flex-direction: column; gap: 8px; }
+        .ch-welcome-btn { width: 100%; justify-content: center; min-height: 48px; }
         .ch-auth-form .ch-field-row { flex-direction: column; gap: 0; }
         .ch-auth-card { padding: 20px 16px; }
         .ch-feed-toolbar-card { padding: 10px; }
@@ -1222,7 +1226,7 @@ function ch_global_styles() {
        ============================================================ */
     .ch-popular-cats-card {
         background: var(--ch-surface);
-        border: 1px solid var(--ch-border);
+        border: 1px solid rgba(255, 117, 81, 0.18);
         border-radius: var(--ch-radius-lg);
         padding: 14px 16px 16px;
         margin-bottom: 14px;
@@ -1277,19 +1281,19 @@ function ch_global_styles() {
         backdrop-filter: blur(4px);
     }
     .ch-welcome-card {
-        background: var(--ch-surface);
-        border-radius: 22px;
-        padding: 36px 32px 28px;
-        width: 100%; max-width: 400px;
-        box-shadow: 0 24px 64px rgba(99,102,241,0.22), 0 4px 16px rgba(0,0,0,0.1);
-        border: 1px solid var(--ch-border);
+        background: linear-gradient(180deg, #fffdfa 0%, #fdf6f0 100%);
+        border-radius: 28px;
+        padding: 34px 24px 22px;
+        width: 100%; max-width: 372px;
+        box-shadow: 0 26px 64px rgba(23, 29, 38, 0.18), 0 6px 20px rgba(255, 122, 89, 0.08);
+        border: 1px solid rgba(223, 205, 191, 0.8);
         position: relative; overflow: hidden;
         text-align: center;
     }
     .ch-welcome-glow {
-        position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-        width: 200px; height: 200px; border-radius: 50%;
-        background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+        position: absolute; top: -48px; left: 50%; transform: translateX(-50%);
+        width: 220px; height: 180px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 122, 89, 0.13) 0%, rgba(255, 194, 163, 0.08) 38%, transparent 74%);
         pointer-events: none;
     }
     .ch-welcome-close {
@@ -1302,41 +1306,114 @@ function ch_global_styles() {
     }
     .ch-welcome-close:hover { background: var(--ch-accent-light); color: var(--ch-accent); border-color: var(--ch-accent-mid); }
     .ch-welcome-icon {
-        width: 64px; height: 64px; border-radius: 18px;
-        background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark));
         display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 18px;
-        box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+        width: auto; height: auto;
+        margin: 0 auto 16px;
+    }
+    .ch-welcome-logo {
+        width: 84px; height: 84px; object-fit: contain; display: block;
+        filter: drop-shadow(0 10px 24px rgba(255, 122, 89, 0.14));
     }
     .ch-welcome-title {
-        font-size: 22px; font-weight: 800; color: var(--ch-text);
-        margin: 0 0 8px; letter-spacing: -0.4px;
+        font-size: 27px; font-weight: 800; color: #1f2530;
+        margin: 0 0 10px; letter-spacing: -0.6px; line-height: 1.08;
     }
     .ch-welcome-subtitle {
-        font-size: 13.5px; color: var(--ch-text-muted);
-        margin: 0 0 22px; line-height: 1.6;
+        font-size: 14px; color: #6d7280;
+        margin: 0 auto 20px; line-height: 1.65; max-width: 280px;
     }
     .ch-welcome-features {
         display: flex; flex-direction: column; gap: 10px;
-        margin-bottom: 24px; text-align: left;
+        margin-bottom: 22px; text-align: left;
     }
     .ch-welcome-feature {
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 14px; border-radius: var(--ch-radius);
-        background: var(--ch-bg); border: 1px solid var(--ch-border);
-        font-size: 13px; color: var(--ch-text-muted);
+        display: flex; align-items: flex-start; gap: 14px;
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.82);
+        border: 1px solid rgba(220, 209, 200, 0.92);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 8px 18px rgba(34, 40, 49, 0.05);
+        position: relative;
     }
-    .ch-welcome-feat-icon { font-size: 16px; flex-shrink: 0; }
+    .ch-welcome-feat-icon {
+        display: none;
+    }
+    .ch-welcome-feature > span:not(.ch-welcome-feat-icon) {
+        display: none;
+    }
+    .ch-welcome-feature::before {
+        content: "";
+        width: 50px; height: 50px; flex-shrink: 0;
+        border-radius: 16px;
+        background-color: #fff6f1;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 28px 28px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 8px 18px rgba(255, 122, 89, 0.12);
+    }
+    .ch-welcome-feature:nth-child(1)::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Crect x='2' y='5' width='14' height='11' rx='3' fill='%23FF7A59'/%3E%3Cpath d='M6 16l-1 3 3-3' fill='%23FF7A59'/%3E%3Crect x='11' y='10' width='15' height='11' rx='3' fill='%231D3557'/%3E%3Cpath d='M18 21l4 2-1-2' fill='%231D3557'/%3E%3Cpath d='M6 9h5M6 12h7M14 13h6M14 16h5' stroke='white' stroke-linecap='round' stroke-width='1.6'/%3E%3C/svg%3E");
+    }
+    .ch-welcome-feature:nth-child(2)::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Cpath d='M14 3.5l3.2 6.1 6.8 1.1-4.9 4.8 1.1 6.8-6.2-3.2-6.2 3.2 1.1-6.8L4 10.7l6.8-1.1L14 3.5z' fill='%23FFB347'/%3E%3Ccircle cx='14' cy='14' r='3.4' fill='%23FFF4E7'/%3E%3Cpath d='M14 11.2v5.6M11.2 14h5.6' stroke='%231D3557' stroke-linecap='round' stroke-width='1.8'/%3E%3C/svg%3E");
+    }
+    .ch-welcome-feature:nth-child(3)::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28' fill='none'%3E%3Crect x='5' y='11' width='18' height='12' rx='3' fill='%23FFD9C7'/%3E%3Cpath d='M8 11V8.5A1.5 1.5 0 019.5 7h4.8A1.7 1.7 0 0116 8.7V11' stroke='%231D3557' stroke-width='1.6'/%3E%3Cpath d='M14 10l4.7-3.9' stroke='%23FF7A59' stroke-linecap='round' stroke-width='2'/%3E%3Cpath d='M18.7 5.8l2-.3-.7 1.8' stroke='%23FF7A59' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'/%3E%3Cpath d='M9.6 15.3l2.4 2.3 5.3-5.3' stroke='%231D3557' stroke-linecap='round' stroke-linejoin='round' stroke-width='2.1'/%3E%3C/svg%3E");
+    }
+    .ch-welcome-feature-copy {
+        display: flex; flex-direction: column; gap: 3px;
+        min-width: 0;
+    }
+    .ch-welcome-feature-copy strong {
+        display: block;
+        font-size: 13px;
+        line-height: 1.2;
+        color: #1f2530;
+        font-weight: 700;
+    }
+    .ch-welcome-feature-copy span {
+        display: block;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #6d7280;
+    }
     .ch-welcome-actions {
-        display: flex; gap: 8px; margin-bottom: 12px;
+        display: flex; gap: 10px; margin-bottom: 12px;
+    }
+    .ch-welcome-btn {
+        flex: 1;
+        min-height: 50px;
+        border-radius: 999px;
+        display: inline-flex; align-items: center; justify-content: center;
+        text-decoration: none;
+        font-size: 15px; font-weight: 700;
+        font-family: var(--ch-font);
+        transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+    .ch-welcome-btn:hover {
+        transform: translateY(-1px);
+    }
+    .ch-welcome-btn-primary {
+        color: white;
+        background: linear-gradient(180deg, #ff8b6f 0%, #ff6f56 100%);
+        box-shadow: 0 10px 24px rgba(255, 111, 86, 0.28);
+    }
+    .ch-welcome-btn-primary:hover {
+        box-shadow: 0 14px 28px rgba(255, 111, 86, 0.34);
+    }
+    .ch-welcome-btn-secondary {
+        color: #202632;
+        background: rgba(255,255,255,0.88);
+        border: 1px solid rgba(220, 209, 200, 0.95);
+        box-shadow: 0 6px 16px rgba(34, 40, 49, 0.05);
     }
     .ch-welcome-skip {
         background: none; border: none; cursor: pointer;
-        font-size: 12px; color: var(--ch-text-subtle);
+        font-size: 12px; color: #7a7f8a;
         font-family: var(--ch-font); transition: color 0.15s;
         text-decoration: underline; text-underline-offset: 2px;
     }
-    .ch-welcome-skip:hover { color: var(--ch-text-muted); }
+    .ch-welcome-skip:hover { color: #4c5563; }
 
     /* ============================================================
        SETTINGS MODAL
@@ -2545,59 +2622,93 @@ function ch_global_scripts() {
             menu.style.display = isVisible ? 'none' : 'block';
         };
 
+        window.chNotificationCache = window.chNotificationCache || {
+            fetchedAt: 0,
+            payload: null
+        };
+
+        window.chSetNotificationCount = function(unreadCount) {
+            const countEl = document.getElementById('ch-notification-count');
+            if (!countEl) return;
+            if (unreadCount > 0) {
+                countEl.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                countEl.style.display = 'block';
+            } else {
+                countEl.style.display = 'none';
+            }
+        };
+
+        window.chRenderNotifications = function(data) {
+            const list = document.getElementById('ch-notifications-list');
+            if (!list) return;
+
+            if (!data.notifications || data.notifications.length === 0) {
+                list.innerHTML = '<div class="ch-no-notifications">You\'re all caught up!</div>';
+                return;
+            }
+
+            const typeIcons = {
+                reply: {
+                    cls: 'type-reply',
+                    svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+                },
+                mention: {
+                    cls: 'type-mention',
+                    svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>'
+                },
+                vote: {
+                    cls: 'type-vote',
+                    svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>'
+                },
+                announcement: {
+                    cls: 'type-announcement',
+                    svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
+                },
+                report_resolved: {
+                    cls: 'type-report_resolved',
+                    svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+                },
+            };
+
+            list.innerHTML = data.notifications.map(n => {
+                const postUrl   = n.post_rand_id
+                    ? (chFeedUrl + '?view_post=' + encodeURIComponent(n.post_rand_id))
+                    : null;
+                const clickAttr = postUrl
+                    ? `onclick="chMarkNotificationRead(${n.id}, '${postUrl}', this)"`
+                    : `onclick="chMarkNotificationRead(${n.id}, null, this)"`;
+                const icon = typeIcons[n.type] || { cls: 'type-default', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' };
+                return `
+                <div class="ch-notification-item ${n.is_read ? '' : 'unread'}" ${clickAttr} data-id="${n.id}">
+                    <div class="ch-notification-dot"></div>
+                    <div class="ch-notification-icon ${icon.cls}">${icon.svg}</div>
+                    <div class="ch-notification-content">
+                        <div class="ch-notification-message">${n.message}</div>
+                        <div class="ch-notification-time">${n.created_at}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        };
+
         window.chLoadNotifications = function() {
+            const now = Date.now();
+            if (window.chNotificationCache.payload && (now - window.chNotificationCache.fetchedAt) < 15000) {
+                chRenderNotifications(window.chNotificationCache.payload);
+                chSetNotificationCount(window.chNotificationCache.payload.unread_count || 0);
+                return Promise.resolve(window.chNotificationCache.payload);
+            }
+
             fetch(ajaxurl + '?action=ch_get_notifications')
             .then(r => r.json())
             .then(json => {
                 if (!json.success) return;
-                const list = document.getElementById('ch-notifications-list');
-
-                if (json.data.notifications.length === 0) {
-                    list.innerHTML = '<div class="ch-no-notifications">You\'re all caught up!</div>';
-                    return;
-                }
-
-                const typeIcons = {
-                    reply: {
-                        cls: 'type-reply',
-                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
-                    },
-                    mention: {
-                        cls: 'type-mention',
-                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>'
-                    },
-                    vote: {
-                        cls: 'type-vote',
-                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>'
-                    },
-                    announcement: {
-                        cls: 'type-announcement',
-                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'
-                    },
-                    report_resolved: {
-                        cls: 'type-report_resolved',
-                        svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-                    },
+                window.chNotificationCache = {
+                    fetchedAt: Date.now(),
+                    payload: json.data
                 };
-
-                list.innerHTML = json.data.notifications.map(n => {
-                    const postUrl   = n.post_rand_id
-                        ? (chFeedUrl + '?view_post=' + encodeURIComponent(n.post_rand_id))
-                        : null;
-                    const clickAttr = postUrl
-                        ? `onclick="chMarkNotificationRead(${n.id}, '${postUrl}', this)"`
-                        : `onclick="chMarkNotificationRead(${n.id}, null, this)"`;
-                    const icon = typeIcons[n.type] || { cls: 'type-default', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' };
-                    return `
-                    <div class="ch-notification-item ${n.is_read ? '' : 'unread'}" ${clickAttr} data-id="${n.id}">
-                        <div class="ch-notification-dot"></div>
-                        <div class="ch-notification-icon ${icon.cls}">${icon.svg}</div>
-                        <div class="ch-notification-content">
-                            <div class="ch-notification-message">${n.message}</div>
-                            <div class="ch-notification-time">${n.created_at}</div>
-                        </div>
-                    </div>`;
-                }).join('');
+                chRenderNotifications(json.data);
+                chSetNotificationCount(json.data.unread_count || 0);
+                return json.data;
             })
             .catch(error => {
                 console.error('Failed to load notifications:', error);
@@ -2609,16 +2720,13 @@ function ch_global_scripts() {
             const item = el?.closest('.ch-notification-item') || document.querySelector(`.ch-notification-item[data-id="${notificationId}"]`);
             if (item && item.classList.contains('unread')) {
                 item.classList.remove('unread');
-                const countEl = document.getElementById('ch-notification-count');
-                if (countEl && countEl.style.display !== 'none') {
-                    const current = parseInt(countEl.textContent) || 0;
-                    const next    = current - 1;
-                    if (next <= 0) {
-                        countEl.style.display = 'none';
-                    } else {
-                        countEl.textContent = next > 99 ? '99+' : next;
-                    }
+                if (window.chNotificationCache.payload) {
+                    const currentUnread = parseInt(window.chNotificationCache.payload.unread_count || 0, 10);
+                    window.chNotificationCache.payload.unread_count = Math.max(0, currentUnread - 1);
+                    const cachedItem = (window.chNotificationCache.payload.notifications || []).find(n => parseInt(n.id, 10) === parseInt(notificationId, 10));
+                    if (cachedItem) cachedItem.is_read = 1;
                 }
+                chSetNotificationCount(window.chNotificationCache.payload?.unread_count || 0);
             }
 
             // Fire mark-read in background — don't block navigation
@@ -2636,8 +2744,13 @@ function ch_global_scripts() {
         window.chMarkAllNotificationsRead = function() {
             // Instantly clear all unread states in UI
             document.querySelectorAll('.ch-notification-item.unread').forEach(el => el.classList.remove('unread'));
-            const countEl = document.getElementById('ch-notification-count');
-            if (countEl) countEl.style.display = 'none';
+            if (window.chNotificationCache.payload) {
+                window.chNotificationCache.payload.unread_count = 0;
+                (window.chNotificationCache.payload.notifications || []).forEach(n => {
+                    n.is_read = 1;
+                });
+            }
+            chSetNotificationCount(0);
 
             const fd = new FormData();
             fd.append('action', 'ch_mark_notifications');
@@ -2645,17 +2758,16 @@ function ch_global_scripts() {
         };
 
         window.chLoadNotificationCount = function() {
-            fetch(ajaxurl + '?action=ch_get_notifications')
+            if (window.chNotificationCache.payload) {
+                chSetNotificationCount(window.chNotificationCache.payload.unread_count || 0);
+                return Promise.resolve(window.chNotificationCache.payload.unread_count || 0);
+            }
+
+            fetch(ajaxurl + '?action=ch_get_notification_count')
             .then(r => r.json())
             .then(json => {
                 if (json.success) {
-                    const countEl = document.getElementById('ch-notification-count');
-                    if (json.data.unread_count > 0) {
-                        countEl.textContent = json.data.unread_count > 99 ? '99+' : json.data.unread_count;
-                        countEl.style.display = 'block';
-                    } else {
-                        countEl.style.display = 'none';
-                    }
+                    chSetNotificationCount(json.data.unread_count || 0);
                 }
             })
             .catch(error => {
@@ -2664,7 +2776,8 @@ function ch_global_scripts() {
         };
 
         // Load notification count on page load
-        if (document.getElementById('ch-notification-count')) {
+        if (document.getElementById('ch-notification-count') && !window.__chNotificationCountInitialized) {
+            window.__chNotificationCountInitialized = true;
             chLoadNotificationCount();
         }
 
@@ -3278,7 +3391,8 @@ function ch_feed_scripts() {
         // ---- Notification count on load ----
 
         // Load count on page load
-        if (document.getElementById('ch-notification-count')) {
+        if (document.getElementById('ch-notification-count') && !window.__chNotificationCountInitialized) {
+            window.__chNotificationCountInitialized = true;
             chLoadNotificationCount();
         }
 
