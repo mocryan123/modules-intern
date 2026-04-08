@@ -232,8 +232,33 @@ function ps_overview_tab($business_id) {
     $revenue  = (float) $wpdb->get_var("SELECT COALESCE(SUM(total_price),0) FROM {$t} WHERE payment_status='paid'");
     $recent   = $wpdb->get_results("SELECT * FROM {$t} ORDER BY created_at DESC LIMIT 8");
 
+    $order_page     = get_page_by_path('submit-print-order');
+    $order_page_url = $order_page ? get_permalink($order_page->ID) : home_url('/submit-print-order/');
+
     ob_start();
     ?>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;padding:12px 16px;background:#f8f9fa;border:1px solid #e5e7eb;border-radius:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+            <svg width="16" height="16" style="flex-shrink:0;" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17H17.01M17 20H5a2 2 0 01-2-2V9a2 2 0 012-2h2V5a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v7a2 2 0 01-2 2z"/></svg>
+            <span style="font-size:13px;color:#6b7280;white-space:nowrap;flex-shrink:0;">Share your order page:</span>
+            <code style="font-size:12px;color:#374151;background:#e5e7eb;padding:3px 8px;border-radius:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px;display:inline-block;"><?php echo esc_html($order_page_url); ?></code>
+        </div>
+        <button
+            id="ps-copy-order-link"
+            data-url="<?php echo esc_attr($order_page_url); ?>"
+            style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;color:#374151;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:border-color .15s,color .15s;"
+        >
+            <svg id="ps-copy-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <svg id="ps-check-icon" width="14" height="14" fill="none" stroke="#059669" stroke-width="2.5" viewBox="0 0 24 24" style="display:none;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span id="ps-copy-label">Copy link</span>
+        </button>
+    </div>
+
     <div class="bntm-stats-row">
         <div class="bntm-stat-card">
             <div class="stat-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
@@ -293,6 +318,54 @@ function ps_overview_tab($business_id) {
         </table>
         </div>
     </div>
+
+    <script>
+    (function(){
+        var btn = document.getElementById('ps-copy-order-link');
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+            var url      = this.dataset.url;
+            var copyIcon = document.getElementById('ps-copy-icon');
+            var checkIcon= document.getElementById('ps-check-icon');
+            var label    = document.getElementById('ps-copy-label');
+
+            function onCopied() {
+                copyIcon.style.display  = 'none';
+                checkIcon.style.display = 'inline';
+                label.textContent       = 'Copied!';
+                btn.style.borderColor   = '#10b981';
+                btn.style.color         = '#059669';
+                setTimeout(function() {
+                    copyIcon.style.display  = 'inline';
+                    checkIcon.style.display = 'none';
+                    label.textContent       = 'Copy link';
+                    btn.style.borderColor   = '';
+                    btn.style.color         = '';
+                }, 2500);
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(onCopied).catch(function() {
+                    fallbackCopy(url, onCopied);
+                });
+            } else {
+                fallbackCopy(url, onCopied);
+            }
+        });
+
+        function fallbackCopy(text, callback) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity  = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try { document.execCommand('copy'); callback(); } catch(e) {}
+            document.body.removeChild(ta);
+        }
+    })();
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -305,12 +378,14 @@ function ps_orders_tab($business_id) {
     global $wpdb;
     $t = $wpdb->prefix . 'ps_orders';
 
-    $filter_status = isset($_GET['status']) ? sanitize_text_field($_GET['status']) : '';
-    $search        = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
+    $filter_status  = isset($_GET['status'])  ? sanitize_text_field($_GET['status'])  : '';
+    $filter_payment = isset($_GET['payment']) ? sanitize_text_field($_GET['payment']) : '';
+    $search         = isset($_GET['search'])  ? sanitize_text_field($_GET['search'])  : '';
 
     $where  = 'WHERE 1=1';
     $params = [];
-    if ($filter_status) { $where .= ' AND status=%s'; $params[] = $filter_status; }
+    if ($filter_status)  { $where .= ' AND status=%s';         $params[] = $filter_status; }
+    if ($filter_payment) { $where .= ' AND payment_status=%s'; $params[] = $filter_payment; }
     if ($search) {
         $where .= ' AND (customer_name LIKE %s OR customer_email LIKE %s OR rand_id LIKE %s OR file_name LIKE %s)';
         $like = '%' . $wpdb->esc_like($search) . '%';
@@ -327,16 +402,21 @@ function ps_orders_tab($business_id) {
     <div class="bntm-form-section">
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
             <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;">
-                <input type="hidden" name="tab" value="orders">
-                <input type="text" name="search" value="<?php echo esc_attr($search); ?>" placeholder="Search by name, email, order ID..." class="bntm-input" style="flex:1;min-width:200px;">
-                <select name="status" class="bntm-select">
-                    <option value="">All Statuses</option>
-                    <?php foreach ($statuses as $s): ?>
-                        <option value="<?php echo $s; ?>" <?php selected($filter_status, $s); ?>><?php echo ucfirst(str_replace('_',' ',$s)); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <button type="submit" class="bntm-btn-primary">Filter</button>
-                <?php if ($filter_status || $search): ?><a href="?tab=orders" class="bntm-btn-secondary">Clear</a><?php endif; ?>
+                    <input type="hidden" name="tab" value="orders">
+                    <input type="text" name="search" value="<?php echo esc_attr($search); ?>" placeholder="Search by name, email, order ID..." class="bntm-input" style="flex:1;min-width:200px;">
+                    <select name="status" class="bntm-select">
+                        <option value="">All Statuses</option>
+                        <?php foreach ($statuses as $s): ?>
+                            <option value="<?php echo $s; ?>" <?php selected($filter_status, $s); ?>><?php echo ucfirst(str_replace('_',' ',$s)); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <select name="payment" class="bntm-select">
+                        <option value="">All Payments</option>
+                        <option value="unpaid" <?php selected($filter_payment, 'unpaid'); ?>>Unpaid</option>
+                        <option value="paid"   <?php selected($filter_payment, 'paid');   ?>>Paid</option>
+                    </select>
+                    <button type="submit" class="bntm-btn-primary">Filter</button>
+                    <?php if ($filter_status || $filter_payment || $search): ?><a href="?tab=orders" class="bntm-btn-secondary">Clear</a><?php endif; ?>
             </form>
         </div>
 
@@ -379,17 +459,22 @@ function ps_orders_tab($business_id) {
                         <?php if ($o->payment_method): ?><div style="font-size:11px;color:#6b7280;margin-top:4px;"><?php echo esc_html($o->payment_method); ?></div><?php endif; ?>
                     </td>
                     <td>
-                        <select class="ps-status-select bntm-select" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>" style="font-size:12px;padding:4px 8px;">
-                            <?php foreach ($statuses as $s): ?>
+                        <select class="ps-status-select bntm-select" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>" style="font-size:12px;padding:4px 8px;" <?php echo in_array($o->status, ['picked_up','cancelled']) ? 'disabled' : ''; ?>>
+                            <?php foreach ($statuses as $s):
+                                if ($s === 'picked_up') continue;
+                            ?>
                                 <option value="<?php echo $s; ?>" <?php selected($o->status, $s); ?>><?php echo ucfirst(str_replace('_',' ',$s)); ?></option>
                             <?php endforeach; ?>
+                            <?php if ($o->status === 'picked_up'): ?>
+                                <option value="picked_up" selected disabled>Picked Up</option>
+                            <?php endif; ?>
                         </select>
                     </td>
                     <td style="font-size:12px;color:#6b7280;white-space:nowrap;"><?php echo date('M d, Y', strtotime($o->created_at)); ?></td>
                     <td>
                         <div style="display:flex;gap:6px;flex-direction:column;">
                             <button class="bntm-btn-small bntm-btn-primary ps-view-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>">View</button>
-                            <?php if ($o->status === 'ready'): ?>
+                            <?php if (!in_array($o->status, ['picked_up', 'cancelled'])): ?>
                             <button class="bntm-btn-small bntm-btn-secondary ps-pickup-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>">Picked Up</button>
                             <?php endif; ?>
                             <?php if ($o->payment_status === 'unpaid'): ?>
@@ -414,24 +499,31 @@ function ps_orders_tab($business_id) {
         const SHOP_ADDR   = '<?php echo esc_js(ps_get_setting("shop_address", "")); ?>';
         const SHOP_HOURS  = '<?php echo esc_js(ps_get_setting("shop_hours", "Mon–Sat, 8:00 AM – 6:00 PM")); ?>';
 
-        // ── Send "Ready for Pickup" email to customer ───────────
         function psSendReadyEmail(data) {
             if (!data.customer_email) return;
             emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-                to_email     : data.customer_email,
-                to_name      : data.customer_name,
-                reply_to     : data.customer_email,
-                order_id     : data.rand_id,
-                file_name    : data.file_name,
-                total_price  : '₱' + data.total_price,
-                shop_name    : SHOP_NAME,
-                shop_address : SHOP_ADDR,
-                shop_hours   : SHOP_HOURS,
-                message      : 'Your print order is now ready for pickup! Please bring your Order ID when you visit the shop.',
+                to_email             : data.customer_email,
+                to_name              : data.customer_name,
+                reply_to             : data.customer_email,
+                order_id             : data.rand_id,
+                file_name            : data.file_name,
+                paper_size           : data.paper_size,
+                color_mode           : data.color_mode,
+                copies               : data.copies,
+                sides                : data.sides,
+                orientation          : data.orientation,
+                binding              : data.binding,
+                total_pages          : data.total_pages,
+                additional_services  : data.additional_services || 'None',
+                total_price          : '₱' + data.total_price,
+                payment_method       : data.payment_method,
+                shop_name            : SHOP_NAME,
+                shop_address         : SHOP_ADDR,
+                shop_hours           : SHOP_HOURS,
+                message              : 'Your print order is now ready for pickup! Please bring your Order ID when you visit the shop.',
             }).catch(err => console.warn('EmailJS ready email error:', err));
         }
 
-        // ── Status dropdown change ──────────────────────────────
         document.querySelectorAll('.ps-status-select').forEach(sel => {
             sel.addEventListener('change', function() {
                 const fd = new FormData();
@@ -444,18 +536,26 @@ function ps_orders_tab($business_id) {
                         alert('Failed to update status: ' + json.data.message);
                     } else if (json.data.send_ready_email) {
                         psSendReadyEmail({
-                            customer_email : json.data.customer_email,
-                            customer_name  : json.data.customer_name,
-                            rand_id        : json.data.rand_id,
-                            file_name      : json.data.file_name,
-                            total_price    : json.data.total_price,
+                            customer_email      : json.data.customer_email,
+                            customer_name       : json.data.customer_name,
+                            rand_id             : json.data.rand_id,
+                            file_name           : json.data.file_name,
+                            paper_size          : json.data.paper_size,
+                            color_mode          : json.data.color_mode,
+                            copies              : json.data.copies,
+                            sides               : json.data.sides,
+                            orientation         : json.data.orientation,
+                            binding             : json.data.binding,
+                            total_pages         : json.data.total_pages,
+                            additional_services : json.data.additional_services,
+                            total_price         : json.data.total_price,
+                            payment_method      : json.data.payment_method,
                         });
                     }
                 });
             });
         });
 
-        // ── View order modal ────────────────────────────────────
         document.querySelectorAll('.ps-view-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const fd = new FormData();
@@ -468,7 +568,6 @@ function ps_orders_tab($business_id) {
             });
         });
 
-        // ── Mark picked up ──────────────────────────────────────
         document.querySelectorAll('.ps-pickup-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (!confirm('Mark this order as picked up?')) return;
@@ -483,7 +582,6 @@ function ps_orders_tab($business_id) {
             });
         });
 
-        // ── Mark paid ───────────────────────────────────────────
         document.querySelectorAll('.ps-markpaid-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (!confirm('Mark this order as paid?')) return;
@@ -499,7 +597,6 @@ function ps_orders_tab($business_id) {
             });
         });
 
-        // ── Delete order ────────────────────────────────────────
         document.querySelectorAll('.ps-delete-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (!confirm('Delete this order permanently?')) return;
@@ -548,6 +645,10 @@ function ps_settings_tab($business_id) {
     $gcash_number      = ps_get_setting('gcash_number', '');
     $gcash_qr_url      = ps_get_setting('gcash_qr_url', '');
     $admin_email       = ps_get_setting('admin_email', get_option('admin_email'));
+
+    $extra_services_raw = ps_get_setting('extra_services', '[]');
+    $extra_services     = json_decode($extra_services_raw, true);
+    if (!is_array($extra_services)) $extra_services = [];
 
     ob_start();
     ?>
@@ -621,6 +722,40 @@ function ps_settings_tab($business_id) {
         <button id="ps-save-gcash-btn" class="bntm-btn-primary" data-nonce="<?php echo $nonce; ?>">Save GCash Details</button>
     </div>
 
+    <!-- ── ADDITIONAL SERVICES ── -->
+    <div class="bntm-form-section">
+        <h3>Additional Services</h3>
+        <p style="color:#6b7280;margin-bottom:20px;">Custom add-ons customers can select on the order form (e.g. lamination, colored paper). Price is per order unless "Per Copy" is enabled.</p>
+
+        <div id="ps-extra-services-list">
+            <div style="display:grid;grid-template-columns:1fr 1.4fr 110px 90px 60px;gap:8px;margin-bottom:6px;align-items:center;">
+                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Name</span>
+                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Description</span>
+                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Price (₱)</span>
+                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Per Copy</span>
+                <span></span>
+            </div>
+            <?php foreach ($extra_services as $svc): ?>
+            <div class="ps-svc-row" style="display:grid;grid-template-columns:1fr 1.4fr 110px 90px 60px;gap:8px;margin-bottom:8px;align-items:center;">
+                <input type="text" class="bntm-input" value="<?php echo esc_attr($svc['name'] ?? ''); ?>" placeholder="e.g. Lamination">
+                <input type="text" class="bntm-input" value="<?php echo esc_attr($svc['desc'] ?? ''); ?>" placeholder="Short description">
+                <input type="number" class="bntm-input" value="<?php echo esc_attr($svc['price'] ?? '0.00'); ?>" step="0.01" min="0">
+                <select class="bntm-select">
+                    <option value="0" <?php selected(empty($svc['per_copy'])); ?>>No</option>
+                    <option value="1" <?php selected(!empty($svc['per_copy'])); ?>>Yes</option>
+                </select>
+                <button type="button" class="bntm-btn-small bntm-btn-danger ps-remove-svc">Remove</button>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <button type="button" id="ps-add-svc-row" class="bntm-btn-secondary" style="margin-top:4px;">+ Add Service</button>
+        <div style="margin-top:10px;padding:10px 14px;background:#f0f9ff;border-left:3px solid #3b82f6;border-radius:6px;font-size:12px;color:#1e40af;">
+            Services appear as checkboxes on the order form and are added to the order total.
+        </div>
+        <button id="ps-save-services-btn" class="bntm-btn-primary" data-nonce="<?php echo esc_attr($nonce); ?>" style="margin-top:16px;">Save Additional Services</button>
+    </div>
+
     <script>
     (function(){
         function showMsg(el, msg, type) {
@@ -670,6 +805,74 @@ function ps_settings_tab($business_id) {
         gcashBtn.addEventListener('click', function() {
             saveSettings(collectSettings(['gcash_name','gcash_number','gcash_qr_url']), this, this.dataset.nonce);
         });
+
+        // ── Additional Services ──────────────────────────────────
+        function newSvcRow(name, desc, price, perCopy) {
+            const row = document.createElement('div');
+            row.className = 'ps-svc-row';
+            row.style.cssText = 'display:grid;grid-template-columns:1fr 1.4fr 110px 90px 60px;gap:8px;margin-bottom:8px;align-items:center;';
+            row.innerHTML = `
+                <input type="text" class="bntm-input" value="${name||''}" placeholder="e.g. Lamination">
+                <input type="text" class="bntm-input" value="${desc||''}" placeholder="Short description">
+                <input type="number" class="bntm-input" value="${price||'0.00'}" step="0.01" min="0">
+                <select class="bntm-select">
+                    <option value="0" ${!perCopy?'selected':''}>No</option>
+                    <option value="1" ${perCopy?'selected':''}>Yes</option>
+                </select>
+                <button type="button" class="bntm-btn-small bntm-btn-danger ps-remove-svc">Remove</button>
+            `;
+            return row;
+        }
+
+        const addSvcBtn = document.getElementById('ps-add-svc-row');
+        if (addSvcBtn) {
+            addSvcBtn.addEventListener('click', function() {
+                const row = newSvcRow();
+                document.getElementById('ps-extra-services-list').appendChild(row);
+                row.querySelector('input').focus();
+            });
+        }
+
+        const svcList = document.getElementById('ps-extra-services-list');
+        if (svcList) {
+            svcList.addEventListener('click', function(e) {
+                if (e.target.classList.contains('ps-remove-svc')) {
+                    e.target.closest('.ps-svc-row').remove();
+                }
+            });
+        }
+
+        const saveSvcBtn = document.getElementById('ps-save-services-btn');
+        if (saveSvcBtn) {
+            saveSvcBtn.addEventListener('click', function() {
+                const rows = document.querySelectorAll('.ps-svc-row');
+                const services = [];
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const sel    = row.querySelector('select');
+                    const name   = inputs[0].value.trim();
+                    if (!name) return;
+                    services.push({
+                        name     : name,
+                        desc     : inputs[1].value.trim(),
+                        price    : parseFloat(inputs[2].value) || 0,
+                        per_copy : sel.value === '1' ? 1 : 0,
+                    });
+                });
+
+                const btn = this;
+                btn.disabled = true; btn.textContent = 'Saving...';
+                const fd = new FormData();
+                fd.append('action', 'ps_save_pricing');
+                fd.append('nonce', btn.dataset.nonce);
+                fd.append('extra_services', JSON.stringify(services));
+                fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
+                    showMsg(msgEl, json.data.message, json.success ? 'success' : 'error');
+                    btn.disabled = false; btn.textContent = 'Save Additional Services';
+                });
+            });
+        }
+
     })();
     </script>
     <?php
@@ -696,6 +899,10 @@ function bntm_shortcode_ps_order() {
     $gcash_number  = ps_get_setting('gcash_number', '');
     $gcash_qr_url  = ps_get_setting('gcash_qr_url', '');
     $admin_email   = ps_get_setting('admin_email', get_option('admin_email'));
+
+    $extra_services_raw = ps_get_setting('extra_services', '[]');
+    $extra_services     = json_decode($extra_services_raw, true);
+    if (!is_array($extra_services)) $extra_services = [];
 
     ob_start();
     ?>
@@ -829,77 +1036,170 @@ function bntm_shortcode_ps_order() {
                     <p class="pso-subheading">Your price updates live as you adjust the settings below.</p>
                 </div>
 
-                <div class="pso-options-grid">
-                    <div class="pso-option-group">
-                        <label class="pso-label">Paper Size</label>
-                        <div class="pso-radio-cards" id="opt-paper-size">
-                            <label class="pso-radio-card active"><input type="radio" name="paper_size" value="A4" checked><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" stroke-width="1.5"/></svg><span>A4</span><small>210 × 297 mm</small></div></label>
-                            <label class="pso-radio-card"><input type="radio" name="paper_size" value="A3"><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" stroke-width="1.5"/></svg><span>A3</span><small>297 × 420 mm</small></div></label>
-                            <label class="pso-radio-card"><input type="radio" name="paper_size" value="Short"><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="1.5"/></svg><span>Short</span><small>216 × 279 mm</small></div></label>
-                            <label class="pso-radio-card"><input type="radio" name="paper_size" value="Long"><div class="pso-radio-card-inner"><svg width="18" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 22"><rect x="1" y="1" width="16" height="20" rx="2" stroke-width="1.5"/></svg><span>Long</span><small>216 × 330 mm</small></div></label>
-                        </div>
-                    </div>
+                <div class="pso-step2-layout">
+                    <div class="pso-step2-options">
+                        <div class="pso-options-grid">
+                            <div class="pso-option-group">
+                                <label class="pso-label">Paper Size</label>
+                                <div class="pso-radio-cards" id="opt-paper-size">
+                                    <label class="pso-radio-card active"><input type="radio" name="paper_size" value="A4" checked><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" stroke-width="1.5"/></svg><span>A4</span><small>210 × 297 mm</small></div></label>
+                                    <label class="pso-radio-card"><input type="radio" name="paper_size" value="A3"><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" stroke-width="1.5"/></svg><span>A3</span><small>297 × 420 mm</small></div></label>
+                                    <label class="pso-radio-card"><input type="radio" name="paper_size" value="Short"><div class="pso-radio-card-inner"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" stroke-width="1.5"/></svg><span>Short</span><small>216 × 279 mm</small></div></label>
+                                    <label class="pso-radio-card"><input type="radio" name="paper_size" value="Long"><div class="pso-radio-card-inner"><svg width="18" height="22" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 18 22"><rect x="1" y="1" width="16" height="20" rx="2" stroke-width="1.5"/></svg><span>Long</span><small>216 × 330 mm</small></div></label>
+                                </div>
+                            </div>
 
-                    <div class="pso-option-group">
-                        <label class="pso-label">Color Mode</label>
-                        <div class="pso-radio-cards" id="opt-color-mode">
-                            <label class="pso-radio-card active"><input type="radio" name="color_mode" value="bw" checked><div class="pso-radio-card-inner"><div class="pso-color-swatch bw"></div><span>Black &amp; White</span><small>Grayscale</small></div></label>
-                            <label class="pso-radio-card"><input type="radio" name="color_mode" value="color"><div class="pso-radio-card-inner"><div class="pso-color-swatch color"></div><span>Full Color</span><small>CMYK</small></div></label>
-                        </div>
-                    </div>
+                            <div class="pso-option-group">
+                                <label class="pso-label">Color Mode</label>
+                                <div class="pso-radio-cards" id="opt-color-mode">
+                                    <label class="pso-radio-card active"><input type="radio" name="color_mode" value="bw" checked><div class="pso-radio-card-inner"><div class="pso-color-swatch bw"></div><span>Black &amp; White</span><small>Grayscale</small></div></label>
+                                    <label class="pso-radio-card"><input type="radio" name="color_mode" value="color"><div class="pso-radio-card-inner"><div class="pso-color-swatch color"></div><span>Full Color</span><small>CMYK</small></div></label>
+                                </div>
+                            </div>
 
-                    <div class="pso-two-col">
-                        <div class="pso-option-group">
-                            <label class="pso-label">Orientation</label>
-                            <div class="pso-radio-cards" id="opt-orientation">
-                                <label class="pso-radio-card active"><input type="radio" name="orientation" value="portrait" checked><div class="pso-radio-card-inner"><svg width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 20"><rect x="1" y="1" width="14" height="18" rx="1.5"/></svg><span>Portrait</span></div></label>
-                                <label class="pso-radio-card"><input type="radio" name="orientation" value="landscape"><div class="pso-radio-card-inner"><svg width="20" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 20 16"><rect x="1" y="1" width="18" height="14" rx="1.5"/></svg><span>Landscape</span></div></label>
+                            <div class="pso-two-col">
+                                <div class="pso-option-group">
+                                    <label class="pso-label">Orientation</label>
+                                    <div class="pso-radio-cards" id="opt-orientation">
+                                        <label class="pso-radio-card active"><input type="radio" name="orientation" value="portrait" checked><div class="pso-radio-card-inner"><svg width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 16 20"><rect x="1" y="1" width="14" height="18" rx="1.5"/></svg><span>Portrait</span></div></label>
+                                        <label class="pso-radio-card"><input type="radio" name="orientation" value="landscape"><div class="pso-radio-card-inner"><svg width="20" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 20 16"><rect x="1" y="1" width="18" height="14" rx="1.5"/></svg><span>Landscape</span></div></label>
+                                    </div>
+                                </div>
+                                <div class="pso-option-group">
+                                    <label class="pso-label">Sides</label>
+                                    <div class="pso-radio-cards" id="opt-sides">
+                                        <label class="pso-radio-card active"><input type="radio" name="sides" value="single" checked><div class="pso-radio-card-inner"><span>Single</span><small>One-sided</small></div></label>
+                                        <label class="pso-radio-card"><input type="radio" name="sides" value="double"><div class="pso-radio-card-inner"><span>Double</span><small>Two-sided</small></div></label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pso-two-col">
+                                <div class="pso-option-group">
+                                    <label class="pso-label">Number of Copies</label>
+                                    <div class="pso-qty-control">
+                                        <button type="button" class="pso-qty-btn" id="pso-qty-minus"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/></svg></button>
+                                        <input type="number" id="opt-copies" value="1" min="1" max="999" class="pso-qty-input" readonly>
+                                        <button type="button" class="pso-qty-btn" id="pso-qty-plus"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg></button>
+                                    </div>
+                                </div>
+                                <div class="pso-option-group">
+                                    <label class="pso-label">Binding</label>
+                                    <select id="opt-binding" class="pso-select">
+                                        <option value="none">None</option>
+                                        <option value="staple">Staple</option>
+                                        <option value="spiral">Spiral Binding</option>
+                                        <option value="hardcover">Hard Cover</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="pso-option-group">
+                                <label class="pso-label">Special Instructions <span class="pso-optional">(optional)</span></label>
+                                <textarea id="opt-notes" class="pso-textarea" rows="3" placeholder="e.g. Print pages 1–10 only, do not staple..."></textarea>
+                            </div>
+
+                            <?php if (!empty($extra_services)): ?>
+                            <div class="pso-option-group">
+                                <label class="pso-label">Additional Services <span class="pso-optional">(optional)</span></label>
+                                <div style="display:flex;flex-direction:column;gap:10px;">
+                                    <?php foreach ($extra_services as $svc): ?>
+                                    <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:1.5px solid var(--pso-border);border-radius:var(--pso-radius-sm);cursor:pointer;transition:border-color .2s;background:#fff;">
+                                        <input type="checkbox"
+                                            class="pso-extra-svc"
+                                            data-name="<?php echo esc_attr($svc['name']); ?>"
+                                            data-price="<?php echo esc_attr($svc['price']); ?>"
+                                            data-per-copy="<?php echo esc_attr($svc['per_copy'] ?? 0); ?>"
+                                            style="width:16px;height:16px;accent-color:var(--pso-accent);cursor:pointer;flex-shrink:0;">
+                                        <div>
+                                            <div style="font-size:13px;font-weight:600;color:var(--pso-ink);">
+                                                <?php echo esc_html($svc['name']); ?> — <span style="color:var(--pso-accent);">₱<?php echo number_format($svc['price'], 2); ?></span><?php if (!empty($svc['per_copy'])): ?> <span style="font-size:11px;color:var(--pso-ink-4);">per copy</span><?php endif; ?>
+                                            </div>
+                                            <?php if (!empty($svc['desc'])): ?>
+                                            <div style="font-size:11px;color:var(--pso-ink-4);margin-top:2px;"><?php echo esc_html($svc['desc']); ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </label>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="pso-price-card" id="pso-price-card">
+                            <div class="pso-price-card-bg"></div>
+                            <div class="pso-price-card-content">
+                                <div class="pso-price-rows">
+                                    <div class="pso-price-row"><span>Pages &times; Copies</span><span id="pv-pages" class="pso-price-val">—</span></div>
+                                    <div class="pso-price-row"><span>Print cost</span><span id="pv-print" class="pso-price-val">₱0.00</span></div>
+                                    <div class="pso-price-row" id="pv-binding-row" style="display:none;"><span>Binding</span><span id="pv-binding" class="pso-price-val">₱0.00</span></div>
+                                    <div class="pso-price-row" id="pv-extras-row" style="display:none;"><span>Extra services</span><span id="pv-extras" class="pso-price-val">₱0.00</span></div>
+                                </div>
+                                <div class="pso-price-total-row"><span>Total</span><span id="pv-total" class="pso-price-total-val">₱0.00</span></div>
                             </div>
                         </div>
-                        <div class="pso-option-group">
-                            <label class="pso-label">Sides</label>
-                            <div class="pso-radio-cards" id="opt-sides">
-                                <label class="pso-radio-card active"><input type="radio" name="sides" value="single" checked><div class="pso-radio-card-inner"><span>Single</span><small>One-sided</small></div></label>
-                                <label class="pso-radio-card"><input type="radio" name="sides" value="double"><div class="pso-radio-card-inner"><span>Double</span><small>Two-sided</small></div></label>
+                    </div>
+
+                    <!-- Right: Live Preview -->
+                    <div class="pso-step2-preview">
+                        <div class="pso-preview-wrap">
+                            <div class="pso-preview-header">
+                                <div class="pso-preview-title">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    Live Preview
+                                </div>
+                                <span class="pso-preview-badge" id="pso-preview-badge">A4 · B&amp;W · Portrait</span>
+                            </div>
+
+                            <div class="pso-preview-stage" id="pso-preview-stage">
+                                <div class="pso-preview-desk">
+                                    <div class="pso-page-shadow"></div>
+                                    <div class="pso-page" id="pso-preview-page">
+                                        <div class="pso-copies-stack" id="pso-copies-stack"></div>
+                                        <div class="pso-page-inner" id="pso-page-inner">
+                                            <div class="pso-binding-indicator" id="pso-binding-indicator" style="display:none;"></div>
+                                            <div class="pso-page-header-block">
+                                                <div class="pso-page-line pso-line-title"></div>
+                                                <div class="pso-page-line pso-line-sub" style="width:58%;"></div>
+                                            </div>
+                                            <div class="pso-page-body">
+                                                <div class="pso-page-line" style="width:100%"></div>
+                                                <div class="pso-page-line" style="width:93%"></div>
+                                                <div class="pso-page-line" style="width:97%"></div>
+                                                <div class="pso-page-line" style="width:86%"></div>
+                                                <div class="pso-page-line pso-line-gap"></div>
+                                                <div class="pso-page-line" style="width:100%"></div>
+                                                <div class="pso-page-line" style="width:89%"></div>
+                                                <div class="pso-page-line" style="width:95%"></div>
+                                                <div class="pso-page-line" style="width:79%"></div>
+                                                <div class="pso-page-line pso-line-gap"></div>
+                                                <div class="pso-page-line" style="width:100%"></div>
+                                                <div class="pso-page-line" style="width:91%"></div>
+                                                <div class="pso-page-line" style="width:84%"></div>
+                                                <div class="pso-page-line" style="width:100%"></div>
+                                                <div class="pso-page-line" style="width:72%"></div>
+                                            </div>
+                                            <div class="pso-page-color-swatches" id="pso-color-swatches" style="display:none;">
+                                                <div class="pso-swatch-row">
+                                                    <div class="pso-swatch" style="background:#e63946;"></div>
+                                                    <div class="pso-swatch" style="background:#2a9d8f;"></div>
+                                                    <div class="pso-swatch" style="background:#e9c46a;"></div>
+                                                    <div class="pso-swatch" style="background:#264653;"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="pso-page-number">1</div>
+                                    </div>
+                                </div>
+
+                                <div class="pso-preview-specs">
+                                    <span class="pso-spec-pill" id="spec-size">A4 · 210×297mm</span>
+                                    <span class="pso-spec-pill" id="spec-color">Black &amp; White</span>
+                                    <span class="pso-spec-pill" id="spec-sides">Single-sided</span>
+                                    <span class="pso-spec-pill" id="spec-copies">1 copy</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="pso-two-col">
-                        <div class="pso-option-group">
-                            <label class="pso-label">Number of Copies</label>
-                            <div class="pso-qty-control">
-                                <button type="button" class="pso-qty-btn" id="pso-qty-minus"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/></svg></button>
-                                <input type="number" id="opt-copies" value="1" min="1" max="999" class="pso-qty-input" readonly>
-                                <button type="button" class="pso-qty-btn" id="pso-qty-plus"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg></button>
-                            </div>
-                        </div>
-                        <div class="pso-option-group">
-                            <label class="pso-label">Binding</label>
-                            <select id="opt-binding" class="pso-select">
-                                <option value="none">None</option>
-                                <option value="staple">Staple</option>
-                                <option value="spiral">Spiral Binding</option>
-                                <option value="hardcover">Hard Cover</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="pso-option-group">
-                        <label class="pso-label">Special Instructions <span class="pso-optional">(optional)</span></label>
-                        <textarea id="opt-notes" class="pso-textarea" rows="3" placeholder="e.g. Print pages 1–10 only, do not staple..."></textarea>
-                    </div>
-                </div>
-
-                <div class="pso-price-card" id="pso-price-card">
-                    <div class="pso-price-card-bg"></div>
-                    <div class="pso-price-card-content">
-                        <div class="pso-price-rows">
-                            <div class="pso-price-row"><span>Pages &times; Copies</span><span id="pv-pages" class="pso-price-val">—</span></div>
-                            <div class="pso-price-row"><span>Print cost</span><span id="pv-print" class="pso-price-val">₱0.00</span></div>
-                            <div class="pso-price-row" id="pv-binding-row" style="display:none;"><span>Binding</span><span id="pv-binding" class="pso-price-val">₱0.00</span></div>
-                        </div>
-                        <div class="pso-price-total-row"><span>Total</span><span id="pv-total" class="pso-price-total-val">₱0.00</span></div>
                     </div>
                 </div>
 
@@ -923,7 +1223,7 @@ function bntm_shortcode_ps_order() {
                     <div class="pso-field-group pso-full">
                         <label class="pso-label">Payment Method <span class="pso-required">*</span></label>
                         <div class="pso-payment-options">
-                            <label class="pso-payment-card active"><input type="radio" name="payment_method" value="cash" checked><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>Cash on Pickup</label>
+                            <label class="pso-payment-card active"><input type="radio" name="payment_method" value="cash" checked><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>Cash</label>
                             <label class="pso-payment-card"><input type="radio" name="payment_method" value="gcash"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>GCash</label>
                         </div>
                     </div>
@@ -995,6 +1295,7 @@ function bntm_shortcode_ps_order() {
                         <div class="pso-review-item"><span>Sides</span><strong id="rv-sides">—</strong></div>
                         <div class="pso-review-item"><span>Copies</span><strong id="rv-copies">—</strong></div>
                         <div class="pso-review-item"><span>Binding</span><strong id="rv-binding">—</strong></div>
+                        <div class="pso-review-item" id="rv-extras-row" style="display:none;"><span>Add-ons</span><strong id="rv-extras">—</strong></div>
                     </div>
                     <div class="pso-review-section">
                         <div class="pso-review-section-title"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>Customer</div>
@@ -1124,7 +1425,6 @@ function bntm_shortcode_ps_order() {
     .pso-btn-ghost:hover { border-color:var(--pso-ink-3); color:var(--pso-ink); background:var(--pso-surface-2); }
     .pso-btn-outline { display:inline-flex; align-items:center; gap:8px; background:none; border:1.5px solid var(--pso-accent); color:var(--pso-accent); border-radius:var(--pso-radius-sm); padding:10px 22px; font-size:14px; font-weight:600; font-family:var(--pso-font-body); cursor:pointer; transition:all .2s; }
     .pso-btn-outline:hover { background:var(--pso-accent); color:#fff; }
-    /* Upload zone — pointer events only when idle */
     .pso-upload-zone { border:2px dashed var(--pso-border); border-radius:var(--pso-radius); padding:56px 32px; text-align:center; transition:border-color .2s,background .2s; background:var(--pso-surface-2); position:relative; }
     .pso-upload-zone.idle { cursor:pointer; }
     .pso-upload-zone.idle:hover,.pso-upload-zone.dragging { border-color:var(--pso-accent); background:var(--pso-accent-bg); }
@@ -1151,6 +1451,43 @@ function bntm_shortcode_ps_order() {
     .pso-reupload-btn { margin-left:auto; display:inline-flex; align-items:center; gap:5px; background:none; border:1px solid var(--pso-border); border-radius:6px; padding:6px 12px; font-size:12px; color:var(--pso-ink-3); cursor:pointer; transition:all .2s; }
     .pso-reupload-btn:hover { border-color:var(--pso-ink-3); color:var(--pso-ink); }
     .pso-upload-error { margin-top:12px; padding:12px 16px; background:var(--pso-red-bg); border:1px solid #fecaca; border-radius:var(--pso-radius-sm); color:var(--pso-red); font-size:13px; }
+    .pso-step2-layout { display:grid; grid-template-columns:1fr 320px; gap:28px; align-items:start; }
+    .pso-step2-options { min-width:0; }
+    .pso-step2-preview { position:sticky; top:20px; }
+    .pso-preview-wrap { border:1.5px solid var(--pso-border); border-radius:var(--pso-radius); overflow:hidden; background:var(--pso-surface-2); }
+    .pso-preview-header { display:flex; align-items:center; justify-content:space-between; padding:11px 16px; border-bottom:1px solid var(--pso-border); background:#fff; }
+    .pso-preview-title { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:var(--pso-ink-3); }
+    .pso-preview-badge { font-size:10px; font-weight:600; color:var(--pso-accent); background:var(--pso-accent-bg); padding:3px 9px; border-radius:99px; letter-spacing:.2px; transition:all .3s; white-space:nowrap; }
+    .pso-preview-stage { padding:28px 20px 18px; display:flex; flex-direction:column; align-items:center; gap:16px; background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(0,0,0,.018) 10px,rgba(0,0,0,.018) 20px),#eef0f4; }
+    .pso-preview-desk { position:relative; display:flex; align-items:flex-end; justify-content:center; }
+    .pso-page-shadow { position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); width:85%; height:18px; background:radial-gradient(ellipse at center,rgba(0,0,0,.25) 0%,transparent 70%); filter:blur(5px); pointer-events:none; }
+    .pso-page { position:relative; width:130px; height:184px; background:#fff; border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,.1),0 6px 20px rgba(0,0,0,.14),inset 0 0 0 1px rgba(0,0,0,.06); transition:width .4s cubic-bezier(.4,0,.2,1), height .4s cubic-bezier(.4,0,.2,1); overflow:visible; }
+    .pso-page.double-sided::after { content:''; position:absolute; top:5px; right:-6px; width:100%; height:100%; background:#f5f5f5; border-radius:2px; box-shadow:0 1px 4px rgba(0,0,0,.1),inset 0 0 0 1px rgba(0,0,0,.05); z-index:-1; }
+    .pso-copies-stack { position:absolute; inset:0; pointer-events:none; z-index:-1; }
+    .pso-copy-ghost { position:absolute; background:#fff; border-radius:2px; box-shadow:0 1px 4px rgba(0,0,0,.1),inset 0 0 0 1px rgba(0,0,0,.05); }
+    .pso-page-inner { padding:13px 13px 10px; height:100%; box-sizing:border-box; overflow:hidden; display:flex; flex-direction:column; gap:0; position:relative; }
+    .pso-page-header-block { margin-bottom:9px; }
+    .pso-page-line { height:4px; border-radius:99px; background:#e2e5ea; margin-bottom:4px; transition:background .35s; }
+    .pso-page-line.pso-line-title { height:7px; width:68%; background:#b8c0ce; margin-bottom:5px; }
+    .pso-page-line.pso-line-sub   { height:4px; background:#cdd2db; }
+    .pso-line-gap { margin-top:3px; }
+    .pso-page-inner.bw-mode .pso-page-line  { background:#e2e5ea; }
+    .pso-page-inner.bw-mode .pso-line-title { background:#b8c0ce; }
+    .pso-page-inner.bw-mode .pso-line-sub   { background:#cdd2db; }
+    .pso-page-inner.color-mode .pso-page-line  { background:#c8e0f4; }
+    .pso-page-inner.color-mode .pso-line-title { background:#5a9fd4; }
+    .pso-page-inner.color-mode .pso-line-sub   { background:#8bbde0; }
+    .pso-page-color-swatches { margin-top:auto; padding-top:6px; }
+    .pso-swatch-row { display:flex; gap:3px; }
+    .pso-swatch { width:14px; height:14px; border-radius:3px; transition:filter .35s; }
+    .pso-page-inner.bw-mode .pso-swatch { filter:grayscale(1); }
+    .pso-binding-indicator { position:absolute; top:0; bottom:0; left:0; width:7px; background:repeating-linear-gradient(180deg,#c0c8d8 0px,#c0c8d8 5px,transparent 5px,transparent 9px); border-radius:2px 0 0 2px; }
+    .pso-binding-indicator.staple { background:repeating-linear-gradient(180deg,#8899bb 0px,#8899bb 3px,transparent 3px,transparent 14px); width:5px; }
+    .pso-binding-indicator.spiral { background:repeating-linear-gradient(180deg,#7a8fbb 0px,#7a8fbb 4px,transparent 4px,transparent 8px); width:8px; }
+    .pso-binding-indicator.hardcover { background:linear-gradient(180deg,#4a5a7a,#2e3d5e); width:11px; box-shadow:inset -2px 0 4px rgba(0,0,0,.25); }
+    .pso-page-number { position:absolute; bottom:5px; right:8px; font-size:6px; color:#c0c8d8; font-family:var(--pso-font-body); user-select:none; }
+    .pso-preview-specs { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
+    .pso-spec-pill { font-size:10px; font-weight:600; padding:3px 10px; border-radius:99px; background:rgba(255,255,255,.85); border:1px solid rgba(0,0,0,.08); color:var(--pso-ink-3); backdrop-filter:blur(4px); transition:all .2s; }
     .pso-options-grid { display:flex; flex-direction:column; gap:24px; }
     .pso-label { display:block; font-size:13px; font-weight:600; color:var(--pso-ink-2); margin-bottom:10px; }
     .pso-optional { font-weight:400; color:var(--pso-ink-4); }
@@ -1179,7 +1516,7 @@ function bntm_shortcode_ps_order() {
     .pso-textarea { width:100%; box-sizing:border-box; padding:12px 14px; border:1.5px solid var(--pso-border); border-radius:var(--pso-radius-sm); font-size:14px; font-family:var(--pso-font-body); color:var(--pso-ink); resize:vertical; transition:border-color .2s; background:#fff; }
     .pso-textarea:focus { outline:none; border-color:var(--pso-accent); }
     .pso-textarea::placeholder { color:var(--pso-ink-4); }
-    .pso-price-card { position:relative; overflow:hidden; border-radius:var(--pso-radius); margin-top:8px; }
+    .pso-price-card { position:relative; overflow:hidden; border-radius:var(--pso-radius); margin-top:20px; }
     .pso-price-card-bg { position:absolute; inset:0; background:linear-gradient(135deg,#0d1117 0%,#1a2744 60%,#1a3a6b 100%); }
     .pso-price-card-content { position:relative; padding:24px 28px; }
     .pso-price-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
@@ -1224,6 +1561,12 @@ function bntm_shortcode_ps_order() {
     .pso-pickup-box { background:var(--pso-surface-2); border:1px solid var(--pso-border); border-radius:var(--pso-radius-sm); padding:20px; text-align:left; font-size:13px; line-height:1.7; margin-bottom:28px; }
     .pso-pickup-box-title { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--pso-ink-3); margin-bottom:10px; }
     .pso-pickup-note { font-size:11px; color:var(--pso-ink-4); margin-top:6px; font-style:italic; }
+    .pso-extra-svc-label:has(input:checked) { border-color:var(--pso-accent) !important; background:var(--pso-accent-bg) !important; }
+    @media(max-width:1100px){
+        .pso-step2-layout { grid-template-columns:1fr; }
+        .pso-step2-preview { position:static; }
+        .pso-preview-stage { flex-direction:row; flex-wrap:wrap; justify-content:center; padding:20px; }
+    }
     @media(max-width:900px){
         .pso-root { flex-direction:column; }
         .pso-sidebar { width:100%; }
@@ -1251,7 +1594,6 @@ function bntm_shortcode_ps_order() {
 
     <script>
     (function(){
-        // ── EmailJS Config ──────────────────────────────────────
         const EMAILJS_SERVICE_ID  = '<?php echo esc_js(PS_EMAILJS_SERVICE_ID); ?>';
         const EMAILJS_TEMPLATE_ID = '<?php echo esc_js(PS_EMAILJS_TEMPLATE_ID); ?>';
         const ADMIN_EMAIL         = '<?php echo esc_js($admin_email); ?>';
@@ -1259,57 +1601,56 @@ function bntm_shortcode_ps_order() {
         const SHOP_ADDRESS        = '<?php echo esc_js($shop_address); ?>';
         const SHOP_HOURS          = '<?php echo esc_js($shop_hours); ?>';
 
-        // ── Send EmailJS Notification ───────────────────────────
         function psSendEmail(params) {
             return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
                 .catch(err => console.warn('EmailJS error:', err));
         }
 
-        // ── Send Order Confirmation to Customer ─────────────────
         function psSendConfirmation(orderData) {
             if (!orderData.customer_email) return;
             return psSendEmail({
-                to_email      : orderData.customer_email,
-                to_name       : orderData.customer_name,
-                reply_to      : orderData.customer_email,
-                order_id      : orderData.rand_id,
-                file_name     : orderData.file_name,
-                paper_size    : orderData.paper_size,
-                color_mode    : orderData.color_mode === 'color' ? 'Full Color' : 'Black & White',
-                copies        : orderData.copies,
-                sides         : orderData.sides,
-                orientation   : orderData.orientation,
-                binding       : orderData.binding,
-                total_pages   : orderData.total_pages,
-                total_price   : '₱' + orderData.total_price,
-                payment_method: orderData.payment_method === 'gcash' ? 'GCash' : 'Cash on Pickup',
-                shop_name     : SHOP_NAME,
-                shop_address  : SHOP_ADDRESS,
-                shop_hours    : SHOP_HOURS,
-                message       : 'Your print order has been received! We will notify you when it is ready for pickup.',
+                to_email             : orderData.customer_email,
+                to_name              : orderData.customer_name,
+                reply_to             : orderData.customer_email,
+                order_id             : orderData.rand_id,
+                file_name            : orderData.file_name,
+                paper_size           : orderData.paper_size,
+                color_mode           : orderData.color_mode === 'color' ? 'Full Color' : 'Black & White',
+                copies               : orderData.copies,
+                sides                : orderData.sides,
+                orientation          : orderData.orientation,
+                binding              : orderData.binding,
+                total_pages          : orderData.total_pages,
+                additional_services  : orderData.additional_services || 'None',
+                total_price          : '₱' + orderData.total_price,
+                payment_method       : orderData.payment_method === 'gcash' ? 'GCash' : 'Cash',
+                shop_name            : SHOP_NAME,
+                shop_address         : SHOP_ADDRESS,
+                shop_hours           : SHOP_HOURS,
+                message              : 'Your print order has been received! We will notify you when it is ready for pickup.',
             });
         }
 
-        // ── Send New Order Alert to Admin ───────────────────────
         function psSendAdminAlert(orderData) {
             if (!ADMIN_EMAIL) return;
             return psSendEmail({
-                to_email      : ADMIN_EMAIL,
-                to_name       : 'Admin',
-                reply_to      : orderData.customer_email || ADMIN_EMAIL,
-                order_id      : orderData.rand_id,
-                file_name     : orderData.file_name,
-                paper_size    : orderData.paper_size,
-                color_mode    : orderData.color_mode === 'color' ? 'Full Color' : 'Black & White',
-                copies        : orderData.copies,
-                sides         : orderData.sides,
-                orientation   : orderData.orientation,
-                binding       : orderData.binding,
-                total_pages   : orderData.total_pages,
-                total_price   : '₱' + orderData.total_price,
-                payment_method: orderData.payment_method === 'gcash' ? 'GCash' : 'Cash on Pickup',
-                shop_name     : SHOP_NAME,
-                message       : 'New print order received from ' + orderData.customer_name + ' (' + orderData.customer_email + ').',
+                to_email             : ADMIN_EMAIL,
+                to_name              : 'Admin',
+                reply_to             : orderData.customer_email || ADMIN_EMAIL,
+                order_id             : orderData.rand_id,
+                file_name            : orderData.file_name,
+                paper_size           : orderData.paper_size,
+                color_mode           : orderData.color_mode === 'color' ? 'Full Color' : 'Black & White',
+                copies               : orderData.copies,
+                sides                : orderData.sides,
+                orientation          : orderData.orientation,
+                binding              : orderData.binding,
+                total_pages          : orderData.total_pages,
+                additional_services  : orderData.additional_services || 'None',
+                total_price          : '₱' + orderData.total_price,
+                payment_method       : orderData.payment_method === 'gcash' ? 'GCash' : 'Cash',
+                shop_name            : SHOP_NAME,
+                message              : 'New print order received from ' + orderData.customer_name + ' (' + orderData.customer_email + ').',
             });
         }
 
@@ -1334,27 +1675,19 @@ function bntm_shortcode_ps_order() {
         const fileInput = document.getElementById('pso-file-input');
         const nextBtn1  = document.getElementById('pso-next-1');
 
-        // ── Upload zone: only open picker when in idle state ────
-        // The zone itself handles drag/drop; clicks only work via
-        // the "Browse files" button (idle) or "Change" button (success).
-        // This prevents a second file dialog from opening after upload.
         dropZone.addEventListener('click', function(e) {
-            // Ignore clicks that originated from buttons inside the zone
             if (e.target.closest('button')) return;
-            // Only open picker when the zone is in idle state
             if (!dropZone.classList.contains('has-file') &&
                 document.getElementById('pso-upload-progress').style.display === 'none') {
                 fileInput.click();
             }
         });
 
-        // "Browse files" button — explicit click, stop bubble so zone doesn't also fire
         document.getElementById('pso-browse-btn').addEventListener('click', function(e) {
             e.stopPropagation();
             fileInput.click();
         });
 
-        // "Change" (re-upload) button — explicit click, stop bubble
         document.getElementById('pso-reupload-btn').addEventListener('click', function(e) {
             e.stopPropagation();
             psoResetUpload();
@@ -1371,10 +1704,8 @@ function bntm_shortcode_ps_order() {
             }
         });
 
-        // Use a one-time change listener pattern to avoid double-fire
         fileInput.addEventListener('change', function() {
             if (this.files[0]) uploadFile(this.files[0]);
-            // Reset value so the same file can be re-selected after "Change"
             this.value = '';
         });
 
@@ -1432,7 +1763,6 @@ function bntm_shortcode_ps_order() {
             xhr.send(fd);
         }
 
-        // Initialise idle state
         dropZone.classList.add('idle');
 
         window.psoResetUpload = function() {
@@ -1445,7 +1775,7 @@ function bntm_shortcode_ps_order() {
             nextBtn1.disabled = true;
         };
 
-        nextBtn1.addEventListener('click', () => { goToStep(2); recalculate(); });
+        nextBtn1.addEventListener('click', () => { goToStep(2); recalculate(); updatePreview(); });
 
         function initRadioCards(sel) {
             document.querySelectorAll(sel + ' .pso-radio-card').forEach(card => {
@@ -1454,6 +1784,7 @@ function bntm_shortcode_ps_order() {
                     card.classList.add('active');
                     card.querySelector('input').checked = true;
                     recalculate();
+                    updatePreview();
                 });
             });
         }
@@ -1482,11 +1813,36 @@ function bntm_shortcode_ps_order() {
         });
 
         const qtyInput = document.getElementById('opt-copies');
-        document.getElementById('pso-qty-minus').addEventListener('click', () => { if (parseInt(qtyInput.value) > 1) { qtyInput.value = parseInt(qtyInput.value) - 1; recalculate(); } });
-        document.getElementById('pso-qty-plus').addEventListener('click',  () => { if (parseInt(qtyInput.value) < 999) { qtyInput.value = parseInt(qtyInput.value) + 1; recalculate(); } });
-        document.getElementById('opt-binding').addEventListener('change', recalculate);
+        document.getElementById('pso-qty-minus').addEventListener('click', () => {
+            if (parseInt(qtyInput.value) > 1) { qtyInput.value = parseInt(qtyInput.value) - 1; recalculate(); updatePreview(); }
+        });
+        document.getElementById('pso-qty-plus').addEventListener('click', () => {
+            if (parseInt(qtyInput.value) < 999) { qtyInput.value = parseInt(qtyInput.value) + 1; recalculate(); updatePreview(); }
+        });
+        document.getElementById('opt-binding').addEventListener('change', () => { recalculate(); updatePreview(); });
+
+        // Recalculate when extra services are toggled
+        document.querySelectorAll('.pso-extra-svc').forEach(chk => {
+            chk.addEventListener('change', () => recalculate());
+        });
 
         function getSelected(name) { const el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : ''; }
+
+        function getExtraCost() {
+            let extra = 0;
+            document.querySelectorAll('.pso-extra-svc:checked').forEach(chk => {
+                const price   = parseFloat(chk.dataset.price) || 0;
+                const perCopy = chk.dataset.perCopy === '1';
+                extra += perCopy ? price * (parseInt(qtyInput.value) || 1) : price;
+            });
+            return extra;
+        }
+
+        function getSelectedExtrasLabel() {
+            const names = [];
+            document.querySelectorAll('.pso-extra-svc:checked').forEach(chk => names.push(chk.dataset.name));
+            return names.length ? names.join(', ') : 'None';
+        }
 
         function recalculate() {
             if (!uploadedFile) return;
@@ -1497,16 +1853,106 @@ function bntm_shortcode_ps_order() {
             fd.append('sides', getSelected('sides')); fd.append('binding', document.getElementById('opt-binding').value);
             fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
                 if (!json.success) return;
-                calculatedPrice = json.data;
+                const extraCost  = getExtraCost();
+                const grandTotal = parseFloat(json.data.total_price) + extraCost;
+                calculatedPrice  = { ...json.data, extra_cost: extraCost.toFixed(2), grand_total: grandTotal.toFixed(2) };
+
                 document.getElementById('pv-pages').textContent = json.data.total_pages + ' pages';
                 document.getElementById('pv-print').textContent = '₱' + json.data.print_cost;
+
                 if (parseFloat(json.data.binding_cost) > 0) {
                     document.getElementById('pv-binding-row').style.display = 'flex';
                     document.getElementById('pv-binding').textContent = '₱' + json.data.binding_cost;
                 } else { document.getElementById('pv-binding-row').style.display = 'none'; }
-                document.getElementById('pv-total').textContent = '₱' + json.data.total_price;
+
+                if (extraCost > 0) {
+                    document.getElementById('pv-extras-row').style.display = 'flex';
+                    document.getElementById('pv-extras').textContent = '₱' + extraCost.toFixed(2);
+                } else { document.getElementById('pv-extras-row').style.display = 'none'; }
+
+                document.getElementById('pv-total').textContent = '₱' + grandTotal.toFixed(2);
             });
         }
+
+        // ── Live Print Preview ──────────────────────────────────
+        const PAPER_DIMS = {
+            'A4':    { w: 210, h: 297, label: '210×297mm' },
+            'A3':    { w: 297, h: 420, label: '297×420mm' },
+            'Short': { w: 216, h: 279, label: '216×279mm' },
+            'Long':  { w: 216, h: 330, label: '216×330mm' },
+        };
+        const PREVIEW_BASE_H = 184;
+
+        function updatePreview() {
+            const paper       = getSelected('paper_size') || 'A4';
+            const colorMode   = getSelected('color_mode') || 'bw';
+            const orientation = getSelected('orientation') || 'portrait';
+            const sides       = getSelected('sides') || 'single';
+            const binding     = document.getElementById('opt-binding').value;
+            const copies      = parseInt(qtyInput.value) || 1;
+
+            const dims        = PAPER_DIMS[paper] || PAPER_DIMS['A4'];
+            const isLandscape = orientation === 'landscape';
+            const isColor     = colorMode === 'color';
+            const isDouble    = sides === 'double';
+
+            const mmW   = isLandscape ? dims.h : dims.w;
+            const mmH   = isLandscape ? dims.w : dims.h;
+            const ratio = mmW / mmH;
+            const pageH = PREVIEW_BASE_H;
+            const pageW = Math.round(pageH * ratio);
+
+            const page      = document.getElementById('pso-preview-page');
+            const inner     = document.getElementById('pso-page-inner');
+            const bindingEl = document.getElementById('pso-binding-indicator');
+            const swatches  = document.getElementById('pso-color-swatches');
+            const stack     = document.getElementById('pso-copies-stack');
+            const badge     = document.getElementById('pso-preview-badge');
+
+            page.style.width  = pageW + 'px';
+            page.style.height = pageH + 'px';
+            page.classList.toggle('double-sided', isDouble);
+
+            if (isColor) {
+                inner.classList.add('color-mode');
+                inner.classList.remove('bw-mode');
+                swatches.style.display = 'block';
+            } else {
+                inner.classList.add('bw-mode');
+                inner.classList.remove('color-mode');
+                swatches.style.display = 'none';
+            }
+
+            if (binding === 'none') {
+                bindingEl.style.display = 'none';
+            } else {
+                bindingEl.style.display = 'block';
+                bindingEl.className = 'pso-binding-indicator ' + binding;
+            }
+
+            stack.innerHTML = '';
+            const visibleGhosts = Math.min(copies - 1, 4);
+            for (let i = 0; i < visibleGhosts; i++) {
+                const ghost = document.createElement('div');
+                ghost.className = 'pso-copy-ghost';
+                const offset = (i + 1) * 3;
+                ghost.style.top    = offset + 'px';
+                ghost.style.left   = offset + 'px';
+                ghost.style.right  = (-offset) + 'px';
+                ghost.style.bottom = (-offset) + 'px';
+                ghost.style.zIndex = -(i + 1);
+                stack.appendChild(ghost);
+            }
+
+            const mmLabel = isLandscape ? dims.label.split('×').reverse().join('×') : dims.label;
+            document.getElementById('spec-size').textContent   = paper + ' · ' + mmLabel;
+            document.getElementById('spec-color').textContent  = isColor ? 'Full Color' : 'Black & White';
+            document.getElementById('spec-sides').textContent  = isDouble ? 'Double-sided' : 'Single-sided';
+            document.getElementById('spec-copies').textContent = copies + (copies === 1 ? ' copy' : ' copies');
+            badge.textContent = paper + ' · ' + (isColor ? 'Color' : 'B&W') + ' · ' + (isLandscape ? 'Landscape' : 'Portrait');
+        }
+
+        updatePreview();
 
         document.getElementById('pso-back-2').addEventListener('click', () => goToStep(1));
         document.getElementById('pso-next-2').addEventListener('click', () => goToStep(3));
@@ -1529,7 +1975,7 @@ function bntm_shortcode_ps_order() {
             buildReview(); goToStep(4);
         });
 
-        const paymentLabels = {cash:'Cash on Pickup', gcash:'GCash'};
+        const paymentLabels = {cash:'Cash', gcash:'GCash'};
         const bindingLabels = {none:'None', staple:'Staple', spiral:'Spiral Binding', hardcover:'Hard Cover'};
 
         function buildReview() {
@@ -1545,8 +1991,19 @@ function bntm_shortcode_ps_order() {
             document.getElementById('rv-email').textContent       = document.getElementById('cust-email').value;
             document.getElementById('rv-phone').textContent       = document.getElementById('cust-phone').value || '—';
             document.getElementById('rv-payment').textContent     = paymentLabels[getSelected('payment_method')] || '—';
-            document.getElementById('rv-total').textContent       = calculatedPrice ? '₱' + calculatedPrice.total_price : '₱0.00';
-            document.getElementById('rv-total-note').textContent  = calculatedPrice ? calculatedPrice.total_pages + ' pages × ₱' + calculatedPrice.unit_price + '/page' : '';
+
+            const extrasLabel = getSelectedExtrasLabel();
+            const extrasRow   = document.getElementById('rv-extras-row');
+            if (extrasLabel !== 'None') {
+                extrasRow.style.display = 'flex';
+                document.getElementById('rv-extras').textContent = extrasLabel;
+            } else {
+                extrasRow.style.display = 'none';
+            }
+
+            const total = calculatedPrice ? calculatedPrice.grand_total : '0.00';
+            document.getElementById('rv-total').textContent      = '₱' + total;
+            document.getElementById('rv-total-note').textContent = calculatedPrice ? calculatedPrice.total_pages + ' pages × ₱' + calculatedPrice.unit_price + '/page' : '';
         }
 
         document.getElementById('pso-back-4').addEventListener('click', () => goToStep(3));
@@ -1567,7 +2024,12 @@ function bntm_shortcode_ps_order() {
             fd.append('customer_email', document.getElementById('cust-email').value);
             fd.append('customer_phone', document.getElementById('cust-phone').value);
             fd.append('payment_method', getSelected('payment_method'));
-            if (calculatedPrice) { fd.append('total_pages', calculatedPrice.total_pages); fd.append('unit_price', calculatedPrice.unit_price); fd.append('total_price', calculatedPrice.total_price); }
+            if (calculatedPrice) {
+                fd.append('total_pages', calculatedPrice.total_pages);
+                fd.append('unit_price', calculatedPrice.unit_price);
+                fd.append('total_price', calculatedPrice.grand_total);
+                fd.append('extra_services_selected', getSelectedExtrasLabel());
+            }
 
             this.disabled  = true;
             this.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation:spin .8s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Submitting…';
@@ -1575,24 +2037,24 @@ function bntm_shortcode_ps_order() {
             fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
                 if (json.success) {
                     const orderData = {
-                        rand_id        : json.data.rand_id,
-                        customer_name  : document.getElementById('cust-name').value,
-                        customer_email : document.getElementById('cust-email').value,
-                        file_name      : uploadedFile.file_name,
-                        paper_size     : getSelected('paper_size'),
-                        color_mode     : getSelected('color_mode'),
-                        copies         : qtyInput.value,
-                        sides          : getSelected('sides'),
-                        orientation    : getSelected('orientation'),
-                        binding        : bindingLabels[document.getElementById('opt-binding').value] || 'None',
-                        total_pages    : calculatedPrice ? calculatedPrice.total_pages : '—',
-                        total_price    : calculatedPrice ? calculatedPrice.total_price : '0.00',
-                        payment_method : getSelected('payment_method'),
+                        rand_id             : json.data.rand_id,
+                        customer_name       : document.getElementById('cust-name').value,
+                        customer_email      : document.getElementById('cust-email').value,
+                        file_name           : uploadedFile.file_name,
+                        paper_size          : getSelected('paper_size'),
+                        color_mode          : getSelected('color_mode'),
+                        copies              : qtyInput.value,
+                        sides               : getSelected('sides'),
+                        orientation         : getSelected('orientation'),
+                        binding             : bindingLabels[document.getElementById('opt-binding').value] || 'None',
+                        total_pages         : calculatedPrice ? calculatedPrice.total_pages : '—',
+                        additional_services : getSelectedExtrasLabel(),
+                        total_price         : calculatedPrice ? calculatedPrice.grand_total : '0.00',
+                        payment_method      : getSelected('payment_method'),
                     };
 
-                    // ── Fire EmailJS emails ──────────────────────
-                    psSendConfirmation(orderData);  // to customer
-                    psSendAdminAlert(orderData);    // to admin
+                    psSendConfirmation(orderData);
+                    psSendAdminAlert(orderData);
 
                     document.getElementById('pso-order-id-display').textContent = json.data.rand_id;
                     const emailVal = document.getElementById('cust-email').value;
@@ -1830,9 +2292,12 @@ function bntm_ajax_ps_submit_order() {
     $binding        = sanitize_text_field($_POST['binding'] ?? 'none');
     $notes          = sanitize_textarea_field($_POST['notes'] ?? '');
     $payment_method = sanitize_text_field($_POST['payment_method'] ?? '');
+    $extra_selected = sanitize_text_field($_POST['extra_services_selected'] ?? '');
+    $client_total   = floatval($_POST['total_price'] ?? 0);
 
     if (!$customer_name || !$file_name) wp_send_json_error(['message' => 'Missing required fields.']);
 
+    // Recalculate server-side to be safe
     $prices = [
         'bw'    => ['A4' => ps_get_setting('bw_a4', 2), 'A3' => ps_get_setting('bw_a3', 4), 'Short' => ps_get_setting('bw_letter', 2), 'Long' => ps_get_setting('bw_long', 2)],
         'color' => ['A4' => ps_get_setting('color_a4', 8), 'A3' => ps_get_setting('color_a3', 14), 'Short' => ps_get_setting('color_letter', 8), 'Long' => ps_get_setting('color_long', 8)],
@@ -1843,6 +2308,14 @@ function bntm_ajax_ps_submit_order() {
     $real_binding     = floatval($binding_map[$binding] ?? 0) * $copies;
     $real_total       = round($real_unit * $real_total_pages + $real_binding, 2);
 
+    // Use client total if provided (includes extra services), otherwise use server-computed
+    $final_total = $client_total > 0 ? $client_total : $real_total;
+
+    // Append extra services to notes if any
+    if ($extra_selected && $extra_selected !== 'None') {
+        $notes = $notes ? $notes . "\nExtra services: " . $extra_selected : "Extra services: " . $extra_selected;
+    }
+
     $rand_id     = 'PS-' . strtoupper(substr(md5(uniqid() . $customer_email), 0, 8));
     $business_id = is_user_logged_in() ? get_current_user_id() : 0;
 
@@ -1852,13 +2325,13 @@ function bntm_ajax_ps_submit_order() {
         'file_name' => $file_name, 'file_path' => $file_path, 'file_size' => $file_size, 'page_count' => $page_count,
         'copies' => $copies, 'paper_size' => $paper_size, 'color_mode' => $color_mode,
         'orientation' => $orientation, 'sides' => $sides, 'binding' => $binding, 'notes' => $notes,
-        'total_pages' => $real_total_pages, 'unit_price' => $real_unit, 'total_price' => $real_total,
+        'total_pages' => $real_total_pages, 'unit_price' => $real_unit, 'total_price' => $final_total,
         'payment_method' => $payment_method, 'status' => 'pending',
         'payment_status' => 'unpaid',
     ], ['%s','%d','%s','%s','%s','%s','%s','%d','%d','%d','%s','%s','%s','%s','%s','%s','%d','%f','%f','%s','%s','%s']);
 
     if ($result) {
-        wp_send_json_success(['rand_id' => $rand_id, 'total' => $real_total]);
+        wp_send_json_success(['rand_id' => $rand_id, 'total' => $final_total]);
     } else {
         wp_send_json_error(['message' => 'Failed to save order. Please try again.']);
     }
@@ -1963,18 +2436,32 @@ function bntm_ajax_ps_update_order_status() {
 
     $result = $wpdb->update($t, $update_data, ['id' => $order_id], $update_format, ['%d']);
 
-    // Return order data for EmailJS ready notification
     if ($status === 'ready') {
         $order = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d", $order_id));
         if ($order && $result !== false) {
+            // Extract additional services from notes if present
+            $additional_services = 'None';
+            if ($order->notes && strpos($order->notes, 'Extra services:') !== false) {
+                preg_match('/Extra services: (.+)/i', $order->notes, $m);
+                if (!empty($m[1])) $additional_services = trim($m[1]);
+            }
             wp_send_json_success([
-                'message'          => 'Status updated',
-                'send_ready_email' => true,
-                'customer_email'   => $order->customer_email,
-                'customer_name'    => $order->customer_name,
-                'rand_id'          => $order->rand_id,
-                'file_name'        => $order->file_name,
-                'total_price'      => number_format($order->total_price, 2),
+                'message'             => 'Status updated',
+                'send_ready_email'    => true,
+                'customer_email'      => $order->customer_email,
+                'customer_name'       => $order->customer_name,
+                'rand_id'             => $order->rand_id,
+                'file_name'           => $order->file_name,
+                'paper_size'          => $order->paper_size,
+                'color_mode'          => $order->color_mode === 'color' ? 'Full Color' : 'Black & White',
+                'copies'              => $order->copies,
+                'sides'               => ucfirst($order->sides) . '-sided',
+                'orientation'         => ucfirst($order->orientation),
+                'binding'             => $order->binding === 'none' ? 'None' : ucfirst($order->binding),
+                'total_pages'         => $order->total_pages,
+                'additional_services' => $additional_services,
+                'total_price'         => number_format($order->total_price, 2),
+                'payment_method'      => ucfirst($order->payment_method),
             ]);
         }
     }
@@ -2028,6 +2515,7 @@ function bntm_ajax_ps_save_pricing() {
              'shop_name','shop_address','shop_hours','shop_note',
              'allowed_file_types','max_file_mb','admin_email',
              'gcash_name','gcash_number','gcash_qr_url'];
+
     $text_keys = ['shop_name','shop_address','shop_hours','shop_note','allowed_file_types',
                   'admin_email','gcash_name','gcash_number','gcash_qr_url'];
 
@@ -2037,6 +2525,27 @@ function bntm_ajax_ps_save_pricing() {
             ps_set_setting($key, $val);
         }
     }
+
+    // Handle extra_services separately — sanitize_text_field() destroys JSON
+    if (isset($_POST['extra_services'])) {
+        $raw     = wp_unslash($_POST['extra_services']);
+        $decoded = json_decode($raw, true);
+        if (is_array($decoded)) {
+            $clean = [];
+            foreach ($decoded as $svc) {
+                $clean[] = [
+                    'name'     => sanitize_text_field($svc['name'] ?? ''),
+                    'desc'     => sanitize_text_field($svc['desc'] ?? ''),
+                    'price'    => floatval($svc['price'] ?? 0),
+                    'per_copy' => intval($svc['per_copy'] ?? 0),
+                ];
+            }
+            ps_set_setting('extra_services', wp_json_encode($clean));
+        } else {
+            ps_set_setting('extra_services', '[]');
+        }
+    }
+
     wp_send_json_success(['message' => 'Settings saved successfully!']);
 }
 
