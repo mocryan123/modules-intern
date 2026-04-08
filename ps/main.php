@@ -148,9 +148,9 @@ function bntm_shortcode_ps_dashboard() {
 
     <div class="bntm-ps-container">
         <div class="bntm-tabs">
-            <a href="?tab=overview"  class="bntm-tab <?php echo $active_tab === 'overview'  ? 'active' : ''; ?>">Overview</a>
-            <a href="?tab=orders"    class="bntm-tab <?php echo $active_tab === 'orders'    ? 'active' : ''; ?>">Orders</a>
-            <a href="?tab=settings"  class="bntm-tab <?php echo $active_tab === 'settings'  ? 'active' : ''; ?>">Settings</a>
+            <a href="?page_id=14&tab=overview"  class="bntm-tab <?php echo $active_tab === 'overview' ? 'active' : ''; ?>">Overview</a>
+            <a href="?page_id=14&tab=orders"    class="bntm-tab <?php echo $active_tab === 'orders' ? 'active' : ''; ?>">Orders</a>
+            <a href="?page_id=14&tab=settings"  class="bntm-tab <?php echo $active_tab === 'settings' ? 'active' : ''; ?>">Settings</a>
         </div>
         <div class="bntm-tab-content">
             <?php
