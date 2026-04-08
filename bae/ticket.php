@@ -65,7 +65,7 @@ function bae_resend_email( $to, $subject, $text ) {
         $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        $mail->setFrom( $from, 'Brand Asset Engine' );
+        $mail->setFrom( $from, 'Mothie' );
         $mail->addAddress( $to );
         $mail->Subject = $subject;
         $mail->Body    = $text;
@@ -267,8 +267,8 @@ function bntm_bae_ajax_ticket_check() {
 
         $email   = $profile['login_code_email'];
         $name    = $profile['business_name'] ?: 'your workspace';
-        $subject = 'Your Brand Asset Engine login code';
-        $body    = "Hi,\n\nYour login verification code for {$name} is:\n\n    {$otp}\n\nThis code expires in 10 minutes.\n\n— Brand Asset Engine";
+        $subject = 'Your Mothie login code';
+        $body    = "Hi,\n\nYour login verification code for {$name} is:\n\n    {$otp}\n\nThis code expires in 10 minutes.\n\n— Mothie";
         $sent = bae_resend_email( $email, $subject, $body );
 
         if ( ! $sent ) {
@@ -609,8 +609,8 @@ function bntm_bae_ajax_send_login_otp() {
 
     $email   = $profile['login_code_email'];
     $name    = $profile['business_name'] ?: 'your workspace';
-    $subject = 'Your Brand Asset Engine login code';
-    $body    = "Hi,\n\nYour login verification code for {$name} is:\n\n    {$otp}\n\nThis code expires in 10 minutes. If you didn't request this, you can ignore this email.\n\n— Brand Asset Engine";
+    $subject = 'Your Mothie login code';
+    $body    = "Hi,\n\nYour login verification code for {$name} is:\n\n    {$otp}\n\nThis code expires in 10 minutes. If you didn't request this, you can ignore this email.\n\n— Mothie";
 
     $sent = bae_resend_email( $email, $subject, $body );
 
@@ -706,6 +706,7 @@ function bntm_bae_ticket_migrate() {
 // =============================================================================
 
 function bntm_bae_ticket_screen() {
+    $logo_url = esc_js(bae_module_logo_url());
     ob_start(); ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -714,9 +715,9 @@ function bntm_bae_ticket_screen() {
     .baetk::before { content:''; position:absolute; width:480px; height:480px; border-radius:50%; background:radial-gradient(circle,rgba(139,92,246,.13) 0%,transparent 70%); top:-160px; right:-80px; pointer-events:none; z-index:0; }
     .baetk::after  { content:''; position:absolute; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(236,72,153,.08) 0%,transparent 70%); bottom:-80px; left:-80px; pointer-events:none; z-index:0; }
     .baetk-in { width:100%; max-width:400px; text-align:center; position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; }
-    .baetk-logo { width:56px; height:56px; background:linear-gradient(135deg,#6d28d9,#ec4899); border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 28px; box-shadow:0 0 36px rgba(139,92,246,.4); position:relative; z-index:2; }
-    .baetk-logo svg { width:26px; height:26px; }
-    .baetk-title { font-family:'Instrument Serif',serif; font-size:32px; font-style:italic; color:#ede9ff; margin-bottom:8px; line-height:1.2; width:100%; position:relative; z-index:2; }
+    .baetk-logo { width:56px; display:flex; align-items:center; justify-content:center; margin:0 auto 28px; position:relative; z-index:2; }
+    .baetk-logo img { width:100%; height:auto; display:block; }
+    .baetk-title { font-family:'Cambo',serif; font-size:32px; font-style:bold; color:#ede9ff; margin-bottom:8px; line-height:1.2; width:100%; position:relative; z-index:2; }
     .baetk-sub { font-size:14px; color:#4d4a65; margin-bottom:36px; line-height:1.7; width:100%; position:relative; z-index:2; }
     .baetk-inp { width:100%; background:rgba(28,20,12,0.04); border:1.5px solid rgba(139,92,246,.2); border-radius:14px; padding:16px 20px; font-size:22px; font-family:'Geist',monospace; font-weight:700; letter-spacing:.15em; color:#1d1a16; outline:none; text-align:center; text-transform:uppercase; transition:border-color .2s,box-shadow .2s; margin-bottom:14px; display:block; box-sizing:border-box; position:relative; z-index:2; pointer-events:auto; }
     .baetk-inp:focus { border-color:#8b5cf6; box-shadow:0 0 0 3px rgba(139,92,246,.15); }
@@ -757,6 +758,51 @@ function bntm_bae_ticket_screen() {
     .baetk-kicker { display:block; font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:#8c857a; margin-bottom:2px; }
     .baetk[data-theme="dark"] .baetk-kicker { color:#8c88a8; }
     .baetk-brandname { display:block; font-family:'Instrument Serif',serif; font-size:18px; line-height:1; color:inherit; }
+    .baetk-brandname .bae-brand-wordmark {
+        display:inline-flex;
+        align-items:flex-end;
+        gap:.03em;
+        color:inherit;
+        line-height:1;
+    }
+    .baetk-brandname .bae-brand-wordmark-leading,
+    .baetk-brandname .bae-brand-wordmark-trailing,
+    .baetk-brandname .bae-brand-wordmark-letter {
+        display:inline-block;
+    }
+    .baetk-brandname .bae-brand-wordmark-center {
+        display:inline-flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:flex-end;
+        margin:0 .08em;
+        line-height:.88;
+    }
+    .baetk-brandname .bae-brand-wordmark-logo {
+        width:1.9em;
+        margin-bottom:-0.04em;
+    }
+    .baetk-brandname .bae-brand-wordmark-letter { color:#7c3aed; }
+    .baetk-brandname .bae-brand-wordmark-merge .bae-brand-wordmark-center {
+        position:relative;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        flex-direction:row;
+        margin:0 .02em 0 .04em;
+        line-height:1;
+    }
+    .baetk-brandname .bae-brand-wordmark-merge .bae-brand-wordmark-letter-o { color:transparent; }
+    .baetk-brandname .bae-brand-wordmark-logo-merge {
+        width:1.12em;
+        margin:0;
+        position:absolute;
+        left:50%;
+        top:52%;
+        transform:translate(-50%, -50%);
+    }
+    .baetk[data-theme="dark"] .baetk-brandname .bae-brand-wordmark-letter { color:#a78bfa; }
+    .baetk[data-theme="light"] .baetk-brandname .bae-brand-logo-img { filter:invert(1); }
     .baetk-theme-btn {
         display:flex; align-items:center; gap:8px;
         background:rgba(255,255,255,.74); border:1px solid rgba(28,20,12,.08);
@@ -788,9 +834,8 @@ function bntm_bae_ticket_screen() {
         box-shadow:0 1px 3px rgba(0,0,0,.3);
     }
     .baetk-toggle-track.on .baetk-toggle-thumb { transform:translateX(16px); }
-    .baetk-logo { width:36px; height:36px; background:linear-gradient(135deg,#111827,#7c3aed); border-radius:12px; display:flex; align-items:center; justify-content:center; margin:0; box-shadow:0 16px 32px rgba(124,58,237,.18); position:relative; z-index:2; transition:transform .28s ease, box-shadow .28s ease, filter .28s ease; }
-    .baetk-logo svg { width:18px; height:18px; }
-    .baetk-logo:hover { transform:scale(1.05) rotate(-2deg); box-shadow:0 20px 46px rgba(124,58,237,.26); }
+    .baetk-logo { width:42px; margin:0; transition:transform .28s ease, filter .28s ease; }
+    .baetk-logo:hover { transform:scale(1.05) rotate(-2deg); }
     .baetk-in { width:100%; max-width:none; text-align:left; position:relative; z-index:2; display:block; }
     .baetk-err { color:#dc2626; background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.18); }
     .baetk-hint { color:#8c857a; }
@@ -798,7 +843,7 @@ function bntm_bae_ticket_screen() {
     .baetk-new-btn { color:#1d1a16; border-color:rgba(28,20,12,.08); background:rgba(255,255,255,.52); }
     .baetk[data-theme="dark"] .baetk-new-btn { color:#f4f1ff; border-color:rgba(255,255,255,.08); background:rgba(28,28,38,.72); }
     .baetk-new-btn:hover { background:rgba(124,58,237,.08); border-color:rgba(124,58,237,.3); color:inherit; transform:translateY(-1px) scale(1.01); box-shadow:0 16px 30px rgba(124,58,237,.12); }
-    .baetk-logo:hover { transform:scale(1.05) rotate(-2deg); box-shadow:0 20px 46px rgba(124,58,237,.26); }
+    .baetk[data-theme="light"] .baetk-logo img { filter:invert(1); }
     .baetk-spin { border:2px solid rgba(124,58,237,.24); border-top-color:var(--accent); }
     .baetk-inp::placeholder { color:#a49c92; }
     .baetk[data-theme="dark"] .baetk-inp::placeholder { color:#6a667e; }
@@ -808,7 +853,7 @@ function bntm_bae_ticket_screen() {
     .baetk-eyebrow { display:inline-flex; align-items:center; gap:10px; padding:10px 14px; border-radius:999px; border:1px solid rgba(28,20,12,.08); background:rgba(255,255,255,.86); color:#6d665c; font-size:12px; letter-spacing:.14em; text-transform:uppercase; margin-bottom:24px; box-shadow:0 18px 50px rgba(28,20,12,.08); backdrop-filter:blur(20px); }
     .baetk[data-theme="dark"] .baetk-eyebrow { border-color:rgba(255,255,255,.08); background:rgba(28,28,38,.86); color:#a7a2bb; }
     .baetk-eyebrow i { width:8px; height:8px; border-radius:50%; background:linear-gradient(135deg,#ec4899,#8b5cf6); box-shadow:0 0 0 6px rgba(139,92,246,.12); display:inline-block; }
-    .baetk-title { font-family:'Instrument Serif',serif; font-size:clamp(42px, 5.1vw, 72px); line-height:.92; letter-spacing:-.03em; color:inherit; margin:0 0 16px; max-width:11ch; }
+    .baetk-title { font-family:'Cambo',serif; font-size:clamp(42px, 5.1vw, 72px); line-height:.92; letter-spacing:-.03em; color:inherit; margin:0 0 16px; max-width:30ch; }
     .baetk-sub { font-size:clamp(14px, 1.1vw, 18px); line-height:1.85; color:#6d665c; margin-bottom:22px; max-width:58ch; }
     .baetk[data-theme="dark"] .baetk-sub { color:#a7a2bb; }
     .baetk-chips { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px; }
@@ -1474,11 +1519,10 @@ function bntm_bae_ticket_screen() {
             <div class="baetk-nav">
                 <div class="baetk-brand">
                     <div class="baetk-logo">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        <img src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie logo">
                     </div>
                     <div>
-                        <span class="baetk-kicker">Brand Asset Engine</span>
-                        <span class="baetk-brandname">One ticket. One brand.</span>
+                        <span class="baetk-brandname"><?php echo bae_render_brand_wordmark_merge(); ?></span>
                     </div>
                 </div>
                 <button type="button" class="baetk-theme-btn" id="baetk-theme-btn" onclick="baeTkToggleTheme()">
@@ -1495,14 +1539,16 @@ function bntm_bae_ticket_screen() {
 
             <div class="baetk-hero">
                 <div class="baetk-copy" id="baetk-copy">
-                    <div class="baetk-eyebrow"><i></i> Brand Asset Engine</div>
-                    <div class="baetk-title">Build a clean brand asset system with one ticket.</div>
-                    <div class="baetk-sub">Claim access, open your workspace, and create the visual pieces your brand needs without clutter. BAE keeps the system focused, simple, and easy to trust.</div>
-                    <div class="baetk-chips">
-                        <div class="baetk-chip">Brand assets</div>
-                        <div class="baetk-chip">One workspace</div>
-                        <div class="baetk-chip">MSME-friendly</div>
-                    </div>
+                    <div class="baetk-eyebrow"><i></i> Mothie</div>
+					<div class="baetk-title">YOUR BRAND YOUR ASSET.</div>
+					<div class="baetk-sub">Mothie is your Brand Asset Engine for modular brand systems — logo, colors, typography, business card, letterhead, email signature, and social kit — all from one brand profile. No design skills required.</div>
+					<div class="baetk-chips">
+						<div class="baetk-chip">Logo system</div>
+						<div class="baetk-chip">Color palette</div>
+						<div class="baetk-chip">Business card</div>
+						<div class="baetk-chip">Social kit</div>
+						<div class="baetk-chip">Brand guidelines</div>
+					</div>
                 </div>
 
                 <div class="baetk-card" id="baetk-card">
@@ -1531,20 +1577,26 @@ function bntm_bae_ticket_screen() {
             </div>
 
             <section class="baetk-section" id="baetk-section-1" data-motion="left">
-                <div class="baetk-section-inner">
-                    <div class="baetk-split">
-                        <div class="baetk-copy-block">
-                            <div class="baetk-eyebrow" style="margin-bottom:18px;"><i></i> Brand language</div>
-                            <h2 class="baetk-copy-xl">A clean entrance for a serious MSME tool.</h2>
-                            <p class="baetk-copy-sm">BAE should feel like a polished front door, not a rough utility screen. White-first, editorial, and calm. The ticket gate is the first impression, so it needs to carry the mood of the whole product.</p>
-                        </div>
-                        <div class="baetk-surface">
-                            <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1400&q=80" alt="Soft workspace mood">
-                            <div class="baetk-caption">Mood reference</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+				<div class="baetk-section-inner">
+					<div class="baetk-split">
+						<div class="baetk-copy-block">
+							<div class="baetk-eyebrow" style="margin-bottom:18px;"><i></i> How it works</div>
+							<h2 class="baetk-copy-xl">Mothify your brand. Get your full asset kit.</h2>
+							<p class="baetk-copy-sm">You enter your business name, colors, fonts, tagline, and brand personality. BAE generates every visual asset your brand needs — formatted, export-ready, and consistent across every touchpoint.</p>
+							<div class="baetk-lines">
+								<div class="baetk-line"><div class="num">Profile</div><div><h4>Brand Profile</h4><p>Enter your business name, colors, typography, industry, and tone of voice.</p></div></div>
+								<div class="baetk-line"><div class="num">Generate</div><div><h4>Asset Generator</h4><p>One click generates your business card, letterhead, email signature, social kit, and brand guidelines.</p></div></div>
+								<div class="baetk-line"><div class="num">Export</div><div><h4>Brand Kit</h4><p>View, copy, or share your complete HTML-ready brand assets from your kit page.</p></div></div>
+							</div>
+						</div>
+						<div class="baetk-surface">
+							<img src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=1200&q=80" alt="Brand design workspace">
+							<div class="baetk-caption">Asset Generator</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
 
             <section class="baetk-section baetk-deepglow" id="baetk-section-2" data-motion="right">
                 <div class="shadow-orb one"></div>
@@ -1581,11 +1633,11 @@ function bntm_bae_ticket_screen() {
 
             <section class="baetk-section" id="baetk-section-3" data-motion="up">
                 <div class="baetk-section-inner baetk-storyband">
-                    <div class="baetk-marquee"><span>Brand Asset Engine / assets / identity / kit / launch / export /</span><span>Brand Asset Engine / assets / identity / kit / launch / export /</span></div>
+                    <div class="baetk-marquee"><span>Mothie / assets / identity / kit / launch / export /</span><span>Mothie / assets / identity / kit / launch / export /</span></div>
                     <div class="baetk-storygrid">
                         <div class="baetk-storycard">
                             <div class="baetk-eyebrow" style="margin-bottom:18px;"><i></i> Identity flow</div>
-                            <h2 class="baetk-copy-xl">Build the brand world once, then keep every asset aligned.</h2>
+                            <h2 class="baetk-copy-xl">Mothify the brand world once, then keep every asset aligned.</h2>
                             <p class="baetk-copy-sm">BAE helps a small business move from rough ideas into a usable identity system. Every logo, color choice, and layout cue should feel like part of the same brand family, not a one-off file.</p>
                         </div>
                         <div class="baetk-surface">
@@ -1622,7 +1674,7 @@ function bntm_bae_ticket_screen() {
                             <p>These details keep the product simple for owners while protecting the consistency of the brand asset kit.</p>
                         </div>
                         <h2 class="baetk-copy-xl" style="max-width:14ch;">Built for owners who want a brand system they can trust.</h2>
-                        <p class="baetk-copy-sm">The engine keeps the path simple: one ticket, one workspace, one brand. That structure gives MSMEs a quick way to move from setup to usable assets without losing visual consistency or momentum.</p>
+                        <p class="baetk-copy-sm">MOTHIE stands for Modular Optimized Transformative Hub Internal Engine. The path stays simple: one ticket, one workspace, one brand system that helps MSMEs move from passive, scattered brand management into a more strategic and consistent workflow.</p>
                         <div class="baetk-metrics">
                             <div class="baetk-metric"><strong>1</strong><span>ticket = one brand</span></div>
                             <div class="baetk-metric"><strong>2</strong><span>theme modes</span></div>
@@ -1637,7 +1689,7 @@ function bntm_bae_ticket_screen() {
                 <div class="baetk-cta-inner">
                     <div>
                         <h3>Launch ready</h3>
-                        <p>Keep the gate calm, let the Brand Asset Engine do the work, and preserve the brand mood from first click to final export. That is the right shape for a small MSME product that needs speed, clarity, and trust.</p>
+                        <p>Keep the gate calm, let the Mothie do the work, and preserve the brand mood from first click to final export. That is the right shape for a small MSME product that needs speed, clarity, and trust.</p>
                         <a class="btn" href="javascript:void(0)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Back to ticket gate</a>
                     </div>
                     <div class="baetk-surface" style="min-height:420px;">
@@ -1650,8 +1702,8 @@ function bntm_bae_ticket_screen() {
             <footer class="baetk-footer">
                 <div class="baetk-footer-inner">
                     <div>
-                        <strong style="display:block;font-size:13px;color:inherit;margin-bottom:4px;">Brand Asset Engine</strong>
-                        <span>One ticket, one workspace, one brand system.</span>
+                        <strong style="display:block;font-size:13px;color:inherit;margin-bottom:4px;">Mothie</strong>
+                        <span>Brand Asset Engine for modular, optimized brand systems.</span>
                     </div>
                     <div class="baetk-footer-links">
                         <a href="javascript:void(0)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Top</a>
@@ -1665,6 +1717,7 @@ function bntm_bae_ticket_screen() {
     <script>
     /* BAE Ticket Screen — all functions global, no IIFE */
     var _baeTkAj = '<?php echo esc_js( admin_url( "admin-ajax.php" ) ); ?>';
+    var _baeTkLogo = '<?php echo $logo_url; ?>';
 
     function _baeTkEl(id) { return document.getElementById(id); }
 
@@ -1862,7 +1915,7 @@ function bntm_bae_ticket_screen() {
         function renderOtp() {
             wrap.innerHTML =
                 '<div class="baetk-logo">' +
-                    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
+                    '<img src="' + _baeTkLogo + '" alt="Mothie logo">' +
                 '</div>' +
                 '<div class="baetk-title">Check your email</div>' +
                 '<div class="baetk-sub">A 6-digit code was sent to<br><strong style="color:#8b88a4;">' + (maskedEmail || 'your registered email') + '</strong></div>' +
@@ -2011,8 +2064,8 @@ function bntm_bae_ticket_screen() {
                 overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:' + overlayBg + ';display:flex;align-items:center;justify-content:center;padding:24px;';
                 overlay.innerHTML = [
                     '<div style="background:' + modalBg + ';border:1px solid ' + modalBorder + ';border-radius:20px;padding:36px 32px;max-width:420px;width:100%;text-align:center;">',
-                        '<div style="width:48px;height:48px;background:linear-gradient(135deg,#6d28d9,#ec4899);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">',
-                            '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2.5\"><path d=\"M20 6 9 17l-5-5\"/></svg>',
+                        '<div style="width:58px;margin:0 auto 20px;">',
+                            '<img src="' + _baeTkLogo + '" alt="Mothie logo" style="width:100%;height:auto;display:block;' + (isDark ? '' : 'filter:invert(1);') + '">',
                         '</div>',
                         '<div style="font-family:Instrument Serif,serif;font-size:26px;font-style:italic;color:' + titleColor + ';margin-bottom:8px;">Your ticket is ready</div>',
                         '<div style="font-size:13px;color:' + textColor + ';margin-bottom:24px;">Save this code to access your workspace from any device.</div>',
@@ -2253,21 +2306,49 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
         transition: background 0.5s, border-color 0.5s;
         position: sticky; top: 0; z-index: 100;
     }
-    .bae-logo-mark {
-        width: 34px; height: 34px;
-        background: linear-gradient(135deg, var(--brand-deep), var(--pink));
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-family: 'Instrument Serif', serif;
-        font-size: 14px; font-style: italic; color: white; font-weight: 400;
+    .bae-header-logo {
+        display:flex; align-items:center; gap:10px;
+    }
+    .bae-brand-mark {
+        width: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
     }
-    .bae-logo-text {
+    .bae-brand-logo-img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .bae-brand-wordmark {
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 0.03em;
         font-family: 'Instrument Serif', serif;
         font-size: 18px; font-style: italic;
         color: var(--text); transition: color 0.5s;
+        line-height: 1;
     }
-    .bae-logo-text span { color: var(--brand-soft); }
+    .bae-brand-wordmark-leading,
+    .bae-brand-wordmark-trailing,
+    .bae-brand-wordmark-letter {
+        display: inline-block;
+    }
+    .bae-brand-wordmark-center {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        margin: 0 0.08em;
+        line-height: 0.88;
+    }
+    .bae-brand-wordmark-logo {
+        width: 1.9em;
+        margin-bottom: -0.04em;
+    }
+    .bae-brand-wordmark-letter { color: var(--brand-soft); }
+    .bae-wrap.bae-light .bae-brand-logo-img { filter: invert(1); }
     .bae-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 
     /* Theme toggle */
@@ -2881,8 +2962,7 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
 
         <!-- Header -->
         <div class="bae-header">
-            <div class="bae-logo-mark">B</div>
-            <div class="bae-logo-text">Brand<span>Asset</span></div>
+            <div class="bae-header-logo"><?php echo bae_render_brand_wordmark_merge(); ?></div>
             <div class="bae-header-right">
                 <?php if ($onboarding_done_tk && $active_tab !== 'dashboard'): ?>
                 <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"

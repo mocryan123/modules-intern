@@ -852,7 +852,7 @@ function bae_render_book_pages($p, $tpl) {
     $o .= '<div style="font-size:.75em;opacity:.65;margin-bottom:14px;">'.$tagline.'</div>';
     if ($website) $o .= '<div style="font-size:.72em;font-weight:700;opacity:.85;">'.$website.'</div>';
     $o .= '</div>';
-    $o .= '<div style="font-size:.58em;opacity:.3;">&copy; '.date('Y').' '.$name.' &middot; Brand Asset Engine</div>';
+    $o .= '<div style="font-size:.58em;opacity:.3;">&copy; '.date('Y').' '.$name.' &middot; Mothie</div>';
     $o .= '</div></div>';
 
     return $o;

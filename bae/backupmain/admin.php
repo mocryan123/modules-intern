@@ -1002,8 +1002,8 @@ function bae_admin_dashboard() {
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                     </div>
                     <div>
-                        <div class="bae-adm-sidebar-name">BAE Admin</div>
-                        <div class="bae-adm-sidebar-sub">Command Center</div>
+                        <div class="bae-adm-sidebar-name">Mothie</div>
+                        <div class="bae-adm-sidebar-sub">Brand Asset Engine</div>
                     </div>
                 </div>
 
@@ -1729,7 +1729,7 @@ function bae_admin_dashboard() {
                             <h3>Quick Links</h3>
                             <p>Direct access to user-facing applications.</p>
                             <div style="display:flex;flex-direction:column;gap:8px;">
-                                <a href="<?php echo home_url('/brand-engine'); ?>" target="_blank" class="bae-adm-quick-btn" style="justify-content:center;padding:12px;">Open Brand Engine Frontend ↗</a>
+                                <a href="<?php echo home_url('/brand-engine'); ?>" target="_blank" class="bae-adm-quick-btn" style="justify-content:center;padding:12px;">Open Mothie Frontend ↗</a>
                                 <a href="<?php echo admin_url('post-new.php?post_type=page'); ?>" target="_blank" class="bae-adm-quick-btn" style="justify-content:center;padding:12px;">Create New Page in WP ↗</a>
                                 <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
                                     <h4 style="font-size:12px;color:var(--text);margin:0 0 8px;">Admin Passcode</h4>

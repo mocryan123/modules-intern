@@ -1,6 +1,6 @@
 <?php
 /**
- * Module Name: Brand Asset Engine
+ * Module Name: Mothie
  * Module Slug: bae
  * Description: A complete brand identity builder for MSMEs. Allows business owners to define
  *              their brand identity (name, colors, fonts, tone, tagline) and generate ready-to-use
@@ -15,6 +15,41 @@ if (!defined('ABSPATH')) exit;
 
 define('BNTM_BAE_PATH', dirname(__FILE__) . '/');
 define('BNTM_BAE_URL', plugin_dir_url(__FILE__));
+
+function bae_module_logo_url() {
+    $path = BNTM_BAE_PATH . 'logo.png';
+    $ver  = file_exists($path) ? filemtime($path) : time();
+    return add_query_arg('ver', $ver, BNTM_BAE_URL . 'logo.png');
+}
+
+function bae_render_brand_mark($class = '') {
+    $classes = trim('bae-brand-mark ' . $class);
+    return '<span class="' . esc_attr($classes) . '"><img class="bae-brand-logo-img" src="' . esc_url(bae_module_logo_url()) . '" alt="Mothie logo"></span>';
+}
+
+function bae_render_brand_wordmark($class = '') {
+    $classes = trim('bae-brand-wordmark ' . $class);
+    return '<span class="' . esc_attr($classes) . '">'
+        . '<span class="bae-brand-wordmark-leading">M</span>'
+        . '<span class="bae-brand-wordmark-center">'
+        . '<img class="bae-brand-logo-img bae-brand-wordmark-logo" src="' . esc_url(bae_module_logo_url()) . '" alt="Mothie logo">'
+        . '<span class="bae-brand-wordmark-letter">o</span>'
+        . '</span>'
+        . '<span class="bae-brand-wordmark-trailing">thie</span>'
+        . '</span>';
+}
+
+function bae_render_brand_wordmark_merge($class = '') {
+    $classes = trim('bae-brand-wordmark bae-brand-wordmark-merge ' . $class);
+    return '<span class="' . esc_attr($classes) . '">'
+        . '<span class="bae-brand-wordmark-leading">M</span>'
+        . '<span class="bae-brand-wordmark-center">'
+        . '<span class="bae-brand-wordmark-letter bae-brand-wordmark-letter-o">o</span>'
+        . '<img class="bae-brand-logo-img bae-brand-wordmark-logo bae-brand-wordmark-logo-merge" src="' . esc_url(bae_module_logo_url()) . '" alt="Mothie logo">'
+        . '</span>'
+        . '<span class="bae-brand-wordmark-trailing">thie</span>'
+        . '</span>';
+}
 
 // Load ticketing system
 require_once BNTM_BAE_PATH . 'ticket.php';
@@ -68,7 +103,7 @@ require_once BNTM_BAE_PATH . 'brand-book.php';
 
 function bntm_bae_get_pages() {
     return [
-        'Brand Asset Engine' => '[bntm_bae_dashboard]',
+        'Mothie' => '[bntm_bae_dashboard]',
         'Brand Kit'          => '[bntm_bae_kit]',
     ];
 }
@@ -571,6 +606,14 @@ function bae_wizard_shortcode($user_id) {
     .bae-wiz-wrap.bae-light .bae-wiz-tile-desc { color: #5c586d; }
     .bae-wiz-wrap.bae-light .bae-wiz-hint { color: #6b6880; }
     .bae-wiz-wrap.bae-light .bae-wiz-question, .bae-wiz-wrap.bae-light .bae-wiz-tagline-opt { color: #1d1a16; }
+    .bae-wiz-brand {
+        display: inline-flex;
+        align-items: flex-end;
+        justify-content: center;
+        margin-bottom: 24px;
+    }
+    .bae-wiz-brand .bae-brand-wordmark { color: inherit; }
+    .bae-wiz-wrap.bae-light .bae-brand-logo-img { filter: invert(1); }
     .bae-wiz-tiles {
         display: grid; grid-template-columns: 1fr 1fr;
         gap: 10px; margin-bottom: 22px;
@@ -662,6 +705,7 @@ function bae_wizard_shortcode($user_id) {
 
         <!-- Step 1: Name -->
         <div class="bae-wiz-screen" id="bae-step-1">
+            <div class="bae-wiz-brand"><?php echo bae_render_brand_wordmark(); ?></div>
             <div class="bae-wiz-question">What's your business name?</div>
             <div class="bae-wiz-hint">This will appear on all your brand assets.</div>
             <input type="text" class="bae-wiz-input" id="bae-wiz-name" placeholder="e.g. Dela Cruz Bakery" autocomplete="off">
@@ -776,14 +820,14 @@ function bae_wizard_shortcode($user_id) {
             <input type="email" class="bae-wiz-input" id="bae-wiz-email" placeholder="Business email (optional)">
             <input type="text" class="bae-wiz-input" id="bae-wiz-phone" placeholder="Phone number (optional)">
             <input type="text" class="bae-wiz-input" id="bae-wiz-website" placeholder="Website (optional)">
-            <button class="bae-wiz-next" onclick="baeWizSubmit()">Build My Brand &#9654;</button>
+            <button class="bae-wiz-next" onclick="baeWizSubmit()">Mothify My Brand &#9654;</button>
             <button class="bae-wiz-back" onclick="baeWizGo(4)">&#8592; Back</button>
         </div>
 
         <!-- Generating -->
         <div class="bae-wiz-screen bae-wiz-generating" id="bae-step-gen" style="display:none;">
             <div class="bae-wiz-spinner"></div>
-            <div class="bae-wiz-gen-title">Building your brand...</div>
+            <div class="bae-wiz-gen-title">Mothifying your brand...</div>
             <div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>
         </div>
 
@@ -792,11 +836,11 @@ function bae_wizard_shortcode($user_id) {
             <div id="bae-cel-icon" style="width:64px;height:64px;background:linear-gradient(135deg,#6d28d9,#ec4899);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </div>
-            <div class="bae-wiz-question" style="margin-bottom:8px;" id="bae-cel-title">Your brand is ready.</div>
-            <div class="bae-wiz-hint" id="bae-cel-sub">All assets powered by your profile.<br>Let's see what we built.</div>
+            <div class="bae-wiz-question" style="margin-bottom:8px;" id="bae-cel-title">Your brand is mothified.</div>
+            <div class="bae-wiz-hint" id="bae-cel-sub">All assets powered by your profile.<br>Let's see what we mothified.</div>
             <div id="bae-cel-swatches" style="display:flex;justify-content:center;gap:10px;margin:24px 0;"></div>
             <button class="bae-wiz-next" style="max-width:280px;margin:0 auto;" onclick="window.location.href=window.location.pathname+'?tab=identity'">
-                Open My Brand
+                Open Mothie
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
         </div>
@@ -1327,7 +1371,7 @@ function bae_wizard_shortcode($user_id) {
                             genScreen.innerHTML = '';
                             hideScreen('bae-step-gen');
                             // Reset gen screen for next attempt
-                            genScreen.innerHTML = '<div class="bae-wiz-spinner"></div><div class="bae-wiz-gen-title">Building your brand...</div><div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>';
+                            genScreen.innerHTML = '<div class="bae-wiz-spinner"></div><div class="bae-wiz-gen-title">Mothifying your brand...</div><div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>';
                             showScreen('bae-step-5');
                         };
                         genScreen.appendChild(retryBtn);
@@ -1344,7 +1388,7 @@ function bae_wizard_shortcode($user_id) {
                     retryBtn.style.cssText = 'max-width:220px;margin:20px auto 0;';
                     retryBtn.textContent = 'Try Again';
                     retryBtn.onclick = function() {
-                        genScreen.innerHTML = '<div class="bae-wiz-spinner"></div><div class="bae-wiz-gen-title">Building your brand...</div><div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>';
+                        genScreen.innerHTML = '<div class="bae-wiz-spinner"></div><div class="bae-wiz-gen-title">Mothifying your brand...</div><div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>';
                         hideScreen('bae-step-gen');
                         showScreen('bae-step-5');
                     };
@@ -1363,7 +1407,7 @@ function bae_wizard_shortcode($user_id) {
 
 function bntm_shortcode_bae() {
     if (!is_user_logged_in()) {
-        return '<div class="bntm-notice">Please log in to access the Brand Asset Engine.</div>';
+        return '<div class="bntm-notice">Please log in to access the Mothie.</div>';
     }
 
     $user_id    = get_current_user_id();
@@ -1434,7 +1478,8 @@ function bntm_shortcode_bae() {
         <!-- Page loader -->
         <div id="bae-page-loader" class="bae-page-loader bae-page-loader-enter" aria-live="polite">
             <div class="bae-loader-panel">
-                <div class="bae-loader-kicker">Brand Asset Engine</div>
+                <div class="bae-loader-logo"><?php echo bae_render_brand_mark(); ?></div>
+                <div class="bae-loader-kicker">Mothie</div>
                 <div class="bae-loader-title">
                     <span class="jp">読み込み中</span>
                     <span class="en" id="bae-loader-title-en">Loading your workspace</span>
@@ -1502,25 +1547,14 @@ function bntm_shortcode_bae() {
             inset: 0;
         }
         .bae-loader-panel {
-            position: relative;
             width: min(360px, 100%);
             padding: 28px 26px 24px;
-            border: 1px solid var(--border-2);
-            border-radius: 22px;
-            background:
-                linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
-                var(--surface);
-            box-shadow: 0 24px 70px rgba(0,0,0,.28);
-            backdrop-filter: blur(16px);
             text-align: center;
         }
-        .bae-loader-panel::before {
-            content: '';
-            position: absolute;
-            inset: 10px;
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            pointer-events: none;
+        .bae-loader-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 14px;
         }
         .bae-loader-kicker {
             font-size: 11px;
@@ -1574,6 +1608,7 @@ function bntm_shortcode_bae() {
                 radial-gradient(circle at 82% 14%, rgba(236,72,153,.09), transparent 28%),
                 linear-gradient(180deg, rgba(250,250,250,.95) 0%, rgba(244,243,255,.98) 100%);
         }
+        .bae-page-loader.bae-light .bae-brand-logo-img { filter: invert(1); }
         @media (max-width: 640px) {
             .bae-page-loader { padding: 16px; }
             .bae-loader-panel { padding: 24px 20px 20px; }
@@ -1582,8 +1617,107 @@ function bntm_shortcode_bae() {
 
         <!-- Header -->
         <div class="bae-header">
-            <div class="bae-logo-mark">B</div>
-            <div class="bae-logo-text">Brand<span>Asset</span></div>
+            <div class="bae-header-logo">
+                <?php echo bae_render_brand_wordmark_merge(); ?>
+            </div>
+            <?php /* stepper moved here */ ?>
+            <!-- Tab Nav — only shown during onboarding -->
+            <?php if (!$onboarding_done || in_array($active_tab, ['overview','assets','kit','startup'])): ?>
+            <div class="bae-stepper bae-stepper-inline">
+                <?php
+                $tabs = [
+                    'overview'   => ['label' => 'Brand Profile',   'short' => 'Profile'],
+                    'assets'     => ['label' => 'Asset Generator', 'short' => 'Assets'],
+                    'kit'        => ['label' => 'Brand Kit',       'short' => 'Kit'],
+                    'startup'    => ['label' => 'Launch Toolkit',  'short' => 'Launch'],
+                ];
+                $user_plan   = bae_get_user_plan($user_id, $profile);
+                $is_free     = $user_plan === 'free';
+                $has_profile = !empty($profile) && !empty($profile['business_name']);
+                global $wpdb;
+                $asset_count_step = 0;
+                if ($has_profile && !empty($profile['id'])) {
+                    $asset_count_step = (int)$wpdb->get_var($wpdb->prepare(
+                        "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
+                        $profile['id']
+                    ));
+                }
+                $assets_done  = $has_profile && $asset_count_step >= 1;
+                $kit_done     = $assets_done;
+                $startup_done = $kit_done;
+                $completed = [
+                    'overview' => $has_profile,
+                    'assets'   => $assets_done,
+                    'kit'      => $kit_done,
+                    'startup'  => $startup_done,
+                ];
+                $locks = [
+                    'assets'  => !$has_profile,
+                    'kit'     => !$assets_done,
+                    'startup' => !$assets_done,
+                ];
+                $onboarding_done = $has_profile && $assets_done;
+                if ($onboarding_done && !isset($_GET['tab'])) {
+                    $active_tab = 'dashboard';
+                }
+                $pro_tabs  = [];
+                $base_url  = strtok($_SERVER['REQUEST_URI'], '?');
+                $tab_keys  = array_keys($tabs);
+                $total     = count($tab_keys);
+                foreach ($tab_keys as $i => $slug):
+                    $info      = $tabs[$slug];
+                    $is_active = $active_tab === $slug;
+                    $is_done   = ($completed[$slug] ?? false) && !$is_active;
+                    $is_locked = $locks[$slug] ?? false;
+                    $is_last   = $i === $total - 1;
+                    $step_num  = $i + 1;
+                    $lock_msg  = match($slug) {
+                        'assets'  => 'Complete Brand Profile first',
+                        'kit'     => 'Generate at least 1 asset first',
+                        'startup' => 'Complete Asset Generator first',
+                        default   => 'Complete previous step first',
+                    };
+                ?>
+                    <div class="bae-step-wrap <?php echo $is_last ? 'bae-step-last' : ''; ?>">
+                        <?php if ($is_locked): ?>
+                        <div class="bae-step bae-step-locked" title="<?php echo esc_attr($lock_msg); ?>">
+                            <div class="bae-step-node"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg></div>
+                            <div class="bae-step-label"><?php echo $info['short']; ?></div>
+                        </div>
+                        <?php elseif ($is_done && !$is_active): ?>
+                        <a href="<?php echo $base_url; ?>?tab=<?php echo $slug; ?>" class="bae-step bae-step-done">
+                            <div class="bae-step-node"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></div>
+                            <div class="bae-step-label"><?php echo $info['short']; ?></div>
+                        </a>
+                        <?php elseif ($is_active): ?>
+                        <div class="bae-step bae-step-active">
+                            <div class="bae-step-node"><span><?php echo $step_num; ?></span></div>
+                            <div class="bae-step-label"><?php echo $info['label']; ?></div>
+                        </div>
+                        <?php else: ?>
+                        <a href="<?php echo $base_url; ?>?tab=<?php echo $slug; ?>" class="bae-step">
+                            <div class="bae-step-node"><span><?php echo $step_num; ?></span></div>
+                            <div class="bae-step-label"><?php echo $info['short']; ?></div>
+                        </a>
+                        <?php endif; ?>
+                        <?php if (!$is_last): ?>
+                        <div class="bae-step-line <?php echo $is_done ? 'bae-step-line-done' : ''; ?>"></div>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+                <?php if ($onboarding_done): ?>
+                <div style="margin-left:auto;padding:0 8px 0 16px;flex-shrink:0;">
+                    <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
+                       style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--brand-soft);text-decoration:none;padding:7px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:8px;white-space:nowrap;transition:all .15s;"
+                       onmouseover="this.style.background='rgba(139,92,246,.18)'"
+                       onmouseout="this.style.background='rgba(139,92,246,.1)'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="15" rx="1"/></svg>
+                        Dashboard
+                    </a>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
             <div class="bae-header-right">
                 <?php if ($onboarding_done && $active_tab !== 'dashboard'): ?>
                 <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
@@ -1646,7 +1780,7 @@ function bntm_shortcode_bae() {
                 <div class="bae-pricing-header">
                     <div class="bae-pricing-eyebrow">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                        Unlock the full Brand Asset Engine
+                        Unlock the full Mothie
                     </div>
                     <div class="bae-pricing-title" id="bae-pricing-title">Take your brand further</div>
                     <div class="bae-pricing-subtitle" id="bae-pricing-subtitle">Regenerate assets anytime, use the custom AI generator, and share your brand kit publicly.</div>
@@ -1725,126 +1859,7 @@ function bntm_shortcode_bae() {
             </div>
         </div>
 
-        <!-- Tab Nav — only shown during onboarding -->
-        <?php if (!$onboarding_done || in_array($active_tab, ['overview','assets','kit','startup'])): ?>
-        <div class="bae-stepper">
-            <?php
-            // Onboarding steps — only 4. Launch/Book/Settings are post-onboarding tools.
-            $tabs = [
-                'overview'   => ['label' => 'Brand Profile',   'short' => 'Profile'],
-                'assets'     => ['label' => 'Asset Generator', 'short' => 'Assets'],
-                'kit'        => ['label' => 'Brand Kit',       'short' => 'Kit'],
-                'startup'    => ['label' => 'Launch Toolkit',  'short' => 'Launch'],
-            ];
 
-            $user_plan   = bae_get_user_plan($user_id, $profile);
-            $is_free     = $user_plan === 'free';
-            $has_profile = !empty($profile) && !empty($profile['business_name']);
-
-            // Asset count for completion checks
-            global $wpdb;
-            $asset_count_step = 0;
-            if ($has_profile && !empty($profile['id'])) {
-                $asset_count_step = (int)$wpdb->get_var($wpdb->prepare(
-                    "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
-                    $profile['id']
-                ));
-            }
-
-            // Step completion — strictly sequential
-            $assets_done  = $has_profile && $asset_count_step >= 1;
-            $kit_done     = $assets_done; // Kit unlocks when assets exist
-            $startup_done = $kit_done;    // Launch unlocks when kit is accessible
-
-            $completed = [
-                'overview' => $has_profile,
-                'assets'   => $assets_done,
-                'kit'      => $kit_done,
-                'startup'  => $startup_done,
-            ];
-
-            // Locking rules — each step requires the previous
-            $locks = [
-                'assets'  => !$has_profile,
-                'kit'     => !$assets_done,
-                'startup' => !$assets_done,
-            ];
-
-            // Onboarding done = profile + at least 1 asset generated
-            $onboarding_done = $has_profile && $assets_done;
-            if ($onboarding_done && !isset($_GET['tab'])) {
-                $active_tab = 'dashboard';
-            }
-
-            $pro_tabs  = [];
-            $base_url      = strtok($_SERVER['REQUEST_URI'], '?');
-
-            $tab_keys = array_keys($tabs);
-            $total    = count($tab_keys);
-
-            foreach ($tab_keys as $i => $slug):
-                $info      = $tabs[$slug];
-                $is_active = $active_tab === $slug;
-                $is_done   = ($completed[$slug] ?? false) && !$is_active;
-                $is_locked = $locks[$slug] ?? false;
-                $is_last   = $i === $total - 1;
-                $step_num  = $i + 1;
-                $lock_msg  = match($slug) {
-                    'assets'  => 'Complete Brand Profile first',
-                    'kit'     => 'Generate at least 1 asset first',
-                    'startup' => 'Complete Asset Generator first',
-                    default   => 'Complete previous step first',
-                };
-            ?>
-                <div class="bae-step-wrap <?php echo $is_last ? 'bae-step-last' : ''; ?>">
-                    <?php if ($is_locked): ?>
-                    <div class="bae-step bae-step-locked" title="<?php echo esc_attr($lock_msg); ?>">
-                        <div class="bae-step-node">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
-                        </div>
-                        <div class="bae-step-label"><?php echo $info['short']; ?></div>
-                    </div>
-                    <?php elseif ($is_done && !$is_active): ?>
-                    <a href="<?php echo $base_url; ?>?tab=<?php echo $slug; ?>" class="bae-step bae-step-done">
-                        <div class="bae-step-node">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
-                        </div>
-                        <div class="bae-step-label"><?php echo $info['short']; ?></div>
-                    </a>
-                    <?php elseif ($is_active): ?>
-                    <div class="bae-step bae-step-active">
-                        <div class="bae-step-node">
-                            <span><?php echo $step_num; ?></span>
-                        </div>
-                        <div class="bae-step-label"><?php echo $info['label']; ?></div>
-                    </div>
-                    <?php else: ?>
-                    <a href="<?php echo $base_url; ?>?tab=<?php echo $slug; ?>" class="bae-step">
-                        <div class="bae-step-node">
-                            <span><?php echo $step_num; ?></span>
-                        </div>
-                        <div class="bae-step-label"><?php echo $info['short']; ?></div>
-                    </a>
-                    <?php endif; ?>
-
-                    <?php if (!$is_last): ?>
-                    <div class="bae-step-line <?php echo $is_done ? 'bae-step-line-done' : ''; ?>"></div>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
-            <?php if ($onboarding_done): ?>
-            <div style="margin-left:auto;padding:0 8px 0 16px;flex-shrink:0;">
-                <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
-                   style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--brand-soft);text-decoration:none;padding:7px 14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:8px;white-space:nowrap;transition:all .15s;"
-                   onmouseover="this.style.background='rgba(139,92,246,.18)'"
-                   onmouseout="this.style.background='rgba(139,92,246,.1)'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="15" rx="1"/></svg>
-                    Dashboard
-                </a>
-            </div>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
 
         <?php if ($onboarding_done && $active_tab !== 'overview' && $active_tab !== 'assets' && $active_tab !== 'kit' && $active_tab !== 'startup'): ?>
         <!-- Post-onboarding tool nav -->
@@ -1979,28 +1994,92 @@ function bntm_shortcode_bae() {
         display: flex;
         align-items: center;
         gap: 16px;
-        padding: 18px 28px;
+        padding: 0 28px;
+        height: 62px;
         border-bottom: 1px solid var(--border);
         background: var(--bg-2);
         transition: background 0.5s, border-color 0.5s;
         position: sticky; top: 0; z-index: 100;
     }
-    .bae-logo-mark {
-        width: 34px; height: 34px;
-        background: linear-gradient(135deg, var(--brand-deep), var(--pink));
-        border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-family: 'Instrument Serif', serif;
-        font-size: 14px; font-style: italic; color: white; font-weight: 400;
+    .bae-header-logo {
+        display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .bae-brand-mark {
+        width: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
     }
-    .bae-logo-text {
+    .bae-brand-logo-img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .bae-brand-wordmark {
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 0.03em;
         font-family: 'Instrument Serif', serif;
         font-size: 18px; font-style: italic;
         color: var(--text); transition: color 0.5s;
+        line-height: 1;
     }
-    .bae-logo-text span { color: var(--brand-soft); }
-    .bae-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .bae-brand-wordmark-leading,
+    .bae-brand-wordmark-trailing,
+    .bae-brand-wordmark-letter {
+        display: inline-block;
+    }
+    .bae-brand-wordmark-center {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        margin: 0 0.08em;
+        line-height: 0.88;
+    }
+    .bae-brand-wordmark-logo {
+        width: 1.9em;
+        margin-bottom: -0.04em;
+    }
+    .bae-brand-wordmark-letter {
+        color: var(--brand-soft);
+    }
+    .bae-brand-wordmark-merge .bae-brand-wordmark-center {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        margin: 0 0.02em 0 0.04em;
+        line-height: 1;
+    }
+    .bae-brand-wordmark-merge .bae-brand-wordmark-letter-o {
+        color: transparent;
+    }
+    .bae-brand-wordmark-logo-merge {
+        width: 1.12em;
+        margin: 0;
+        position: absolute;
+        left: 50%;
+        top: 52%;
+        transform: translate(-50%, -50%);
+    }
+    .bae-wrap.bae-light .bae-brand-logo-img {
+        filter: invert(1);
+    }
+    .bae-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+    /* Stepper when placed inline inside the header */
+    .bae-stepper-inline {
+        flex: 1;
+        justify-content: center;
+        border-bottom: none !important;
+        background: transparent !important;
+        padding: 0 8px !important;
+        min-height: unset !important;
+        overflow: visible !important;
+    }
 
     /* Theme toggle */
     .bae-theme-btn {
@@ -6401,7 +6480,7 @@ function bae_settings_tab($user_id, $profile) {
         <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <?php
             $info = [
-                'System'      => 'Brand Asset Engine',
+                'System'      => 'Mothie',
                 'Version'     => '1.1.0',
                 'Slug'        => 'bae',
                 'Status'      => !empty($profile) ? 'Profile Active' : 'No Profile',
@@ -7583,7 +7662,7 @@ function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
     </div>
   </div>
   <div style='background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 40px;display:flex;justify-content:space-between;'>
-    <div style='font-size:10px;color:#9ca3af;'>Generated by Brand Asset Engine</div>
+    <div style='font-size:10px;color:#9ca3af;'>Generated by Mothie</div>
     <div style='font-size:10px;color:{$pc};font-weight:600;'>{$name} &copy; " . date('Y') . "</div>
   </div>
 </div>";
@@ -7763,7 +7842,7 @@ function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
       " . ($address ? "<div style='font-size:13px;color:rgba(255,255,255,0.6);'>{$address}</div>" : '') . "
     </div>
     <div style='margin-top:32px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.15);display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);'>
-      <span>Generated by Brand Asset Engine</span>
+      <span>Generated by Mothie</span>
       <span>{$name} Brand Book &copy; " . date('Y') . "</span>
     </div>
   </div>
@@ -7838,7 +7917,7 @@ function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
 
   <!-- Footer -->
   <div style='background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 36px;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;'>
-    <span>Generated by Brand Asset Engine — Site Structure Guide</span>
+    <span>Generated by Mothie — Site Structure Guide</span>
     <span>{$name} &copy; " . date('Y') . "</span>
   </div>
 
@@ -7995,7 +8074,7 @@ function bae_render_kit_html($p) {
         </div>
 
         <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-            <div style="font-size:11px;color:#9ca3af;">Generated by Brand Asset Engine</div>
+            <div style="font-size:11px;color:#9ca3af;">Generated by Mothie</div>
             <div style="font-size:11px;color:<?php echo $pc; ?>;font-weight:600;"><?php echo $name; ?> &copy; <?php echo date('Y'); ?></div>
         </div>
     </div>
@@ -8388,7 +8467,7 @@ function bntm_ajax_bae_export_zip() {
 
     // Add a README
     $readme  = "Brand Assets — " . ($profile['business_name'] ?? 'Your Brand') . "\n";
-    $readme .= "Generated by Brand Asset Engine\n";
+    $readme .= "Generated by Mothie\n";
     $readme .= "Date: " . date('Y-m-d') . "\n\n";
     $readme .= "FILES INCLUDED:\n";
     foreach ($assets as $asset) {
@@ -9880,7 +9959,7 @@ function bae_render_book_pages($p, $tpl) {
     $o .= '<div style="font-size:.75em;opacity:.65;margin-bottom:14px;">'.$tagline.'</div>';
     if ($website) $o .= '<div style="font-size:.72em;font-weight:700;opacity:.85;">'.$website.'</div>';
     $o .= '</div>';
-    $o .= '<div style="font-size:.58em;opacity:.3;">&copy; '.date('Y').' '.$name.' &middot; Brand Asset Engine</div>';
+    $o .= '<div style="font-size:.58em;opacity:.3;">&copy; '.date('Y').' '.$name.' &middot; Mothie</div>';
     $o .= '</div></div>';
 
     return $o;

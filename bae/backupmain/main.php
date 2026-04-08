@@ -1,6 +1,6 @@
 <?php
 /**
- * Module Name: Brand Asset Engine
+ * Module Name: Mothie
  * Module Slug: bae
  * Description: A complete brand identity builder for MSMEs. Allows business owners to define
  *              their brand identity (name, colors, fonts, tone, tagline) and generate ready-to-use
@@ -68,7 +68,7 @@ require_once BNTM_BAE_PATH . 'brand-book.php';
 
 function bntm_bae_get_pages() {
     return [
-        'Brand Asset Engine' => '[bntm_bae_dashboard]',
+        'Mothie' => '[bntm_bae_dashboard]',
         'Brand Kit'          => '[bntm_bae_kit]',
     ];
 }
@@ -687,14 +687,14 @@ function bae_wizard_shortcode($user_id) {
             <input type="email" class="bae-wiz-input" id="bae-wiz-email" placeholder="Business email (optional)">
             <input type="text" class="bae-wiz-input" id="bae-wiz-phone" placeholder="Phone number (optional)">
             <input type="text" class="bae-wiz-input" id="bae-wiz-website" placeholder="Website (optional)">
-            <button class="bae-wiz-next" onclick="baeWizSubmit()">Build My Brand &#9654;</button>
+            <button class="bae-wiz-next" onclick="baeWizSubmit()">Mothify My Brand &#9654;</button>
             <button class="bae-wiz-back" onclick="baeWizGo(4)">&#8592; Back</button>
         </div>
 
         <!-- Generating -->
         <div class="bae-wiz-screen bae-wiz-generating" id="bae-step-gen" style="display:none;">
             <div class="bae-wiz-spinner"></div>
-            <div class="bae-wiz-gen-title">Building your brand...</div>
+            <div class="bae-wiz-gen-title">Mothifying your brand...</div>
             <div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>
         </div>
 
@@ -703,11 +703,11 @@ function bae_wizard_shortcode($user_id) {
             <div id="bae-cel-icon" style="width:64px;height:64px;background:linear-gradient(135deg,#6d28d9,#ec4899);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </div>
-            <div class="bae-wiz-question" style="margin-bottom:8px;" id="bae-cel-title">Your brand is ready.</div>
-            <div class="bae-wiz-hint" id="bae-cel-sub">All assets powered by your profile.<br>Let's see what we built.</div>
+            <div class="bae-wiz-question" style="margin-bottom:8px;" id="bae-cel-title">Your brand is mothified.</div>
+            <div class="bae-wiz-hint" id="bae-cel-sub">All assets powered by your profile.<br>Let's see what we mothified.</div>
             <div id="bae-cel-swatches" style="display:flex;justify-content:center;gap:10px;margin:24px 0;"></div>
             <button class="bae-wiz-next" style="max-width:280px;margin:0 auto;" onclick="window.location.href=window.location.pathname+'?tab=identity'">
-                Open My Brand
+                Open Mothie
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
         </div>
@@ -1210,7 +1210,7 @@ function bae_wizard_shortcode($user_id) {
                             genScreen.innerHTML = '';
                             hideScreen('bae-step-gen');
                             // Reset gen screen for next attempt
-                            genScreen.innerHTML = '<div class="bae-wiz-spinner"></div><div class="bae-wiz-gen-title">Building your brand...</div><div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>';
+                            genScreen.innerHTML = '<div class="bae-wiz-spinner"></div><div class="bae-wiz-gen-title">Mothifying your brand...</div><div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>';
                             showScreen('bae-step-5');
                         };
                         genScreen.appendChild(retryBtn);
@@ -1227,7 +1227,7 @@ function bae_wizard_shortcode($user_id) {
                     retryBtn.style.cssText = 'max-width:220px;margin:20px auto 0;';
                     retryBtn.textContent = 'Try Again';
                     retryBtn.onclick = function() {
-                        genScreen.innerHTML = '<div class="bae-wiz-spinner"></div><div class="bae-wiz-gen-title">Building your brand...</div><div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>';
+                        genScreen.innerHTML = '<div class="bae-wiz-spinner"></div><div class="bae-wiz-gen-title">Mothifying your brand...</div><div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>';
                         hideScreen('bae-step-gen');
                         showScreen('bae-step-5');
                     };
@@ -1246,7 +1246,7 @@ function bae_wizard_shortcode($user_id) {
 
 function bntm_shortcode_bae() {
     if (!is_user_logged_in()) {
-        return '<div class="bntm-notice">Please log in to access the Brand Asset Engine.</div>';
+        return '<div class="bntm-notice">Please log in to access the Mothie.</div>';
     }
 
     $user_id    = get_current_user_id();
@@ -1335,8 +1335,8 @@ function bntm_shortcode_bae() {
 
         <!-- Header -->
         <div class="bae-header">
-            <div class="bae-logo-mark">B</div>
-            <div class="bae-logo-text">Brand<span>Asset</span></div>
+            <div class="bae-logo-mark">M</div>
+            <div class="bae-logo-text">Mothie<span></span></div>
             <div class="bae-header-right">
                 <?php if ($onboarding_done && $active_tab !== 'dashboard'): ?>
                 <a href="<?php echo esc_url(strtok($_SERVER['REQUEST_URI'],'?')); ?>"
@@ -1399,7 +1399,7 @@ function bntm_shortcode_bae() {
                 <div class="bae-pricing-header">
                     <div class="bae-pricing-eyebrow">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                        Unlock the full Brand Asset Engine
+                        Unlock the full Mothie
                     </div>
                     <div class="bae-pricing-title" id="bae-pricing-title">Take your brand further</div>
                     <div class="bae-pricing-subtitle" id="bae-pricing-subtitle">Regenerate assets anytime, use the custom AI generator, and share your brand kit publicly.</div>
@@ -5689,7 +5689,7 @@ function bae_settings_tab($user_id, $profile) {
         <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <?php
             $info = [
-                'System'      => 'Brand Asset Engine',
+                'System'      => 'Mothie',
                 'Version'     => '1.1.0',
                 'Slug'        => 'bae',
                 'Status'      => !empty($profile) ? 'Profile Active' : 'No Profile',
@@ -6777,7 +6777,7 @@ function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
     </div>
   </div>
   <div style='background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 40px;display:flex;justify-content:space-between;'>
-    <div style='font-size:10px;color:#9ca3af;'>Generated by Brand Asset Engine</div>
+    <div style='font-size:10px;color:#9ca3af;'>Generated by Mothie</div>
     <div style='font-size:10px;color:{$pc};font-weight:600;'>{$name} &copy; " . date('Y') . "</div>
   </div>
 </div>";
@@ -6957,7 +6957,7 @@ function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
       " . ($address ? "<div style='font-size:13px;color:rgba(255,255,255,0.6);'>{$address}</div>" : '') . "
     </div>
     <div style='margin-top:32px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.15);display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);'>
-      <span>Generated by Brand Asset Engine</span>
+      <span>Generated by Mothie</span>
       <span>{$name} Brand Book &copy; " . date('Y') . "</span>
     </div>
   </div>
@@ -7032,7 +7032,7 @@ function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
 
   <!-- Footer -->
   <div style='background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 36px;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;'>
-    <span>Generated by Brand Asset Engine — Site Structure Guide</span>
+    <span>Generated by Mothie — Site Structure Guide</span>
     <span>{$name} &copy; " . date('Y') . "</span>
   </div>
 
@@ -7199,7 +7199,7 @@ function bae_render_kit_html($p) {
         </div>
 
         <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-            <div style="font-size:11px;color:#9ca3af;">Generated by Brand Asset Engine</div>
+            <div style="font-size:11px;color:#9ca3af;">Generated by Mothie</div>
             <div style="font-size:11px;color:<?php echo $pc; ?>;font-weight:600;"><?php echo $name; ?> &copy; <?php echo date('Y'); ?></div>
         </div>
     </div>
@@ -7588,7 +7588,7 @@ function bntm_ajax_bae_export_zip() {
 
     // Add a README
     $readme  = "Brand Assets — " . ($profile['business_name'] ?? 'Your Brand') . "\n";
-    $readme .= "Generated by Brand Asset Engine\n";
+    $readme .= "Generated by Mothie\n";
     $readme .= "Date: " . date('Y-m-d') . "\n\n";
     $readme .= "FILES INCLUDED:\n";
     foreach ($assets as $asset) {
@@ -8908,7 +8908,7 @@ function bae_render_book_pages($p, $tpl) {
     $o .= '<div style="font-size:.75em;opacity:.65;margin-bottom:14px;">'.$tagline.'</div>';
     if ($website) $o .= '<div style="font-size:.72em;font-weight:700;opacity:.85;">'.$website.'</div>';
     $o .= '</div>';
-    $o .= '<div style="font-size:.58em;opacity:.3;">&copy; '.date('Y').' '.$name.' &middot; Brand Asset Engine</div>';
+    $o .= '<div style="font-size:.58em;opacity:.3;">&copy; '.date('Y').' '.$name.' &middot; Mothie</div>';
     $o .= '</div></div>';
 
     return $o;

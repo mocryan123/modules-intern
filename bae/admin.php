@@ -584,13 +584,10 @@ function bae_admin_dashboard() {
         flex-shrink: 0;
     }
     .bae-adm-sidebar-icon {
-        width: 32px; height: 32px; min-width: 32px;
-        background: linear-gradient(135deg, #6d28d9, #ec4899);
-        border-radius: 9px;
+        width: 44px; min-width: 44px;
         display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 0 14px rgba(139,92,246,.3);
     }
-    .bae-adm-sidebar-icon svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .bae-adm-sidebar-icon img { width: 100%; height: auto; display: block; }
     .bae-adm-sidebar-name {
         font-family: 'Instrument Serif', serif;
         font-size: 16px; font-style: italic;
@@ -598,6 +595,50 @@ function bae_admin_dashboard() {
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .bae-adm-sidebar-sub { font-size: 10px; color: var(--text-3); margin-top: 2px; white-space: nowrap; }
+    .bae-adm-sidebar-name .bae-brand-wordmark {
+        display: inline-flex;
+        align-items: flex-end;
+        gap: 0.03em;
+        color: inherit;
+        line-height: 1;
+    }
+    .bae-adm-sidebar-name .bae-brand-wordmark-leading,
+    .bae-adm-sidebar-name .bae-brand-wordmark-trailing,
+    .bae-adm-sidebar-name .bae-brand-wordmark-letter {
+        display: inline-block;
+    }
+    .bae-adm-sidebar-name .bae-brand-wordmark-center {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        margin: 0 0.08em;
+        line-height: 0.88;
+    }
+    .bae-adm-sidebar-name .bae-brand-wordmark-logo {
+        width: 1.9em;
+        margin-bottom: -0.04em;
+    }
+    .bae-adm-sidebar-name .bae-brand-wordmark-letter { color: var(--brand-s); }
+    .bae-adm-sidebar-name .bae-brand-wordmark-merge .bae-brand-wordmark-center {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        margin: 0 0.02em 0 0.04em;
+        line-height: 1;
+    }
+    .bae-adm-sidebar-name .bae-brand-wordmark-merge .bae-brand-wordmark-letter-o { color: transparent; }
+    .bae-adm-sidebar-name .bae-brand-wordmark-logo-merge {
+        width: 1.12em;
+        margin: 0;
+        position: absolute;
+        left: 50%;
+        top: 52%;
+        transform: translate(-50%, -50%);
+    }
+    .bae-adm.bae-light .bae-adm-sidebar-icon img { filter: invert(1); }
 
     /* Search */
     .bae-adm-sidebar-search { padding: 12px 12px 8px; flex-shrink: 0; }
@@ -1050,11 +1091,11 @@ function bae_admin_dashboard() {
             <aside class="bae-adm-sidebar">
                 <div class="bae-adm-sidebar-logo">
                     <div class="bae-adm-sidebar-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        <img src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie logo">
                     </div>
                     <div>
-                        <div class="bae-adm-sidebar-name">BAE Admin</div>
-                        <div class="bae-adm-sidebar-sub">Command Center</div>
+                        <div class="bae-adm-sidebar-name"><?php echo bae_render_brand_wordmark_merge(); ?></div>
+                        <div class="bae-adm-sidebar-sub">Brand Asset Engine</div>
                     </div>
                 </div>
 
@@ -1929,7 +1970,7 @@ function bae_admin_dashboard() {
                             <h3>Quick Links</h3>
                             <p>Direct access to user-facing applications.</p>
                             <div style="display:flex;flex-direction:column;gap:8px;">
-                                <a href="<?php echo home_url('/brand-engine'); ?>" target="_blank" class="bae-adm-quick-btn" style="justify-content:center;padding:12px;">Open Brand Engine Frontend ↗</a>
+                                <a href="<?php echo home_url('/brand-engine'); ?>" target="_blank" class="bae-adm-quick-btn" style="justify-content:center;padding:12px;">Open Mothie Frontend ↗</a>
                                 <a href="<?php echo admin_url('post-new.php?post_type=page'); ?>" target="_blank" class="bae-adm-quick-btn" style="justify-content:center;padding:12px;">Create New Page in WP ↗</a>
                                 <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
                                     <h4 style="font-size:12px;color:var(--text);margin:0 0 8px;">Admin Passcode</h4>
