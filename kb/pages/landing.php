@@ -1021,12 +1021,14 @@ function bntm_kbf_render_landing() {
     .kbf-faq details[open] summary::after { content: '–'; }
     .kbf-faq details p { margin: 10px 0 0; color: var(--kbf-muted); font-size: 12.5px; line-height: 1.5; }
     .kbf-faq-body {
-        display: grid;
-        grid-template-rows: 0fr;
-        transition: grid-template-rows .3s ease;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height .3s ease, opacity .2s ease;
+        will-change: max-height, opacity;
     }
     .kbf-faq-body > div { overflow: hidden; }
-    .kbf-faq details[open] .kbf-faq-body { grid-template-rows: 1fr; }
+    .kbf-faq details[open] .kbf-faq-body { max-height: 520px; opacity: 1; }
 
     .kbf-footer {
         margin-top: 44px; 
@@ -1841,37 +1843,6 @@ function bntm_kbf_render_landing() {
         return false;
     };
 
-    // FAQ smooth animation — prevent instant jump on open
-    document.querySelectorAll('.kbf-faq details').forEach(function(detail) {
-        var body = detail.querySelector('.kbf-faq-body');
-        var summary = detail.querySelector('summary');
-        if (!body || !summary) return;
-
-        // Ensure correct initial state
-        body.style.gridTemplateRows = detail.open ? '1fr' : '0fr';
-
-        summary.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (detail.dataset.animating === '1') return;
-            detail.dataset.animating = '1';
-
-            if (detail.open) {
-                body.style.gridTemplateRows = '0fr';
-                var onEnd = function() {
-                    detail.open = false;
-                    detail.dataset.animating = '0';
-                    body.removeEventListener('transitionend', onEnd);
-                };
-                body.addEventListener('transitionend', onEnd);
-            } else {
-                detail.open = true;
-                requestAnimationFrame(function(){
-                    body.style.gridTemplateRows = '1fr';
-                    detail.dataset.animating = '0';
-                });
-            }
-        });
-    });
     // Hamburger menu toggle
       (function() {
           var btn = document.getElementById('kbf-hamburger-btn');
