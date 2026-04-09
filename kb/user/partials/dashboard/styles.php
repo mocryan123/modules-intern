@@ -975,6 +975,21 @@
         height:auto;
         overflow:visible;
     }
+    .kbf-user-ui #kbf-modal-create .kbf-modal-body{
+        overflow-x:hidden;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-step-content[data-step="3"]{
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-form-row{
+        flex-wrap:wrap;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-form-row > .kbf-form-group{
+        width:100%;
+        min-width:0;
+    }
     .kbf-user-ui #kbf-modal-edit .kbf-step-content{
         height:500px;
         overflow-y:auto;

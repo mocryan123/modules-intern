@@ -407,14 +407,6 @@
           </div>
           <div><div class="kbf-stat-label">Active Now</div><div class="kbf-stat-value"><?php echo $active_funds; ?></div></div>
         </div>
-        <?php if($pending_funds > 0): ?>
-        <div class="kbf-stat" style="border-color:#fcd34d;background:#fffbeb;">
-          <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
-          </div>
-          <div><div class="kbf-stat-label">Pending Review</div><div class="kbf-stat-value" style="color:#92400e;"><?php echo $pending_funds; ?></div></div>
-        </div>
-        <?php endif; ?>
       </div>
 
       <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;">

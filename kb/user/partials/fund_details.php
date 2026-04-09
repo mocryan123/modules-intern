@@ -136,6 +136,70 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- ================== CSS ================== -->
     <style>
     .kbf-detail-wrap{max-width:1000px;margin:0 auto;}
+    .kbf-photo-main{
+      width:100%;
+      aspect-ratio:4 / 3;
+      height:auto;
+    }
+    .kbf-photo-main img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .kbf-category-pill,
+    .kbf-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      padding:3px 8px;
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.25px;
+      line-height:1.1;
+      border-radius:999px;
+      box-sizing:border-box;
+    }
+    .kbf-category-pill{
+      background:#eef2f7;
+      color:#475569;
+      border:1px solid #e2e8f0;
+      font-weight:600;
+      letter-spacing:0;
+    }
+    .kbf-fundtype-pill{
+      display:inline-flex;
+      align-items:center;
+      padding:3px 8px;
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.25px;
+      line-height:1.1;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#334155;
+      border:1px solid #e2e8f0;
+      box-sizing:border-box;
+    }
+    .kbf-category-pill img{
+      width:10px;
+      height:10px;
+      flex-shrink:0;
+    }
+    .kbf-section-description,
+    .kbf-section-organizer,
+    .kbf-section-message{
+      transition:none !important;
+      box-shadow:none !important;
+      border:1px solid var(--kbf-border) !important;
+    }
+    .kbf-section-description:hover,
+    .kbf-section-organizer:hover,
+    .kbf-section-message:hover{
+      transform:none !important;
+      box-shadow:none !important;
+      border-color:var(--kbf-border) !important;
+    }
     .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;}
    .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
  .kbf-detail-left{display:flex;flex-direction:column;padding-bottom:24px;justify-content:flex-start;min-height:0;}
@@ -207,20 +271,6 @@ function bntm_shortcode_kbf_fund_details() {
       .kbf-account-header-row .kbf-section-title{order:1;}
       .kbf-account-header-actions{order:2;}
     }
-    .kbf-category-pill{
-        display:inline-flex;
-        align-items:center;
-        gap:6px;
-        padding:4px 10px;
-        border-radius:999px;
-        font-size:11px;
-        font-weight:600;
-        color:#475569;
-        background:#eef2f7;
-        border:1px solid #e2e8f0;
-        text-transform:none;
-        letter-spacing:0;
-    }
     .kbf-save-btn{
         transition:none;
     }
@@ -235,7 +285,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-save-btn.is-saved img{
       filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
     }
-      .kbf-leaderboard-card{flex:1;display:flex;flex-direction:column;justify-content:flex-end;max-height:360px;}
+    .kbf-leaderboard-card{flex:1;display:flex;flex-direction:column;justify-content:flex-end;max-height:none;}
       .kbf-leaderboard-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto;padding-right:6px;}
     .kbf-leaderboard-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);}
     .kbf-leaderboard-title{display:flex;align-items:center;gap:10px;min-width:0;}
@@ -246,7 +296,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-leaderboard-pill{background:var(--kbf-accent);color:#fff;border-radius:99px;padding:3px 10px;font-size:10.5px;font-weight:800;flex-shrink:0;}
     .kbf-photo-gallery{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
     .kbf-photo-main{border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;}
-    .kbf-photo-main img{width:100%;height:300px;object-fit:cover;display:block;transition:transform .3s ease;transform:translateX(0);}
+    .kbf-photo-main img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease;transform:translateX(0);}
     .kbf-photo-nav{
         position:absolute;
         top:50%;
@@ -549,7 +599,7 @@ function bntm_shortcode_kbf_fund_details() {
         .kbf-section-leaderboard{order:5;}
         .kbf-section-progress{order:6;}
         .kbf-detail-sticky{height:auto !important;}
-        .kbf-photo-main img{height:300px;}
+        .kbf-photo-main img{height:100%;}
         .kbf-photo-thumb img{height:80px;}
         .kbf-photo-nav{
             width:34px;
@@ -640,11 +690,6 @@ function bntm_shortcode_kbf_fund_details() {
               <div class="kbf-form-group"><label>Phone *</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX" required></div>
             </div>
             <input type="hidden" name="payment_method" value="online_payment">
-            <?php if($demo_mode): ?>
-            <div class="kbf-alert kbf-alert-warning kbf-alert-block" style="margin-top:6px;">
-              <span><strong style="text-transform:uppercase;letter-spacing:.12em;background:rgba(146,64,14,.12);padding:2px 6px;border-radius:6px;">Demo Mode</strong> — Payments are simulated for testing.</span>
-            </div>
-            <?php endif; ?>
             <div id="kbf-spd-msg" style="margin-top:10px;"></div>
           </form>
         </div>
@@ -760,13 +805,13 @@ function bntm_shortcode_kbf_fund_details() {
 
         <!-- Title + Meta -->
         <div class="kbf-section-title" style="margin-bottom:20px;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
               <span class="kbf-category-pill">
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="11" height="11" style="filter:invert(34%) sepia(8%) saturate(1386%) hue-rotate(182deg) brightness(93%) contrast(85%);">
-                <?php echo esc_html(strtolower((string)$fund->category)); ?>
+                <?php echo esc_html(ucfirst(strtolower((string)$fund->category))); ?>
               </span>
-            <span class="kbf-badge kbf-badge-<?php echo $fund->status; ?>"><?php echo ucfirst($fund->status); ?></span>
-          </div>
+              <span class="kbf-fundtype-pill"><?php echo ucwords(str_replace('_',' ',$fund->funder_type)); ?></span>
+            </div>
           <h1 style="font-size:24px;font-weight:600;color:var(--kbf-navy);margin:0 0 10px;line-height:1.3;"><?php echo esc_html($fund->title); ?></h1>
           <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--kbf-slate);">
             <span style="display:flex;align-items:center;gap:5px;">
@@ -814,18 +859,13 @@ function bntm_shortcode_kbf_fund_details() {
           </a>
         </div>
         <?php endif; ?>
+
       </div>
 
       <!-- RIGHT: Sticky action sidebar -->
       <div class="kbf-detail-right">
       <div class="kbf-detail-sticky">
 
-        <!-- Funder type info -->
-        <div class="kbf-section-fund-type" style="background:var(--kbf-slate-lt);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--kbf-text-sm);">
-          <div style="font-weight:700;color:var(--kbf-navy);margin-bottom:4px;">Fund Type</div>
-          <div><?php echo ucwords(str_replace('_',' ',$fund->funder_type)); ?></div>
-        </div>
-  
         <!-- Top Sponsors Leaderboard -->
         <div class="kbf-leaderboard-card kbf-section-leaderboard" style="background:#fff;border:1px solid var(--kbf-border);border-radius:12px;padding:18px;margin-top:14px;">
           <div class="kbf-leaderboard-head">
@@ -921,11 +961,6 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
 
           <?php if($fund->status==='active' && (!$is_owner || $demo_mode)): ?>
-          <?php if($demo_mode): ?>
-          <div class="kbf-alert kbf-alert-warning kbf-alert-block" style="margin-bottom:14px;">
-            <span><strong style="text-transform:uppercase;letter-spacing:.12em;background:rgba(146,64,14,.12);padding:2px 6px;border-radius:6px;">Demo Mode</strong> — Payments are simulated for testing.</span>
-          </div>
-          <?php endif; ?>
           <button class="kbf-btn kbf-btn-primary" style="width:100%;padding:13px;font-size:15px;font-weight:700;margin-bottom:10px;" onclick="kbfShowModal('kbf-modal-sponsor')">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="16" height="16" style="filter:invert(100%);">
             <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Fund'; ?>
@@ -969,52 +1004,10 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
           </div>
         </div>
-      </div>
-      </div>
-      </div>
-    </div>
 
-    <!-- Description (full width) -->
-    <div class="kbf-card kbf-section-description" style="margin-bottom:20px;">
-      <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">About This Fund</h3>
-      <div style="font-size:14.5px;color:var(--kbf-text-sm);line-height:1.8;"><?php echo nl2br(esc_html(wp_unslash($fund->description))); ?></div>
-    </div>
-
-    <!-- Message wall (full width) -->
-    <div class="kbf-card">
-      <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
-        Message <span style="background:var(--kbf-green-lt);color:var(--kbf-green);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;"><?php echo $sponsor_count; ?></span>
-      </h3>
-      <?php if(!empty($sponsors)): ?>
-      <div class="kbf-sponsor-wall">
-        <?php foreach($sponsors as $sp):
-          $initials = $sp->is_anonymous ? '?' : strtoupper(substr(isset($sp->sponsor_name) ? $sp->sponsor_name : 'A',0,1));
-        ?>
-        <div class="kbf-sponsor-item">
-          <div class="kbf-sponsor-avatar">
-            <?php if($sp->is_anonymous || empty($sp->sponsor_name)): ?>
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person.svg" alt="">
-            <?php else: ?>
-              <?php echo $initials; ?>
-            <?php endif; ?>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:500;font-size:13.5px;color:var(--kbf-text);">
-              <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?>
-              <span style="color:var(--kbf-slate);font-weight:400;"> • <?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
-            </div>
-            <?php if($sp->message): ?><div class="kbf-sponsor-msg">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
-          </div>
-        </div>
-        <?php endforeach; ?>
       </div>
-      <?php else: ?>
-      <div style="text-align:center;padding:24px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chat-left-text-fill.svg" alt="" width="32" height="32" style="margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
-        <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No messages yet</p>
-        <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to leave a message.</p>
       </div>
-      <?php endif; ?>
+      </div>
     </div>
 
     <!-- Poster Modal -->
@@ -1084,8 +1077,64 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
         </div>
       </div>
-    </div>
-    </div><!-- .kbf-wrap -->
+      </div>
+
+      <!-- Description + Messages -->
+      <div class="kbf-detail-panels" style="margin-top:20px;">
+        <div class="kbf-detail-left">
+          <div class="kbf-card kbf-section-description" style="padding:18px;">
+            <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">About This Fund</h3>
+            <div style="font-size:14.5px;color:var(--kbf-text-sm);line-height:1.8;"><?php echo nl2br(esc_html(wp_unslash($fund->description))); ?></div>
+          </div>
+          <div class="kbf-card kbf-section-description" style="padding:18px;margin-top:18px;">
+            <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">Milestones &amp; Updates</h3>
+            <div style="font-size:13px;color:var(--kbf-slate);">No updates yet.</div>
+          </div>
+        </div>
+        <div class="kbf-detail-right">
+          <div class="kbf-card kbf-section-message" style="padding:18px;">
+            <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
+              Message <span style="background:var(--kbf-green-lt);color:var(--kbf-green);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;"><?php echo $sponsor_count; ?></span>
+            </h3>
+            <?php if(!empty($sponsors)): ?>
+            <div class="kbf-sponsor-wall">
+              <?php foreach($sponsors as $sp):
+                $initials = $sp->is_anonymous ? '?' : strtoupper(substr(isset($sp->sponsor_name) ? $sp->sponsor_name : 'A',0,1));
+              ?>
+              <div class="kbf-sponsor-item">
+                <div class="kbf-sponsor-avatar">
+                  <?php if($sp->is_anonymous || empty($sp->sponsor_name)): ?>
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person.svg" alt="">
+                  <?php else: ?>
+                    <?php echo $initials; ?>
+                  <?php endif; ?>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:500;font-size:13.5px;color:var(--kbf-text);">
+                    <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?>
+                    <span style="color:var(--kbf-slate);font-weight:400;"> • <?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
+                  </div>
+                  <?php if($sp->message): ?><div class="kbf-sponsor-msg">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
+                </div>
+              </div>
+              <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+            <div style="text-align:center;padding:24px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chat-left-text-fill.svg" alt="" width="32" height="32" style="margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No messages yet</p>
+              <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to leave a message.</p>
+            </div>
+            <?php endif; ?>
+          </div>
+          <div class="kbf-card kbf-section-description" style="padding:18px;margin-top:18px;">
+            <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">Benefits</h3>
+            <div style="font-size:13px;color:var(--kbf-slate);">No benefits added yet.</div>
+          </div>
+        </div>
+      </div>
+
+      </div><!-- .kbf-wrap -->
     
     <!-- ================== JS ================== -->
     <script>

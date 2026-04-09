@@ -106,7 +106,7 @@ if (!defined('KBF_EMAIL_VERIFY_TTL')) {
 }
 if (!defined('KBF_EMAIL_VERIFY_DISABLED')) {
     // Temporarily disable email verification checks and emails.
-    define('KBF_EMAIL_VERIFY_DISABLED', true);
+    define('KBF_EMAIL_VERIFY_DISABLED', false);
 }
 if (!defined('KBF_AUTH_SIGNUP_LIMIT')) {
     define('KBF_AUTH_SIGNUP_LIMIT', 5);
@@ -571,6 +571,7 @@ function kbf_refund_all_sponsors($fund_id) {
     // Auto-refund disabled.
     return;
 }
+
 
 
 

@@ -23,6 +23,20 @@ function bntm_shortcode_kbf_admin() {
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
+    <style>
+      .bntm-topbar,
+      body .bntm-topbar,
+      .kbf-admin-wrap .bntm-topbar{
+        display:none !important;
+      }
+      html, body, body.admin-bar{
+        margin-top:0 !important;
+        padding-top:0 !important;
+      }
+      #wpadminbar{
+        display:none !important;
+      }
+    </style>
     <?php if(false): ?><div></div><?php endif; ?>
     <div class="kbf-wrap kbf-admin-wrap">
     <?php

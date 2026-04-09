@@ -1588,6 +1588,11 @@
             return;
         }
         const fd = new FormData(form);
+        var goalInput = document.getElementById('kbf-goal-amount');
+        if (goalInput) {
+            var goalRaw = (goalInput.dataset.kbfRaw || goalInput.value || '').replace(/,/g, '');
+            fd.set('goal_amount', goalRaw);
+        }
         var provEl = document.getElementById('kbf-province');
         var muniEl = document.getElementById('kbf-municipality');
         var brgyEl = document.getElementById('kbf-barangay');
