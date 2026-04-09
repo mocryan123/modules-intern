@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Organizer profile shortcode */
 if (!function_exists('kbf_account_profile_get_biz_id')) {
     function kbf_account_profile_get_biz_id($wpdb) {
@@ -393,7 +393,7 @@ function bntm_shortcode_kbf_organizer_profile() {
               </div>
             </div>
             <div class="kbf-progress-wrap" style="margin-bottom:12px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
-            <div class="kbf-fund-amounts"><span><strong>?<?php echo number_format($f->raised_amount,2); ?></strong>raised</span><span><strong>?<?php echo number_format($f->goal_amount,2); ?></strong>goal</span><span><strong><?php echo round($pct); ?>%</strong>funded</span></div>
+            <div class="kbf-fund-amounts"><span><strong>&#8369;<?php echo number_format($f->raised_amount,2); ?></strong>raised</span><span><strong>&#8369;<?php echo number_format($f->goal_amount,2); ?></strong>goal</span><span><strong><?php echo round($pct); ?>%</strong>funded</span></div>
             <div class="kbf-card-actions">
               <?php
                 $fund_token = '';
@@ -421,7 +421,7 @@ function bntm_shortcode_kbf_organizer_profile() {
         <div class="kbf-card" style="margin-bottom:16px;">
           <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Stats</h4>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Raised</span><strong style="color:var(--kbf-blue);">?<?php echo number_format($profile->total_raised,0); ?></strong></div>
+            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Raised</span><strong style="color:var(--kbf-blue);">&#8369;<?php echo number_format($profile->total_raised,0); ?></strong></div>
             <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Sponsors</span><strong><?php echo number_format($profile->total_sponsors); ?></strong></div>
             <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Active Funds</span><strong><?php $active_count=0; foreach($funds as $f){ if($f->status==='active') $active_count++; } echo $active_count; ?></strong></div>             
           </div>
@@ -623,3 +623,4 @@ function bntm_shortcode_kbf_organizer_profile() {
     }
     return bntm_universal_container('Organizer Profile -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+

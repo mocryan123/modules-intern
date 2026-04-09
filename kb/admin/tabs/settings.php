@@ -98,7 +98,7 @@ function kbf_admin_settings_tab() {
             </svg>
           </div>
           <div>
-            <div style="font-weight:700;color:#92400e;font-size:14.5px;margin-bottom:2px;">Demo Mode is ON — payments are auto‑confirmed</div>
+            <div style="font-weight:700;color:#92400e;font-size:14.5px;margin-bottom:2px;">Demo Mode is ON — payments are auto-confirmed</div>
             <div style="color:#92400e;font-size:13px;line-height:1.6;">
               No real payment is required while Demo Mode is active. Switch to Live before launch.
             </div>
@@ -191,7 +191,7 @@ function kbf_admin_settings_tab() {
           </div>
           <!-- Live Keys -->
           <div>
-            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-green);margin-bottom:10px;">Live (Production)</div>
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-blue);margin-bottom:10px;">Live (Production)</div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Live Public Key</label>
               <input type="text" id="lv-pub" value="<?php echo esc_attr($lv_pub); ?>" placeholder="pk-live-..." style="font-family:monospace;font-size:12px;">
@@ -267,7 +267,7 @@ function kbf_admin_settings_tab() {
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfSaveDiditKeys('sandbox')">Save Sandbox Keys</button>
             </div>
             <div>
-              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-green);margin-bottom:10px;">Live</div>
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-blue);margin-bottom:10px;">Live</div>
             <div class="kbf-form-group" style="margin-bottom:10px;">
               <label style="font-size:12.5px;">Live API Key</label>
               <input type="text" id="didit-lv-key" value="<?php echo esc_attr($didit_lv_key); ?>" placeholder="didit-live-key-...">
@@ -447,3 +447,4 @@ function kbf_admin_settings_tab() {
     </script>
     <?php return ob_get_clean();
 }
+

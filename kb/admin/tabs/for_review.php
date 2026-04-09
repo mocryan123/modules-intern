@@ -34,7 +34,7 @@ function kbf_admin_pending_tab() {
               <div class="kbf-meta" style="margin-top:4px;">by <?php echo esc_html($f->organizer); ?> &bull; <?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?> &bull; <?php echo $format_funder_type($f->funder_type); ?></div>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:8px 0 0;"><?php echo esc_html(wp_trim_words(wp_unslash($f->description),40)); ?></p>
               <div style="display:flex;gap:20px;margin-top:10px;font-size:12.5px;color:var(--kbf-slate);flex-wrap:wrap;">
-                <span><strong>Goal:</strong> ₱<?php echo $format_currency($f->goal_amount,2); ?></span>
+                <span><strong>Goal:</strong> &#8369;<?php echo $format_currency($f->goal_amount,2); ?></span>
                 <span><strong>Deadline:</strong> <?php echo $format_date($f->deadline); ?></span>
                 <span><strong>Email:</strong> <?php echo esc_html($f->email); ?></span>
                 <span><strong>Phone:</strong> <?php echo esc_html($f->phone); ?></span>

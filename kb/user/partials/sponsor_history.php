@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Sponsor history shortcode */
 function bntm_shortcode_kbf_sponsor_history() {
     kbf_global_assets();
@@ -91,3 +91,4 @@ function bntm_shortcode_kbf_sponsor_history() {
     <?php
     return ob_get_clean();
 }
+

@@ -1,4 +1,4 @@
-<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
+Ôªø<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
     <!-- ===== MODAL: Create Fund ===== -->
     <div id="kbf-modal-create" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
@@ -58,13 +58,13 @@
                     <?php echo $fee_disabled ? 'Platform fee: 0% (disabled).' : 'Platform fee: 5% per transaction.'; ?>
                   </small>
                   <div class="kbf-meta" id="kbf-fee-preview" style="margin-top:6px;">
-                    Platform cut: ?0.00 &nbsp;ï&nbsp; Net goal: ?0.00
+                    Platform cut: ?0.00 &nbsp;‚Ä¢&nbsp; Net goal: ?0.00
                   </div>
                 </div>
               <div class="kbf-form-group">
                 <label>Deadline *</label>
                 <input type="date" name="deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" required>
-                <small>Required ó set an end date (minimum 7 days from today).</small>
+                <small>Required ‚Äî set an end date (minimum 7 days from today).</small>
               </div>
               </div>
               <div class="kbf-form-group">
@@ -180,7 +180,7 @@
           <div class="kbf-auth-side">
             <div class="kbf-auth-side-inner">
               <div class="kbf-auth-chip">Fundora Access</div>
-              <div class="kbf-auth-quote">ìBayanihan works best when people can see real progress.î</div>
+              <div class="kbf-auth-quote">‚ÄúBayanihan works best when people can see real progress.‚Äù</div>
               <div class="kbf-auth-sub">Sign in to save campaigns, manage funds, and support with confidence.</div>
             </div>
           </div>
@@ -194,6 +194,41 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL: Add Milestone ===== -->
+    <div id="kbf-modal-milestone" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal kbf-modal-sm">
+        <div class="kbf-modal-header">
+          <h3>Add Milestone</h3>
+          <button class="kbf-modal-close" type="button" onclick="kbfCloseModal('kbf-modal-milestone')">&times;</button>
+        </div>
+        <div class="kbf-modal-body">
+          <div class="kbf-meta" id="kbf-milestone-fund-title" style="margin-bottom:12px;"></div>
+          <form id="kbf-milestone-form" onsubmit="return false;" enctype="multipart/form-data">
+            <input type="hidden" id="kbf-milestone-fund-id" name="fund_id">
+            <div class="kbf-form-group">
+              <label>Milestone Title</label>
+              <input type="text" name="milestone_title" placeholder="e.g., Goal reached!" maxlength="120">
+            </div>
+            <div class="kbf-form-group">
+              <label>Update Details</label>
+              <textarea name="milestone_body" rows="4" placeholder="Share an update for your supporters..."></textarea>
+            </div>
+            <div class="kbf-form-group">
+              <label>Add Photos (optional)</label>
+              <input type="file" id="kbf-milestone-photos" name="milestone_photos[]" accept="image/*" multiple>
+              <small>Up to 5 photos. JPG/PNG/WebP.</small>
+            </div>
+          </form>
+          <div id="kbf-milestone-msg" style="margin-top:10px;"></div>
+          <div class="kbf-meta">This will appear in the Milestones & Updates section.</div>
+        </div>
+        <div class="kbf-modal-footer">
+          <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfCloseModal('kbf-modal-milestone')">Cancel</button>
+          <button class="kbf-btn kbf-btn-primary" type="button" id="kbf-milestone-save">Save Milestone</button>
         </div>
       </div>
     </div>
@@ -276,7 +311,7 @@
               <div class="kbf-form-group">
                 <label>Deadline</label>
                 <input type="date" name="deadline" id="edit-fund-deadline">
-                <small>Optional ó update the end date.</small>
+                <small>Optional ‚Äî update the end date.</small>
               </div>
               <!-- Auto-return UI removed -->
             </div>
@@ -427,7 +462,7 @@
         </div>
         <div class="kbf-modal-body">
           <p id="kbf-trash-message" style="margin:0;color:var(--kbf-slate);font-size:13px;">
-            This will move the fundraiser to cancelled status and it wonít be visible to sponsors.
+            This will move the fundraiser to cancelled status and it won‚Äôt be visible to sponsors.
             Are you sure you want to continue?
           </p>
         </div>
@@ -447,7 +482,7 @@
         </div>
         <div class="kbf-modal-body">
           <p style="margin:0 0 8px;color:var(--kbf-slate);font-size:13px;">
-            The fundraiser deadline has passed and the goal wasnít met. Your request will be reviewed by admin.
+            The fundraiser deadline has passed and the goal wasn‚Äôt met. Your request will be reviewed by admin.
           </p>
           <p style="margin:0;color:var(--kbf-slate);font-size:12.5px;">
             Escrow releases after deadline are subject to a 5% platform deduction. See our
@@ -460,6 +495,7 @@
         </div>
       </div>
     </div>
+
 
 
 

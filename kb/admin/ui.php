@@ -666,3 +666,4 @@ window.kbfSubmitReject = function(){
     $c=ob_get_clean();
     return bntm_universal_container('KonekBayan Admin Panel',$c, ['show_topbar'=>false,'show_header'=>false,'wrap'=>false]);
 }
+

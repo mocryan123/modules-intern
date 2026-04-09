@@ -17,6 +17,7 @@ function bntm_kbf_get_tables() {
             description LONGTEXT,
             photos TEXT COMMENT 'JSON array of photo URLs',
             benefits TEXT COMMENT 'JSON array of benefit tiers',
+            milestones TEXT COMMENT 'JSON array of milestone updates',
             goal_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
             raised_amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
             category VARCHAR(100) DEFAULT 'Others',
@@ -232,6 +233,7 @@ function bntm_kbf_ensure_fund_columns() {
     $cols = [
         'fund_token' => "ALTER TABLE {$ft} ADD COLUMN fund_token VARCHAR(64) NULL",
         'benefits'   => "ALTER TABLE {$ft} ADD COLUMN benefits TEXT NULL",
+        'milestones' => "ALTER TABLE {$ft} ADD COLUMN milestones TEXT NULL",
     ];
     foreach ($cols as $col => $sql) {
         if (!in_array($col, $existing, true)) {

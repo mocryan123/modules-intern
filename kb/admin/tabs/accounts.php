@@ -170,7 +170,7 @@ function kbf_admin_organizers_tab() {
               <td class="kbf-meta" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 <?php echo esc_html($p->user_email); ?>
               </td>
-              <td><strong>₱<?php echo $format_number($p->total_raised, 0); ?></strong></td>
+              <td><strong>&#8369;<?php echo $format_number($p->total_raised, 0); ?></strong></td>
               <td><?php echo $format_number($p->total_sponsors); ?></td>
             <td><?php echo $format_number($p->rating, 1); ?>/5 (<?php echo $p->rating_count; ?>)</td>
             <td class="kbf-meta"><?php echo esc_html($didit_status ? ucfirst($didit_status) : '—'); ?></td>

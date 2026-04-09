@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Public browse shortcode */
 if (!function_exists('kbf_browse_get_fund_token')) {
     function kbf_browse_get_fund_token($fund_id) {
@@ -620,7 +620,7 @@ function bntm_shortcode_kbf_browse() {
           <?php if($loc): ?>
           <div style="margin-top:10px;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);">
             <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <strong><?php echo esc_html($loc); ?></strong> <a href="<?php echo esc_url(remove_query_arg('loc')); ?>" style="color:var(--kbf-red);margin-left:4px;text-decoration:none;">� Remove</a>
+            <strong><?php echo esc_html($loc); ?></strong> <a href="<?php echo esc_url(remove_query_arg('loc')); ?>" style="color:var(--kbf-red);margin-left:4px;text-decoration:none;">× Remove</a>
           </div>
           <?php endif; ?>
         </div>
@@ -684,8 +684,8 @@ function bntm_shortcode_kbf_browse() {
           <!-- Progress -->
           <div class="kbf-progress-wrap" style="margin-bottom:8px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:16px;">
-            <span><strong style="color:var(--kbf-navy);font-size:14px;">?<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
-            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ?<?php echo number_format($f->goal_amount,0); ?></span>
+            <span><strong style="color:var(--kbf-navy);font-size:14px;">&#8369;<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
+            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of &#8369;<?php echo number_format($f->goal_amount,0); ?></span>
           </div>
 
           <!-- Actions -->
@@ -924,5 +924,6 @@ function bntm_shortcode_kbf_browse() {
     $c=ob_get_clean();
     return bntm_universal_container('Browse Funds -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 

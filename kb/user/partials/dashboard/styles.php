@@ -99,6 +99,12 @@
         border:1px dashed #d7e3f7;
         color:#475569;
     }
+    @media (max-width: 1200px){
+        .kbf-tab-content{
+            padding-left:20px;
+            padding-right:20px;
+        }
+    }
     .kbf-card-actions{
         display:flex;
         align-items:center;
@@ -106,6 +112,7 @@
         justify-content:flex-start;
         margin-top:12px;
     }
+    .kbf-card-actions .kbf-btn,
     .kbf-card-actions .kbf-btn-sm{
         height:32px;
         min-width:32px;
@@ -114,11 +121,31 @@
         align-items:center;
         justify-content:center;
     }
-    .kbf-btn-withdraw{
-        height:34px;
-        padding:0 12px;
+    .kbf-card-actions .kbf-btn-withdraw{
+        height:32px;
+        padding:0 10px;
         gap:6px;
         white-space:nowrap;
+    }
+    .kbf-more-withdraw{
+        display:none;
+    }
+    .kbf-more-milestone{
+        display:none;
+    }
+    @media (max-width: 580px){
+        .kbf-card-actions .kbf-btn-withdraw{
+            display:none;
+        }
+        .kbf-card-more-menu .kbf-more-withdraw{
+            display:inline-flex;
+        }
+        .kbf-card-actions .kbf-btn-milestone{
+            display:none;
+        }
+        .kbf-card-more-menu .kbf-more-milestone{
+            display:inline-flex;
+        }
     }
     .kbf-card-more-wrap{position:relative;}
     .kbf-card-more-menu{

@@ -1,4 +1,4 @@
-<?php
+ï»¿<?php
 /*
  * KBF user dashboard tab: Overview.
  */
@@ -377,7 +377,7 @@
         </span>
         <div>
           <strong><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</strong>
-          Not visible to sponsors yet. Usually 3–5 days. You’ll be notified after approval.
+          Not visible to sponsors yet. Usually 3â€“5 days. Youâ€™ll be notified after approval.
           <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
         </div>
       </div>
@@ -393,7 +393,7 @@
           <div class="kbf-stat-icon kbf-stat-icon--plain">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/piggy-bank-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
           </div>
-          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">?<?php echo $format_currency($total_raised, 0); ?></div></div>
+          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">&#8369;<?php echo $format_currency($total_raised, 0); ?></div></div>
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
@@ -463,7 +463,7 @@
             </span>
             <div>
               <strong>Withdrawal Pending:</strong>
-              <span>Your request is being reviewed by admin (2–5 business days).</span>
+              <span>Your request is being reviewed by admin (2â€“5 business days).</span>
             </div>
           </div>
           <?php endif; ?>
@@ -551,8 +551,8 @@
           </div>
           <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div class="kbf-fund-amounts">
-            <span><strong>?<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
-            <span><strong>?<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
+            <span><strong>&#8369;<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
+            <span><strong>&#8369;<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
             <span><strong><?php echo round($pct); ?>%</strong>funded</span>
           </div>
           <?php
@@ -570,6 +570,12 @@
                 <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
                 View Details
               </a>
+              <?php if($f->status==='completed'): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus-circle.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Add Milestone
+                </button>
+              <?php endif; ?>
               <?php if($f->status==='active' && $f->escrow_status==='holding' && $deadline_passed && $f->raised_amount < $f->goal_amount): ?>
                 <?php if($escrow_pending): ?>
                   <span class="kbf-badge kbf-badge-pending">Escrow Request Pending</span>
@@ -606,11 +612,30 @@
                   Edit
                 </button>
                 <?php endif; ?>
+                <?php if($f->status==='completed'): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-more-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus-circle.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Add Milestone
+                </button>
+                <?php endif; ?>
                 <?php if($f->status==='active' && $f->raised_amount>=$f->goal_amount): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfMarkComplete(<?php echo $f->id; ?>)">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check2-circle.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
                   Mark Complete
                 </button>
+                <?php endif; ?>
+                <?php if(in_array($f->status,['active','completed']) && $f->escrow_status==='released'): ?>
+                  <?php if($wd_block): ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    Request Withdrawal
+                  </button>
+                  <?php else: ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    Request Withdrawal
+                  </button>
+                  <?php endif; ?>
                 <?php endif; ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
@@ -644,7 +669,7 @@
                 <?php foreach($sponsors as $sp): ?>
                   <tr>
                     <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
-                    <td><strong style="color:var(--kbf-blue);">?<?php echo $format_currency($sp->amount); ?></strong></td>
+                    <td><strong style="color:var(--kbf-blue);">&#8369;<?php echo $format_currency($sp->amount); ?></strong></td>
                     <td><?php echo esc_html($format_payment_method($sp->payment_method)); ?></td>
                     <td class="kbf-meta"><?php echo date('M d, Y',strtotime($sp->created_at)); ?></td>
                   </tr>
@@ -678,11 +703,11 @@
             </div>
             <div class="kbf-cta-check">
               <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
-              Upload 2–3 photos to build trust
+              Upload 2â€“3 photos to build trust
             </div>
             <div class="kbf-cta-check">
               <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
-              Share once it’s live to get first sponsors
+              Share once itâ€™s live to get first sponsors
             </div>
             <div class="kbf-cta-check">
               <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
@@ -700,7 +725,7 @@
               Browse Funds
             </a>
           </div>
-          <div class="kbf-cta-note">Start a fund in under 3 minutes. We’ll guide you step-by-step.</div>
+          <div class="kbf-cta-note">Start a fund in under 3 minutes. Weâ€™ll guide you step-by-step.</div>
         </div>
       </div>
       
@@ -894,6 +919,7 @@
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

@@ -798,11 +798,11 @@
             if (!stageW || !stageH) return;
             var maxW = Math.max(40, stageW - pad * 2);
             var maxH = Math.max(40, stageH - pad * 2);
-            var cropW = Math.min(maxW, maxH * 16 / 9);
-            var cropH = cropW * 9 / 16;
+            var cropW = Math.min(maxW, maxH * 4 / 3);
+            var cropH = cropW * 3 / 4;
             if (cropH > maxH) {
                 cropH = maxH;
-                cropW = cropH * 16 / 9;
+                cropW = cropH * 4 / 3;
             }
             var cropX = Math.max(0, (stageW - cropW) / 2);
             var cropY = Math.max(0, (stageH - cropH) / 2);
@@ -1658,7 +1658,7 @@
                 var val = parseMoney(input.dataset.kbfRaw || input.value);
                 var cut = val * rate;
                 var net = Math.max(0, val - cut);
-                out.innerHTML = 'Platform cut: ₱' + fmt(cut) + ' &nbsp;•&nbsp; Net goal: ₱' + fmt(net);
+                out.innerHTML = 'Platform cut: \\u20B1' + fmt(cut) + ' &nbsp;•&nbsp; Net goal: \\u20B1' + fmt(net);
             }
             input.addEventListener('input', function(){
                 var before = input.value;
@@ -1980,9 +1980,9 @@
     window.kbfOpenWd = function(fundId, available, title) {
         document.getElementById('wd-fund-id').value = fundId;
         document.getElementById('wd-fund-title').textContent = title || 'Fund #'+fundId;
-        document.getElementById('wd-available-label').textContent = '₱' + parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+        document.getElementById('wd-available-label').textContent = '\\u20B1' + parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
         document.getElementById('wd-amount').max = available;
-        document.getElementById('wd-amount').placeholder = 'Max ₱'+parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2});
+        document.getElementById('wd-amount').placeholder = 'Max \\u20B1'+parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2});
         document.getElementById('kbf-wd-msg').innerHTML = '';
         document.getElementById('kbf-wd-form').reset();
         document.getElementById('wd-fund-id').value = fundId; // re-set after reset
@@ -1994,6 +1994,72 @@
         document.getElementById('kbf-appeal-msg').innerHTML = '';
         kbfOpenModal('kbf-modal-appeal');
     };
+
+    window.kbfOpenMilestoneModal = function(fundId, title) {
+        var titleEl = document.getElementById('kbf-milestone-fund-title');
+        var idEl = document.getElementById('kbf-milestone-fund-id');
+        if (titleEl) titleEl.textContent = title ? ('Fund: ' + title) : '';
+        if (idEl) idEl.value = fundId || '';
+        var form = document.getElementById('kbf-milestone-form');
+        if (form) form.reset();
+        var msg = document.getElementById('kbf-milestone-msg');
+        if (msg) msg.innerHTML = '';
+        var saveBtn = document.getElementById('kbf-milestone-save');
+        if (saveBtn && !saveBtn.dataset.bound) {
+            saveBtn.dataset.bound = '1';
+            saveBtn.addEventListener('click', kbfHandleMilestoneSave);
+        }
+        kbfOpenModal('kbf-modal-milestone');
+    };
+    function kbfHandleMilestoneSave(){
+        var saveBtn = document.getElementById('kbf-milestone-save');
+        var form = document.getElementById('kbf-milestone-form');
+        var msg = document.getElementById('kbf-milestone-msg');
+        if (!form) return;
+        var title = form.querySelector('input[name="milestone_title"]');
+        var body = form.querySelector('textarea[name="milestone_body"]');
+        if (title && body && !title.value.trim() && !body.value.trim()) {
+            if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Please add a title or update details.</div>';
+            return;
+        }
+        if (typeof window.ajaxurl === 'undefined' || !window.ajaxurl) {
+            if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Submit failed: ajaxurl is not defined.</div>';
+            return;
+        }
+        var fd = new FormData(form);
+        fd.append('action','kbf_add_milestone');
+        fd.append('nonce','<?php echo wp_create_nonce('kbf_add_milestone'); ?>');
+        if (saveBtn) kbfSetBtnLoading(saveBtn, true, 'Saving...');
+        kbfSetSkeleton(msg, true);
+        fetch(ajaxurl, { method:'POST', body:fd })
+        .then(r=>r.text()).then(t=>{
+            console.log('kbf_add_milestone raw response:', t);
+            var json = null;
+            try {
+                var cleaned = String(t || '').replace(/^\uFEFF/, '').trim();
+                var start = cleaned.indexOf('{');
+                var end = cleaned.lastIndexOf('}');
+                var payload = (start !== -1 && end !== -1 && end > start) ? cleaned.slice(start, end + 1) : cleaned;
+                json = JSON.parse(payload);
+            } catch(e) {
+                json = { success:false, data:{ message:'Invalid server response. Please try again.', raw: t } };
+            }
+            console.log('kbf_add_milestone parsed:', json);
+            if (msg) {
+                var extra = (json.data && json.data.raw) ? ('<div style="margin-top:6px;font-size:11px;opacity:.7;word-break:break-word;">'+String(json.data.raw).slice(0,280)+'</div>') : '';
+                msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+(json.data && json.data.message ? json.data.message : 'Save failed.')+extra+'</div>';
+            }
+            if (saveBtn) kbfSetBtnLoading(saveBtn, false);
+            kbfSetSkeleton(msg, false);
+            if (json.success) {
+                // Temporarily disable auto-refresh after save
+            }
+        }).catch(()=>{
+            if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed.</div>';
+            if (saveBtn) kbfSetBtnLoading(saveBtn, false);
+            kbfSetSkeleton(msg, false);
+        });
+    }
 
     window.kbfCancelFund = function(fundId) {
         if (!confirm('Cancel this fund? This cannot be undone.')) return;

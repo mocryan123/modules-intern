@@ -449,7 +449,7 @@ function kbf_dashboard_find_funds_tab() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" required>
+              <input type="number" name="amount" placeholder="Min. &#8369;50" min="50" step="1" required>
               <div id="kbff-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
             </div>
             <div class="kbf-form-group">
@@ -635,7 +635,7 @@ function kbf_dashboard_find_funds_tab() {
           <!-- Progress -->
           <div class="kbf-explore-progress"><span style="width:<?php echo $pct; ?>%"></span></div>
           <div class="kbf-explore-footer">
-            <span><span class="kbf-explore-amount">₱<?php echo $format_currency($f->raised_amount, 0); ?></span> · <?php echo round($pct); ?>%</span>
+            <span><span class="kbf-explore-amount">&#8369;<?php echo $format_currency($f->raised_amount, 0); ?></span> · <?php echo round($pct); ?>%</span>
           </div>
 
           <!-- Action buttons -->
@@ -882,7 +882,7 @@ function kbf_dashboard_find_funds_tab() {
         const limitEl = document.getElementById('kbff-sponsor-limit');
         const amountEl = document.querySelector('#kbff-sponsor-form input[name="amount"]');
         if (remaining > 0) {
-            if (limitEl) limitEl.textContent = 'Max allowed: ₱' + parseFloat(remaining).toLocaleString() + ' (remaining goal)';
+            if (limitEl) limitEl.textContent = 'Max allowed: \u20B1' + parseFloat(remaining).toLocaleString() + ' (remaining goal)';
             if (amountEl) amountEl.max = remaining;
         } else {
             if (limitEl) limitEl.textContent = '';
@@ -893,7 +893,7 @@ function kbf_dashboard_find_funds_tab() {
             +'<strong style="font-size:14px;color:var(--kbf-navy);">'+title+'</strong>'
             +'<div style="margin-top:8px;" class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+pct+'%"></div></div>'
             +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:5px;color:var(--kbf-slate);">'
-            +'<span>₱'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% of ₱'+parseFloat(goal).toLocaleString()+'</span></div>';
+            +'<span>\u20B1'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% of \u20B1'+parseFloat(goal).toLocaleString()+'</span></div>';
         document.getElementById('kbff-modal-sponsor').style.display='flex';
     };
     window.kbffSubmitSponsor=function(nonce){
@@ -919,7 +919,7 @@ function kbf_dashboard_find_funds_tab() {
         const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
         if (maxVal && amt > maxVal) {
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ₱' + maxVal.toLocaleString() + ' for this fund.</div>';
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than \u20B1' + maxVal.toLocaleString() + ' for this fund.</div>';
             return;
         }
         kbfSetBtnLoading(btn,true,'Processing...');

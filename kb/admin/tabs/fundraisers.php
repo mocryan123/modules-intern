@@ -56,8 +56,8 @@ function kbf_admin_all_funds_tab() {
                 </div>
               </td>
               <td><?php echo esc_html($f->category); ?></td>
-              <td>₱<?php echo $format_currency($f->goal_amount, 0); ?></td>
-              <td><strong style="color:var(--kbf-green);">₱<?php echo $format_currency($f->raised_amount, 0); ?></strong></td>
+              <td>&#8369;<?php echo $format_currency($f->goal_amount, 0); ?></td>
+              <td><strong style="color:var(--kbf-blue);">&#8369;<?php echo $format_currency($f->raised_amount, 0); ?></strong></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>"><?php echo ucfirst($f->escrow_status); ?></span></td>
               <td>
@@ -79,3 +79,4 @@ function kbf_admin_all_funds_tab() {
     </div>
     <?php return ob_get_clean();
 }
+

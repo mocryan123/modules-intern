@@ -439,6 +439,77 @@ function bntm_ajax_kbf_request_withdrawal() {
     else wp_send_json_error(['message'=>'Failed to submit withdrawal request. Please try again.']);
 }
 
+function bntm_ajax_kbf_add_milestone() {
+    check_ajax_referer('kbf_add_milestone','nonce');
+    if (!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    if (function_exists('bntm_kbf_ensure_fund_columns')) {
+        bntm_kbf_ensure_fund_columns();
+    }
+    global $wpdb;
+    $ft = $wpdb->prefix.'kbf_funds';
+    $cols = $wpdb->get_col("SHOW COLUMNS FROM {$ft}");
+    if (!in_array('milestones', $cols, true)) {
+        wp_send_json_error(['message'=>'Milestones column missing. Please refresh and try again.']);
+    }
+    $biz = get_current_user_id();
+    $fund_id = isset($_POST['fund_id']) ? intval($_POST['fund_id']) : 0;
+    if (!$fund_id) wp_send_json_error(['message'=>'Invalid fund.']);
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND business_id=%d", $fund_id, $biz));
+    if (!$fund) wp_send_json_error(['message'=>'Fund not found.']);
+    if ($fund->status !== 'completed') {
+        wp_send_json_error(['message'=>'Milestones can only be added after completion.']);
+    }
+    $title = isset($_POST['milestone_title']) ? sanitize_text_field($_POST['milestone_title']) : '';
+    $body  = isset($_POST['milestone_body']) ? sanitize_textarea_field($_POST['milestone_body']) : '';
+    if ($title === '' && $body === '') {
+        wp_send_json_error(['message'=>'Please add a title or update details.']);
+    }
+    $photo_urls = [];
+    if (!empty($_FILES['milestone_photos']['name'][0])) {
+        $count = min(5, count($_FILES['milestone_photos']['name']));
+        for ($i=0; $i<$count; $i++) {
+            $file = [
+                'name'     => $_FILES['milestone_photos']['name'][$i],
+                'type'     => $_FILES['milestone_photos']['type'][$i],
+                'tmp_name' => $_FILES['milestone_photos']['tmp_name'][$i],
+                'error'    => $_FILES['milestone_photos']['error'][$i],
+                'size'     => $_FILES['milestone_photos']['size'][$i],
+            ];
+            $up = kbf_handle_image_upload($file);
+            if (isset($up['error'])) wp_send_json_error(['message'=>$up['error']]);
+            if (isset($up['url'])) $photo_urls[] = $up['url'];
+        }
+    }
+    $existing = $fund->milestones ? json_decode($fund->milestones, true) : [];
+    if (!is_array($existing)) $existing = [];
+    $milestone = [
+        'id'        => bntm_rand_id(),
+        'title'     => $title,
+        'body'      => $body,
+        'photos'    => $photo_urls,
+        'created_at'=> current_time('mysql'),
+    ];
+    array_unshift($existing, $milestone);
+    $res = $wpdb->update(
+        $ft,
+        ['milestones' => wp_json_encode($existing)],
+        ['id' => $fund_id],
+        ['%s'],
+        ['%d']
+    );
+    if ($res === false) {
+        wp_send_json_error(['message'=>'Failed to save milestone.', 'debug'=>$wpdb->last_error]);
+    }
+    $fresh = $wpdb->get_row($wpdb->prepare("SELECT milestones FROM {$ft} WHERE id=%d", $fund_id));
+    $saved_raw = $fresh ? $fresh->milestones : null;
+    wp_send_json_success([
+        'message'=>'Milestone saved.',
+        'milestone'=>$milestone,
+        'fund_id'=>$fund_id,
+        'saved_milestones'=>$saved_raw
+    ]);
+}
+
 function bntm_ajax_kbf_extend_deadline() {
     check_ajax_referer('kbf_extend','nonce');
     if (!kbf_rate_limit_ok('extend_deadline', 10, 300)) {
@@ -575,7 +646,7 @@ function bntm_ajax_kbf_sponsor_fund() {
     }
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$st=$wpdb->prefix.'kbf_sponsorships';
     $id=intval($_POST['fund_id']);$amount=floatval($_POST['amount']);
-    if($amount<50) wp_send_json_error(['message'=>'Minimum sponsorship is ₱50.']);
+    if($amount<50) wp_send_json_error(['message'=>'Minimum sponsorship is &#8369;50.']);
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'",$id));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found or not accepting sponsorships.']);
     if ($fund->goal_amount > 0) {
@@ -584,7 +655,7 @@ function bntm_ajax_kbf_sponsor_fund() {
             wp_send_json_error(['message'=>'This fund has already reached its goal.']);
         }
         if ($amount > $remaining) {
-            wp_send_json_error(['message'=>'Maximum allowed sponsorship is ₱'.number_format($remaining,2).' for this fund.']);
+            wp_send_json_error(['message'=>'Maximum allowed sponsorship is &#8369;'.number_format($remaining,2).' for this fund.']);
         }
     }
     $anon=intval($_POST['is_anonymous']??0);
@@ -633,8 +704,8 @@ function bntm_ajax_kbf_sponsor_fund() {
         $cnt=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$fund->business_id));
         $wpdb->update($pt,['total_raised'=>$total,'total_sponsors'=>$cnt],['business_id'=>$fund->business_id],['%f','%d'],['%d']);
         $msg = $just_completed
-            ? 'Sponsorship confirmed! ₱'.number_format($amount,2).' added. This fund has now reached its goal!'
-            : 'Sponsorship confirmed! ₱'.number_format($amount,2).' has been added to this fund. Thank you for your support!';
+            ? 'Sponsorship confirmed! &#8369;'.number_format($amount,2).' added. This fund has now reached its goal!'
+            : 'Sponsorship confirmed! &#8369;'.number_format($amount,2).' has been added to this fund. Thank you for your support!';
         wp_send_json_success(['message'=>$msg,'fund_completed'=>$just_completed]);
     } else {
         wp_send_json_error(['message'=>'Sponsorship failed. Please try again.']);

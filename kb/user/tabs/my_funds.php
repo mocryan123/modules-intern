@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF user dashboard tab: My Funds.
  */
@@ -40,7 +40,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
       }
       if($pending_count > 0): ?>
       <div class="kbf-alert kbf-alert-info" style="margin-bottom:20px;">
-        <strong>How fund approval works:</strong> After you submit a fund, our admin team reviews it (usually within 24–48 hours).
+        <strong>How fund approval works:</strong> After you submit a fund, our admin team reviews it (usually within 24â€“48 hours).
         Once approved, your fund goes <strong>live</strong> and becomes visible to all sponsors on the Browse page.
         You'll see the status change from <em>Pending</em> to <em>Active</em> here.
       </div>
@@ -62,7 +62,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
           <?php if($f->status === 'pending'): ?>
           <div style="background:#fef3c7;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <div><strong>Under Review</strong> -- Awaiting admin approval. Not visible to sponsors yet. Usually 24–48 hours.</div>
+            <div><strong>Under Review</strong> -- Awaiting admin approval. Not visible to sponsors yet. Usually 24â€“48 hours.</div>
           </div>
           <?php elseif($f->status === 'suspended'): ?>
           <div style="background:#fce7f3;border-left:3px solid #db2777;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#831843;display:flex;align-items:flex-start;gap:10px;">
@@ -94,8 +94,8 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
           </div>
           <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div class="kbf-fund-amounts">
-            <span><strong>?<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
-            <span><strong>?<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
+            <span><strong>&#8369;<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
+            <span><strong>&#8369;<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
             <span><strong><?php echo round($pct); ?>%</strong>funded</span>
           </div>
           <div class="kbf-btn-group" style="margin-top:12px;">
@@ -147,7 +147,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
                 <?php foreach($sponsors as $sp): ?>
                   <tr>
                     <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
-                    <td><strong style="color:var(--kbf-blue);">?<?php echo $format_currency($sp->amount); ?></strong></td>
+                    <td><strong style="color:var(--kbf-blue);">&#8369;<?php echo $format_currency($sp->amount); ?></strong></td>
                     <td><?php echo esc_html($format_payment_method($sp->payment_method)); ?></td>
                     <td class="kbf-meta"><?php echo date('M d, Y',strtotime($sp->created_at)); ?></td>
                   </tr>
@@ -162,6 +162,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

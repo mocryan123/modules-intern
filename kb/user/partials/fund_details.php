@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
     function kbf_fund_details_load_fund($wpdb, $ft, $current_user_id) {
@@ -68,6 +68,20 @@ function bntm_shortcode_kbf_fund_details() {
     $photos   = $fund->photos ? json_decode($fund->photos,true) : [];
     $benefits = $fund->benefits ? json_decode($fund->benefits,true) : [];
     if (!is_array($benefits)) $benefits = [];
+    $milestones = [];
+    if (!empty($fund->milestones)) {
+        $raw_milestones = $fund->milestones;
+        if (is_string($raw_milestones)) {
+            $milestones = json_decode($raw_milestones, true);
+            if (!is_array($milestones)) {
+                $milestones = json_decode(stripslashes($raw_milestones), true);
+            }
+            if (!is_array($milestones) && function_exists('is_serialized') && is_serialized($raw_milestones)) {
+                $milestones = maybe_unserialize($raw_milestones);
+            }
+        }
+        if (!is_array($milestones)) $milestones = [];
+    }
     $browse_url = kbf_get_page_url('browse');
     $org_token = ($fund && function_exists('kbf_get_or_create_organizer_token'))
         ? kbf_get_or_create_organizer_token($fund->business_id)
@@ -464,8 +478,9 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-photo-lightbox img{
         width:min(96vw, 1400px);
         max-width:96vw;
+        aspect-ratio:4 / 3;
+        height:auto;
         max-height:90vh;
-        height:90vh;
         object-fit:cover;
         border-radius:16px;
         box-shadow:0 24px 60px rgba(0,0,0,0.45);
@@ -525,7 +540,7 @@ function bntm_shortcode_kbf_fund_details() {
         background:#fff;
         border:1px solid var(--kbf-border);
         border-radius:12px;
-        box-shadow:0 6px 14px rgba(15,23,42,0.06);
+        box-shadow:none;
     }
     .kbf-sponsor-avatar{
         width:38px;height:38px;border-radius:50%;
@@ -655,9 +670,10 @@ function bntm_shortcode_kbf_fund_details() {
         .kbf-photo-lightbox img{
             width:100%;
             max-width:100%;
+            aspect-ratio:4 / 3;
             height:auto;
             max-height:86vh;
-            object-fit:contain;
+            object-fit:cover;
             border-radius:14px;
         }
         .kbf-photo-lightbox-nav{
@@ -706,8 +722,8 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-modal-header"><h3>Sponsor "<?php echo esc_html(wp_trim_words($fund->title,6)); ?>"</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-sponsor')">&times;</button></div>
         <div class="kbf-modal-body">
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:12px 16px;margin-bottom:18px;display:flex;justify-content:space-between;font-size:13px;">
-            <span><strong style="color:var(--kbf-blue);">?<?php echo number_format($fund->raised_amount,2); ?></strong> raised</span>
-            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ?<?php echo number_format($fund->goal_amount,2); ?> goal</span>
+            <span><strong style="color:var(--kbf-blue);">&#8369;<?php echo number_format($fund->raised_amount,2); ?></strong> raised</span>
+            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of &#8369;<?php echo number_format($fund->goal_amount,2); ?> goal</span>
           </div>
           <form id="kbf-sponsor-form" onsubmit="return false;">
             <input type="hidden" name="fund_id" value="<?php echo $fund->id; ?>">
@@ -719,7 +735,7 @@ function bntm_shortcode_kbf_fund_details() {
               <label>Amount (PHP) *</label>
               <input type="number" name="amount" placeholder="Min. ?50" min="50" step="1" max="<?php echo $fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''; ?>" required>
               <?php if($fund->goal_amount>0): ?>
-                <div class="kbf-meta" style="margin-top:4px;">Max allowed: ?<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
+                <div class="kbf-meta" style="margin-top:4px;">Max allowed: &#8369;<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
               <?php endif; ?>
             </div>
             <div class="kbf-form-group">
@@ -932,9 +948,9 @@ function bntm_shortcode_kbf_fund_details() {
           <?php else: ?>
           <?php
           $rank_colors = [
-              1 => ['bg'=>'linear-gradient(135deg,#f59e0b,#fbbf24)', 'icon'=>'🥇', 'label'=>'1st'],
-              2 => ['bg'=>'linear-gradient(135deg,#6b7280,#9ca3af)', 'icon'=>'🥈', 'label'=>'2nd'],
-              3 => ['bg'=>'linear-gradient(135deg,#b45309,#d97706)', 'icon'=>'🥉', 'label'=>'3rd'],
+              1 => ['bg'=>'linear-gradient(135deg,#f59e0b,#fbbf24)', 'icon'=>'ðŸ¥‡', 'label'=>'1st'],
+              2 => ['bg'=>'linear-gradient(135deg,#6b7280,#9ca3af)', 'icon'=>'ðŸ¥ˆ', 'label'=>'2nd'],
+              3 => ['bg'=>'linear-gradient(135deg,#b45309,#d97706)', 'icon'=>'ðŸ¥‰', 'label'=>'3rd'],
           ];
           foreach($leaderboard as $rank => $entry):
             $pos = $rank + 1;
@@ -960,7 +976,7 @@ function bntm_shortcode_kbf_fund_details() {
               </div>
               <!-- Amount -->
               <div style="text-align:right;flex-shrink:0;">
-                <div style="font-size:13.5px;font-weight:600;color:var(--kbf-blue);">?<?php echo number_format($entry->total_given, 0); ?></div>
+                <div style="font-size:13.5px;font-weight:600;color:var(--kbf-blue);">&#8369;<?php echo number_format($entry->total_given, 0); ?></div>
               </div>
             </div>
             <?php if($last_donated): ?>
@@ -982,8 +998,8 @@ function bntm_shortcode_kbf_fund_details() {
           <!-- Progress -->
           <div style="margin-bottom:16px;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
-              <span class="kbf-gradient-num" style="font-size:24px;font-weight:600 !important;">?<?php echo number_format($fund->raised_amount,2); ?></span>
-              <span style="font-size:13px;color:var(--kbf-slate);">of ?<?php echo number_format($fund->goal_amount,2); ?></span>
+              <span class="kbf-gradient-num" style="font-size:24px;font-weight:600 !important;">&#8369;<?php echo number_format($fund->raised_amount,2); ?></span>
+              <span style="font-size:13px;color:var(--kbf-slate);">of &#8369;<?php echo number_format($fund->goal_amount,2); ?></span>
             </div>
             <div class="kbf-progress-wrap" style="height:10px;margin-bottom:10px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%;height:10px;"></div></div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
@@ -1122,15 +1138,39 @@ function bntm_shortcode_kbf_fund_details() {
       </div>
 
       <!-- Description + Messages -->
-      <div class="kbf-detail-panels" style="margin-top:20px;">
+      <div class="kbf-detail-panels">
         <div class="kbf-detail-left">
           <div class="kbf-card kbf-section-description" style="padding:18px;">
             <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">About This Fund</h3>
             <div style="font-size:14.5px;color:var(--kbf-text-sm);line-height:1.8;"><?php echo nl2br(esc_html(wp_unslash($fund->description))); ?></div>
           </div>
-          <div class="kbf-card kbf-section-description" style="padding:18px;margin-top:18px;">
+          <div class="kbf-card kbf-section-milestones" style="padding:18px;margin-top:18px;">
             <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">Milestones &amp; Updates</h3>
-            <div style="font-size:13px;color:var(--kbf-slate);">No updates yet.</div>
+            <?php if(!empty($milestones)): ?>
+              <div style="display:grid;gap:12px;">
+                <?php foreach($milestones as $ms):
+                  $ms_title = isset($ms['title']) ? $ms['title'] : '';
+                  $ms_body = isset($ms['body']) ? $ms['body'] : '';
+                  $ms_date = isset($ms['created_at']) ? $ms['created_at'] : '';
+                  $ms_photos = isset($ms['photos']) && is_array($ms['photos']) ? $ms['photos'] : [];
+                ?>
+                  <div style="border:1px solid var(--kbf-border);border-radius:12px;padding:12px;background:#fff;">
+                    <?php if($ms_title !== ''): ?><div style="font-weight:600;color:var(--kbf-navy);margin-bottom:4px;"><?php echo esc_html($ms_title); ?></div><?php endif; ?>
+                    <?php if($ms_date): ?><div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:6px;"><?php echo esc_html(date('M d, Y', strtotime($ms_date))); ?></div><?php endif; ?>
+                    <?php if($ms_body !== ''): ?><div style="font-size:13px;color:var(--kbf-text-sm);line-height:1.6;"><?php echo nl2br(esc_html(wp_unslash($ms_body))); ?></div><?php endif; ?>
+                    <?php if(!empty($ms_photos)): ?>
+                      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+                        <?php foreach($ms_photos as $p): ?>
+                          <img src="<?php echo esc_url($p); ?>" alt="Milestone photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">
+                        <?php endforeach; ?>
+                      </div>
+                    <?php endif; ?>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+            <?php else: ?>
+              <div style="font-size:13px;color:var(--kbf-slate);">No updates yet.</div>
+            <?php endif; ?>
           </div>
         </div>
         <div class="kbf-detail-right">
@@ -1154,7 +1194,7 @@ function bntm_shortcode_kbf_fund_details() {
                 <div style="flex:1;min-width:0;">
                   <div style="font-weight:500;font-size:13.5px;color:var(--kbf-text);">
                     <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?>
-                    <span style="color:var(--kbf-slate);font-weight:400;"> � <?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
+                    <span style="color:var(--kbf-slate);font-weight:400;"> • <?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
                   </div>
                   <?php if($sp->message): ?><div class="kbf-sponsor-msg">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
                 </div>
@@ -1180,7 +1220,7 @@ function bntm_shortcode_kbf_fund_details() {
                 ?>
                   <li>
                     <?php if($b_title !== ''): ?><div class="kbf-benefits-title"><?php echo esc_html($b_title); ?></div><?php endif; ?>
-                    <?php if($b_amt !== '' && (float)$b_amt > 0): ?><div class="kbf-benefits-amount">?<?php echo number_format((float)$b_amt, 0); ?></div><?php endif; ?>
+                    <?php if($b_amt !== '' && (float)$b_amt > 0): ?><div class="kbf-benefits-amount">&#8369;<?php echo number_format((float)$b_amt, 0); ?></div><?php endif; ?>
                     <?php if($b_desc !== ''): ?><div class="kbf-benefits-desc"><?php echo esc_html($b_desc); ?></div><?php endif; ?>
                   </li>
                 <?php endforeach; ?>
@@ -1733,6 +1773,10 @@ function bntm_shortcode_kbf_fund_details() {
     document.addEventListener('DOMContentLoaded', function(){
         initLeaderboardPager();
     });
+    console.log('kbf fund id', <?php echo wp_json_encode($fund->id ?? null); ?>);
+    console.log('kbf fund token', <?php echo wp_json_encode($fund->fund_token ?? null); ?>);
+    console.log('kbf milestones raw', <?php echo wp_json_encode($fund->milestones ?? null); ?>);
+    console.log('kbf milestones parsed', <?php echo wp_json_encode($milestones); ?>);
     </script>
     <?php
     $c=ob_get_clean();
@@ -1741,6 +1785,7 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 

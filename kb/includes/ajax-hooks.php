@@ -31,6 +31,7 @@ add_action('wp_ajax_kbf_submit_rating',              'bntm_ajax_kbf_submit_ratin
 add_action('wp_ajax_nopriv_kbf_submit_rating',       'bntm_ajax_kbf_submit_rating');
 add_action('wp_ajax_kbf_toggle_save_fund',           'bntm_ajax_kbf_toggle_save_fund');
 add_action('wp_ajax_kbf_user_refresh_tab',           'bntm_ajax_kbf_user_refresh_tab');
+add_action('wp_ajax_kbf_add_milestone',              'bntm_ajax_kbf_add_milestone');
 
 add_action('wp_ajax_kbf_admin_approve_fund',         'bntm_ajax_kbf_admin_approve_fund');
 add_action('wp_ajax_kbf_admin_reject_fund',          'bntm_ajax_kbf_admin_reject_fund');

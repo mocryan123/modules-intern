@@ -66,7 +66,7 @@ function kbf_dashboard_sponsorships_tab($business_id) {
                   <div style="height:14px;"></div>
                 </td>
                 <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?><?php if($s->email): ?><div class="kbf-meta"><?php echo esc_html($s->email); ?></div><?php endif; ?></td>
-                <td><strong>₱<?php echo number_format($s->amount,2); ?></strong></td>
+                <td><strong>&#8369;<?php echo number_format($s->amount,2); ?></strong></td>
                 <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
                 <td class="kbf-meta" style="font-style:italic;max-width:200px;">
                   <span class="kbf-clamp-2"><?php echo esc_html($s->message?:' -- '); ?></span>

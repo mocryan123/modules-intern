@@ -1439,9 +1439,6 @@ function kbf_global_assets() {
         .kbf-tab-content { padding: 0; }
         .kbf-modal-body { padding: 16px; }
     }
-    @media(max-width:620px){
-        .kbf-tab-content { padding-left:20px; padding-right:20px; }
-    }
     /* Share modal */
     .kbf-share-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;}
     .kbf-share-box{background:#fff;border-radius:14px;padding:28px;max-width:420px;width:100%;box-shadow: none;}
