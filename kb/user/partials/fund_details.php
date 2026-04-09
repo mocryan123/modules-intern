@@ -930,12 +930,7 @@ function bntm_shortcode_kbf_fund_details() {
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="16" height="16" style="filter:invert(100%);">
             <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Fund'; ?>
           </button>
-          <?php if($fund->auto_return): ?>
-          <div style="margin:-2px 0 10px;display:flex;align-items:center;gap:6px;color:var(--kbf-green);font-size:12px;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(41%) sepia(98%) saturate(342%) hue-rotate(83deg) brightness(93%) contrast(89%);">
-            Auto-refund if goal not met
-          </div>
-          <?php endif; ?>
+          <!-- Auto-refund UI removed -->
           <div class="kbf-action-note">Sponsors get a receipt instantly after checkout.</div>
           <?php elseif($fund->status==='completed'): ?>
           <div class="kbf-alert kbf-alert-success" style="margin-bottom:10px;text-align:center;font-weight:700;">This fund has been completed!</div>

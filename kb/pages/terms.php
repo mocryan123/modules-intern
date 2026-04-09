@@ -429,16 +429,14 @@ function bntm_kbf_render_terms() {
           <h3>6.3 No Exceptions</h3>
           <p>Platform fees apply to all campaigns and all organizers without exception, including registered non-governmental organizations and charitable institutions.</p>
 
-          <h2 id="refunds">7. Refunds and Failed Campaigns</h2>
-          <h3>7.1 Campaign Auto-Return Policy</h3>
-          <p>Each campaign on Fundora has an auto-return setting configured by the organizer at the time of campaign creation. Sponsors are clearly informed of this setting before making a donation.</p>
-          <ul>
-            <li>If auto-return is enabled: In the event a campaign does not reach its fundraising goal by the deadline, all sponsors will be refunded their donation amount within thirty (30) business days of the campaign expiry date.</li>
-            <li>If auto-return is disabled: Sponsors acknowledge before donating that the organizer retains all funds raised regardless of whether the goal is met.</li>
-          </ul>
-          <h3>7.2 Dispute Refunds</h3>
+          <h2 id="refunds">7. Refunds, Escrow, and Platform Deductions</h2>
+          <h3>7.1 Deadline Not Met</h3>
+          <p>If a campaign does not reach its fundraising goal by the deadline, organizers may still request escrow release. If approved, a 5% platform deduction applies to the released amount.</p>
+          <h3>7.2 Goal Met Before Deadline</h3>
+          <p>If a campaign reaches its goal before the deadline, organizers may withdraw or request escrow release with a reduced 3% platform deduction.</p>
+          <h3>7.3 Dispute Refunds</h3>
           <p>Where Fundora determines through investigation that fraud or misrepresentation has occurred, refunds may be issued to affected sponsors within fourteen (14) business days of the resolution of the investigation.</p>
-          <h3>7.3 Non-Refundable Fees</h3>
+          <h3>7.4 Non-Refundable Fees</h3>
           <p>Payment gateway processing fees are non-refundable as they are collected by the payment provider and are outside of Fundora's control.</p>
 
           <h2 id="organizers">8. Organizer Responsibilities</h2>

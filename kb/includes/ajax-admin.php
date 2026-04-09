@@ -67,7 +67,21 @@ function bntm_ajax_kbf_admin_process_withdrawal() {
     $wd=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$wt} WHERE id=%d",$id));
     if(!$wd) wp_send_json_error(['message'=>'Withdrawal not found.']);
     if($type==='approve') {
-        $wpdb->update($wt,['status'=>'released','processed_at'=>current_time('mysql'),'admin_notes'=>$notes],['id'=>$id],['%s','%s','%s'],['%d']);
+        $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d", $wd->fund_id));
+        $rate = function_exists('kbf_get_platform_fee_rate') ? kbf_get_platform_fee_rate($fund) : 0.05;
+        $gross = (float) $wd->amount;
+        $fee = round($gross * $rate, 2);
+        $net = max(0, $gross - $fee);
+        $fee_note = $rate > 0
+            ? sprintf('Platform fee %.0f%%: PHP %s. Net payout: PHP %s (from PHP %s).', $rate * 100, number_format($fee, 2), number_format($net, 2), number_format($gross, 2))
+            : sprintf('Platform fee disabled. Net payout: PHP %s (from PHP %s).', number_format($net, 2), number_format($gross, 2));
+        $final_notes = trim($notes . ($notes ? "\n" : "") . $fee_note);
+        $wpdb->update($wt, [
+            'status' => 'released',
+            'processed_at' => current_time('mysql'),
+            'admin_notes' => $final_notes,
+            'amount' => $net,
+        ], ['id'=>$id], ['%s','%s','%s','%f'], ['%d']);
         $wpdb->update($ft,['escrow_status'=>'released'],['id'=>$wd->fund_id],['%s'],['%d']);
         wp_send_json_success(['message'=>'Withdrawal approved and released!']);
     } else {
@@ -168,7 +182,16 @@ function bntm_ajax_kbf_admin_process_escrow_request() {
     if($req->status !== 'pending') wp_send_json_error(['message'=>'Request already processed.']);
 
     if($action === 'approve') {
-        $wpdb->update($et, ['status'=>'approved','admin_notes'=>$notes,'reviewed_at'=>current_time('mysql')], ['id'=>$id], ['%s','%s','%s'], ['%d']);
+        $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d", $req->fund_id));
+        $rate = function_exists('kbf_get_platform_fee_rate') ? kbf_get_platform_fee_rate($fund) : 0.05;
+        $gross = $fund ? (float) $fund->raised_amount : 0.0;
+        $fee = round($gross * $rate, 2);
+        $net = max(0, $gross - $fee);
+        $fee_note = $rate > 0
+            ? sprintf('Platform fee %.0f%%: PHP %s. Net payout: PHP %s (from PHP %s).', $rate * 100, number_format($fee, 2), number_format($net, 2), number_format($gross, 2))
+            : sprintf('Platform fee disabled. Net payout: PHP %s (from PHP %s).', number_format($net, 2), number_format($gross, 2));
+        $final_notes = trim($notes . ($notes ? "\n" : "") . $fee_note);
+        $wpdb->update($et, ['status'=>'approved','admin_notes'=>$final_notes,'reviewed_at'=>current_time('mysql')], ['id'=>$id], ['%s','%s','%s'], ['%d']);
         $wpdb->update($ft, ['escrow_status'=>'released'], ['id'=>$req->fund_id], ['%s'], ['%d']);
         wp_send_json_success(['message'=>'Escrow request approved. Funds released.']);
     } else {

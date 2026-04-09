@@ -371,23 +371,18 @@ function bntm_kbf_render_refund() {
           <p>This Refund Policy outlines the conditions under which refunds are issued on the Fundora platform. By donating to a campaign or creating a campaign on Fundora, you agree to the terms described in this policy.</p>
           <p>Fundora acts as a platform connecting organizers and sponsors. All funds flow through our payment gateway provider. Refunds are subject to the capabilities and timelines of our payment processor.</p>
 
-          <h2 id="auto-return">2. Campaign Auto-Return Refunds</h2>
-          <h3>2.1 How Auto-Return Works</h3>
-          <p>Each campaign on Fundora has an auto-return setting configured by the organizer at the time of campaign creation. This setting is displayed prominently on the campaign page so sponsors can make an informed decision before donating.</p>
-          <h3>2.2 Auto-Return Enabled</h3>
-          <p>If a campaign has auto-return enabled and does not reach its fundraising goal by the deadline:</p>
+          <h2 id="auto-return">2. Refunds, Escrow, and Platform Deductions</h2>
+          <h3>2.1 If the Goal Is Not Met by the Deadline</h3>
+          <p>Organizers may still request escrow release even if the campaign does not reach its goal by the deadline. In this case:</p>
           <ul>
-            <li>All sponsors will be refunded their full donation amount.</li>
-            <li>Refunds will be processed within thirty (30) business days of the campaign expiry date.</li>
-            <li>Refunds will be returned to the original payment method used at the time of donation.</li>
-            <li>Payment gateway processing fees are non-refundable as they are charged by the payment provider.</li>
+            <li>Funds may be released upon approved escrow request.</li>
+            <li>A 5% platform deduction applies to the released amount.</li>
           </ul>
-          <h3>2.3 Auto-Return Disabled</h3>
-          <p>If a campaign has auto-return disabled:</p>
+          <h3>2.2 If the Goal Is Met Before the Deadline</h3>
+          <p>When a campaign reaches its goal before the deadline:</p>
           <ul>
-            <li>Sponsors acknowledge before donating that the organizer retains all funds raised regardless of whether the goal is met.</li>
-            <li>No refunds will be issued under this setting unless fraud or misrepresentation is determined through Fundora's dispute resolution process.</li>
-            <li>This setting is clearly communicated on the campaign page before any donation is made.</li>
+            <li>Organizers may proceed with withdrawal or escrow release.</li>
+            <li>A reduced 3% platform deduction applies.</li>
           </ul>
 
           <h2 id="disputes">3. Dispute and Fraud Refunds</h2>

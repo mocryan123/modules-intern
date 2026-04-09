@@ -1037,14 +1037,22 @@
             }
             if (editPhotoWrap) kbfRenderEditThumbs();
         };
-        window.kbfSetEditExistingPhotos = function(urls){
-            if (!Array.isArray(urls)) urls = [];
-            kbfEditExistingUrls = urls.filter(function(u){ return !!u; });
-            kbfEditRemovedUrls = [];
-            var removedInput = document.getElementById('kbf-edit-removed-photos');
-            if (removedInput) removedInput.value = '';
-            if (editPhotoWrap) kbfRenderEditThumbs();
-        };
+    window.kbfSetEditExistingPhotos = function(urls){
+        if (!Array.isArray(urls)) urls = [];
+        var seen = {};
+        kbfEditExistingUrls = urls
+            .filter(function(u){ return !!u; })
+            .filter(function(u){
+                var key = String(u);
+                if (seen[key]) return false;
+                seen[key] = true;
+                return true;
+            });
+        kbfEditRemovedUrls = [];
+        var removedInput = document.getElementById('kbf-edit-removed-photos');
+        if (removedInput) removedInput.value = '';
+        if (editPhotoWrap) kbfRenderEditThumbs();
+    };
         if (photoInput && photoWrap) {
             photoWrap.addEventListener('click', function(e){
                 if (!e.target || !e.target.classList.contains('kbf-photo-add')) return;

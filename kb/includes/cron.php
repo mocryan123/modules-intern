@@ -21,8 +21,7 @@ function kbf_cron_check_deadlines() {
         if ($fund->raised_amount >= $fund->goal_amount) {
             $wpdb->update($table, ['status' => 'completed', 'escrow_status' => 'released'], ['id' => $fund->id], ['%s','%s'], ['%d']);
         } elseif ($fund->auto_return) {
-            kbf_refund_all_sponsors($fund->id);
-            $wpdb->update($table, ['status' => 'cancelled', 'escrow_status' => 'refunded'], ['id' => $fund->id], ['%s','%s'], ['%d']);
+            // Auto-refund disabled.
         } else {
             $wpdb->update($table, ['status' => 'completed', 'escrow_status' => 'released'], ['id' => $fund->id], ['%s','%s'], ['%d']);
         }

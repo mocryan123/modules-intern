@@ -577,7 +577,7 @@
         width:100%;
         max-width:740px;
         background:#fff;
-        border-radius:24px;
+        border-radius:16px;
         border:1px solid #94a3b840;
         box-shadow:
             0 32px 90px #0f172a47,
@@ -608,12 +608,12 @@
         justify-content:space-between;
         padding:20px 24px 18px;
         background:#ffffff;
-        border-bottom:1px solid #94a3b838;
+        border-bottom:0;
     }
     .kbf-user-ui .kbf-modal-header h3{
         margin:0;
         font-size:17px;
-        font-weight:600;
+        font-weight:400;
         letter-spacing:-.2px;
         color:var(--kbf-navy, #0f172a);
         display:flex;
@@ -651,8 +651,8 @@
     }
     .kbf-user-ui #kbf-modal-create .kbf-modal-body,
     .kbf-user-ui #kbf-modal-edit .kbf-modal-body{
-        overflow:visible;
-        max-height:none;
+        overflow-y:auto;
+        max-height:calc(90vh - 140px);
     }
     .kbf-user-ui .kbf-modal-footer{
         display:flex;
@@ -660,7 +660,18 @@
         gap:10px;
         padding:16px 24px 22px;
         background:#ffffff;
-        border-top:1px solid #94a3b838;
+        border-top:0;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-modal-footer,
+    .kbf-user-ui #kbf-modal-edit .kbf-modal-footer{
+        justify-content:space-between;
+        position:sticky;
+        bottom:0;
+        background:#ffffff;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-modal-footer .kbf-btn-secondary,
+    .kbf-user-ui #kbf-modal-edit .kbf-modal-footer .kbf-btn-secondary{
+        margin-right:auto;
     }
     .kbf-user-ui .kbf-modal-footer .kbf-btn{
         min-height:40px;

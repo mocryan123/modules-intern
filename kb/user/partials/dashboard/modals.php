@@ -125,12 +125,7 @@
                 </select>
                 <small>Barangay list will load based on municipality.</small>
               </div>
-              <div class="kbf-form-group">
-                <label class="kbf-checkbox-row">
-                  <input type="checkbox" name="auto_return" value="1">
-                  Auto-return funds to sponsors if goal not met by deadline
-                </label>
-              </div>
+              <!-- Auto-return UI removed -->
               <div class="kbf-form-group">
                 <label class="kbf-checkbox-row">
                   <input type="checkbox" name="agree_terms" id="kbf-agree-terms" required>
@@ -269,12 +264,7 @@
                 <input type="date" name="deadline" id="edit-fund-deadline">
                 <small>Optional — update the end date.</small>
               </div>
-              <div class="kbf-form-group">
-                <label class="kbf-checkbox-row">
-                  <input type="checkbox" name="auto_return" id="edit-fund-auto-return" value="1">
-                  Auto-return funds to sponsors if goal not met by deadline
-                </label>
-              </div>
+              <!-- Auto-return UI removed -->
             </div>
             <input type="hidden" name="location" id="edit-fund-location-hidden">
             <input type="hidden" name="remove_photos" id="kbf-edit-removed-photos">
@@ -442,9 +432,12 @@
           <button class="kbf-modal-close" type="button" onclick="kbfCloseModal('kbf-modal-escrow-request')">&times;</button>
         </div>
         <div class="kbf-modal-body">
-          <p style="margin:0;color:var(--kbf-slate);font-size:13px;">
+          <p style="margin:0 0 8px;color:var(--kbf-slate);font-size:13px;">
             The fundraiser deadline has passed and the goal wasn’t met. Your request will be reviewed by admin.
-            Continue?
+          </p>
+          <p style="margin:0;color:var(--kbf-slate);font-size:12.5px;">
+            Escrow releases after deadline are subject to a 5% platform deduction. See our
+            <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>" target="_blank" rel="noopener noreferrer">Refund Policy</a>.
           </p>
         </div>
         <div class="kbf-modal-footer">

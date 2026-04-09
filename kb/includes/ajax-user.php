@@ -254,8 +254,12 @@ function bntm_ajax_kbf_update_fund() {
             if(isset($up['url'])) $existing[]=$up['url'];
         }
     }
-    if (!empty($_POST['remove_photos']) || !empty($_FILES['photos']['name'][0])) {
-        $data['photos']=!empty($existing) ? json_encode($existing) : null;
+    $unique_photos = array_values(array_unique($existing));
+    $should_update_photos = !empty($_POST['remove_photos'])
+        || !empty($_FILES['photos']['name'][0])
+        || count($unique_photos) !== count($existing);
+    if ($should_update_photos) {
+        $data['photos'] = !empty($unique_photos) ? json_encode($unique_photos) : null;
     }
     $res=$wpdb->update($t,$data,['id'=>$id],array_fill(0,count($data),'%s'),['%d']);
     if($res!==false) wp_send_json_success(['message'=>'Fund updated successfully!']);
@@ -273,7 +277,7 @@ function bntm_ajax_kbf_cancel_fund() {
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if(in_array($fund->status,['cancelled','completed'])) wp_send_json_error(['message'=>'This fund cannot be cancelled.']);
-    if($fund->raised_amount>0 && $fund->auto_return) kbf_refund_all_sponsors($id);
+    // Auto-refund disabled.
     $wpdb->update($t,['status'=>'cancelled'],['id'=>$id],['%s'],['%d']);
     wp_send_json_success(['message'=>'Fund cancelled.']);
 }

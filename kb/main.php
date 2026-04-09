@@ -399,6 +399,22 @@ function kbf_set_setting($key, $value) {
     update_option('kbf_setting_' . $key, $value);
 }
 
+function kbf_get_platform_fee_rate($fund) {
+    $fee_disabled = (bool) kbf_get_setting('kbf_disable_platform_fee', false);
+    if ($fee_disabled) {
+        return 0.0;
+    }
+    if (!$fund) {
+        return 0.05;
+    }
+    $deadline_ts = $fund->deadline ? strtotime($fund->deadline . ' 23:59:59') : 0;
+    $now = time();
+    if ($fund->raised_amount >= $fund->goal_amount && $deadline_ts && $now <= $deadline_ts) {
+        return 0.03;
+    }
+    return 0.05;
+}
+
 function kbf_withdrawal_status_label($status) {
     if ($status === 'released' || $status === 'approved') return 'Approved';
     if ($status === 'rejected') return 'Rejected';
@@ -552,14 +568,8 @@ if (!function_exists('bntm_rand_id')) {
 }
 
 function kbf_refund_all_sponsors($fund_id) {
-    global $wpdb;$t=$wpdb->prefix.'kbf_sponsorships';
-    $wpdb->update($t,['payment_status'=>'refunded'],['fund_id'=>$fund_id,'payment_status'=>'completed'],['%s'],['%d','%s']);
-    // =====================================================
-    // NOTIFICATION PLACEHOLDER
-    // TODO: Notify all sponsors about the refund here
-    // do_action('kbf_refunds_triggered', $fund_id);
-    // =====================================================
-    error_log("[KonekBayan] Auto-refund triggered for fund #{$fund_id}");
+    // Auto-refund disabled.
+    return;
 }
 
 
