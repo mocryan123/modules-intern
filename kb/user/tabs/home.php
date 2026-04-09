@@ -1,0 +1,907 @@
+﻿<?php
+/*
+ * KBF user dashboard tab: Overview.
+ */
+
+  function kbf_dashboard_overview_tab($business_id) {
+      global $wpdb;
+      $ft = $wpdb->prefix.'kbf_funds';
+      $st = $wpdb->prefix.'kbf_sponsorships';
+      $wt = $wpdb->prefix.'kbf_withdrawals';
+      $fund_details_url = kbf_get_page_url('fund_details');
+      $pt = $wpdb->prefix.'kbf_organizer_profiles';
+      $profile = $business_id ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,social_links,payout_type,payout_name,payout_number,is_verified FROM {$pt} WHERE business_id=%d", $business_id)) : null;
+      $show_onboarding = $business_id ? (bool) get_user_meta($business_id, 'kbf_show_onboarding', true) : false;
+      $address = $business_id ? get_user_meta($business_id, 'kbf_address', true) : '';
+      $socials = $profile && $profile->social_links ? json_decode($profile->social_links, true) : [];
+      $has_avatar = $profile && !empty($profile->avatar_url);
+      $has_bio = $profile && !empty(trim((string) $profile->bio));
+      $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
+      $has_address = !empty(trim((string) $address));
+      $has_social = !empty($socials['facebook']) || !empty($socials['instagram']) || !empty($socials['twitter']) || !empty($socials['website']);
+      $nonce_onboard = wp_create_nonce('kbf_onboarding');
+      $onboard_done = ($has_avatar ? 1 : 0) + ($has_bio ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0) + ($has_social ? 1 : 0);
+      $onboard_pct = round(($onboard_done / 5) * 100);
+      $format_currency = function($amount, $decimals = 2) {
+          return number_format((float)$amount, $decimals);
+      };
+      $format_payment_method = function($method) {
+          if ($method === 'online_payment') return 'Online Payment';
+          if ($method === 'bank_payment') return 'Bank Payment';
+          return ucfirst(str_replace('_', ' ', isset($method) ? $method : '--'));
+      };
+
+    // Ensure completed funds have released escrow (auto-release on completion).
+    if ($business_id) {
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$ft} SET escrow_status='released' WHERE business_id=%d AND status='completed' AND escrow_status='holding'",
+            $business_id
+        ));
+    }
+
+    $total_funds    = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d",$business_id));
+    $active_funds   = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d AND status='active'",$business_id));
+    $pending_funds  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d AND status='pending'",$business_id));
+    $total_raised   = (float)$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(raised_amount),0) FROM {$ft} WHERE business_id=%d",$business_id));
+    $total_sponsors = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$business_id));
+    $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
+    $escrow_requests = [];
+    $er = $wpdb->prefix.'kbf_escrow_requests';
+    $escrow_rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$er} WHERE business_id=%d ORDER BY requested_at DESC",$business_id));
+    foreach ((array)$escrow_rows as $erow) {
+        if (!isset($escrow_requests[$erow->fund_id])) {
+            $escrow_requests[$erow->fund_id] = $erow;
+        }
+    }
+    $find_funds_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
+    $nonce_save = wp_create_nonce('kbf_save_fund');
+    $saved_ids = [];
+    if($business_id){
+        $sf = $wpdb->prefix.'kbf_saved_funds';
+        $saved_ids = $wpdb->get_col($wpdb->prepare("SELECT fund_id FROM {$sf} WHERE user_id=%d", $business_id));
+        $saved_ids = array_map('intval', $saved_ids);
+    }
+
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
+    <div class="kbf-section">
+      <style>
+        .kbf-onboard-open{
+          overflow:hidden;
+        }
+        .kbf-onboard-backdrop{
+          position:fixed;
+          inset:0;
+          background:rgba(15,23,42,.5);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          z-index:9999;
+          padding:22px;
+        }
+        .kbf-onboard{
+          background:#fff;
+          border:1px solid rgba(15,23,42,.08);
+          border-radius:18px;
+          padding:0;
+          width:100%;
+          max-width:820px;
+          display:grid;
+          box-shadow:0 28px 70px rgba(15,23,42,.22);
+          position:relative;
+          overflow:hidden;
+        }
+        .kbf-onboard h4{margin:0 0 6px;font-size:19px;font-weight:600;color:var(--kbf-navy);letter-spacing:-.3px;}
+        .kbf-onboard p{margin:0;font-size:13px;color:var(--kbf-slate);line-height:1.7;}
+        .kbf-onboard-shell{
+          display:grid;
+          grid-template-columns:260px 1fr;
+          min-height:260px;
+        }
+        .kbf-onboard-left{
+          padding:20px 18px;
+          background:linear-gradient(160deg,#eef4ff 0%, #f7fbff 55%, #ffffff 100%);
+          border-right:1px solid rgba(15,23,42,.08);
+          display:flex;
+          flex-direction:column;
+          gap:12px;
+        }
+        .kbf-onboard-avatar{
+          width:54px;
+          height:54px;
+          border-radius:16px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          overflow:hidden;
+          background:#eaf1ff;
+          border:1px solid rgba(37,99,235,.2);
+        }
+        .kbf-onboard-avatar.is-empty{
+          background:linear-gradient(135deg,#3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
+          border:none;
+          box-shadow:0 10px 18px rgba(37,99,235,.25);
+        }
+        .kbf-onboard-avatar img{
+          width:100%;
+          height:100%;
+          object-fit:cover;
+        }
+        .kbf-onboard-avatar svg{
+          width:26px;
+          height:26px;
+          fill:#fff;
+        }
+        .kbf-onboard-right{
+          padding:20px 22px 18px;
+          display:grid;
+          gap:14px;
+        }
+        .kbf-onboard-badge{
+          display:inline-flex;
+          align-items:center;
+          gap:6px;
+          padding:6px 10px;
+          border-radius:999px;
+          background:#eef4ff;
+          color:#1d4ed8;
+          font-size:10.5px;
+          font-weight:600;
+          text-transform:uppercase;
+        }
+        .kbf-onboard-progress{
+          display:flex;
+          align-items:flex-end;
+          gap:10px;
+        }
+        .kbf-onboard-progress .kbf-count{
+          font-size:28px;
+          font-weight:600;
+          color:var(--kbf-navy);
+          line-height:1;
+        }
+        .kbf-onboard-progress .kbf-count span{
+          font-size:12px;
+          font-weight:500;
+          color:var(--kbf-slate);
+          margin-left:2px;
+        }
+        .kbf-onboard-bar{
+          flex:1;
+          height:7px;
+          border-radius:999px;
+          background:#e7efff;
+          overflow:hidden;
+        }
+        .kbf-onboard-bar span{
+          display:block;
+          height:100%;
+          background:linear-gradient(90deg,#2563eb 0%, #60a5fa 100%);
+        }
+        .kbf-onboard-step-list{
+          margin:0;
+          padding:0;
+          list-style:none;
+          display:grid;
+          gap:10px;
+        }
+        .kbf-onboard-step{
+          list-style:none;
+          background:#ffffff;
+          border:1px solid rgba(15,23,42,.08);
+          border-radius:12px;
+          padding:12px 14px;
+          font-size:12px;
+          font-weight:600;
+          color:var(--kbf-navy);
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:10px;
+          box-shadow:0 8px 16px rgba(15,23,42,.05);
+        }
+        .kbf-onboard-step.is-done{
+          border-color:rgba(34,197,94,.25);
+          background:#f0fdf4;
+        }
+        .kbf-onboard-step .kbf-step-left{
+          display:flex;
+          align-items:center;
+          gap:10px;
+        }
+        .kbf-onboard-dot{
+          width:10px;
+          height:10px;
+          border-radius:50%;
+          background:#c7d2fe;
+        }
+        .kbf-onboard-step.is-done .kbf-onboard-dot{
+          background:#22c55e;
+          box-shadow:0 0 0 4px rgba(34,197,94,.16);
+        }
+        .kbf-onboard-meta{
+          font-size:10.5px;
+          font-weight:500;
+          color:var(--kbf-slate);
+          text-transform:uppercase;
+          letter-spacing:.3px;
+        }
+        .kbf-onboard-actions{
+          display:flex;
+          gap:10px;
+          align-items:center;
+          justify-content:flex-end;
+        }
+        @media (max-width: 820px){
+          .kbf-onboard-shell{grid-template-columns:1fr;}
+          .kbf-onboard-left{border-right:0;border-bottom:1px solid rgba(15,23,42,.08);}
+        }
+      </style>
+      <?php if ($show_onboarding): ?>
+        <div class="kbf-onboard-backdrop" id="kbf-onboard-backdrop">
+          <div class="kbf-onboard" id="kbf-onboard-card" role="dialog" aria-modal="true" aria-labelledby="kbf-onboard-title">
+            <div class="kbf-onboard-shell">
+              <div class="kbf-onboard-left">
+                <div class="kbf-onboard-avatar <?php echo $has_avatar ? '' : 'is-empty'; ?>">
+                  <?php if ($has_avatar): ?>
+                    <img src="<?php echo esc_url($profile->avatar_url); ?>" alt="Profile">
+                  <?php else: ?>
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                    </svg>
+                  <?php endif; ?>
+                </div>
+                <div class="kbf-onboard-badge">Onboarding</div>
+                <h4 id="kbf-onboard-title">Set up your account profile</h4>
+                <p>Complete a few essentials to unlock withdrawals and build supporter trust.</p>
+                <div class="kbf-onboard-progress">
+                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/5</span></div>
+                  <div class="kbf-onboard-bar"><span style="width:<?php echo (int) $onboard_pct; ?>%;"></span></div>
+                </div>
+              </div>
+              <div class="kbf-onboard-right">
+                <ul class="kbf-onboard-step-list">
+                  <li class="kbf-onboard-step <?php echo $has_avatar ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Upload photo</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_avatar ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_bio ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>About/Bio</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_bio ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_payout ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Payout details</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_payout ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_address ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Address</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_address ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_social ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Social links</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_social ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                </ul>
+                <div class="kbf-onboard-actions">
+                  <a class="kbf-btn kbf-btn-primary" href="?kbf_tab=profile">Complete Profile</a>
+                  <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfDismissOnboarding()">Skip for now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <script>
+          document.documentElement.classList.add('kbf-onboard-open');
+          if (typeof ajaxurl === 'undefined') {
+            var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+          }
+          function kbfDismissOnboarding(){
+            document.documentElement.classList.remove('kbf-onboard-open');
+            const backdrop = document.getElementById('kbf-onboard-backdrop');
+            const card = document.getElementById('kbf-onboard-card');
+            const fd = new FormData();
+            fd.append('action', 'kbf_dismiss_onboarding');
+            fd.append('nonce', '<?php echo esc_attr($nonce_onboard); ?>');
+            fetch(ajaxurl, {method:'POST', body:fd})
+              .then(r => r.json())
+              .then(() => { if (backdrop) backdrop.remove(); if (card) card.remove(); })
+              .catch(() => { if (backdrop) backdrop.remove(); if (card) card.remove(); });
+          }
+        </script>
+      <?php endif; ?>
+      <style>
+        .kbf-card-list[data-kbf-card-pager="home"] + .kbf-table-pager{
+          margin-bottom:0;
+          padding-bottom:0;
+        }
+        .kbf-save-btn{
+          transition:none;
+        }
+        .kbf-save-btn img{
+          transition:none;
+        }
+        .kbf-save-btn.is-saved{
+          background:#e7f1ff;
+          border-color:#bfd7ff;
+          color:#1d4ed8;
+        }
+        .kbf-save-btn.is-saved img{
+          filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
+        }
+        .kbf-card-more-menu button:hover,
+        .kbf-card-more-menu .kbf-btn:hover,
+        .kbf-card-more-menu .kbf-btn-secondary:hover{
+          background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
+          color:#0f172a !important;
+          transform:translateX(1px);
+          box-shadow:
+            inset 0 0 0 1px #bfdbfe,
+            0 8px 18px rgba(59,130,246,.16);
+        }
+      </style>
+      <style>
+        .kbf-sponsor-details{border-top:1px solid var(--kbf-border);margin-top:14px;}
+        .kbf-sponsor-details summary{
+          cursor:pointer;
+          font-size:13px;
+          font-weight:600;
+          color:var(--kbf-navy);
+          list-style:none;
+          padding:12px 0;
+          display:flex;
+          align-items:center;
+          gap:8px;
+        }
+        .kbf-sponsor-details summary::-webkit-details-marker{display:none;}
+        .kbf-sponsor-details-content{
+          display:none;
+        }
+        .kbf-sponsor-details[open] .kbf-sponsor-details-content{
+          display:block;
+        }
+      </style>
+        <div class="kbf-section-header">
+         <h3 class="kbf-section-title">Dashboard Overview</h3>
+         <button class="kbf-btn kbf-btn-primary kbf-btn-sm" style="padding:0 14px;" onclick="kbfOpenModal('kbf-modal-create')">
+           <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus-lg.svg" alt="" width="12" height="12" style="filter:invert(100%);">
+           Create Fund
+         </button>
+        </div>
+      <?php if($pending_funds > 0): ?>
+      <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+        <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/>
+          </svg>
+        </span>
+        <div>
+          <strong><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</strong>
+          Not visible to sponsors yet. Usually 3–5 days. You’ll be notified after approval.
+          <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
+        </div>
+      </div>
+      <?php endif; ?>
+      <div class="kbf-stats">
+        <div class="kbf-stat">
+          <div class="kbf-stat-icon kbf-stat-icon--plain">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/stack.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+          </div>
+          <div><div class="kbf-stat-label">Total Funds</div><div class="kbf-stat-value"><?php echo $total_funds; ?></div></div>
+        </div>
+        <div class="kbf-stat">
+          <div class="kbf-stat-icon kbf-stat-icon--plain">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/piggy-bank-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+          </div>
+          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">₱<?php echo $format_currency($total_raised, 0); ?></div></div>
+        </div>
+        <div class="kbf-stat">
+          <div class="kbf-stat-icon kbf-stat-icon--plain">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+          </div>
+          <div><div class="kbf-stat-label">Total Sponsors</div><div class="kbf-stat-value"><?php echo $total_sponsors; ?></div></div>
+        </div>
+        <div class="kbf-stat">
+          <div class="kbf-stat-icon kbf-stat-icon--plain">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+          </div>
+          <div><div class="kbf-stat-label">Active Now</div><div class="kbf-stat-value"><?php echo $active_funds; ?></div></div>
+        </div>
+        <?php if($pending_funds > 0): ?>
+        <div class="kbf-stat" style="border-color:#fcd34d;background:#fffbeb;">
+          <div class="kbf-stat-icon kbf-stat-icon--plain">
+            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+          </div>
+          <div><div class="kbf-stat-label">Pending Review</div><div class="kbf-stat-value" style="color:#92400e;"><?php echo $pending_funds; ?></div></div>
+        </div>
+        <?php endif; ?>
+      </div>
+
+      <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;">
+        <h3 class="kbf-section-title">All My Funds</h3>
+        <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+            <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;min-width:160px;">
+              <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="14" height="14">
+              </span>
+              <select id="kbf-filter-status" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
+                <option value="suspended">Suspended</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+            <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;min-width:160px;">
+              <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/funnel-fill.svg" alt="" width="14" height="14">
+              </span>
+              <select id="kbf-filter-escrow" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
+                <option value="all">All Escrow</option>
+                <option value="holding">Holding</option>
+              <option value="released">Released</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <?php if(empty($funds)): ?>
+        <div class="kbf-empty"><svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg><p>No funds created yet.</p></div>
+      <?php else: ?>
+      <div class="kbf-card-list" data-kbf-card-pager="home">
+      <?php foreach($funds as $f):
+        $pct = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
+        $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
+        $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
+        $photo_list = $f->photos ? json_decode($f->photos, true) : [];
+        $photo_json = wp_json_encode(array_values(array_filter(is_array($photo_list) ? $photo_list : [])));
+        $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status, admin_notes FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1",$f->id));
+        $is_saved = in_array((int)$f->id, $saved_ids, true);
+        $save_icon = $is_saved ? 'bookmark-check-fill' : 'bookmark';
+        ?>
+        <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
+          <?php if($last_wd && $last_wd->status === 'pending'): ?>
+          <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+            <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zM7.5 4.5a.5.5 0 0 1 1 0V8a.5.5 0 0 1-.146.354l-2 2a.5.5 0 0 1-.708-.708L7.5 7.793V4.5z"/>
+              </svg>
+            </span>
+            <div>
+              <strong>Withdrawal Pending:</strong>
+              <span>Your request is being reviewed by admin (2–5 business days).</span>
+            </div>
+          </div>
+          <?php endif; ?>
+          <?php if($last_wd && $last_wd->status === 'rejected'): ?>
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+            <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+              </svg>
+            </span>
+            <div>
+              <strong>Withdrawal Rejected:</strong>
+              <?php if(!empty($last_wd->admin_notes)): ?>
+                <?php echo esc_html($last_wd->admin_notes); ?>
+              <?php else: ?>
+                <span>No rejection note was provided.</span>
+              <?php endif; ?>
+            </div>
+          </div>
+          <?php endif; ?>
+          <?php if($f->status === 'suspended'): ?>
+          <div style="background:#fce7f3;border-left:3px solid #db2777;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#831843;display:flex;align-items:flex-start;gap:10px;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            <div><strong>Fund Suspended</strong> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
+          </div>
+          <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')" style="margin:-6px 0 12px;">
+            Appeal Suspension
+          </button>
+          <?php elseif($f->status === 'cancelled'): ?>
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+            <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+              </svg>
+            </span>
+            <div>
+              <strong>Rejected:</strong>
+              <?php if(!empty($f->admin_notes)): ?>
+                <?php echo esc_html($f->admin_notes); ?>
+              <?php else: ?>
+                <span>No rejection message was provided. Please contact support if you need details.</span>
+              <?php endif; ?>
+            </div>
+          </div>
+          <?php endif; ?>
+          <div class="kbf-card-header">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+                  <strong class="kbf-clamp-2" style="font-size:15px;max-width:520px;"><?php echo esc_html($f->title); ?></strong>
+                <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
+              </div>
+              <div class="kbf-meta">
+                <div class="kbf-meta-row">
+                  <span class="kbf-meta-item">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="">
+                      <?php echo esc_html(ucwords(strtolower((string)$f->category))); ?>
+                  </span>
+                  <span class="kbf-meta-divider"></span>
+                  <span class="kbf-meta-item">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
+                    <?php echo esc_html($f->location); ?>
+                  </span>
+                </div>
+                <div class="kbf-meta-row">
+                  <?php if($days_left!==null): ?>
+                    <span class="kbf-meta-item kbf-meta-strong" style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;">
+                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="">
+                      <?php echo $days_left; ?>d left
+                    </span>
+                    <span class="kbf-meta-divider"></span>
+                  <?php endif; ?>
+                  <span class="kbf-meta-item">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="">
+                    <?php echo $sc; ?> sponsors
+                  </span>
+                  <span class="kbf-meta-divider"></span>
+                  <span class="kbf-meta-item">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/shield-fill-check.svg" alt="">
+                    Escrow
+                    <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
+          <div class="kbf-fund-amounts">
+            <span><strong>₱<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
+            <span><strong>₱<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
+            <span><strong><?php echo round($pct); ?>%</strong>funded</span>
+          </div>
+          <?php
+            $wd_block = $last_wd && in_array($last_wd->status, ['pending','approved','released']);
+          ?>
+            <div class="kbf-card-actions">
+              <?php
+                $deadline_passed = $f->deadline && strtotime($f->deadline) <= time();
+                $escrow_req = isset($escrow_requests[$f->id]) ? $escrow_requests[$f->id] : null;
+                $escrow_pending = $escrow_req && $escrow_req->status === 'pending';
+                $escrow_rejected = $escrow_req && $escrow_req->status === 'rejected';
+              ?>
+              <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : ''; ?>
+              <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
+                View Details
+              </a>
+              <?php if($f->status==='active' && $f->escrow_status==='holding' && $deadline_passed && $f->raised_amount < $f->goal_amount): ?>
+                <?php if($escrow_pending): ?>
+                  <span class="kbf-badge kbf-badge-pending">Escrow Request Pending</span>
+                <?php else: ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEscrowRequest(<?php echo $f->id; ?>)">
+                    Request Escrow
+                  </button>
+                <?php endif; ?>
+                <?php if($escrow_rejected): ?>
+                  <span class="kbf-badge kbf-badge-cancelled">Escrow Request Rejected</span>
+                <?php endif; ?>
+              <?php endif; ?>
+                <?php if(in_array($f->status,['active','completed']) && $f->escrow_status==='released'): ?>
+                  <?php if($wd_block): ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    Request Withdrawal
+                  </button>
+                  <?php else: ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    Request Withdrawal
+                  </button>
+                  <?php endif; ?>
+                <?php endif; ?>
+              <div class="kbf-card-more-wrap">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                </button>
+                <div class="kbf-card-more-menu" id="kbf-home-more-<?php echo esc_attr($f->id); ?>">
+                <?php if(in_array($f->status,['active','pending'])): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/pencil-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Edit
+                </button>
+                <?php endif; ?>
+                <?php if($f->status==='active' && $f->raised_amount>=$f->goal_amount): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfMarkComplete(<?php echo $f->id; ?>)">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check2-circle.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Mark Complete
+                </button>
+                <?php endif; ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Share
+                </button>
+                <?php if($f->status==='pending'): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','cancel')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Cancel
+                </button>
+                <?php endif; ?>
+                <?php if(in_array($f->status,['cancelled','suspended'])): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">
+                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/trash-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  Trash
+                </button>
+            <?php endif; ?>
+              </div>
+            </div>
+          </div>
+          <?php
+          $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' ORDER BY amount DESC LIMIT 5",$f->id));
+          if(!empty($sponsors)): ?>
+          <details class="kbf-sponsor-details">
+            <summary>View Sponsors (<?php echo $sc; ?>)</summary>
+            <div class="kbf-sponsor-details-content">
+              <div class="kbf-table-wrap" style="margin-top:10px;" data-kbf-table-desc="Lists recent sponsors for this fundraiser and their contributions.">
+              <table class="kbf-table">
+                <thead><tr><th>Sponsor</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead>
+                <tbody>
+                <?php foreach($sponsors as $sp): ?>
+                  <tr>
+                    <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
+                    <td><strong style="color:var(--kbf-green);">₱<?php echo $format_currency($sp->amount); ?></strong></td>
+                    <td><?php echo esc_html($format_payment_method($sp->payment_method)); ?></td>
+                    <td class="kbf-meta"><?php echo date('M d, Y',strtotime($sp->created_at)); ?></td>
+                  </tr>
+                <?php endforeach; ?>
+                </tbody>
+              </table>
+              </div>
+            </div>
+          </details>
+          <?php endif; ?>
+        </div>
+      <?php endforeach; ?>
+      </div>
+      <div class="kbf-empty kbf-home-empty" style="display:none;padding:60px 20px;">
+        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        <p>No funds match your filters.</p>
+        <button class="kbf-btn kbf-btn-primary kbf-home-clear" type="button" style="margin-top:12px;">Clear Filters</button>
+      </div>
+      <?php endif; ?>
+      <div class="kbf-cta-card">
+        <div>
+          <div class="kbf-cta-eyebrow">Next Step</div>
+          <div class="kbf-cta-title">Launch your next fundraiser</div>
+          <div class="kbf-cta-sub">Create a new fund to mobilize support. Keep updates consistent to build trust and improve conversion.</div>
+          <div class="kbf-cta-checklist">
+            <div class="kbf-cta-check">
+              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              Add a clear goal and deadline
+            </div>
+            <div class="kbf-cta-check">
+              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              Upload 2–3 photos to build trust
+            </div>
+            <div class="kbf-cta-check">
+              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              Share once it’s live to get first sponsors
+            </div>
+            <div class="kbf-cta-check">
+              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              Post a quick update every milestone
+            </div>
+          </div>
+        </div>
+        <div class="kbf-cta-right">
+          <div class="kbf-cta-actions">
+            <button class="kbf-btn kbf-btn-primary" onclick="kbfOpenModal('kbf-modal-create')">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Start a Fundraiser
+            </button>
+            <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url($find_funds_url); ?>">
+              Browse Funds
+            </a>
+          </div>
+          <div class="kbf-cta-note">Start a fund in under 3 minutes. We’ll guide you step‑by‑step.</div>
+        </div>
+      </div>
+      
+    <!-- ================== JS ================== -->
+    <script>
+      (function(){
+        var statusEl = document.getElementById('kbf-filter-status');
+        var escrowEl = document.getElementById('kbf-filter-escrow');
+        if(!statusEl || !escrowEl) return;
+        function applyFilters(){
+          var statusVal = statusEl.value;
+          var escrowVal = escrowEl.value;
+          var cards = document.querySelectorAll('.kbf-section .kbf-card[data-status]');
+          cards.forEach(function(card){
+            var matchStatus = (statusVal === 'all') || (card.getAttribute('data-status') === statusVal);
+            var matchEscrow = (escrowVal === 'all') || (card.getAttribute('data-escrow') === escrowVal);
+            card.dataset.kbfFilterHidden = (matchStatus && matchEscrow) ? '0' : '1';
+          });
+          if (window.kbfHomeRenderCards) window.kbfHomeRenderCards();
+        }
+        window.kbfHomeApplyFilters = applyFilters;
+        statusEl.addEventListener('change', applyFilters);
+        escrowEl.addEventListener('change', applyFilters);
+        applyFilters();
+      })();
+
+      (function(){
+        var wrap = document.querySelector('.kbf-card-list[data-kbf-card-pager="home"]');
+        var emptyEl = document.querySelector('.kbf-home-empty');
+        var clearBtn = document.querySelector('.kbf-home-clear');
+        var statusEl = document.getElementById('kbf-filter-status');
+        var escrowEl = document.getElementById('kbf-filter-escrow');
+        if(!wrap || wrap.dataset.kbfPager === 'on') return;
+        var cards = Array.prototype.slice.call(wrap.querySelectorAll('.kbf-card[data-status]'));
+        if(cards.length === 0) return;
+        wrap.dataset.kbfPager = 'on';
+
+        var pager = document.createElement('div');
+        pager.className = 'kbf-table-pager';
+        pager.innerHTML = '' +
+          '<div class="kbf-table-pager-left">Show ' +
+          '<select class="kbf-table-rows">' +
+            '<option value="3">3</option>' +
+            '<option value="5" selected>5</option>' +
+            '<option value="10">10</option>' +
+          '</select> cards</div>' +
+          '<div class="kbf-table-pager-right">' +
+            '<button class="kbf-table-pager-btn kbf-table-prev" type="button">Prev</button>' +
+            '<span class="kbf-table-pager-page">1 / 1</span>' +
+            '<button class="kbf-table-pager-btn kbf-table-next" type="button">Next</button>' +
+          '</div>';
+        wrap.insertAdjacentElement('afterend', pager);
+
+        var select = pager.querySelector('.kbf-table-rows');
+        var prevBtn = pager.querySelector('.kbf-table-prev');
+        var nextBtn = pager.querySelector('.kbf-table-next');
+        var pageLabel = pager.querySelector('.kbf-table-pager-page');
+        var page = 1;
+        var perPage = parseInt(select.value, 10) || 5;
+        if (clearBtn) {
+          clearBtn.addEventListener('click', function(){
+            if (statusEl) statusEl.value = 'all';
+            if (escrowEl) escrowEl.value = 'all';
+            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
+            setTimeout(function(){
+              if (typeof window.kbfHomeApplyFilters === 'function') {
+                window.kbfHomeApplyFilters();
+              } else if (window.kbfHomeRenderCards) {
+                window.kbfHomeRenderCards();
+              }
+              location.reload();
+            }, 200);
+          });
+        }
+
+        function getFilteredCards(){
+          return cards.filter(function(card){ return card.dataset.kbfFilterHidden !== '1'; });
+        }
+
+        function scrollToCards(){
+          try {
+            var target = wrap.closest('.kbf-section') || wrap;
+            if (target && target.scrollIntoView) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          } catch(e) {
+            window.scrollTo(0, 0);
+          }
+        }
+
+        function render(){
+          var visible = getFilteredCards();
+          var total = visible.length;
+          var pages = Math.max(1, Math.ceil(total / perPage));
+          if(page > pages) page = pages;
+          var start = (page - 1) * perPage;
+          var end = start + perPage;
+          cards.forEach(function(card){
+            card.style.display = 'none';
+          });
+          visible.forEach(function(card, i){
+            if (i >= start && i < end) card.style.display = '';
+          });
+          pageLabel.textContent = page + ' / ' + pages;
+          prevBtn.disabled = page <= 1;
+          nextBtn.disabled = page >= pages;
+          pager.style.display = total > 0 ? 'flex' : 'none';
+          if (emptyEl) emptyEl.style.display = total > 0 ? 'none' : 'flex';
+          if (wrap) wrap.style.display = total > 0 ? '' : 'none';
+        }
+        function setLoading(btn){
+          btn.classList.add('is-loading');
+          btn.disabled = true;
+          setTimeout(function(){ btn.classList.remove('is-loading'); render(); scrollToCards(); }, 250);
+        }
+        select.addEventListener('change', function(){
+          perPage = parseInt(this.value, 10) || 5;
+          page = 1;
+          render();
+        });
+        prevBtn.addEventListener('click', function(){
+          if(page > 1){ page--; setLoading(prevBtn); }
+        });
+        nextBtn.addEventListener('click', function(){
+          page++; setLoading(nextBtn);
+        });
+
+        window.kbfHomeRenderCards = function(){
+          page = 1;
+          render();
+        };
+
+        render();
+      })();
+
+      window.kbfToggleHomeMore=function(e,id){
+        if(e) e.stopPropagation();
+        var menu = document.getElementById('kbf-home-more-' + id);
+        if(!menu) return;
+        var card = menu.closest('.kbf-card');
+        menu.onclick = function(ev){ ev.stopPropagation(); };
+        document.querySelectorAll('.kbf-card-more-menu.open').forEach(function(m){
+          if(m !== menu) m.classList.remove('open');
+        });
+        document.querySelectorAll('.kbf-card.is-menu-open').forEach(function(c){
+          if(!card || c !== card) c.classList.remove('is-menu-open');
+        });
+        menu.classList.toggle('open');
+        if(card){ card.classList.toggle('is-menu-open', menu.classList.contains('open')); }
+      };
+      document.addEventListener('click', function(){
+        document.querySelectorAll('.kbf-card-more-menu.open').forEach(function(m){
+          m.classList.remove('open');
+        });
+        document.querySelectorAll('.kbf-card.is-menu-open').forEach(function(c){
+          c.classList.remove('is-menu-open');
+        });
+      });
+      
+      var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
+      var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
+      if (typeof window.kbfSaveFund === 'undefined') {
+        window.kbfSaveFund = function(id, btn){
+          if(!id) return;
+          var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
+          var fd = new FormData();
+          fd.append('action','kbf_toggle_save_fund');
+          fd.append('nonce', kbfSaveNonce);
+          fd.append('fund_id', id);
+          if(typeof kbfFetchJson === 'undefined'){ alert('Save failed.'); return; }
+          kbfFetchJson(ajaxurl, fd, function(j){
+            if(j && j.success){
+              var saved = !!(j.data && j.data.saved);
+              if(el){
+                el.classList.toggle('is-saved', saved);
+                el.setAttribute('data-saved', saved ? '1' : '0');
+                el.title = saved ? 'Saved' : 'Save';
+                el.setAttribute('data-tooltip', saved ? 'Saved' : 'Save');
+                var img = el.querySelector('img');
+                if(img){ img.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/' + (saved ? 'bookmark-check-fill' : 'bookmark') + '.svg'; }
+              }
+            } else {
+              alert((j && j.data && j.data.message) ? j.data.message : 'Unable to save.');
+            }
+          }, function(err){ alert(err || 'Request failed.'); });
+        };
+      }
+    </script>
+    </div>
+    <?php return ob_get_clean();
+}
+
+
+
+
+

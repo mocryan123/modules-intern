@@ -1,0 +1,57 @@
+﻿<?php
+/*
+ * KBF admin tab: Transactions.
+ */
+
+function kbf_admin_transactions_tab() {
+    global $wpdb;
+    $st = $wpdb->prefix.'kbf_sponsorships';
+    $ft = $wpdb->prefix.'kbf_funds';
+    $params = [];
+    $where = "WHERE 1=1";
+    $where .= kbf_admin_date_where('s.created_at', $params);
+    $sql = "SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id {$where} ORDER BY s.created_at DESC LIMIT 300";
+    $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    $format_currency = function($amount, $decimals = 2) {
+        return number_format((float)$amount, $decimals);
+    };
+    $format_date = function($value) {
+        return $value ? date('M d, Y', strtotime($value)) : '—';
+    };
+    ob_start();
+    ?>
+    <!-- ================== HTML ================== -->
+    <div class="kbf-section">
+      <h3 class="kbf-section-title">All Transactions</h3>
+      <?php if(empty($rows)): ?>
+        <div class="kbf-table-empty" data-kbf-table-desc="Displays sponsorship transactions and payment status.">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr 1.2fr .9fr .9fr .9fr;">
+            <span>Fundraiser</span>
+            <span>Supporter</span>
+            <span>Amount</span>
+            <span>Payment</span>
+            <span>Date</span>
+          </div>
+          <div class="kbf-table-empty-body">No transactions found.</div>
+        </div>
+      <?php else: ?>
+      <div class="kbf-table-wrap" data-kbf-table-desc="Displays sponsorship transactions and payment status.">
+        <table class="kbf-table">
+          <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>Date</th></tr></thead>
+          <tbody>
+          <?php foreach($rows as $s): ?>
+            <tr>
+              <td><strong><?php echo esc_html(wp_trim_words($s->fund_title,5)); ?></strong></td>
+              <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?></td>
+              <td><strong style="color:var(--kbf-green);">₱<?php echo $format_currency($s->amount, 2); ?></strong></td>
+              <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
+              <td class="kbf-meta"><?php echo $format_date($s->created_at); ?></td>
+            </tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <?php endif; ?>
+    </div>
+    <?php return ob_get_clean();
+}
