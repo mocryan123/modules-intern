@@ -77,6 +77,7 @@ function kbf_global_assets() {
         75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
         100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
     }
+<<<<<<< HEAD
     /* Hide legacy BNTM topbar on KBF pages */
     .bntm-topbar{
         display:none !important;
@@ -105,6 +106,7 @@ function kbf_global_assets() {
         margin:0 !important;
         padding:0 !important;
         background: transparent;
+        overflow:auto;
     }
     body.admin-bar{
         margin-top:0 !important;
@@ -114,13 +116,19 @@ function kbf_global_assets() {
         display:none !important;
     }
     .bntm-bg{
-        position:fixed;
-        inset:0;
-        width:100vw;
-        height:100vh;
+        position:relative;
+        width:100%;
+        min-height:100vh;
+        height:auto;
+        overflow:visible;
         margin:0 !important;
         padding:0 !important;
     }
+    html.kbf-modal-lock, body.kbf-modal-lock{
+        overflow:hidden !important;
+    }
+=======
+>>>>>>> c6a8340e550ac9c7454c8831a94eaec761536ab2
     /* Remove WP admin-bar top offset so full-bleed auth pages don't show a white strip */
     html{ margin-top:0 !important; }
     body{ margin-top:0 !important; padding-top:0 !important; }
