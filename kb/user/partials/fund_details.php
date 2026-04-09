@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
     function kbf_fund_details_load_fund($wpdb, $ft, $current_user_id) {
@@ -66,6 +66,8 @@ function bntm_shortcode_kbf_fund_details() {
     $organizer = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$fund->business_id));
     $days     = $fund->deadline ? max(0,ceil((strtotime($fund->deadline)-time())/86400)) : null;
     $photos   = $fund->photos ? json_decode($fund->photos,true) : [];
+    $benefits = $fund->benefits ? json_decode($fund->benefits,true) : [];
+    if (!is_array($benefits)) $benefits = [];
     $browse_url = kbf_get_page_url('browse');
     $org_token = ($fund && function_exists('kbf_get_or_create_organizer_token'))
         ? kbf_get_or_create_organizer_token($fund->business_id)
@@ -193,6 +195,35 @@ function bntm_shortcode_kbf_fund_details() {
       box-shadow:none !important;
       border:1px solid var(--kbf-border) !important;
     }
+    .kbf-benefits-view{
+      display:grid;
+      gap:10px;
+      margin:0;
+      padding:0;
+      list-style:none;
+    }
+    .kbf-benefits-view li{
+      border:1px solid var(--kbf-border);
+      border-radius:12px;
+      padding:12px;
+      background:#fff;
+      display:grid;
+      gap:6px;
+    }
+    .kbf-benefits-amount{
+      font-weight:700;
+      color:var(--kbf-blue);
+      font-size:13px;
+    }
+    .kbf-benefits-title{
+      font-weight:600;
+      color:var(--kbf-navy);
+      font-size:14px;
+    }
+    .kbf-benefits-desc{
+      font-size:12.5px;
+      color:var(--kbf-slate);
+    }
     .kbf-section-description:hover,
     .kbf-section-organizer:hover,
     .kbf-section-message:hover{
@@ -293,7 +324,18 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-leaderboard-icon img{width:14px;height:14px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
     .kbf-leaderboard-text{font-size:14px;font-weight:800;color:var(--kbf-navy);line-height:1;}
     .kbf-leaderboard-sub{font-size:11.5px;color:var(--kbf-slate);margin-top:3px;}
-    .kbf-leaderboard-pill{background:var(--kbf-accent);color:#fff;border-radius:99px;padding:3px 10px;font-size:10.5px;font-weight:800;flex-shrink:0;}
+    .kbf-leaderboard-pill{
+      background:#eef2ff;
+      color:#1d4ed8;
+      border:1px solid #c7d2fe;
+      border-radius:999px;
+      padding:3px 8px;
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.3px;
+      text-transform:uppercase;
+      flex-shrink:0;
+    }
     .kbf-photo-gallery{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
     .kbf-photo-main{border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;}
     .kbf-photo-main img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease;transform:translateX(0);}
@@ -664,8 +706,8 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-modal-header"><h3>Sponsor "<?php echo esc_html(wp_trim_words($fund->title,6)); ?>"</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-sponsor')">&times;</button></div>
         <div class="kbf-modal-body">
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:12px 16px;margin-bottom:18px;display:flex;justify-content:space-between;font-size:13px;">
-            <span><strong style="color:var(--kbf-green);">₱<?php echo number_format($fund->raised_amount,2); ?></strong> raised</span>
-            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ₱<?php echo number_format($fund->goal_amount,2); ?> goal</span>
+            <span><strong style="color:var(--kbf-blue);">?<?php echo number_format($fund->raised_amount,2); ?></strong> raised</span>
+            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ?<?php echo number_format($fund->goal_amount,2); ?> goal</span>
           </div>
           <form id="kbf-sponsor-form" onsubmit="return false;">
             <input type="hidden" name="fund_id" value="<?php echo $fund->id; ?>">
@@ -675,9 +717,9 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" max="<?php echo $fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''; ?>" required>
+              <input type="number" name="amount" placeholder="Min. ?50" min="50" step="1" max="<?php echo $fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''; ?>" required>
               <?php if($fund->goal_amount>0): ?>
-                <div class="kbf-meta" style="margin-top:4px;">Max allowed: ₱<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
+                <div class="kbf-meta" style="margin-top:4px;">Max allowed: ?<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
               <?php endif; ?>
             </div>
             <div class="kbf-form-group">
@@ -890,9 +932,9 @@ function bntm_shortcode_kbf_fund_details() {
           <?php else: ?>
           <?php
           $rank_colors = [
-              1 => ['bg'=>'linear-gradient(135deg,#f59e0b,#fbbf24)', 'icon'=>'ðŸ¥‡', 'label'=>'1st'],
-              2 => ['bg'=>'linear-gradient(135deg,#6b7280,#9ca3af)', 'icon'=>'ðŸ¥ˆ', 'label'=>'2nd'],
-              3 => ['bg'=>'linear-gradient(135deg,#b45309,#d97706)', 'icon'=>'ðŸ¥‰', 'label'=>'3rd'],
+              1 => ['bg'=>'linear-gradient(135deg,#f59e0b,#fbbf24)', 'icon'=>'🥇', 'label'=>'1st'],
+              2 => ['bg'=>'linear-gradient(135deg,#6b7280,#9ca3af)', 'icon'=>'🥈', 'label'=>'2nd'],
+              3 => ['bg'=>'linear-gradient(135deg,#b45309,#d97706)', 'icon'=>'🥉', 'label'=>'3rd'],
           ];
           foreach($leaderboard as $rank => $entry):
             $pos = $rank + 1;
@@ -918,7 +960,7 @@ function bntm_shortcode_kbf_fund_details() {
               </div>
               <!-- Amount -->
               <div style="text-align:right;flex-shrink:0;">
-                <div style="font-size:13.5px;font-weight:600;color:var(--kbf-green);">₱<?php echo number_format($entry->total_given, 0); ?></div>
+                <div style="font-size:13.5px;font-weight:600;color:var(--kbf-blue);">?<?php echo number_format($entry->total_given, 0); ?></div>
               </div>
             </div>
             <?php if($last_donated): ?>
@@ -940,8 +982,8 @@ function bntm_shortcode_kbf_fund_details() {
           <!-- Progress -->
           <div style="margin-bottom:16px;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
-              <span class="kbf-gradient-num" style="font-size:24px;font-weight:600 !important;">₱<?php echo number_format($fund->raised_amount,2); ?></span>
-              <span style="font-size:13px;color:var(--kbf-slate);">of ₱<?php echo number_format($fund->goal_amount,2); ?></span>
+              <span class="kbf-gradient-num" style="font-size:24px;font-weight:600 !important;">?<?php echo number_format($fund->raised_amount,2); ?></span>
+              <span style="font-size:13px;color:var(--kbf-slate);">of ?<?php echo number_format($fund->goal_amount,2); ?></span>
             </div>
             <div class="kbf-progress-wrap" style="height:10px;margin-bottom:10px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%;height:10px;"></div></div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
@@ -1094,7 +1136,7 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-detail-right">
           <div class="kbf-card kbf-section-message" style="padding:18px;">
             <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
-              Message <span style="background:var(--kbf-green-lt);color:var(--kbf-green);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;"><?php echo $sponsor_count; ?></span>
+              Message <span style="background:var(--kbf-green-lt);color:var(--kbf-blue);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;"><?php echo $sponsor_count; ?></span>
             </h3>
             <?php if(!empty($sponsors)): ?>
             <div class="kbf-sponsor-wall">
@@ -1112,7 +1154,7 @@ function bntm_shortcode_kbf_fund_details() {
                 <div style="flex:1;min-width:0;">
                   <div style="font-weight:500;font-size:13.5px;color:var(--kbf-text);">
                     <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?>
-                    <span style="color:var(--kbf-slate);font-weight:400;"> • <?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
+                    <span style="color:var(--kbf-slate);font-weight:400;"> � <?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
                   </div>
                   <?php if($sp->message): ?><div class="kbf-sponsor-msg">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
                 </div>
@@ -1129,7 +1171,23 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
           <div class="kbf-card kbf-section-description" style="padding:18px;margin-top:18px;">
             <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">Benefits</h3>
-            <div style="font-size:13px;color:var(--kbf-slate);">No benefits added yet.</div>
+            <?php if(!empty($benefits)): ?>
+              <ul class="kbf-benefits-view">
+                <?php foreach($benefits as $b):
+                  $b_title = isset($b['title']) ? $b['title'] : '';
+                  $b_desc  = isset($b['description']) ? $b['description'] : '';
+                  $b_amt   = isset($b['amount']) ? $b['amount'] : '';
+                ?>
+                  <li>
+                    <?php if($b_title !== ''): ?><div class="kbf-benefits-title"><?php echo esc_html($b_title); ?></div><?php endif; ?>
+                    <?php if($b_amt !== '' && (float)$b_amt > 0): ?><div class="kbf-benefits-amount">?<?php echo number_format((float)$b_amt, 0); ?></div><?php endif; ?>
+                    <?php if($b_desc !== ''): ?><div class="kbf-benefits-desc"><?php echo esc_html($b_desc); ?></div><?php endif; ?>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+            <?php else: ?>
+              <div style="font-size:13px;color:var(--kbf-slate);">No benefits added yet.</div>
+            <?php endif; ?>
           </div>
         </div>
       </div>
@@ -1403,7 +1461,7 @@ function bntm_shortcode_kbf_fund_details() {
         const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
         if (maxVal && amt > maxVal) {
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ₱' + maxVal.toLocaleString() + ' for this fund.</div>';
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ?' + maxVal.toLocaleString() + ' for this fund.</div>';
             return;
         }
         kbfSetBtnLoading(btn,true,'Processing...');

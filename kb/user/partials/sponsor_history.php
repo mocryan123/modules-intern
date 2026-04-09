@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* Sponsor history shortcode */
 function bntm_shortcode_kbf_sponsor_history() {
     kbf_global_assets();
@@ -76,7 +76,7 @@ function bntm_shortcode_kbf_sponsor_history() {
                   <?php endif; ?>
                 </td>
                 <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name ?: 'Sponsor'); ?></td>
-                <td><strong style="color:var(--kbf-green);">PHP <?php echo number_format($s->amount,2); ?></strong></td>
+                <td><strong style="color:var(--kbf-blue);">PHP <?php echo number_format($s->amount,2); ?></strong></td>
                 <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
                 <td><?php echo esc_html($s->payment_method==='online_payment'?'Online Payment':($s->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',isset($s->payment_method) ? $s->payment_method : '')))); ?></td>
                 <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>

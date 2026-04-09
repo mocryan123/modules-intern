@@ -1146,6 +1146,69 @@
         width:100%;height:100%;
         object-fit:cover;display:block;
     }
+    .kbf-user-ui .kbf-benefits-list{
+        display:grid;
+        gap:12px;
+        margin-top:10px;
+    }
+    .kbf-user-ui .kbf-benefit-card{
+        border:1px solid #e2e8f0;
+        border-radius:12px;
+        background:#fff;
+        padding:12px;
+        display:grid;
+        gap:8px;
+    }
+    .kbf-user-ui .kbf-benefit-row{
+        display:grid;
+        grid-template-columns:1fr 120px 32px;
+        gap:8px;
+        align-items:center;
+    }
+    .kbf-user-ui .kbf-benefit-row input{
+        height:38px;
+    }
+    .kbf-user-ui .kbf-benefit-amount{
+        text-align:right;
+    }
+    .kbf-user-ui .kbf-benefit-remove{
+        width:32px;
+        height:32px;
+        border-radius:8px;
+        border:1px solid #e2e8f0;
+        background:#fff;
+        color:#64748b;
+        font-size:18px;
+        line-height:1;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+    }
+    .kbf-user-ui .kbf-benefit-remove:hover{
+        border-color:#cbd5f5;
+        color:#1f2a44;
+    }
+    .kbf-user-ui .kbf-benefit-desc{
+        min-height:64px;
+        resize:vertical;
+    }
+    .kbf-user-ui .kbf-benefit-add{
+        margin-top:10px;
+        padding:8px 14px;
+        font-size:13px;
+    }
+    @media (max-width: 600px){
+        .kbf-user-ui .kbf-benefit-row{
+            grid-template-columns:1fr;
+        }
+        .kbf-user-ui .kbf-benefit-amount{
+            text-align:left;
+        }
+        .kbf-user-ui .kbf-benefit-remove{
+            justify-self:flex-start;
+        }
+    }
     .kbf-user-ui .kbf-photo-remove{
         position:absolute;
         top:6px;right:6px;

@@ -173,6 +173,27 @@ function bntm_ajax_kbf_create_fund() {
         wp_send_json_error(['message'=>'Deadline must be at least 7 days from today.']);
     }
     if($goal<100) wp_send_json_error(['message'=>'Minimum goal is ?100.']);
+    $benefits_raw = isset($_POST['benefits']) ? wp_unslash($_POST['benefits']) : '';
+    $benefits_clean = [];
+    if (!empty($benefits_raw)) {
+        $benefits = json_decode($benefits_raw, true);
+        if (is_array($benefits)) {
+            foreach ($benefits as $b) {
+                if (!is_array($b)) continue;
+                $title = sanitize_text_field($b['title'] ?? '');
+                $desc  = sanitize_textarea_field($b['description'] ?? '');
+                $amount_raw = isset($b['amount']) ? preg_replace('/[^\d.]/', '', (string)$b['amount']) : '';
+                $amount = $amount_raw !== '' ? (float)$amount_raw : 0;
+                if ($title === '' && $desc === '' && $amount <= 0) continue;
+                $benefits_clean[] = [
+                    'title'       => $title,
+                    'description' => $desc,
+                    'amount'      => $amount,
+                ];
+            }
+        }
+    }
+    $benefits_json = !empty($benefits_clean) ? wp_json_encode($benefits_clean) : null;
     // Handle photos
     $photo_urls=[];
     if(!empty($_FILES['photos']['name'][0])) {
@@ -191,6 +212,7 @@ function bntm_ajax_kbf_create_fund() {
         'title'         =>sanitize_text_field($_POST['title']),
         'description'   =>sanitize_textarea_field($_POST['description']),
         'photos'        =>!empty($photo_urls)?json_encode($photo_urls):null,
+        'benefits'      =>$benefits_json,
         'goal_amount'   =>$goal,
         'category'      =>sanitize_text_field($_POST['category']),
         'email'         =>sanitize_email($_POST['email']),
@@ -200,7 +222,7 @@ function bntm_ajax_kbf_create_fund() {
         'deadline'      =>$deadline,
         'status'        =>'pending',
         'share_token'   =>wp_generate_password(32,false),
-    ],['%s','%d','%s','%s','%s','%s','%f','%s','%s','%s','%s','%d','%s','%s','%s']);
+    ],['%s','%d','%s','%s','%s','%s','%s','%f','%s','%s','%s','%s','%d','%s','%s','%s']);
     // Ensure organizer profile exists
     $pt=$wpdb->prefix.'kbf_organizer_profiles';
     if(!$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz))) {
@@ -232,6 +254,29 @@ function bntm_ajax_kbf_update_fund() {
         'deadline'=>!empty($_POST['deadline']) ? sanitize_text_field($_POST['deadline']) : null,
         'auto_return'=>isset($_POST['auto_return']) ? 1 : 0
     ];
+    if (isset($_POST['benefits'])) {
+        $benefits_raw = wp_unslash($_POST['benefits']);
+        $benefits_clean = [];
+        if (!empty($benefits_raw)) {
+            $benefits = json_decode($benefits_raw, true);
+            if (is_array($benefits)) {
+                foreach ($benefits as $b) {
+                    if (!is_array($b)) continue;
+                    $title = sanitize_text_field($b['title'] ?? '');
+                    $desc  = sanitize_textarea_field($b['description'] ?? '');
+                    $amount_raw = isset($b['amount']) ? preg_replace('/[^\d.]/', '', (string)$b['amount']) : '';
+                    $amount = $amount_raw !== '' ? (float)$amount_raw : 0;
+                    if ($title === '' && $desc === '' && $amount <= 0) continue;
+                    $benefits_clean[] = [
+                        'title'       => $title,
+                        'description' => $desc,
+                        'amount'      => $amount,
+                    ];
+                }
+            }
+        }
+        $data['benefits'] = !empty($benefits_clean) ? wp_json_encode($benefits_clean) : null;
+    }
     $existing=$fund->photos?json_decode($fund->photos,true):[];
     if (!is_array($existing)) $existing = [];
     // Remove photos

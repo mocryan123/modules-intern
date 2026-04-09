@@ -147,6 +147,13 @@
             if (pStep === n) p.classList.add('is-active');
             else p.classList.remove('is-active');
         }
+        var modal = document.getElementById('kbf-modal-create');
+        if (modal) {
+            var body = modal.querySelector('.kbf-modal-body');
+            if (body) body.scrollTop = 0;
+        }
+        var activePanel = form.querySelector('.kbf-step-content.is-active');
+        if (activePanel) activePanel.scrollTop = 0;
         var prev = document.getElementById('kbf-create-prev');
         var next = document.getElementById('kbf-create-next');
         var submit = document.getElementById('kbf-create-submit');
@@ -1068,6 +1075,93 @@
             });
             kbfRenderCreateThumbs();
         }
+        function kbfInitBenefitsEditor(containerId, inputId, addBtnId) {
+            var container = document.getElementById(containerId);
+            var input = document.getElementById(inputId);
+            var addBtn = document.getElementById(addBtnId);
+            if (!container || !input) return null;
+            function buildCard(data){
+                var card = document.createElement('div');
+                card.className = 'kbf-benefit-card';
+                var row = document.createElement('div');
+                row.className = 'kbf-benefit-row';
+                var title = document.createElement('input');
+                title.type = 'text';
+                title.className = 'kbf-benefit-title';
+                title.placeholder = 'Tier name';
+                title.value = data && data.title ? data.title : '';
+                var amount = document.createElement('input');
+                amount.type = 'text';
+                amount.inputMode = 'decimal';
+                amount.className = 'kbf-benefit-amount';
+                amount.placeholder = 'Amount (PHP)';
+                amount.value = data && data.amount ? data.amount : '';
+                var remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'kbf-benefit-remove';
+                remove.innerHTML = '&times;';
+                remove.addEventListener('click', function(){
+                    card.remove();
+                    sync();
+                });
+                row.appendChild(title);
+                row.appendChild(amount);
+                row.appendChild(remove);
+                var desc = document.createElement('textarea');
+                desc.className = 'kbf-benefit-desc';
+                desc.rows = 2;
+                desc.placeholder = 'Short description';
+                desc.value = data && data.description ? data.description : '';
+                card.appendChild(row);
+                card.appendChild(desc);
+                [title, amount, desc].forEach(function(el){
+                    el.addEventListener('input', sync);
+                });
+                return card;
+            }
+            function normalizeAmount(val){
+                return String(val || '').replace(/[^0-9.]/g, '');
+            }
+            function sync(){
+                var items = container.querySelectorAll('.kbf-benefit-card');
+                var list = [];
+                items.forEach(function(card){
+                    var title = card.querySelector('.kbf-benefit-title');
+                    var amount = card.querySelector('.kbf-benefit-amount');
+                    var desc = card.querySelector('.kbf-benefit-desc');
+                    var t = title ? title.value.trim() : '';
+                    var a = amount ? normalizeAmount(amount.value) : '';
+                    var d = desc ? desc.value.trim() : '';
+                    if (!t && !a && !d) return;
+                    list.push({
+                        title: t,
+                        amount: a,
+                        description: d
+                    });
+                });
+                input.value = list.length ? JSON.stringify(list) : '';
+            }
+            function set(list){
+                container.innerHTML = '';
+                if (Array.isArray(list)) {
+                    list.forEach(function(item){
+                        container.appendChild(buildCard(item || {}));
+                    });
+                }
+                sync();
+            }
+            if (addBtn) {
+                addBtn.addEventListener('click', function(){
+                    container.appendChild(buildCard({}));
+                    sync();
+                });
+            }
+            set([]);
+            return { set: set, sync: sync };
+        }
+        window.kbfBenefitsEditors = window.kbfBenefitsEditors || {};
+        window.kbfBenefitsEditors.create = kbfInitBenefitsEditor('kbf-create-benefits','kbf-create-benefits-input','kbf-create-benefit-add');
+        window.kbfBenefitsEditors.edit = kbfInitBenefitsEditor('kbf-edit-benefits','kbf-edit-benefits-input','kbf-edit-benefit-add');
         var createProv = document.getElementById('kbf-province');
         var createMuni = document.getElementById('kbf-municipality');
         var createBrgy = document.getElementById('kbf-barangay');
@@ -1183,6 +1277,14 @@
                 if (f.type === 'checkbox') f.checked = !!draft.fields[f.name];
                 else f.value = draft.fields[f.name];
             }
+            if (window.kbfBenefitsEditors && window.kbfBenefitsEditors.create) {
+                var benefitsField = draft.fields.benefits || '';
+                var benefitList = [];
+                try {
+                    benefitList = benefitsField ? JSON.parse(benefitsField) : [];
+                } catch(e) { benefitList = []; }
+                window.kbfBenefitsEditors.create.set(Array.isArray(benefitList) ? benefitList : []);
+            }
             if (draft.photos && Array.isArray(draft.photos) && draft.photos.length) {
                 kbfCreateFiles = [];
                 draft.photos.slice(0,5).forEach(function(p){
@@ -1268,20 +1370,23 @@
             if (photoInput) {
                 kbfSyncCreateFiles();
             }
-            if (photoWrap) kbfRenderCreateThumbs();
-            if (createForm) {
-                createForm.querySelectorAll('.kbf-field-error').forEach(function(el){ el.textContent = ''; });
-                createForm.querySelectorAll('.kbf-input-error').forEach(function(el){ el.classList.remove('kbf-input-error'); });
-                var t = createForm.querySelector('.kbf-title-counter');
-                if (t) t.textContent = '0 / 150';
-                var d = createForm.querySelector('.kbf-desc-counter');
-                if (d) d.textContent = '0 / 800';
-            }
-            kbfSetCreateStep(1);
-            kbfSetCreateDraft(null);
-            kbfCloseModal('kbf-modal-draft');
-            kbfCloseModal('kbf-modal-create');
-        };
+        if (photoWrap) kbfRenderCreateThumbs();
+        if (createForm) {
+            createForm.querySelectorAll('.kbf-field-error').forEach(function(el){ el.textContent = ''; });
+            createForm.querySelectorAll('.kbf-input-error').forEach(function(el){ el.classList.remove('kbf-input-error'); });
+            var t = createForm.querySelector('.kbf-title-counter');
+            if (t) t.textContent = '0 / 150';
+            var d = createForm.querySelector('.kbf-desc-counter');
+            if (d) d.textContent = '0 / 800';
+        }
+        if (window.kbfBenefitsEditors && window.kbfBenefitsEditors.create) {
+            window.kbfBenefitsEditors.create.set([]);
+        }
+        kbfSetCreateStep(1);
+        kbfSetCreateDraft(null);
+        kbfCloseModal('kbf-modal-draft');
+        kbfCloseModal('kbf-modal-create');
+    };
         if (next) kbfSetCreateStep(1);
     })();;
     function kbfSetBtnLoading(btn, on, label) {
@@ -1587,6 +1692,9 @@
             if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Submit failed: ajaxurl is not defined.</div>';
             return;
         }
+        if (window.kbfBenefitsEditors && window.kbfBenefitsEditors.create) {
+            window.kbfBenefitsEditors.create.sync();
+        }
         const fd = new FormData(form);
         var goalInput = document.getElementById('kbf-goal-amount');
         if (goalInput) {
@@ -1708,6 +1816,9 @@
 
         kbfSetBtnLoading(btn, true, 'Saving...');
         kbfSetSkeleton(msg, true);
+        if (window.kbfBenefitsEditors && window.kbfBenefitsEditors.edit) {
+            window.kbfBenefitsEditors.edit.sync();
+        }
         const fd = new FormData(form);
         var goalInput = document.getElementById('kbf-goal-amount');
         if (goalInput) {
@@ -1811,7 +1922,7 @@
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
 
-    window.kbfOpenEdit = function(id, title, desc, loc, deadline, autoReturn, photosJson) {
+    window.kbfOpenEdit = function(id, title, desc, loc, deadline, autoReturn, photosJson, benefitsJson) {
         document.getElementById('edit-fund-id').value = id;
         document.getElementById('edit-fund-title').value = title;
         document.getElementById('edit-fund-desc').value = desc;
@@ -1831,6 +1942,13 @@
                 existing = photosJson ? JSON.parse(photosJson) : [];
             } catch(e) { existing = []; }
             window.kbfSetEditExistingPhotos(existing);
+        }
+        if (window.kbfBenefitsEditors && window.kbfBenefitsEditors.edit) {
+            var benefitList = [];
+            try {
+                benefitList = benefitsJson ? JSON.parse(benefitsJson) : [];
+            } catch(e) { benefitList = []; }
+            window.kbfBenefitsEditors.edit.set(Array.isArray(benefitList) ? benefitList : []);
         }
         var hiddenLoc = document.getElementById('edit-fund-location-hidden');
         if (hiddenLoc) hiddenLoc.value = loc || '';

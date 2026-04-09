@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* Public browse shortcode */
 if (!function_exists('kbf_browse_get_fund_token')) {
     function kbf_browse_get_fund_token($fund_id) {
@@ -507,7 +507,7 @@ function bntm_shortcode_kbf_browse() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" required>
+              <input type="number" name="amount" placeholder="Min. ?50" min="50" step="1" required>
               <div id="kbf-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
             </div>
             <div class="kbf-form-group"><label>Message (optional)</label><textarea name="message" rows="2" placeholder="Leave an encouraging message..."></textarea></div>
@@ -620,7 +620,7 @@ function bntm_shortcode_kbf_browse() {
           <?php if($loc): ?>
           <div style="margin-top:10px;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);">
             <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <strong><?php echo esc_html($loc); ?></strong> <a href="<?php echo esc_url(remove_query_arg('loc')); ?>" style="color:var(--kbf-red);margin-left:4px;text-decoration:none;">× Remove</a>
+            <strong><?php echo esc_html($loc); ?></strong> <a href="<?php echo esc_url(remove_query_arg('loc')); ?>" style="color:var(--kbf-red);margin-left:4px;text-decoration:none;">� Remove</a>
           </div>
           <?php endif; ?>
         </div>
@@ -684,8 +684,8 @@ function bntm_shortcode_kbf_browse() {
           <!-- Progress -->
           <div class="kbf-progress-wrap" style="margin-bottom:8px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:16px;">
-            <span><strong style="color:var(--kbf-navy);font-size:14px;">₱<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
-            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ₱<?php echo number_format($f->goal_amount,0); ?></span>
+            <span><strong style="color:var(--kbf-navy);font-size:14px;">?<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
+            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of ?<?php echo number_format($f->goal_amount,0); ?></span>
           </div>
 
           <!-- Actions -->
@@ -724,7 +724,7 @@ function bntm_shortcode_kbf_browse() {
         const limitEl = document.getElementById('kbf-sponsor-limit');
         const amountEl = document.querySelector('#kbf-sponsor-form input[name="amount"]');
         if (remaining > 0) {
-            if (limitEl) limitEl.textContent = 'Max allowed: ₱' + parseFloat(remaining).toLocaleString() + ' (remaining goal)';
+            if (limitEl) limitEl.textContent = 'Max allowed: ?' + parseFloat(remaining).toLocaleString() + ' (remaining goal)';
             if (amountEl) amountEl.max = remaining;
         } else {
             if (limitEl) limitEl.textContent = '';
@@ -734,7 +734,7 @@ function bntm_shortcode_kbf_browse() {
             (img?'<img src="'+img+'" style="width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:10px;display:block;">':'')
             +'<strong style="font-size:15px;color:var(--kbf-navy);">'+title+'</strong>'
             +'<div style="margin-top:8px;" class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+pct+'%"></div></div>'
-            +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:var(--kbf-slate);"><span>₱'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% funded</span></div>';
+            +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:var(--kbf-slate);"><span>?'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% funded</span></div>';
         document.getElementById('kbf-modal-sponsor').style.display='flex';
     };
     function kbfGetActiveSponsorModal(){
@@ -795,7 +795,7 @@ function bntm_shortcode_kbf_browse() {
         const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
         if (maxVal && amt > maxVal) {
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ₱' + maxVal.toLocaleString() + ' for this fund.</div>';
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ?' + maxVal.toLocaleString() + ' for this fund.</div>';
             return;
         }
         kbfSetBtnLoading(btn,true,'Processing...');
@@ -863,7 +863,7 @@ function bntm_shortcode_kbf_browse() {
                     return '<img src="'+src+'" width="14" height="14" style="filter:'+filter+';">';
                 };
                 const stars=Array.from({length:5},(_,i)=>starSvg(i<Math.round(parseFloat(d.rating)))).join('');
-                const statusColor={'active':'var(--kbf-green)','completed':'var(--kbf-blue)'};
+                const statusColor={'active':'var(--kbf-blue)','completed':'var(--kbf-blue)'};
                 const statusBg={'active':'var(--kbf-green-lt)','completed':'#dbeafe'};
 
                 // Fund history HTML
@@ -876,7 +876,7 @@ function bntm_shortcode_kbf_browse() {
                         +'</div>'
                         +'<div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:6px;">'+f.category+' &bull; '+f.sponsor_count+' sponsor'+(f.sponsor_count!==1?'s':'')+'</div>'
                         +'<div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+f.pct+'%"></div></div>'
-                        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--kbf-slate);margin-top:4px;"><span>₱'+f.raised+' raised</span><span>'+f.pct+'% of ₱'+f.goal+'</span></div>'
+                        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--kbf-slate);margin-top:4px;"><span>?'+f.raised+' raised</span><span>'+f.pct+'% of ?'+f.goal+'</span></div>'
                         +'</div>').join('')
                       + '</div>'
                     : '<div style="text-align:center;padding:16px;color:var(--kbf-slate);font-size:13px;margin-top:16px;">No fund history yet.</div>';
@@ -908,7 +908,7 @@ function bntm_shortcode_kbf_browse() {
                 +'</div></div>'
                 // Stats
                 +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:4px;">'
-                +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Raised</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">₱'+parseFloat(d.total_raised).toLocaleString()+'</div></div>'
+                +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Raised</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">?'+parseFloat(d.total_raised).toLocaleString()+'</div></div>'
                 +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Sponsors</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">'+d.total_sponsors+'</div></div>'
                 +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Funds</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">'+d.total_funds+'</div></div>'
                 +'</div>'

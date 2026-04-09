@@ -1,4 +1,4 @@
-Ôªø<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
+<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
     <!-- ===== MODAL: Create Fund ===== -->
     <div id="kbf-modal-create" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
@@ -58,13 +58,13 @@
                     <?php echo $fee_disabled ? 'Platform fee: 0% (disabled).' : 'Platform fee: 5% per transaction.'; ?>
                   </small>
                   <div class="kbf-meta" id="kbf-fee-preview" style="margin-top:6px;">
-                    Platform cut: ‚Ç±0.00 &nbsp;‚Ä¢&nbsp; Net goal: ‚Ç±0.00
+                    Platform cut: ?0.00 &nbsp;ï&nbsp; Net goal: ?0.00
                   </div>
                 </div>
               <div class="kbf-form-group">
                 <label>Deadline *</label>
                 <input type="date" name="deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" required>
-                <small>Required ‚Äî set an end date (minimum 7 days from today).</small>
+                <small>Required ó set an end date (minimum 7 days from today).</small>
               </div>
               </div>
               <div class="kbf-form-group">
@@ -76,15 +76,22 @@
                   <button class="kbf-photo-add" type="button" id="kbf-create-photo-add" aria-label="Add photos">+</button>
                 </div>
               </div>
+              <div class="kbf-form-group kbf-benefits-group">
+                <label>Benefits / Reward Tiers (optional)</label>
+                <div class="kbf-benefits-list" id="kbf-create-benefits"></div>
+                <button class="kbf-btn kbf-btn-secondary kbf-benefit-add" type="button" id="kbf-create-benefit-add">+ Add Benefit</button>
+                <input type="hidden" name="benefits" id="kbf-create-benefits-input">
+                <small>Add tiers supporters receive (e.g., merch, thank-you note, exclusive updates).</small>
+              </div>
               <div class="kbf-photo-tips kbf-photo-tips-bottom">
                 <div class="kbf-photo-tips-title">
                   <span class="kbf-photo-tips-icon">i</span>
                   Photo tips checklist
                 </div>
                 <div class="kbf-photo-tips-list">
-                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">‚úì</span> Use clear, well-lit images (avoid blur).</div>
-                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">‚úì</span> Add at least 2 photos to build trust.</div>
-                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">‚úì</span> Show the cause, not just text graphics.</div>
+                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">?</span> Use clear, well-lit images (avoid blur).</div>
+                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">?</span> Add at least 2 photos to build trust.</div>
+                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">?</span> Show the cause, not just text graphics.</div>
                 </div>
               </div>
             </div>
@@ -173,7 +180,7 @@
           <div class="kbf-auth-side">
             <div class="kbf-auth-side-inner">
               <div class="kbf-auth-chip">Fundora Access</div>
-              <div class="kbf-auth-quote">‚ÄúBayanihan works best when people can see real progress.‚Äù</div>
+              <div class="kbf-auth-quote">ìBayanihan works best when people can see real progress.î</div>
               <div class="kbf-auth-sub">Sign in to save campaigns, manage funds, and support with confidence.</div>
             </div>
           </div>
@@ -228,6 +235,13 @@
                   <button class="kbf-photo-add" type="button" id="kbf-edit-photo-add" aria-label="Add photos">+</button>
                 </div>
               </div>
+              <div class="kbf-form-group kbf-benefits-group">
+                <label>Benefits / Reward Tiers (optional)</label>
+                <div class="kbf-benefits-list" id="kbf-edit-benefits"></div>
+                <button class="kbf-btn kbf-btn-secondary kbf-benefit-add" type="button" id="kbf-edit-benefit-add">+ Add Benefit</button>
+                <input type="hidden" name="benefits" id="kbf-edit-benefits-input">
+                <small>Update the supporter benefits shown on the fund details page.</small>
+              </div>
             </div>
 
             <div class="kbf-step-content" data-step="2">
@@ -262,7 +276,7 @@
               <div class="kbf-form-group">
                 <label>Deadline</label>
                 <input type="date" name="deadline" id="edit-fund-deadline">
-                <small>Optional ‚Äî update the end date.</small>
+                <small>Optional ó update the end date.</small>
               </div>
               <!-- Auto-return UI removed -->
             </div>
@@ -336,7 +350,7 @@
             <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
               <div style="font-size:12px;color:var(--kbf-slate);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;">Fund</div>
               <div id="wd-fund-title" style="font-size:14px;font-weight:700;color:var(--kbf-navy);margin-bottom:6px;"></div>
-              <div style="font-size:13px;color:var(--kbf-green);font-weight:700;"><span id="wd-available-label"></span> available</div>
+              <div style="font-size:13px;color:var(--kbf-blue);font-weight:700;"><span id="wd-available-label"></span> available</div>
             </div>
             <div class="kbf-form-group">
               <label>Amount to Withdraw (PHP) *</label>
@@ -413,7 +427,7 @@
         </div>
         <div class="kbf-modal-body">
           <p id="kbf-trash-message" style="margin:0;color:var(--kbf-slate);font-size:13px;">
-            This will move the fundraiser to cancelled status and it won‚Äôt be visible to sponsors.
+            This will move the fundraiser to cancelled status and it wonít be visible to sponsors.
             Are you sure you want to continue?
           </p>
         </div>
@@ -433,7 +447,7 @@
         </div>
         <div class="kbf-modal-body">
           <p style="margin:0 0 8px;color:var(--kbf-slate);font-size:13px;">
-            The fundraiser deadline has passed and the goal wasn‚Äôt met. Your request will be reviewed by admin.
+            The fundraiser deadline has passed and the goal wasnít met. Your request will be reviewed by admin.
           </p>
           <p style="margin:0;color:var(--kbf-slate);font-size:12.5px;">
             Escrow releases after deadline are subject to a 5% platform deduction. See our

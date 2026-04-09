@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF user dashboard tab: Overview.
  */
@@ -377,7 +377,7 @@
         </span>
         <div>
           <strong><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</strong>
-          Not visible to sponsors yet. Usually 3–5 days. You’ll be notified after approval.
+          Not visible to sponsors yet. Usually 3�5 days. You�ll be notified after approval.
           <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
         </div>
       </div>
@@ -393,7 +393,7 @@
           <div class="kbf-stat-icon kbf-stat-icon--plain">
             <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/piggy-bank-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
           </div>
-          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">₱<?php echo $format_currency($total_raised, 0); ?></div></div>
+          <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">?<?php echo $format_currency($total_raised, 0); ?></div></div>
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
@@ -447,6 +447,8 @@
         $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
         $photo_list = $f->photos ? json_decode($f->photos, true) : [];
         $photo_json = wp_json_encode(array_values(array_filter(is_array($photo_list) ? $photo_list : [])));
+        $benefit_list = $f->benefits ? json_decode($f->benefits, true) : [];
+        $benefit_json = wp_json_encode(array_values(array_filter(is_array($benefit_list) ? $benefit_list : [])));
         $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status, admin_notes FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1",$f->id));
         $is_saved = in_array((int)$f->id, $saved_ids, true);
         $save_icon = $is_saved ? 'bookmark-check-fill' : 'bookmark';
@@ -461,7 +463,7 @@
             </span>
             <div>
               <strong>Withdrawal Pending:</strong>
-              <span>Your request is being reviewed by admin (2–5 business days).</span>
+              <span>Your request is being reviewed by admin (2�5 business days).</span>
             </div>
           </div>
           <?php endif; ?>
@@ -549,8 +551,8 @@
           </div>
           <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div class="kbf-fund-amounts">
-            <span><strong>₱<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
-            <span><strong>₱<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
+            <span><strong>?<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
+            <span><strong>?<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
             <span><strong><?php echo round($pct); ?>%</strong>funded</span>
           </div>
           <?php
@@ -599,7 +601,7 @@
                 </button>
                 <div class="kbf-card-more-menu" id="kbf-home-more-<?php echo esc_attr($f->id); ?>">
                 <?php if(in_array($f->status,['active','pending'])): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>')">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>','<?php echo esc_js($benefit_json); ?>')">
                   <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/pencil-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
                   Edit
                 </button>
@@ -642,7 +644,7 @@
                 <?php foreach($sponsors as $sp): ?>
                   <tr>
                     <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
-                    <td><strong style="color:var(--kbf-green);">₱<?php echo $format_currency($sp->amount); ?></strong></td>
+                    <td><strong style="color:var(--kbf-blue);">?<?php echo $format_currency($sp->amount); ?></strong></td>
                     <td><?php echo esc_html($format_payment_method($sp->payment_method)); ?></td>
                     <td class="kbf-meta"><?php echo date('M d, Y',strtotime($sp->created_at)); ?></td>
                   </tr>
@@ -676,11 +678,11 @@
             </div>
             <div class="kbf-cta-check">
               <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
-              Upload 2–3 photos to build trust
+              Upload 2�3 photos to build trust
             </div>
             <div class="kbf-cta-check">
               <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
-              Share once it’s live to get first sponsors
+              Share once it�s live to get first sponsors
             </div>
             <div class="kbf-cta-check">
               <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
@@ -698,7 +700,7 @@
               Browse Funds
             </a>
           </div>
-          <div class="kbf-cta-note">Start a fund in under 3 minutes. We’ll guide you step‑by‑step.</div>
+          <div class="kbf-cta-note">Start a fund in under 3 minutes. We�ll guide you step-by-step.</div>
         </div>
       </div>
       
