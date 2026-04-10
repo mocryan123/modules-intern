@@ -105,7 +105,7 @@ function bntm_ch_get_compiled_callback_asset_url($callback, $type = 'js') {
 }
 
 function bntm_ch_logo_url() {
-    return BNTM_CH_URL . 'assets/' . rawurlencode('Civichub Logo.png');
+    return BNTM_CH_URL . rawurlencode('logo.png');
 }
 
 function ch_get_email_verification_template_id() {
@@ -323,7 +323,6 @@ add_action('wp_enqueue_scripts', function() {
     $js_url = bntm_ch_get_compiled_asset_url('js');
     if ($js_url) {
         wp_enqueue_script('bntm-ch-global-script', $js_url, [], null, true);
-        wp_script_add_data('bntm-ch-global-script', 'defer', true);
     } else {
         $js_inline = bntm_ch_get_inline_asset_content('js');
         if ($js_inline !== '') {
@@ -338,7 +337,6 @@ add_action('wp_enqueue_scripts', function() {
         $feed_js_url = bntm_ch_get_compiled_callback_asset_url('ch_feed_scripts');
         if ($feed_js_url) {
             wp_enqueue_script('bntm-ch-feed-script', $feed_js_url, ['bntm-ch-global-script'], null, true);
-            wp_script_add_data('bntm-ch-feed-script', 'defer', true);
         } else {
             $feed_inline = bntm_ch_extract_inline_asset(ch_feed_scripts(), 'js');
             if ($feed_inline !== '') {
@@ -353,7 +351,6 @@ add_action('wp_enqueue_scripts', function() {
         $post_view_js_url = bntm_ch_get_compiled_callback_asset_url('ch_post_view_scripts');
         if ($post_view_js_url) {
             wp_enqueue_script('bntm-ch-post-view-script', $post_view_js_url, ['bntm-ch-global-script','bntm-ch-feed-script'], null, true);
-            wp_script_add_data('bntm-ch-post-view-script', 'defer', true);
         } else {
             $post_view_inline = bntm_ch_extract_inline_asset(ch_post_view_scripts(), 'js');
             if ($post_view_inline !== '') {
@@ -421,7 +418,7 @@ function bntm_ch_get_tables() {
             slug VARCHAR(150) NOT NULL,
             description TEXT,
             color VARCHAR(10) DEFAULT '#FF7551',
-            icon VARCHAR(50) DEFAULT 'forum',
+            icon VARCHAR(50) DEFAULT 'Forum',
             post_count INT UNSIGNED DEFAULT 0,
             follower_count INT UNSIGNED DEFAULT 0,
             sort_order INT DEFAULT 0,
@@ -908,6 +905,7 @@ function bntm_shortcode_ch_auth() {
             .then(json => {
                 if (json.success) {
                     msgEl.innerHTML = '<div class="bntm-notice-success">Welcome back! Redirecting…</div>';
+                    if(window.chNavBarStart) window.chNavBarStart();
                     setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 800);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
@@ -954,6 +952,7 @@ function bntm_shortcode_ch_auth() {
             .then(json => {
                 if (json.success) {
                     msgEl.innerHTML = '<div class="bntm-notice-success">Account created! Signing you in…</div>';
+                    if(window.chNavBarStart) window.chNavBarStart();
                     setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 1000);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Registration failed. Please try again.') + '</div>';
@@ -1010,6 +1009,7 @@ function bntm_shortcode_ch_auth() {
             .then(json => {
                 if (json.success) {
                     msgEl.innerHTML = '<div class="bntm-notice-success">Welcome back! Redirecting...</div>';
+                    if(window.chNavBarStart) window.chNavBarStart();
                     setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 800);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
@@ -1064,6 +1064,7 @@ function bntm_shortcode_ch_auth() {
             .then(json => {
                 if (json.success) {
                     msgEl.innerHTML = '<div class="bntm-notice-success">' + (json.data?.message || 'Account created! Redirecting...') + '</div>';
+                    if(window.chNavBarStart) window.chNavBarStart();
                     setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 1000);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Registration failed. Please try again.') + '</div>';

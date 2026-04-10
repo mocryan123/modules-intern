@@ -283,35 +283,41 @@ function ch_guest_landing_page() {
 
     <nav class="ch-top-nav" style="position: relative;">
         <!-- Burger Menu Toggle -->
-        <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '.ch-nav-links', '.ch-user-bar');">
+        <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '#ch-guest-drawer');">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
         <div class="ch-top-nav-logo" style="margin: 0 16px 0 0; display: flex; align-items: center;">
             <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo" style="height: 28px;">
         </div>
-        <div class="ch-nav-links">
-            <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link active">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-                Home
-            </a>
-            <a href="<?php echo esc_url($feed_url . '?sort=trending'); ?>" class="ch-nav-link">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                </svg>
-                Trending
-            </a>
-        </div>
+        <div id="ch-guest-drawer" class="ch-mobile-drawer-wrap">
+            <button class="ch-top-drawer-close" type="button" onclick="chCloseAllMobileMenus()" aria-label="Close menu">&times;</button>
+            <div class="ch-nav-links">
+                <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link active">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span class="ch-nav-label">Home</span>
+                </a>
+                <a href="<?php echo esc_url($feed_url . '?sort=trending'); ?>" class="ch-nav-link">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    <span class="ch-nav-label">Trending</span>
+                </a>
+            </div>
 
-        <div class="ch-user-bar">
-            <a href="<?php echo esc_url($login_url); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
-            <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+            <div class="ch-user-bar">
+                <a href="<?php echo esc_url($login_url); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+            </div>
         </div>
     </nav>
 
     <div class="ch-guest-landing-wrap">
         <aside class="ch-guest-sidebar">
+            <!-- Mobile Drawer Close -->
+            <button class="ch-drawer-close" onclick="document.body.classList.remove('ch-drawer-open')" aria-label="Close Menu" style="display:none;position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ch-text-muted);">&times;</button>
+
             <div class="ch-sidebar-widget">
                 <h4>Categories</h4>
                 <p class="ch-guest-helper">Follow topics to unlock posting on private categories.</p>
@@ -3041,90 +3047,95 @@ function bntm_shortcode_ch_feed() {
     ?>
     <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>'; var chFeedUrl = '<?php echo esc_js($feed_url); ?>';</script>
     <nav class="ch-top-nav">
-        <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '.ch-nav-links', '.ch-user-bar');">
+        <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '#ch-feed-drawer');">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
         <div class="ch-top-nav-logo" style="margin: 0 16px 0 0; display: flex; align-items: center;">
             <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo" style="height: 28px;">
         </div>
-        <div class="ch-nav-links">
-            <?php if ($user_id): ?>
-            <a href="?tab=my_feed" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span class="ch-nav-label">My Feed</span>
-            </a>
-            <?php endif; ?>
-            <a href="<?php echo get_permalink(); ?>" class="ch-nav-link <?php echo !$bookmarks && $sort === 'new' && $tab === '' && !$cat_slug && !$search ? 'active' : ''; ?>">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <span class="ch-nav-label">Home</span>
-            </a>
-            <a href="?sort=trending" class="ch-nav-link <?php echo $sort === 'trending' && $tab === '' && !$bookmarks ? 'active' : ''; ?>">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                <span class="ch-nav-label">Trending</span>
-            </a>
-            <?php if ($user_id): ?>
-            <a href="?bookmarks=1" class="ch-nav-link <?php echo $bookmarks && $tab === '' ? 'active' : ''; ?>">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-                <span class="ch-nav-label">Bookmarks</span>
-            </a>
-            <?php endif; ?>
-        </div>
-    <?php if ($user_id): ?>
-        <?php $current_display = wp_get_current_user()->display_name ?: 'U'; ?>
-        <div class="ch-user-bar">
-            <div class="ch-notifications-dropdown">
-                <button class="ch-icon-action-btn ch-notifications-btn" id="ch-notif-btn" onclick="chToggleNotifications(event)" aria-label="Notifications">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                    <span class="ch-notification-badge" id="ch-notification-count" style="display:none;"></span>
-                </button>
-                <div class="ch-dropdown-panel" id="ch-notifications-menu" style="display:none;">
-                    <div class="ch-dropdown-header">
-                        <span>Notifications</span>
-                        <button class="ch-dropdown-action" onclick="chMarkAllNotificationsRead()">Mark all read</button>
-                    </div>
-                    <div id="ch-notifications-list" class="ch-notifications-list">
-                        <div class="ch-no-notifications">Loading...</div>
-                    </div>
-                    <div class="ch-dropdown-footer">
-                        <a href="?tab=profile">View all notifications</a>
-                    </div>
+        <?php if ($user_id): ?>
+        <div class="ch-notifications-dropdown ch-top-nav-notifications">
+            <button class="ch-icon-action-btn ch-notifications-btn" id="ch-notif-btn" onclick="chToggleNotifications(event)" aria-label="Notifications">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <span class="ch-notification-badge" id="ch-notification-count" style="display:none;"></span>
+            </button>
+            <div class="ch-dropdown-panel" id="ch-notifications-menu" style="display:none;">
+                <div class="ch-dropdown-header">
+                    <span>Notifications</span>
+                    <button class="ch-dropdown-action" onclick="chMarkAllNotificationsRead()">Mark all read</button>
+                </div>
+                <div id="ch-notifications-list" class="ch-notifications-list">
+                    <div class="ch-no-notifications">Loading...</div>
+                </div>
+                <div class="ch-dropdown-footer">
+                    <a href="?tab=profile">View all notifications</a>
                 </div>
             </div>
-            <div class="ch-profile-dropdown">
-                <button class="ch-avatar-btn" id="ch-profile-btn" onclick="chToggleProfileMenu(event)" aria-label="Profile" data-ch-current-user-avatar="1" data-avatar-name="<?php echo esc_attr($current_display); ?>">
-                    <?php echo ch_render_avatar($current_display, $current_profile->avatar_url ?? '', 'ch-avatar-btn-inner', 'ch-current-user-avatar-img'); ?>
-                </button>
-                <div class="ch-dropdown-panel ch-dropdown-panel-sm" id="ch-profile-menu" style="display:none;">
-                    <div class="ch-dropdown-user-info">
-                        <div class="ch-avatar-btn ch-avatar-btn-lg" data-ch-current-user-avatar="1" data-avatar-name="<?php echo esc_attr($current_display); ?>"><?php echo ch_render_avatar($current_display, $current_profile->avatar_url ?? '', 'ch-avatar-btn-inner ch-avatar-btn-inner-lg', 'ch-current-user-avatar-img'); ?></div>
-                        <div>
-                            <div class="ch-dropdown-username"><?php echo esc_html($current_display); ?></div>
-                            <div class="ch-dropdown-usermeta">Community Member</div>
+        </div>
+        <?php endif; ?>
+        <div id="ch-feed-drawer" class="ch-mobile-drawer-wrap">
+            <button class="ch-top-drawer-close" type="button" onclick="chCloseAllMobileMenus()" aria-label="Close menu">&times;</button>
+            <div class="ch-nav-links">
+                <?php if ($user_id): ?>
+                <a href="?tab=my_feed" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="ch-nav-label">My Feed</span>
+                </a>
+                <?php endif; ?>
+                <a href="<?php echo get_permalink(); ?>" class="ch-nav-link <?php echo !$bookmarks && $sort === 'new' && $tab === '' && !$cat_slug && !$search ? 'active' : ''; ?>">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span class="ch-nav-label">Home</span>
+                </a>
+                <a href="?sort=trending" class="ch-nav-link <?php echo $sort === 'trending' && $tab === '' && !$bookmarks ? 'active' : ''; ?>">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span class="ch-nav-label">Trending</span>
+                </a>
+                <?php if ($user_id): ?>
+                <a href="?bookmarks=1" class="ch-nav-link <?php echo $bookmarks && $tab === '' ? 'active' : ''; ?>">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                    <span class="ch-nav-label">Bookmarks</span>
+                </a>
+                <?php endif; ?>
+            </div>
+        <?php if ($user_id): ?>
+            <?php $current_display = wp_get_current_user()->display_name ?: 'U'; ?>
+            <div class="ch-user-bar">
+                <div class="ch-profile-dropdown">
+                    <button class="ch-avatar-btn" id="ch-profile-btn" onclick="chToggleProfileMenu(event)" aria-label="Profile" data-ch-current-user-avatar="1" data-avatar-name="<?php echo esc_attr($current_display); ?>">
+                        <?php echo ch_render_avatar($current_display, $current_profile->avatar_url ?? '', 'ch-avatar-btn-inner', 'ch-current-user-avatar-img'); ?>
+                    </button>
+                    <div class="ch-dropdown-panel ch-dropdown-panel-sm" id="ch-profile-menu" style="display:none;">
+                        <div class="ch-dropdown-user-info">
+                            <div class="ch-avatar-btn ch-avatar-btn-lg" data-ch-current-user-avatar="1" data-avatar-name="<?php echo esc_attr($current_display); ?>"><?php echo ch_render_avatar($current_display, $current_profile->avatar_url ?? '', 'ch-avatar-btn-inner ch-avatar-btn-inner-lg', 'ch-current-user-avatar-img'); ?></div>
+                            <div>
+                                <div class="ch-dropdown-username"><?php echo esc_html($current_display); ?></div>
+                                <div class="ch-dropdown-usermeta">Community Member</div>
+                            </div>
                         </div>
+                        <div class="ch-dropdown-divider"></div>
+                        <a href="javascript:void(0)" class="ch-dropdown-item" onclick="chOpenSettingsModal(); chCloseProfileMenu();">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            Settings
+                        </a>
+                        <div class="ch-dropdown-divider"></div>
+                        <a href="<?php echo wp_logout_url(get_permalink()); ?>" class="ch-dropdown-item ch-dropdown-item-danger">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Sign Out
+                        </a>
                     </div>
-                    <div class="ch-dropdown-divider"></div>
-                    <a href="javascript:void(0)" class="ch-dropdown-item" onclick="chOpenSettingsModal(); chCloseProfileMenu();">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                        Settings
-                    </a>
-                    <div class="ch-dropdown-divider"></div>
-                    <a href="<?php echo wp_logout_url(get_permalink()); ?>" class="ch-dropdown-item ch-dropdown-item-danger">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        Sign Out
-                    </a>
                 </div>
             </div>
+        <?php else: ?>
+            <div class="ch-user-bar">
+                <?php
+                $auth_url   = ch_get_auth_url('login');
+                $reg_url    = ch_get_auth_url('register');
+                ?>
+                <a href="<?php echo esc_url($auth_url); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+            </div>
+        <?php endif; ?>
         </div>
-    <?php else: ?>
-        <div class="ch-user-bar">
-            <?php
-            $auth_url   = ch_get_auth_url('login');
-            $reg_url    = ch_get_auth_url('register');
-            ?>
-            <a href="<?php echo esc_url($auth_url); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
-            <a href="<?php echo esc_url($reg_url); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
-        </div>
-    <?php endif; ?>
     </nav>
 
     <?php if ($tab === 'my_feed'): ?>
@@ -3208,6 +3219,9 @@ function bntm_shortcode_ch_feed() {
 
             <!-- Trending sidebar -->
             <aside class="ch-special-sidebar">
+            <!-- Mobile Drawer Close -->
+            <button class="ch-drawer-close" onclick="document.body.classList.remove('ch-drawer-open')" aria-label="Close Menu" style="display:none;position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ch-text-muted);">&times;</button>
+
                 <div class="ch-sidebar-widget">
                     <h4>🔥 Hot Categories</h4>
                     <?php foreach ($trending_cats as $tcat): ?>
@@ -3322,6 +3336,9 @@ function bntm_shortcode_ch_feed() {
             </main>
 
             <aside class="ch-special-sidebar">
+            <!-- Mobile Drawer Close -->
+            <button class="ch-drawer-close" onclick="document.body.classList.remove('ch-drawer-open')" aria-label="Close Menu" style="display:none;position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ch-text-muted);">&times;</button>
+
                 <?php if (!empty($bm_cats)): ?>
                 <div class="ch-sidebar-widget">
                     <h4>Saved by Category</h4>
@@ -3350,6 +3367,9 @@ function bntm_shortcode_ch_feed() {
     <div class="ch-feed-wrap">
         <!-- Sidebar -->
         <aside class="ch-feed-sidebar">
+            <!-- Mobile Drawer Close -->
+            <button class="ch-drawer-close" onclick="document.body.classList.remove('ch-drawer-open')" aria-label="Close Menu" style="display:none;position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--ch-text-muted);">&times;</button>
+
             <div class="ch-sidebar-widget">
                 <h4>Categories</h4>
                 <form method="get" class="ch-categories-filter-form ch-categories-filter-sidebar" style="margin-bottom:12px;">
