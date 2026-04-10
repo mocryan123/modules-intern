@@ -22,6 +22,12 @@ function bae_module_logo_url() {
     return add_query_arg('ver', $ver, BNTM_BAE_URL . 'logo.png');
 }
 
+function bae_module_favicon_url() {
+    $path = BNTM_BAE_PATH . 'favicon.ico';
+    $ver  = file_exists($path) ? filemtime($path) : time();
+    return add_query_arg('ver', $ver, BNTM_BAE_URL . 'favicon.ico');
+}
+
 function bae_policy_url() {
     if (function_exists('get_privacy_policy_url')) {
         $url = get_privacy_policy_url();
@@ -58,6 +64,22 @@ function bae_render_brand_wordmark_merge($class = '') {
         . '<span class="bae-brand-wordmark-trailing">thie</span>'
         . '</span>';
 }
+
+add_action('wp_head', function() {
+    static $bae_favicon_rendered = false;
+
+    if ($bae_favicon_rendered) {
+        return;
+    }
+
+    $bae_favicon_rendered = true;
+    $favicon_url = esc_url(bae_module_favicon_url());
+    $logo_url    = esc_url(bae_module_logo_url());
+
+    echo '<link rel="icon" href="' . $favicon_url . '" sizes="any">' . "\n";
+    echo '<link rel="shortcut icon" href="' . $favicon_url . '">' . "\n";
+    echo '<link rel="apple-touch-icon" href="' . $logo_url . '">' . "\n";
+}, 5);
 
 // Load ticketing system
 require_once BNTM_BAE_PATH . 'ticket.php';
@@ -859,6 +881,13 @@ function bae_wizard_shortcode($user_id) {
 
     <script>
     (function() {
+        document.querySelectorAll('div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"]').forEach(function(el) {
+            var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+            if (text.indexOf('CPU:') !== -1 && text.indexOf('Memory:') !== -1 && text.indexOf('Queries:') !== -1) {
+                el.style.display = 'none';
+            }
+        });
+
         var ajaxurl = '<?php echo esc_js(admin_url("admin-ajax.php")); ?>';
         var nonce   = '<?php echo esc_js($nonce); ?>';
         var state   = { step:1, name:'', industry:'', primary:'', secondary:'', accent:'', personality:'', tagline:'', email:'', phone:'', website:'' };
@@ -1953,6 +1982,10 @@ function bntm_shortcode_bae() {
         flex: 1;
     }
 
+    div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="z-index:99999"] {
+        display: none !important;
+    }
+
     /* Glow orb bg */
     .bae-wrap::before {
         content: '';
@@ -2139,6 +2172,14 @@ function bntm_shortcode_bae() {
         padding: 20px 24px;
         border-radius: 26px;
         background:
+            linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+            radial-gradient(circle at 0% 0%, rgba(139,92,246,.18), transparent 30%),
+            linear-gradient(135deg, rgba(17,17,24,.96), rgba(28,28,38,.98));
+        border: 1px solid rgba(255,255,255,.08);
+        box-shadow: 0 18px 46px rgba(0, 0, 0, .28);
+    }
+    .bae-wrap.bae-light .bae-dash-hero {
+        background:
             linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,.22)),
             radial-gradient(circle at 0% 0%, rgba(139,92,246,.08), transparent 28%),
             var(--surface);
@@ -2160,6 +2201,11 @@ function bntm_shortcode_bae() {
         display: flex;
         align-items: center;
         justify-content: center;
+        background: linear-gradient(135deg, rgba(139,92,246,.18), rgba(236,72,153,.16));
+        border: 1px solid rgba(255,255,255,.10);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .bae-wrap.bae-light .bae-dash-avatar {
         background: linear-gradient(135deg, rgba(139,92,246,.12), rgba(236,72,153,.10));
         border: 1px solid var(--border);
         box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
@@ -2170,8 +2216,25 @@ function bntm_shortcode_bae() {
         object-fit: cover;
         display: block;
     }
-    .bae-dash-avatar .bae-brand-mark {
-        width: 42px;
+    .bae-dash-avatar-fallback {
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .bae-dash-avatar-fallback > * {
+        max-width: 100%;
+    }
+    .bae-dash-avatar-fallback-light {
+        display: none;
+    }
+    .bae-wrap.bae-light .bae-dash-avatar-fallback-dark {
+        display: none;
+    }
+    .bae-wrap.bae-light .bae-dash-avatar-fallback-light {
+        display: flex;
     }
     .bae-dash-copy {
         min-width: 0;
@@ -2200,7 +2263,7 @@ function bntm_shortcode_bae() {
     .bae-dash-sub {
         font-size: 14px;
         line-height: 1.65;
-        color: var(--text-3);
+        color: var(--text-2);
     }
     .bae-dash-metrics {
         display: flex;
@@ -2216,12 +2279,14 @@ function bntm_shortcode_bae() {
         gap: 12px;
         padding: 14px 16px;
         border-radius: 18px;
-        background: rgba(255,255,255,.65);
-        border: 1px solid var(--border);
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.08);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
     }
     .bae-wrap.bae-light .bae-dash-metric {
         background: rgba(255,255,255,.88);
+        border: 1px solid var(--border);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
     }
     .bae-dash-metric-icon {
         width: 40px;
@@ -2745,6 +2810,12 @@ function bntm_shortcode_bae() {
 
     /* ── TAB CONTENT ── */
     .bae-tab-content { padding: 28px; background: var(--bg); transition: background 0.5s; }
+
+    @media (min-width: 1025px) {
+        .bae-tab-content {
+            padding: 42px 96px;
+        }
+    }
 
     /* ── CARDS ── */
     .bae-card {
@@ -11333,7 +11404,12 @@ function bae_home_dashboard($user_id, $profile) {
                     <?php if (!empty($logo_url)): ?>
                         <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($brand_name); ?> logo">
                     <?php else: ?>
-                        <?php echo bae_render_brand_mark(); ?>
+                        <div class="bae-dash-avatar-fallback bae-dash-avatar-fallback-dark">
+                            <?php echo bae_render_logo_lockup($p, ['compact' => true, 'dark' => true]); ?>
+                        </div>
+                        <div class="bae-dash-avatar-fallback bae-dash-avatar-fallback-light">
+                            <?php echo bae_render_logo_lockup($p, ['compact' => true, 'dark' => false]); ?>
+                        </div>
                     <?php endif; ?>
                 </div>
                 <div class="bae-dash-copy">
