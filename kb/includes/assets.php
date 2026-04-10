@@ -454,10 +454,8 @@ function kbf_global_assets() {
     }
     .kbf-admin-sidebar-label{
         font-size:10px;
-        text-transform:uppercase;
-        letter-spacing:.12em;
         color:#9aa7b7;
-        font-weight:700;
+        font-weight:500;
         margin:12px 0 8px;
     }
     .kbf-admin-sidebar-note{

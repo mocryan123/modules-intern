@@ -44,7 +44,23 @@ function bntm_shortcode_kbf_admin() {
     $open_reports_count  = $count_query('kbf_reports', "status='open'");
     $pending_wd_count    = $count_query('kbf_withdrawals', "status='pending'");
     $open_appeals_count  = $count_query('kbf_appeals', "status='open'");
-    $tabs=['pending'=>'For Review','all_funds'=>'Fundraisers','transactions'=>'Payments','withdrawals'=>'Cashouts','reports'=>'Reports','appeals'=>'Appeals','organizers'=>'Accounts','security'=>'Security Logs','settings'=>'Settings'];
+    $tabs=[
+      'pending'=>'For Review',
+      'all_funds'=>'Fundraisers',
+      'transactions'=>'Payments',
+      'withdrawals'=>'Cashouts',
+      'reports'=>'Reports',
+      'appeals'=>'Appeals',
+      'organizers'=>'Accounts',
+      'security'=>'Security Logs',
+      'settings'=>'Settings'
+    ];
+    $nav_groups=[
+      'Overview'=>['pending'=>'For Review'],
+      'Fundraising'=>['all_funds'=>'Fundraisers','transactions'=>'Payments','withdrawals'=>'Cashouts'],
+      'Trust & Safety'=>['reports'=>'Reports','appeals'=>'Appeals'],
+      'Administration'=>['organizers'=>'Accounts','security'=>'Security Logs','settings'=>'Settings'],
+    ];
     $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
     $render_nav_link = function($key, $label) use ($tab, $counts, $format_nav_count) {
         $raw_count = !empty($counts[$key]) ? (int)$counts[$key] : 0;
@@ -87,10 +103,13 @@ function bntm_shortcode_kbf_admin() {
           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora">
           <span class="kbf-brand-text">fundora</span>
         </div>
-        <div class="kbf-admin-sidebar-label">Admin Navigation</div>
+        <div>Admin Navigation</div>
         <nav class="kbf-dashboard-nav kbf-admin-nav" id="kbf-admin-nav">
-          <?php foreach($tabs as $k=>$label): ?>
-            <?php $render_nav_link($k, $label); ?>
+          <?php foreach($nav_groups as $group_label=>$items): ?>
+            <div style="margin-top:12px;"><?php echo esc_html($group_label); ?></div>
+            <?php foreach($items as $k=>$label): ?>
+              <?php $render_nav_link($k, $label); ?>
+            <?php endforeach; ?>
           <?php endforeach; ?>
         </nav>
         <div class="kbf-admin-sidebar-note">Fundora Admin</div>
@@ -123,8 +142,11 @@ function bntm_shortcode_kbf_admin() {
           <i class="ph-bold ph-x kbf-icon" aria-hidden="true"></i>
         </button>
       </div>
-      <?php foreach($tabs as $k=>$label): ?>
-        <?php $render_mobile_link($k, $label); ?>
+      <?php foreach($nav_groups as $group_label=>$items): ?>
+        <div style="margin:10px 0 6px;"><?php echo esc_html($group_label); ?></div>
+        <?php foreach($items as $k=>$label): ?>
+          <?php $render_mobile_link($k, $label); ?>
+        <?php endforeach; ?>
       <?php endforeach; ?>
     </div>
     <div class="kbf-modal-overlay kbf-admin-reject-modal" id="kbf-admin-reject-modal" style="display:none;">
