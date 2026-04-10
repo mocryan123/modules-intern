@@ -100,6 +100,14 @@ function ch_global_styles() {
     .ch-user-bar { display: flex; align-items: center; gap: 6px; }
     /* Subtle separator between notification bell and avatar on desktop */
     @media (min-width: 781px) {
+        .ch-top-nav {
+            justify-content: flex-start;
+            gap: 16px;
+        }
+        .ch-top-nav .ch-top-nav-notifications {
+            margin-left: auto;
+            margin-right: 0;
+        }
         .ch-user-bar { gap: 8px; }
         .ch-user-bar::before {
             content: ''; display: block; width: 1px; height: 22px;
@@ -1339,7 +1347,7 @@ function ch_global_styles() {
     }
 
     @media (min-width: 781px) {
-        .ch-top-nav .ch-top-nav-notifications { order: 3; margin-left: 0; margin-right: 0; }
+        .ch-top-nav .ch-top-nav-notifications { order: 3; margin-left: auto; margin-right: 0; }
         .ch-top-nav .ch-mobile-drawer-wrap > .ch-nav-links { order: 1; }
         .ch-top-nav .ch-mobile-drawer-wrap > .ch-user-bar { order: 4; }
         .ch-top-nav .ch-mobile-drawer-wrap > .ch-user-bar .ch-profile-dropdown { display: flex; align-items: center; }
