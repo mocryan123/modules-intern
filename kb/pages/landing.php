@@ -199,10 +199,15 @@ function bntm_kbf_render_landing() {
     ?>
     <!-- ================== CSS ================== -->
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Shippori+Antique+B1&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Shippori+Antique+B1&display=swap');
 
     :root {
+        --kbf-glass-bg: rgba(255, 255, 255, 0.7);
+        --kbf-glass-border: rgba(255, 255, 255, 0.6);
+        --kbf-glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        --kbf-blob-1: rgba(91, 168, 245, 0.08);
+        --kbf-blob-2: rgba(111, 182, 255, 0.05);
         --kbf-ink: #0f1115;
         --kbf-muted: #4f5a6b;
         --kbf-border: #edf0f4;
@@ -219,7 +224,7 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-landing {
-        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+        font-family: 'Outfit', system-ui, -apple-system, sans-serif;
         color: var(--kbf-ink);
         background:
             radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),
@@ -262,7 +267,7 @@ function bntm_kbf_render_landing() {
         left: 0;
         right: 0;
         z-index: 1000;
-        background: rgba(255, 255, 255, 0.86);
+        background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid transparent;
@@ -276,15 +281,15 @@ function bntm_kbf_render_landing() {
         box-shadow: 0 6px 28px rgba(15, 40, 80, 0.10);
     }
     .kbf-topbar-left { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-    .kbf-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+    .kbf-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
     .kbf-brand-badge {
         width: 26px; height: 26px;
         border-radius: 50%;
         background: #b9dcff;
         display: inline-flex; align-items: center; justify-content: center;
-        color: #103054; font-weight: 800; font-size: 14px;
+        color: #103054; font-weight: 600; font-size: 17px;
     }
-    .kbf-nav { display: flex; flex-direction: row; gap: 20px; font-size: 12.5px; color: var(--kbf-muted); }
+    .kbf-nav { display: flex; flex-direction: row; gap: 20px; font-size: 18px; color: #334155; }
     .kbf-nav a { position: relative; display:inline-flex; align-items:center; }
     .kbf-nav a::after {
         content: ''; position: absolute; left: 0; bottom: -8px;
@@ -295,24 +300,15 @@ function bntm_kbf_render_landing() {
     .kbf-actions { display: flex; gap: 10px; align-items: center; }
     .kbf-btn {
         display: inline-flex; align-items: center; justify-content: center;
-        padding: 10px 18px; border-radius: 999px;
-        font-weight: 500; font-size: 12.5px;
+        padding: 12px 24px; border-radius: 999px;
+        font-weight: 500; font-size: 18px;
         border: 1px solid transparent;
         transition: transform .3s ease, box-shadow .3s ease, background .3s ease, filter .3s ease;
     }
     .kbf-btn.kbf-btn-primary {
         background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 55%, #1f6fe0 100%);
         color: #ffffff;
-        box-shadow:
-            0 1px 2px rgba(32, 112, 224, 0.20),
-            0 4px 14px rgba(42, 120, 220, 0.28),
-            0 0 0 0px rgba(111, 182, 255, 0),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        position: relative;
-        isolation: isolate;
-    }
+        box-shadow: 0 4px 15px rgba(61, 142, 240, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.03em; }
     .kbf-btn.kbf-btn-primary::before {
         content: '';
         position: absolute;
@@ -347,7 +343,7 @@ function bntm_kbf_render_landing() {
         filter: brightness(0.96);
         transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
     }
-    .kbf-btn-ghost { background: transparent; border-color: var(--kbf-border); color: var(--kbf-muted); }
+    .kbf-btn-ghost { background: transparent; border-color: var(--kbf-border); color: #334155; }
     .kbf-btn-ghost[aria-disabled="true"] { opacity: .7; cursor: not-allowed; }
 
     /* ============================================================
@@ -505,7 +501,7 @@ function bntm_kbf_render_landing() {
     .kbf-eyebrow {
         display: inline-flex; align-items: center; gap: 8px;
         padding: 6px 14px; border-radius: 999px;
-        font-size: 11px; font-weight: 600;
+        font-size: 17px; font-weight: 600;
         letter-spacing: .14em; text-transform: uppercase;
         color: #1a3a66; background: #e7f1ff;
         border: 1px solid #d7e7ff; width: fit-content;
@@ -516,7 +512,7 @@ function bntm_kbf_render_landing() {
     }
     .kbf-hero-heading {
         font-size: clamp(40px, 5.6vw, 64px);
-        font-weight: 700; line-height: 1.04;
+        font-weight: 600; line-height: 1.04;
         color: #0d1a2e; letter-spacing: -1.5px; margin: 0;
     }
     .kbf-hero-highlight {
@@ -525,16 +521,11 @@ function bntm_kbf_render_landing() {
         border-radius: 8px; padding: 2px 14px; font-style: normal;
     }
     .kbf-hero-desc {
-        font-size: 14.5px; font-weight: 400;
-        color: var(--kbf-muted); line-height: 1.7; margin: 0;
-    }
-    .kbf-hero-sub {
-        font-size: 12.5px;
-        color: #6a7b92;
-        letter-spacing: 0.02em;
+        font-size: 17px; font-weight: 400;
+        color: #334155; line-height: 1.7; margin: 0;
     }
     
-    .kbf-hero-cta-btn { width: fit-content; padding: 12px 22px; gap: 10px; }
+    .kbf-hero-cta-btn { width: fit-content; padding: 14px 28px; gap: 10px; }
     .kbf-hero-cta-btn img {
         width: 17px;
         height: 17px;
@@ -552,7 +543,7 @@ function bntm_kbf_render_landing() {
         background: #ffffff; color: #ff6f6f;
         border-radius: 50%;
         display: inline-flex; align-items: center; justify-content: center;
-        font-size: 13px; flex-shrink: 0;
+        font-size: 28px; flex-shrink: 0;
     }
 
     /* Right: floating phone cards */
@@ -578,7 +569,7 @@ function bntm_kbf_render_landing() {
     }
     .kbf-pcard {
         position: absolute; border-radius: 24px; overflow: hidden;
-        background: linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
+        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);
         border: 1px solid #e1e7f0;
         box-shadow:
             0 30px 70px rgba(15, 23, 42, 0.12),
@@ -626,7 +617,7 @@ function bntm_kbf_render_landing() {
     }
     /* Left card  -  partially hidden behind main, slight counter-tilt */
     .kbf-pcard-tl {
-        width: 124px; height: 210px;
+        width: 134px; height: 210px;
         left: 50%; top: 50%;
         --pc-x: calc(-50% - 150px);
         --pc-y: -50%;
@@ -685,7 +676,7 @@ function bntm_kbf_render_landing() {
         width: 22px; height: 22px; border-radius: 50%;
         background: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
         display: flex; align-items: center; justify-content: center;
-        font-size: 11px; flex-shrink: 0;
+        font-size: 17px; flex-shrink: 0;
         border: 1px solid #dde3ee;
         box-shadow: 0 4px 10px rgba(15, 40, 80, 0.12);
     }
@@ -695,14 +686,14 @@ function bntm_kbf_render_landing() {
         display: block;
         filter: grayscale(100%) brightness(0.6);
     }
-    .kbf-pcard-name { font-size: 9px; font-weight: 600; color: #0d1a2e; line-height: 1.3; }
-    .kbf-pcard-sub  { font-size: 8px; color: #8aa0b8; }
+    .kbf-pcard-name { font-size: 18px; font-weight: 600; color: #0d1a2e; line-height: 1.5; }
+    .kbf-pcard-sub  { font-size: 17px; color: #8aa0b8; }
     .kbf-pcard-play {
         margin-left: auto; width: 20px; height: 20px;
         background: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
         border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        font-size: 8px; color: #2a6aad; flex-shrink: 0;
+        font-size: 17px; color: #2a6aad; flex-shrink: 0;
         border: 1px solid #dde3ee;
         box-shadow: 0 4px 10px rgba(15, 40, 80, 0.12);
     }
@@ -715,7 +706,7 @@ function bntm_kbf_render_landing() {
     .kbf-fchip {
         position: absolute; background: #fff;
         border: 1px solid #d7e7ff; border-radius: 20px;
-        padding: 5px 11px; font-size: 10.5px; font-weight: 600;
+        padding: 5px 11px; font-size: 28px; font-weight: 600;
         color: #1a3a66; display: flex; align-items: center; gap: 6px;
         z-index: 5; white-space: nowrap;
         box-shadow: var(--kbf-shadow);
@@ -725,10 +716,10 @@ function bntm_kbf_render_landing() {
     /* SECTIONS */
     .kbf-section { margin-top: 54px; scroll-margin-top: calc(var(--kbf-topbar-h, 64px) + 16px); }
     .kbf-section:first-of-type { margin-top: 32px; }
-    .kbf-section h2 { font-size: 24px; margin: 0 0 8px; letter-spacing: -0.2px; font-weight: 400; }
-    .kbf-section p { color: var(--kbf-muted); margin: 0; font-size: 13.5px; line-height: 1.7; }
+    .kbf-section h2 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.2px; font-weight: 400; }
+    .kbf-section p { color: #334155; margin: 0; font-size: 28px; line-height: 1.7; }
     .kbf-section p + p { margin-top: 10px; }
-    .kbf-section .kbf-lead { font-size: 14px; line-height: 1.7; margin-top: 8px; }
+    .kbf-section .kbf-lead { font-size: 17px; line-height: 1.7; margin-top: 8px; }
     .kbf-article-list {
         margin: 16px 0 0;
         padding: 18px;
@@ -772,7 +763,7 @@ function bntm_kbf_render_landing() {
         opacity: 0.9;
     }
     .kbf-two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
-    .kbf-list { margin: 12px 0 0; padding: 0; color: var(--kbf-muted); font-size: 14px; line-height: 1.65; list-style: none; }
+    .kbf-list { margin: 12px 0 0; padding: 0; color: #334155; font-size: 17px; line-height: 1.65; list-style: none; }
     .kbf-list li {
         position: relative;
         padding-left: 22px;
@@ -791,7 +782,7 @@ function bntm_kbf_render_landing() {
         box-shadow: 0 4px 10px rgba(61, 142, 240, 0.25);
     }
     .kbf-compare-table { margin-top: 18px; border: 1px solid var(--kbf-border); border-radius: var(--kbf-radius-lg); overflow: hidden; background: #fff; box-shadow: var(--kbf-shadow); }
-    .kbf-compare-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--kbf-border); font-size: 12.5px; }
+    .kbf-compare-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--kbf-border); font-size: 18px; }
     .kbf-compare-row strong { color: #0d1a2e; font-weight: 600; }
     .kbf-compare-row:last-child { border-bottom: none; }
     .kbf-compare-head { background: #f3f7ff; font-weight: 600; color: #1a3a66; }
@@ -806,7 +797,7 @@ function bntm_kbf_render_landing() {
     .kbf-feature-grid.kbf-feature-grid--two .kbf-card:nth-child(4),
     .kbf-feature-grid.kbf-feature-grid--two .kbf-card:nth-child(5) { grid-column: auto; }
     .kbf-card {
-        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); border: 1px solid var(--kbf-glass-border);
         border: 1px solid #e0e9f7;
         border-radius: var(--kbf-radius-lg);
         padding: 16px;
@@ -842,7 +833,7 @@ function bntm_kbf_render_landing() {
         background: #e7f1ff;
         border: 1px solid #d7e7ff;
         display: inline-flex; align-items: center;
-        justify-content: center; color: #2a5a9e; font-weight: 700; font-size: 13px;
+        justify-content: center; color: #2a5a9e; font-weight: 600; font-size: 28px;
     }
     .kbf-card .kbf-chip img {
         width: 16px;
@@ -850,8 +841,8 @@ function bntm_kbf_render_landing() {
         display: block;
         filter: invert(46%) sepia(85%) saturate(1381%) hue-rotate(198deg) brightness(98%) contrast(93%);
     }
-    .kbf-card h4 { margin: 12px 0 6px; font-size: 14px; }
-    .kbf-card p { font-size: 12.5px; }
+    .kbf-card h4 { margin: 12px 0 6px; font-size: 17px; }
+    .kbf-card p { font-size: 18px; }
 
     /* Trust strip */
     .kbf-trust-strip {
@@ -865,7 +856,7 @@ function bntm_kbf_render_landing() {
         justify-content: center;
         gap: 16px;
         flex-wrap: wrap;
-        font-size: 12px;
+        font-size: 18px;
         color: #1a3a66;
         box-shadow: 0 10px 20px rgba(15, 40, 80, 0.06);
     }
@@ -953,11 +944,11 @@ function bntm_kbf_render_landing() {
     .kbf-urgent-card:hover { transform: translateY(-3px); box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12); }
     .kbf-urgent-thumb { height: 180px; background-size: cover; background-position: center; }
     .kbf-urgent-body { padding: 14px 16px 16px; }
-    .kbf-urgent-meta { font-size: 11.5px; color: var(--kbf-muted); }
-    .kbf-urgent-title { font-size: 13.5px; font-weight: 700; margin: 6px 0 10px; }
+    .kbf-urgent-meta { font-size: 17px; color: #334155; }
+    .kbf-urgent-title { font-size: 28px; font-weight: 600; margin: 6px 0 10px; }
     .kbf-progress { height: 6px; background: #edf1f7; border-radius: 999px; overflow: hidden; }
     .kbf-progress span { display: block; height: 100%; background: var(--kbf-lime); width: 68%; }
-    .kbf-amounts { display: flex; justify-content: space-between; font-size: 12px; color: var(--kbf-muted); margin-top: 10px; }
+    .kbf-amounts { display: flex; justify-content: space-between; font-size: 18px; color: #334155; margin-top: 10px; }
     .kbf-about-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 18px; margin-top: 24px; align-items: stretch; }
     .kbf-about-card {
         background: var(--kbf-surface);
@@ -966,8 +957,8 @@ function bntm_kbf_render_landing() {
         padding: 18px;
         box-shadow: var(--kbf-shadow);
     }
-    .kbf-about-card h4 { margin: 0 0 8px; font-size: 16px; }
-    .kbf-about-card p { margin: 0; color: var(--kbf-muted); font-size: 13.5px; line-height: 1.6; }
+    .kbf-about-card h4 { margin: 0 0 8px; font-size: 28px; }
+    .kbf-about-card p { margin: 0; color: #334155; font-size: 28px; line-height: 1.6; }
     .kbf-about-photo {
         border-radius: var(--kbf-radius-lg);
         overflow: hidden;
@@ -978,7 +969,7 @@ function bntm_kbf_render_landing() {
     }
     .kbf-about-photo img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 0; filter: grayscale(1); }
 
-    .kbf-stat {
+   .kbf-stat {
         margin-top: 44px; display: grid; grid-template-columns: 1fr;
         align-items: center; position: relative;
         text-align: center; padding: 28px 12px 34px;
@@ -1013,13 +1004,13 @@ function bntm_kbf_render_landing() {
     .kbf-faq { margin-top: 22px; border-top: 1px solid var(--kbf-border); }
     .kbf-faq details { border-bottom: 1px solid var(--kbf-border); padding: 18px 0; }
     .kbf-faq summary {
-        list-style: none; cursor: pointer; font-size: 13.5px; font-weight: 600;
+        list-style: none; cursor: pointer; font-size: 28px; font-weight: 600;
         display: flex; align-items: center; justify-content: space-between; gap: 10px;
     }
     .kbf-faq summary::-webkit-details-marker { display: none; }
-    .kbf-faq summary::after { content: '+'; color: var(--kbf-muted); font-weight: 700; }
+    .kbf-faq summary::after { content: '+'; color: #334155; font-weight: 600; }
     .kbf-faq details[open] summary::after { content: '-'; }
-    .kbf-faq details p { margin: 10px 0 0; color: var(--kbf-muted); font-size: 12.5px; line-height: 1.5; }
+    .kbf-faq details p { margin: 10px 0 0; color: #334155; font-size: 18px; line-height: 1.6; }
     .kbf-faq-body {
         max-height: 0;
         opacity: 0;
@@ -1032,7 +1023,7 @@ function bntm_kbf_render_landing() {
 
     .kbf-footer {
         margin-top: 44px; 
-        background: #0c0f14; 
+        background: linear-gradient(135deg, rgba(74, 152, 255, 0.9) 0%, rgba(47, 123, 220, 0.95) 100%) !important;
         color: #b9c0cc;
         margin-bottom:40px;
         border-radius: 22px; padding: 20px 22px;
@@ -1041,8 +1032,8 @@ function bntm_kbf_render_landing() {
     }
     .kbf-footer-left{ display:flex; flex-direction:column; gap:6px; }
     .kbf-footer h5 { margin: 0 0 6px; color: #fff; }
-    .kbf-footer p { font-size: 12px; line-height: 1.6; }
-    .kbf-footer small { color: #8590a6; font-size: 11.5px; }
+    .kbf-footer p {color:#ffffff; font-size: 18px; line-height: 1.6; }&
+    .kbf-footer small { color: #ffffff; font-size: 17px; }
     .kbf-footer .kbf-footer-links{
       display:flex;
       gap:12px;
@@ -1051,7 +1042,7 @@ function bntm_kbf_render_landing() {
     }
     .kbf-footer .kbf-footer-links a{
       color:#cbd5f5;
-      font-size:12px;
+      font-size:18px;
       text-decoration:none;
     }
     .kbf-footer .kbf-footer-links a:hover{
@@ -1062,13 +1053,29 @@ function bntm_kbf_render_landing() {
         width: 32px; height: 32px; border-radius: 50%;
         border: 1px solid rgba(255,255,255,.18);
         display: inline-flex; align-items: center; justify-content: center;
-        color: #fff; font-size: 12px;
+        color: #fff; font-size: 18px;
     }
     .kbf-footer .kbf-social img {
         width: 16px;
         height: 16px;
         display: block;
         filter: invert(100%);
+    }
+    .kbf-footer {
+        background: linear-gradient(135deg, rgba(74, 152, 255, 0.9) 0%, rgba(47, 123, 220, 0.95) 100%) !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+        font-size: 12.5px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+    }
+    .kbf-footer,
+    .kbf-footer p,
+    .kbf-footer small,
+    .kbf-footer a,
+    .kbf-footer .kbf-footer-links a,
+    .kbf-footer .kbf-brand,
+    .kbf-footer .kbf-brand-text,
+    .kbf-footer h5{
+        color:#ffffff !important;
     }
 
     /* About section extras */
@@ -1083,7 +1090,7 @@ function bntm_kbf_render_landing() {
         margin-top: 18px;
     }
     .kbf-about-stat {
-        background: var(--kbf-surface);
+        background: transparent;
         padding: 24px 20px;
         text-align: center;
     }
@@ -1099,10 +1106,10 @@ function bntm_kbf_render_landing() {
         line-height: 1;
     }
     .kbf-about-stat-label {
-        font-size: 11.5px;
-        color: var(--kbf-muted);
+        font-size: 17px;
+        color: #334155;
         margin-top: 6px;
-        line-height: 1.4;
+        line-height: 1.5;
     }
     .kbf-about-values {
         display: grid;
@@ -1125,14 +1132,14 @@ function bntm_kbf_render_landing() {
         margin-top: 2px;
     }
     .kbf-about-value-title {
-        font-size: 13px;
+        font-size: 28px;
         font-weight: 600;
         color: var(--kbf-ink);
         margin-bottom: 4px;
     }
     .kbf-about-value-desc {
-        font-size: 12px;
-        color: var(--kbf-muted);
+        font-size: 18px;
+        color: #334155;
         line-height: 1.6;
     }
 
@@ -1153,7 +1160,7 @@ function bntm_kbf_render_landing() {
         border-radius: 8px;
         padding: 6px 8px;
         cursor: pointer;
-        color: var(--kbf-muted);
+        color: #334155;
         align-items: center;
         justify-content: center;
     }
@@ -1186,7 +1193,7 @@ function bntm_kbf_render_landing() {
     .kbf-mobile-menu.kbf-menu-open { display: flex; }
     .kbf-mobile-menu a {
         padding: 13px 18px;
-        font-size: 13.5px;
+        font-size: 28px;
         color: var(--kbf-ink);
         border-bottom: 1px solid var(--kbf-border);
         transition: background .15s ease;
@@ -1304,7 +1311,7 @@ function bntm_kbf_render_landing() {
         .kbf-feature-grid .kbf-card { grid-column: span 1; }
         .kbf-feature-grid .kbf-card:nth-child(4),
         .kbf-feature-grid .kbf-card:nth-child(5) { grid-column: span 1; }
-        .kbf-section h2 { font-size: 20px; }
+        .kbf-section h2 { font-size: 28px; }
         .kbf-stat h3 { font-size: 48px; }
         .kbf-divider { margin-top: 44px; margin-bottom: 44px; }
         #kbf-faq h2 { max-width: 250px; margin-left: auto; margin-right: auto; }
@@ -1330,15 +1337,15 @@ function bntm_kbf_render_landing() {
 
     @media (max-width: 480px) {
         .kbf-landing { padding: 14px 10px 36px; }
-        .kbf-topbar { padding: 10px 18px; }
-        .kbf-brand-badge { width: 22px; height: 22px; font-size: 12px; }
+        .kbf-topbar { padding: 12px 24px; }
+        .kbf-brand-badge { width: 22px; height: 22px; font-size: 18px; }
     .kbf-hero { padding: 20px 16px 28px; border-radius: var(--kbf-radius-md); }
         .kbf-hero-heading { font-size: 28px; letter-spacing: -0.5px; }
-        .kbf-hero-desc { font-size: 13px; }
+        .kbf-hero-desc { font-size: 28px; }
         .kbf-hero-right { height: 260px; }
         .kbf-cards-wrap { --kbf-card-scale: 0.65; }
-        .kbf-eyebrow { font-size: 9.5px; padding: 5px 10px; }
-        .kbf-btn { font-size: 12px; padding: 8px 14px; }
+        .kbf-eyebrow { font-size: 18px; padding: 5px 10px; }
+        .kbf-btn { font-size: 18px; padding: 8px 14px; }
         .kbf-actions .kbf-btn { width: auto; }
         .kbf-feature-grid { grid-template-columns: 1fr; gap: 10px; }
         .kbf-feature-grid .kbf-card,
@@ -1348,23 +1355,470 @@ function bntm_kbf_render_landing() {
         .kbf-urgent-thumb { height: 180px; }
         .kbf-about-photo { height: 240px; }
         .kbf-section h2 { font-size: 18px; }
-        .kbf-section p { font-size: 13px; }
+        .kbf-section p { font-size: 28px; }
         .kbf-compare-row { gap: 6px; }
         .kbf-stat h3 { font-size: 40px; }
-        .kbf-stat p { font-size: 13px; }
-        .kbf-faq summary { font-size: 13px; }
-        .kbf-faq details p { font-size: 12px; }
+        .kbf-stat p { font-size: 28px; }
+        .kbf-faq summary { font-size: 28px; }
+        .kbf-faq details p { font-size: 18px; }
     .kbf-footer { padding: 20px 18px; border-radius: var(--kbf-radius-lg); gap: 14px; }
-        .kbf-footer p { font-size: 12px; }
+        .kbf-footer p { font-size: 18px; }
         .kbf-divider { margin-top: 36px; margin-bottom: 36px; }
     }
 
     @media (max-width: 360px) {
-        .kbf-hero-heading { font-size: 24px; }
+        .kbf-hero-heading { font-size: 28px; }
         .kbf-hero-right { height: 220px; }
         .kbf-cards-wrap { --kbf-card-scale: 0.58; }
         .kbf-stat h3 { font-size: 34px; }
-        .kbf-btn.kbf-btn-primary { font-size: 11.5px; }
+        .kbf-btn.kbf-btn-primary { font-size: 17px; }
+    }
+
+    /* --- PREMIUM OVERRIDES (ADDED BY DESIGNER) --- */
+    .kbf-hero {
+        background: radial-gradient(circle at top left, #ddeeff 0%, #ffffff 50%), url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="1" fill="rgba(0,0,0,0.03)"/></svg>') !important;
+    }
+    .kbf-hero-heading, .kbf-display, .kbf-hero h1 {
+        font-size: 44px !important;
+        font-weight: 600 !important;
+        letter-spacing: -1px !important;
+        line-height: 1.1 !important;
+        color: #0d1a2e !important;
+    }
+    .kbf-hero-sub, .kbf-eyebrow {
+        font-size: 11.5px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.18em !important;
+        color: #8b97aa !important;
+        font-weight: 600 !important;
+    }
+    .kbf-hero-desc {
+        font-size: 15px !important;
+        line-height: 1.75 !important;
+        color: #4f5a6b !important;
+    }
+    .kbf-hero-cta-btn {
+        box-shadow: 0 2px 4px rgba(32,112,224,0.15), 0 8px 24px rgba(42,120,220,0.38), inset 0 1px 0 rgba(255,255,255,0.22) !important;
+        position: relative;
+        overflow: hidden;
+    }
+    .kbf-hero-cta-btn::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        transform: skewX(-20deg);
+        transition: none;
+    }
+    .kbf-hero-cta-btn:hover::after {
+        animation: kbfShimmer 1.5s infinite;
+    }
+    @keyframes kbfShimmer {
+        100% { left: 200%; }
+    }
+    .kbf-topbar {
+        background: rgba(255,255,255,0.92) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        border-bottom: 1px solid rgba(237,240,244,0.8) !important;
+    }
+    .kbf-topbar.kbf-topbar-scrolled {
+        box-shadow: 0 2px 20px rgba(15,40,80,0.07) !important;
+    }
+    .kbf-nav a {
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        color: #64748b !important;
+    }
+    .kbf-nav a:hover, .kbf-nav a:active {
+        color: #0f1115 !important;
+    }
+    .kbf-nav a::after {
+        height: 2px !important;
+        background: #3d8ef0 !important;
+        border-radius: 999px !important;
+    }
+    .kbf-feature-grid .kbf-card {
+        background: #ffffff !important;
+        border: 1px solid #edf0f4 !important;
+        border-radius: 16px !important;
+        padding: 24px !important;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.05) !important;
+    }
+    .kbf-feature-grid .kbf-card:hover {
+        transform: translateY(-4px) !important;
+        box-shadow: 0 8px 24px rgba(15,23,42,0.09) !important;
+        border-color: #d0e3fa !important;
+    }
+    .kbf-chip {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 10px !important;
+        background: #e7f1ff !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .kbf-chip img, .kbf-chip i, .kbf-chip svg {
+        filter: invert(46%) sepia(85%) saturate(1381%) hue-rotate(198deg) brightness(98%) contrast(93%) !important;
+    }
+    .kbf-feature-grid h4, .kbf-feature-grid .kbf-card h4 {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #0f1115 !important;
+        margin-bottom: 6px !important;
+    }
+    .kbf-feature-grid p, .kbf-feature-grid .kbf-card p {
+        font-size: 13.5px !important;
+        line-height: 1.7 !important;
+        color: #4f5a6b !important;
+    }
+    .kbf-about-stats {
+        background: linear-gradient(135deg, #f5f9ff 0%, #ffffff 60%, #f0f5ff 100%) !important;
+        border-radius: 20px !important;
+        padding: 40px 32px !important;
+    }
+    .kbf-about-stat-num {
+        font-size: 40px !important;
+        font-weight: 600 !important;
+        letter-spacing: -1.5px !important;
+        background: linear-gradient(180deg, #4a9af5 0%, #1d4ed8 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+    .kbf-about-stat-label {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        color: #6f7785 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        margin-top: 4px !important;
+    }
+    .kbf-compare-table {
+        border-radius: 16px !important;
+        overflow: hidden !important;
+        border: 1px solid #edf0f4 !important;
+    }
+    .kbf-compare-table .kbf-compare-head, .kbf-compare-row:first-child {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.7px !important;
+        background: linear-gradient(180deg, #fafcff 0%, #f5f8fd 100%) !important;
+        color: #64748b !important;
+    }
+    .kbf-compare-row:hover td, .kbf-compare-row:hover > div {
+        background: #f7faff !important;
+    }
+    .kbf-compare-row > p:nth-child(3), .kbf-compare-table td:nth-child(3) {
+        border-left: none !important;
+    }
+    .kbf-stat .kbf-photo-grid img {
+        border-radius: 16px !important;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.3) !important;
+    }
+    .kbf-feature-grid--two .kbf-card, .kbf-audience-card, .kbf-section.kbf-stat + .kbf-section .kbf-card {
+        border: 1px solid #edf0f4 !important;
+        border-radius: 16px !important;
+        padding: 24px !important;
+        background: #ffffff !important;
+    }
+    .kbf-feature-grid--two .kbf-card:hover, .kbf-audience-card:hover, .kbf-section.kbf-stat + .kbf-section .kbf-card:hover {
+        background: linear-gradient(135deg, #f7fbff 0%, #ffffff 100%) !important;
+        border-color: #c8dcf5 !important;
+    }
+    .kbf-feature-grid--two h4, .kbf-audience-card h4, .kbf-section.kbf-stat + .kbf-section .kbf-card h4 {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #0f1115 !important;
+    }
+    .kbf-feature-grid--two p, .kbf-audience-card p, .kbf-section.kbf-stat + .kbf-section .kbf-card p {
+        font-size: 13.5px !important;
+        line-height: 1.7 !important;
+        color: #4f5a6b !important;
+    }
+    #kbf-faq h2 {
+        font-size: 26px !important;
+        font-weight: 600 !important;
+        color: #0f1115 !important;
+        text-align: center !important;
+        margin-bottom: 32px !important;
+    }
+    .kbf-faq details {
+        border-bottom: 1px solid #edf0f4 !important;
+        padding: 18px 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+    .kbf-faq summary {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #0f1115 !important;
+    }
+    .kbf-faq-body p, .kbf-faq details p {
+        font-size: 13.5px !important;
+        line-height: 1.75 !important;
+        color: #4f5a6b !important;
+    }
+    .kbf-footer {
+        background: linear-gradient(135deg, rgba(74, 152, 255, 0.9) 0%, rgba(47, 123, 220, 0.95) 100%) !important;
+        color: rgba(255,255,255,0.5) !important;
+        font-size: 12.5px !important;
+        border-top: 1px solid rgba(255,255,255,0.07) !important;
+    }
+    .kbf-footer .kbf-brand-text {
+        color: #3d8ef0 !important;
+        font-family: 'Shippori Antique B1', sans-serif !important;
+    }
+    .kbf-footer-links a {
+        color: rgba(255,255,255,0.45) !important;
+        font-size: 12px !important;
+    }
+    .kbf-footer-links a:hover {
+        color: #ffffff !important;
+    }
+
+    /* --- TYPOGRAPHY CONSISTENCY --- */
+    .kbf-landing h1, .kbf-hero-heading { font-weight: 600 !important; }
+    .kbf-landing h2 { font-weight: 600 !important; letter-spacing: -0.5px !important; }
+    .kbf-landing h3 { font-weight: 600 !important; }
+    .kbf-landing h4 { font-weight: 600 !important; }
+    .kbf-landing h5, .kbf-landing h6 { font-weight: 500 !important; }
+    .kbf-landing p, .kbf-landing li { font-weight: 400 !important; }
+    .kbf-landing .kbf-meta, .kbf-landing small { font-weight: 400 !important; }
+    .kbf-landing strong, .kbf-landing b { font-weight: 600 !important; }
+    .kbf-btn { font-weight: 500 !important; } /* Soften buttons */
+
+    /* --- EXACT TYPOGRAPHY OVERRIDES (USER REQUESTED) --- */
+    .kbf-hero h1, .kbf-hero-heading, .kbf-display {
+        font-weight: 600 !important;
+        font-size: 38px !important;
+        letter-spacing: -0.6px !important;
+        line-height: 1.15 !important;
+    }
+    
+    .kbf-brand-text, .kbf-brand {
+        font-weight: 600 !important;
+    }
+    
+    .kbf-section h2, .kbf-section-title {
+        font-weight: 600 !important;
+        font-size: 22px !important;
+        letter-spacing: -0.2px !important;
+        line-height: 1.3 !important;
+    }
+    
+    .kbf-card h4, .kbf-feature-grid h4, .kbf-audience-card h4, .kbf-section h3, .kbf-section h4 {
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        letter-spacing: 0 !important;
+        line-height: 1.4 !important;
+    }
+    
+    .kbf-landing p, .kbf-landing li {
+        font-weight: 400 !important;
+        font-size: 13.5px !important;
+        line-height: 1.75 !important;
+        color: #4f5a6b !important;
+    }
+
+    .kbf-compare-table tbody td, .kbf-compare-row > p {
+        font-weight: 400 !important;
+        font-size: 13px !important;
+        color: #0f1115 !important;
+    }
+    
+    .kbf-eyebrow, .kbf-hero-sub {
+        font-weight: 500 !important;
+        font-size: 11px !important;
+        letter-spacing: 0.18em !important;
+        text-transform: uppercase !important;
+        color: #8b97aa !important;
+    }
+    
+    .kbf-about-stat-num {
+        font-weight: 600 !important;
+        font-size: 36px !important;
+        letter-spacing: -1px !important;
+    }
+    
+    .kbf-about-stat-label {
+        font-weight: 400 !important;
+        font-size: 12px !important;
+        color: #6f7785 !important;
+    }
+    
+    .kbf-compare-table thead th, .kbf-compare-head, .kbf-compare-row:first-child > div {
+        font-weight: 600 !important;
+        font-size: 11px !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+        color: #64748b !important;
+    }
+    
+    .kbf-nav a {
+        font-weight: 500 !important;
+        font-size: 13px !important;
+        color: #64748b !important;
+    }
+    
+    .kbf-btn {
+        font-weight: 500 !important;
+        font-size: 13px !important;
+    }
+    
+    .kbf-stat h3 {
+        font-weight: 600 !important;
+        font-size: 48px !important;
+        letter-spacing: -1px !important;
+        color: #0f1115  !important;
+    }
+    
+    .kbf-faq summary {
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        color: #0f1115 !important;
+    }
+    
+    .kbf-faq-body p, .kbf-faq details p {
+        font-weight: 400 !important;
+        font-size: 13.5px !important;
+        color: #4f5a6b !important;
+        line-height: 1.75 !important;
+    }
+    
+    .kbf-footer, .kbf-footer p, .kbf-footer small, .kbf-footer-links a {
+        font-weight: 400 !important;
+        font-size: 12.5px !important;
+        color: #ffffff !important;
+    }
+
+    /* PCARD Text Fixes */
+    h4.kbf-pcard-name {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #0d1a2e !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
+    }
+    p.kbf-pcard-sub {
+        font-size: 12.5px !important;
+        font-weight: 500 !important;
+        color: #8b97aa !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
+    }
+
+    /* --- GLOBAL CARD HOVER TRANSITIONS --- */
+    .kbf-card, 
+    .kbf-audience-card, 
+    .kbf-pcard, 
+    .kbf-compare-row {
+        transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    }
+    
+    .kbf-btn {
+        transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    }
+
+    /* --- COMPARE TABLE CONSISTENCY FIX --- */
+    .kbf-compare-head > p, .kbf-compare-row:first-child > p {
+        font-weight: 600 !important;
+        font-size: 11px !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+        color: #64748b !important;
+    }
+    
+    .kbf-compare-row strong {
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        color: #0d1a2e !important;
+    }
+    
+    .kbf-compare-row > p:not(.kbf-compare-head > p) {
+        font-weight: 500 !important;
+        font-size: 13.5px !important;
+        color: #4f5a6b !important;
+        line-height:1.5 !important;
+    }
+    
+    /* Enforce the specific table body cell rules requested by user precisely over the global P rules */
+    .kbf-compare-row:not(.kbf-compare-head) > p {
+        font-weight: 400 !important;
+        font-size: 13px !important;
+        color: #0f1115 !important;
+    }
+
+    /* --- STATS REDESIGN & TYPOGRAPHY FIX --- */
+    .kbf-about-stats {
+        background: linear-gradient(135deg, #ffffff 0%, #f7fbff 100%) !important;
+        border: 1px solid #edf0f4 !important;
+        border-radius: 24px !important;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.03) !important;
+        padding: 48px 32px !important;
+    }
+
+    .kbf-landing p.kbf-about-stat-num {
+        font-size: 46px !important;
+        font-weight: 600 !important;
+        letter-spacing: -1.5px !important;
+        background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 55%, #1f6fe0 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        line-height: 1 !important;
+        margin-bottom: 2px !important;
+        display: inline-block !important; /* Required for webkit clear text clipping */
+    }
+    
+    .kbf-landing p.kbf-about-stat-label {
+        font-weight: 500 !important;
+        font-size: 11.5px !important;
+        color: #64748b !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        line-height: 1.6 !important;
+        margin-top: 10px !important;
+    }
+
+    /* --- FINAL USER TYPOGRAPHY WEIGHT OVERRIDES --- */
+    /* H1 (Hero Headlines) */
+    .kbf-landing h1, .kbf-hero h1, .kbf-hero-heading, .kbf-display { font-weight: 600 !important; }
+    
+    /* H2 (Section Titles) */
+    .kbf-landing h2, .kbf-section h2, .kbf-section-title, #kbf-faq h2 { font-weight: 500 !important; }
+    
+    /* H3 (Display Titles) */
+    .kbf-landing h3, .kbf-stat h3, .kbf-section h3 { font-weight: 500 !important; }
+    
+    /* H4 (Card & Feature Headings) */
+    .kbf-landing h4, .kbf-card h4, .kbf-feature-grid h4, .kbf-audience-card h4, .kbf-section h4, .kbf-about-value-title, h4.kbf-pcard-name { font-weight: 500 !important; }
+    
+    /* H5 / H6 (Minor Headings) */
+    .kbf-landing h5, .kbf-landing h6 { font-weight: 400 !important; }
+    
+    /* P (Body Text/Paragraphs) */
+    .kbf-landing p, .kbf-landing li, .kbf-faq-body p, .kbf-faq details p, .kbf-footer p { font-weight: 400 !important; }
+    
+    /* Strong / B (Bold Text) */
+    .kbf-landing strong, .kbf-landing b, .kbf-compare-row strong { font-weight: 500 !important; }
+
+    /* Explicit Fix for Feature Grid H4 */
+    .kbf-feature-grid h4, 
+    .kbf-feature-grid .kbf-card h4, 
+    .kbf-feature-grid--two h4, 
+    .kbf-audience-card h4, 
+    .kbf-section.kbf-stat + .kbf-section .kbf-card h4 {
+        font-weight: 500 !important;
+    }
+
+    /* Explicit Fix for FAQ Summary Questions */
+    .kbf-faq summary {
+        font-weight: 500 !important;
     }
     </style>
 
@@ -1401,7 +1855,7 @@ function bntm_kbf_render_landing() {
           <div class="kbf-mobile-menu-header">
             <div class="kbf-brand">
               <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:24px;height:24px;object-fit:contain;border-radius:6px;">
-              <span class="kbf-brand-text" style="font-weight:800;">fundora</span>
+              <span class="kbf-brand-text" style="font-weight: 600;">fundora</span>
             </div>
             <button class="kbf-hamburger" onclick="document.getElementById('kbf-hamburger-btn').click()" aria-label="Close menu" style="display:inline-flex;">
               <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="Close">
@@ -1422,10 +1876,8 @@ function bntm_kbf_render_landing() {
 
             <!-- Left: Text -->
             <div class="kbf-hero-left">
-              <div class="kbf-eyebrow">
-                <span class="kbf-eyebrow-dot"></span>
-                Filipino Crowdfunding Platform
-              </div>
+              <p class="kbf-eyebrow" style="margin:0; display:flex; align-items:center; gap:8px;"><span class="kbf-eyebrow-dot"></span> Filipino Crowdfunding Platform
+              </p>
 
               <h1 class="kbf-hero-heading" style="font-weight: 600;">
                 Fundora: <br>
@@ -1436,8 +1888,6 @@ function bntm_kbf_render_landing() {
               <p class="kbf-hero-desc">
                 Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
               </p>
-              <div class="kbf-hero-sub">Crowdfunding Philippines  -  Online Fundraising  -  Zero Fees (Beta)</div>
-
 
               <a class="kbf-btn kbf-btn-primary kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
                 Start Supporting on Fundora
@@ -1455,7 +1905,7 @@ function bntm_kbf_render_landing() {
                   </div>
                   <div class="kbf-pcard-bar">
                     <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
-                    <div><div class="kbf-pcard-name">Yourself</div><div class="kbf-pcard-sub">Health</div></div>
+                    <div><h4 class="kbf-pcard-name">Yourself</h4><p class="kbf-pcard-sub">Health</p></div>
                     <div class="kbf-pcard-play"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/play-fill.svg" alt=""></div>
                   </div>
                 </div>
@@ -1465,7 +1915,7 @@ function bntm_kbf_render_landing() {
                   </div>
                   <div class="kbf-pcard-bar">
                     <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
-                    <div><div class="kbf-pcard-name">Charity or Events</div><div class="kbf-pcard-sub">Community</div></div>
+                    <div><h4 class="kbf-pcard-name">Charity or Events</h4><p class="kbf-pcard-sub">Community</p></div>
                     <div class="kbf-pcard-play"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/play-fill.svg" alt=""></div>
                   </div>
                 </div>
@@ -1475,7 +1925,7 @@ function bntm_kbf_render_landing() {
                   </div>
                   <div class="kbf-pcard-bar">
                     <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
-                    <div><div class="kbf-pcard-name">Someone Else</div><div class="kbf-pcard-sub">Protected</div></div>
+                    <div><h4 class="kbf-pcard-name">Someone Else</h4><p class="kbf-pcard-sub">Protected</p></div>
                     <div class="kbf-pcard-play"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/play-fill.svg" alt=""></div>
                   </div>
                 </div>
@@ -1593,34 +2043,34 @@ function bntm_kbf_render_landing() {
             <p>Social media was built for connection. Fundora was built for community fundraising in the Philippines.</p>
             <div class="kbf-compare-table" style="text-align:left;">
               <div class="kbf-compare-row kbf-compare-head">
-                <div>Factor</div>
-                <div>Social Media donation posts</div>
-                <div>Fundora</div>
+                <p style="margin:0;">Factor</p>
+                <p style="margin:0;">Social Media donation posts</p>
+                <p style="margin:0;">Fundora</p>
               </div>
               <div class="kbf-compare-row">
                 <strong>Campaign visibility</strong>
-                <div>Posts get buried within days</div>
-                <div>Permanent, shareable campaign page</div>
+                <p style="margin:0;">Posts get buried within days</p>
+                <p style="margin:0;">Permanent, shareable campaign page</p>
               </div>
               <div class="kbf-compare-row">
                 <strong>Funds tracking</strong>
-                <div>Manual tracking and receipts</div>
-                <div>Automatic progress tracking and logs</div>
+                <p style="margin:0;">Manual tracking and receipts</p>
+                <p style="margin:0;">Automatic progress tracking and logs</p>
               </div>
               <div class="kbf-compare-row">
                 <strong>Account verification</strong>
-                <div>None</div>
-                <div>ID-verified with credibility index</div>
+                <p style="margin:0;">None</p>
+                <p style="margin:0;">ID-verified with credibility index</p>
               </div>
               <div class="kbf-compare-row">
                 <strong>Update history</strong>
-                <div>Scattered across posts</div>
-                <div>Timestamped update log</div>
+                <p style="margin:0;">Scattered across posts</p>
+                <p style="margin:0;">Timestamped update log</p>
               </div>
               <div class="kbf-compare-row">
                 <strong>Platform fee</strong>
-                <div>Free</div>
-                <div>Free during beta</div>
+                <p style="margin:0;">Free</p>
+                <p style="margin:0;">Free during beta</p>
               </div>
             </div>
           </div>
@@ -1628,20 +2078,20 @@ function bntm_kbf_render_landing() {
           <!-- Stats row -->
           <div class="kbf-about-stats">
             <div class="kbf-about-stat">
-              <div class="kbf-about-stat-num">&#8369;0</div>
-              <div class="kbf-about-stat-label">Platform fee during beta  -  100% to the person raising funds</div>
+              <p class="kbf-about-stat-num" style="margin:0;">&#8369;0</p>
+              <p class="kbf-about-stat-label" style="margin:0;">Platform fee during beta  -  100% to the person raising funds</p>
             </div>
             <div class="kbf-about-stat">
-              <div class="kbf-about-stat-num">3Ã—</div>
-              <div class="kbf-about-stat-label">More raised with proof updates</div>
+              <p class="kbf-about-stat-num" style="margin:0;">3x</p>
+              <p class="kbf-about-stat-label" style="margin:0;">More raised with proof updates</p>
             </div>
             <div class="kbf-about-stat">
-              <div class="kbf-about-stat-num">48h</div>
-              <div class="kbf-about-stat-label">Average time to first donation</div>
+              <p class="kbf-about-stat-num" style="margin:0;">48h</p>
+              <p class="kbf-about-stat-label" style="margin:0;">Average time to first donation</p>
             </div>
             <div class="kbf-about-stat">
-              <div class="kbf-about-stat-num">100%</div>
-              <div class="kbf-about-stat-label">Donations go directly to the person raising funds</div>
+              <p class="kbf-about-stat-num" style="margin:0;">100%</p>
+              <p class="kbf-about-stat-label" style="margin:0;">Donations go directly to the person raising funds</p>
             </div>
           </div>
 
@@ -1649,20 +2099,20 @@ function bntm_kbf_render_landing() {
           <div class="kbf-about-values">
             <div class="kbf-about-value">
               <div>
-                <div class="kbf-about-value-title">Rooted in bayanihan</div>
-                <div class="kbf-about-value-desc">We didn't invent community giving. We just built infrastructure worthy of it.</div>
+                <h4 class="kbf-about-value-title" style="margin:0 0 6px;">Rooted in bayanihan</h4>
+                <p class="kbf-about-value-desc" style="margin:0;">We didn't invent community giving. We just built infrastructure worthy of it.</p>
               </div>
             </div>
             <div class="kbf-about-value">
               <div>
-                <div class="kbf-about-value-title">Radical transparency</div>
-                <div class="kbf-about-value-desc">Every peso tracked. Every organizer verified. No black holes.</div>
+                <h4 class="kbf-about-value-title" style="margin:0 0 6px;">Radical transparency</h4>
+                <p class="kbf-about-value-desc" style="margin:0;">Every peso tracked. Every organizer verified. No black holes.</p>
               </div>
             </div>
             <div class="kbf-about-value">
               <div>
-                <div class="kbf-about-value-title">Built for Filipinos</div>
-                <div class="kbf-about-value-desc">GCash, local banks, community-first  -  designed for how we actually live.</div>
+                <h4 class="kbf-about-value-title" style="margin:0 0 6px;">Built for Filipinos</h4>
+                <p class="kbf-about-value-desc" style="margin:0;">GCash, local banks, community-first  -  designed for how we actually live.</p>
               </div>
             </div>
           </div>
@@ -1725,8 +2175,7 @@ function bntm_kbf_render_landing() {
         <footer class="kbf-footer kbf-reveal delay-3" style="margin-top:80px;">
           <div class="kbf-footer-left">
             <div class="kbf-brand" style="margin-bottom:8px;">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:20px;height:20px;object-fit:contain;border-radius:6px;">
-              <span class="kbf-brand-text" style="font-weight: 600;">fundora</span>
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:30px;object-fit:contain;border-radius:6px;filter:brightness(0) invert(1);">
             </div>
             <p>Community fundraising rooted in bayanihan.</p>
             <div class="kbf-footer-links">

@@ -82,6 +82,11 @@ function bntm_kbf_render_signin() {
       body.admin-bar{margin-top:0 !important;}
       #wpadminbar{display:none !important;}
       :root{
+        --kbf-glass-bg: rgba(255, 255, 255, 0.7);
+        --kbf-glass-border: rgba(255, 255, 255, 0.6);
+        --kbf-glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        --kbf-blob-1: rgba(91, 168, 245, 0.08);
+        --kbf-blob-2: rgba(111, 182, 255, 0.05);
         --kbf-auth-ink:#0b1a33;
         --kbf-auth-blue:#2563eb;
       }
@@ -120,12 +125,7 @@ function bntm_kbf_render_signin() {
       .kbf-auth-orb{
         position:absolute;
         width:320px;height:320px;border-radius:50%;
-        background:radial-gradient(circle at 30% 30%, rgba(96,165,250,.28), rgba(255,255,255,0) 64%);
-        filter:blur(24px);
-        opacity:.95;
-        pointer-events:none;
-        animation:kbfOrbFloat 18s ease-in-out infinite, kbfOrbFade 14s ease-in-out infinite;
-      }
+        background: radial-gradient(circle at 30% 30%, var(--kbf-blob-1), transparent 64%); }
       .kbf-auth-orb.orb-1{top:6%;right:10%;animation-delay:1s,0s;}
       .kbf-auth-orb.orb-2{bottom:8%;left:6%;animation-delay:6s,2s;}
       .kbf-auth-orb.orb-3{top:58%;right:28%;width:240px;height:240px;opacity:.75;animation-delay:9s,3s;}
@@ -144,9 +144,9 @@ function bntm_kbf_render_signin() {
         width:100%;
         max-width:1100px;
         margin:0 auto;
-        background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+        background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: var(--kbf-glass-shadow);
         border:1px solid rgba(37,99,235,.12);
-        border-radius:26px;
+        border-radius:32px; overflow:hidden; transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);
         display:grid;
         grid-template-columns:1.15fr .85fr;
@@ -157,7 +157,7 @@ function bntm_kbf_render_signin() {
       .kbf-auth-card:hover{transform:none;box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);}
       .kbf-auth-left{padding:40px 42px 44px;}
       .kbf-auth-right{
-        background: linear-gradient(135deg, #4a98ff 0%, #2f7bdc 100%);
+        background: linear-gradient(135deg, rgba(74, 152, 255, 0.9) 0%, rgba(47, 123, 220, 0.95) 100%); backdrop-filter: blur(12px);
         color:#ffffff;
         padding:36px 34px;
         display:flex;
@@ -168,12 +168,12 @@ function bntm_kbf_render_signin() {
         gap:14px;
         border-left:1px solid rgba(255,255,255,.2);
       }
-      .kbf-auth-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--kbf-auth-ink);font-size:15px;margin-bottom:14px;letter-spacing:.2px;}
+      .kbf-auth-brand{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--kbf-auth-ink);font-size:15px;margin-bottom:14px;letter-spacing:.2px;}
       .kbf-auth-brand img{width:140px;height:auto;max-height:36px;object-fit:contain;}
-      .kbf-auth-title{font-size:30px;font-weight:600;color:var(--kbf-auth-ink);margin:0 0 8px;}
-      .kbf-auth-sub{font-size:13.5px;color:var(--kbf-slate);margin:0 0 26px;line-height:1.8;max-width:440px;}
+      .kbf-auth-title{font-size:26px;font-weight:500;color:var(--kbf-auth-ink);margin:0 0 8px;}
+      .kbf-auth-sub{font-size:14px;color:var(--kbf-slate);margin:0 0 22px;line-height:1.7;max-width:440px;}
       .kbf-auth-form .kbf-form-group{margin-bottom:14px;}
-      .kbf-auth-input{display:flex;align-items:center;gap:10px;background:#ffffff;border:1.5px solid #dbe8ff;border-radius:14px;padding:12px 14px;box-shadow:0 6px 16px rgba(30,64,175,.06);}
+      .kbf-auth-input{display:flex;align-items:center;gap:10px;background:#ffffff;border:1px solid rgba(37,99,235,0.2); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px);border-radius:14px;padding:12px 14px;box-shadow:0 6px 16px rgba(30,64,175,.06);}
       .kbf-auth-input input{background:#ffffff;}
       .kbf-auth-input img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-input input{border:0;background:transparent;outline:none;font-size:13.5px;width:100%;}
@@ -189,11 +189,11 @@ function bntm_kbf_render_signin() {
       .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
       .kbf-auth-toggle img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-cta{margin-top:14px;}
-      .kbf-auth-right h3{font-size:20px;margin:0;font-weight:600;color:#ffffff;}
-      .kbf-auth-right p{font-size:13px;margin:0;color:rgba(255,255,255,.85);line-height:1.7;}
+      .kbf-auth-right h3{font-size:20px;margin:0;font-weight:500;color:#ffffff;}
+      .kbf-auth-right p{font-size:13.5px;margin:0;color:rgba(255,255,255,.85);line-height:1.7;}
       .kbf-auth-points{display:grid;gap:10px;margin-top:6px;}
       .kbf-auth-point{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#ffffff;}
-      .kbf-auth-point span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.2);color:#ffffff;font-size:12px;font-weight:700;}
+      .kbf-auth-point span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.2);color:#ffffff;font-size:12px;font-weight:600;}
       .kbf-auth-footer{margin-top:14px;font-size:12.5px;color:var(--kbf-slate);}
       .kbf-auth-footer a{color:var(--kbf-blue);font-weight:600;text-decoration:none;}
       @media (max-width: 900px){
@@ -207,9 +207,9 @@ function bntm_kbf_render_signin() {
         .kbf-auth-right{padding:20px;}
         .kbf-auth-brand img{width:120px;}
         .kbf-auth-title{font-size:24px;}
-        .kbf-auth-sub{font-size:12.5px;line-height:1.6;margin-bottom:18px;}
+        .kbf-auth-sub{font-size:13.5px;line-height:1.6;margin-bottom:18px;}
         .kbf-auth-input{padding:10px 12px;border-radius:12px;}
-        .kbf-auth-point{font-size:12px;}
+        .kbf-auth-point{font-size:12.5px;}
       }
       @media (max-width: 520px){
         .kbf-auth-card{box-shadow:0 18px 50px rgba(15,23,42,.12), 0 6px 18px rgba(37,99,235,.08);}
@@ -257,7 +257,7 @@ function bntm_kbf_render_signin() {
                     </button>
                   </div>
                 </div>
-              <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--kbf-slate);margin-top:2px;">
+              <label style="display:flex;gap:6px;align-items:center;font-size:18px;color:var(--kbf-slate);margin-top:2px;">
                 <input type="checkbox" name="rememberme" style="width:14px;height:14px;"> Keep me signed in
               </label>
               <div class="kbf-auth-cta">
