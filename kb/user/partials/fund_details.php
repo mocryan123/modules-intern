@@ -245,7 +245,7 @@ function bntm_shortcode_kbf_fund_details() {
       box-shadow:none !important;
       border-color:var(--kbf-border) !important;
     }
-    .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;}
+    .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;flex-wrap:wrap;}
   .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
 .kbf-detail-left{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;}
 .kbf-detail-right{display:flex;flex-direction:column;}
@@ -1050,9 +1050,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
       </div>
     </div>
-  </div>
-      
-    <!-- Message (full width) -->
+  <div class="kbf-detail-secondary"><!-- Message (full width) -->
     <div class="kbf-card kbf-section-message" style="padding:18px;margin-top:18px;">
       <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
         Message <span style="background:var(--kbf-green-lt);color:var(--kbf-blue);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;">
@@ -1158,7 +1156,9 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
         </div>
       </div>
-    </div></div><!-- .kbf-wrap -->
+    </div>
+</div><!-- .kbf-detail-secondary -->
+</div><!-- .kbf-wrap -->
     
     <!-- ================== JS ================== -->
     <script>
@@ -1750,6 +1750,10 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
+
+
+
 
 
 
