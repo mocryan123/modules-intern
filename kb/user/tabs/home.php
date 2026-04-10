@@ -513,29 +513,17 @@
                     <i class="ph ph-tag kbf-icon" aria-hidden="true"></i>
                       <?php echo esc_html(ucwords(strtolower((string)$f->category))); ?>
                   </span>
-                  <span class="kbf-meta-divider"></span>
-                  <span class="kbf-meta-item">
-                    <i class="ph ph-map-pin kbf-icon" aria-hidden="true"></i>
-                    <?php echo esc_html($f->location); ?>
-                  </span>
-                </div>
-                <div class="kbf-meta-row">
                   <?php if($days_left!==null): ?>
+                    <span class="kbf-meta-divider"></span>
                     <span class="kbf-meta-item kbf-meta-strong" style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;">
                       <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
                       <?php echo $days_left; ?>d left
                     </span>
-                    <span class="kbf-meta-divider"></span>
                   <?php endif; ?>
-                  <span class="kbf-meta-item">
-                    <i class="ph ph-users kbf-icon" aria-hidden="true"></i>
-                    <?php echo $sc; ?> sponsors
-                  </span>
                   <span class="kbf-meta-divider"></span>
                   <span class="kbf-meta-item">
-                    <i class="ph ph-shield kbf-icon" aria-hidden="true"></i>
-                    Escrow
-                    <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
+                    <i class="ph ph-users kbf-icon" aria-hidden="true"></i>
+                    <?php echo $sc; ?> sponsor<?php echo $sc !== 1 ? 's' : ''; ?>
                   </span>
                 </div>
               </div>
