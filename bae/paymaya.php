@@ -12,28 +12,10 @@
 
 if (!defined('ABSPATH')) exit;
 
-if (file_exists(dirname(__FILE__) . '/.env') && !getenv('BAE_PM_SECRET_KEY')) {
-    $env_file = dirname(__FILE__) . '/.env';
-    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        if (strpos($line, '=') === false) continue;
-
-        [$key, $value] = explode('=', $line, 2);
-        $key = trim($key);
-        $value = trim($value);
-
-        if ($key !== '' && !getenv($key)) {
-            putenv($key . '=' . $value);
-        }
-    }
-}
-
-define('BAE_PM_SECRET_KEY', getenv('BAE_PM_SECRET_KEY') ?: 'MISSING_SECRET_KEY');
-define('BAE_PM_PUBLIC_KEY', getenv('BAE_PM_PUBLIC_KEY') ?: 'MISSING_PUBLIC_KEY');
-define('BAE_PM_WEBHOOK_SECRET', getenv('BAE_PM_WEBHOOK_SECRET') ?: 'MISSING_WEBHOOK_SECRET');
-define('BAE_PM_BASE_URL', rtrim(getenv('BAE_PM_BASE_URL') ?: 'https://pg-sandbox.paymaya.com', '/'));
+define('BAE_PM_SECRET_KEY', get_option('bae_pm_secret_key') ?: 'MISSING_SECRET_KEY');
+define('BAE_PM_PUBLIC_KEY', get_option('bae_pm_public_key') ?: 'MISSING_PUBLIC_KEY');
+define('BAE_PM_WEBHOOK_SECRET', get_option('bae_pm_webhook_secret') ?: 'MISSING_WEBHOOK_SECRET');
+define('BAE_PM_BASE_URL', rtrim(get_option('bae_pm_base_url') ?: 'https://pg-sandbox.paymaya.com', '/'));
 
 define('BAE_PRICE_STARTER_MONTHLY', 4900);
 define('BAE_PRICE_STARTER_LIFETIME', 19900);

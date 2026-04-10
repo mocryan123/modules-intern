@@ -40,16 +40,17 @@ function bae_resend_email( $to, $subject, $text ) {
     global $bae_resend_last_error;
     $bae_resend_last_error = '';
 
-    $from = getenv( 'BAE_SMTP_FROM' );
-    $pass = getenv( 'BAE_SMTP_PASS' );
+    // First try database options, fallback to environment variables
+    $from = get_option('bae_smtp_from') ?: getenv('BAE_SMTP_FROM');
+    $pass = get_option('bae_smtp_pass') ?: getenv('BAE_SMTP_PASS');
 
     if ( empty( $from ) || empty( $pass ) ) {
-        $bae_resend_last_error = 'BAE_SMTP_FROM or BAE_SMTP_PASS is not set in environment.';
+        $bae_resend_last_error = 'BAE SMTP credentials are not set in settings.';
         error_log( '[BAE Mail] ' . $bae_resend_last_error );
         return false;
     }
 
-    // Use PHPMailer — bundled with WordPress core, always available
+    // Use PHPMailer — bundled with WordPress core, always available available
     require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
     require_once ABSPATH . WPINC . '/PHPMailer/SMTP.php';
     require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';

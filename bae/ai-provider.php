@@ -27,6 +27,16 @@ function bae_gemini_key_pool(): array {
     static $pool = null;
     if ( $pool !== null ) return $pool;
     $pool = [];
+
+    // First try options database
+    $keys_json = get_option('bae_gemini_keys', '[]');
+    $options_keys = json_decode($keys_json, true) ?: [];
+    foreach ($options_keys as $key) {
+        if ($key && strlen(trim($key)) > 10) $pool[] = trim($key);
+    }
+    if (!empty($pool)) return $pool;
+
+    // Fallback to environment variables
     for ( $i = 1; $i <= 4; $i++ ) {
         $key = getenv( "BAE_GEMINI_KEY_{$i}" );
         if ( $key && strlen( trim( $key ) ) > 10 ) $pool[] = trim( $key );
@@ -50,6 +60,20 @@ function bae_groq_key_pool(): array {
     static $pool = null;
     if ( $pool !== null ) return $pool;
     $pool = [];
+
+    // First try options database
+    $keys_json = get_option('bae_groq_keys', '[]');
+    $options_keys = json_decode($keys_json, true) ?: [];
+    foreach ($options_keys as $key) {
+        if ($key && strlen(trim($key)) > 10) $pool[] = trim($key);
+    }
+    
+    if (!empty($pool)) {
+        shuffle( $pool );
+        return $pool;
+    }
+
+    // Fallback to environment variables
     for ( $i = 1; $i <= 20; $i++ ) {
         $key = getenv( "BAE_GROQ_KEY_{$i}" );
         if ( $key && strlen( trim( $key ) ) > 10 ) $pool[] = trim( $key );

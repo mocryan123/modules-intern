@@ -58,6 +58,7 @@ add_action('wp_ajax_bae_admin_get_assets',        'bae_ajax_admin_get_assets');
 add_action('wp_ajax_nopriv_bae_admin_get_assets', 'bae_ajax_admin_get_assets');
 add_action('wp_ajax_bae_admin_stats',        'bae_ajax_admin_stats');
 add_action('wp_ajax_nopriv_bae_admin_stats', 'bae_ajax_admin_stats');
+add_action('wp_ajax_bae_admin_save_all_settings', 'bae_ajax_admin_save_all_settings');
 
 function bae_admin_auth_check() {
     if (!bae_admin_check_session()) {
@@ -146,6 +147,39 @@ function bae_ajax_admin_stats() {
     }
 
     wp_send_json_success($stats);
+}
+
+function bae_ajax_admin_save_all_settings() {
+    bae_admin_auth_check();
+    global $wpdb;
+
+    // AI Providers
+    $gemini = isset($_POST['gemini_keys']) && is_array($_POST['gemini_keys']) ? array_map('sanitize_text_field', $_POST['gemini_keys']) : [];
+    $groq = isset($_POST['groq_keys']) && is_array($_POST['groq_keys']) ? array_map('sanitize_text_field', $_POST['groq_keys']) : [];
+    $or = isset($_POST['or_keys']) && is_array($_POST['or_keys']) ? array_map('sanitize_text_field', $_POST['or_keys']) : [];
+    update_option('bae_gemini_keys', json_encode(array_filter($gemini)));
+    update_option('bae_groq_keys', json_encode(array_filter($groq)));
+    update_option('bae_or_keys', json_encode(array_filter($or)));
+
+    // PayMaya
+    update_option('bae_pm_public_key', sanitize_text_field($_POST['pm_public'] ?? ''));
+    update_option('bae_pm_secret_key', sanitize_text_field($_POST['pm_secret'] ?? ''));
+    update_option('bae_pm_webhook_secret', sanitize_text_field($_POST['pm_webhook'] ?? ''));
+    update_option('bae_pm_base_url', sanitize_url($_POST['pm_base'] ?? 'https://pg-sandbox.paymaya.com'));
+
+    // Stripe
+    update_option('bae_stripe_public_key', sanitize_text_field($_POST['stripe_public'] ?? ''));
+    update_option('bae_stripe_secret_key', sanitize_text_field($_POST['stripe_secret'] ?? ''));
+    update_option('bae_stripe_webhook_secret', sanitize_text_field($_POST['stripe_webhook'] ?? ''));
+    update_option('bae_stripe_price_starter_monthly', sanitize_text_field($_POST['stripe_starter_m'] ?? ''));
+    update_option('bae_stripe_price_starter_lifetime', sanitize_text_field($_POST['stripe_starter_l'] ?? ''));
+    update_option('bae_stripe_price_pro_monthly', sanitize_text_field($_POST['stripe_pro_m'] ?? ''));
+
+    // SMTP
+    update_option('bae_smtp_from', sanitize_email($_POST['smtp_from'] ?? ''));
+    update_option('bae_smtp_pass', sanitize_text_field($_POST['smtp_pass'] ?? ''));
+
+    wp_send_json_success(['message' => 'Settings saved successfully.']);
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -501,8 +535,24 @@ function bae_admin_dashboard() {
         'security'  => 'Security',
     ];
 
-    $paymaya_secret = getenv('BAE_PM_SECRET_KEY') ?: get_option('bae_paymaya_secret', '');
-    $paymaya_public = getenv('BAE_PM_PUBLIC_KEY') ?: get_option('bae_paymaya_public', '');
+    $gemini_keys_json = get_option('bae_gemini_keys', '[]');
+    $groq_keys_json = get_option('bae_groq_keys', '[]');
+    $or_keys_json = get_option('bae_or_keys', '[]');
+
+    $paymaya_secret = get_option('bae_pm_secret_key', '');
+    $paymaya_public = get_option('bae_pm_public_key', '');
+    $paymaya_webhook = get_option('bae_pm_webhook_secret', '');
+    $paymaya_base = get_option('bae_pm_base_url', 'https://pg-sandbox.paymaya.com');
+
+    $stripe_secret = get_option('bae_stripe_secret_key', '');
+    $stripe_public = get_option('bae_stripe_public_key', '');
+    $stripe_webhook = get_option('bae_stripe_webhook_secret', '');
+    $stripe_starter_m = get_option('bae_stripe_price_starter_monthly', '');
+    $stripe_starter_l = get_option('bae_stripe_price_starter_lifetime', '');
+    $stripe_pro_m = get_option('bae_stripe_price_pro_monthly', '');
+
+    $smtp_from = get_option('bae_smtp_from', '');
+    $smtp_pass = get_option('bae_smtp_pass', '');
 
     ob_start();
     ?>
@@ -1475,7 +1525,7 @@ function bae_admin_dashboard() {
                 </div>
 
                 <div class="bae-adm-sidebar-search">
-                    <input type="text" id="bae-adm-nav-search" placeholder="Search menu..." oninput="baeAdmNavSearch(this.value)">
+                    <input type="text" id="bae-adm-nav-search" placeholder="Search menu..." oninput="baeAdmNavSearch(this.value)" autocomplete="off" data-1p-ignore data-lpignore="true" spellcheck="false">
                 </div>
 
                 <nav class="bae-adm-nav" id="bae-adm-nav">
@@ -1563,7 +1613,7 @@ function bae_admin_dashboard() {
                                 Analytics
                             </a>
                             <a href="<?php echo esc_url($base_url . '&adm=settings'); ?>" class="bae-adm-quick-btn">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09"/></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09"/></svg>
                                 Settings
                             </a>
                         </div>
@@ -1653,7 +1703,7 @@ function bae_admin_dashboard() {
                         <div class="bae-adm-metric-pill" style="border-color:rgba(139,92,246,.3);">Pro: <strong><?php echo $stats['pro']; ?></strong></div>
                     </div>
                     <div class="bae-adm-toolbar">
-                        <input type="text" class="bae-adm-search" id="bae-adm-search" placeholder="Search by business name or ticket..." oninput="baeAdmSearch()">
+                        <input type="text" class="bae-adm-search" id="bae-adm-search" placeholder="Search by business name or ticket..." oninput="baeAdmSearch()" autocomplete="off" data-1p-ignore data-lpignore="true" spellcheck="false">
                         <select class="bae-adm-filter" id="bae-adm-plan-filter" onchange="baeAdmSearch()">
                             <option value="">All Plans</option>
                             <option value="free">Free</option>
@@ -1748,7 +1798,7 @@ function bae_admin_dashboard() {
                         </div>
                     </div>
                     <div class="bae-adm-toolbar">
-                        <input type="text" class="bae-adm-search" id="bae-adm-search" placeholder="Search tickets..." oninput="baeAdmSearch()">
+                        <input type="text" class="bae-adm-search" id="bae-adm-search" placeholder="Search tickets..." oninput="baeAdmSearch()" autocomplete="off" data-1p-ignore data-lpignore="true" spellcheck="false">
                         <div style="font-size:12px;color:var(--text-3);" id="bae-adm-count"><?php echo count($all_tickets); ?> tickets</div>
                     </div>
                     <div class="bae-adm-table-wrap">
@@ -1832,7 +1882,7 @@ function bae_admin_dashboard() {
                     </div>
 
                     <div class="bae-adm-toolbar">
-                        <input type="text" class="bae-adm-search" id="bae-adm-search" placeholder="Search assets..." oninput="baeAdmSearch()">
+                        <input type="text" class="bae-adm-search" id="bae-adm-search" placeholder="Search assets..." oninput="baeAdmSearch()" autocomplete="off" data-1p-ignore data-lpignore="true" spellcheck="false">
                         <div style="font-size:12px;color:var(--text-3);" id="bae-adm-count"><?php echo count($all_assets); ?> assets</div>
                     </div>
                     <div class="bae-adm-table-wrap">
@@ -2303,60 +2353,120 @@ function bae_admin_dashboard() {
                     </script>
 
                 <?php elseif ($route === 'settings'): ?>
-                    <div class="bae-adm-sysinfo">
-                        <div class="bae-adm-sysinfo-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" width="16" height="16"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                            <strong>BAE Engine Version</strong>
-                            <span>1.2.0</span>
-                            <div class="bae-adm-sysinfo-dot ok"></div>
-                        </div>
-                        <div class="bae-adm-sysinfo-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" width="16" height="16"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                            <strong>PHP Version</strong>
-                            <span><?php echo phpversion(); ?></span>
-                            <div class="bae-adm-sysinfo-dot <?php echo version_compare(phpversion(), '7.4', '>=') ? 'ok' : 'warn'; ?>"></div>
-                        </div>
-                        <div class="bae-adm-sysinfo-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" width="16" height="16"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-                            <strong>Database Status</strong>
-                            <span>Connected</span>
-                            <div class="bae-adm-sysinfo-dot <?php echo $wpdb->get_var("SHOW TABLES LIKE '{$pt}'") === $pt ? 'ok' : 'err'; ?>"></div>
-                        </div>
-                        <div class="bae-adm-sysinfo-item">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" width="16" height="16"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                            <strong>PayMaya Gateway</strong>
-                            <span><?php echo !empty($paymaya_secret) ? 'Configured' : 'Not Set'; ?></span>
-                            <div class="bae-adm-sysinfo-dot <?php echo !empty($paymaya_secret) ? 'ok' : 'err'; ?>"></div>
-                        </div>
-                    </div>
+                    <style>
+                    .bae-env-group { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+                    .bae-env-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+                    .bae-dynamic-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+                    .bae-dynamic-item { display: flex; gap: 8px; align-items: center; }
+                    .bae-dynamic-item input { flex: 1; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; color: var(--text); outline: none; }
+                    .bae-dynamic-item input:focus { border-color: var(--brand); }
+                    .bae-dynamic-btn { padding: 9px 12px; border: 1px solid rgba(251,113,133,0.3); border-radius: 8px; background: rgba(251,113,133,0.05); color: var(--red); cursor: pointer; transition: all .2s; }
+                    .bae-dynamic-btn:hover { background: rgba(251,113,133,0.15); }
+                    .bae-add-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px dashed var(--border-2); background: rgba(255,255,255,0.02); color: var(--text-3); transition: all .2s; }
+                    .bae-add-btn:hover { border-color: var(--brand); color: var(--brand-s); }
+                    .bae-adm-field { margin-bottom: 14px; }
+                    .bae-adm-field label { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6px; font-weight: 600; }
+                    .bae-adm-field input { width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; color: var(--text); outline: none; box-sizing: border-box; }
+                    .bae-adm-field input:focus { border-color: var(--brand); }
+                    </style>
+                    <div style="display:grid;grid-template-columns:minmax(0, 1.4fr) minmax(0, 1fr);gap:24px;">
+                        <div class="bae-adm-form-section" style="margin:0;display:flex;flex-direction:column;">
+                            
+                            <div class="bae-env-group">
+                                <h3 style="margin:0 0 16px;">AI Providers</h3>
+                                <div class="bae-adm-field">
+                                    <label>Gemini Keys (Max 3)</label>
+                                    <div class="bae-dynamic-list" id="list-gemini"></div>
+                                    <button type="button" class="bae-add-btn" id="add-gemini" onclick="baeAddKey('gemini', 3, 'Gemini API Key')">+ Add Gemini Key</button>
+                                </div>
+                                <div class="bae-adm-field">
+                                    <label>Groq Keys (Max 20)</label>
+                                    <div class="bae-dynamic-list" id="list-groq"></div>
+                                    <button type="button" class="bae-add-btn" id="add-groq" onclick="baeAddKey('groq', 20, 'Groq API Key')">+ Add Groq Key</button>
+                                </div>
+                                <div class="bae-adm-field">
+                                    <label>OpenRouter Keys (Max 3)</label>
+                                    <div class="bae-dynamic-list" id="list-or"></div>
+                                    <button type="button" class="bae-add-btn" id="add-or" onclick="baeAddKey('or', 3, 'OpenRouter API Key')">+ Add OpenRouter Key</button>
+                                </div>
+                            </div>
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-                        <div class="bae-adm-form-section" style="margin:0;">
-                            <h3>PayMaya API Keys</h3>
-                            <p>Required for Starter and Pro plan upgrades.</p>
-                            <div class="bae-adm-field">
-                                <label>Public Key</label>
-                                <input type="text" id="bae-pm-public" value="<?php echo esc_attr($paymaya_public); ?>" placeholder="pk-...">
+                            <div class="bae-env-group">
+                                <h3 style="margin:0 0 16px;">PayMaya Settings</h3>
+                                <div class="bae-adm-field"><label>Public Key</label><input type="text" id="bae-pm-public" value="<?php echo esc_attr($paymaya_public); ?>" placeholder="pk-..."></div>
+                                <div class="bae-adm-field"><label>Secret Key</label><input type="password" id="bae-pm-secret" value="<?php echo esc_attr($paymaya_secret); ?>" placeholder="sk-..."></div>
+                                <div class="bae-adm-field"><label>Webhook Secret</label><input type="password" id="bae-pm-webhook" value="<?php echo esc_attr($paymaya_webhook); ?>" placeholder="Webhook secret..."></div>
+                                <div class="bae-adm-field"><label>Base URL</label><input type="text" id="bae-pm-base" value="<?php echo esc_attr($paymaya_base); ?>" placeholder="https://pg-sandbox.paymaya.com"></div>
                             </div>
-                            <div class="bae-adm-field">
-                                <label>Secret Key</label>
-                                <input type="password" id="bae-pm-secret" value="<?php echo esc_attr($paymaya_secret); ?>" placeholder="sk-...">
+
+                            <div class="bae-env-group">
+                                <h3 style="margin:0 0 16px;">Stripe Settings</h3>
+                                <div class="bae-adm-field"><label>Public Key</label><input type="text" id="bae-stripe-public" value="<?php echo esc_attr($stripe_public); ?>" placeholder="pk_..."></div>
+                                <div class="bae-adm-field"><label>Secret Key</label><input type="password" id="bae-stripe-secret" value="<?php echo esc_attr($stripe_secret); ?>" placeholder="sk_..."></div>
+                                <div class="bae-adm-field"><label>Webhook Secret</label><input type="password" id="bae-stripe-webhook" value="<?php echo esc_attr($stripe_webhook); ?>" placeholder="whsec_..."></div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                                    <div class="bae-adm-field"><label>Starter Monthly Price ID</label><input type="text" id="bae-stripe-starter-m" value="<?php echo esc_attr($stripe_starter_m); ?>" placeholder="price_..."></div>
+                                    <div class="bae-adm-field"><label>Starter Lifetime Price ID</label><input type="text" id="bae-stripe-starter-l" value="<?php echo esc_attr($stripe_starter_l); ?>" placeholder="price_..."></div>
+                                </div>
+                                <div class="bae-adm-field"><label>Pro Monthly Price ID</label><input type="text" id="bae-stripe-pro-m" value="<?php echo esc_attr($stripe_pro_m); ?>" placeholder="price_..."></div>
                             </div>
-                            <button class="bae-adm-save-btn" id="bae-pm-save" onclick="baeAdmSavePaymongo()">Save Keys</button>
+
+                            <div class="bae-env-group">
+                                <h3 style="margin:0 0 16px;">SMTP Settings</h3>
+                                <div class="bae-adm-field"><label>From Email</label><input type="email" id="bae-smtp-from" value="<?php echo esc_attr($smtp_from); ?>" placeholder="email@example.com" autocomplete="off" data-1p-ignore data-lpignore="true"></div>
+                                <div class="bae-adm-field"><label>Password</label><input type="password" id="bae-smtp-pass" value="<?php echo esc_attr($smtp_pass); ?>" placeholder="App password" autocomplete="new-password"></div>
+                            </div>
+
+                            <button class="bae-adm-save-btn" id="bae-settings-save" onclick="baeAdmSaveAllSettings()">Save All Settings</button>
                         </div>
-                        <div class="bae-adm-form-section" style="margin:0;">
-                            <h3>Quick Links</h3>
-                            <p>Direct access to user-facing applications.</p>
+                        
+                        <div class="bae-adm-form-section" style="margin:0;height:fit-content;">
+                            <h3 style="margin:0 0 16px;">Quick Links</h3>
+                            <p style="font-size:13px;color:var(--text-2);margin-bottom:16px;">Direct access to user-facing applications.</p>
                             <div style="display:flex;flex-direction:column;gap:8px;">
                                 <a href="<?php echo home_url('/brand-engine'); ?>" target="_blank" class="bae-adm-quick-btn" style="justify-content:center;padding:12px;">Open Mothie Frontend ↗</a>
-                                <a href="<?php echo admin_url('post-new.php?post_type=page'); ?>" target="_blank" class="bae-adm-quick-btn" style="justify-content:center;padding:12px;">Create New Page in WP ↗</a>
                                 <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
-                                    <h4 style="font-size:12px;color:var(--text);margin:0 0 8px;">Admin Passcode</h4>
-                                    <p style="font-size:11px;color:var(--text-3);margin:0;">The passcode protects this dashboard from unauthorized access. To change it, edit the <code>BAE_ADMIN_SECRET</code> constant in the plugin code.</p>
+                                    <h4 style="font-size:12px;color:var(--text);margin:0 0 8px;">About Settings</h4>
+                                    <p style="font-size:11px;color:var(--text-3);margin:0;">Settings here replace the local .env variables. Make sure your API keys are valid!</p>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
+                    <script>
+                    window.baeEnvData = {
+                        gemini: <?php echo empty(json_decode($gemini_keys_json, true)) ? '[]' : $gemini_keys_json; ?>,
+                        groq: <?php echo empty(json_decode($groq_keys_json, true)) ? '[]' : $groq_keys_json; ?>,
+                        or: <?php echo empty(json_decode($or_keys_json, true)) ? '[]' : $or_keys_json; ?>
+                    };
+                    
+                    function baeAddKey(type, max, placeholder, val = '') {
+                        var list = document.getElementById('list-' + type);
+                        if (!list) return;
+                        if (list.children.length >= max) return;
+                        var div = document.createElement('div');
+                        div.className = 'bae-dynamic-item';
+                        div.innerHTML = '<input type="password" data-type="'+type+'" value="'+val.replace(/"/g, '&quot;')+'" placeholder="'+placeholder+'"><button type="button" class="bae-dynamic-btn" onclick="this.parentElement.remove(); document.getElementById(\'add-'+type+'\').style.display=\'inline-flex\';">✕</button>';
+                        list.appendChild(div);
+                        if (list.children.length >= max) { document.getElementById('add-' + type).style.display = 'none'; }
+                    }
+                    
+                    document.addEventListener('DOMContentLoaded', function() {
+                        if (document.getElementById('list-gemini')) {
+                            var gemList = Array.isArray(window.baeEnvData.gemini) ? window.baeEnvData.gemini : [];
+                            gemList.forEach(function(k){ baeAddKey('gemini', 3, 'Gemini API Key', k); });
+                            if(gemList.length===0) baeAddKey('gemini', 3, 'Gemini API Key');
+                            
+                            var groqList = Array.isArray(window.baeEnvData.groq) ? window.baeEnvData.groq : [];
+                            groqList.forEach(function(k){ baeAddKey('groq', 20, 'Groq API Key', k); });
+                            if(groqList.length===0) baeAddKey('groq', 20, 'Groq API Key');
+                            
+                            var orList = Array.isArray(window.baeEnvData.or) ? window.baeEnvData.or : [];
+                            orList.forEach(function(k){ baeAddKey('or', 3, 'OpenRouter API Key', k); });
+                            if(orList.length===0) baeAddKey('or', 3, 'OpenRouter API Key');
+                        }
+                    });
+                    </script>
 
                 <?php elseif ($route === 'security'): ?>
                     <?php
@@ -2422,33 +2532,28 @@ function bae_admin_dashboard() {
         </div><!-- /layout -->
         </div><!-- /shell -->
     </div><!-- /bae-adm -->
-
-    <div id="bae-adm-toast"></div>
-
     <script>
-    var _baeAdmAj    = '<?php echo esc_js($aj); ?>';
-    var _baeAdmNonce = '<?php echo esc_js($nonce); ?>';
-    var _baeAdmConfirmCb = null;
+    var _baeAdmAj = '<?php echo admin_url("admin-ajax.php"); ?>';
+    var _baeAdmNonce = '<?php echo wp_create_nonce(BAE_ADMIN_NONCE); ?>';
 
-    // ── Confirm modal
-    function baeAdmConfirm(title, msg, cb) {
+    function baeAdmConfirm(title, msg, onOk) {
+        var overlay = document.getElementById('bae-adm-confirm');
+        if (!overlay) return;
         document.getElementById('bae-adm-confirm-title').textContent = title;
-        document.getElementById('bae-adm-confirm-msg').textContent   = msg;
-        _baeAdmConfirmCb = cb;
-        var el = document.getElementById('bae-adm-confirm');
-        el.classList.add('open');
-        if (window.gsap) gsap.fromTo('.bae-adm-confirm-modal', {opacity:0,y:16}, {opacity:1,y:0,duration:.25,ease:'power3.out'});
+        document.getElementById('bae-adm-confirm-msg').innerHTML = msg;
+        overlay.style.display = 'flex';
+        var cancel = document.getElementById('bae-adm-confirm-cancel');
+        var ok = document.getElementById('bae-adm-confirm-ok');
+        var cleanup = function() {
+            overlay.style.display = 'none';
+            cancel.removeEventListener('click', onCancel);
+            ok.removeEventListener('click', onConfirm);
+        };
+        var onCancel = function() { cleanup(); };
+        var onConfirm = function() { cleanup(); if (onOk) onOk(); };
+        cancel.addEventListener('click', onCancel);
+        ok.addEventListener('click', onConfirm);
     }
-    document.getElementById('bae-adm-confirm-ok').addEventListener('click', function() {
-        document.getElementById('bae-adm-confirm').classList.remove('open');
-        if (typeof _baeAdmConfirmCb === 'function') _baeAdmConfirmCb();
-    });
-    document.getElementById('bae-adm-confirm-cancel').addEventListener('click', function() {
-        document.getElementById('bae-adm-confirm').classList.remove('open');
-        _baeAdmConfirmCb = null;
-    });
-
-    // ── Toast
     function baeAdmToast(msg, type) {
         var t = document.getElementById('bae-adm-toast');
         t.textContent = msg; t.className = type || ''; t.style.display = 'block';

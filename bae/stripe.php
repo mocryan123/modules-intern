@@ -13,27 +13,13 @@
 if (!defined('ABSPATH')) exit;
 
 // ─────────────────────────────────────────────────────────────────
-// ENV — Load .env file if present
-// ─────────────────────────────────────────────────────────────────
-if (file_exists(dirname(__FILE__) . '/.env') && !getenv('BAE_STRIPE_SECRET_KEY')) {
-    $env_file = dirname(__FILE__) . '/.env';
-    $lines    = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        [$key, $val] = array_pad(explode('=', $line, 2), 2, '');
-        $key = trim($key); $val = trim($val);
-        if (!empty($key) && !getenv($key)) putenv("{$key}={$val}");
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────
-// CONFIG — Stripe API Keys (from .env)
+// CONFIG — Stripe API Keys (from settings)
 // Get keys from: dashboard.stripe.com → Developers → API Keys
 // ─────────────────────────────────────────────────────────────────
 if (!defined('BAE_STRIPE_SECRET_KEY')) {
-    define('BAE_STRIPE_SECRET_KEY',  getenv('BAE_STRIPE_SECRET_KEY')  ?: 'MISSING_SECRET_KEY');
-    define('BAE_STRIPE_PUBLIC_KEY',  getenv('BAE_STRIPE_PUBLIC_KEY')  ?: 'MISSING_PUBLIC_KEY');
-    define('BAE_STRIPE_WEBHOOK_SECRET', getenv('BAE_STRIPE_WEBHOOK_SECRET') ?: 'MISSING_WEBHOOK_SECRET');
+    define('BAE_STRIPE_SECRET_KEY',  get_option('bae_stripe_secret_key')  ?: 'MISSING_SECRET_KEY');
+    define('BAE_STRIPE_PUBLIC_KEY',  get_option('bae_stripe_public_key')  ?: 'MISSING_PUBLIC_KEY');
+    define('BAE_STRIPE_WEBHOOK_SECRET', get_option('bae_stripe_webhook_secret') ?: 'MISSING_WEBHOOK_SECRET');
 }
 
 define('BAE_STRIPE_API', 'https://api.stripe.com/v1');
@@ -41,13 +27,13 @@ define('BAE_STRIPE_API', 'https://api.stripe.com/v1');
 // ─────────────────────────────────────────────────────────────────
 // PLAN → PRICE ID MAP
 // Create products/prices in Stripe dashboard, paste IDs here
-// or set via .env as BAE_STRIPE_PRICE_STARTER and BAE_STRIPE_PRICE_PRO
+// or set via settings page
 // ─────────────────────────────────────────────────────────────────
 function bae_stripe_price_ids() {
     return [
-        'starter_monthly'  => getenv('BAE_STRIPE_PRICE_STARTER_MONTHLY')  ?: '',
-        'starter_lifetime' => getenv('BAE_STRIPE_PRICE_STARTER_LIFETIME') ?: '',
-        'pro_monthly'      => getenv('BAE_STRIPE_PRICE_PRO_MONTHLY')      ?: '',
+        'starter_monthly'  => get_option('bae_stripe_price_starter_monthly')  ?: '',
+        'starter_lifetime' => get_option('bae_stripe_price_starter_lifetime') ?: '',
+        'pro_monthly'      => get_option('bae_stripe_price_pro_monthly')      ?: '',
     ];
 }
 
