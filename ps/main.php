@@ -148,9 +148,9 @@ function bntm_shortcode_ps_dashboard() {
 
     <div class="bntm-ps-container">
         <div class="bntm-tabs">
-            <a href="?page_id=14&tab=overview"  class="bntm-tab <?php echo $active_tab === 'overview' ? 'active' : ''; ?>">Overview</a>
-            <a href="?page_id=14&tab=orders"    class="bntm-tab <?php echo $active_tab === 'orders' ? 'active' : ''; ?>">Orders</a>
-            <a href="?page_id=14&tab=settings"  class="bntm-tab <?php echo $active_tab === 'settings' ? 'active' : ''; ?>">Settings</a>
+            <a href="?page_id=<?php echo get_the_ID(); ?>&tab=overview"  class="bntm-tab <?php echo $active_tab === 'overview' ? 'active' : ''; ?>">Overview</a>
+            <a href="?page_id=<?php echo get_the_ID(); ?>&tab=orders"    class="bntm-tab <?php echo $active_tab === 'orders' ? 'active' : ''; ?>">Orders</a>
+            <a href="?page_id=<?php echo get_the_ID(); ?>&tab=settings"  class="bntm-tab <?php echo $active_tab === 'settings' ? 'active' : ''; ?>">Settings</a>
         </div>
         <div class="bntm-tab-content">
             <?php
@@ -295,7 +295,7 @@ function ps_overview_tab($business_id) {
     <div class="bntm-form-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <h3 style="margin:0;">Recent Orders</h3>
-            <a href="?page_id=14&tab=orders" class="bntm-btn-secondary" style="font-size:13px;">
+            <a href="?page_id=<?php echo get_the_ID(); ?>&tab=orders" class="bntm-btn-secondary" style="font-size:13px;">
                 View All
             </a>
         </div>
@@ -404,6 +404,7 @@ function ps_orders_tab($business_id) {
     <div class="bntm-form-section">
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
             <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;">
+                    <input type="hidden" name="page_id" value="<?php echo get_the_ID(); ?>">
                     <input type="hidden" name="tab" value="orders">
                     <input type="text" name="search" value="<?php echo esc_attr($search); ?>" placeholder="Search by name, email, order ID..." class="bntm-input" style="flex:1;min-width:200px;">
                     <select name="status" class="bntm-select">
@@ -418,7 +419,7 @@ function ps_orders_tab($business_id) {
                         <option value="paid"   <?php selected($filter_payment, 'paid');   ?>>Paid</option>
                     </select>
                     <button type="submit" class="bntm-btn-primary">Filter</button>
-                    <?php if ($filter_status || $filter_payment || $search): ?><a href="?tab=orders" class="bntm-btn-secondary">Clear</a><?php endif; ?>
+                    <?php if ($filter_status || $filter_payment || $search): ?><a href="?page_id=<?php echo get_the_ID(); ?>&tab=orders" class="bntm-btn-secondary">Clear</a><?php endif; ?>
             </form>
         </div>
 
@@ -475,7 +476,7 @@ function ps_orders_tab($business_id) {
                     <td style="font-size:12px;color:#6b7280;white-space:nowrap;"><?php echo date('M d, Y', strtotime($o->created_at)); ?></td>
                     <td>
                         <div style="display:flex;gap:6px;flex-direction:column;">
-                            <button class="bntm-btn-small bntm-btn-primary ps-view-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>">View</button>
+                            <button class="bntm-btn-small bntm-btn-primary ps-view-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>">View All Details</button>
                             <?php if (!in_array($o->status, ['picked_up', 'cancelled'])): ?>
                             <button class="bntm-btn-small bntm-btn-secondary ps-pickup-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>">Picked Up</button>
                             <?php endif; ?>
@@ -2213,10 +2214,11 @@ function bntm_ajax_ps_upload_file() {
     if (empty($_FILES['file'])) wp_send_json_error(['message' => 'No file received.']);
 
     $file   = $_FILES['file'];
-    $max_mb = (int) ps_get_setting('max_file_mb', 20);
+    $s       = ps_get_all_settings();
+    $max_mb  = (int)($s['max_file_mb'] ?? 20);
     if ($file['size'] > $max_mb * 1024 * 1024) wp_send_json_error(['message' => "File exceeds maximum size of {$max_mb}MB."]);
 
-    $allowed_raw   = ps_get_setting('allowed_file_types', 'pdf,doc,docx,ppt,pptx,jpg,png');
+    $allowed_raw   = $s['allowed_file_types'] ?? 'pdf,doc,docx,ppt,pptx,jpg,png';
     $allowed_types = array_map('trim', explode(',', strtolower($allowed_raw)));
     $ext           = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     if (!in_array($ext, $allowed_types)) wp_send_json_error(['message' => "File type '.{$ext}' is not allowed."]);
@@ -2239,7 +2241,7 @@ function bntm_ajax_ps_upload_file() {
         'file_name'  => $safe_name,
         'file_size'  => $file['size'],
         'file_path'  => $target_path,
-        'file_url'   => str_replace($upload_dir['basedir'], $upload_dir['baseurl'], $target_path),
+        'file_url'   => ps_get_file_url($target_path),
         'page_count' => $page_count,
     ]);
 }
@@ -2254,15 +2256,17 @@ function bntm_ajax_ps_calculate_price() {
     $sides      = sanitize_text_field($_POST['sides'] ?? 'single');
     $binding    = sanitize_text_field($_POST['binding'] ?? 'none');
 
+    // One call loads all settings from cache (single DB query for the whole request)
+    $s = ps_get_all_settings();
     $prices = [
-        'bw'    => ['A4' => ps_get_setting('bw_a4', 2), 'A3' => ps_get_setting('bw_a3', 4), 'Short' => ps_get_setting('bw_letter', 2), 'Long' => ps_get_setting('bw_long', 2)],
-        'color' => ['A4' => ps_get_setting('color_a4', 8), 'A3' => ps_get_setting('color_a3', 14), 'Short' => ps_get_setting('color_letter', 8), 'Long' => ps_get_setting('color_long', 8)],
+        'bw'    => ['A4' => floatval($s['bw_a4'] ?? 2),    'A3' => floatval($s['bw_a3'] ?? 4),    'Short' => floatval($s['bw_letter'] ?? 2),    'Long' => floatval($s['bw_long'] ?? 2)],
+        'color' => ['A4' => floatval($s['color_a4'] ?? 8), 'A3' => floatval($s['color_a3'] ?? 14), 'Short' => floatval($s['color_letter'] ?? 8), 'Long' => floatval($s['color_long'] ?? 8)],
     ];
-    $unit_price   = floatval($prices[$color_mode][$paper_size] ?? $prices['bw']['A4']);
+    $unit_price   = $prices[$color_mode][$paper_size] ?? $prices['bw']['A4'];
     $total_pages  = $page_count * $copies;
     $print_cost   = round($unit_price * $total_pages, 2);
-    $binding_map  = ['spiral' => ps_get_setting('binding_spiral', 35), 'staple' => ps_get_setting('binding_staple', 5), 'hardcover' => ps_get_setting('binding_hardcover', 80), 'none' => 0];
-    $binding_cost = floatval($binding_map[$binding] ?? 0) * $copies;
+    $binding_map  = ['spiral' => floatval($s['binding_spiral'] ?? 35), 'staple' => floatval($s['binding_staple'] ?? 5), 'hardcover' => floatval($s['binding_hardcover'] ?? 80), 'none' => 0];
+    $binding_cost = ($binding_map[$binding] ?? 0) * $copies;
     $total_price  = $print_cost + $binding_cost;
 
     wp_send_json_success([
@@ -2299,15 +2303,16 @@ function bntm_ajax_ps_submit_order() {
 
     if (!$customer_name || !$file_name) wp_send_json_error(['message' => 'Missing required fields.']);
 
-    // Recalculate server-side to be safe
+    // Recalculate server-side to be safe — one cache load, zero extra DB queries
+    $s = ps_get_all_settings();
     $prices = [
-        'bw'    => ['A4' => ps_get_setting('bw_a4', 2), 'A3' => ps_get_setting('bw_a3', 4), 'Short' => ps_get_setting('bw_letter', 2), 'Long' => ps_get_setting('bw_long', 2)],
-        'color' => ['A4' => ps_get_setting('color_a4', 8), 'A3' => ps_get_setting('color_a3', 14), 'Short' => ps_get_setting('color_letter', 8), 'Long' => ps_get_setting('color_long', 8)],
+        'bw'    => ['A4' => floatval($s['bw_a4'] ?? 2),    'A3' => floatval($s['bw_a3'] ?? 4),    'Short' => floatval($s['bw_letter'] ?? 2),    'Long' => floatval($s['bw_long'] ?? 2)],
+        'color' => ['A4' => floatval($s['color_a4'] ?? 8), 'A3' => floatval($s['color_a3'] ?? 14), 'Short' => floatval($s['color_letter'] ?? 8), 'Long' => floatval($s['color_long'] ?? 8)],
     ];
-    $real_unit        = floatval($prices[$color_mode][$paper_size] ?? $prices['bw']['A4']);
+    $real_unit        = $prices[$color_mode][$paper_size] ?? $prices['bw']['A4'];
     $real_total_pages = max(1, $page_count) * $copies;
-    $binding_map      = ['spiral' => ps_get_setting('binding_spiral', 35), 'staple' => ps_get_setting('binding_staple', 5), 'hardcover' => ps_get_setting('binding_hardcover', 80), 'none' => 0];
-    $real_binding     = floatval($binding_map[$binding] ?? 0) * $copies;
+    $binding_map      = ['spiral' => floatval($s['binding_spiral'] ?? 35), 'staple' => floatval($s['binding_staple'] ?? 5), 'hardcover' => floatval($s['binding_hardcover'] ?? 80), 'none' => 0];
+    $real_binding     = ($binding_map[$binding] ?? 0) * $copies;
     $real_total       = round($real_unit * $real_total_pages + $real_binding, 2);
 
     // Use client total if provided (includes extra services), otherwise use server-computed
@@ -2371,10 +2376,9 @@ function bntm_ajax_ps_get_orders() {
 
     $color_label   = $o->color_mode === 'color' ? 'Full Color' : 'Black & White';
     $binding_label = $o->binding === 'none' ? 'None' : ucfirst($o->binding);
-    $file_url      = '';
+    $file_url = '';
     if ($o->file_path && file_exists($o->file_path)) {
-        $upload_dir = wp_upload_dir();
-        $file_url   = str_replace($upload_dir['basedir'], $upload_dir['baseurl'], $o->file_path);
+        $file_url = ps_get_file_url($o->file_path);
     }
 
     ob_start();
@@ -2555,11 +2559,28 @@ function bntm_ajax_ps_save_pricing() {
 // 10. HELPER FUNCTIONS
 // ─────────────────────────────────────────────────────────────
 
-function ps_get_setting($key, $default = '') {
+/**
+ * Load ALL settings in one query and cache in memory for the request lifetime.
+ * This turns N individual DB hits into a single SELECT per request.
+ */
+function ps_get_all_settings() {
+    static $cache = null;
+    if ($cache !== null) return $cache;
     global $wpdb;
-    $t   = $wpdb->prefix . 'ps_settings';
-    $val = $wpdb->get_var($wpdb->prepare("SELECT setting_value FROM {$t} WHERE setting_key=%s LIMIT 1", $key));
-    return $val !== null ? $val : $default;
+    $t    = $wpdb->prefix . 'ps_settings';
+    $rows = $wpdb->get_results("SELECT setting_key, setting_value FROM {$t}", ARRAY_A);
+    $cache = [];
+    if ($rows) {
+        foreach ($rows as $row) {
+            $cache[$row['setting_key']] = $row['setting_value'];
+        }
+    }
+    return $cache;
+}
+
+function ps_get_setting($key, $default = '') {
+    $cache = ps_get_all_settings();
+    return array_key_exists($key, $cache) ? $cache[$key] : $default;
 }
 
 function ps_set_setting($key, $value) {
@@ -2580,7 +2601,8 @@ function ps_format_filesize($bytes) {
 }
 
 function ps_get_file_url($file_path) {
-    $upload_dir = wp_upload_dir();
+    static $upload_dir = null;
+    if ($upload_dir === null) $upload_dir = wp_upload_dir();
     return str_replace($upload_dir['basedir'], $upload_dir['baseurl'], $file_path);
 }
 
