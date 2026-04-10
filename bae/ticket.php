@@ -2247,6 +2247,17 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
     $user_id    = is_user_logged_in() ? get_current_user_id() : 0;
     $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'overview';
 
+    if ( ! isset( $_GET['tab'] ) && ! empty( $profile['id'] ) ) {
+        global $wpdb;
+        $has_generated_assets_tk = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
+            $profile['id']
+        ) ) >= 1;
+        if ( $has_generated_assets_tk && ! bae_has_viewed_onboarding_asset( $profile ) ) {
+            $active_tab = 'assets';
+        }
+    }
+
     ob_start(); ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script>
@@ -3068,17 +3079,18 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
             $ac_tk = $has_profile ? (int)$wpdb->get_var($wpdb->prepare(
                 "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE ticket = %s AND is_generated = 1", $ticket
             )) : 0;
+            $has_viewed_asset_tk = $has_profile && bae_has_viewed_onboarding_asset( $profile );
             $assets_done_tk = $has_profile && $ac_tk >= 1;
             $completed_steps = [
                 'overview' => $has_profile,
                 'assets'   => $assets_done_tk,
-                'kit'      => $assets_done_tk,
-                'startup'  => $assets_done_tk,
+                'kit'      => $has_viewed_asset_tk,
+                'startup'  => $has_viewed_asset_tk,
             ];
             $locks_tk = [
                 'assets'  => !$has_profile,
-                'kit'     => !$assets_done_tk,
-                'startup' => !$assets_done_tk,
+                'kit'     => !$has_viewed_asset_tk,
+                'startup' => !$has_viewed_asset_tk,
             ];
             foreach ( $tab_keys as $i => $slug ):
                 $label          = $tabs[$slug];
@@ -3088,8 +3100,8 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
                 $is_locked = $locks_tk[$slug] ?? false;
                 $lock_msg_tk = match($slug) {
                     'assets'  => 'Complete Brand Profile first',
-                    'kit'     => 'Generate at least 1 asset first',
-                    'startup' => 'Complete Asset Generator first',
+                    'kit'     => 'Preview 1 generated asset first',
+                    'startup' => 'Preview 1 generated asset first',
                     default   => 'Complete previous step first',
                 };
                 $is_last        = $i === $total - 1;
@@ -3148,7 +3160,7 @@ function bntm_bae_dashboard_with_ticket( $ticket, $profile ) {
                     "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
                     $profile['id']
                 )) : 0;
-            $onboarding_done_tk = $has_profile && $asset_count_tk >= 1;
+            $onboarding_done_tk = $has_profile && bae_has_viewed_onboarding_asset( $profile );
             if ($onboarding_done_tk && !isset($_GET['tab'])) $active_tab = 'dashboard';
 
             if     ( $active_tab === 'overview'   ) echo bae_overview_tab( $user_id, $profile );
@@ -3270,7 +3282,14 @@ function bntm_bae_nopriv_save_profile() {
     if ( $existing ) {
         $wpdb->update( $table, $data, [ 'ticket' => $ticket ] );
         $wpdb->show_errors();
-        wp_send_json_success( [ 'message' => 'Brand profile updated successfully!' ] );
+        $saved_profile = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", (int) $existing->id ), ARRAY_A );
+        $saved_plan = bae_get_user_plan( 0, $saved_profile );
+        wp_send_json_success( [
+            'message' => 'Brand profile updated successfully!',
+            'profile_id' => (int) $existing->id,
+            'plan' => $saved_plan,
+            'starter_assets' => bae_get_onboarding_auto_asset_types( $saved_plan ),
+        ] );
     } else {
         $data['rand_id']  = bntm_rand_id();
         $data['ticket']   = $ticket;
@@ -3279,7 +3298,15 @@ function bntm_bae_nopriv_save_profile() {
         $r = $wpdb->insert( $table, $data );
         $wpdb->show_errors();
         if ( $r === false ) wp_send_json_error( [ 'message' => 'Failed to save. Please try again.' ] );
-        wp_send_json_success( [ 'message' => 'Brand profile created successfully!' ] );
+        $profile_id = (int) $wpdb->insert_id;
+        $saved_profile = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $profile_id ), ARRAY_A );
+        $saved_plan = bae_get_user_plan( 0, $saved_profile );
+        wp_send_json_success( [
+            'message' => 'Brand profile created successfully!',
+            'profile_id' => $profile_id,
+            'plan' => $saved_plan,
+            'starter_assets' => bae_get_onboarding_auto_asset_types( $saved_plan ),
+        ] );
     }
 }
 

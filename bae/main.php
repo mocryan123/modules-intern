@@ -176,6 +176,7 @@ function bntm_bae_get_tables() {
             kit_slug VARCHAR(100) UNIQUE NOT NULL DEFAULT '',
             kit_views INT UNSIGNED NOT NULL DEFAULT 0,
             kit_unique_views INT UNSIGNED NOT NULL DEFAULT 0,
+            onboarding_asset_viewed TINYINT(1) NOT NULL DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_user (user_id),
@@ -232,6 +233,8 @@ add_action('wp_ajax_bae_save_kit_settings',      'bntm_ajax_bae_save_kit_setting
 add_action('wp_ajax_nopriv_bae_save_kit_settings','bntm_ajax_bae_save_kit_settings');
 add_action('wp_ajax_bae_custom_generate',        'bntm_ajax_bae_custom_generate');
 add_action('wp_ajax_nopriv_bae_custom_generate', 'bntm_ajax_bae_custom_generate');
+add_action('wp_ajax_bae_mark_asset_viewed',        'bntm_ajax_bae_mark_asset_viewed');
+add_action('wp_ajax_nopriv_bae_mark_asset_viewed', 'bntm_ajax_bae_mark_asset_viewed');
 add_action('wp_ajax_bae_save_custom_asset',        'bntm_ajax_bae_save_custom_asset');
 add_action('wp_ajax_nopriv_bae_save_custom_asset', 'bntm_ajax_bae_save_custom_asset');
 add_action('wp_ajax_bae_wizard_palettes',          'bntm_ajax_bae_wizard_palettes');
@@ -541,6 +544,7 @@ function bae_extract_json_array($text) {
 
 function bae_wizard_shortcode($user_id) {
     $nonce = wp_create_nonce('bae_save_profile');
+    $generate_nonce = wp_create_nonce('bae_generate_asset');
     ob_start();
     ?>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -872,8 +876,8 @@ function bae_wizard_shortcode($user_id) {
             <div class="bae-wiz-question" style="margin-bottom:8px;" id="bae-cel-title">Your brand is mothified.</div>
             <div class="bae-wiz-hint" id="bae-cel-sub">All assets powered by your profile.<br>Let's see what we mothified.</div>
             <div id="bae-cel-swatches" style="display:flex;justify-content:center;gap:10px;margin:24px 0;"></div>
-            <button class="bae-wiz-next" style="max-width:280px;margin:0 auto;" onclick="window.location.href=window.location.pathname+'?tab=identity'">
-                Open Mothie
+            <button class="bae-wiz-next" style="max-width:280px;margin:0 auto;" onclick="window.location.href=window.location.pathname+'?tab=assets'">
+                Open Asset Generator
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
         </div>
@@ -890,6 +894,7 @@ function bae_wizard_shortcode($user_id) {
 
         var ajaxurl = '<?php echo esc_js(admin_url("admin-ajax.php")); ?>';
         var nonce   = '<?php echo esc_js($nonce); ?>';
+        var generateNonce = '<?php echo esc_js($generate_nonce); ?>';
         var state   = { step:1, name:'', industry:'', primary:'', secondary:'', accent:'', personality:'', tagline:'', email:'', phone:'', website:'' };
 
         // AI palette fetch state
@@ -1368,6 +1373,44 @@ function bae_wizard_shortcode($user_id) {
 
             document.getElementById('bae-wiz-gen-status').textContent = 'Saving your brand profile...';
 
+            function generateStarterAssets(profileId, assetTypes) {
+                assetTypes = Array.isArray(assetTypes) ? assetTypes : [];
+                if (!profileId || !assetTypes.length) return Promise.resolve();
+
+                var labels = {
+                    business_card: 'Business Card',
+                    letterhead: 'Letterhead',
+                    email_signature: 'Email Signature',
+                    social_kit: 'Social Media Kit',
+                    brand_guidelines: 'Brand Guidelines',
+                    sitemap: 'Site Structure'
+                };
+
+                function runAt(index) {
+                    if (index >= assetTypes.length) return Promise.resolve();
+                    var type = assetTypes[index];
+                    document.getElementById('bae-wiz-gen-status').textContent = 'Creating ' + (labels[type] || type) + ' (' + (index + 1) + '/' + assetTypes.length + ')...';
+
+                    var afd = new FormData();
+                    afd.append('action', 'bae_generate_asset');
+                    afd.append('asset_type', type);
+                    afd.append('profile_id', profileId);
+                    afd.append('nonce', generateNonce);
+
+                    return fetch(ajaxurl, { method:'POST', body: afd })
+                        .then(function(r){ return r.json(); })
+                        .then(function(j){
+                            if (!j || !j.success) {
+                                var msg = j && j.data && j.data.message ? j.data.message : 'Failed to generate starter assets.';
+                                throw new Error(msg);
+                            }
+                            return runAt(index + 1);
+                        });
+                }
+
+                return runAt(0);
+            }
+
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(function(r){
                 // Log raw response for debugging
@@ -1379,24 +1422,31 @@ function bae_wizard_shortcode($user_id) {
             })
             .then(function(j){
                 if (j.success) {
-                    document.getElementById('bae-wiz-gen-status').textContent = 'Brand created!';
-                    var swatchContainer = document.getElementById('bae-cel-swatches');
-                    if (swatchContainer && state.primary) {
-                        [state.primary, state.secondary, state.accent].forEach(function(col) {
-                            var sw = document.createElement('div');
-                            sw.style.cssText = 'width:48px;height:48px;border-radius:14px;background:'+col+';border:1px solid rgba(255,255,255,0.15);';
-                            swatchContainer.appendChild(sw);
+                    var payload = j.data || {};
+                    generateStarterAssets(payload.profile_id || 0, payload.starter_assets || [])
+                        .then(function() {
+                            document.getElementById('bae-wiz-gen-status').textContent = 'Brand created!';
+                            var swatchContainer = document.getElementById('bae-cel-swatches');
+                            if (swatchContainer && state.primary && !swatchContainer.children.length) {
+                                [state.primary, state.secondary, state.accent].forEach(function(col) {
+                                    var sw = document.createElement('div');
+                                    sw.style.cssText = 'width:48px;height:48px;border-radius:14px;background:'+col+';border:1px solid rgba(255,255,255,0.15);';
+                                    swatchContainer.appendChild(sw);
+                                });
+                            }
+                            var celTitle = document.getElementById('bae-cel-title');
+                            if (celTitle && state.name) celTitle.textContent = state.name + ' is ready.';
+                            hideScreen('bae-step-gen');
+                            showScreen('bae-step-done');
+                            if (window.gsap) {
+                                gsap.fromTo('#bae-cel-icon', {scale:0,rotate:-15}, {scale:1,rotate:0,duration:0.5,ease:'back.out(2)',delay:0.1});
+                                gsap.fromTo('#bae-cel-swatches > div', {scale:0,y:10}, {scale:1,y:0,duration:0.4,stagger:0.08,ease:'back.out(2)',delay:0.3});
+                                gsap.to('#bae-cel-icon', {boxShadow:'0 0 36px rgba(139,92,246,0.6)',duration:1.4,repeat:-1,yoyo:true,ease:'sine.inOut',delay:0.8});
+                            }
+                        })
+                        .catch(function(err) {
+                            document.getElementById('bae-wiz-gen-status').textContent = err && err.message ? err.message : 'Starter asset generation failed.';
                         });
-                    }
-                    var celTitle = document.getElementById('bae-cel-title');
-                    if (celTitle && state.name) celTitle.textContent = state.name + ' is ready.';
-                    hideScreen('bae-step-gen');
-                    showScreen('bae-step-done');
-                    if (window.gsap) {
-                        gsap.fromTo('#bae-cel-icon', {scale:0,rotate:-15}, {scale:1,rotate:0,duration:0.5,ease:'back.out(2)',delay:0.1});
-                        gsap.fromTo('#bae-cel-swatches > div', {scale:0,y:10}, {scale:1,y:0,duration:0.4,stagger:0.08,ease:'back.out(2)',delay:0.3});
-                        gsap.to('#bae-cel-icon', {boxShadow:'0 0 36px rgba(139,92,246,0.6)',duration:1.4,repeat:-1,yoyo:true,ease:'sine.inOut',delay:0.8});
-                    }
                 } else {
                     var errMsg = (j.data && j.data.message) ? j.data.message : 'Something went wrong.';
                     document.getElementById('bae-wiz-gen-status').textContent = errMsg;
@@ -1498,6 +1548,13 @@ function bntm_shortcode_bae() {
     // Has ticket but no business name yet → show wizard
     if ( ( empty($profile) || empty($profile['business_name']) ) && !isset($_GET['tab']) ) {
         return bae_wizard_shortcode($user_id);
+    }
+
+    if (!isset($_GET['tab']) && !empty($profile) && !empty($profile['id'])) {
+        $has_generated_assets = bae_count_assets($user_id, (int) $profile['id']) >= 1;
+        if ($has_generated_assets && !bae_has_viewed_onboarding_asset($profile)) {
+            $active_tab = 'assets';
+        }
     }
 
     $onboarding_done = false;
@@ -1682,9 +1739,10 @@ function bntm_shortcode_bae() {
                         $profile['id']
                     ));
                 }
+                $has_viewed_asset = $has_profile && bae_has_viewed_onboarding_asset($profile);
                 $assets_done  = $has_profile && $asset_count_step >= 1;
-                $kit_done     = $assets_done;
-                $startup_done = $kit_done;
+                $kit_done     = $has_viewed_asset;
+                $startup_done = $has_viewed_asset;
                 $completed = [
                     'overview' => $has_profile,
                     'assets'   => $assets_done,
@@ -1693,10 +1751,10 @@ function bntm_shortcode_bae() {
                 ];
                 $locks = [
                     'assets'  => !$has_profile,
-                    'kit'     => !$assets_done,
-                    'startup' => !$assets_done,
+                    'kit'     => !$has_viewed_asset,
+                    'startup' => !$has_viewed_asset,
                 ];
-                $onboarding_done = $has_profile && $assets_done;
+                $onboarding_done = $has_profile && $has_viewed_asset;
                 if ($onboarding_done && !isset($_GET['tab'])) {
                     $active_tab = 'dashboard';
                 }
@@ -1713,8 +1771,8 @@ function bntm_shortcode_bae() {
                     $step_num  = $i + 1;
                     $lock_msg  = match($slug) {
                         'assets'  => 'Complete Brand Profile first',
-                        'kit'     => 'Generate at least 1 asset first',
-                        'startup' => 'Complete Asset Generator first',
+                        'kit'     => 'Preview 1 generated asset first',
+                        'startup' => 'Preview 1 generated asset first',
                         default   => 'Complete previous step first',
                     };
                 ?>
@@ -5539,6 +5597,7 @@ function bae_assets_tab($user_id, $profile) {
     $profile_id   = $p['id'];
     $user_plan    = bae_get_user_plan($user_id, $profile);
     $is_free      = $user_plan === 'free';
+    $needs_first_asset_view = !bae_has_viewed_onboarding_asset($profile);
 
     $generated = $wpdb->get_results($wpdb->prepare(
         "SELECT * FROM {$assets_table} WHERE profile_id = %d",
@@ -5590,6 +5649,12 @@ function bae_assets_tab($user_id, $profile) {
         </button>
         <?php endif; ?>
     </div>
+
+    <?php if ($needs_first_asset_view): ?>
+    <div class="bae-notice bae-notice-info" id="bae-assets-first-view-guide" style="margin-bottom:18px;">
+        Preview any generated asset once to unlock <strong>Brand Kit</strong> and <strong>Launch Toolkit</strong>. This guide disappears after your first asset view.
+    </div>
+    <?php endif; ?>
 
     <?php if ($is_free): ?>
     <div class="bae-free-plan-tip">
@@ -5661,6 +5726,8 @@ function bae_assets_tab($user_id, $profile) {
                 <?php if ($is_gen): ?>
                     <button type="button" class="bae-btn bae-btn-outline bae-btn-sm bae-preview-btn"
                             data-type="<?php echo $type; ?>"
+                            data-pid="<?php echo esc_attr($profile_id); ?>"
+                            data-nonce="<?php echo esc_attr($nonce); ?>"
                             data-name="<?php echo esc_attr($meta['name']); ?>"
                             data-html="<?php echo esc_attr($gen_data['asset_html']); ?>">
                         Preview
@@ -5856,10 +5923,36 @@ function bae_assets_tab($user_id, $profile) {
 
     <script>
     (function() {
+        var baeNeedsFirstAssetView = <?php echo $needs_first_asset_view ? 'true' : 'false'; ?>;
+
+        function baeMarkFirstAssetViewed(btn) {
+            if (!baeNeedsFirstAssetView || !btn) return;
+
+            var fd = new FormData();
+            fd.append('action', 'bae_mark_asset_viewed');
+            fd.append('profile_id', btn.dataset.pid || '');
+            fd.append('nonce', btn.dataset.nonce || '');
+
+            fetch(ajaxurl, { method:'POST', body:fd })
+                .then(function(r) { return r.json(); })
+                .then(function(j) {
+                    if (j && j.success && j.data && j.data.first_time) {
+                        baeNeedsFirstAssetView = false;
+                        var guide = document.getElementById('bae-assets-first-view-guide');
+                        if (guide) {
+                            guide.innerHTML = 'Nice. <strong>Brand Kit</strong> and <strong>Launch Toolkit</strong> are now unlocked. Refreshing...';
+                        }
+                        setTimeout(function() { window.location.reload(); }, 900);
+                    }
+                })
+                .catch(function() {});
+        }
+
         // Preview
         document.querySelectorAll('.bae-preview-btn').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 if (e && e.preventDefault) e.preventDefault();
+                baeMarkFirstAssetViewed(this);
                 baeOpenModal(this.dataset.name, this.dataset.html);
             });
         });
@@ -6681,18 +6774,12 @@ function bae_kit_tab($user_id, $profile) {
         return ob_get_clean();
     }
 
-    // Gate: need at least 1 generated asset
-    global $wpdb;
-    $kit_asset_count = (int)$wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
-        $profile['id']
-    ));
-    if ($kit_asset_count < 1) {
+    if (!bae_has_viewed_onboarding_asset($profile)) {
         ob_start(); ?>
         <div class="bae-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-            <strong>Generate at least 1 asset first.</strong>
-            <p style="color:var(--text-3);margin-bottom:16px;">Your Brand Kit is built from your generated assets. Head to Asset Generator and generate at least one.</p>
+            <strong>Preview 1 generated asset first.</strong>
+            <p style="color:var(--text-3);margin-bottom:16px;">Your Brand Kit unlocks after you preview one generated asset in Asset Generator.</p>
             <a href="?tab=assets" class="bae-btn bae-btn-primary" style="display:inline-flex;align-items:center;gap:8px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 Go to Asset Generator
@@ -8650,14 +8737,29 @@ function bntm_ajax_bae_save_profile() {
     if ($existing) {
         $data['kit_slug'] = bae_make_unique_kit_slug($data['business_name'], (int) $existing->id);
         $wpdb->update($table, $data, ['id' => $existing->id]);
-        wp_send_json_success(['message' => 'Brand profile updated successfully!']);
+        $saved_profile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id = %d", (int) $existing->id), ARRAY_A);
+        $saved_plan = bae_get_user_plan(is_user_logged_in() ? get_current_user_id() : 0, $saved_profile);
+        wp_send_json_success([
+            'message' => 'Brand profile updated successfully!',
+            'profile_id' => (int) $existing->id,
+            'plan' => $saved_plan,
+            'starter_assets' => bae_get_onboarding_auto_asset_types($saved_plan),
+        ]);
     } else {
         $data['rand_id']  = bntm_rand_id();
         $data['user_id']  = is_user_logged_in() ? get_current_user_id() : 0;
         $data['kit_slug'] = bae_make_unique_kit_slug($data['business_name']);
         $r = $wpdb->insert($table, $data);
         if ($r === false) wp_send_json_error(['message' => 'Failed to save profile. Please try again.']);
-        wp_send_json_success(['message' => 'Brand profile created successfully!']);
+        $profile_id = (int) $wpdb->insert_id;
+        $saved_profile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$table} WHERE id = %d", $profile_id), ARRAY_A);
+        $saved_plan = bae_get_user_plan(is_user_logged_in() ? get_current_user_id() : 0, $saved_profile);
+        wp_send_json_success([
+            'message' => 'Brand profile created successfully!',
+            'profile_id' => $profile_id,
+            'plan' => $saved_plan,
+            'starter_assets' => bae_get_onboarding_auto_asset_types($saved_plan),
+        ]);
     }
 }
 
@@ -9064,6 +9166,19 @@ function bae_count_assets($user_id, $profile_id = 0) {
         }
     }
     return 0;
+}
+
+function bae_get_onboarding_auto_asset_types($plan = 'free') {
+    $all_assets = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap'];
+    if ($plan === 'starter' || $plan === 'pro') {
+        return $all_assets;
+    }
+    return ['business_card', 'email_signature', 'social_kit'];
+}
+
+function bae_has_viewed_onboarding_asset($profile = null) {
+    if (empty($profile) || !is_array($profile)) return false;
+    return !empty($profile['onboarding_asset_viewed']);
 }
 
 function bae_get_initials($name) {
@@ -9772,18 +9887,12 @@ function bae_startup_tab($user_id, $profile) {
         return ob_get_clean();
     }
 
-    // Gate: need at least 1 generated asset
-    global $wpdb;
-    $launch_asset_count = (int)$wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$wpdb->prefix}bae_assets WHERE profile_id = %d AND is_generated = 1",
-        $profile['id']
-    ));
-    if ($launch_asset_count < 1) {
+    if (!bae_has_viewed_onboarding_asset($profile)) {
         ob_start(); ?>
         <div class="bae-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7a6 6 0 11-5.398-5.398"/></svg>
-            <strong>Complete Asset Generator first.</strong>
-            <p style="color:var(--text-3);margin-bottom:16px;">Generate at least 1 asset to unlock the Launch Toolkit.</p>
+            <strong>Preview 1 generated asset first.</strong>
+            <p style="color:var(--text-3);margin-bottom:16px;">Launch Toolkit unlocks after you preview one generated asset in Asset Generator.</p>
             <a href="?tab=assets" class="bae-btn bae-btn-primary" style="display:inline-flex;align-items:center;gap:8px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 Go to Asset Generator
@@ -11137,6 +11246,73 @@ function bae_migrate_logo_builder_columns() {
         if (empty($exists)) {
             $wpdb->query($sql);
         }
+    }
+}
+
+function bntm_ajax_bae_mark_asset_viewed() {
+    check_ajax_referer('bae_generate_asset', 'nonce');
+
+    global $wpdb;
+    $profiles_table = $wpdb->prefix . 'bae_profiles';
+    $profile_id = intval($_POST['profile_id'] ?? 0);
+    if (!$profile_id) {
+        wp_send_json_error(['message' => 'Missing profile.']);
+    }
+
+    $where = ['id' => $profile_id];
+    $where_format = ['%d'];
+
+    $ticket = '';
+    if (!empty($_COOKIE['bae_ticket'])) {
+        $raw = strtoupper(sanitize_text_field($_COOKIE['bae_ticket']));
+        if (preg_match('/^BAE-[A-Z0-9]{4}-[A-Z0-9]{4}$/', $raw)) {
+            $ticket = $raw;
+        }
+    }
+
+    if ($ticket) {
+        $where['ticket'] = $ticket;
+        $where_format[] = '%s';
+    } elseif (is_user_logged_in()) {
+        $where['user_id'] = get_current_user_id();
+        $where_format[] = '%d';
+    } else {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
+
+    $profile = $wpdb->get_row(
+        $wpdb->prepare("SELECT id, onboarding_asset_viewed FROM {$profiles_table} WHERE id = %d", $profile_id),
+        ARRAY_A
+    );
+    if (!$profile) {
+        wp_send_json_error(['message' => 'Profile not found.']);
+    }
+
+    $result = $wpdb->update(
+        $profiles_table,
+        ['onboarding_asset_viewed' => 1],
+        $where,
+        ['%d'],
+        $where_format
+    );
+
+    if ($result === false) {
+        wp_send_json_error(['message' => 'Could not update onboarding progress.']);
+    }
+
+    wp_send_json_success([
+        'first_time' => empty($profile['onboarding_asset_viewed']),
+        'message' => 'Asset view recorded.'
+    ]);
+}
+
+add_action('admin_init', 'bae_migrate_onboarding_asset_viewed_column');
+function bae_migrate_onboarding_asset_viewed_column() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_profiles';
+    $col = $wpdb->get_results("SHOW COLUMNS FROM {$table} LIKE 'onboarding_asset_viewed'");
+    if (empty($col)) {
+        $wpdb->query("ALTER TABLE {$table} ADD COLUMN onboarding_asset_viewed TINYINT(1) NOT NULL DEFAULT 0 AFTER kit_unique_views");
     }
 }
 
