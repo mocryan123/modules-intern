@@ -84,6 +84,11 @@ function bntm_kbf_render_signup() {
     ob_start();
     ?>
     <style>
+      @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css');
+      @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css');
+      .ph{font-family:'Phosphor' !important;font-style:normal;font-weight:400;line-height:1;}
+      .ph-bold{font-weight:700;}
+      .ph-fill{font-weight:400;}
       html,body{margin:0 !important;padding:0;width:100%;height:100%;overflow:hidden;overscroll-behavior:none;}
       html,body{margin-top:0 !important;}
       body.admin-bar{margin-top:0 !important;}
@@ -252,24 +257,24 @@ function bntm_kbf_render_signup() {
               <div class="kbf-form-group">
                 <label>Name</label>
                 <div class="kbf-auth-input">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="">
+                  <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
                   <input type="text" name="full_name" placeholder="Full name" required>
                 </div>
               </div>
               <div class="kbf-form-group">
                 <label>Email</label>
                 <div class="kbf-auth-input">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/envelope-fill.svg" alt="">
+                  <i class="ph ph-envelope-simple kbf-icon" aria-hidden="true"></i>
                   <input type="email" name="user_email" placeholder="you@example.com" required>
                 </div>
               </div>
                 <div class="kbf-form-group">
                   <label>Password</label>
                   <div class="kbf-auth-input">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/lock-fill.svg" alt="">
+                    <i class="ph ph-lock kbf-icon" aria-hidden="true"></i>
                     <input type="password" id="kbf-signup-password" name="user_password" placeholder="Create a password" required>
                     <button type="button" class="kbf-auth-toggle" data-target="kbf-signup-password" aria-label="Show password">
-                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-slash.svg" alt="">
+                      <i class="ph ph-eye-slash kbf-icon" aria-hidden="true"></i>
                     </button>
                   </div>
                 </div>
@@ -302,11 +307,14 @@ function bntm_kbf_render_signup() {
               if (!input) return;
               var isHidden = input.getAttribute('type') === 'password';
               input.setAttribute('type', isHidden ? 'text' : 'password');
-              var img = btn.querySelector('img');
-              if (img) {
-                img.src = isHidden
-                  ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye.svg'
-                  : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-slash.svg';
+              var icon = btn.querySelector('i');
+              if (icon) {
+                icon.classList.remove('ph-eye','ph-eye-slash','ph-fill','ph');
+                if (isHidden) {
+                  icon.classList.add('ph','ph-eye');
+                } else {
+                  icon.classList.add('ph','ph-eye-slash');
+                }
               }
               btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
             });
@@ -317,6 +325,7 @@ function bntm_kbf_render_signup() {
     <?php
     return ob_get_clean();
 }
+
 
 
 

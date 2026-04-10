@@ -486,13 +486,13 @@ function kbf_dashboard_profile_tab($business_id) {
                 <img src="<?php echo esc_url($avatar); ?>" alt="Profile photo" class="kbf-profile-photo">
               <?php else: ?>
                 <div class="kbf-profile-photo-fallback" aria-hidden="true">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="">
+                  <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
                 </div>
               <?php endif; ?>
               <div class="kbf-photo-overlay">
                 <div class="kbf-photo-edit" aria-hidden="true">
                   <div class="kbf-photo-edit-icon">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/camera-fill.svg" alt="">
+                    <i class="ph ph-camera kbf-icon" aria-hidden="true"></i>
                   </div>
                   <div class="kbf-photo-edit-text">Change Photo</div>
                 </div>
@@ -613,7 +613,7 @@ function kbf_dashboard_profile_tab($business_id) {
               <div class="kbf-stats kbf-stats-grid">
                 <div class="kbf-stat kbf-stat-card">
                   <div class="kbf-stat-icon">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/piggy-bank-fill.svg" alt="" width="16" height="16">
+                    <i class="ph ph-piggy-bank kbf-icon" style="font-size:16px" aria-hidden="true"></i>
                   </div>
                   <div>
                     <div class="kbf-stat-label">TOTAL RAISED</div>
@@ -622,7 +622,7 @@ function kbf_dashboard_profile_tab($business_id) {
                 </div>
                 <div class="kbf-stat kbf-stat-card">
                   <div class="kbf-stat-icon">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="" width="16" height="16">
+                    <i class="ph ph-users kbf-icon" style="font-size:16px" aria-hidden="true"></i>
                   </div>
                   <div>
                     <div class="kbf-stat-label">TOTAL SPONSORS</div>
@@ -631,7 +631,7 @@ function kbf_dashboard_profile_tab($business_id) {
                 </div>
                 <div class="kbf-stat kbf-stat-card">
                   <div class="kbf-stat-icon">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" alt="" width="16" height="16" class="kbf-stat-icon-img">
+                    <i class="ph-fill ph-thumbs-up kbf-stat-icon-img kbf-icon" style="font-size:16px" aria-hidden="true"></i>
                   </div>
                   <div>
                     <div class="kbf-stat-label">CREDIBILITY</div>
@@ -1326,3 +1326,4 @@ document.addEventListener('DOMContentLoaded', function(){
       </script>
     <?php return ob_get_clean();
 }
+

@@ -198,9 +198,16 @@ function bntm_kbf_render_landing() {
     ob_start();
     ?>
     <!-- ================== CSS ================== -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Shippori+Antique+B1&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Shippori+Antique+B1&display=swap');
+    @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css');
+    @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css');
+    .ph{font-family:'Phosphor' !important;font-style:normal;font-weight:400;line-height:1;}
+    .ph-bold{font-weight:700;}
+    .ph-fill{font-weight:400;}
 
     :root {
         --kbf-glass-bg: rgba(255, 255, 255, 0.7);
@@ -1172,11 +1179,10 @@ function bntm_kbf_render_landing() {
         border-bottom: 1px solid var(--kbf-border);
         background: #fff;
     }
-    .kbf-hamburger img {
-        width: 18px;
-        height: 18px;
+    .kbf-hamburger i {
+        font-size: 18px;
         display: block;
-        filter: invert(30%) sepia(10%) saturate(800%) hue-rotate(185deg) brightness(0.9);
+        color: #64748b;
     }
     .kbf-mobile-menu {
         display: none;
@@ -1848,7 +1854,7 @@ function bntm_kbf_render_landing() {
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
           </div>
           <button class="kbf-hamburger" id="kbf-hamburger-btn" aria-label="Open menu">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="Menu" id="kbf-hamburger-icon">
+            <i id="kbf-hamburger-icon" class="ph ph-list kbf-icon" role="img" aria-label="Menu"></i>
           </button>
         </div>
               <div class="kbf-mobile-menu" id="kbf-mobile-menu">
@@ -1858,7 +1864,7 @@ function bntm_kbf_render_landing() {
               <span class="kbf-brand-text" style="font-weight: 600;">fundora</span>
             </div>
             <button class="kbf-hamburger" onclick="document.getElementById('kbf-hamburger-btn').click()" aria-label="Close menu" style="display:inline-flex;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="Close">
+              <i class="ph-bold ph-x kbf-icon" role="img" aria-label="Close"></i>
             </button>
           </div>
             <a href="#kbf-home" onclick="kbfMobileNav('kbf-home')">Home</a>
@@ -1891,7 +1897,7 @@ function bntm_kbf_render_landing() {
 
               <a class="kbf-btn kbf-btn-primary kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
                 Start Supporting on Fundora
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-up-right.svg" alt="">
+                <i class="ph ph-arrow-up-right kbf-icon" aria-hidden="true"></i>
 
               </a>
             </div>
@@ -1906,7 +1912,7 @@ function bntm_kbf_render_landing() {
                   <div class="kbf-pcard-bar">
                     <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
                     <div><h4 class="kbf-pcard-name">Yourself</h4><p class="kbf-pcard-sub">Health</p></div>
-                    <div class="kbf-pcard-play"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/play-fill.svg" alt=""></div>
+                    <div class="kbf-pcard-play"><i class="ph ph-play kbf-icon" aria-hidden="true"></i></div>
                   </div>
                 </div>
                 <div class="kbf-pcard kbf-pcard-main">
@@ -1916,7 +1922,7 @@ function bntm_kbf_render_landing() {
                   <div class="kbf-pcard-bar">
                     <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
                     <div><h4 class="kbf-pcard-name">Charity or Events</h4><p class="kbf-pcard-sub">Community</p></div>
-                    <div class="kbf-pcard-play"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/play-fill.svg" alt=""></div>
+                    <div class="kbf-pcard-play"><i class="ph ph-play kbf-icon" aria-hidden="true"></i></div>
                   </div>
                 </div>
                 <div class="kbf-pcard kbf-pcard-br">
@@ -1926,7 +1932,7 @@ function bntm_kbf_render_landing() {
                   <div class="kbf-pcard-bar">
                     <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
                     <div><h4 class="kbf-pcard-name">Someone Else</h4><p class="kbf-pcard-sub">Protected</p></div>
-                    <div class="kbf-pcard-play"><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/play-fill.svg" alt=""></div>
+                    <div class="kbf-pcard-play"><i class="ph ph-play kbf-icon" aria-hidden="true"></i></div>
                   </div>
                 </div>
               </div>
@@ -1956,35 +1962,35 @@ function bntm_kbf_render_landing() {
           <div class="kbf-feature-grid">
             <div class="kbf-card kbf-card--soft">
                 <div class="kbf-chip" aria-hidden="true">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/book-half.svg" alt="">
+                  <i class="ph ph-book-open kbf-icon" aria-hidden="true"></i>
                 </div>
                <h4 style="font-weight: 500;">Verified account profiles</h4>
                <p>Anyone raising funds completes ID verification before going live. A visible checkmark builds instant donor confidence.</p>
             </div>
             <div class="kbf-card kbf-card--glass">
               <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/megaphone-fill.svg" alt="">
+                <i class="ph ph-megaphone kbf-icon" aria-hidden="true"></i>
               </div>
                 <h4 style="font-weight: 500;">Transparent fund tracking</h4>
                <p>Every peso is logged. Organizers post receipts, photos, and spending breakdowns that donors can view anytime.</p>
             </div>
             <div class="kbf-card kbf-card--outline">
               <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" alt="">
+                <i class="ph-fill ph-thumbs-up kbf-icon" aria-hidden="true"></i>
               </div>
                 <h4 style="font-weight: 500;">Public update log</h4>
                <p>Updates are timestamped on the campaign page so supporters see progress, receipts, and outcomes in one place.</p>
             </div>
             <div class="kbf-card kbf-card--split">
               <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/transparency.svg" alt="">
+                <i class="ph ph-circle-half-tilt kbf-icon" aria-hidden="true"></i>
               </div>
                 <h4 style="font-weight: 500;">Campaign reporting system</h4>
                <p>Suspicious activity can be flagged directly. Reports are reviewed by the Fundora team to protect donors.</p>
             </div>
             <div class="kbf-card kbf-card--tint">
               <div class="kbf-chip" aria-hidden="true">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/capslock-fill.svg" alt="">
+                <i class="ph ph-arrow-fat-line-up kbf-icon" aria-hidden="true"></i>
               </div>
                 <h4 style="font-weight: 500;">Credibility index</h4>
                <p>Organizers build a visible track record across campaigns that makes future fundraising faster and more trusted.</p>
@@ -2187,13 +2193,13 @@ function bntm_kbf_render_landing() {
           </div>
           <div class="kbf-social">
             <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/instagram.svg" alt="">
+              <i class="ph ph-instagram-logo kbf-icon" aria-hidden="true"></i>
             </a>
             <a href="https://www.facebook.com/bentamosabentamo" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/facebook.svg" alt="">
+              <i class="ph ph-facebook-logo kbf-icon" aria-hidden="true"></i>
             </a>
             <a href="https://www.linkedin.com/company/bentamo/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/linkedin.svg" alt="">
+              <i class="ph ph-linkedin-logo kbf-icon" aria-hidden="true"></i>
             </a>
           </div>
         </footer>
@@ -2304,18 +2310,26 @@ function bntm_kbf_render_landing() {
           if (!btn || !menu) return;
           var open = false;
 
+        function setIcon(stateOpen){
+            if (!icon) return;
+            var openCls = ['ph-bold','ph-x'];
+            var closeCls = ['ph','ph-list'];
+            icon.classList.remove.apply(icon.classList, openCls);
+            icon.classList.remove.apply(icon.classList, closeCls);
+            icon.classList.add.apply(icon.classList, stateOpen ? openCls : closeCls);
+        }
         function openMenu() {
             open = true;
             menu.classList.add('kbf-menu-open');
             if (overlay) overlay.classList.add('kbf-overlay-open');
-            icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg';
+            setIcon(true);
         }
 
         function closeMenu() {
             open = false;
             menu.classList.remove('kbf-menu-open');
             if (overlay) overlay.classList.remove('kbf-overlay-open');
-            icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg';
+            setIcon(false);
         }
 
           btn.addEventListener('click', function() {
@@ -2349,7 +2363,10 @@ function bntm_kbf_render_landing() {
         var icon = document.getElementById('kbf-hamburger-icon');
         if (menu) menu.classList.remove('kbf-menu-open');
         if (overlay) overlay.classList.remove('kbf-overlay-open');
-        if (icon) icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg';
+        if (icon) {
+            icon.classList.remove('ph-bold','ph-x');
+            icon.classList.add('ph','ph-list');
+        }
         var target = document.getElementById(id);
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return false;
@@ -2392,6 +2409,7 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
+
 
 
 

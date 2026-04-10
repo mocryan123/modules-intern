@@ -371,23 +371,23 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-save-btn{
         transition:none;
     }
-        .kbf-save-btn img{
-          transition:none;
-        }
+    .kbf-save-btn i{
+      transition:none;
+    }
         .kbf-save-btn.is-saved{
       background:#e7f1ff;
       border-color:#bfd7ff;
       color:#1d4ed8;
     }
-    .kbf-save-btn.is-saved img{
-      filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
+    .kbf-save-btn.is-saved i{
+      color:#3b82f6;
     }
     .kbf-leaderboard-card{flex:1;display:flex;flex-direction:column;justify-content:flex-end;max-height:none;}
       .kbf-leaderboard-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto;padding-right:6px;}
     .kbf-leaderboard-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);}
     .kbf-leaderboard-title{display:flex;align-items:center;gap:10px;min-width:0;}
     .kbf-leaderboard-icon{width:28px;height:28px;border-radius:8px;background:#eef4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .kbf-leaderboard-icon img{width:14px;height:14px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
+    .kbf-leaderboard-icon i{font-size:14px;color:#3b82f6;}
     .kbf-leaderboard-text{font-size:14px;font-weight:800;color:var(--kbf-navy);line-height:1;}
     .kbf-leaderboard-sub{font-size:11.5px;color:var(--kbf-slate);margin-top:3px;}
     .kbf-leaderboard-pill{
@@ -629,10 +629,12 @@ function bntm_shortcode_kbf_fund_details() {
 
     .kbf-org-avatar{position:relative;width:52px;height:52px;flex-shrink:0;}
     .kbf-org-avatar > img{width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;}
-    .kbf-org-verified{position:absolute;right:-2px;bottom:-2px;width:18px;height:18px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #fff;}
-    .kbf-org-verified::before{content:'';width:13px;height:13px;background:#1d4ed8;display:block;
-        -webkit-mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;
-        mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;}
+    .kbf-org-verified{
+        position:absolute;right:-2px;bottom:-2px;width:18px;height:18px;border-radius:50%;
+        background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #fff;
+        color:#1d4ed8;
+    }
+    .kbf-org-verified i{font-size:13px;}
     .kbf-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);margin-bottom:20px;}
     .kbf-breadcrumb a{color:var(--kbf-blue);text-decoration:none;font-weight:600;}
     .kbf-breadcrumb a:hover{text-decoration:underline;}
@@ -806,7 +808,7 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-sponsor')">Cancel</button>
           <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSpdSponsor('<?php echo $nonce_sponsor; ?>')">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="14" height="14" style="filter:invert(100%);">
+            <i class="ph-fill ph-heart kbf-icon" style="font-size:14px; filter:invert(100%)" aria-hidden="true"></i>
             Confirm Sponsorship
           </button>
         </div>
@@ -845,7 +847,7 @@ function bntm_shortcode_kbf_fund_details() {
             <div class="kbf-form-group"><label>Credibility</label>
               <div id="kbf-star-picker" style="display:flex;gap:8px;margin-top:6px;">
                 <?php for($i=1;$i<=5;$i++): ?>
-                  <img class="kbf-star-btn" data-val="<?php echo $i; ?>" data-filled="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" data-empty="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg" alt="" width="32" height="32" style="cursor:pointer;filter:invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%);" onclick="kbfSetRating(<?php echo $i; ?>)">
+                  <i class="kbf-star-btn ph ph-thumbs-up kbf-icon" data-val="<?php echo $i; ?>" data-filled="ph-fill ph-thumbs-up" data-empty="ph ph-thumbs-up" style="cursor:pointer;font-size:32px;color:#94a3b8;" onclick="kbfSetRating(<?php echo $i; ?>)" aria-hidden="true"></i>
                 <?php endfor; ?>
               </div>
               <input type="hidden" name="rating" id="kbf-rating-val" value="5">
@@ -865,7 +867,7 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- Breadcrumb -->
     <div class="kbf-breadcrumb">
       <a href="<?php echo esc_url($browse_url); ?>" style="display:inline-flex;align-items:center;gap:6px;">
-        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-left.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+        <i class="ph ph-arrow-left kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
         Back to Browse
       </a>
     </div>
@@ -887,10 +889,10 @@ function bntm_shortcode_kbf_fund_details() {
             <img src="<?php echo esc_url($photos[0]); ?>" alt="<?php echo esc_attr($fund->title); ?>">
             <?php if(count($photos)>1): ?>
               <button type="button" class="kbf-photo-nav kbf-photo-prev" id="kbf-photo-prev" aria-label="Previous photo">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chevron-left.svg" alt="">
+                <i class="ph ph-caret-left kbf-icon" aria-hidden="true"></i>
               </button>
               <button type="button" class="kbf-photo-nav kbf-photo-next" id="kbf-photo-next" aria-label="Next photo">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chevron-right.svg" alt="">
+                <i class="ph ph-caret-right kbf-icon" aria-hidden="true"></i>
               </button>
               <span class="kbf-photo-count" id="kbf-photo-count">1/<?php echo count($photos); ?></span>
             <?php endif; ?>
@@ -901,7 +903,7 @@ function bntm_shortcode_kbf_fund_details() {
         <?php else: ?>
         <div class="kbf-photo-gallery kbf-section-photo">
           <div class="kbf-photo-main" id="kbf-photo-main" style="height:360px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--kbf-navy) 0%,var(--kbf-navy-light) 100%);">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="64" height="64" style="opacity:.25;filter:invert(100%);">
+            <i class="ph-fill ph-heart kbf-icon" style="font-size:64px; opacity:.25;filter:invert(100%)" aria-hidden="true"></i>
           </div>
         </div>
         <?php endif; ?>
@@ -917,7 +919,7 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-section-title" style="margin-bottom:20px;">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
               <span class="kbf-category-pill">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="11" height="11" style="filter:invert(34%) sepia(8%) saturate(1386%) hue-rotate(182deg) brightness(93%) contrast(85%);">
+                <i class="ph ph-tag kbf-icon" style="font-size:11px; filter:invert(34%) sepia(8%) saturate(1386%) hue-rotate(182deg) brightness(93%) contrast(85%)" aria-hidden="true"></i>
                 <?php echo esc_html(ucfirst(strtolower((string)$fund->category))); ?>
               </span>
               <span class="kbf-fundtype-pill"><?php echo ucwords(str_replace('_',' ',$fund->funder_type)); ?></span>
@@ -925,7 +927,7 @@ function bntm_shortcode_kbf_fund_details() {
           <h1 style="font-size:24px;font-weight:600;color:var(--kbf-navy);margin:0 0 10px;line-height:1.3;"><?php echo esc_html($fund->title); ?></h1>
           <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--kbf-slate);">
             <span style="display:flex;align-items:center;gap:5px;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+              <i class="ph ph-map-pin kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
               <?php echo esc_html($fund->location); ?>
             </span>
           </div>
@@ -938,7 +940,7 @@ function bntm_shortcode_kbf_fund_details() {
   <div class="kbf-account-header-row" style="display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);gap:10px;flex-wrap:nowrap;">
     <h3 class="kbf-section-title" style="margin:0;">About the Account</h3>
     <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--kbf-blue);text-decoration:none;font-weight:600;">
-      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="13" height="13" style="filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);">
+      <i class="ph ph-user kbf-icon" style="font-size:13px; filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%)" aria-hidden="true"></i>
       <span class="kbf-account-profile-text">View Full Profile</span>
     </a>
   </div>
@@ -948,10 +950,10 @@ function bntm_shortcode_kbf_fund_details() {
         <img src="<?php echo esc_url($organizer->avatar_url); ?>" alt="">
       <?php else: ?>
         <div style="width:52px;height:52px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="" width="24" height="24" style="filter:invert(100%);">
+          <i class="ph ph-user kbf-icon" style="font-size:24px; filter:invert(100%)" aria-hidden="true"></i>
         </div>
       <?php endif; ?>
-      <?php if($organizer && $organizer->is_verified): ?><span class="kbf-org-verified"></span><?php endif; ?>
+      <?php if($organizer && $organizer->is_verified): ?><span class="kbf-org-verified" aria-hidden="true"><i class="ph-fill ph-seal-check kbf-icon" aria-hidden="true"></i></span><?php endif; ?>
     </div>
     <div class="kbf-org-text">
       <div style="font-weight:600;color:var(--kbf-navy);"><?php echo esc_html($fund->organizer_name); ?></div>
@@ -994,7 +996,7 @@ function bntm_shortcode_kbf_fund_details() {
               <div class="kbf-table-pager kbf-table-pager-inline" data-kbf-leaderboard-pager></div>
             <?php else: ?>
               <div style="text-align:center;padding:20px 10px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="32" height="32" style="margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="ph-fill ph-heart kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No sponsors yet</p>
                 <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to support!</p>
               </div>
@@ -1023,18 +1025,18 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
             <div style="margin-top:14px;">
               <button class="kbf-btn kbf-btn-primary" style="width:100%;" onclick="kbfShowModal('kbf-modal-sponsor')">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="16" height="16" style="filter:invert(100%);">
+                <i class="ph-fill ph-heart kbf-icon" style="font-size:16px; filter:invert(100%)" aria-hidden="true"></i>
                 <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Fund'; ?>
               </button>
               <div style="font-size:11.5px;color:var(--kbf-slate);margin:8px 0 10px;">Sponsors get a receipt instantly after checkout.</div>
               <div class="kbf-card-actions" style="display:flex;gap:10px;">
                 <button class="kbf-btn kbf-btn-secondary kbf-save-btn" type="button" data-fund-id="<?php echo (int)$fund->id; ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" data-save-label="Save Fund" onclick="kbfSaveFund('<?php echo (int)$fund->id; ?>', this)">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo $is_saved ? 'bookmark-check-fill' : 'bookmark'; ?>.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="<?php echo $is_saved ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple'; ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
                   <span class="kbf-save-label"><?php echo $is_saved ? 'Saved' : 'Save Fund'; ?></span>
                 </button>
                 <div class="kbf-more-wrap">
                   <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfToggleMoreMenu(event)">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     More
                   </button>
                   <div class="kbf-more-menu" id="kbf-more-menu">
@@ -1065,7 +1067,7 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-sponsor-item">
           <div class="kbf-sponsor-avatar">
             <?php if($sp->is_anonymous || empty($sp->sponsor_name)): ?>
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person.svg" alt="">
+              <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
             <?php else: ?>
               <?php echo $initials; ?>
             <?php endif; ?>
@@ -1082,7 +1084,7 @@ function bntm_shortcode_kbf_fund_details() {
       </div>
       <?php else: ?>
       <div style="text-align:center;padding:24px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/chat-left-text-fill.svg" alt="" width="32" height="32" style="margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+        <i class="ph ph-chat kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
         <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No messages yet</p>
         <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to leave a message.</p>
       </div>
@@ -1609,11 +1611,12 @@ function bntm_shortcode_kbf_fund_details() {
         document.getElementById('kbf-rating-val').value=v;
         document.querySelectorAll('.kbf-star-btn').forEach((s,i)=>{
             const filled = i < v;
-            const src = filled ? s.getAttribute('data-filled') : s.getAttribute('data-empty');
-            s.src = src;
-            s.style.filter = filled
-                ? 'invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)'
-                : 'invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%)';
+            const fillCls = (s.getAttribute('data-filled') || 'ph-fill ph-thumbs-up').split(' ');
+            const emptyCls = (s.getAttribute('data-empty') || 'ph ph-thumbs-up').split(' ');
+            s.classList.remove.apply(s.classList, fillCls);
+            s.classList.remove.apply(s.classList, emptyCls);
+            s.classList.add.apply(s.classList, filled ? fillCls : emptyCls);
+            s.style.color = filled ? '#3b82f6' : '#94a3b8';
         });
     };
     kbfSetRating(5);
@@ -1653,8 +1656,12 @@ function bntm_shortcode_kbf_fund_details() {
                 if(el){
                     el.classList.toggle('is-saved', saved);
                     el.setAttribute('data-saved', saved ? '1' : '0');
-                    var img = el.querySelector('img');
-                    if(img){ img.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/' + (saved ? 'bookmark-check-fill' : 'bookmark') + '.svg'; }
+                    var icon = el.querySelector('i');
+                    if(icon){
+                        icon.classList.remove('ph','ph-bookmark-simple','ph-fill');
+                        if(saved){ icon.classList.add('ph-fill','ph-bookmark-simple'); }
+                        else { icon.classList.add('ph','ph-bookmark-simple'); }
+                    }
                     var label = el.querySelector('.kbf-save-label');
                     if(label){ label.textContent = saved ? 'Saved' : (el.getAttribute('data-save-label') || 'Save Fund'); }
                 }
@@ -1750,6 +1757,7 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 

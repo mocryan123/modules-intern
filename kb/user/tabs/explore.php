@@ -329,11 +329,11 @@ function kbf_dashboard_find_funds_tab() {
         color:#0f172a;
         transition:background .15s ease, color .15s ease, transform .15s ease;
       }
-      .kbf-explore-actions .kbf-btn-sm img{margin:0;}
+      .kbf-explore-actions .kbf-btn-sm i{margin:0;}
       .kbf-save-btn{
         transition:none;
       }
-      .kbf-save-btn img{
+      .kbf-save-btn i{
         transition:none;
       }
       .kbf-save-btn.is-saved{
@@ -341,8 +341,8 @@ function kbf_dashboard_find_funds_tab() {
         border-color:#bfd7ff;
         color:#1d4ed8;
       }
-      .kbf-save-btn.is-saved img{
-        filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
+      .kbf-save-btn.is-saved i{
+        color:#3b82f6;
       }
       .kbf-explore-more-menu button{
         width:100%;
@@ -515,7 +515,7 @@ function kbf_dashboard_find_funds_tab() {
 
           <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:140px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="14" height="14">
+              <i class="ph ph-tag kbf-icon" style="font-size:14px" aria-hidden="true"></i>
             </span>
             <select id="kbff-cat-select" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:140px;">
               <option value="">All Categories</option>
@@ -526,7 +526,7 @@ function kbf_dashboard_find_funds_tab() {
           </div>
           <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:130px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/funnel-fill.svg" alt="" width="14" height="14">
+              <i class="ph ph-funnel kbf-icon" style="font-size:14px" aria-hidden="true"></i>
             </span>
             <select id="kbff-sort-select" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:130px;">
               <option value="newest" <?php echo ($sort==='newest'||!$sort)?'selected':''; ?>>Newest</option>
@@ -537,7 +537,7 @@ function kbf_dashboard_find_funds_tab() {
 
           <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:130px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/bookmark-fill.svg" alt="" width="14" height="14">
+              <i class="ph-fill ph-bookmark-simple kbf-icon" style="font-size:14px" aria-hidden="true"></i>
             </span>
             <select id="kbff-saved-select" name="ff_saved" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:130px;">
               <option value="">All Funds</option>
@@ -547,10 +547,10 @@ function kbf_dashboard_find_funds_tab() {
 
           <input type="text" name="ff_q" id="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer..." style="flex:1 1 220px;min-width:200px;height:38px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
           <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;min-width:38px;width:38px;padding:0;" aria-label="Near Me">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+            <i class="ph ph-map-pin kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
           </button>
           <button type="submit" class="kbf-btn kbf-btn-primary">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/search.svg" alt="" width="14" height="14" style="filter:invert(100%);margin-right:6px;">
+            <i class="ph ph-magnifying-glass kbf-icon" style="font-size:14px; filter:invert(100%);margin-right:6px" aria-hidden="true"></i>
             Search
           </button>
         </form>
@@ -563,7 +563,7 @@ function kbf_dashboard_find_funds_tab() {
     <!-- Fund grid -->
     <?php if(empty($funds)): ?>
     <div class="kbf-empty" style="padding:60px 20px;">
-      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/search.svg" alt="" width="44" height="44" style="margin:0 auto 14px;display:block;opacity:.35;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+      <i class="ph ph-magnifying-glass kbf-icon" style="font-size:44px; margin:0 auto 14px;display:block;opacity:.35;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
       <p style="font-size:15px;font-weight:600;color:var(--kbf-navy);margin-bottom:4px;">No funds found</p>
       <p style="color:var(--kbf-slate);font-size:13px;">Try adjusting your search or category filter.</p>
       <?php if($q||$cat): ?><a href="?kbf_tab=find_funds" class="kbf-btn kbf-btn-primary" style="margin-top:14px;">Clear Filters</a><?php endif; ?>
@@ -581,9 +581,9 @@ function kbf_dashboard_find_funds_tab() {
         $is_own = ($f->business_id == $current_user_id);
         $supporters = isset($f->sponsors_count) ? (int)$f->sponsors_count : (isset($f->sponsor_count) ? (int)$f->sponsor_count : 0);
         $supporters_label = $supporters > 0 ? $supporters.' people' : '';
-        $supporters_icon = 'people-fill';
+        $supporters_icon = 'ph ph-users';
         $is_saved = in_array((int)$f->id, $saved_ids, true);
-        $save_icon = $is_saved ? 'bookmark-check-fill' : 'bookmark';
+        $save_icon = $is_saved ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple';
         $save_title = $is_saved ? 'Saved' : 'Save';
       ?>
       <div class="kbf-explore-card">
@@ -595,7 +595,7 @@ function kbf_dashboard_find_funds_tab() {
               <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($f->title); ?>">
             <?php else: ?>
               <div class="kbf-explore-fallback">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/heart-fill.svg" alt="" width="40" height="40" style="opacity:.35;filter:invert(36%) sepia(16%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="ph-fill ph-heart kbf-icon" style="font-size:40px; opacity:.35;filter:invert(36%) sepia(16%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
               </div>
             <?php endif; ?>
           </div>
@@ -615,18 +615,18 @@ function kbf_dashboard_find_funds_tab() {
         <!-- Location + Organizer -->
         <div class="kbf-explore-meta">
           <span class="kbf-explore-meta-item kbf-explore-loc">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
+            <i class="ph ph-map-pin kbf-icon" aria-hidden="true"></i>
             <?php echo esc_html($f->location); ?>
           </span>
           <?php if($supporters > 0): ?>
           <span class="kbf-explore-meta-item" style="flex-shrink:0;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($supporters_icon); ?>.svg" alt="">
+            <i class="<?php echo esc_attr($supporters_icon); ?> kbf-icon" aria-hidden="true"></i>
             <?php echo esc_html($supporters_label); ?>
           </span>
           <?php endif; ?>
           <?php if($days!==null): ?>
           <span class="kbf-explore-meta-item" style="flex-shrink:0;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="">
+            <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
             <?php echo $days; ?>d
           </span>
           <?php endif; ?>
@@ -643,19 +643,19 @@ function kbf_dashboard_find_funds_tab() {
           <div class="kbf-explore-actions is-own">
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-primary" style="font-size:12.5px;text-align:center;">View Details</a>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" title="<?php echo esc_attr($save_title); ?>" data-tooltip="<?php echo esc_attr($save_title); ?>">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($save_icon); ?>.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="<?php echo esc_attr($save_icon); ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
               </button>
             <div class="kbf-explore-more-wrap">
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleExploreMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
               </button>
               <div class="kbf-explore-more-menu" id="kbf-explore-more-<?php echo esc_attr($f->id); ?>">
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Share
                 </button>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-flag kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Report Abuse
                 </button>
               </div>
@@ -665,19 +665,19 @@ function kbf_dashboard_find_funds_tab() {
           <div class="kbf-explore-actions is-public">
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-primary" style="font-size:12.5px;text-align:center;">View Campaign</a>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" title="<?php echo esc_attr($save_title); ?>" data-tooltip="<?php echo esc_attr($save_title); ?>">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($save_icon); ?>.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="<?php echo esc_attr($save_icon); ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
               </button>
             <div class="kbf-explore-more-wrap">
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleExploreMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
               </button>
               <div class="kbf-explore-more-menu" id="kbf-explore-more-<?php echo esc_attr($f->id); ?>">
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Share
                 </button>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/flag-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-flag kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Report Abuse
                 </button>
               </div>
@@ -837,8 +837,12 @@ function kbf_dashboard_find_funds_tab() {
                         el.setAttribute('data-saved', saved ? '1' : '0');
                         el.title = saved ? 'Saved' : 'Save';
                         el.setAttribute('data-tooltip', saved ? 'Saved' : 'Save');
-                        var img = el.querySelector('img');
-                        if(img){ img.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/' + (saved ? 'bookmark-check-fill' : 'bookmark') + '.svg'; }
+                        var icon = el.querySelector('i');
+                        if(icon){
+                          icon.classList.remove('ph','ph-bookmark-simple','ph-fill');
+                          if(saved){ icon.classList.add('ph-fill','ph-bookmark-simple'); icon.style.color = '#3b82f6'; }
+                          else { icon.classList.add('ph','ph-bookmark-simple'); icon.style.color = 'var(--kbf-text-sm)'; }
+                        }
                     }
                     if(kbfSavedOnly && !saved){ window.location.reload(); }
                 } else {
@@ -1032,6 +1036,7 @@ function kbf_dashboard_find_funds_tab() {
     <?php
     return ob_get_clean();
 }
+
 
 
 

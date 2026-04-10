@@ -119,16 +119,13 @@ function bntm_shortcode_kbf_organizer_profile() {
           align-items:center;
           justify-content:center;
         }
-        .kbf-org-avatar > .kbf-org-avatar-fallback img{width:28px;height:28px;filter:invert(100%);}
+        .kbf-org-avatar > .kbf-org-avatar-fallback i{font-size:28px;color:#ffffff;}
         .kbf-org-verified{
           position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;
           background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px #fff;
         }
-        .kbf-org-verified::before{
-          content:'';width:14px;height:14px;background:#1d4ed8;display:block;
-          -webkit-mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;
-          mask:url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/patch-check-fill.svg') no-repeat center/contain;
-        }
+        .kbf-org-verified{color:#1d4ed8;}
+        .kbf-org-verified i{font-size:14px;}
         .kbf-social-icons{
           display:flex;
           align-items:center;
@@ -145,11 +142,10 @@ function bntm_shortcode_kbf_organizer_profile() {
           align-items:center;
           justify-content:center;
         }
-        .kbf-social-icon img{
-          width:18px;
-          height:18px;
+        .kbf-social-icon i{
+          font-size:18px;
           display:block;
-          filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);
+          color:#64748b;
         }
         .kbf-profile-sidebar{
           position:sticky;
@@ -253,7 +249,7 @@ function bntm_shortcode_kbf_organizer_profile() {
       <!-- Breadcrumb -->
       <div class="kbf-breadcrumb">
         <a href="<?php echo esc_url($back_url); ?>" style="display:inline-flex;align-items:center;gap:6px;">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-left.svg" alt="" width="14" height="14" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+          <i class="ph ph-arrow-left kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
           <?php echo esc_html($back_label); ?>
         </a>
       </div>
@@ -264,11 +260,11 @@ function bntm_shortcode_kbf_organizer_profile() {
             <img src="<?php echo esc_url($profile->avatar_url); ?>" alt="">
           <?php else: ?>
             <div class="kbf-org-avatar-fallback" aria-hidden="true">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="">
+              <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
             </div>
           <?php endif; ?>
           <?php if($profile && (int)$profile->is_verified === 1): ?>
-            <span class="kbf-org-verified"></span>
+            <span class="kbf-org-verified" aria-hidden="true"><i class="ph-fill ph-seal-check kbf-icon" aria-hidden="true"></i></span>
           <?php endif; ?>
         </div>
         <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:16px;">
@@ -281,13 +277,13 @@ function bntm_shortcode_kbf_organizer_profile() {
             <?php endif; ?>
             <?php if($account_address !== ''): ?>
               <div style="display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--kbf-slate);font-size:12.5px;">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="" width="13" height="13" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="ph ph-map-pin kbf-icon" style="font-size:13px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 <span><?php echo esc_html($account_address); ?></span>
               </div>
             <?php endif; ?>
 <?php if($profile&&$profile->rating_count>0): ?>
           <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" width="14" height="14" alt="" style="filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);">
+            <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:14px; filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)" aria-hidden="true"></i>
             <span style="color:var(--kbf-slate);font-size:13px;"><?php echo number_format($profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
           </div>
           <?php endif; ?>
@@ -295,13 +291,13 @@ function bntm_shortcode_kbf_organizer_profile() {
           <?php if(!empty(array_filter($socials))): ?>
           <div class="kbf-social-icons" style="margin-top:0;">
             <?php foreach([
-              'facebook' => 'facebook',
-              'instagram' => 'instagram',
-              'twitter' => 'twitter-x',
-              'website' => 'globe2'
+              'facebook' => 'ph ph-facebook-logo',
+              'instagram' => 'ph ph-instagram-logo',
+              'twitter' => 'ph ph-x-logo',
+              'website' => 'ph ph-globe'
             ] as $k=>$icon): if(!empty($socials[$k])): ?>
               <a class="kbf-social-icon" href="<?php echo esc_url($socials[$k]); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr(ucfirst($k)); ?>">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/<?php echo esc_attr($icon); ?>.svg" alt="<?php echo esc_attr(ucfirst($k)); ?>">
+                <i class="<?php echo esc_attr($icon); ?> kbf-icon" aria-hidden="true"></i>
               </a>
             <?php endif; endforeach; ?>
           </div>
@@ -319,7 +315,7 @@ function bntm_shortcode_kbf_organizer_profile() {
           <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
             <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="14" height="14">
+                <i class="ph ph-tag kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
               <select id="kbf-filter-status">
                 <option value="all">All Status</option>
@@ -332,7 +328,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             </div>
             <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/funnel-fill.svg" alt="" width="14" height="14">
+                <i class="ph ph-funnel kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
               <select id="kbf-filter-escrow">
                 <option value="all">All Escrow</option>
@@ -361,30 +357,30 @@ function bntm_shortcode_kbf_organizer_profile() {
                 <div class="kbf-meta">
                   <div class="kbf-meta-row">
                     <span class="kbf-meta-item">
-                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="">
+                      <i class="ph ph-tag kbf-icon" aria-hidden="true"></i>
                       <?php echo esc_html($f->category); ?>
                     </span>
                     <span class="kbf-meta-divider"></span>
                     <span class="kbf-meta-item">
-                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
+                      <i class="ph ph-map-pin kbf-icon" aria-hidden="true"></i>
                       <?php echo esc_html($f->location); ?>
                     </span>
                   </div>
                   <div class="kbf-meta-row">
                     <?php if($days_left!==null): ?>
                       <span class="kbf-meta-item kbf-meta-strong" style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;">
-                        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="">
+                        <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
                         <?php echo $days_left; ?>d left
                       </span>
                       <span class="kbf-meta-divider"></span>
                     <?php endif; ?>
                     <span class="kbf-meta-item">
-                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="">
+                      <i class="ph ph-users kbf-icon" aria-hidden="true"></i>
                       <?php echo $sc; ?> sponsors
                     </span>
                     <span class="kbf-meta-divider"></span>
                     <span class="kbf-meta-item">
-                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/shield-fill-check.svg" alt="">
+                      <i class="ph ph-shield kbf-icon" aria-hidden="true"></i>
                       Escrow
                       <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
                     </span>
@@ -404,7 +400,7 @@ function bntm_shortcode_kbf_organizer_profile() {
                 }
               ?>
               <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
+                <i class="ph ph-arrow-square-right kbf-icon" style="font-size:12px; filter:invert(100%)" aria-hidden="true"></i>
                 View Details
               </a>
             </div>
@@ -433,7 +429,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin:0;text-transform:uppercase;letter-spacing:.5px;">Credibility Score</h4>
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="display:inline-flex;gap:2px;line-height:1;font-size:12px;">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" width="12" height="12" alt="" style="filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);">
+                <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:12px; filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)" aria-hidden="true"></i>
               </span>
               <strong style="font-size:12.5px;"><?php echo number_format((float)$profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</strong>
             </div>
@@ -454,7 +450,7 @@ function bntm_shortcode_kbf_organizer_profile() {
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
                 <div style="display:flex;align-items:center;gap:3px;">
                   <?php for($i=1;$i<=5;$i++): ?>
-                  <img src="<?php echo $i <= (int)$r->rating ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg' : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg'; ?>" width="12" height="12" alt="" style="filter:<?php echo $i <= (int)$r->rating ? 'invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)' : 'invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%)'; ?>;">
+                  <i class="<?php echo $i <= (int)$r->rating ? 'ph-fill ph-thumbs-up' : 'ph ph-thumbs-up'; ?> kbf-icon" style="font-size:12px;color:<?php echo $i <= (int)$r->rating ? '#3b82f6' : '#94a3b8'; ?>;" aria-hidden="true"></i>
                   <?php endfor; ?>
                 </div>
                 <span class="kbf-meta"><?php echo date('M d, Y',strtotime($r->created_at)); ?></span>
@@ -483,7 +479,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             <div class="kbf-form-group"><label>Credibility</label>
               <div id="kbf-star-picker" style="display:flex;gap:8px;margin-top:6px;">
                 <?php for($i=1;$i<=5;$i++): ?>
-                  <img class="kbf-star-btn" data-val="<?php echo $i; ?>" data-filled="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg" data-empty="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg" alt="" width="28" height="28" style="cursor:pointer;filter:invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%);" onclick="kbfSetRating(<?php echo $i; ?>)">
+                  <i class="kbf-star-btn ph ph-thumbs-up kbf-icon" data-val="<?php echo $i; ?>" data-filled="ph-fill ph-thumbs-up" data-empty="ph ph-thumbs-up" style="cursor:pointer;font-size:28px;color:#94a3b8;" onclick="kbfSetRating(<?php echo $i; ?>)" aria-hidden="true"></i>
                 <?php endfor; ?>
               </div>
               <input type="hidden" name="rating" id="kbf-rating-val" value="5">
@@ -505,10 +501,12 @@ function bntm_shortcode_kbf_organizer_profile() {
         var stars = document.querySelectorAll('#kbf-star-picker .kbf-star-btn');
         stars.forEach(function(star){
           var val = parseInt(star.getAttribute('data-val'),10);
-          star.src = val <= v ? star.getAttribute('data-filled') : star.getAttribute('data-empty');
-          star.style.filter = val <= v
-            ? 'invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)'
-            : 'invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%)';
+          var fillCls = (star.getAttribute('data-filled') || 'ph-fill ph-thumbs-up').split(' ');
+          var emptyCls = (star.getAttribute('data-empty') || 'ph ph-thumbs-up').split(' ');
+          star.classList.remove.apply(star.classList, fillCls);
+          star.classList.remove.apply(star.classList, emptyCls);
+          star.classList.add.apply(star.classList, val <= v ? fillCls : emptyCls);
+          star.style.color = val <= v ? '#3b82f6' : '#94a3b8';
         });
         var inp = document.getElementById('kbf-rating-val');
         if(inp) inp.value = v;
@@ -623,5 +621,6 @@ function bntm_shortcode_kbf_organizer_profile() {
     }
     return bntm_universal_container('Organizer Profile -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 

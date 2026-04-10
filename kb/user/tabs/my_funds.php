@@ -124,13 +124,13 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
             </button>
             <?php if($f->status === 'pending'): ?>
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfCancelFund(<?php echo $f->id; ?>)">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="ph-bold ph-x kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 Cancel
               </button>
             <?php endif; ?>
             <?php if(in_array($f->status,['cancelled','suspended'])): ?>
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/trash-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                <i class="ph ph-trash-simple kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 Trash
               </button>
             <?php endif; ?>
@@ -162,6 +162,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

@@ -318,7 +318,7 @@
         .kbf-save-btn{
           transition:none;
         }
-        .kbf-save-btn img{
+        .kbf-save-btn i{
           transition:none;
         }
         .kbf-save-btn.is-saved{
@@ -326,8 +326,8 @@
           border-color:#bfd7ff;
           color:#1d4ed8;
         }
-        .kbf-save-btn.is-saved img{
-          filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%);
+        .kbf-save-btn.is-saved i{
+          color:#3b82f6;
         }
         .kbf-card-more-menu button:hover,
         .kbf-card-more-menu .kbf-btn:hover,
@@ -364,7 +364,7 @@
         <div class="kbf-section-header">
          <h3 class="kbf-section-title">Dashboard Overview</h3>
          <button class="kbf-btn kbf-btn-primary kbf-btn-sm" style="padding:0 14px;" onclick="kbfOpenModal('kbf-modal-create')">
-           <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus-lg.svg" alt="" width="12" height="12" style="filter:invert(100%);">
+           <i class="ph ph-plus kbf-icon" style="font-size:12px; filter:invert(100%)" aria-hidden="true"></i>
            Create Fund
          </button>
         </div>
@@ -385,25 +385,25 @@
       <div class="kbf-stats">
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/stack.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+            <i class="ph ph-cards-three kbf-stat-icon-img kbf-icon" style="font-size:20px" aria-hidden="true"></i>
           </div>
           <div><div class="kbf-stat-label">Total Funds</div><div class="kbf-stat-value"><?php echo $total_funds; ?></div></div>
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/piggy-bank-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+            <i class="ph ph-piggy-bank kbf-stat-icon-img kbf-icon" style="font-size:20px" aria-hidden="true"></i>
           </div>
           <div><div class="kbf-stat-label">Total Raised</div><div class="kbf-stat-value">&#8369;<?php echo $format_currency($total_raised, 0); ?></div></div>
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+            <i class="ph ph-users kbf-stat-icon-img kbf-icon" style="font-size:20px" aria-hidden="true"></i>
           </div>
           <div><div class="kbf-stat-label">Total Sponsors</div><div class="kbf-stat-value"><?php echo $total_sponsors; ?></div></div>
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/eye-fill.svg" alt="" width="20" height="20" class="kbf-stat-icon-img">
+            <i class="ph-fill ph-eye kbf-stat-icon-img kbf-icon" style="font-size:20px" aria-hidden="true"></i>
           </div>
           <div><div class="kbf-stat-label">Active Now</div><div class="kbf-stat-value"><?php echo $active_funds; ?></div></div>
         </div>
@@ -414,7 +414,7 @@
         <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
             <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;min-width:160px;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="" width="14" height="14">
+                <i class="ph ph-tag kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
               <select id="kbf-filter-status" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
                 <option value="all">All Status</option>
@@ -427,7 +427,7 @@
           </div>
             <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;min-width:160px;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/funnel-fill.svg" alt="" width="14" height="14">
+                <i class="ph ph-funnel kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
               <select id="kbf-filter-escrow" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
                 <option value="all">All Escrow</option>
@@ -451,7 +451,7 @@
         $benefit_json = wp_json_encode(array_values(array_filter(is_array($benefit_list) ? $benefit_list : [])));
         $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status, admin_notes FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1",$f->id));
         $is_saved = in_array((int)$f->id, $saved_ids, true);
-        $save_icon = $is_saved ? 'bookmark-check-fill' : 'bookmark';
+        $save_icon = $is_saved ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple';
         ?>
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
           <?php if($last_wd && $last_wd->status === 'pending'): ?>
@@ -518,30 +518,30 @@
               <div class="kbf-meta">
                 <div class="kbf-meta-row">
                   <span class="kbf-meta-item">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/tag-fill.svg" alt="">
+                    <i class="ph ph-tag kbf-icon" aria-hidden="true"></i>
                       <?php echo esc_html(ucwords(strtolower((string)$f->category))); ?>
                   </span>
                   <span class="kbf-meta-divider"></span>
                   <span class="kbf-meta-item">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/geo-alt-fill.svg" alt="">
+                    <i class="ph ph-map-pin kbf-icon" aria-hidden="true"></i>
                     <?php echo esc_html($f->location); ?>
                   </span>
                 </div>
                 <div class="kbf-meta-row">
                   <?php if($days_left!==null): ?>
                     <span class="kbf-meta-item kbf-meta-strong" style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;">
-                      <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/clock-fill.svg" alt="">
+                      <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
                       <?php echo $days_left; ?>d left
                     </span>
                     <span class="kbf-meta-divider"></span>
                   <?php endif; ?>
                   <span class="kbf-meta-item">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="">
+                    <i class="ph ph-users kbf-icon" aria-hidden="true"></i>
                     <?php echo $sc; ?> sponsors
                   </span>
                   <span class="kbf-meta-divider"></span>
                   <span class="kbf-meta-item">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/shield-fill-check.svg" alt="">
+                    <i class="ph ph-shield kbf-icon" aria-hidden="true"></i>
                     Escrow
                     <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
                   </span>
@@ -567,12 +567,12 @@
               ?>
               <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : ''; ?>
               <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/box-arrow-up-right.svg" alt="" width="12" height="12" style="filter:invert(100%);">
+                <i class="ph ph-arrow-square-right kbf-icon" style="font-size:12px; filter:invert(100%)" aria-hidden="true"></i>
                 View Details
               </a>
               <?php if($f->status==='completed'): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus-circle.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-plus kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Add Milestone
                 </button>
               <?php endif; ?>
@@ -591,65 +591,65 @@
                 <?php if(in_array($f->status,['active','completed']) && $f->escrow_status==='released'): ?>
                   <?php if($wd_block): ?>
                   <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
                   <?php else: ?>
                   <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
                   <?php endif; ?>
                 <?php endif; ?>
               <div class="kbf-card-more-wrap">
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/three-dots-vertical.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 </button>
                 <div class="kbf-card-more-menu" id="kbf-home-more-<?php echo esc_attr($f->id); ?>">
                 <?php if(in_array($f->status,['active','pending'])): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>','<?php echo esc_js($benefit_json); ?>')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/pencil-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-pencil-simple kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Edit
                 </button>
                 <?php endif; ?>
                 <?php if($f->status==='completed'): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-more-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/plus-circle.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-plus kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Add Milestone
                 </button>
                 <?php endif; ?>
                 <?php if($f->status==='active' && $f->raised_amount>=$f->goal_amount): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfMarkComplete(<?php echo $f->id; ?>)">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check2-circle.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph-bold ph-check kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Mark Complete
                 </button>
                 <?php endif; ?>
                 <?php if(in_array($f->status,['active','completed']) && $f->escrow_status==='released'): ?>
                   <?php if($wd_block): ?>
                   <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
                   <?php else: ?>
                   <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/cash-coin.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                    <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
                   <?php endif; ?>
                 <?php endif; ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/share-fill.svg" alt="" width="12" height="12" style="filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Share
                 </button>
                 <?php if($f->status==='pending'): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','cancel')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-circle-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph-bold ph-x kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Cancel
                 </button>
                 <?php endif; ?>
                 <?php if(in_array($f->status,['cancelled','suspended'])): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">
-                  <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/trash-fill.svg" alt="" width="12" height="12" style="filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);">
+                  <i class="ph ph-trash-simple kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Trash
                 </button>
             <?php endif; ?>
@@ -698,19 +698,19 @@
           <div class="kbf-cta-sub">Create a new fund to mobilize support. Keep updates consistent to build trust and improve conversion.</div>
           <div class="kbf-cta-checklist">
             <div class="kbf-cta-check">
-              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
               Add a clear goal and deadline
             </div>
             <div class="kbf-cta-check">
-              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
               Upload 2–3 photos to build trust
             </div>
             <div class="kbf-cta-check">
-              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
               Share once it’s live to get first sponsors
             </div>
             <div class="kbf-cta-check">
-              <i><img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/check-lg.svg" alt=""></i>
+              <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
               Post a quick update every milestone
             </div>
           </div>
@@ -906,8 +906,12 @@
                 el.setAttribute('data-saved', saved ? '1' : '0');
                 el.title = saved ? 'Saved' : 'Save';
                 el.setAttribute('data-tooltip', saved ? 'Saved' : 'Save');
-                var img = el.querySelector('img');
-                if(img){ img.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/' + (saved ? 'bookmark-check-fill' : 'bookmark') + '.svg'; }
+                var icon = el.querySelector('i');
+                if(icon){
+                  icon.classList.remove('ph','ph-bookmark-simple','ph-fill');
+                  if(saved){ icon.classList.add('ph-fill','ph-bookmark-simple'); icon.style.color = '#3b82f6'; }
+                  else { icon.classList.add('ph','ph-bookmark-simple'); icon.style.color = 'var(--kbf-text-sm)'; }
+                }
               }
             } else {
               alert((j && j.data && j.data.message) ? j.data.message : 'Unable to save.');
@@ -919,6 +923,7 @@
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

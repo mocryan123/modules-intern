@@ -518,7 +518,7 @@ function bntm_shortcode_kbf_browse() {
             <input type="hidden" name="payment_method" value="online_payment">
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
-              <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/exclamation-triangle-fill.svg" alt="" width="16" height="16" style="flex-shrink:0;margin-top:1px;filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%);">
+              <i class="ph-bold ph-exclamation-mark kbf-icon" style="font-size:16px; flex-shrink:0;margin-top:1px;filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%)" aria-hidden="true"></i>
               <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
             </div>
             <?php else: ?>
@@ -856,11 +856,9 @@ function bntm_shortcode_kbf_browse() {
             if(j.success){
                 const d=j.data;
                 const starSvg=(filled)=>{
-                    const src = filled ? 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up-fill.svg' : 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/hand-thumbs-up.svg';
-                    const filter = filled
-                        ? 'invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)'
-                        : 'invert(79%) sepia(10%) saturate(383%) hue-rotate(183deg) brightness(96%) contrast(90%)';
-                    return '<img src="'+src+'" width="14" height="14" style="filter:'+filter+';">';
+                    const color = filled ? '#3b82f6' : '#94a3b8';
+                    const cls = filled ? 'ph-fill ph-thumbs-up' : 'ph ph-thumbs-up';
+                    return '<i class=\"'+cls+' kbf-icon\" style=\"font-size:14px;color:'+color+';\"></i>';
                 };
                 const stars=Array.from({length:5},(_,i)=>starSvg(i<Math.round(parseFloat(d.rating)))).join('');
                 const statusColor={'active':'var(--kbf-blue)','completed':'var(--kbf-blue)'};
@@ -898,7 +896,7 @@ function bntm_shortcode_kbf_browse() {
                 document.getElementById('kbf-organizer-body').innerHTML=
                 // Header
                 '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;">'
-                +(d.avatar_url?'<img src="'+d.avatar_url+'" style="width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);flex-shrink:0;">':'<div style="width:62px;height:62px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src=\"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg\" width=\"28\" height=\"28\" style=\"filter:invert(100%);\"></div>')
+                +(d.avatar_url?'<img src="'+d.avatar_url+'" style="width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);flex-shrink:0;">':'<div style="width:62px;height:62px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class=\"ph ph-user kbf-icon\" style=\"font-size:28px;color:#ffffff;\"></i></div>')
                 +'<div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong style="font-size:16px;color:var(--kbf-navy);">'+d.display_name+'</strong>'
                 +(d.is_verified?'<span class="kbf-badge kbf-badge-verified" style="font-size:10px;">Verified</span>':'')
                 +'</div>'
@@ -924,6 +922,7 @@ function bntm_shortcode_kbf_browse() {
     $c=ob_get_clean();
     return bntm_universal_container('Browse Funds -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 

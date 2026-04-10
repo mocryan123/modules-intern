@@ -102,7 +102,7 @@ function kbf_admin_organizers_tab() {
       <div class="kbf-stats" style="margin-bottom:18px;">
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img class="kbf-stat-icon-img" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/people-fill.svg" alt="" width="18" height="18">
+            <i class="ph ph-users kbf-stat-icon-img kbf-icon" style="font-size:18px" aria-hidden="true"></i>
           </div>
           <div>
             <div class="kbf-stat-label">Total Accounts</div>
@@ -111,7 +111,7 @@ function kbf_admin_organizers_tab() {
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img class="kbf-stat-icon-img" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-plus-fill.svg" alt="" width="18" height="18">
+            <i class="ph ph-user-plus kbf-stat-icon-img kbf-icon" style="font-size:18px" aria-hidden="true"></i>
           </div>
           <div>
             <div class="kbf-stat-label">New (7 days)</div>
@@ -120,7 +120,7 @@ function kbf_admin_organizers_tab() {
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <img class="kbf-stat-icon-img" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/shield-fill-check.svg" alt="" width="18" height="18">
+            <i class="ph ph-shield kbf-stat-icon-img kbf-icon" style="font-size:18px" aria-hidden="true"></i>
           </div>
           <div>
             <div class="kbf-stat-label">Pending Verification</div>
@@ -235,6 +235,7 @@ function kbf_admin_organizers_tab() {
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

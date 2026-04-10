@@ -63,9 +63,11 @@
         overlay.classList.toggle('kbf-overlay-open');
         if (icon) {
           var isOpen = menu.classList.contains('kbf-menu-open');
-          var openSrc = icon.getAttribute('data-open');
-          var closeSrc = icon.getAttribute('data-close');
-          icon.src = isOpen ? openSrc : closeSrc;
+          var openCls = (icon.getAttribute('data-open') || 'ph-bold ph-x').split(' ');
+          var closeCls = (icon.getAttribute('data-close') || 'ph ph-list').split(' ');
+          icon.classList.remove.apply(icon.classList, openCls);
+          icon.classList.remove.apply(icon.classList, closeCls);
+          icon.classList.add.apply(icon.classList, isOpen ? openCls : closeCls);
         }
       }
       function kbfCloseMobileMenu(){
@@ -75,8 +77,11 @@
         if (menu) menu.classList.remove('kbf-menu-open');
         if (overlay) overlay.classList.remove('kbf-overlay-open');
         if (icon) {
-          var closeSrc = icon.getAttribute('data-close');
-          icon.src = closeSrc;
+          var closeCls = (icon.getAttribute('data-close') || 'ph ph-list').split(' ');
+          var openCls = (icon.getAttribute('data-open') || 'ph-bold ph-x').split(' ');
+          icon.classList.remove.apply(icon.classList, openCls);
+          icon.classList.remove.apply(icon.classList, closeCls);
+          icon.classList.add.apply(icon.classList, closeCls);
         }
       }
       window.addEventListener('resize', function(){

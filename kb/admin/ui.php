@@ -77,7 +77,7 @@ function bntm_shortcode_kbf_admin() {
         <span class="kbf-brand-text">fundora</span>
       </div>
       <button class="kbf-hamburger" type="button" onclick="kbfToggleMobileMenu()" aria-label="Toggle menu">
-        <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="">
+        <i class="ph ph-list kbf-icon" aria-hidden="true"></i>
       </button>
     </div>
 
@@ -120,7 +120,7 @@ function bntm_shortcode_kbf_admin() {
     <div class="kbf-mobile-menu" id="kbf-mobile-menu">
       <div class="kbf-mobile-menu-header" style="justify-content:flex-end;">
         <button class="kbf-hamburger" type="button" onclick="kbfCloseMobileMenu()" aria-label="Close menu">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="">
+          <i class="ph-bold ph-x kbf-icon" aria-hidden="true"></i>
         </button>
       </div>
       <?php foreach($tabs as $k=>$label): ?>
@@ -370,7 +370,7 @@ function bntm_shortcode_kbf_admin() {
                   '<button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-table-apply">Apply</button>' +
                   '<button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-table-clear">Clear</button>' +
                   '<button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-table-refresh" aria-label="Refresh">' +
-                    '<img class="kbf-refresh-icon" src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-clockwise.svg" alt="">' +
+                    '<i class="ph ph-arrow-clockwise kbf-refresh-icon kbf-icon" aria-hidden="true"></i>' +
                   '</button>' +
                 '</div>';
             target.parentNode.insertBefore(tools, target);
@@ -666,4 +666,5 @@ window.kbfSubmitReject = function(){
     $c=ob_get_clean();
     return bntm_universal_container('KonekBayan Admin Panel',$c, ['show_topbar'=>false,'show_header'=>false,'wrap'=>false]);
 }
+
 

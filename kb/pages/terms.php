@@ -14,6 +14,11 @@ function bntm_kbf_render_terms() {
     ?>
     <!-- ================== CSS ================== -->
     <style>
+      @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css');
+      @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css');
+      .ph{font-family:'Phosphor' !important;font-style:normal;font-weight:400;line-height:1;}
+      .ph-bold{font-weight:700;}
+      .ph-fill{font-weight:400;}
       html{ scroll-behavior:smooth; }
       body{ background:#f6f7fb; }
       .kbf-topbar {
@@ -122,9 +127,10 @@ function bntm_kbf_render_terms() {
         align-items:center;
         justify-content:center;
       }
-      .kbf-hamburger img{
-        width:18px;height:18px;display:block;
-        filter: invert(30%) sepia(10%) saturate(800%) hue-rotate(185deg) brightness(0.9);
+      .kbf-hamburger i{
+        font-size:18px;
+        display:block;
+        color:#64748b;
       }
       .kbf-mobile-overlay{
         display:none;
@@ -328,7 +334,7 @@ function bntm_kbf_render_terms() {
           <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
         </div>
         <button class="kbf-hamburger" id="kbf-hamburger-btn" aria-label="Open menu">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg" alt="Menu" id="kbf-hamburger-icon">
+          <i id="kbf-hamburger-icon" class="ph ph-list kbf-icon" role="img" aria-label="Menu"></i>
         </button>
       </div>
       <div class="kbf-mobile-menu" id="kbf-mobile-menu">
@@ -338,7 +344,7 @@ function bntm_kbf_render_terms() {
             <span class="kbf-brand-text" style="font-weight:800;">fundora</span>
           </div>
           <button class="kbf-hamburger" type="button" id="kbf-hamburger-close" aria-label="Close menu" style="display:inline-flex;">
-            <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg" alt="Close">
+            <i class="ph-bold ph-x kbf-icon" role="img" aria-label="Close"></i>
           </button>
         </div>
         <a href="<?php echo esc_url($landing_url); ?>#kbf-home">Home</a>
@@ -509,13 +515,13 @@ function bntm_kbf_render_terms() {
       </div>
       <div class="kbf-social">
         <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/instagram.svg" alt="">
+          <i class="ph ph-instagram-logo kbf-icon" aria-hidden="true"></i>
         </a>
         <a href="https://www.facebook.com/bentamosabentamo" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/facebook.svg" alt="">
+          <i class="ph ph-facebook-logo kbf-icon" aria-hidden="true"></i>
         </a>
         <a href="https://www.linkedin.com/company/bentamo/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
-          <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/linkedin.svg" alt="">
+          <i class="ph ph-linkedin-logo kbf-icon" aria-hidden="true"></i>
         </a>
       </div>
       </footer>
@@ -530,17 +536,25 @@ function bntm_kbf_render_terms() {
         var icon = document.getElementById('kbf-hamburger-icon');
         if (!btn || !menu || !overlay) return;
         var open = false;
+        function setIcon(stateOpen){
+          if (!icon) return;
+          var openCls = ['ph-bold','ph-x'];
+          var closeCls = ['ph','ph-list'];
+          icon.classList.remove.apply(icon.classList, openCls);
+          icon.classList.remove.apply(icon.classList, closeCls);
+          icon.classList.add.apply(icon.classList, stateOpen ? openCls : closeCls);
+        }
         function openMenu(){
           open = true;
           menu.classList.add('kbf-menu-open');
           overlay.classList.add('kbf-overlay-open');
-          if (icon) icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg';
+          setIcon(true);
         }
         function closeMenu(){
           open = false;
           menu.classList.remove('kbf-menu-open');
           overlay.classList.remove('kbf-overlay-open');
-          if (icon) icon.src = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg';
+          setIcon(false);
         }
         btn.addEventListener('click', function(){
           if (open) closeMenu();
@@ -586,4 +600,5 @@ function bntm_kbf_render_terms() {
     <?php
     return ob_get_clean();
 }
+
 

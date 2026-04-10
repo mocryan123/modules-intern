@@ -43,11 +43,7 @@
       </div>
       <div class="kbf-actions">
         <button class="kbf-hamburger" type="button" onclick="kbfToggleMobileMenu()">
-          <img id="kbf-mobile-menu-icon"
-               src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg"
-               data-open="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/x-lg.svg"
-               data-close="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/list.svg"
-               alt="">
+          <i id="kbf-mobile-menu-icon" data-open="ph-bold ph-x" data-close="ph ph-list" class="ph ph-list kbf-icon" aria-hidden="true"></i>
         </button>
         <?php if($is_logged_in): ?>
           <div class="kbf-user-menu" id="kbf-user-menu">
@@ -57,11 +53,11 @@
                   <img class="kbf-dashboard-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="User avatar" id="kbf-navbar-avatar">
                 <?php else: ?>
                   <span class="kbf-dashboard-avatar-fallback" aria-hidden="true">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/person-fill.svg" alt="">
+                    <i class="ph ph-user kbf-icon kbf-stat-icon-img" aria-hidden="true"></i>
                   </span>
                 <?php endif; ?>
                 <?php if($nav_profile && !empty($nav_profile->is_verified)): ?>
-                  <span class="kbf-dashboard-verified" aria-hidden="true"></span>
+                  <span class="kbf-dashboard-verified" aria-hidden="true"><i class="ph-fill ph-seal-check kbf-icon" aria-hidden="true"></i></span>
                 <?php endif; ?>
               </span>
               <span class="kbf-dashboard-name"><?php echo esc_html($user->display_name); ?></span>
@@ -104,4 +100,5 @@
       ?>
       </div>
       </div><!-- .kbf-dashboard-shell -->
+
 

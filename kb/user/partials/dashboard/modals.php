@@ -347,16 +347,16 @@
             </div>
             <div class="kbf-photo-editor-actions">
               <button type="button" class="kbf-photo-editor-icon-btn" id="kbf-photo-rotate-left" aria-label="Rotate left" title="Rotate Left" data-tooltip="Rotate Left">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-counterclockwise.svg" alt="">
+                <i class="ph ph-arrow-counter-clockwise kbf-icon" aria-hidden="true"></i>
               </button>
               <button type="button" class="kbf-photo-editor-icon-btn" id="kbf-photo-rotate-right" aria-label="Rotate right" title="Rotate Right" data-tooltip="Rotate Right">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/arrow-clockwise.svg" alt="">
+                <i class="ph ph-arrow-clockwise kbf-icon" aria-hidden="true"></i>
               </button>
               <button type="button" class="kbf-photo-editor-icon-btn" id="kbf-photo-flip-x" aria-label="Flip horizontal" title="Flip Horizontal" data-tooltip="Flip Horizontal">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/symmetry-vertical.svg" alt="">
+                <i class="ph ph-flip-vertical kbf-icon" aria-hidden="true"></i>
               </button>
               <button type="button" class="kbf-photo-editor-icon-btn" id="kbf-photo-flip-y" aria-label="Flip vertical" title="Flip Vertical" data-tooltip="Flip Vertical">
-                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/icons/symmetry-horizontal.svg" alt="">
+                <i class="ph ph-flip-horizontal kbf-icon" aria-hidden="true"></i>
               </button>
               <button type="button" class="kbf-btn kbf-btn-secondary kbf-photo-editor-reset" id="kbf-photo-reset" aria-label="Reset" title="Reset" data-tooltip="Reset">
                 Reset
@@ -495,6 +495,7 @@
         </div>
       </div>
     </div>
+
 
 
 
