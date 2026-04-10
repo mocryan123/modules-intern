@@ -3345,6 +3345,136 @@ function bntm_shortcode_bae() {
         .bae-preview-panel.open { transform: translateY(0); }
     }
 
+    /* ── BENTO GRID SYSTEM ── */
+    .bae-bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-auto-flow: dense;
+        gap: 16px;
+    }
+    .bae-bento-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 24px;
+        transition: background 0.3s, border-color 0.3s, box-shadow 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+    .bae-bento-card:hover {
+        border-color: var(--border-2);
+        box-shadow: 0 4px 20px rgba(139,92,246,0.08);
+    }
+    .bae-bento-card.span-8 { grid-column: span 8; }
+    .bae-bento-card.span-6 { grid-column: span 6; }
+    .bae-bento-card.span-4 { grid-column: span 4; }
+    .bae-bento-card.span-12 { grid-column: span 12; }
+    @media (max-width: 900px) {
+        .bae-bento-grid { grid-template-columns: 1fr 1fr; }
+        .bae-bento-card.span-8,
+        .bae-bento-card.span-6,
+        .bae-bento-card.span-4 { grid-column: span 1; }
+        .bae-bento-card.span-12 { grid-column: span 2; }
+    }
+    @media (max-width: 600px) {
+        .bae-bento-grid { grid-template-columns: 1fr; }
+        .bae-bento-card.span-12 { grid-column: span 1; }
+    }
+    .bae-bento-card-icon {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 14px;
+        background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(167,139,250,0.08));
+        color: var(--brand-soft);
+        flex-shrink: 0;
+    }
+    .bae-bento-label {
+        font-size: 11px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .1em; color: var(--text-3);
+        margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .bae-bento-label::after {
+        content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    /* Soft glassmorphism inputs for bento cards */
+    .bae-bento-card .bae-form-group input,
+    .bae-bento-card .bae-form-group select,
+    .bae-bento-card .bae-form-group textarea {
+        background: var(--bg-2);
+        border: 1.5px solid transparent;
+        border-radius: 14px;
+        padding: 11px 14px;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .bae-bento-card .bae-form-group input:focus,
+    .bae-bento-card .bae-form-group select:focus,
+    .bae-bento-card .bae-form-group textarea:focus {
+        border-color: rgba(139,92,246,0.5);
+        box-shadow: 0 0 0 3px rgba(139,92,246,0.1), inset 0 1px 3px rgba(0,0,0,0.05);
+        outline: none;
+    }
+    .bae-wrap.bae-light .bae-bento-card .bae-form-group input,
+    .bae-wrap.bae-light .bae-bento-card .bae-form-group select,
+    .bae-wrap.bae-light .bae-bento-card .bae-form-group textarea {
+        background: #f5f4ff;
+        border-color: transparent;
+    }
+    /* AI pill buttons */
+    .bae-ai-pill {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(236,72,153,0.08));
+        border: 1px solid rgba(139,92,246,0.25);
+        border-radius: 999px; padding: 4px 12px;
+        font-size: 11px; font-weight: 600; color: var(--brand-soft);
+        cursor: pointer; font-family: 'Geist', sans-serif;
+        transition: all .2s; white-space: nowrap;
+    }
+    .bae-ai-pill:hover {
+        background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.12));
+        border-color: rgba(139,92,246,0.4);
+        transform: translateY(-1px);
+    }
+
+    /* ── ASSET SEARCH + DRAG ── */
+    .bae-asset-toolbar {
+        display: flex; align-items: center; gap: 12px;
+        margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .bae-asset-search {
+        flex: 1; min-width: 200px; max-width: 340px;
+        display: flex; align-items: center; gap: 8px;
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 12px; padding: 8px 14px;
+        transition: border-color .2s;
+    }
+    .bae-asset-search:focus-within { border-color: rgba(139,92,246,0.5); }
+    .bae-asset-search svg { flex-shrink: 0; color: var(--text-3); }
+    .bae-asset-search input {
+        background: none; border: none; outline: none;
+        font-size: 13px; font-family: 'Geist', sans-serif;
+        color: var(--text); width: 100%;
+    }
+    .bae-asset-search input::placeholder { color: var(--text-3); }
+    .bae-asset-card.bae-drag-over {
+        border: 2px dashed var(--brand) !important;
+        background: rgba(139,92,246,0.06) !important;
+    }
+    .bae-asset-card.bae-dragging {
+        opacity: 0.4;
+        transform: scale(0.97);
+        transition: all .15s;
+    }
+    .bae-asset-card[draggable="true"] { cursor: grab; }
+    .bae-asset-card[draggable="true"]:active { cursor: grabbing; }
+    .bae-assets-hidden { display: none !important; }
+    .bae-asset-no-results {
+        grid-column: 1 / -1;
+        text-align: center; padding: 40px;
+        font-size: 14px; color: var(--text-3);
+    }
+
     /* ── COMPLETENESS INDICATOR ── */
     .bae-completeness-bar {
         background: var(--surface); border: 1px solid var(--border);
@@ -3764,7 +3894,7 @@ function bae_overview_tab($user_id, $profile) {
         <div class="bae-stat-card">
             <div class="bae-stat-label">Assets Generated</div>
             <div class="bae-stat-value"><?php echo $assets_count; ?></div>
-            <div class="bae-stat-sub">of 7 available</div>
+            <div class="bae-stat-sub">of 12 available</div>
         </div>
         <div class="bae-stat-card" style="cursor:<?php echo $is_free ? 'pointer' : 'default'; ?>;" <?php if ($is_free) echo 'onclick="baePricingOpen()"'; ?>>
             <div class="bae-stat-label">Current Plan</div>
@@ -3857,205 +3987,208 @@ function bae_overview_tab($user_id, $profile) {
         </div>
 
         <form id="bae-profile-form">
+        <!-- ╔════════════════════════════════════╗ -->
+        <!-- ║  BENTO GRID — Brand Profile Form   ║ -->
+        <!-- ╚════════════════════════════════════╝ -->
+        <div class="bae-bento-grid">
 
-            <!-- Section: Business Info -->
-            <div style="margin-bottom:28px;">
-                <div class="bae-section-label">Business Information</div>
-                <div class="bae-form-grid">
-                    <div class="bae-form-group">
-                        <label>Business Name *</label>
-                        <input type="text" name="business_name" placeholder="e.g. Dela Cruz Bakery"
-                               value="<?php echo esc_attr($p['business_name'] ?? ''); ?>" required>
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Industry / Sector *</label>
-                        <select name="industry">
-                            <?php
-                            $industries = ['Food & Beverage','Retail & Commerce','Fashion & Apparel','Health & Wellness',
-                                          'Beauty & Cosmetics','Technology','Professional Services','Education & Training',
-                                          'Home & Lifestyle','Agriculture','Construction & Trades','Creative & Media','Other'];
-                            $sel = $p['industry'] ?? '';
-                            foreach ($industries as $ind):
-                            ?>
-                                <option value="<?php echo $ind; ?>" <?php selected($sel, $ind); ?>><?php echo $ind; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Tagline</label>
-                        <input type="text" name="tagline" id="bae-tagline-input" placeholder="e.g. Fresh baked with love, every day"
-                               value="<?php echo esc_attr($p['tagline'] ?? ''); ?>">
-                        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
-                            <small style="margin:0;">Short phrase that sums up your brand promise.</small>
-                            <button type="button" id="bae-ai-tagline-btn" style="display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border-2);border-radius:7px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--brand-soft);cursor:pointer;font-family:'Geist',sans-serif;transition:all .2s;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                                Suggest with AI
-                            </button>
-                        </div>
-                        <!-- AI tagline suggestions dropdown -->
-                        <div id="bae-ai-tagline-panel" style="display:none;margin-top:10px;padding:12px;background:var(--bg-3);border-radius:12px;border:1px solid var(--border-2);">
-                            <div id="bae-ai-tagline-results" style="display:flex;flex-direction:column;gap:6px;">
-                                <div style="font-size:13px;color:var(--text-3);text-align:center;padding:8px;">Writing taglines...</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Target Audience</label>
-                        <input type="text" name="personality" placeholder="e.g. Families in Quezon City who value quality"
-                               value="<?php echo esc_attr($p['personality'] ?? ''); ?>">
-                        <small>Describe your ideal customer in one sentence.</small>
-                    </div>
+        <!-- ══ CARD 1: Core Identity (wide) ══ -->
+        <div class="bae-bento-card span-8">
+            <div class="bae-bento-label">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+                Core Identity
+            </div>
+            <div class="bae-form-grid">
+                <div class="bae-form-group">
+                    <label>Business Name *</label>
+                    <input type="text" name="business_name" placeholder="e.g. Dela Cruz Bakery"
+                           value="<?php echo esc_attr($p['business_name'] ?? ''); ?>" required>
+                </div>
+                <div class="bae-form-group">
+                    <label>Industry / Sector *</label>
+                    <select name="industry">
+                        <?php
+                        $industries = ['Food & Beverage','Retail & Commerce','Fashion & Apparel','Health & Wellness',
+                                      'Beauty & Cosmetics','Technology','Professional Services','Education & Training',
+                                      'Home & Lifestyle','Agriculture','Construction & Trades','Creative & Media','Other'];
+                        $sel = $p['industry'] ?? '';
+                        foreach ($industries as $ind):
+                        ?>
+                            <option value="<?php echo $ind; ?>" <?php selected($sel, $ind); ?>><?php echo $ind; ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </div>
-
-            <div class="bae-divider"></div>
-
-            <!-- CHANGED: NEW Contact Information section — used in all generated assets -->
-            <div style="margin-bottom:28px;">
-                <div class="bae-section-label">Contact Information</div>
-                <small style="display:block;color:var(--text-3);font-size:12px;margin-bottom:16px;">
-                    Used in business cards, letterheads, email signatures, and other assets — no more placeholder text.
-                </small>
-                <div class="bae-form-grid">
-                    <div class="bae-form-group">
-                        <label>Email Address</label>
-                        <input type="email" name="email" placeholder="hello@yourbusiness.com"
-                               value="<?php echo esc_attr($p['email'] ?? ''); ?>">
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" name="phone" placeholder="+63 900 000 0000"
-                               value="<?php echo esc_attr($p['phone'] ?? ''); ?>">
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Website</label>
-                        <input type="url" name="website" placeholder="https://yourbusiness.com"
-                               value="<?php echo esc_attr($p['website'] ?? ''); ?>">
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Business Address</label>
-                        <input type="text" name="address" placeholder="123 Main St, Quezon City"
-                               value="<?php echo esc_attr($p['address'] ?? ''); ?>">
-                    </div>
-                </div>
-            </div>
-
-            <div class="bae-divider"></div>
-
-            <!-- Section: Colors -->
-            <div style="margin-bottom:28px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <div class="bae-section-label" style="margin-bottom:0;">Brand Colors</div>
-                    <button type="button" id="bae-ai-color-btn" class="bae-btn bae-btn-outline bae-btn-sm" style="display:flex;align-items:center;gap:6px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                        Suggest with AI
+            <div class="bae-form-group" style="margin-top:12px;">
+                <label>Tagline</label>
+                <div style="position:relative;">
+                    <input type="text" name="tagline" id="bae-tagline-input" placeholder="e.g. Fresh baked with love, every day"
+                           value="<?php echo esc_attr($p['tagline'] ?? ''); ?>">
+                    <button type="button" id="bae-ai-tagline-btn" class="bae-ai-pill" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                        AI Suggest
                     </button>
                 </div>
-                <!-- AI color suggestions panel -->
-                <div id="bae-ai-color-panel" style="display:none;margin-bottom:16px;padding:16px;background:var(--bg-3);border-radius:14px;border:1px solid var(--border-2);">
-                    <div style="font-size:11px;font-weight:700;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                        AI Palette Suggestions
-                    </div>
-                    <div id="bae-ai-color-results" style="display:flex;flex-direction:column;gap:8px;">
-                        <div style="font-size:13px;color:var(--text-3);text-align:center;padding:16px;">Generating palettes...</div>
-                    </div>
-                </div>
-                <div class="bae-form-grid three">
-                    <div class="bae-form-group">
-                        <label>Primary Color</label>
-                        <div class="bae-color-row bae-color-pair">
-                            <input type="color" name="primary_color_picker" value="<?php echo esc_attr(bae_safe_color($p['primary_color'] ?? '', '#1a1a2e')); ?>">
-                            <input type="text" name="primary_color" id="bae-primary-color" value="<?php echo esc_attr(bae_safe_color($p['primary_color'] ?? '', '#1a1a2e')); ?>" maxlength="7" placeholder="#1a1a2e">
-                        </div>
-                        <small>Main brand color — headers, buttons, accents.</small>
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Secondary Color</label>
-                        <div class="bae-color-row bae-color-pair">
-                            <input type="color" name="secondary_color_picker" value="<?php echo esc_attr(bae_safe_color($p['secondary_color'] ?? '', '#16213e')); ?>">
-                            <input type="text" name="secondary_color" id="bae-secondary-color" value="<?php echo esc_attr(bae_safe_color($p['secondary_color'] ?? '', '#16213e')); ?>" maxlength="7" placeholder="#16213e">
-                        </div>
-                        <small>Supports primary — backgrounds, cards.</small>
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Accent Color</label>
-                        <div class="bae-color-row bae-color-pair">
-                            <input type="color" name="accent_color_picker" value="<?php echo esc_attr(bae_safe_color($p['accent_color'] ?? '', '#e94560')); ?>">
-                            <input type="text" name="accent_color" id="bae-accent-color" value="<?php echo esc_attr(bae_safe_color($p['accent_color'] ?? '', '#e94560')); ?>" maxlength="7" placeholder="#e94560">
-                        </div>
-                        <small>Highlight color — badges, links, CTAs.</small>
-                    </div>
-                </div>
-                <div class="bae-notice bae-notice-error" id="bae-color-warning" style="display:none;margin-top:12px;"></div>
-            </div>
-
-            <div class="bae-divider"></div>
-
-            <!-- Section: Typography -->
-            <div style="margin-bottom:28px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <div class="bae-section-label" style="margin-bottom:0;">Typography</div>
-                    <button type="button" id="bae-ai-font-btn" class="bae-btn bae-btn-outline bae-btn-sm" style="display:flex;align-items:center;gap:6px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                        Suggest with AI
-                    </button>
-                </div>
-                <!-- AI font pairing panel -->
-                <div id="bae-ai-font-panel" style="display:none;margin-bottom:16px;padding:16px;background:var(--bg-3);border-radius:14px;border:1px solid var(--border-2);">
-                    <div style="font-size:11px;font-weight:700;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                        AI Font Pairing Suggestions
-                    </div>
-                    <div id="bae-ai-font-results" style="display:flex;flex-direction:column;gap:8px;">
-                        <div style="font-size:13px;color:var(--text-3);text-align:center;padding:16px;">Generating font pairings...</div>
-                    </div>
-                </div>
-                <div class="bae-form-grid">
-                    <div class="bae-form-group">
-                        <label>Heading Font</label>
-                        <select name="font_heading">
-                            <?php
-                            $fonts = ['Inter','Playfair Display','Montserrat','Raleway','Oswald','Lora','Poppins','Nunito','Roboto Slab','Merriweather'];
-                            $sfh = $p['font_heading'] ?? 'Inter';
-                            foreach ($fonts as $f):
-                            ?>
-                                <option value="<?php echo $f; ?>" <?php selected($sfh, $f); ?>><?php echo $f; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <small>Used for titles and headlines in your assets.</small>
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Body Font</label>
-                        <select name="font_body">
-                            <?php
-                            $sfb = $p['font_body'] ?? 'Inter';
-                            foreach ($fonts as $f):
-                            ?>
-                                <option value="<?php echo $f; ?>" <?php selected($sfb, $f); ?>><?php echo $f; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <small>Used for body text, descriptions, addresses.</small>
+                <div id="bae-ai-tagline-panel" style="display:none;margin-top:10px;padding:12px;background:var(--bg-3);border-radius:12px;border:1px solid var(--border-2);">
+                    <div id="bae-ai-tagline-results" style="display:flex;flex-direction:column;gap:6px;">
+                        <div style="font-size:13px;color:var(--text-3);text-align:center;padding:8px;">Writing taglines...</div>
                     </div>
                 </div>
             </div>
+            <div class="bae-form-group" style="margin-top:12px;">
+                <label>Target Audience</label>
+                <input type="text" name="personality" placeholder="e.g. Families in Quezon City who value quality"
+                       value="<?php echo esc_attr($p['personality'] ?? ''); ?>">
+                <small>Describe your ideal customer in one sentence.</small>
+            </div>
+        </div>
 
-            <div class="bae-divider"></div>
+        <!-- ══ CARD 2: Contact Info (narrow, right) ══ -->
+        <div class="bae-bento-card span-4">
+            <div class="bae-bento-label">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.08 6.08l.94-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17.42z"/></svg>
+                Contact Info
+            </div>
+            <div class="bae-form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" placeholder="hello@yourbusiness.com"
+                       value="<?php echo esc_attr($p['email'] ?? ''); ?>">
+            </div>
+            <div class="bae-form-group" style="margin-top:12px;">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" placeholder="+63 900 000 0000"
+                       value="<?php echo esc_attr($p['phone'] ?? ''); ?>">
+            </div>
+            <div class="bae-form-group" style="margin-top:12px;">
+                <label>Website</label>
+                <input type="url" name="website" placeholder="https://yourbusiness.com"
+                       value="<?php echo esc_attr($p['website'] ?? ''); ?>">
+            </div>
+            <div class="bae-form-group" style="margin-top:12px;">
+                <label>Business Address</label>
+                <input type="text" name="address" placeholder="123 Main St, Quezon City"
+                       value="<?php echo esc_attr($p['address'] ?? ''); ?>">
+            </div>
+        </div>
 
-            <!-- Section: Logo -->
-            <div style="margin-bottom:28px;">
-                <div class="bae-section-label">Logo</div>
-
-                <!-- Method A: Upload -->
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                    <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--brand-deep),var(--brand));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <span style="font-size:11px;font-weight:800;color:white;">A</span>
-                    </div>
-                    <div style="font-size:12px;font-weight:700;color:var(--text-2);">Upload Your Own Logo <span style="font-size:11px;font-weight:400;color:var(--text-3);">— Use your actual logo file (PNG, SVG, JPG)</span></div>
+        <!-- ══ CARD 3: Aesthetics — Colors ══ -->
+        <div class="bae-bento-card span-6">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div class="bae-bento-label" style="margin-bottom:0;flex:1;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+                    Brand Colors
                 </div>
+                <button type="button" id="bae-ai-color-btn" class="bae-ai-pill">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                    AI Suggest
+                </button>
+            </div>
+            <!-- AI color suggestions panel -->
+            <div id="bae-ai-color-panel" style="display:none;margin-bottom:16px;padding:16px;background:var(--bg-3);border-radius:14px;border:1px solid var(--border-2);">
+                <div style="font-size:11px;font-weight:700;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                    AI Palette Suggestions
+                </div>
+                <div id="bae-ai-color-results" style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="font-size:13px;color:var(--text-3);text-align:center;padding:16px;">Generating palettes...</div>
+                </div>
+            </div>
+            <div class="bae-form-grid three">
+                <div class="bae-form-group">
+                    <label>Primary</label>
+                    <div class="bae-color-row bae-color-pair">
+                        <input type="color" name="primary_color_picker" value="<?php echo esc_attr(bae_safe_color($p['primary_color'] ?? '', '#1a1a2e')); ?>">
+                        <input type="text" name="primary_color" id="bae-primary-color" value="<?php echo esc_attr(bae_safe_color($p['primary_color'] ?? '', '#1a1a2e')); ?>" maxlength="7" placeholder="#1a1a2e">
+                    </div>
+                    <small>Headers, buttons</small>
+                </div>
+                <div class="bae-form-group">
+                    <label>Secondary</label>
+                    <div class="bae-color-row bae-color-pair">
+                        <input type="color" name="secondary_color_picker" value="<?php echo esc_attr(bae_safe_color($p['secondary_color'] ?? '', '#16213e')); ?>">
+                        <input type="text" name="secondary_color" id="bae-secondary-color" value="<?php echo esc_attr(bae_safe_color($p['secondary_color'] ?? '', '#16213e')); ?>" maxlength="7" placeholder="#16213e">
+                    </div>
+                    <small>Backgrounds, cards</small>
+                </div>
+                <div class="bae-form-group">
+                    <label>Accent</label>
+                    <div class="bae-color-row bae-color-pair">
+                        <input type="color" name="accent_color_picker" value="<?php echo esc_attr(bae_safe_color($p['accent_color'] ?? '', '#e94560')); ?>">
+                        <input type="text" name="accent_color" id="bae-accent-color" value="<?php echo esc_attr(bae_safe_color($p['accent_color'] ?? '', '#e94560')); ?>" maxlength="7" placeholder="#e94560">
+                    </div>
+                    <small>Badges, links, CTAs</small>
+                </div>
+            </div>
+            <div class="bae-notice bae-notice-error" id="bae-color-warning" style="display:none;margin-top:12px;"></div>
+        </div>
 
-                <!-- Logo Upload -->
-                <div style="margin-bottom:20px;padding:20px;background:var(--bg-3);border:2px dashed var(--border-2);border-radius:14px;transition:border-color .2s;" id="bae-logo-upload-area">
+        <!-- ══ CARD 4: Aesthetics — Typography ══ -->
+        <div class="bae-bento-card span-6">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <div class="bae-bento-label" style="margin-bottom:0;flex:1;">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                    Typography
+                </div>
+                <button type="button" id="bae-ai-font-btn" class="bae-ai-pill">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                    AI Suggest
+                </button>
+            </div>
+            <!-- AI font pairing panel -->
+            <div id="bae-ai-font-panel" style="display:none;margin-bottom:16px;padding:16px;background:var(--bg-3);border-radius:14px;border:1px solid var(--border-2);">
+                <div style="font-size:11px;font-weight:700;color:var(--brand-soft);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
+                    AI Font Pairing Suggestions
+                </div>
+                <div id="bae-ai-font-results" style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="font-size:13px;color:var(--text-3);text-align:center;padding:16px;">Generating font pairings...</div>
+                </div>
+            </div>
+            <div class="bae-form-grid">
+                <div class="bae-form-group">
+                    <label>Heading Font</label>
+                    <select name="font_heading">
+                        <?php
+                        $fonts = ['Inter','Playfair Display','Montserrat','Raleway','Oswald','Lora','Poppins','Nunito','Roboto Slab','Merriweather'];
+                        $sfh = $p['font_heading'] ?? 'Inter';
+                        foreach ($fonts as $f):
+                        ?>
+                            <option value="<?php echo $f; ?>" <?php selected($sfh, $f); ?>><?php echo $f; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small>Titles &amp; headlines in assets.</small>
+                </div>
+                <div class="bae-form-group">
+                    <label>Body Font</label>
+                    <select name="font_body">
+                        <?php
+                        $sfb = $p['font_body'] ?? 'Inter';
+                        foreach ($fonts as $f):
+                        ?>
+                            <option value="<?php echo $f; ?>" <?php selected($sfb, $f); ?>><?php echo $f; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <small>Body text, descriptions, addresses.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ CARD 5: Logo Studio (full width) ══ -->
+        <div class="bae-bento-card span-12">
+            <div class="bae-bento-label">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                Logo Studio
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+                <!-- Sub-panel A: Upload -->
+                <div style="padding:20px;background:var(--bg-3);border:2px dashed var(--border-2);border-radius:18px;transition:border-color .2s;" id="bae-logo-upload-area">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                        <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--brand-deep),var(--brand));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <span style="font-size:11px;font-weight:800;color:white;">A</span>
+                        </div>
+                        <div style="font-size:12px;font-weight:700;color:var(--text-2);">Upload Your Logo <span style="font-weight:400;color:var(--text-3);">— PNG, SVG, JPG</span></div>
+                    </div>
                     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
                         <div id="bae-logo-preview-wrap" style="width:80px;height:80px;border-radius:12px;background:var(--surface);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
                             <?php if (!empty($p['logo_url'])): ?>
@@ -4064,9 +4197,8 @@ function bae_overview_tab($user_id, $profile) {
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                             <?php endif; ?>
                         </div>
-                        <div style="flex:1;min-width:200px;">
-                            <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Upload Your Logo</div>
-                            <div style="font-size:12px;color:var(--text-3);margin-bottom:12px;">PNG, SVG, or JPG. Transparent PNG recommended for best results.</div>
+                        <div style="flex:1;min-width:160px;">
+                            <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;">Transparent PNG recommended.</div>
                             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                                 <label style="display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border-2);border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all .2s;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -4077,132 +4209,138 @@ function bae_overview_tab($user_id, $profile) {
                                 <button type="button" id="bae-logo-remove-btn" style="background:none;border:1px solid rgba(244,63,94,.3);border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;color:#fb7185;cursor:pointer;font-family:'Geist',sans-serif;">Remove</button>
                                 <button type="button" id="bae-logo-check-btn" class="bae-btn bae-btn-outline bae-btn-sm" style="display:flex;align-items:center;gap:5px;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                                    Check Background
+                                    Check BG
                                 </button>
                                 <?php endif; ?>
                                 <span id="bae-logo-upload-status" style="font-size:12px;color:var(--text-3);"></span>
                             </div>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;">
-                                <button type="button" id="bae-logo-download-png" class="bae-btn bae-btn-outline bae-btn-sm">Download PNG</button>
-                                <button type="button" id="bae-logo-download-svg" class="bae-btn bae-btn-outline bae-btn-sm">Download SVG</button>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;">
+                                <button type="button" id="bae-logo-download-png" class="bae-btn bae-btn-outline bae-btn-sm">PNG</button>
+                                <button type="button" id="bae-logo-download-svg" class="bae-btn bae-btn-outline bae-btn-sm">SVG</button>
                                 <span id="bae-logo-download-status" style="font-size:12px;color:var(--text-3);"></span>
                             </div>
                         </div>
                     </div>
                     <input type="hidden" name="logo_url" id="bae-logo-url-hidden" value="<?php echo esc_attr($p['logo_url'] ?? ''); ?>">
+                    <!-- Logo Background Checker -->
+                    <div id="bae-logo-bg-checker" style="display:none;margin-top:14px;">
+                        <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Background Checker</div>
+                        <div id="bae-logo-bg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>
+                    </div>
                 </div>
 
-                <!-- Logo Background Checker -->
-                <div id="bae-logo-bg-checker" style="display:none;margin-bottom:20px;">
-                    <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">Background Checker — click to apply</div>
-                    <div id="bae-logo-bg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;"></div>
-                    <div style="font-size:11px;color:var(--text-3);margin-top:10px;">These show your logo on different backgrounds. Pick one to set as your primary color, or use it as a reference when designing.</div>
-                </div>
-
-                <div class="bae-form-grid">
-                    <div class="bae-form-group">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-                            <div style="width:22px;height:22px;border-radius:6px;background:var(--bg-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                <span style="font-size:11px;font-weight:800;color:var(--text-2);">B</span>
-                            </div>
-                            <div style="font-size:12px;font-weight:700;color:var(--text-2);">CSS Logo Builder <span style="font-size:11px;font-weight:400;color:var(--text-3);">— Used in assets when no logo uploaded</span></div>
+                <!-- Sub-panel B: CSS Builder -->
+                <div>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                        <div style="width:22px;height:22px;border-radius:6px;background:var(--bg-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <span style="font-size:11px;font-weight:800;color:var(--text-2);">B</span>
                         </div>
-                        <label>Logo Type</label>
-                        <select name="logo_style">
-                            <?php
-                            $styles = [
-                                'wordmark'    => 'Wordmark — Business name as logo',
-                                'lettermark'  => 'Lettermark — Initials only',
-                                'combination' => 'Combination — Icon + Name',
-                                'emblem'      => 'Emblem — Icon inside a badge shape',
-                                'monogram'    => 'Monogram — Stylized initials',
-                                'abstract'    => 'Abstract Mark — Icon only, no text',
-                                'badge'       => 'Badge — Circular seal style',
-                                'stacked'     => 'Stacked — Icon above name',
-                                'outlined'    => 'Outlined — Name with border frame',
-                                'minimal'     => 'Minimal — Initials with dot/line',
-                            ];
-                            $sls = $p['logo_style'] ?? 'wordmark';
-                            foreach ($styles as $val => $lbl):
-                            ?>
-                                <option value="<?php echo $val; ?>" <?php selected($sls, $val); ?>><?php echo $lbl; ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div style="font-size:12px;font-weight:700;color:var(--text-2);">CSS Logo Builder <span style="font-weight:400;color:var(--text-3);">— Fallback when no logo</span></div>
                     </div>
-                    <div class="bae-form-group">
-                        <label>Logo Icon / Symbol</label>
-                        <div id="bae-icon-picker" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;padding:12px;background:var(--bg-3);border-radius:12px;border:1px solid var(--border-2);max-height:200px;overflow-y:auto;">
-                            <?php
-                            $all_icons = bae_get_all_icons();
-                            $sli = $p['logo_icon'] ?? '';
-                            foreach ($all_icons as $icon_key => $icon_label):
-                                $svg = bae_get_icon_svg_preview($icon_key);
-                            ?>
-                            <div class="bae-icon-tile <?php echo $sli === $icon_key ? 'selected' : ''; ?>"
-                                 data-value="<?php echo esc_attr($icon_key); ?>"
-                                 title="<?php echo esc_attr($icon_label); ?>"
-                                 onclick="baeSelectIcon(this)"
-                                 style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px solid <?php echo $sli === $icon_key ? '#8b5cf6' : 'transparent'; ?>;background:<?php echo $sli === $icon_key ? 'rgba(139,92,246,.15)' : 'var(--surface)'; ?>;transition:all .15s;">
-                                <?php echo $svg; ?>
-                            </div>
-                            <?php endforeach; ?>
+                    <div class="bae-form-grid">
+                        <div class="bae-form-group">
+                            <label>Logo Type</label>
+                            <select name="logo_style">
+                                <?php
+                                $styles = [
+                                    'wordmark'    => 'Wordmark — Name as logo',
+                                    'lettermark'  => 'Lettermark — Initials only',
+                                    'combination' => 'Combination — Icon + Name',
+                                    'emblem'      => 'Emblem — Icon inside badge',
+                                    'monogram'    => 'Monogram — Stylized initials',
+                                    'abstract'    => 'Abstract Mark — Icon only',
+                                    'badge'       => 'Badge — Circular seal',
+                                    'stacked'     => 'Stacked — Icon above name',
+                                    'outlined'    => 'Outlined — Name with border',
+                                    'minimal'     => 'Minimal — Initials with dot',
+                                ];
+                                $sls = $p['logo_style'] ?? 'wordmark';
+                                foreach ($styles as $val => $lbl):
+                                ?>
+                                    <option value="<?php echo $val; ?>" <?php selected($sls, $val); ?>><?php echo $lbl; ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
-                        <input type="hidden" name="logo_icon" id="bae-logo-icon-hidden" value="<?php echo esc_attr($sli); ?>">
-                        <small>Icon used in combination/lettermark logos.</small>
+                        <div class="bae-form-group">
+                            <label>Logo Icon</label>
+                            <div id="bae-icon-picker" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;padding:10px;background:var(--bg-3);border-radius:12px;border:1px solid var(--border-2);max-height:180px;overflow-y:auto;">
+                                <?php
+                                $all_icons = bae_get_all_icons();
+                                $sli = $p['logo_icon'] ?? '';
+                                foreach ($all_icons as $icon_key => $icon_label):
+                                    $svg = bae_get_icon_svg_preview($icon_key);
+                                ?>
+                                <div class="bae-icon-tile <?php echo $sli === $icon_key ? 'selected' : ''; ?>"
+                                     onclick="baeSelectIcon(this)"
+                                     data-value="<?php echo esc_attr($icon_key); ?>"
+                                     title="<?php echo esc_attr($icon_label); ?>"
+                                     style="width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;border:1.5px solid transparent;background:var(--surface);transition:all .15s;padding:4px;">
+                                    <?php echo $svg; ?>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <input type="hidden" id="bae-logo-icon-hidden" name="logo_icon" value="<?php echo esc_attr($sli); ?>">
+                        </div>
+                    </div>
+                    <div class="bae-form-grid" style="margin-top:12px;">
+                        <div class="bae-form-group">
+                            <label for="bae-logo-icon-scale">Icon Scale — <span id="bae-logo-icon-scale-value"><?php echo esc_html((int)($p['logo_icon_scale'] ?? 100)); ?>%</span></label>
+                            <input type="range" id="bae-logo-icon-scale" name="logo_icon_scale" min="60" max="160" step="5" value="<?php echo esc_attr((int)($p['logo_icon_scale'] ?? 100)); ?>">
+                        </div>
+                        <div class="bae-form-group">
+                            <label for="bae-logo-spacing">Spacing — <span id="bae-logo-spacing-value"><?php echo esc_html((int)($p['logo_spacing'] ?? 14)); ?>px</span></label>
+                            <input type="range" id="bae-logo-spacing" name="logo_spacing" min="6" max="28" step="1" value="<?php echo esc_attr((int)($p['logo_spacing'] ?? 14)); ?>">
+                        </div>
+                        <div class="bae-form-group">
+                            <label>Icon Position</label>
+                            <?php $logo_position = $p['logo_position'] ?? 'auto'; ?>
+                            <select name="logo_position">
+                                <option value="auto" <?php selected($logo_position, 'auto'); ?>>Auto</option>
+                                <option value="left" <?php selected($logo_position, 'left'); ?>>Left</option>
+                                <option value="top" <?php selected($logo_position, 'top'); ?>>Top</option>
+                                <option value="right" <?php selected($logo_position, 'right'); ?>>Right</option>
+                            </select>
+                        </div>
+                        <div class="bae-form-group">
+                            <label>Text Case</label>
+                            <?php $logo_text_case = $p['logo_text_case'] ?? 'default'; ?>
+                            <select name="logo_text_case">
+                                <option value="default" <?php selected($logo_text_case, 'default'); ?>>Default</option>
+                                <option value="uppercase" <?php selected($logo_text_case, 'uppercase'); ?>>UPPERCASE</option>
+                                <option value="title" <?php selected($logo_text_case, 'title'); ?>>Title Case</option>
+                                <option value="lowercase" <?php selected($logo_text_case, 'lowercase'); ?>>lowercase</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
+            </div><!-- /logo studio grid -->
+        </div><!-- /bento card logo -->
 
-                <div class="bae-form-grid" style="margin-top:14px;">
-                    <div class="bae-form-group">
-                        <label for="bae-logo-icon-scale">Icon Size</label>
-                        <input type="range" id="bae-logo-icon-scale" name="logo_icon_scale" min="70" max="160" step="5" value="<?php echo esc_attr((int)($p['logo_icon_scale'] ?? 100)); ?>">
-                        <small><span id="bae-logo-icon-scale-value"><?php echo esc_html((int)($p['logo_icon_scale'] ?? 100)); ?>%</span> icon scale for generated logo styles.</small>
-                    </div>
-                    <div class="bae-form-group">
-                        <label for="bae-logo-spacing">Spacing</label>
-                        <input type="range" id="bae-logo-spacing" name="logo_spacing" min="6" max="28" step="1" value="<?php echo esc_attr((int)($p['logo_spacing'] ?? 14)); ?>">
-                        <small><span id="bae-logo-spacing-value"><?php echo esc_html((int)($p['logo_spacing'] ?? 14)); ?>px</span> spacing between icon and text.</small>
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Icon Position</label>
-                        <?php $logo_position = $p['logo_position'] ?? 'auto'; ?>
-                        <select name="logo_position">
-                            <option value="auto" <?php selected($logo_position, 'auto'); ?>>Auto</option>
-                            <option value="left" <?php selected($logo_position, 'left'); ?>>Left</option>
-                            <option value="top" <?php selected($logo_position, 'top'); ?>>Top</option>
-                            <option value="right" <?php selected($logo_position, 'right'); ?>>Right</option>
-                        </select>
-                        <small>Override icon placement for generated layouts.</small>
-                    </div>
-                    <div class="bae-form-group">
-                        <label>Text Case</label>
-                        <?php $logo_text_case = $p['logo_text_case'] ?? 'default'; ?>
-                        <select name="logo_text_case">
-                            <option value="default" <?php selected($logo_text_case, 'default'); ?>>Default</option>
-                            <option value="uppercase" <?php selected($logo_text_case, 'uppercase'); ?>>Uppercase</option>
-                            <option value="title" <?php selected($logo_text_case, 'title'); ?>>Title Case</option>
-                            <option value="lowercase" <?php selected($logo_text_case, 'lowercase'); ?>>Lowercase</option>
-                        </select>
-                        <small>Adjust the logo wordmark styling without changing your saved business name.</small>
-                    </div>
-                </div>
-            </div>
+        </div><!-- /bae-bento-grid -->
 
-            <style>
-            .bae-icon-tile:hover { border-color: rgba(139,92,246,.4) !important; background: rgba(139,92,246,.08) !important; }
-            .bae-icon-tile.selected { border-color: #8b5cf6 !important; background: rgba(139,92,246,.15) !important; }
-            #bae-icon-picker::-webkit-scrollbar { width: 4px; }
-            #bae-icon-picker::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 999px; }
-            </style>
+        <style>
+        .bae-icon-tile:hover { border-color: rgba(139,92,246,.4) !important; background: rgba(139,92,246,.08) !important; }
+        .bae-icon-tile.selected { border-color: #8b5cf6 !important; background: rgba(139,92,246,.15) !important; }
+        #bae-icon-picker::-webkit-scrollbar { width: 4px; }
+        #bae-icon-picker::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 999px; }
+        @media (max-width: 700px) {
+            .bae-bento-card .bae-form-grid.three { grid-template-columns: 1fr; }
+        }
+        /* Logo studio responsive */
+        @media (max-width: 700px) {
+            .bae-bento-card.span-12 > div > div[style*="grid-template-columns:1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        </style>
 
-            <input type="hidden" name="action" value="bae_save_profile">
-            <input type="hidden" name="nonce" value="<?php echo $nonce; ?>">
+        <input type="hidden" name="action" value="bae_save_profile">
+        <input type="hidden" name="nonce" value="<?php echo $nonce; ?>">
 
-            <div style="display:flex;align-items:center;gap:12px;">
-                <button type="submit" class="bae-btn bae-btn-primary">Save Brand Profile</button>
-
-            </div>
-            <div id="bae-profile-msg"></div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+            <button type="submit" class="bae-btn bae-btn-primary">Save Brand Profile</button>
+        </div>
+        <div id="bae-profile-msg"></div>
         </form>
     </div><!-- /bae-profile-form-col -->
 
@@ -4534,7 +4672,7 @@ function bae_overview_tab($user_id, $profile) {
             var nonce = '<?php echo esc_js(wp_create_nonce("bae_generate_asset")); ?>';
             var pid   = '<?php echo esc_js($p["id"] ?? ""); ?>';
             if (!pid) { if (btn) btn.textContent = 'No profile ID'; return; }
-            var types = ['business_card','letterhead','email_signature','social_kit','brand_guidelines'];
+            var types = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap', 'invoice_template', 'price_list', 'flyer_template', 'thank_you_card', 'media_kit', 'poster_a3'];
             var done  = 0;
             types.forEach(function(type) {
                 var card = document.getElementById('bae-card-' + type);
@@ -4563,7 +4701,7 @@ function bae_overview_tab($user_id, $profile) {
 
         // Refresh all visible asset card previews with latest form data
         window.baeRefreshAssetPreviews = function(formData) {
-            var assetTypes = ['business_card','letterhead','email_signature','social_kit','brand_guidelines'];
+            var assetTypes = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap', 'invoice_template', 'price_list', 'flyer_template', 'thank_you_card', 'media_kit', 'poster_a3'];
             assetTypes.forEach(function(type) {
                 var card = document.getElementById('bae-card-' + type);
                 if (!card) return;
@@ -5610,12 +5748,18 @@ function bae_assets_tab($user_id, $profile) {
     }
 
     $asset_types = [
-        'business_card'    => ['name' => 'Business Card',    'desc' => 'Print-ready front & back layout'],
-        'letterhead'       => ['name' => 'Letterhead',        'desc' => 'A4 branded document header/footer'],
-        'email_signature'  => ['name' => 'Email Signature',   'desc' => 'HTML email signature snippet'],
-        'social_kit'       => ['name' => 'Social Media Kit',  'desc' => 'Profile frame + post template'],
-        'brand_guidelines' => ['name' => 'Brand Guidelines',  'desc' => 'One-page brand rules document'],
-        'sitemap'          => ['name' => 'Site Structure',    'desc' => 'Suggested sitemap for your industry'],
+        'business_card'    => ['name' => 'Business Card',       'desc' => 'Print-ready front & back layout',             'icon' => '🪪'],
+        'letterhead'       => ['name' => 'Letterhead',           'desc' => 'A4 branded document header/footer',           'icon' => '📄'],
+        'email_signature'  => ['name' => 'Email Signature',      'desc' => 'HTML email signature snippet',                'icon' => '✉️'],
+        'social_kit'       => ['name' => 'Social Media Kit',     'desc' => 'Profile frame + post template',               'icon' => '📱'],
+        'brand_guidelines' => ['name' => 'Brand Guidelines',     'desc' => 'One-page brand rules document',               'icon' => '📋'],
+        'sitemap'          => ['name' => 'Site Structure',       'desc' => 'Suggested sitemap for your industry',          'icon' => '🗺️'],
+        'invoice_template' => ['name' => 'Invoice Template',     'desc' => 'Branded invoice layout for clients',           'icon' => '🧾'],
+        'price_list'       => ['name' => 'Price List',           'desc' => 'Stylized product or service pricing sheet',    'icon' => '💰'],
+        'flyer_template'   => ['name' => 'Promo Flyer',          'desc' => 'Promotional flyer for events or offers',       'icon' => '📣'],
+        'thank_you_card'   => ['name' => 'Thank You Card',       'desc' => 'Branded thank-you card for customers',         'icon' => '💌'],
+        'media_kit'        => ['name' => 'Media Kit',            'desc' => 'Press/partnership one-pager with brand stats', 'icon' => '📰'],
+        'poster_a3'        => ['name' => 'A3 Poster',            'desc' => 'Large-format print-ready branded poster',      'icon' => '🖼️'],
     ];
 
     // Append saved custom assets from DB
@@ -5637,7 +5781,7 @@ function bae_assets_tab($user_id, $profile) {
             <div class="bae-card-desc">Generate branded HTML assets ready for download or handoff.</div>
         </div>
         <?php if ($is_free): ?>
-        <button class="bae-btn bae-btn-outline" onclick="baePricingOpen('Generate all 7 assets at once', 'Free plan lets you generate each asset individually. Upgrade to generate all 7 in one click, and regenerate anytime.')">
+        <button class="bae-btn bae-btn-outline" onclick="baePricingOpen('Generate all 12 assets at once', 'Free plan lets you generate each asset individually. Upgrade to generate all 12 in one click, and regenerate anytime.')">
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
             Generate All — Starter+
         </button>
@@ -5679,12 +5823,32 @@ function bae_assets_tab($user_id, $profile) {
 
     <div id="bae-generate-all-msg"></div>
 
-    <div class="bae-assets-grid" style="margin-top:20px;">
+    <div class="bae-asset-toolbar" style="margin-top:20px;">
+        <!-- Search bar -->
+        <div class="bae-asset-search">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="bae-asset-search-input" placeholder="Search assets…" autocomplete="off">
+        </div>
+        <span style="font-size:12px;color:var(--text-3);" id="bae-asset-count-label"></span>
+        <span style="font-size:11px;color:var(--text-3);margin-left:auto;display:flex;align-items:center;gap:5px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l4-4 4 4"/><path d="M9 5v14"/><path d="M19 15l-4 4-4-4"/><path d="M15 19V5"/></svg>
+            Drag cards to reorder
+        </span>
+    </div>
+
+    <div class="bae-assets-grid" id="bae-assets-grid-container" style="margin-top:0;">
+        <div class="bae-asset-no-results" id="bae-asset-no-results" style="display:none;">
+            No assets match your search. <button onclick="document.getElementById('bae-asset-search-input').value='';baeFilterAssets();" style="background:none;border:none;color:var(--brand-soft);cursor:pointer;font-family:'Geist',sans-serif;font-size:14px;">Clear search</button>
+        </div>
         <?php foreach ($asset_types as $type => $meta):
             $is_gen   = isset($gen_map[$type]);
             $gen_data = $is_gen ? $gen_map[$type] : null;
         ?>
-        <div class="bae-asset-card" id="bae-card-<?php echo $type; ?>">
+        <div class="bae-asset-card" id="bae-card-<?php echo $type; ?>"
+             draggable="true"
+             data-asset-type="<?php echo esc_attr($type); ?>"
+             data-asset-name="<?php echo esc_attr(strtolower($meta['name'])); ?>"
+             data-asset-desc="<?php echo esc_attr(strtolower($meta['desc'])); ?>">
             <div class="bae-asset-preview">
                 <?php if ($is_gen): ?>
                     <div class="bae-asset-preview-inner bae-ai-asset">
@@ -5799,7 +5963,100 @@ function bae_assets_tab($user_id, $profile) {
             </div>
         </div>
         <?php endforeach; ?>
-    </div>
+    </div><!-- /bae-assets-grid-container -->
+
+    <script>
+    (function() {
+        // ── Asset Search ──────────────────────────────────────────────────────
+        var searchInput = document.getElementById('bae-asset-search-input');
+        var noResults   = document.getElementById('bae-asset-no-results');
+        var countLabel  = document.getElementById('bae-asset-count-label');
+
+        function baeFilterAssets() {
+            var q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+            var cards = document.querySelectorAll('#bae-assets-grid-container .bae-asset-card');
+            var visible = 0;
+            cards.forEach(function(card) {
+                var name = (card.dataset.assetName || '').toLowerCase();
+                var desc = (card.dataset.assetDesc || '').toLowerCase();
+                var match = !q || name.indexOf(q) !== -1 || desc.indexOf(q) !== -1;
+                card.classList.toggle('bae-assets-hidden', !match);
+                if (match) visible++;
+            });
+            if (noResults) noResults.style.display = visible === 0 ? 'block' : 'none';
+            if (countLabel) countLabel.textContent = q ? visible + ' result' + (visible !== 1 ? 's' : '') : '';
+        }
+        window.baeFilterAssets = baeFilterAssets;
+        if (searchInput) {
+            searchInput.addEventListener('input', baeFilterAssets);
+        }
+
+        // ── Drag-and-Drop Reorder ─────────────────────────────────────────────
+        var grid = document.getElementById('bae-assets-grid-container');
+        var dragging = null;
+        var ORDER_KEY = 'bae_asset_order_<?php echo esc_js($profile_id); ?>';
+
+        function saveOrder() {
+            try {
+                var cards = grid.querySelectorAll('.bae-asset-card[data-asset-type]');
+                var order = Array.from(cards).map(function(c) { return c.dataset.assetType; });
+                localStorage.setItem(ORDER_KEY, JSON.stringify(order));
+            } catch(e) {}
+        }
+
+        function loadOrder() {
+            try {
+                var saved = localStorage.getItem(ORDER_KEY);
+                if (!saved) return;
+                var order = JSON.parse(saved);
+                var noResultsEl = document.getElementById('bae-asset-no-results');
+                order.forEach(function(type) {
+                    var card = document.getElementById('bae-card-' + type);
+                    if (card) grid.appendChild(card);
+                });
+                if (noResultsEl) grid.appendChild(noResultsEl);
+            } catch(e) {}
+        }
+        loadOrder();
+
+        grid.addEventListener('dragstart', function(e) {
+            var card = e.target.closest('.bae-asset-card');
+            if (!card) return;
+            dragging = card;
+            card.classList.add('bae-dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        grid.addEventListener('dragend', function(e) {
+            if (dragging) dragging.classList.remove('bae-dragging');
+            grid.querySelectorAll('.bae-drag-over').forEach(function(c) { c.classList.remove('bae-drag-over'); });
+            dragging = null;
+            saveOrder();
+        });
+        grid.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            var target = e.target.closest('.bae-asset-card');
+            if (!target || target === dragging) return;
+            grid.querySelectorAll('.bae-drag-over').forEach(function(c) { c.classList.remove('bae-drag-over'); });
+            target.classList.add('bae-drag-over');
+        });
+        grid.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var target = e.target.closest('.bae-asset-card');
+            if (!target || !dragging || target === dragging) return;
+            target.classList.remove('bae-drag-over');
+            // Insert dragging before or after target
+            var rect = target.getBoundingClientRect();
+            var midX = rect.left + rect.width / 2;
+            if (e.clientX < midX) {
+                grid.insertBefore(dragging, target);
+            } else {
+                grid.insertBefore(dragging, target.nextSibling);
+            }
+            saveOrder();
+        });
+    })();
+    </script>
 
     <!-- Custom AI Generator -->
     <?php
@@ -6290,7 +6547,7 @@ function bae_assets_tab($user_id, $profile) {
         var progressFill = document.getElementById('bae-progress-fill');
         var progressLabel = document.getElementById('bae-progress-label');
 
-        var types = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap'];
+        var types = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap', 'invoice_template', 'price_list', 'flyer_template', 'thank_you_card', 'media_kit', 'poster_a3'];
 
         function setStepState(type, state) {
             var el = document.getElementById('bae-step-' + type);
@@ -7434,11 +7691,20 @@ function bntm_ajax_bae_social_captions() {
         wp_send_json_error(['message' => 'Please enter a topic or event first.']);
     }
 
-    $profile = $wpdb->get_row($wpdb->prepare(
-        "SELECT business_name, industry, personality, tagline FROM {$wpdb->prefix}bae_profiles WHERE id = %d AND user_id = %d",
-        $profile_id,
-        get_current_user_id()
-    ), ARRAY_A);
+    $ticket_ck = bae_get_ticket_cookie();
+    $profile = null;
+    if ($ticket_ck) {
+        $profile = $wpdb->get_row($wpdb->prepare(
+            "SELECT business_name, industry, personality, tagline FROM {$wpdb->prefix}bae_profiles WHERE id = %d AND ticket = %s",
+            $profile_id, $ticket_ck
+        ), ARRAY_A);
+    }
+    if (!$profile) {
+        $profile = $wpdb->get_row($wpdb->prepare(
+            "SELECT business_name, industry, personality, tagline FROM {$wpdb->prefix}bae_profiles WHERE id = %d",
+            $profile_id
+        ), ARRAY_A);
+    }
 
     if (!$profile) {
         wp_send_json_error(['message' => 'Profile not found.']);
@@ -7606,7 +7872,7 @@ function bntm_ajax_bae_consistency_scan() {
 
     if ( ! $profile ) wp_send_json_error( [ 'message' => 'Profile not found.' ] );
 
-    $allowed = [ 'business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap' ];
+    $allowed = [ 'business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap', 'invoice_template', 'price_list', 'flyer_template', 'thank_you_card', 'media_kit', 'poster_a3' ];
 
     $rows = $wpdb->get_results( $wpdb->prepare(
         "SELECT asset_type, asset_html FROM {$assets_table} WHERE profile_id = %d AND is_generated = 1",
@@ -8519,6 +8785,267 @@ function bae_generate_asset_html_static($type, $profile, $regen_prompt = '') {
 
 </div>";
 
+        case 'invoice_template':
+            return "
+<style>
+@import url('https://fonts.googleapis.com/css2?family=" . urlencode($fh) . ":wght@400;700&family=" . urlencode($fb) . "&display=swap');
+* { box-sizing: border-box; }
+</style>
+<div style='width:595px;min-height:842px;background:#fff;font-family:\"{$fb}\",sans-serif;border:1px solid #e5e7eb;'>
+  <!-- Header -->
+  <div style='background:{$pc};padding:28px 40px;display:flex;justify-content:space-between;align-items:flex-start;'>
+    <div>
+      <div style='font-family:\"{$fh}\",sans-serif;font-size:24px;font-weight:700;color:#fff;margin-bottom:4px;'>{$name}</div>
+      <div style='font-size:11px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.1em;'>{$tagline}</div>
+    </div>
+    <div style='text-align:right;'>
+      <div style='font-size:22px;font-weight:700;color:#fff;letter-spacing:0.05em;'>INVOICE</div>
+      <div style='font-size:12px;color:rgba(255,255,255,0.7);margin-top:4px;'>#INV-2025-001</div>
+    </div>
+  </div>
+  <!-- Bill To / Invoice Info -->
+  <div style='display:grid;grid-template-columns:1fr 1fr;gap:0;padding:28px 40px;border-bottom:1px solid #f3f4f6;'>
+    <div>
+      <div style='font-size:10px;font-weight:700;color:{$ac};text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;'>Bill To</div>
+      <div style='font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;'>Client Name</div>
+      <div style='font-size:12px;color:#6b7280;line-height:1.7;'>Company Name<br>Address Line 1<br>City, Province ZIP</div>
+    </div>
+    <div style='text-align:right;'>
+      <div style='font-size:10px;font-weight:700;color:{$ac};text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;'>Invoice Details</div>
+      <div style='display:flex;flex-direction:column;gap:4px;font-size:12px;color:#374151;'>
+        <div style='display:flex;justify-content:space-between;gap:24px;'><span style='color:#9ca3af;'>Issue Date</span><span>" . date('M d, Y') . "</span></div>
+        <div style='display:flex;justify-content:space-between;gap:24px;'><span style='color:#9ca3af;'>Due Date</span><span>" . date('M d, Y', strtotime('+30 days')) . "</span></div>
+        <div style='display:flex;justify-content:space-between;gap:24px;'><span style='color:#9ca3af;'>Invoice #</span><span>INV-2025-001</span></div>
+      </div>
+    </div>
+  </div>
+  <!-- Items Table -->
+  <div style='padding:0 40px;'>
+    <table style='width:100%;border-collapse:collapse;margin:24px 0;'>
+      <thead>
+        <tr style='background:#f9fafb;'>
+          <th style='padding:10px 12px;text-align:left;font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #e5e7eb;'>Description</th>
+          <th style='padding:10px 12px;text-align:center;font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #e5e7eb;'>Qty</th>
+          <th style='padding:10px 12px;text-align:right;font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #e5e7eb;'>Price</th>
+          <th style='padding:10px 12px;text-align:right;font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #e5e7eb;'>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style='padding:12px;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;'>Service / Product Name</td><td style='padding:12px;text-align:center;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;'>1</td><td style='padding:12px;text-align:right;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;'>₱5,000.00</td><td style='padding:12px;text-align:right;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;'>₱5,000.00</td></tr>
+        <tr><td style='padding:12px;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;'>Additional Item</td><td style='padding:12px;text-align:center;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;'>2</td><td style='padding:12px;text-align:right;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;'>₱1,500.00</td><td style='padding:12px;text-align:right;font-size:13px;color:#374151;border-bottom:1px solid #f3f4f6;'>₱3,000.00</td></tr>
+        <tr><td style='padding:12px;font-size:13px;color:#9ca3af;font-style:italic;' colspan='4'>Add more items as needed...</td></tr>
+      </tbody>
+    </table>
+    <!-- Totals -->
+    <div style='display:flex;justify-content:flex-end;'>
+      <div style='min-width:240px;'>
+        <div style='display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px;'><span style='color:#6b7280;'>Subtotal</span><span>₱8,000.00</span></div>
+        <div style='display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px;'><span style='color:#6b7280;'>VAT (12%)</span><span>₱960.00</span></div>
+        <div style='display:flex;justify-content:space-between;padding:12px 0;font-size:16px;font-weight:700;color:{$pc};'><span>Total Due</span><span>₱8,960.00</span></div>
+      </div>
+    </div>
+  </div>
+  <!-- Footer -->
+  <div style='margin:28px 40px 0;padding:18px;background:{$pc}08;border:1px solid {$pc}22;border-radius:10px;'>
+    <div style='font-size:10px;font-weight:700;color:{$ac};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;'>Payment Details</div>
+    <div style='font-size:12px;color:#374151;line-height:1.7;'>Bank: BDO / BPI &nbsp;|&nbsp; Account: {$name} &nbsp;|&nbsp; GCash: {$phone}<br>{$email} &nbsp;·&nbsp; {$website}</div>
+  </div>
+  <div style='padding:16px 40px;margin-top:20px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;'>
+    <span>Thank you for your business!</span>
+    <span>{$name} &copy; " . date('Y') . "</span>
+  </div>
+</div>";
+
+        case 'price_list':
+            $items = [
+                ['cat' => 'Basic', 'items' => [
+                    ['name' => 'Starter Package', 'desc' => 'Perfect for small needs', 'price' => '₱499'],
+                    ['name' => 'Standard Service', 'desc' => 'Most popular choice', 'price' => '₱999'],
+                ]],
+                ['cat' => 'Premium', 'items' => [
+                    ['name' => 'Professional Package', 'desc' => 'Full-featured solution', 'price' => '₱1,999'],
+                    ['name' => 'Enterprise Plan', 'desc' => 'Custom for large teams', 'price' => 'Custom'],
+                ]],
+            ];
+            $rows_html = '';
+            foreach ($items as $cat) {
+                $rows_html .= "<div style='margin-bottom:20px;'>";
+                $rows_html .= "<div style='font-size:10px;font-weight:700;color:{$ac};text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid {$ac};'>" . esc_html($cat['cat']) . "</div>";
+                foreach ($cat['items'] as $item) {
+                    $rows_html .= "<div style='display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f3f4f6;gap:16px;'>"
+                        . "<div><div style='font-size:14px;font-weight:600;color:#111827;'>" . esc_html($item['name']) . "</div><div style='font-size:12px;color:#6b7280;margin-top:2px;'>" . esc_html($item['desc']) . "</div></div>"
+                        . "<div style='font-size:18px;font-weight:700;color:{$pc};white-space:nowrap;'>" . esc_html($item['price']) . "</div>"
+                        . "</div>";
+                }
+                $rows_html .= "</div>";
+            }
+            return "
+<style>
+@import url('https://fonts.googleapis.com/css2?family=" . urlencode($fh) . ":wght@400;700&family=" . urlencode($fb) . "&display=swap');
+</style>
+<div style='width:595px;background:#fff;font-family:\"{$fb}\",sans-serif;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;'>
+  <div style='background:linear-gradient(135deg,{$pc},{$sc});padding:32px 40px;position:relative;overflow:hidden;'>
+    <div style='position:absolute;top:-30px;right:-30px;width:140px;height:140px;background:{$ac};opacity:0.15;border-radius:50%;'></div>
+    <div style='font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px;'>Price List</div>
+    <div style='font-family:\"{$fh}\",sans-serif;font-size:26px;font-weight:700;color:#fff;margin-bottom:4px;'>{$name}</div>
+    <div style='font-size:12px;color:rgba(255,255,255,0.7);'>{$tagline}</div>
+  </div>
+  <div style='padding:28px 40px;'>{$rows_html}</div>
+  <div style='background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 40px;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;'>
+    <span>All prices are subject to change without notice.</span>
+    <span>{$email}</span>
+  </div>
+</div>";
+
+        case 'flyer_template':
+            return "
+<style>
+@import url('https://fonts.googleapis.com/css2?family=" . urlencode($fh) . ":wght@400;700;900&family=" . urlencode($fb) . "&display=swap');
+</style>
+<div style='width:420px;min-height:595px;background:linear-gradient(160deg,{$pc} 0%,{$sc} 55%,{$pc} 100%);font-family:\"{$fb}\",sans-serif;position:relative;overflow:hidden;display:flex;flex-direction:column;'>
+  <!-- Decorative circles -->
+  <div style='position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:{$ac};opacity:0.18;border-radius:50%;'></div>
+  <div style='position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;background:{$ac};opacity:0.12;border-radius:50%;'></div>
+  <!-- Content -->
+  <div style='position:relative;z-index:1;padding:36px 32px;flex:1;display:flex;flex-direction:column;justify-content:space-between;'>
+    <div>
+      <div style='display:inline-flex;padding:6px 16px;background:{$ac};border-radius:999px;font-size:11px;font-weight:700;color:#fff;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px;'>Special Offer</div>
+      <div style='font-family:\"{$fh}\",sans-serif;font-size:38px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:12px;'>{$name}</div>
+      <div style='font-size:16px;color:rgba(255,255,255,0.8);margin-bottom:24px;line-height:1.6;'>{$tagline}</div>
+      <div style='font-family:\"{$fh}\",sans-serif;font-size:48px;font-weight:900;color:{$ac};letter-spacing:-1px;'>20% OFF</div>
+      <div style='font-size:13px;color:rgba(255,255,255,0.65);margin-top:6px;'>Limited time offer · Valid this month only</div>
+    </div>
+    <div style='margin-top:32px;'>
+      <div style='border-top:1px solid rgba(255,255,255,0.2);padding-top:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;'>
+        <div>
+          <div style='font-family:\"{$fh}\",sans-serif;font-size:15px;font-weight:700;color:#fff;'>{$name}</div>
+          <div style='font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;'>{$email}</div>
+          " . ($phone ? "<div style='font-size:11px;color:rgba(255,255,255,0.6);'>{$phone}</div>" : '') . "
+        </div>
+        " . ($website ? "<div style='background:{$ac};color:#fff;padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;'>{$website}</div>" : '') . "
+      </div>
+    </div>
+  </div>
+</div>";
+
+        case 'thank_you_card':
+            return "
+<style>
+@import url('https://fonts.googleapis.com/css2?family=" . urlencode($fh) . ":wght@400;700&family=" . urlencode($fb) . "&display=swap');
+</style>
+<div style='display:flex;flex-direction:column;gap:16px;font-family:\"{$fb}\",sans-serif;'>
+  <!-- Front -->
+  <div style='width:400px;height:240px;background:linear-gradient(135deg,{$pc},{$sc});border-radius:14px;padding:32px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;'>
+    <div style='position:absolute;bottom:-40px;right:-40px;width:160px;height:160px;background:{$ac};opacity:0.15;border-radius:50%;'></div>
+    <div style='position:absolute;top:-20px;left:-20px;width:100px;height:100px;background:rgba(255,255,255,0.06);border-radius:50%;'></div>
+    <div style='position:relative;z-index:1;'>
+      <div style='font-size:12px;color:rgba(255,255,255,0.6);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:12px;'>A note from</div>
+      <div style='font-family:\"{$fh}\",sans-serif;font-size:22px;font-weight:700;color:#fff;'>{$name}</div>
+    </div>
+    <div style='width:36px;height:3px;background:{$ac};border-radius:2px;'></div>
+  </div>
+  <!-- Inside -->
+  <div style='width:400px;min-height:240px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:32px;'>
+    <div style='font-family:\"{$fh}\",sans-serif;font-size:28px;font-style:italic;font-weight:700;color:{$pc};margin-bottom:16px;'>Thank You!</div>
+    <div style='font-size:14px;color:#374151;line-height:1.9;margin-bottom:20px;'>Dear valued customer,<br><br>We truly appreciate your support and trust in <strong>{$name}</strong>. Your satisfaction is our greatest reward, and we look forward to serving you again soon.</div>
+    <div style='border-top:1px solid #f3f4f6;padding-top:16px;display:flex;align-items:center;gap:12px;'>
+      <div style='width:38px;height:38px;background:{$pc};border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;'>
+        <span style='font-family:\"{$fh}\",sans-serif;font-size:14px;font-weight:700;color:#fff;'>{$initials}</span>
+      </div>
+      <div>
+        <div style='font-size:13px;font-weight:700;color:{$pc};'>{$name}</div>
+        <div style='font-size:11px;color:#9ca3af;'>{$email}</div>
+      </div>
+    </div>
+  </div>
+</div>";
+
+        case 'media_kit':
+            $tone_tags_mk = bae_derive_tone_tags($p['industry'] ?? '', $p['personality'] ?? '');
+            $tone_str_mk  = implode(', ', array_slice($tone_tags_mk, 0, 4));
+            return "
+<style>
+@import url('https://fonts.googleapis.com/css2?family=" . urlencode($fh) . ":wght@400;700&family=" . urlencode($fb) . "&display=swap');
+* { box-sizing: border-box; }
+</style>
+<div style='width:720px;font-family:\"{$fb}\",sans-serif;background:#fff;'>
+  <!-- Cover -->
+  <div style='background:linear-gradient(135deg,{$pc} 0%,{$sc} 100%);padding:48px 52px;position:relative;overflow:hidden;'>
+    <div style='position:absolute;top:-50px;right:-50px;width:250px;height:250px;background:{$ac};opacity:0.12;border-radius:50%;'></div>
+    <div style='position:absolute;bottom:-60px;left:-30px;width:200px;height:200px;background:rgba(255,255,255,0.06);border-radius:50%;'></div>
+    <div style='position:relative;z-index:1;'>
+      <div style='font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:16px;'>Media Kit · " . date('Y') . "</div>
+      <div style='font-family:\"{$fh}\",sans-serif;font-size:36px;font-weight:700;color:#fff;margin-bottom:8px;'>{$name}</div>
+      <div style='font-size:14px;color:rgba(255,255,255,0.75);max-width:480px;line-height:1.7;'>{$tagline}</div>
+    </div>
+  </div>
+  <!-- About -->
+  <div style='padding:36px 52px;border-bottom:1px solid #f3f4f6;'>
+    <div style='font-size:10px;font-weight:700;color:{$ac};text-transform:uppercase;letter-spacing:0.14em;margin-bottom:10px;'>About {$name}</div>
+    <div style='display:grid;grid-template-columns:1fr 1fr;gap:20px;'>
+      <div style='font-size:13px;color:#374151;line-height:1.8;'><strong style='color:{$pc};'>{$name}</strong> is a {$p['industry']} brand committed to quality, trust, and meaningful impact. We serve our community through products and services that reflect our values.<br><br><em>Tone: {$tone_str_mk}</em></div>
+      <div style='display:flex;flex-direction:column;gap:10px;'>
+        <div style='padding:12px;background:#f9fafb;border-radius:10px;'><div style='font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;'>Industry</div><div style='font-size:14px;font-weight:600;color:#111827;margin-top:3px;'>" . esc_html($p['industry'] ?? 'General') . "</div></div>
+        <div style='padding:12px;background:#f9fafb;border-radius:10px;'><div style='font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;'>Founded</div><div style='font-size:14px;font-weight:600;color:#111827;margin-top:3px;'>" . date('Y') . "</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- Brand Colors -->
+  <div style='padding:28px 52px;border-bottom:1px solid #f3f4f6;'>
+    <div style='font-size:10px;font-weight:700;color:{$ac};text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;'>Brand Colors</div>
+    <div style='display:flex;gap:14px;'>
+      " . implode('', array_map(function($lbl, $c) {
+            return "<div><div style='width:60px;height:60px;border-radius:12px;background:{$c};margin-bottom:6px;'></div><div style='font-size:11px;color:#9ca3af;'>{$lbl}</div><div style='font-family:monospace;font-size:11px;font-weight:600;color:#374151;'>" . strtoupper($c) . "</div></div>";
+        }, ['Primary','Secondary','Accent'], [$pc,$sc,$ac])) . "
+    </div>
+  </div>
+  <!-- Contact -->
+  <div style='padding:28px 52px;background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;'>
+    <div>
+      <div style='font-size:10px;font-weight:700;color:{$ac};text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;'>Press Contact</div>
+      " . ($email ? "<div style='font-size:13px;color:#374151;margin-bottom:3px;'>{$email}</div>" : '') . "
+      " . ($phone ? "<div style='font-size:13px;color:#374151;'>{$phone}</div>" : '') . "
+    </div>
+    " . ($website ? "<div style='font-size:14px;font-weight:700;color:{$pc};'>{$website}</div>" : '') . "
+  </div>
+</div>";
+
+        case 'poster_a3':
+            return "
+<style>
+@import url('https://fonts.googleapis.com/css2?family=" . urlencode($fh) . ":wght@400;700;900&family=" . urlencode($fb) . "&display=swap');
+</style>
+<div style='width:420px;height:594px;background:{$pc};font-family:\"{$fb}\",sans-serif;position:relative;overflow:hidden;display:flex;flex-direction:column;'>
+  <!-- Background decoration -->
+  <div style='position:absolute;top:-80px;right:-80px;width:300px;height:300px;background:{$ac};opacity:0.14;border-radius:50%;'></div>
+  <div style='position:absolute;bottom:-60px;left:-60px;width:240px;height:240px;background:{$sc};opacity:0.4;border-radius:50%;'></div>
+  <div style='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:500px;background:rgba(255,255,255,0.03);border-radius:50%;'></div>
+  <!-- Top band -->
+  <div style='position:relative;z-index:1;padding:28px 32px 0;'>
+    <div style='display:flex;align-items:center;justify-content:space-between;'>
+      <div style='font-size:10px;letter-spacing:0.2em;color:rgba(255,255,255,0.45);text-transform:uppercase;'>" . date('Y') . "</div>
+      <div style='width:28px;height:3px;background:{$ac};border-radius:2px;'></div>
+    </div>
+  </div>
+  <!-- Hero Text -->
+  <div style='position:relative;z-index:1;flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px;'>
+    <div style='font-size:11px;font-weight:700;color:{$ac};text-transform:uppercase;letter-spacing:0.18em;margin-bottom:14px;'>Presenting</div>
+    <div style='font-family:\"{$fh}\",sans-serif;font-size:48px;font-weight:900;color:#fff;line-height:1.0;margin-bottom:18px;'>" . wordwrap($name, 12, "\n", true) . "</div>
+    <div style='width:48px;height:4px;background:{$ac};border-radius:2px;margin-bottom:18px;'></div>
+    " . ($tagline ? "<div style='font-size:15px;color:rgba(255,255,255,0.75);line-height:1.7;max-width:300px;'>{$tagline}</div>" : '') . "
+  </div>
+  <!-- Bottom info bar -->
+  <div style='position:relative;z-index:1;padding:20px 32px;background:rgba(0,0,0,0.25);backdrop-filter:blur(10px);'>
+    <div style='display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;'>
+      <div>
+        <div style='font-family:\"{$fh}\",sans-serif;font-size:14px;font-weight:700;color:#fff;'>{$name}</div>
+        " . ($email ? "<div style='font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;'>{$email}</div>" : '') . "
+      </div>
+      " . ($website ? "<div style='font-size:11px;font-weight:700;color:{$ac};'>{$website}</div>" : '') . "
+    </div>
+  </div>
+</div>";
+
         default:
             return '<div>Unknown asset type.</div>';
     }
@@ -8766,15 +9293,20 @@ function bntm_ajax_bae_save_profile() {
 
 function bntm_ajax_bae_generate_asset() {
     check_ajax_referer('bae_generate_asset', 'nonce');
-    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
+
+    // Allow ticket-based users (user_id = 0) — auth is by ticket cookie
+    $ticket_cookie = bae_get_ticket_cookie();
+    if (!$ticket_cookie && !is_user_logged_in()) {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
 
     global $wpdb;
-    $user_id    = get_current_user_id();
+    $user_id    = is_user_logged_in() ? get_current_user_id() : 0;
     $asset_type = sanitize_text_field($_POST['asset_type'] ?? '');
     $profile_id = intval($_POST['profile_id'] ?? 0);
     $regen_prompt = sanitize_text_field($_POST['regen_prompt'] ?? '');
 
-    $allowed_types = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap'];
+    $allowed_types = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap', 'invoice_template', 'price_list', 'flyer_template', 'thank_you_card', 'media_kit', 'poster_a3'];
     $is_custom_asset = strpos($asset_type, 'custom_') === 0;
     if (!$is_custom_asset && !in_array($asset_type, $allowed_types)) {
         wp_send_json_error(['message' => 'Invalid asset type.']);
@@ -8783,11 +9315,27 @@ function bntm_ajax_bae_generate_asset() {
     $profiles_table = $wpdb->prefix . 'bae_profiles';
     $assets_table   = $wpdb->prefix . 'bae_assets';
 
-    $profile = $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$profiles_table} WHERE id = %d AND user_id = %d",
-        $profile_id, $user_id
-    ), ARRAY_A);
-
+    // Ticket-first identity — users are identified by ticket, not user_id
+    $profile = null;
+    if ($ticket_cookie) {
+        $profile = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$profiles_table} WHERE id = %d AND ticket = %s",
+            $profile_id, $ticket_cookie
+        ), ARRAY_A);
+    }
+    if (!$profile && $user_id > 0) {
+        $profile = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$profiles_table} WHERE id = %d AND user_id = %d",
+            $profile_id, $user_id
+        ), ARRAY_A);
+    }
+    if (!$profile) {
+        // Final fallback for legacy data
+        $profile = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$profiles_table} WHERE id = %d",
+            $profile_id
+        ), ARRAY_A);
+    }
     if (!$profile) {
         wp_send_json_error(['message' => 'Profile not found.']);
     }
@@ -8867,19 +9415,19 @@ function bntm_ajax_bae_generate_asset() {
         'social_kit'       => 'Social Media Kit',
         'brand_guidelines' => 'Brand Guidelines',
         'sitemap'          => 'Site Structure',
+        'invoice_template' => 'Invoice Template',
+        'price_list'       => 'Price List',
+        'flyer_template'   => 'Promo Flyer',
+        'thank_you_card'   => 'Thank You Card',
+        'media_kit'        => 'Media Kit',
+        'poster_a3'        => 'A3 Poster',
     ];
 
+    // Ticket-first lookup — users are ticket-based, not user_id
     $existing = $wpdb->get_row($wpdb->prepare(
-        "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND user_id = %d AND asset_type = %s",
-        $profile_id, $user_id, $asset_type
+        "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
+        $profile_id, $asset_type
     ));
-
-    if (!$existing) {
-        $existing = $wpdb->get_row($wpdb->prepare(
-            "SELECT id, asset_html, asset_name FROM {$assets_table} WHERE profile_id = %d AND asset_type = %s",
-            $profile_id, $asset_type
-        ));
-    }
 
     // Sanitize before saving so echoed HTML can never break the page
     $asset_html = bae_sanitize_asset_html( $asset_html );
@@ -8911,14 +9459,32 @@ function bntm_ajax_bae_generate_asset() {
 
 function bntm_ajax_bae_delete_asset() {
     check_ajax_referer('bae_generate_asset', 'nonce');
-    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
 
     global $wpdb;
     $table    = $wpdb->prefix . 'bae_assets';
-    $user_id  = get_current_user_id();
     $asset_id = intval($_POST['asset_id'] ?? 0);
 
-    $result = $wpdb->delete($table, ['id' => $asset_id, 'user_id' => $user_id], ['%d', '%d']);
+    // Ticket-first identity
+    $ticket = bae_get_ticket_cookie();
+    if ($ticket) {
+        // Verify the asset belongs to this ticket's profile
+        $asset = $wpdb->get_row($wpdb->prepare(
+            "SELECT a.id FROM {$table} a
+             JOIN {$wpdb->prefix}bae_profiles p ON p.id = a.profile_id
+             WHERE a.id = %d AND p.ticket = %s",
+            $asset_id, $ticket
+        ));
+        if ($asset) {
+            $result = $wpdb->delete($table, ['id' => $asset_id], ['%d']);
+        } else {
+            $result = false;
+        }
+    } elseif (is_user_logged_in()) {
+        $result = $wpdb->delete($table, ['id' => $asset_id, 'user_id' => get_current_user_id()], ['%d', '%d']);
+    } else {
+        wp_send_json_error(['message' => 'Unauthorized']);
+        return;
+    }
 
     if ($result) {
         wp_send_json_success(['message' => 'Asset removed.']);
@@ -9169,7 +9735,7 @@ function bae_count_assets($user_id, $profile_id = 0) {
 }
 
 function bae_get_onboarding_auto_asset_types($plan = 'free') {
-    $all_assets = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap'];
+    $all_assets = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap', 'invoice_template', 'price_list', 'flyer_template', 'thank_you_card', 'media_kit', 'poster_a3'];
     if ($plan === 'starter' || $plan === 'pro') {
         return $all_assets;
     }
@@ -11374,7 +11940,7 @@ add_action('wp_ajax_nopriv_bae_preview_asset', 'bntm_ajax_bae_preview_asset');
 function bntm_ajax_bae_preview_asset() {
     // No nonce needed — read-only, no DB writes, no sensitive data
     $type = sanitize_text_field($_POST['asset_type'] ?? 'business_card');
-    $allowed = ['business_card','letterhead','email_signature','social_kit','brand_guidelines'];
+    $allowed = ['business_card', 'letterhead', 'email_signature', 'social_kit', 'brand_guidelines', 'sitemap', 'invoice_template', 'price_list', 'flyer_template', 'thank_you_card', 'media_kit', 'poster_a3'];
     if (!in_array($type, $allowed)) wp_send_json_error(['message' => 'Invalid type.']);
 
     // Build a temporary profile from POST values — never saved to DB
