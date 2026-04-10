@@ -713,6 +713,23 @@ function bntm_ch_add_index_if_missing($table, $index_name, $index_sql) {
 // ============================================================
 
 function bntm_shortcode_ch_auth() {
+    if (!empty($_GET['verify_email']) && !empty($_GET['uid'])) {
+        $verify_user_id = (int) $_GET['uid'];
+        $result = ch_verify_email_token($verify_user_id, sanitize_text_field(wp_unslash($_GET['verify_email'])));
+        if (!is_wp_error($result)) {
+            $verified_user = get_user_by('id', $verify_user_id);
+            if ($verified_user instanceof WP_User) {
+                wp_set_current_user($verified_user->ID);
+                wp_set_auth_cookie($verified_user->ID, true, is_ssl());
+                ch_ensure_profile($verified_user->ID);
+
+                $redirect_after_verify = esc_url_raw(wp_unslash($_GET['redirect_to'] ?? ''));
+                wp_safe_redirect($redirect_after_verify ?: ch_get_feed_url());
+                exit;
+            }
+        }
+    }
+
     $notice = ch_get_auth_notice();
 
     // If already logged in, redirect to feed
