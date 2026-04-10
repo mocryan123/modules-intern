@@ -51,7 +51,7 @@ function kbf_admin_withdrawals_tab() {
           <tbody>
           <?php foreach($escrows as $e): ?>
             <tr>
-              <td><strong><?php echo esc_html(wp_trim_words($e->fund_title,5)); ?></strong></td>
+              <td><span class="kbf-strong"><?php echo esc_html(wp_trim_words($e->fund_title,5)); ?></span></td>
               <td class="kbf-meta"><?php echo esc_html($e->funder_display ?: '-'); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($e->status); ?>"><?php echo ucfirst($e->status); ?></span></td>
               <td class="kbf-meta"><?php echo $format_date($e->requested_at); ?></td>
@@ -98,7 +98,7 @@ function kbf_admin_withdrawals_tab() {
               <td>
                 <div class="kbf-cell-center">
                   <div class="kbf-cell-spacer"></div>
-                  <strong><?php echo esc_html(wp_trim_words($w->fund_title,5)); ?></strong>
+                  <span class="kbf-strong"><?php echo esc_html(wp_trim_words($w->fund_title,5)); ?></span>
                   <div class="kbf-cell-spacer"></div>
                 </div>
               </td>
@@ -109,7 +109,7 @@ function kbf_admin_withdrawals_tab() {
                   <div class="kbf-cell-spacer"></div>
                 </div>
               </td>
-              <td><strong>PHP <?php echo $format_amount($w->amount, 2); ?></strong></td>
+              <td><span class="kbf-strong">PHP <?php echo $format_amount($w->amount, 2); ?></span></td>
               <td class="kbf-meta"><?php echo esc_html($format_account_type($w->account_type)); ?></td>
               <td class="kbf-meta"><?php echo esc_html($w->account_name); ?><br><?php echo esc_html($w->account_number); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
@@ -139,3 +139,4 @@ function kbf_admin_withdrawals_tab() {
     </div>
     <?php return ob_get_clean();
 }
+

@@ -44,7 +44,7 @@ function kbf_admin_all_funds_tab() {
               <td>
                 <div class="kbf-cell-center">
                    <div class="kbf-cell-spacer"></div>
-                  <strong><?php echo esc_html(wp_trim_words($f->title,6)); ?></strong>
+                  <span class="kbf-strong"><?php echo esc_html(wp_trim_words($f->title,6)); ?></span>
                   <div class="kbf-cell-spacer"></div>
                 </div>
               </td>
@@ -57,7 +57,7 @@ function kbf_admin_all_funds_tab() {
               </td>
               <td><?php echo esc_html($f->category); ?></td>
               <td>&#8369;<?php echo $format_currency($f->goal_amount, 0); ?></td>
-              <td><strong style="color:var(--kbf-blue);">&#8369;<?php echo $format_currency($f->raised_amount, 0); ?></strong></td>
+              <td><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo $format_currency($f->raised_amount, 0); ?></span></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>"><?php echo ucfirst($f->escrow_status); ?></span></td>
               <td>
@@ -79,4 +79,5 @@ function kbf_admin_all_funds_tab() {
     </div>
     <?php return ob_get_clean();
 }
+
 

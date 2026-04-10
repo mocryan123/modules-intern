@@ -90,7 +90,7 @@ function bntm_shortcode_kbf_admin() {
     <div class="kbf-dashboard-topbar kbf-admin-topbar">
       <div class="kbf-dashboard-brand">
         <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
-        <span class="kbf-brand-text">fundora</span>
+        
       </div>
       <button class="kbf-hamburger" type="button" onclick="kbfToggleMobileMenu()" aria-label="Toggle menu">
         <i class="ph ph-list kbf-icon" aria-hidden="true"></i>
@@ -101,9 +101,8 @@ function bntm_shortcode_kbf_admin() {
       <aside class="kbf-admin-sidebar">
         <div class="kbf-admin-sidebar-brand">
           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora">
-          <span class="kbf-brand-text">fundora</span>
+          
         </div>
-        <div>Admin Navigation</div>
         <nav class="kbf-dashboard-nav kbf-admin-nav" id="kbf-admin-nav">
           <?php foreach($nav_groups as $group_label=>$items): ?>
             <div style="margin-top:12px;"><?php echo esc_html($group_label); ?></div>
@@ -688,5 +687,7 @@ window.kbfSubmitReject = function(){
     $c=ob_get_clean();
     return bntm_universal_container('KonekBayan Admin Panel',$c, ['show_topbar'=>false,'show_header'=>false,'wrap'=>false]);
 }
+
+
 
 

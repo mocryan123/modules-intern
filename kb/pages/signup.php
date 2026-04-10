@@ -84,7 +84,37 @@ function bntm_kbf_render_signup() {
     ob_start();
     ?>
     <style>
-      @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css');
+      /* Typography scale (match landing) */
+      :root{
+        --kbf-type-h1: 64px;
+        --kbf-type-h2: 32px;
+        --kbf-type-h3: 24px;
+        --kbf-type-h4: 18px;
+        --kbf-type-body: 16px;
+        --kbf-type-lead: 18px;
+        --kbf-type-meta: 12.5px;
+      }
+      .kbf-auth-wrap, .kbf-auth-wrap *{
+        font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      }
+      h1{font-size:var(--kbf-type-h1);line-height:1.05;font-weight:600;letter-spacing:-1.5px;color:#0d1a2e;}
+      h2{font-size:var(--kbf-type-h2);line-height:1.2;font-weight:500;letter-spacing:-0.5px;color:#0f172a;}
+      h3{font-size:var(--kbf-type-h3);line-height:1.3;font-weight:500;letter-spacing:-0.2px;color:#0f172a;}
+      h4{font-size:var(--kbf-type-h4);line-height:1.35;font-weight:500;color:#0f172a;}
+      p, li{font-size:var(--kbf-type-body);line-height:1.65;font-weight:400;color:#334155;}
+      .kbf-lead{font-size:var(--kbf-type-lead);line-height:1.7;}
+      small, .kbf-meta{font-size:var(--kbf-type-meta);line-height:1.5;font-weight:500;color:#64748b;}
+      @media (max-width:720px){
+        :root{
+          --kbf-type-h1: 40px;
+          --kbf-type-h2: 26px;
+          --kbf-type-h3: 20px;
+          --kbf-type-h4: 16px;
+          --kbf-type-body: 15px;
+          --kbf-type-lead: 16px;
+          --kbf-type-meta: 12px;
+        }
+      }@import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css');
       @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css');
       .ph{font-family:'Phosphor' !important;font-style:normal;font-weight:400;line-height:1;}
       .ph-bold{font-weight:700;}
@@ -278,7 +308,7 @@ function bntm_kbf_render_signup() {
                     </button>
                   </div>
                 </div>
-              <label style="display:flex;gap:6px;align-items:center;font-size:18px;color:var(--kbf-slate);margin-top:2px;">
+              <label style="display:flex;gap:6px;align-items:center;font-size:var(--kbf-type-body);color:var(--kbf-slate);margin-top:2px;">
                 <input type="checkbox" style="width:14px;height:14px;" required> I agree to the Terms & Conditions
               </label>
               <div class="kbf-auth-cta">
@@ -325,6 +355,8 @@ function bntm_kbf_render_signup() {
     <?php
     return ob_get_clean();
 }
+
+
 
 
 

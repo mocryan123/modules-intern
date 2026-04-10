@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF admin tab: Security Logs.
  */
@@ -41,7 +41,7 @@ function kbf_admin_security_logs_tab() {
 
         <div class="kbf-card" style="padding:0;overflow:hidden;">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--kbf-border);background:#f8fafc;">
-                <strong style="font-size:14px;color:var(--kbf-navy);">Latest 200 Events</strong>
+                <span style="font-size:14px;color:var(--kbf-navy);" class="kbf-strong">Latest 200 Events</span>
                 <span style="font-size:12px;color:var(--kbf-slate);">Newest first</span>
             </div>
 
@@ -108,3 +108,4 @@ function kbf_admin_security_logs_tab() {
     <?php
     return ob_get_clean();
 }
+

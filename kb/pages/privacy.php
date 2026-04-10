@@ -12,10 +12,40 @@ function bntm_kbf_render_privacy() {
     $login_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url();
     ob_start();
     ?>
-    <!-- ================== CSS ================== -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
     <style>
-      @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css');
-      @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css');
+      /* Typography scale (match landing) */
+      :root{
+        --kbf-type-h1: 64px;
+        --kbf-type-h2: 32px;
+        --kbf-type-h3: 24px;
+        --kbf-type-h4: 18px;
+        --kbf-type-body: 16px;
+        --kbf-type-lead: 18px;
+        --kbf-type-meta: 12.5px;
+      }
+      .kbf-landing, .kbf-legal, body{
+        font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+      }
+      h1{font-size:var(--kbf-type-h1);line-height:1.05;font-weight:600;letter-spacing:-1.5px;color:#0d1a2e;}
+      h2{font-size:var(--kbf-type-h2);line-height:1.2;font-weight:500;letter-spacing:-0.5px;color:#0f172a;}
+      h3{font-size:var(--kbf-type-h3);line-height:1.3;font-weight:500;letter-spacing:-0.2px;color:#0f172a;}
+      h4{font-size:var(--kbf-type-h4);line-height:1.35;font-weight:500;color:#0f172a;}
+      p, li{font-size:var(--kbf-type-body);line-height:1.65;font-weight:400;color:#334155;}
+      .kbf-lead{font-size:var(--kbf-type-lead);line-height:1.7;}
+      small, .kbf-meta{font-size:var(--kbf-type-meta);line-height:1.5;font-weight:500;color:#64748b;}
+      @media (max-width:720px){
+        :root{
+          --kbf-type-h1: 40px;
+          --kbf-type-h2: 26px;
+          --kbf-type-h3: 20px;
+          --kbf-type-h4: 16px;
+          --kbf-type-body: 15px;
+          --kbf-type-lead: 16px;
+          --kbf-type-meta: 12px;
+        }
+      }
       .ph{font-family:'Phosphor' !important;font-style:normal;font-weight:400;line-height:1;}
       .ph-bold{font-weight:700;}
       .ph-fill{font-weight:400;}
@@ -260,8 +290,10 @@ function bntm_kbf_render_privacy() {
       .kbf-footer {
         margin: 44px auto 40px;
         max-width: 1040px;
-        background: #0c0f14;
-        color: #b9c0cc;
+        background: linear-gradient(135deg, rgba(74, 152, 255, 0.9) 0%, rgba(47, 123, 220, 0.95) 100%) !important;
+        color: rgba(255,255,255,0.5) !important;
+        font-size: 12.5px !important;
+        border-top: 1px solid rgba(255,255,255,0.07) !important;
         border-radius: 22px;
         padding: 20px 22px;
         display: grid;
@@ -270,20 +302,33 @@ function bntm_kbf_render_privacy() {
         gap: 14px;
       }
       .kbf-footer-left{ display:flex; flex-direction:column; gap:6px; }
-      .kbf-footer p { margin: 0; font-size: 12px; color: #b9c0cc; line-height:1.6; }
-      .kbf-footer small { color: #8590a6; display:block; margin-top:6px; font-size:11.5px; }
+      .kbf-footer,
+      .kbf-footer p,
+      .kbf-footer small,
+      .kbf-footer a,
+      .kbf-footer .kbf-footer-links a,
+      .kbf-footer .kbf-brand,
+      .kbf-footer .kbf-brand-text,
+      .kbf-footer h5{
+        color:#ffffff !important;
+        font-weight:400 !important;
+        font-size:12.5px !important;
+      }
+      .kbf-footer .kbf-brand img{
+        filter: invert(100%) brightness(1.1);
+      }
       .kbf-footer .kbf-social { display: flex; gap: 8px; }
-      .kbf-footer .kbf-social a {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+            .kbf-footer .kbf-social a {
+        width: 40px;
+        height: 40px;
+        padding: 0;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid rgba(255,255,255,.18);
-        background: transparent;
+        color: #fff;
+        font-size: 20px;
       }
-      .kbf-footer .kbf-social img { width: 16px; height: 16px; filter: invert(100%); }
+      .kbf-footer .kbf-social img { width: 16px; height: 16px; display:block; filter: invert(100%); }
       .kbf-footer .kbf-footer-links{
         display:flex;
         gap:12px;
@@ -291,11 +336,11 @@ function bntm_kbf_render_privacy() {
         margin:0;
       }
       .kbf-footer .kbf-footer-links a{
-        color:#cbd5f5;
-        font-size:12px;
+        color:#ffffff !important;
+        font-size:12.5px !important;
         text-decoration:none;
       }
-      .kbf-footer .kbf-footer-links a:hover{ color:#fff; }
+      .kbf-footer .kbf-footer-links a:hover{ color:#ffffff !important; }
       .kbf-container {
         overflow: visible;
         max-width: 1120px;
@@ -341,7 +386,7 @@ function bntm_kbf_render_privacy() {
         <div class="kbf-mobile-menu-header">
           <div class="kbf-brand">
             <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:24px;height:24px;object-fit:contain;border-radius:6px;">
-            <span class="kbf-brand-text" style="font-weight:800;">fundora</span>
+            
           </div>
           <button class="kbf-hamburger" type="button" id="kbf-hamburger-close" aria-label="Close menu" style="display:inline-flex;">
             <i class="ph-bold ph-x kbf-icon" role="img" aria-label="Close"></i>
@@ -480,32 +525,32 @@ function bntm_kbf_render_privacy() {
           <p>Fundora | Maramag, Bukidnon, Philippines</p>
         </div>
       </div>
-      <footer class="kbf-footer">
-      <div class="kbf-footer-left">
-        <div class="kbf-brand" style="margin-bottom:8px;">
-          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:20px;height:20px;object-fit:contain;border-radius:6px;">
-          <span class="kbf-brand-text" style="font-weight: 600;">fundora</span>
-        </div>
-        <p>Community fundraising rooted in bayanihan.</p>
-        <div class="kbf-footer-links">
-          <a href="<?php echo esc_url(kbf_get_page_url('privacy')); ?>">Privacy Policy</a>
-          <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>">Terms of Service</a>
-          <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>">Refund Policy</a>
-        </div>
-        <small>Â© fundora. All rights reserved.</small>
-      </div>
-      <div class="kbf-social">
-        <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-          <i class="ph ph-instagram-logo kbf-icon" aria-hidden="true"></i>
-        </a>
-        <a href="https://www.facebook.com/bentamosabentamo" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-          <i class="ph ph-facebook-logo kbf-icon" aria-hidden="true"></i>
-        </a>
-        <a href="https://www.linkedin.com/company/bentamo/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
-          <i class="ph ph-linkedin-logo kbf-icon" aria-hidden="true"></i>
-        </a>
-      </div>
-      </footer>
+       <!-- FOOTER -->
+        <footer class="kbf-footer kbf-reveal delay-3" style="margin-top:80px;">
+          <div class="kbf-footer-left">
+            <div class="kbf-brand" style="margin-bottom:8px;">
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:30px;object-fit:contain;border-radius:6px;filter:brightness(0) invert(1);">
+            </div>
+            <p>Community fundraising rooted in bayanihan.</p>
+            <div class="kbf-footer-links">
+              <a href="<?php echo esc_url(kbf_get_page_url('privacy')); ?>">Privacy Policy</a>
+              <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>">Terms of Service</a>
+              <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>">Refund Policy</a>
+            </div>
+            <small>&copy; fundora. All rights reserved.</small>
+          </div>
+          <div class="kbf-social">
+            <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+              <i class="ph ph-instagram-logo kbf-icon" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.facebook.com/bentamosabentamo" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+              <i class="ph ph-facebook-logo kbf-icon" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.linkedin.com/company/bentamo/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+              <i class="ph ph-linkedin-logo kbf-icon" aria-hidden="true"></i>
+            </a>
+          </div>
+        </footer>
       </div>
     </section>
     <script>
@@ -582,6 +627,14 @@ function bntm_kbf_render_privacy() {
     <?php
     return ob_get_clean();
 }
+
+
+
+
+
+
+
+
 
 
 

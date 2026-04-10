@@ -27,10 +27,10 @@ function kbf_admin_appeals_tab() {
         <div class="kbf-card kbf-admin-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
             <div>
-              <strong style="font-size:14px;">Fund: <?php echo esc_html($a->fund_title); ?></strong>
+              <span style="font-size:14px;" class="kbf-strong">Fund: <?php echo esc_html($a->fund_title); ?></span>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:6px 0 0;"><?php echo esc_html($a->message); ?></p>
               <div class="kbf-meta" style="margin-top:6px;">Appeal ID: <?php echo esc_html($a->rand_id); ?> &bull; <?php echo $format_date($a->created_at); ?></div>
-              <?php if($a->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><strong>Admin Note:</strong> <?php echo esc_html($a->admin_notes); ?></div><?php endif; ?>
+              <?php if($a->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><span class="kbf-strong">Admin Note:</span> <?php echo esc_html($a->admin_notes); ?></div><?php endif; ?>
             </div>
             <span class="kbf-badge kbf-badge-<?php echo $a->status; ?>"><?php echo ucfirst($a->status); ?></span>
           </div>
@@ -112,4 +112,5 @@ function kbf_admin_appeals_tab() {
     </script>
     <?php return ob_get_clean();
 }
+
 

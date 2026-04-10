@@ -110,14 +110,14 @@ function kbf_admin_settings_tab() {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
           <div style="flex:1;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <strong style="font-size:15px;color:var(--kbf-navy);">Payment Mode</strong>
+              <span style="font-size:15px;color:var(--kbf-navy);" class="kbf-strong">Payment Mode</span>
               <span class="kbf-badge <?php echo $demo_mode?'kbf-badge-holding':'kbf-badge-active'; ?>">
                 <?php echo $demo_mode?'DEMO -- Auto-confirm':'LIVE -- Maya Checkout'; ?>
               </span>
             </div>
             <p style="margin:0 0 10px;font-size:13.5px;color:var(--kbf-text-sm);line-height:1.6;">
-              <strong>Demo ON:</strong> Sponsorships auto-confirmed instantly, no real payment.<br>
-              <strong>Demo OFF:</strong> Sponsors are redirected to Maya's secure checkout page (Maya Wallet, cards, QRPh).
+              <span class="kbf-strong">Demo ON:</span> Sponsorships auto-confirmed instantly, no real payment.<br>
+              <span class="kbf-strong">Demo OFF:</span> Sponsors are redirected to Maya's secure checkout page (Maya Wallet, cards, QRPh).
             </p>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
@@ -138,14 +138,14 @@ function kbf_admin_settings_tab() {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
           <div style="flex:1;">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-              <strong style="font-size:15px;color:var(--kbf-navy);">Platform Fee</strong>
+              <span style="font-size:15px;color:var(--kbf-navy);" class="kbf-strong">Platform Fee</span>
               <span class="kbf-badge <?php echo $fee_disabled?'kbf-badge-cancelled':'kbf-badge-active'; ?>">
                 <?php echo $fee_disabled?'DISABLED (0%)':'ENABLED (5%)'; ?>
               </span>
             </div>
             <p style="margin:0 0 10px;font-size:13.5px;color:var(--kbf-text-sm);line-height:1.6;">
-              <strong>Enabled:</strong> Platform fee is shown in goal preview (5%).<br>
-              <strong>Disabled:</strong> Platform fee is 0% and hidden from goal preview.
+              <span class="kbf-strong">Enabled:</span> Platform fee is shown in goal preview (5%).<br>
+              <span class="kbf-strong">Disabled:</span> Platform fee is 0% and hidden from goal preview.
             </p>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;min-width:160px;">
@@ -164,12 +164,12 @@ function kbf_admin_settings_tab() {
       <!-- Maya API Keys -->
       <div class="kbf-card" style="margin-bottom:20px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-          <strong style="font-size:15px;color:var(--kbf-navy);">Maya API Keys</strong>
+          <span style="font-size:15px;color:var(--kbf-navy);" class="kbf-strong">Maya API Keys</span>
           <a href="https://developers.maya.ph/reference/sandbox-credentials-and-cards" target="_blank" style="font-size:12px;color:var(--kbf-blue);margin-left:auto;">Open Maya Business Manager</a>
         </div>
 
         <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--kbf-text-sm);line-height:1.7;">
-          <strong style="color:var(--kbf-navy);">Where to find your keys:</strong><br>
+          <span style="color:var(--kbf-navy);" class="kbf-strong">Where to find your keys:</span><br>
           Maya Business Manager -> Developers -> API Keys. Copy Public Key &amp; Secret Key for both Sandbox and Live environments.
         </div>
 
@@ -210,11 +210,11 @@ function kbf_admin_settings_tab() {
         <div style="border-top:1px solid var(--kbf-border);margin-top:20px;padding-top:16px;">
           <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:10px;">Webhook URL (for automatic payment confirmation)</div>
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;font-size:13px;line-height:1.8;">
-            <strong>Your Webhook URL -- copy this into Maya Business Manager:</strong><br>
+            <span class="kbf-strong">Your Webhook URL -- copy this into Maya Business Manager:</span><br>
             <code style="font-size:12px;word-break:break-all;color:var(--kbf-navy);background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin:6px 0;"><?php echo esc_html($webhook_url); ?></code><br>
             <small style="color:var(--kbf-slate);">
               Maya Business Manager -> Developers -> Webhooks -> Add Webhook URL.<br>
-              Subscribe to events: <strong>CHECKOUT_SUCCESS</strong> and <strong>PAYMENT_SUCCESS</strong>.<br>
+              Subscribe to events: <span class="kbf-strong">CHECKOUT_SUCCESS</span> and <span class="kbf-strong">PAYMENT_SUCCESS</span>.<br>
               Optional: add a webhook secret below for signature verification.<br>
               <a href="https://sandbox-manager.paymaya.com" target="_blank" rel="noopener noreferrer">Open Maya Webhooks</a>
               &nbsp;|&nbsp;
@@ -241,11 +241,11 @@ function kbf_admin_settings_tab() {
       <!-- Didit API Keys -->
       <div class="kbf-card" style="margin-bottom:20px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-          <strong style="font-size:15px;color:var(--kbf-navy);">Didit ID Verification</strong>
+          <span style="font-size:15px;color:var(--kbf-navy);" class="kbf-strong">Didit ID Verification</span>
           <a href="https://docs.didit.me/core-technology/id-verification/overview" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:var(--kbf-blue);margin-left:auto;">Open Didit Docs</a>
         </div>
         <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--kbf-text-sm);line-height:1.7;">
-          <strong style="color:var(--kbf-navy);">API setup:</strong><br>
+          <span style="color:var(--kbf-navy);" class="kbf-strong">API setup:</span><br>
           Add your Didit App ID, API key, and workflow IDs for sandbox and live environments.
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px;">
@@ -288,7 +288,7 @@ function kbf_admin_settings_tab() {
         <div style="border-top:1px solid var(--kbf-border);padding-top:16px;">
           <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--kbf-navy);margin-bottom:10px;">Webhook URL (for automatic verification)</div>
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;font-size:13px;line-height:1.8;">
-            <strong>Your Didit Webhook URL:</strong><br>
+            <span class="kbf-strong">Your Didit Webhook URL:</span><br>
             <code style="font-size:12px;word-break:break-all;color:var(--kbf-navy);background:#e2e8f0;padding:4px 8px;border-radius:4px;display:inline-block;margin:6px 0;"><?php echo esc_html($didit_webhook_url); ?></code><br>
             <small style="color:var(--kbf-slate);">
               Didit Dashboard -> API &amp; Webhooks -> Add Webhook URL.<br>
@@ -447,4 +447,5 @@ function kbf_admin_settings_tab() {
     </script>
     <?php return ob_get_clean();
 }
+
 

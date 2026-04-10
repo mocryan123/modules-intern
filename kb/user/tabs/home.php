@@ -370,13 +370,11 @@
         </div>
       <?php if($pending_funds > 0): ?>
       <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;">
-        <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.964 0L.165 13.233c-.457.778.091 1.767.982 1.767h13.706c.89 0 1.438-.99.982-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1-2.002 0 1 1 0 0 1 2.002 0z"/>
-          </svg>
-        </span>
+          <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+            <i class="ph-fill ph-warning" aria-hidden="true"></i>
+          </span>
         <div>
-          <strong><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</strong>
+          <span class="kbf-strong"><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</span>
           Not visible to sponsors yet. Usually 3–5 days. You’ll be notified after approval.
           <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
         </div>
@@ -456,26 +454,22 @@
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
           <?php if($last_wd && $last_wd->status === 'pending'): ?>
           <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
-            <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zM7.5 4.5a.5.5 0 0 1 1 0V8a.5.5 0 0 1-.146.354l-2 2a.5.5 0 0 1-.708-.708L7.5 7.793V4.5z"/>
-              </svg>
-            </span>
+              <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+                <i class="ph-fill ph-warning" aria-hidden="true"></i>
+              </span>
             <div>
-              <strong>Withdrawal Pending:</strong>
+              <span class="kbf-strong">Withdrawal Pending:</span>
               <span>Your request is being reviewed by admin (2–5 business days).</span>
             </div>
           </div>
           <?php endif; ?>
           <?php if($last_wd && $last_wd->status === 'rejected'): ?>
           <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
-            <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
-              </svg>
-            </span>
+              <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+                <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
+              </span>
             <div>
-              <strong>Withdrawal Rejected:</strong>
+              <span class="kbf-strong">Withdrawal Rejected:</span>
               <?php if(!empty($last_wd->admin_notes)): ?>
                 <?php echo esc_html($last_wd->admin_notes); ?>
               <?php else: ?>
@@ -487,20 +481,18 @@
           <?php if($f->status === 'suspended'): ?>
           <div style="background:#fce7f3;border-left:3px solid #db2777;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#831843;display:flex;align-items:flex-start;gap:10px;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-            <div><strong>Fund Suspended</strong> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
+            <div><span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
           </div>
           <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')" style="margin:-6px 0 12px;">
             Appeal Suspension
           </button>
           <?php elseif($f->status === 'cancelled'): ?>
           <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
-            <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
-              </svg>
-            </span>
+              <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+                <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
+              </span>
             <div>
-              <strong>Rejected:</strong>
+              <span class="kbf-strong">Rejected:</span>
               <?php if(!empty($f->admin_notes)): ?>
                 <?php echo esc_html($f->admin_notes); ?>
               <?php else: ?>
@@ -512,7 +504,7 @@
           <div class="kbf-card-header">
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
-                  <strong class="kbf-clamp-2" style="font-size:15px;max-width:520px;"><?php echo esc_html($f->title); ?></strong>
+                  <span class="kbf-clamp-2 kbf-strong" style="font-size:15px;max-width:520px;"><?php echo esc_html($f->title); ?></span>
                 <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
               </div>
               <div class="kbf-meta">
@@ -551,9 +543,9 @@
           </div>
           <div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div class="kbf-fund-amounts">
-            <span><strong>&#8369;<?php echo $format_currency($f->raised_amount); ?></strong>raised</span>
-            <span><strong>&#8369;<?php echo $format_currency($f->goal_amount); ?></strong>goal</span>
-            <span><strong><?php echo round($pct); ?>%</strong>funded</span>
+            <span><span class="kbf-strong">&#8369;<?php echo $format_currency($f->raised_amount); ?></span>raised</span>
+            <span><span class="kbf-strong">&#8369;<?php echo $format_currency($f->goal_amount); ?></span>goal</span>
+            <span><span class="kbf-strong"><?php echo round($pct); ?>%</span>funded</span>
           </div>
           <?php
             $wd_block = $last_wd && in_array($last_wd->status, ['pending','approved','released']);
@@ -669,7 +661,7 @@
                 <?php foreach($sponsors as $sp): ?>
                   <tr>
                     <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
-                    <td><strong style="color:var(--kbf-blue);">&#8369;<?php echo $format_currency($sp->amount); ?></strong></td>
+                    <td><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo $format_currency($sp->amount); ?></span></td>
                     <td><?php echo esc_html($format_payment_method($sp->payment_method)); ?></td>
                     <td class="kbf-meta"><?php echo date('M d, Y',strtotime($sp->created_at)); ?></td>
                   </tr>
@@ -923,6 +915,7 @@
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

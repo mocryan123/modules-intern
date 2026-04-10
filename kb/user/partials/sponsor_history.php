@@ -69,14 +69,14 @@ function bntm_shortcode_kbf_sponsor_history() {
             <?php foreach($rows as $s): ?>
               <tr>
                 <td>
-                  <strong><?php echo esc_html($s->fund_title ?: 'Fundraiser'); ?></strong>
+                  <span class="kbf-strong"><?php echo esc_html($s->fund_title ?: 'Fundraiser'); ?></span>
                   <?php if($s->fund_id): ?>
                     <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($s->fund_id) : ''; ?>
                     <div class="kbf-meta"><a href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $s->fund_id, $fund_details_url)); ?>" style="color:var(--kbf-blue);text-decoration:none;">View fundraiser</a></div>
                   <?php endif; ?>
                 </td>
                 <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name ?: 'Sponsor'); ?></td>
-                <td><strong style="color:var(--kbf-blue);">PHP <?php echo number_format($s->amount,2); ?></strong></td>
+                <td><span style="color:var(--kbf-blue);" class="kbf-strong">PHP <?php echo number_format($s->amount,2); ?></span></td>
                 <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
                 <td><?php echo esc_html($s->payment_method==='online_payment'?'Online Payment':($s->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',isset($s->payment_method) ? $s->payment_method : '')))); ?></td>
                 <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>
@@ -91,4 +91,5 @@ function bntm_shortcode_kbf_sponsor_history() {
     <?php
     return ob_get_clean();
 }
+
 

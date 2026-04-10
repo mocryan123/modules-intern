@@ -30,14 +30,14 @@ function kbf_admin_pending_tab() {
         <div class="kbf-card">
           <div class="kbf-card-header">
             <div>
-              <strong style="font-size:15px;"><?php echo esc_html($f->title); ?></strong>
+              <span style="font-size:15px;" class="kbf-strong"><?php echo esc_html($f->title); ?></span>
               <div class="kbf-meta" style="margin-top:4px;">by <?php echo esc_html($f->organizer); ?> &bull; <?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?> &bull; <?php echo $format_funder_type($f->funder_type); ?></div>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:8px 0 0;"><?php echo esc_html(wp_trim_words(wp_unslash($f->description),40)); ?></p>
               <div style="display:flex;gap:20px;margin-top:10px;font-size:12.5px;color:var(--kbf-slate);flex-wrap:wrap;">
-                <span><strong>Goal:</strong> &#8369;<?php echo $format_currency($f->goal_amount,2); ?></span>
-                <span><strong>Deadline:</strong> <?php echo $format_date($f->deadline); ?></span>
-                <span><strong>Email:</strong> <?php echo esc_html($f->email); ?></span>
-                <span><strong>Phone:</strong> <?php echo esc_html($f->phone); ?></span>
+                <span><span class="kbf-strong">Goal:</span> &#8369;<?php echo $format_currency($f->goal_amount,2); ?></span>
+                <span><span class="kbf-strong">Deadline:</span> <?php echo $format_date($f->deadline); ?></span>
+                <span><span class="kbf-strong">Email:</span> <?php echo esc_html($f->email); ?></span>
+                <span><span class="kbf-strong">Phone:</span> <?php echo esc_html($f->phone); ?></span>
               </div>            </div>
             <span class="kbf-badge kbf-badge-pending">Pending</span>
           </div>
@@ -55,3 +55,4 @@ function kbf_admin_pending_tab() {
     </div>
     <?php return ob_get_clean();
 }
+

@@ -296,14 +296,15 @@ function bntm_kbf_render_landing() {
         display: inline-flex; align-items: center; justify-content: center;
         color: #103054; font-weight: 600; font-size: 17px;
     }
-    .kbf-nav { display: flex; flex-direction: row; gap: 20px; font-size: 18px; color: #334155; }
-    .kbf-nav a { position: relative; display:inline-flex; align-items:center; }
+    .kbf-nav { display: flex; flex-direction: row; gap: 20px; font-size: 12.5px; color: #64748b; align-items: center; flex-wrap: wrap; }
+    .kbf-nav a { position: relative; text-decoration:none; color:#64748b; font-weight:500; display:inline-flex; align-items:center; }
     .kbf-nav a::after {
         content: ''; position: absolute; left: 0; bottom: -8px;
         width: 0; height: 2px; border-radius: 999px;
-        background: var(--kbf-lime); transition: width .2s ease;
+        background: #4a98ff; transition: width .2s ease;
     }
     .kbf-nav a:hover::after { width: 100%; }
+    .kbf-nav a:hover, .kbf-nav a.active { color:#1f2a44; }
     .kbf-actions { display: flex; gap: 10px; align-items: center; }
     .kbf-btn {
         display: inline-flex; align-items: center; justify-content: center;
@@ -1432,16 +1433,17 @@ function bntm_kbf_render_landing() {
         box-shadow: 0 2px 20px rgba(15,40,80,0.07) !important;
     }
     .kbf-nav a {
-        font-size: 13px !important;
+        font-size: 12.5px !important;
         font-weight: 500 !important;
         color: #64748b !important;
+        text-decoration: none !important;
     }
-    .kbf-nav a:hover, .kbf-nav a:active {
-        color: #0f1115 !important;
+    .kbf-nav a:hover, .kbf-nav a:active, .kbf-nav a.active {
+        color: #1f2a44 !important;
     }
     .kbf-nav a::after {
         height: 2px !important;
-        background: #3d8ef0 !important;
+        background: #4a98ff !important;
         border-radius: 999px !important;
     }
     .kbf-feature-grid .kbf-card {
@@ -1668,8 +1670,9 @@ function bntm_kbf_render_landing() {
     
     .kbf-nav a {
         font-weight: 500 !important;
-        font-size: 13px !important;
+        font-size: 12.5px !important;
         color: #64748b !important;
+        text-decoration: none !important;
     }
     
     .kbf-btn {
@@ -1861,7 +1864,7 @@ function bntm_kbf_render_landing() {
           <div class="kbf-mobile-menu-header">
             <div class="kbf-brand">
               <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:24px;height:24px;object-fit:contain;border-radius:6px;">
-              <span class="kbf-brand-text" style="font-weight: 600;">fundora</span>
+              
             </div>
             <button class="kbf-hamburger" onclick="document.getElementById('kbf-hamburger-btn').click()" aria-label="Close menu" style="display:inline-flex;">
               <i class="ph-bold ph-x kbf-icon" role="img" aria-label="Close"></i>
@@ -2054,27 +2057,27 @@ function bntm_kbf_render_landing() {
                 <p style="margin:0;">Fundora</p>
               </div>
               <div class="kbf-compare-row">
-                <strong>Campaign visibility</strong>
+                <span class="kbf-strong">Campaign visibility</span>
                 <p style="margin:0;">Posts get buried within days</p>
                 <p style="margin:0;">Permanent, shareable campaign page</p>
               </div>
               <div class="kbf-compare-row">
-                <strong>Funds tracking</strong>
+                <span class="kbf-strong">Funds tracking</span>
                 <p style="margin:0;">Manual tracking and receipts</p>
                 <p style="margin:0;">Automatic progress tracking and logs</p>
               </div>
               <div class="kbf-compare-row">
-                <strong>Account verification</strong>
+                <span class="kbf-strong">Account verification</span>
                 <p style="margin:0;">None</p>
                 <p style="margin:0;">ID-verified with credibility index</p>
               </div>
               <div class="kbf-compare-row">
-                <strong>Update history</strong>
+                <span class="kbf-strong">Update history</span>
                 <p style="margin:0;">Scattered across posts</p>
                 <p style="margin:0;">Timestamped update log</p>
               </div>
               <div class="kbf-compare-row">
-                <strong>Platform fee</strong>
+                <span class="kbf-strong">Platform fee</span>
                 <p style="margin:0;">Free</p>
                 <p style="margin:0;">Free during beta</p>
               </div>
@@ -2409,6 +2412,8 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
+
+
 
 
 

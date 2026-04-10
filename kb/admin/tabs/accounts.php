@@ -163,14 +163,14 @@ function kbf_admin_organizers_tab() {
               <td>
               <div class="kbf-cell-spacer"></div>
               <div class="kbf-cell-spacer"></div>
-              <strong><?php echo esc_html($p->display_name); ?></strong>
+              <span class="kbf-strong"><?php echo esc_html($p->display_name); ?></span>
               <div class="kbf-cell-spacer"></div>
               <div class="kbf-cell-spacer"></div>
               </td>
               <td class="kbf-meta" style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                 <?php echo esc_html($p->user_email); ?>
               </td>
-              <td><strong>&#8369;<?php echo $format_number($p->total_raised, 0); ?></strong></td>
+              <td><span class="kbf-strong">&#8369;<?php echo $format_number($p->total_raised, 0); ?></span></td>
               <td><?php echo $format_number($p->total_sponsors); ?></td>
             <td><?php echo $format_number($p->rating, 1); ?>/5 (<?php echo $p->rating_count; ?>)</td>
             <td class="kbf-meta"><?php echo esc_html($didit_status ? ucfirst($didit_status) : '—'); ?></td>
@@ -235,6 +235,7 @@ function kbf_admin_organizers_tab() {
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

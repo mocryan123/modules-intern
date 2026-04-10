@@ -519,10 +519,10 @@ function bntm_shortcode_kbf_browse() {
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
               <i class="ph-bold ph-exclamation-mark kbf-icon" style="font-size:16px; flex-shrink:0;margin-top:1px;filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%)" aria-hidden="true"></i>
-              <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
+              <div><span class="kbf-strong">Demo Mode:</span> Redirects to Maya sandbox checkout. No real payment is processed.</div>
             </div>
             <?php else: ?>
-            <div id="kbf-payment-placeholder" class="kbf-payment-placeholder" style="display:none;"><strong>Payment API Integration Point</strong><span id="kbf-payment-label"></span><br><small>Hook: <code>do_action('kbf_process_payment', $method, $amount, $fund_id)</code></small></div>
+            <div id="kbf-payment-placeholder" class="kbf-payment-placeholder" style="display:none;"><span class="kbf-strong">Payment API Integration Point</span><span id="kbf-payment-label"></span><br><small>Hook: <code>do_action('kbf_process_payment', $method, $amount, $fund_id)</code></small></div>
             <?php endif; ?>
             <div id="kbf-sponsor-msg"></div>
           </form>
@@ -620,7 +620,7 @@ function bntm_shortcode_kbf_browse() {
           <?php if($loc): ?>
           <div style="margin-top:10px;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);">
             <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <strong><?php echo esc_html($loc); ?></strong> <a href="<?php echo esc_url(remove_query_arg('loc')); ?>" style="color:var(--kbf-red);margin-left:4px;text-decoration:none;">× Remove</a>
+            <span class="kbf-strong"><?php echo esc_html($loc); ?></span> <a href="<?php echo esc_url(remove_query_arg('loc')); ?>" style="color:var(--kbf-red);margin-left:4px;text-decoration:none;">× Remove</a>
           </div>
           <?php endif; ?>
         </div>
@@ -684,7 +684,7 @@ function bntm_shortcode_kbf_browse() {
           <!-- Progress -->
           <div class="kbf-progress-wrap" style="margin-bottom:8px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
           <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:16px;">
-            <span><strong style="color:var(--kbf-navy);font-size:14px;">&#8369;<?php echo number_format($f->raised_amount,0); ?></strong> <span style="color:var(--kbf-slate);">raised</span></span>
+            <span><span style="color:var(--kbf-navy);font-size:14px;" class="kbf-strong">&#8369;<?php echo number_format($f->raised_amount,0); ?></span> <span style="color:var(--kbf-slate);">raised</span></span>
             <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of &#8369;<?php echo number_format($f->goal_amount,0); ?></span>
           </div>
 
@@ -732,7 +732,7 @@ function bntm_shortcode_kbf_browse() {
         }
         document.getElementById('kbf-fund-preview').innerHTML=
             (img?'<img src="'+img+'" style="width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:10px;display:block;">':'')
-            +'<strong style="font-size:15px;color:var(--kbf-navy);">'+title+'</strong>'
+            +'<span style="font-size:15px;color:var(--kbf-navy);" class="kbf-strong">'+title+'</span>'
             +'<div style="margin-top:8px;" class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+pct+'%"></div></div>'
             +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:var(--kbf-slate);"><span>?'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% funded</span></div>';
         document.getElementById('kbf-modal-sponsor').style.display='flex';
@@ -897,11 +897,11 @@ function bntm_shortcode_kbf_browse() {
                 // Header
                 '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;">'
                 +(d.avatar_url?'<img src="'+d.avatar_url+'" style="width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);flex-shrink:0;">':'<div style="width:62px;height:62px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class=\"ph ph-user kbf-icon\" style=\"font-size:28px;color:#ffffff;\"></i></div>')
-                +'<div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong style="font-size:16px;color:var(--kbf-navy);">'+d.display_name+'</strong>'
+                +'<div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-size:16px;color:var(--kbf-navy);" class="kbf-strong">'+d.display_name+'</span>'
                 +(d.is_verified?'<span class="kbf-badge kbf-badge-verified" style="font-size:10px;">Verified</span>':'')
                 +'</div>'
                 +'<div style="display:flex;gap:3px;align-items:center;margin-top:5px;">'+stars
-                +'<span style="font-size:12px;color:var(--kbf-slate);margin-left:5px;"><strong>'+d.rating+'</strong>/5 &nbsp;&bull;&nbsp; '+d.rating_count+' score'+(d.rating_count!==1?'s':'')+'</span></div>'
+                +'<span style="font-size:12px;color:var(--kbf-slate);margin-left:5px;"><span class="kbf-strong">'+d.rating+'</span>/5 &nbsp;&bull;&nbsp; '+d.rating_count+' score'+(d.rating_count!==1?'s':'')+'</span></div>'
                 +(d.bio?'<p style="font-size:13px;color:var(--kbf-slate);margin:6px 0 0;line-height:1.55;">'+d.bio+'</p>':'')
                 +'</div></div>'
                 // Stats
@@ -922,6 +922,7 @@ function bntm_shortcode_kbf_browse() {
     $c=ob_get_clean();
     return bntm_universal_container('Browse Funds -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 

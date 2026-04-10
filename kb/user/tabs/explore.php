@@ -465,7 +465,7 @@ function kbf_dashboard_find_funds_tab() {
             <?php if($demo_mode): ?>
             <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:6px;">
               <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-              <div><strong>Demo Mode:</strong> Redirects to Maya sandbox checkout. No real payment is processed.</div>
+              <div><span class="kbf-strong">Demo Mode:</span> Redirects to Maya sandbox checkout. No real payment is processed.</div>
             </div>
             <?php endif; ?>
             <div id="kbff-sponsor-msg" style="margin-top:10px;"></div>
@@ -556,7 +556,7 @@ function kbf_dashboard_find_funds_tab() {
         </form>
       </div>
       <div class="kbf-cta-note" id="kbf-explore-tip" style="font-size:12.5px;color:var(--kbf-slate);margin-top:10px;">
-        <strong>Tip:</strong> Funds with regular updates raise up to 3x more.
+        <span class="kbf-strong">Tip:</span> Funds with regular updates raise up to 3x more.
       </div>
     </div>
 
@@ -894,7 +894,7 @@ function kbf_dashboard_find_funds_tab() {
         }
         document.getElementById('kbff-fund-preview').innerHTML=
             (img?'<img src="'+img+'" style="width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:10px;display:block;">':'')
-            +'<strong style="font-size:14px;color:var(--kbf-navy);">'+title+'</strong>'
+            +'<span style="font-size:14px;color:var(--kbf-navy);" class="kbf-strong">'+title+'</span>'
             +'<div style="margin-top:8px;" class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+pct+'%"></div></div>'
             +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:5px;color:var(--kbf-slate);">'
             +'<span>\u20B1'+parseFloat(raised).toLocaleString()+' raised</span><span>'+pct+'% of \u20B1'+parseFloat(goal).toLocaleString()+'</span></div>';
@@ -998,7 +998,7 @@ function kbf_dashboard_find_funds_tab() {
         function setTip(){
             var next = pickRandom();
             if(next.indexOf('Tip:') === 0){
-                tipEl.innerHTML = '<strong>Tip:</strong> ' + next.replace(/^Tip:\s*/,'');
+                tipEl.innerHTML = '<span class="kbf-strong">Tip:</span> ' + next.replace(/^Tip:\s*/,'');
             } else {
                 tipEl.textContent = next;
             }
@@ -1036,6 +1036,7 @@ function kbf_dashboard_find_funds_tab() {
     <?php
     return ob_get_clean();
 }
+
 
 
 

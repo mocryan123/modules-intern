@@ -776,7 +776,7 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-modal-header"><h3>Sponsor "<?php echo esc_html(wp_trim_words($fund->title,6)); ?>"</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-sponsor')">&times;</button></div>
         <div class="kbf-modal-body">
           <div style="background:var(--kbf-slate-lt);border-radius:8px;padding:12px 16px;margin-bottom:18px;display:flex;justify-content:space-between;font-size:13px;">
-            <span><strong style="color:var(--kbf-blue);">&#8369;<?php echo number_format($fund->raised_amount,2); ?></strong> raised</span>
+            <span><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo number_format($fund->raised_amount,2); ?></span> raised</span>
             <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of &#8369;<?php echo number_format($fund->goal_amount,2); ?> goal</span>
           </div>
           <form id="kbf-sponsor-form" onsubmit="return false;">
@@ -873,9 +873,9 @@ function bntm_shortcode_kbf_fund_details() {
     </div>
 
     <?php if($fund->status==='pending' && $is_owner): ?>
-    <div class="kbf-alert kbf-alert-warning" style="margin-bottom:20px;"><strong>Under Review:</strong> This fund is not yet visible to sponsors. Once approved it goes live.</div>
+    <div class="kbf-alert kbf-alert-warning" style="margin-bottom:20px;"><span class="kbf-strong">Under Review:</span> This fund is not yet visible to sponsors. Once approved it goes live.</div>
     <?php elseif($fund->status==='suspended'): ?>
-    <div class="kbf-alert kbf-alert-error" style="margin-bottom:20px;"><strong>Suspended:</strong> <?php echo esc_html($fund->admin_notes?:'Contact support.'); ?></div>
+    <div class="kbf-alert kbf-alert-error" style="margin-bottom:20px;"><span class="kbf-strong">Suspended:</span> <?php echo esc_html($fund->admin_notes?:'Contact support.'); ?></div>
     <?php endif; ?>
 
     <div class="kbf-detail-layout">
@@ -1757,6 +1757,7 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 

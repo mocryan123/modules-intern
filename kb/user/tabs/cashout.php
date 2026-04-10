@@ -45,8 +45,8 @@ function kbf_dashboard_withdrawals_tab($business_id) {
             <tbody>
             <?php foreach($rows as $w): ?>
               <tr>
-                <td><strong class="kbf-cashout-title"><?php echo esc_html($w->fund_title); ?></strong></td>
-                <td><strong>&#8369;<?php echo number_format($w->amount,2); ?></strong></td>
+                <td><span class="kbf-cashout-title kbf-strong"><?php echo esc_html($w->fund_title); ?></span></td>
+                <td><span class="kbf-strong">&#8369;<?php echo number_format($w->amount,2); ?></span></td>
                 <td class="kbf-meta"><?php echo esc_html($format_account_type($w->account_type)); ?></td>
                 <td class="kbf-meta"><?php echo esc_html($w->account_name); ?> &bull; <?php echo esc_html($w->account_number); ?></td>
                 <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
@@ -61,6 +61,7 @@ function kbf_dashboard_withdrawals_tab($business_id) {
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 

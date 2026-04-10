@@ -41,9 +41,9 @@ function kbf_admin_transactions_tab() {
           <tbody>
           <?php foreach($rows as $s): ?>
             <tr>
-              <td><strong><?php echo esc_html(wp_trim_words($s->fund_title,5)); ?></strong></td>
+              <td><span class="kbf-strong"><?php echo esc_html(wp_trim_words($s->fund_title,5)); ?></span></td>
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?></td>
-              <td><strong style="color:var(--kbf-blue);">&#8369;<?php echo $format_currency($s->amount, 2); ?></strong></td>
+              <td><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo $format_currency($s->amount, 2); ?></span></td>
               <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
               <td class="kbf-meta"><?php echo $format_date($s->created_at); ?></td>
             </tr>
@@ -55,4 +55,5 @@ function kbf_admin_transactions_tab() {
     </div>
     <?php return ob_get_clean();
 }
+
 

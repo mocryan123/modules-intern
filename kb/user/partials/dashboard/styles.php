@@ -12,15 +12,15 @@
     --kbf-shadow: #0000000d 0px 2px 4px -1px, #0000000a 0px 1px 2px -1px;
     --kbf-shadow-lg: #0000000f 0px 6px 12px -3px, #0000000d 0px 3px 6px -2px;
 }
-    .kbf-user-ui h1{font-size:28px;font-weight:700;letter-spacing:-0.4px;color:#0d1a2e;margin:0 0 6px;line-height:1.2;}
-    .kbf-user-ui h2{font-size:22px;font-weight:600;color:#0f172a;margin:0 0 6px;line-height:1.3;}
-    .kbf-user-ui h3{font-size:16px;font-weight:600;color:#0f172a;margin:0 0 6px;line-height:1.35;}
-    .kbf-user-ui h4{font-size:14px;font-weight:600;color:#0f172a;margin:0 0 6px;line-height:1.4;}
+    .kbf-user-ui h1{font-size:28px;font-weight:600;letter-spacing:-0.5px;color:#0d1a2e;margin:0 0 6px;line-height:1.2;}
+    .kbf-user-ui h2{font-size:22px;font-weight:500;color:#0f172a;margin:0 0 6px;line-height:1.3;}
+    .kbf-user-ui h3{font-size:16px;font-weight:500;color:#0f172a;margin:0 0 6px;line-height:1.35;}
+    .kbf-user-ui h4{font-size:14px;font-weight:500;color:#0f172a;margin:0 0 6px;line-height:1.4;}
     .kbf-user-ui p{font-size:13.5px;font-weight:400;color:#4f5a6b;line-height:1.65;margin:0;}
     .kbf-user-ui small,
     .kbf-user-ui .kbf-meta,
     .kbf-user-ui .kbf-text-sm{font-size:12.5px;font-weight:400;color:#4f5a6b;line-height:1.5;}
-    .kbf-user-ui label{font-size:12.5px;font-weight:600;color:#4f5a6b;}
+    .kbf-user-ui label{font-size:12.5px;font-weight:500;color:#4f5a6b;}
     .kbf-user-ui .kbf-table thead th{
         font-size:10.5px;
         font-weight:600;
@@ -234,7 +234,7 @@
         justify-content:space-between;
         gap:18px;
         padding:12px 20px;
-        min-height:60px;
+        min-height:68px;
         position:fixed;
         top:0;
         left:0;
@@ -388,6 +388,7 @@
     }
     .kbf-dashboard-user .kbf-dashboard-avatar-wrap{order:1;}
     .kbf-dashboard-user .kbf-dashboard-name{order:0;}
+    .kbf-dashboard-name{font-size:12.5px;}
     .kbf-dashboard-user:hover{ color:#1f2a44; }
     .kbf-user-menu{position:relative;display:inline-flex;align-items:center;}
     .kbf-user-dropdown{
@@ -1446,6 +1447,7 @@
 html.kbf-modal-lock, body.kbf-modal-lock { overflow: auto !important; }
     .kbf-user-ui .kbf-modal-body p{font-weight:400;}
     </style>
+
 
 
 

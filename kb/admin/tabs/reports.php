@@ -31,7 +31,7 @@ function kbf_admin_reports_tab() {
         <div class="kbf-card kbf-admin-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
             <div>
-              <strong style="font-size:14px;">Fund: <?php echo esc_html($r->fund_title); ?></strong>
+              <span style="font-size:14px;" class="kbf-strong">Fund: <?php echo esc_html($r->fund_title); ?></span>
               <div style="font-size:13px;color:var(--kbf-red);font-weight:700;margin-top:2px;">Reason: <?php echo esc_html($r->reason); ?></div>
               <p style="font-size:13px;color:var(--kbf-text-sm);margin:6px 0 0;"><?php echo esc_html($r->details); ?></p>
               <?php if(!empty($r->report_image)): ?>
@@ -40,7 +40,7 @@ function kbf_admin_reports_tab() {
                 </a>
               <?php endif; ?>
               <div class="kbf-meta" style="margin-top:6px;"><?php echo $reporter_label($r->reporter_email); ?> &bull; <?php echo $format_date($r->created_at); ?></div>
-              <?php if($r->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><strong>Admin Note:</strong> <?php echo esc_html($r->admin_notes); ?></div><?php endif; ?>
+              <?php if($r->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><span class="kbf-strong">Admin Note:</span> <?php echo esc_html($r->admin_notes); ?></div><?php endif; ?>
             </div>
             <span class="kbf-badge kbf-badge-<?php echo $r->status; ?>"><?php echo ucfirst($r->status); ?></span>
           </div>
@@ -127,5 +127,6 @@ function kbf_admin_reports_tab() {
     </script>
     <?php return ob_get_clean();
 }
+
 
 

@@ -31,8 +31,8 @@
     <div class="kbf-topbar">
       <div class="kbf-topbar-left">
         <div class="kbf-brand">
-          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:22px;height:22px;object-fit:contain;border-radius:6px;">
-          <span class="kbf-brand-text">fundora</span>
+          <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:25px;object-fit:contain;border-radius:6px;">
+          
         </div>
         <nav class="kbf-nav">
           <a href="?kbf_tab=overview" class="<?php echo $tab==='overview'?'active':''; ?> <?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Home">Home</a>
@@ -100,5 +100,6 @@
       ?>
       </div>
       </div><!-- .kbf-dashboard-shell -->
+
 
 

@@ -351,7 +351,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             <div class="kbf-card-header">
               <div style="flex:1;">
                 <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px;">
-                  <strong class="kbf-card-title"><?php echo esc_html($f->title); ?></strong>
+                  <span class="kbf-card-title kbf-strong"><?php echo esc_html($f->title); ?></span>
                   <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>" style="width:max-content;"><?php echo ucfirst($f->status); ?></span>
                 </div>
                 <div class="kbf-meta">
@@ -389,7 +389,7 @@ function bntm_shortcode_kbf_organizer_profile() {
               </div>
             </div>
             <div class="kbf-progress-wrap" style="margin-bottom:12px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
-            <div class="kbf-fund-amounts"><span><strong>&#8369;<?php echo number_format($f->raised_amount,2); ?></strong>raised</span><span><strong>&#8369;<?php echo number_format($f->goal_amount,2); ?></strong>goal</span><span><strong><?php echo round($pct); ?>%</strong>funded</span></div>
+            <div class="kbf-fund-amounts"><span><span class="kbf-strong">&#8369;<?php echo number_format($f->raised_amount,2); ?></span>raised</span><span><span class="kbf-strong">&#8369;<?php echo number_format($f->goal_amount,2); ?></span>goal</span><span><span class="kbf-strong"><?php echo round($pct); ?>%</span>funded</span></div>
             <div class="kbf-card-actions">
               <?php
                 $fund_token = '';
@@ -417,9 +417,9 @@ function bntm_shortcode_kbf_organizer_profile() {
         <div class="kbf-card" style="margin-bottom:16px;">
           <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Stats</h4>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Raised</span><strong style="color:var(--kbf-blue);">&#8369;<?php echo number_format($profile->total_raised,0); ?></strong></div>
-            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Sponsors</span><strong><?php echo number_format($profile->total_sponsors); ?></strong></div>
-            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Active Funds</span><strong><?php $active_count=0; foreach($funds as $f){ if($f->status==='active') $active_count++; } echo $active_count; ?></strong></div>             
+            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Raised</span><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo number_format($profile->total_raised,0); ?></span></div>
+            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Sponsors</span><span class="kbf-strong"><?php echo number_format($profile->total_sponsors); ?></span></div>
+            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Active Funds</span><span class="kbf-strong"><?php $active_count=0; foreach($funds as $f){ if($f->status==='active') $active_count++; } echo $active_count; ?></span></div>             
           </div>
         </div>
         <?php endif; ?>
@@ -431,7 +431,7 @@ function bntm_shortcode_kbf_organizer_profile() {
               <span style="display:inline-flex;gap:2px;line-height:1;font-size:12px;">
                 <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:12px; filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)" aria-hidden="true"></i>
               </span>
-              <strong style="font-size:12.5px;"><?php echo number_format((float)$profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</strong>
+              <span style="font-size:12.5px;" class="kbf-strong"><?php echo number_format((float)$profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
             </div>
           </div>
           <?php if(is_user_logged_in() && !$has_reviewed): ?>
@@ -621,6 +621,7 @@ function bntm_shortcode_kbf_organizer_profile() {
     }
     return bntm_universal_container('Organizer Profile -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 
