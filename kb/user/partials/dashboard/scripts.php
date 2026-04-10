@@ -1658,7 +1658,8 @@
                 var val = parseMoney(input.dataset.kbfRaw || input.value);
                 var cut = val * rate;
                 var net = Math.max(0, val - cut);
-                out.innerHTML = 'Platform cut: \\u20B1' + fmt(cut) + ' &nbsp;•&nbsp; Net goal: \\u20B1' + fmt(net);
+                var peso = String.fromCharCode(8369);
+                out.innerHTML = 'Platform cut: ' + peso + fmt(cut) + ' &nbsp;•&nbsp; Net goal: ' + peso + fmt(net);
             }
             input.addEventListener('input', function(){
                 var before = input.value;
@@ -1980,9 +1981,10 @@
     window.kbfOpenWd = function(fundId, available, title) {
         document.getElementById('wd-fund-id').value = fundId;
         document.getElementById('wd-fund-title').textContent = title || 'Fund #'+fundId;
-        document.getElementById('wd-available-label').textContent = '\\u20B1' + parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+        var peso = String.fromCharCode(8369);
+        document.getElementById('wd-available-label').textContent = peso + parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
         document.getElementById('wd-amount').max = available;
-        document.getElementById('wd-amount').placeholder = 'Max \\u20B1'+parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2});
+        document.getElementById('wd-amount').placeholder = 'Max ' + peso + parseFloat(available).toLocaleString('en-PH',{minimumFractionDigits:2});
         document.getElementById('kbf-wd-msg').innerHTML = '';
         document.getElementById('kbf-wd-form').reset();
         document.getElementById('wd-fund-id').value = fundId; // re-set after reset
@@ -2273,6 +2275,7 @@
         });
       })();
     </script>
+
 
 
 

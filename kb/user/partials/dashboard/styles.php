@@ -152,7 +152,7 @@
         position:absolute;
         right:0;
         top:calc(100% + 8px);
-        background:rgba(255,255,255,0.98);
+        background:#ffffff;
         border:1px solid #e2e8f0;
         border-radius:14px;
         box-shadow:
@@ -220,7 +220,7 @@
         padding:0;
         box-sizing:border-box;
     }
-    @media (max-width: 620px){
+    @media (max-width: 1200px){
         .kbf-dashboard-shell{
             padding:0;
         }
@@ -240,7 +240,7 @@
         left:0;
         right:0;
         z-index:1000;
-        background: rgba(255, 255, 255, 0.86);
+        background: #ffffff;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid transparent;
@@ -383,7 +383,7 @@
         top:calc(100% + 8px);
         right:0;
         min-width:160px;
-        background:rgba(255,255,255,0.98);
+        background:#ffffff;
         border:1px solid #e2e8f0;
         border-radius:14px;
         box-shadow:
@@ -506,7 +506,7 @@
         width:100%;
         box-sizing:border-box;
     }
-    @media (max-width: 620px){
+    @media (max-width: 1200px){
         .kbf-hero-banner{
             padding-left:10px;
             padding-right:10px;
@@ -971,7 +971,7 @@
         0%{transform:scale(.92);opacity:.7;}
         100%{transform:scale(1);opacity:1;}
     }
-    @media (max-width: 620px){
+    @media (max-width: 1200px){
         .kbf-user-ui .kbf-stepper .kbf-step{display:none;}
         .kbf-user-ui .kbf-stepper .kbf-step.is-active{display:inline-flex;}
         .kbf-user-ui .kbf-step::after{display:none;}
@@ -1404,7 +1404,7 @@
         align-items:center;
         justify-content:center;
         background:#f8fafcbf;
-        backdrop-filter: blur(8px);
+        
     }
     .kbf-user-ui .kbf-loading-mark{
         width:54px;height:54px;
@@ -1434,4 +1434,6 @@
 html.kbf-modal-lock, body.kbf-modal-lock { overflow: auto !important; }
     .kbf-user-ui .kbf-modal-body p{font-weight:400;}
     </style>
+
+
 

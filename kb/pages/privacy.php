@@ -28,7 +28,7 @@ function bntm_kbf_render_privacy() {
         left: 0;
         right: 0;
         z-index: 1000;
-        background: rgba(255, 255, 255, 0.86);
+        background: #ffffff;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid transparent;
@@ -568,4 +568,5 @@ function bntm_kbf_render_privacy() {
     <?php
     return ob_get_clean();
 }
+
 

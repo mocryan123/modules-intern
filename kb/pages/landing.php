@@ -53,7 +53,7 @@ if (!function_exists('kbf_landing_get_faq_items')) {
                 'a' => 'Browse active campaigns, choose a cause, and sponsor using the available payment options.'
             ],
             [
-                'q' => 'Is my sponsorship taxâ€‘deductible?',
+                'q' => 'Is my sponsorship tax-deductible?',
                 'a' => 'Tax benefits depend on organizer accreditation and local regulations. Please check with the organizer first.'
             ],
             [
@@ -70,7 +70,7 @@ if (!function_exists('kbf_landing_get_faq_items')) {
             ],
             [
                 'q' => 'How do organizers receive the funds?',
-                'a' => 'Funds are released to organizers based on the platformâ€™s payout schedule and verification steps.'
+                'a' => 'Funds are released to organizers based on the platform\'s payout schedule and verification steps.'
             ],
             [
                 'q' => 'What if a fundraiser looks suspicious?',
@@ -351,7 +351,7 @@ function bntm_kbf_render_landing() {
     .kbf-btn-ghost[aria-disabled="true"] { opacity: .7; cursor: not-allowed; }
 
     /* ============================================================
-       NEW HERO â€” light theme + floating phone cards
+       NEW HERO  -  light theme + floating phone cards
        ============================================================ */
     .kbf-hero {
         width: 100%;
@@ -407,7 +407,7 @@ function bntm_kbf_render_landing() {
         from{opacity:0; transform:translateY(12px);}
         to{opacity:1; transform:translateY(0);}
     }
-    /* â”€â”€â”€ Scroll reveal system â”€â”€â”€ */
+    /* --- Scroll reveal system --- */
     .kbf-reveal {
         opacity: 0;
         transform: translateY(22px);
@@ -426,7 +426,7 @@ function bntm_kbf_render_landing() {
     .kbf-reveal.delay-2 { transition-delay: 0.13s; }
     .kbf-reveal.delay-3 { transition-delay: 0.20s; }
 
-    /* Child stagger â€” direct children of a revealed section */
+    /* Child stagger  -  direct children of a revealed section */
     .kbf-reveal.is-in > * {
         opacity: 0;
         transform: translateY(14px);
@@ -444,7 +444,7 @@ function bntm_kbf_render_landing() {
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Heading clip reveal â€” apply .kbf-heading-reveal to h1/h2 */
+    /* Heading clip reveal  -  apply .kbf-heading-reveal to h1/h2 */
     .kbf-heading-reveal {
         clip-path: inset(0 0 100% 0);
         transition: clip-path 0.65s cubic-bezier(0.16, 1, 0.3, 1);
@@ -454,7 +454,7 @@ function bntm_kbf_render_landing() {
         clip-path: inset(0 0 0% 0);
     }
 
-    /* Cards in feature grid â€” cascade with y offset */
+    /* Cards in feature grid  -  cascade with y offset */
     .kbf-reveal.is-in .kbf-card:nth-child(1) { animation: kbfCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both; }
     .kbf-reveal.is-in .kbf-card:nth-child(2) { animation: kbfCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both; }
     .kbf-reveal.is-in .kbf-card:nth-child(3) { animation: kbfCardIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both; }
@@ -466,7 +466,7 @@ function bntm_kbf_render_landing() {
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Stat numbers â€” count-up is handled in JS; just fade the block */
+    /* Stat numbers  -  count-up is handled in JS; just fade the block */
     .kbf-about-stat {
         opacity: 0;
         transform: translateY(10px);
@@ -564,7 +564,7 @@ function bntm_kbf_render_landing() {
         align-items:center;
         justify-content:center;
     }
-     /* Cards wrap â€” fixed internal coordinate system */
+     /* Cards wrap  -  fixed internal coordinate system */
     .kbf-cards-wrap {
         position: relative;
         --cw: 420px;
@@ -602,7 +602,7 @@ function bntm_kbf_render_landing() {
         opacity: 0.7;
         pointer-events: none;
     }
-    /* Main card â€” centered anchor */
+    /* Main card  -  centered anchor */
     .kbf-pcard-main {
         width: 200px; height: 340px;
         left: 50%; top: 50%;
@@ -613,7 +613,7 @@ function bntm_kbf_render_landing() {
         z-index: 4;
         animation: kbfFloatMain 5s ease-in-out infinite;
     }
-    /* Bottom-right card â€” sits to the right of the main card */
+    /* Bottom-right card  -  sits to the right of the main card */
     .kbf-pcard-br {
         width: 124px; height: 210px;
         left: 50%; top: 50%;
@@ -624,7 +624,7 @@ function bntm_kbf_render_landing() {
         z-index: 3;
         animation: kbfFloatBR 4.5s ease-in-out infinite;
     }
-    /* Left card â€” partially hidden behind main, slight counter-tilt */
+    /* Left card  -  partially hidden behind main, slight counter-tilt */
     .kbf-pcard-tl {
         width: 124px; height: 210px;
         left: 50%; top: 50%;
@@ -1018,7 +1018,7 @@ function bntm_kbf_render_landing() {
     }
     .kbf-faq summary::-webkit-details-marker { display: none; }
     .kbf-faq summary::after { content: '+'; color: var(--kbf-muted); font-weight: 700; }
-    .kbf-faq details[open] summary::after { content: 'â€“'; }
+    .kbf-faq details[open] summary::after { content: '-'; }
     .kbf-faq details p { margin: 10px 0 0; color: var(--kbf-muted); font-size: 12.5px; line-height: 1.5; }
     .kbf-faq-body {
         max-height: 0;
@@ -1237,7 +1237,7 @@ function bntm_kbf_render_landing() {
     }
     
     /* Responsive */
-   /* Large tablets / small desktops (â‰¤1024px) */
+   /* Large tablets / small desktops (<=1024px) */
     @media (max-width: 1000px) {
         .kbf-hero-left { max-width: 420px; }
         .kbf-hero-right { flex: 0 0 clamp(280px, 34vw, 420px); height: clamp(320px, 45vw, 500px); }
@@ -1436,7 +1436,7 @@ function bntm_kbf_render_landing() {
               <p class="kbf-hero-desc">
                 Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
               </p>
-              <div class="kbf-hero-sub">Crowdfunding Philippines â€¢ Online Fundraising â€¢ Zero Fees (Beta)</div>
+              <div class="kbf-hero-sub">Crowdfunding Philippines  -  Online Fundraising  -  Zero Fees (Beta)</div>
 
 
               <a class="kbf-btn kbf-btn-primary kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
@@ -1583,7 +1583,7 @@ function bntm_kbf_render_landing() {
           <div class="kbf-about-card" style="margin-top:18px;">
             <h2 style="font-size: 1.4em; font-weight: 500;">Why Social Media Fundraising Fails</h2>
             <p>Every Filipino has seen it: a relative posts their GCash number after a hospitalization. A neighbor shares a donation link after a house fire. The intention is real. The response is generous. But the system is broken.</p>
-            <p style="margin-top:10px;">There is no way to confirm how much was raised or whether help arrived. Posts get buried. Families keep waiting. This is not a generosity problem. It is an infrastructure problem â€” and that is exactly what Fundora was built to solve.</p>
+            <p style="margin-top:10px;">There is no way to confirm how much was raised or whether help arrived. Posts get buried. Families keep waiting. This is not a generosity problem. It is an infrastructure problem  -  and that is exactly what Fundora was built to solve.</p>
           </div>
 
 
@@ -1628,8 +1628,8 @@ function bntm_kbf_render_landing() {
           <!-- Stats row -->
           <div class="kbf-about-stats">
             <div class="kbf-about-stat">
-              <div class="kbf-about-stat-num">â‚±0</div>
-              <div class="kbf-about-stat-label">Platform fee during beta â€” 100% to the person raising funds</div>
+              <div class="kbf-about-stat-num">&#8369;0</div>
+              <div class="kbf-about-stat-label">Platform fee during beta  -  100% to the person raising funds</div>
             </div>
             <div class="kbf-about-stat">
               <div class="kbf-about-stat-num">3Ã—</div>
@@ -1662,7 +1662,7 @@ function bntm_kbf_render_landing() {
             <div class="kbf-about-value">
               <div>
                 <div class="kbf-about-value-title">Built for Filipinos</div>
-                <div class="kbf-about-value-desc">GCash, local banks, community-first â€” designed for how we actually live.</div>
+                <div class="kbf-about-value-desc">GCash, local banks, community-first  -  designed for how we actually live.</div>
               </div>
             </div>
           </div>
@@ -1683,7 +1683,7 @@ function bntm_kbf_render_landing() {
             <p>Designed for trust</p>
             <h3 style="font-weight: 300;">Safe & Trusted</h3>
             <p>Reviewed. Verified. Transparent.</p>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($join_url); ?>">Join Fundora â€” it's free</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($join_url); ?>">Join Fundora - it's free</a>
           </div>
         </div>
 
@@ -1691,7 +1691,7 @@ function bntm_kbf_render_landing() {
         <div class="kbf-divider"></div>
         <div class="kbf-section kbf-reveal delay-2">
           <h2 style="font-size: 1.5em; font-weight: 400;">Who should use Fundora?</h2>
-          <p class="kbf-lead">Fundora is built for anyone who needs to raise money from a Filipino community â€” and for donors who want confidence before giving.</p>
+          <p class="kbf-lead">Fundora is built for anyone who needs to raise money from a Filipino community  -  and for donors who want confidence before giving.</p>
           <div class="kbf-feature-grid kbf-feature-grid--two" style="margin-top:18px;">
             <div class="kbf-card kbf-card--outline">
               <h4 style="font-weight: 600;">Families facing medical or emergency costs</h4>
@@ -1734,7 +1734,7 @@ function bntm_kbf_render_landing() {
               <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>">Terms of Service</a>
               <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>">Refund Policy</a>
             </div>
-            <small>Â© fundora. All rights reserved.</small>
+            <small>&copy; fundora. All rights reserved.</small>
           </div>
           <div class="kbf-social">
             <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
@@ -1774,7 +1774,7 @@ function bntm_kbf_render_landing() {
             return;
         }
 
-        // â”€â”€ Section reveals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Section reveals ------------------------------------------
         var revealIO = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
@@ -1795,7 +1795,7 @@ function bntm_kbf_render_landing() {
             revealIO.observe(el);
         });
 
-        // â”€â”€ Stat number count-up â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Stat number count-up -------------------------------------
         var statsIO = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
@@ -1943,6 +1943,10 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
+
+
+
+
 
 
 

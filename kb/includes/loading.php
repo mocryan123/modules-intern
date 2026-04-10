@@ -21,6 +21,8 @@ if (!function_exists('kbf_render_loading_overlay')) {
         <script>
           window.addEventListener('load', function(){
             var el = document.getElementById('kbf-loading-overlay');
+            var legacy = document.getElementById('bntmLoadingOverlay');
+            if (legacy) { legacy.classList.add('hidden'); legacy.style.display = 'none'; }
             if (!el) return;
             setTimeout(function(){ el.style.display = 'none'; }, 600);
           });
@@ -29,3 +31,4 @@ if (!function_exists('kbf_render_loading_overlay')) {
         return ob_get_clean();
     }
 }
+

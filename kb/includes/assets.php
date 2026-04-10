@@ -50,7 +50,7 @@ function kbf_global_assets() {
         align-items:center;
         justify-content:center;
         background:#f8fafcbf;
-        backdrop-filter: blur(8px);
+        
     }
     #kbf-loading-overlay .kbf-loading-mark{
         width:54px;height:54px;
@@ -77,12 +77,8 @@ function kbf_global_assets() {
         75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
         100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
     }
-<<<<<<< HEAD
-    /* Hide legacy BNTM topbar on KBF pages */
-    .bntm-topbar{
-        display:none !important;
-    }
-    /* Hide legacy BNTM header on KBF pages */
+    /* Hide legacy BNTM chrome on KBF pages */
+    .bntm-topbar,
     .bntm-header{
         display:none !important;
     }
@@ -93,6 +89,9 @@ function kbf_global_assets() {
         margin:0 !important;
         padding:0 !important;
         box-shadow:none !important;
+        background: transparent !important;
+        border-radius:0 !important;
+        border:0 !important;
     }
     .bntm-container{
         width:100% !important;
@@ -101,10 +100,34 @@ function kbf_global_assets() {
         padding:0 !important;
         min-height:100vh !important;
     }
+    /* Hide legacy plugin preloader on KBF pages */
+    .kbf-wrap #bntmLoadingOverlay,
+    .kbf-user-ui #bntmLoadingOverlay,
+    .kbf-admin-ui #bntmLoadingOverlay,
+    .kbf-wrap .bntm-loading-overlay,
+    .kbf-user-ui .bntm-loading-overlay,
+    .kbf-admin-ui .bntm-loading-overlay{
+        display:none !important;
+        opacity:0 !important;
+        visibility:hidden !important;
+        pointer-events:none !important;
+    }
     /* Kill any top offset/white strip */
+    .bntm-topbar{
+        height:0 !important;
+        min-height:0 !important;
+        max-height:0 !important;
+        margin:0 !important;
+        padding:0 !important;
+        border:0 !important;
+        line-height:0 !important;
+        overflow:hidden !important;
+        visibility:hidden !important;
+    }
     html, body{
         margin:0 !important;
         padding:0 !important;
+        top:0 !important;
         background: transparent;
         overflow:auto;
     }
@@ -114,6 +137,56 @@ function kbf_global_assets() {
     }
     #wpadminbar{
         display:none !important;
+    }
+    body.kbf-fullwidth-page{
+        background: var(--kbf-bg) !important;
+    }
+    body.kbf-fullwidth-page #page,
+    body.kbf-fullwidth-page .site,
+    body.kbf-fullwidth-page .site-content,
+    body.kbf-fullwidth-page .content-area,
+    body.kbf-fullwidth-page .entry-content,
+    body.kbf-fullwidth-page .ast-container,
+    body.kbf-fullwidth-page .ast-container-fluid{
+        margin-top:0 !important;
+        padding-top:0 !important;
+    }
+    body.kbf-fullwidth-page header#masthead,
+    body.kbf-fullwidth-page .site-header,
+    body.kbf-fullwidth-page .ast-hfb-header,
+    body.kbf-fullwidth-page .ast-header-break-point .main-header-bar,
+    body.kbf-fullwidth-page #ast-desktop-header,
+    body.kbf-fullwidth-page #ast-mobile-header{
+        display:none !important;
+        height:0 !important;
+        min-height:0 !important;
+        margin:0 !important;
+        padding:0 !important;
+        border:0 !important;
+        overflow:hidden !important;
+        visibility:hidden !important;
+    }
+    body.kbf-fullwidth-page,
+    body.kbf-fullwidth-page #page,
+    body.kbf-fullwidth-page .site,
+    body.kbf-fullwidth-page .site-content,
+    body.kbf-fullwidth-page .content-area,
+    body.kbf-fullwidth-page .entry-content,
+    body.kbf-fullwidth-page .wp-site-blocks,
+    body.kbf-fullwidth-page .wp-site-blocks > *{
+        margin-top:0 !important;
+        padding-top:0 !important;
+        border-top:0 !important;
+    }
+    .bntm-content,
+    .bntm-container,
+    .bntm-bg,
+    .kbf-wrap,
+    .kbf-user-ui,
+    .kbf-admin-ui{
+        margin-top:0 !important;
+        padding-top:0 !important;
+        top:0 !important;
     }
     .bntm-bg{
         position:relative;
@@ -126,16 +199,6 @@ function kbf_global_assets() {
     }
     html.kbf-modal-lock, body.kbf-modal-lock{
         overflow:hidden !important;
-    }
-=======
->>>>>>> c6a8340e550ac9c7454c8831a94eaec761536ab2
-    /* Remove WP admin-bar top offset so full-bleed auth pages don't show a white strip */
-    html{ margin-top:0 !important; }
-    body{ margin-top:0 !important; padding-top:0 !important; }
-    #wpadminbar{ display:none !important; }
-    .bntm-bg{
-        margin:0 !important;
-        padding:0 !important;
     }
     .kbf-wrap h1{font-size:28px;font-weight:700;letter-spacing:-0.4px;color:#0d1a2e;margin:0 0 6px;line-height:1.2;}
     .kbf-wrap h2{font-size:22px;font-weight:600;color:#0f172a;margin:0 0 6px;line-height:1.3;}
@@ -694,9 +757,9 @@ function kbf_global_assets() {
         min-height:56px;
         position:relative;
         z-index:1000;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        background: #ffffff;
+        
+        -webkit-
         border-bottom:1px solid var(--kbf-border);
         border-radius:0;
         box-shadow: none;
@@ -969,7 +1032,7 @@ function kbf_global_assets() {
     }
     .kbf-select .kbf-select-display{
         width:100%;
-        padding:9px 36px 9px 12px;
+        padding:0 36px 0 12px;
         border:1.5px solid var(--kbf-border);
         border-radius:7px;
         font-size:13.5px;
@@ -980,10 +1043,32 @@ function kbf_global_assets() {
         display:flex;
         align-items:center;
         justify-content:space-between;
-        gap:10px;
         cursor:pointer;
         transition:border-color .15s, box-shadow .15s, transform .12s;
         box-sizing:border-box;
+        position:relative;
+    }
+    .kbf-table-pager .kbf-select{
+        width:auto;
+        min-width:64px;
+    }
+    .kbf-table-pager .kbf-select .kbf-select-display{
+        width:auto;
+        min-width:64px;
+        padding-left:10px;
+        padding-right:28px;
+    }
+    .kbf-select .kbf-select-display > span{
+        flex:1 1 auto;
+        min-width:0;
+    }
+    .kbf-select .kbf-select-chevron{
+        position:absolute;
+        right:12px;
+        top:50%;
+        transform:translateY(-50%);
+        margin-left:0;
+        flex:0 0 auto;
     }
     .kbf-select.is-placeholder .kbf-select-display,
     .kbf-select.is-disabled .kbf-select-display{
@@ -1010,7 +1095,9 @@ function kbf_global_assets() {
         flex-shrink:0;
         transition:transform .18s ease;
     }
-    .kbf-select.is-open .kbf-select-chevron{ transform:rotate(180deg); }
+    .kbf-select.is-open .kbf-select-chevron{
+        transform:translateY(-50%) rotate(180deg);
+    }
     .kbf-select-menu{
         position:absolute;
         left:0;
@@ -1123,7 +1210,7 @@ function kbf_global_assets() {
     }
 
     /* Modals */
-    .kbf-modal-overlay { position: fixed; inset: 0; background: rgba(10,16,32,.58); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(6px); opacity:0; visibility:hidden; pointer-events:none; transition:opacity .22s ease, visibility .22s ease; }
+    .kbf-modal-overlay { position: fixed; inset: 0; background: rgba(10,16,32,.58); display: flex; align-items: center; justify-content: center; z-index: 99999;  opacity:0; visibility:hidden; pointer-events:none; transition:opacity .22s ease, visibility .22s ease; }
     .kbf-modal-overlay.is-open{ opacity:1; visibility:visible; pointer-events:auto; }
     .kbf-modal {
         position: relative;
@@ -1246,6 +1333,21 @@ function kbf_global_assets() {
     }
     .kbf-table-pager-left,
     .kbf-table-pager-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .kbf-table-pager-left{
+        flex:0 0 auto;
+        width:fit-content;
+        max-width:100%;
+        white-space:nowrap;
+        flex-wrap:nowrap;
+        display:flex;
+        align-items:center;
+        gap:8px;
+    }
+    .kbf-table-pager-left .kbf-select{
+        display:inline-flex;
+        align-items:center;
+        margin-left:auto;
+    }
     .kbf-table-pager-right .kbf-pager-pages{
         display:flex;
         align-items:center;
@@ -1486,6 +1588,49 @@ function kbf_global_assets() {
     }
     </style>
     <script>
+    (function(){
+        function kbfZeroTop(){
+            var html = document.documentElement;
+            var body = document.body;
+            if (html) {
+                html.style.setProperty('margin-top','0','important');
+                html.style.setProperty('padding-top','0','important');
+                html.style.setProperty('top','0','important');
+            }
+            if (body) {
+                body.style.setProperty('margin-top','0','important');
+                body.style.setProperty('padding-top','0','important');
+                body.style.setProperty('top','0','important');
+            }
+            var topbar = document.querySelector('.bntm-topbar');
+            if (topbar) {
+                topbar.style.setProperty('height','0','important');
+                topbar.style.setProperty('min-height','0','important');
+                topbar.style.setProperty('margin','0','important');
+                topbar.style.setProperty('padding','0','important');
+                topbar.style.setProperty('display','none','important');
+            }
+            var adminbar = document.getElementById('wpadminbar');
+            if (adminbar) {
+                adminbar.style.setProperty('display','none','important');
+                adminbar.style.setProperty('height','0','important');
+            }
+            var nodes = document.querySelectorAll('.bntm-content,.bntm-container,.bntm-bg,.kbf-wrap,.kbf-user-ui,.kbf-admin-ui');
+            for (var i = 0; i < nodes.length; i++) {
+                nodes[i].style.setProperty('margin-top','0','important');
+                nodes[i].style.setProperty('padding-top','0','important');
+                nodes[i].style.setProperty('top','0','important');
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', kbfZeroTop);
+        } else {
+            kbfZeroTop();
+        }
+        window.addEventListener('load', kbfZeroTop);
+    })();
+    </script>
+    <script>
     if (typeof window.kbfSetBtnLoading === 'undefined') {
         window.kbfSetBtnLoading = function(btn, on, label) {
             if (!btn) return;
@@ -1523,7 +1668,11 @@ function kbf_global_assets() {
     if (typeof window.kbfInitSelects === 'undefined') {
         window.kbfInitSelects = function(root){
             var scope = root || document;
-            var selects = scope.querySelectorAll('.kbf-form-group select:not([data-kbf-native]):not(.kbf-native-select)');
+            var selects = scope.querySelectorAll(
+                '.kbf-form-group select:not([data-kbf-native]):not(.kbf-native-select),' +
+                '.kbf-table-pager select:not([data-kbf-native]):not(.kbf-native-select),' +
+                '.kbf-explore-pager select:not([data-kbf-native]):not(.kbf-native-select)'
+            );
             selects.forEach(function(select){
                 if (select.dataset.kbfEnhanced === '1') return;
                 if (select.multiple || select.size > 1) return;
@@ -1649,6 +1798,19 @@ function kbf_global_assets() {
                     });
                 };
 
+                if (!window._kbfSelectOutsideBound) {
+                    window._kbfSelectOutsideBound = true;
+                    document.addEventListener('mousedown', function(e){
+                        if (!e || !e.target) return;
+                        if (e.target.closest('.kbf-select') || e.target.closest('.kbf-select-menu')) {
+                            return;
+                        }
+                        if (typeof window.kbfCloseAllSelects === 'function') {
+                            window.kbfCloseAllSelects();
+                        }
+                    });
+                }
+
                 display.addEventListener('click', function(e){
                     e.preventDefault();
                     if (wrapper.classList.contains('is-open')) {
@@ -1745,6 +1907,26 @@ function kbf_global_assets() {
         document.addEventListener('DOMContentLoaded', function(){
             window.kbfInitSelects();
         });
+        if (!window._kbfSelectObserver && window.MutationObserver) {
+            window._kbfSelectObserver = new MutationObserver(function(mutations){
+                var shouldInit = false;
+                for (var i = 0; i < mutations.length; i++) {
+                    var m = mutations[i];
+                    if (!m.addedNodes || !m.addedNodes.length) continue;
+                    for (var j = 0; j < m.addedNodes.length; j++) {
+                        var node = m.addedNodes[j];
+                        if (!node || node.nodeType !== 1) continue;
+                        if (node.matches && node.matches('select')) { shouldInit = true; break; }
+                        if (node.querySelector && node.querySelector('select')) { shouldInit = true; break; }
+                    }
+                    if (shouldInit) break;
+                }
+                if (shouldInit) {
+                    window.kbfInitSelects();
+                }
+            });
+            window._kbfSelectObserver.observe(document.body, { childList: true, subtree: true });
+        }
     }
     if (typeof window.kbfFetchJson === 'undefined') {
         window.kbfFetchJson = function(url, fd, onOk, onErr) {
@@ -1780,7 +1962,7 @@ function kbf_global_assets() {
                 var pager = document.createElement('div');
                 pager.className = 'kbf-table-pager';
                 pager.innerHTML = '' +
-                  '<div class="kbf-table-pager-left">Show ' +
+                  '<div class="kbf-table-pager-left">Show&nbsp;' +
                   '<select class="kbf-table-rows">' +
                     '<option value="5">5</option>' +
                     '<option value="10" selected>10</option>' +
@@ -2002,6 +2184,49 @@ function kbf_global_assets() {
     </div>
 
     <script>
+    (function(){
+        function kbfZeroTop(){
+            var html = document.documentElement;
+            var body = document.body;
+            if (html) {
+                html.style.setProperty('margin-top','0','important');
+                html.style.setProperty('padding-top','0','important');
+                html.style.setProperty('top','0','important');
+            }
+            if (body) {
+                body.style.setProperty('margin-top','0','important');
+                body.style.setProperty('padding-top','0','important');
+                body.style.setProperty('top','0','important');
+            }
+            var topbar = document.querySelector('.bntm-topbar');
+            if (topbar) {
+                topbar.style.setProperty('height','0','important');
+                topbar.style.setProperty('min-height','0','important');
+                topbar.style.setProperty('margin','0','important');
+                topbar.style.setProperty('padding','0','important');
+                topbar.style.setProperty('display','none','important');
+            }
+            var adminbar = document.getElementById('wpadminbar');
+            if (adminbar) {
+                adminbar.style.setProperty('display','none','important');
+                adminbar.style.setProperty('height','0','important');
+            }
+            var nodes = document.querySelectorAll('.bntm-content,.bntm-container,.bntm-bg,.kbf-wrap,.kbf-user-ui,.kbf-admin-ui');
+            for (var i = 0; i < nodes.length; i++) {
+                nodes[i].style.setProperty('margin-top','0','important');
+                nodes[i].style.setProperty('padding-top','0','important');
+                nodes[i].style.setProperty('top','0','important');
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', kbfZeroTop);
+        } else {
+            kbfZeroTop();
+        }
+        window.addEventListener('load', kbfZeroTop);
+    })();
+    </script>
+    <script>
     var _kbfShareUrl = '';
     var _kbfShareTitle = '';
     var _kbfShareDesc = '';
@@ -2127,6 +2352,19 @@ function kbf_global_assets() {
         echo kbf_render_loading_overlay();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

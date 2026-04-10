@@ -72,12 +72,12 @@ function kbf_admin_reports_tab() {
         var pager = document.createElement('div');
         pager.className = 'kbf-table-pager';
         pager.innerHTML = '' +
-          '<div class="kbf-table-pager-left">Show ' +
+          '<div class="kbf-table-pager-left">Show&nbsp;' +
           '<select class="kbf-table-rows">' +
             '<option value="3">3</option>' +
             '<option value="5" selected>5</option>' +
             '<option value="10">10</option>' +
-          '</select> cards</div>' +
+          '</select>&nbsp;cards</div>' +
           '<div class="kbf-table-pager-right">' +
             '<button class="kbf-table-pager-btn kbf-table-prev" type="button">Prev</button>' +
             '<span class="kbf-table-pager-page">1 / 1</span>' +
@@ -127,3 +127,4 @@ function kbf_admin_reports_tab() {
     </script>
     <?php return ob_get_clean();
 }
+

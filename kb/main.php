@@ -5,7 +5,7 @@
  * Description: Community crowdfunding and sponsorship platform for funders and sponsors.
  * Version: 2.0.0
  * Author: Barth Brayan D. Serceña
- * Icon: ./assets/branding/logo.png
+ * Icon: assets/iconlogo.png
  */
 /*
  * KBF module bootstrap: defines constants, shared helpers, DB/cron setup,
@@ -82,6 +82,15 @@ add_action('wp', function () {
     remove_action('wp_head', '_admin_bar_bump_cb');
     add_filter('show_admin_bar', '__return_false');
 }, 0);
+
+// Disable legacy plugin preloader on KBF pages (use KBF branding preloader instead).
+add_filter('bntm_disable_loading_overlay', function($disabled){
+    if (function_exists('kbf_is_kbf_page') && kbf_is_kbf_page()) {
+        return true;
+    }
+    return $disabled;
+});
+
 
 // Mark new accounts to land on profile after first login.
 function kbf_mark_first_login($user_id) {
@@ -571,6 +580,11 @@ function kbf_refund_all_sponsors($fund_id) {
     // Auto-refund disabled.
     return;
 }
+
+
+
+
+
 
 
 

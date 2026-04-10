@@ -545,7 +545,7 @@ function bntm_shortcode_kbf_organizer_profile() {
         if(pager.dataset.ready === '1') return;
         pager.dataset.ready = '1';
         pager.innerHTML = '' +
-          '<div class="kbf-table-pager-left">Show ' +
+          '<div class="kbf-table-pager-left">Show&nbsp;' +
           '<select class="kbf-table-rows">' +
             '<option value="5" selected>5</option>' +
             '<option value="10">10</option>' +
@@ -623,4 +623,5 @@ function bntm_shortcode_kbf_organizer_profile() {
     }
     return bntm_universal_container('Organizer Profile -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
