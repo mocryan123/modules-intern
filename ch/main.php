@@ -282,8 +282,12 @@ function ch_get_feed_url() {
     static $url = null;
 
     if ($url === null) {
-        $page = get_page_by_path('forum-feed');
-        $url = $page ? get_permalink($page) : home_url('/forum-feed/');
+        if (bntm_ch_page_has_shortcode('ch_feed')) {
+            $url = get_permalink(get_queried_object_id());
+        } else {
+            $page = get_page_by_path('forum-feed');
+            $url = $page ? get_permalink($page) : home_url('/forum-feed/');
+        }
     }
 
     return $url;
@@ -293,8 +297,12 @@ function ch_get_auth_url($tab = 'login', $redirect_to = '') {
     static $base = null;
 
     if ($base === null) {
-        $page = get_page_by_path('login-register');
-        $base = $page ? get_permalink($page) : wp_login_url();
+        if (bntm_ch_page_has_shortcode('ch_auth')) {
+            $base = get_permalink(get_queried_object_id());
+        } else {
+            $page = get_page_by_path('login-register');
+            $base = $page ? get_permalink($page) : wp_login_url();
+        }
     }
 
     $args = ['tab' => $tab];
