@@ -456,8 +456,8 @@ function bntm_ajax_kbf_add_milestone() {
     if (!$fund_id) wp_send_json_error(['message'=>'Invalid fund.']);
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND business_id=%d", $fund_id, $biz));
     if (!$fund) wp_send_json_error(['message'=>'Fund not found.']);
-    if ($fund->status !== 'completed') {
-        wp_send_json_error(['message'=>'Milestones can only be added after completion.']);
+    if (!in_array($fund->status, ['active','completed'], true)) {
+        wp_send_json_error(['message'=>'Milestones can only be added for active or completed fundraisers.']);
     }
     $title = isset($_POST['milestone_title']) ? sanitize_text_field($_POST['milestone_title']) : '';
     $body  = isset($_POST['milestone_body']) ? sanitize_textarea_field($_POST['milestone_body']) : '';

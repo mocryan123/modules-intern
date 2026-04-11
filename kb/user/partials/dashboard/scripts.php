@@ -1542,8 +1542,21 @@
             editPhotoInput.addEventListener('change', function(){
                 var incoming = Array.from(editPhotoInput.files || []);
                 if (!incoming.length) return;
+                function kbfFileKey(f){
+                    return [f.name, f.size, f.lastModified, f.type].join('|');
+                }
+                var byKey = {};
+                var merged = [];
+                kbfEditFiles.forEach(function(f){
+                    var k = kbfFileKey(f);
+                    if (!byKey[k]) { byKey[k] = 1; merged.push(f); }
+                });
+                incoming.forEach(function(f){
+                    var k = kbfFileKey(f);
+                    if (!byKey[k]) { byKey[k] = 1; merged.push(f); }
+                });
                 var maxNew = Math.max(0, 5 - kbfEditExistingUrls.length);
-                kbfEditFiles = kbfEditFiles.concat(incoming).slice(0, maxNew);
+                kbfEditFiles = merged.slice(0, maxNew);
                 kbfSyncEditFiles();
                 kbfRenderEditThumbs();
             });
@@ -2748,6 +2761,15 @@
             } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
+    (function(){
+        var form = document.getElementById('kbf-wd-form');
+        if (!form || form.dataset.bound) return;
+        form.dataset.bound = '1';
+        form.addEventListener('submit', function(e){
+            e.preventDefault();
+            kbfSubmitWd();
+        });
+    })();
 
     function kbfSubmitAppeal(nonce) {
         const form = document.getElementById('kbf-appeal-form');
@@ -2840,6 +2862,72 @@
         kbfOpenModal('kbf-modal-appeal');
     };
 
+    var kbfMilestoneFiles = [];
+    var milestoneInput = document.getElementById('kbf-milestone-photos');
+    var milestoneWrap = document.getElementById('kbf-milestone-photo-previews');
+    function kbfSyncMilestoneFiles(){
+        if (!milestoneInput) return;
+        var dt = new DataTransfer();
+        kbfMilestoneFiles.forEach(function(f){ dt.items.add(f); });
+        milestoneInput.files = dt.files;
+    }
+    function kbfRenderMilestoneThumbs(){
+        if (!milestoneWrap) return;
+        milestoneWrap.innerHTML = '';
+        kbfMilestoneFiles.forEach(function(file, idx){
+            if (!file.type || file.type.indexOf('image/') !== 0) return;
+            var reader = new FileReader();
+            reader.onload = function(e){
+                var thumb = document.createElement('div');
+                thumb.className = 'kbf-photo-thumb kbf-photo-slot';
+                thumb.setAttribute('data-index', String(idx));
+                var img = document.createElement('img');
+                img.alt = '';
+                img.src = e.target.result;
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'kbf-photo-remove';
+                btn.innerHTML = '&times;';
+                btn.addEventListener('click', function(){
+                    kbfMilestoneFiles.splice(idx, 1);
+                    kbfSyncMilestoneFiles();
+                    kbfRenderMilestoneThumbs();
+                });
+                thumb.appendChild(img);
+                thumb.appendChild(btn);
+                milestoneWrap.appendChild(thumb);
+            };
+            reader.readAsDataURL(file);
+        });
+        if (kbfMilestoneFiles.length < 5) {
+            var addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'kbf-photo-add';
+            addBtn.setAttribute('aria-label', 'Add photos');
+            addBtn.innerHTML = '+';
+            addBtn.addEventListener('click', function(){
+                if (milestoneInput) milestoneInput.click();
+            });
+            milestoneWrap.appendChild(addBtn);
+        }
+        if (milestoneInput) {
+            milestoneInput.disabled = (kbfMilestoneFiles.length >= 5);
+        }
+    }
+    if (milestoneInput && !milestoneInput.dataset.bound) {
+        milestoneInput.dataset.bound = '1';
+        milestoneInput.addEventListener('change', function(){
+            var files = Array.prototype.slice.call(milestoneInput.files || []);
+            files.forEach(function(f){
+                if (kbfMilestoneFiles.length < 5) {
+                    kbfMilestoneFiles.push(f);
+                }
+            });
+            kbfSyncMilestoneFiles();
+            kbfRenderMilestoneThumbs();
+        });
+    }
+
     window.kbfOpenMilestoneModal = function(fundId, title) {
         var titleEl = document.getElementById('kbf-milestone-fund-title');
         var idEl = document.getElementById('kbf-milestone-fund-id');
@@ -2849,6 +2937,32 @@
         if (form) form.reset();
         var msg = document.getElementById('kbf-milestone-msg');
         if (msg) msg.innerHTML = '';
+        kbfMilestoneFiles = [];
+        kbfSyncMilestoneFiles();
+        kbfRenderMilestoneThumbs();
+        if (form) {
+            var titleInput = form.querySelector('input[name="milestone_title"]');
+            var bodyInput = form.querySelector('textarea[name="milestone_body"]');
+            var titleCounter = form.querySelector('.kbf-title-counter');
+            var descCounter = form.querySelector('.kbf-desc-counter');
+            if (titleCounter) titleCounter.textContent = (titleInput && titleInput.value ? titleInput.value.length : 0) + ' / 150';
+            if (descCounter) descCounter.textContent = (bodyInput && bodyInput.value ? bodyInput.value.length : 0) + ' / 300';
+            form.querySelectorAll('.kbf-field-error').forEach(function(el){ el.textContent = ''; el.style.display = ''; });
+
+            function bindLiveCounter(input, counterEl, max){
+                if (!input || !counterEl) return;
+                if (input.dataset.counterBound) return;
+                input.dataset.counterBound = '1';
+                var update = function(){
+                    var len = (input.value || '').length;
+                    counterEl.textContent = len + ' / ' + max;
+                };
+                input.addEventListener('input', update);
+                update();
+            }
+            bindLiveCounter(titleInput, titleCounter, 150);
+            bindLiveCounter(bodyInput, descCounter, 300);
+        }
         var saveBtn = document.getElementById('kbf-milestone-save');
         if (saveBtn && !saveBtn.dataset.bound) {
             saveBtn.dataset.bound = '1';
@@ -2863,15 +2977,53 @@
         if (!form) return;
         var title = form.querySelector('input[name="milestone_title"]');
         var body = form.querySelector('textarea[name="milestone_body"]');
-        if (title && body && !title.value.trim() && !body.value.trim()) {
-            if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Please add a title or update details.</div>';
+        var photos = form.querySelector('#kbf-milestone-photos');
+        var titleCounter = form.querySelector('.kbf-title-counter');
+        var descCounter = form.querySelector('.kbf-desc-counter');
+        var errors = form.querySelectorAll('.kbf-field-error');
+        errors.forEach(function(el){ el.textContent=''; el.style.display=''; });
+        if (titleCounter) titleCounter.textContent = (title && title.value ? title.value.length : 0) + ' / 150';
+        if (descCounter) descCounter.textContent = (body && body.value ? body.value.length : 0) + ' / 300';
+
+        function setErr(input, message){
+            if (!input) return;
+            var group = input.closest('.kbf-form-group');
+            if (!group) return;
+            var err = group.querySelector('.kbf-field-error');
+            if (err) {
+                err.textContent = message;
+                err.style.display = 'block';
+            }
+        }
+
+        var hasError = false;
+        var titleVal = title ? title.value.trim() : '';
+        var bodyVal = body ? body.value.trim() : '';
+        if (!titleVal) { setErr(title, 'Story title is required.'); hasError = true; }
+        if (!bodyVal) { setErr(body, 'Update details are required.'); hasError = true; }
+        if (titleVal.length > 150) { setErr(title, 'Title must be 150 characters or fewer.'); hasError = true; }
+        if (bodyVal.length > 300) { setErr(body, 'Description must be 300 characters or fewer.'); hasError = true; }
+
+        if (photos && photos.files && photos.files.length > 5) {
+            setErr(photos, 'Please upload up to 5 photos only.');
+            hasError = true;
+        }
+
+        if (hasError) {
+            if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Please fix the highlighted fields.</div>';
             return;
         }
         if (typeof window.ajaxurl === 'undefined' || !window.ajaxurl) {
             if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Submit failed: ajaxurl is not defined.</div>';
             return;
         }
+        if (milestoneInput) milestoneInput.disabled = false;
         var fd = new FormData(form);
+        if (Array.isArray(kbfMilestoneFiles) && kbfMilestoneFiles.length) {
+            kbfMilestoneFiles.slice(0, 5).forEach(function(file){
+                fd.append('milestone_photos[]', file, file.name);
+            });
+        }
         fd.append('action','kbf_add_milestone');
         fd.append('nonce','<?php echo wp_create_nonce('kbf_add_milestone'); ?>');
         if (saveBtn) kbfSetBtnLoading(saveBtn, true, 'Saving...');
@@ -2923,10 +3075,10 @@
         var titleEl = document.getElementById('kbf-trash-title');
         var msgEl = document.getElementById('kbf-trash-message');
         if (kbfTrashMode === 'trash') {
-            if (titleEl) titleEl.textContent = 'Trash?';
+            if (titleEl) titleEl.textContent = 'Cancel Campaign';
             if (msgEl) msgEl.textContent = 'This will permanently delete the fundraiser and its records. This cannot be undone. Are you sure you want to continue?';
         } else {
-            if (titleEl) titleEl.textContent = 'Trash?';
+            if (titleEl) titleEl.textContent = 'Cancel Campaign';
             if (msgEl) msgEl.textContent = 'This will move the fundraiser to cancelled status and it won’t be visible to sponsors. Are you sure you want to continue?';
         }
         kbfOpenModal('kbf-modal-trash-fund');
@@ -3045,78 +3197,7 @@
     </script>
 
     <script>
-      (function(){
-        if (!window.kbfIsLoggedIn) return;
-        var kbfUserTab = '<?php echo esc_js($tab); ?>';
-        var kbfUserRefreshNonce = '<?php echo esc_js($nonce_refresh); ?>';
-        var kbfUserRefreshTabs = ['overview','sponsorships','withdrawals','sponsor_history','my_funds'];
-        if (kbfUserRefreshTabs.indexOf(kbfUserTab) === -1) return;
-
-        var refreshInterval = 25000;
-        var refreshing = false;
-        var refreshTimer = null;
-
-        function runInlineScripts(container){
-          if (!container) return;
-          var scripts = container.querySelectorAll('script');
-          scripts.forEach(function(script){
-            var code = script.textContent || '';
-            if (!code.trim()) return;
-            try { (new Function(code))(); } catch(e) { console.error('kbfUser inline script error:', e); }
-          });
-        }
-
-        function kbfUserRefreshTab(){
-          if (document.hidden) return;
-          if (refreshing) return;
-          if (document.documentElement.classList.contains('kbf-modal-lock') || document.body.classList.contains('kbf-modal-lock')) return;
-          refreshing = true;
-          var fd = new FormData();
-          fd.append('action','kbf_user_refresh_tab');
-          fd.append('_ajax_nonce', kbfUserRefreshNonce);
-          fd.append('tab', kbfUserTab);
-          fetch(ajaxurl,{method:'POST',body:fd})
-            .then(function(r){ return r.text(); })
-            .then(function(text){
-              var cleaned = String(text || '').replace(/^\uFEFF+/, '').trim();
-              if (!cleaned) return null;
-              try { return JSON.parse(cleaned); }
-              catch(e){ throw e; }
-            })
-            .then(function(j){
-              if (!j || !j.success || !j.data || !j.data.html) return;
-              var container = document.querySelector('.kbf-tab-content');
-              if (!container) return;
-              container.innerHTML = j.data.html;
-              runInlineScripts(container);
-              if (window.kbfInitTablePager) window.kbfInitTablePager();
-              if (window.kbfInitTableDescriptions) window.kbfInitTableDescriptions();
-            })
-            .catch(function(err){
-              console.error('kbfUserRefreshTab error:', err);
-            })
-            .finally(function(){ refreshing = false; });
-        }
-
-        function startRefresh(){
-          if (refreshTimer) clearInterval(refreshTimer);
-          refreshTimer = setInterval(kbfUserRefreshTab, refreshInterval);
-        }
-        function stopRefresh(){
-          if (!refreshTimer) return;
-          clearInterval(refreshTimer);
-          refreshTimer = null;
-        }
-        startRefresh();
-        document.addEventListener('visibilitychange', function(){
-          if (document.hidden) {
-            stopRefresh();
-            return;
-          }
-          startRefresh();
-          kbfUserRefreshTab();
-        });
-      })();
+      // Auto-refresh disabled per request.
     </script>
 
 

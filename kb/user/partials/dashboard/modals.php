@@ -254,16 +254,22 @@
             <input type="hidden" id="kbf-milestone-fund-id" name="fund_id">
             <div class="kbf-form-group">
               <label>Story Title</label>
-              <input type="text" name="milestone_title" placeholder="e.g., Goal reached!" maxlength="120">
+              <input type="text" name="milestone_title" placeholder="e.g., Goal reached!" maxlength="150" required>
+              <small class="kbf-title-counter">0 / 150</small>
+              <div class="kbf-field-error"></div>
             </div>
             <div class="kbf-form-group">
               <label>Update Details</label>
-              <textarea name="milestone_body" rows="4" placeholder="Share an update for your supporters..."></textarea>
+              <textarea name="milestone_body" rows="4" placeholder="Share an update for your supporters..." maxlength="300" required></textarea>
+              <small class="kbf-desc-counter">0 / 300</small>
+              <div class="kbf-field-error"></div>
             </div>
             <div class="kbf-form-group">
               <label>Add Photos (optional)</label>
-              <input type="file" id="kbf-milestone-photos" name="milestone_photos[]" accept="image/*" multiple>
+              <input type="file" id="kbf-milestone-photos" class="kbf-milestone-photo-input" name="milestone_photos[]" accept="image/*" multiple>
+              <div id="kbf-milestone-photo-previews" class="kbf-photo-previews kbf-milestone-photo-grid"></div>
               <small>Up to 5 photos. JPG/PNG/WebP.</small>
+              <div class="kbf-field-error"></div>
             </div>
           </form>
           <div id="kbf-milestone-msg" style="margin-top:10px;"></div>
@@ -468,8 +474,8 @@
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="kbfCloseModal('kbf-modal-wd')">Cancel</button>
-          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitWd()">
+          <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfCloseModal('kbf-modal-wd')">Cancel</button>
+          <button class="kbf-btn kbf-btn-primary" type="button" onclick="kbfSubmitWd()">
             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Submit Request
           </button>
@@ -505,7 +511,7 @@
     <div id="kbf-modal-trash-fund" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
         <div class="kbf-modal-header">
-          <h3 id="kbf-trash-title">Trash?</h3>
+          <h3 id="kbf-trash-title">Cancel Campaign</h3>
           <button class="kbf-modal-close" type="button" onclick="kbfCloseModal('kbf-modal-trash-fund')">&times;</button>
         </div>
         <div class="kbf-modal-body">

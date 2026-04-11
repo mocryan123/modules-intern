@@ -78,11 +78,41 @@ function kbf_dashboard_find_funds_tab() {
       #kbff-search-form .kbf-select-display{
         padding-right:36px;
       }
+      @media (max-width: 900px){
+        #kbff-search-form{
+          flex-wrap:wrap !important;
+          row-gap:10px;
+        }
+        #kbff-search-input{
+          order:1;
+          flex:1 1 100% !important;
+          min-width:0 !important;
+        }
+        #kbff-search-form .kbf-form-group{
+          order:2;
+          flex:0 0 auto;
+        }
+        #kbff-near-me-btn,
+        #kbff-search-form .kbf-btn.kbf-btn-primary{
+          order:3;
+          flex:0 0 auto;
+        }
+      }
       .kbf-explore-grid{
         display:grid;
         grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
         gap:18px;
         overflow:visible;
+      }
+      @media (max-width: 900px){
+        .kbf-explore-grid{
+          grid-template-columns:repeat(2, minmax(0, 1fr));
+        }
+      }
+      @media (max-width: 600px){
+        .kbf-explore-grid{
+          grid-template-columns:1fr;
+        }
       }
       .kbf-explore-card{
         background:#fff;

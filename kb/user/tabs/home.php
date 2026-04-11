@@ -355,10 +355,26 @@
         }
         .kbf-sponsor-details summary::-webkit-details-marker{display:none;}
         .kbf-sponsor-details-content{
-          display:none;
-        }
-        .kbf-sponsor-details[open] .kbf-sponsor-details-content{
           display:block;
+          overflow:hidden;
+          max-height:0;
+          opacity:0;
+          transform:translateY(-6px);
+          transition:
+            max-height 520ms cubic-bezier(.2,.8,.2,1),
+            opacity 320ms ease,
+            transform 420ms cubic-bezier(.2,.8,.2,1);
+          will-change:max-height, opacity, transform;
+        }
+        .kbf-sponsor-details.is-open .kbf-sponsor-details-content{
+          opacity:1;
+          transform:translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce){
+          .kbf-sponsor-details-content{
+            transition:none;
+            transform:none;
+          }
         }
       </style>
         <div class="kbf-section-header">
@@ -492,11 +508,11 @@
                 <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
               </span>
             <div>
-              <span class="kbf-strong">Rejected:</span>
+              <span class="kbf-strong">Cancelled:</span>
               <?php if(!empty($f->admin_notes)): ?>
                 <?php echo esc_html($f->admin_notes); ?>
               <?php else: ?>
-                <span>No rejection message was provided. Please contact support if you need details.</span>
+                <span>This campaign was cancelled and is no longer visible to sponsors. Contact support if you need details.</span>
               <?php endif; ?>
             </div>
           </div>
@@ -549,12 +565,6 @@
               <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
                 View Details
               </a>
-              <?php if($f->status==='completed'): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
-                  <i class="ph ph-plus kbf-icon" style="font-size:12px; color:currentColor;" aria-hidden="true"></i>
-                  Add Story
-                </button>
-              <?php endif; ?>
               <?php if($f->status==='active' && $f->escrow_status==='holding' && $deadline_passed && $f->raised_amount < $f->goal_amount): ?>
                 <?php if($escrow_pending): ?>
                   <span class="kbf-badge kbf-badge-pending">Escrow Request Pending</span>
@@ -591,7 +601,7 @@
                   Edit
                 </button>
                 <?php endif; ?>
-                <?php if($f->status==='completed'): ?>
+                <?php if(in_array($f->status, ['active','completed'], true)): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-more-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
                   <i class="ph ph-plus kbf-icon" style="font-size:12px; color:currentColor;" aria-hidden="true"></i>
                   Add Story
@@ -622,7 +632,7 @@
                 </button>
                 <?php if($f->status==='pending'): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','cancel')">
-                  <i class="ph-bold ph-x kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
+                  <i class="ph ph-prohibit kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Cancel
                 </button>
                 <?php endif; ?>
@@ -677,19 +687,19 @@
           <div class="kbf-cta-sub">Create a new fund to mobilize support. Keep updates consistent to build trust and improve conversion.</div>
           <div class="kbf-cta-checklist">
             <div class="kbf-cta-check">
-              <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
+              <i><i class="ph ph-check" aria-hidden="true"></i></i>
               Add a clear goal and deadline
             </div>
             <div class="kbf-cta-check">
-              <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
+              <i><i class="ph ph-check" aria-hidden="true"></i></i>
               Upload 2–3 photos to build trust
             </div>
             <div class="kbf-cta-check">
-              <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
+              <i><i class="ph ph-check" aria-hidden="true"></i></i>
               Share once it’s live to get first sponsors
             </div>
             <div class="kbf-cta-check">
-              <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
+              <i><i class="ph ph-check" aria-hidden="true"></i></i>
               Post a quick update every story
             </div>
           </div>
@@ -865,6 +875,55 @@
           c.classList.remove('is-menu-open');
         });
       });
+
+      (function(){
+        var items = document.querySelectorAll('.kbf-sponsor-details');
+        if (!items || !items.length) return;
+
+        function openDetails(details, content){
+          details.open = true;
+          details.classList.add('is-open');
+          content.style.maxHeight = '0px';
+          content.offsetHeight;
+          content.style.maxHeight = content.scrollHeight + 'px';
+        }
+
+        function closeDetails(details, content){
+          details.classList.remove('is-open');
+          content.style.maxHeight = content.scrollHeight + 'px';
+          content.offsetHeight;
+          content.style.maxHeight = '0px';
+          var onEnd = function(e){
+            if (e.propertyName !== 'max-height') return;
+            content.removeEventListener('transitionend', onEnd);
+            details.open = false;
+          };
+          content.addEventListener('transitionend', onEnd);
+        }
+
+        items.forEach(function(details){
+          var summary = details.querySelector('summary');
+          var content = details.querySelector('.kbf-sponsor-details-content');
+          if (!summary || !content) return;
+
+          if (details.open) {
+            details.classList.add('is-open');
+            content.style.maxHeight = content.scrollHeight + 'px';
+          } else {
+            details.classList.remove('is-open');
+            content.style.maxHeight = '0px';
+          }
+
+          summary.addEventListener('click', function(e){
+            e.preventDefault();
+            if (details.classList.contains('is-open')) {
+              closeDetails(details, content);
+            } else {
+              openDetails(details, content);
+            }
+          });
+        });
+      })();
       
       var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
       var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
@@ -902,7 +961,3 @@
     </div>
     <?php return ob_get_clean();
 }
-
-
-
-

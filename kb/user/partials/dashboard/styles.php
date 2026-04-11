@@ -506,12 +506,11 @@
         overflow-wrap:break-word;
     }
     .kbf-hero-banner{
-        background:linear-gradient(135deg,#edf4ff 0%,#ffffff 50%,#e5f0ff 100%);
-        background-image:
-          radial-gradient(140% 160% at 0% 0%, #4f93ff47 0%, #4f93ff00 55%),
-          radial-gradient(140% 160% at 100% 0%, #a1d2ff4c 0%, #a1d2ff00 55%),
-          linear-gradient(135deg,#edf4ff 0%,#ffffff 50%,#e5f0ff 100%);
-        border:1px solid var(--kbf-border);
+        background:
+          radial-gradient(85% 90% at 0% 0%, #4f93ff24 0%, #4f93ff00 60%),
+          radial-gradient(85% 90% at 100% 0%, #a1d2ff28 0%, #a1d2ff00 60%),
+          linear-gradient(135deg,#f1f6ff 0%,#fbfdff 55%,#eef5ff 100%);
+        border:1px solid #d7e6ff;
         border-radius:22px;
         padding:22px 24px;
         box-shadow:none;
@@ -529,8 +528,7 @@
             padding-right:20px;
         }
     }
-    .kbf-user-ui,
-    .kbf-hero-banner{
+    .kbf-user-ui{
         background-image:none !important;
     }
     .kbf-user-ui{
@@ -557,6 +555,103 @@
         grid-template-columns:1.2fr 1fr;
         gap:18px;
         margin-bottom:20px;
+    }
+    .kbf-cta-card{
+        background:#fff;
+        border:1px solid var(--kbf-border);
+        border-radius:20px;
+        padding:18px 20px;
+        display:flex;
+        gap:18px;
+        align-items:flex-start;
+        justify-content:space-between;
+        box-shadow:0 10px 24px rgba(15,23,42,.06);
+    }
+    .kbf-cta-eyebrow{
+        font-size:11px;
+        letter-spacing:.22em;
+        text-transform:uppercase;
+        color:#94a3b8;
+        font-weight:700;
+        margin-bottom:4px;
+    }
+    .kbf-cta-title{
+        font-size:18px;
+        font-weight:800;
+        color:#0f172a;
+        margin:0 0 6px;
+    }
+    .kbf-cta-sub{
+        font-size:13px;
+        color:#6b7280;
+        margin-bottom:10px;
+        max-width:520px;
+    }
+    .kbf-cta-checklist{
+        display:grid;
+        grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+        gap:8px 14px;
+        max-width:640px;
+    }
+    .kbf-cta-check{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        font-size:12.5px;
+        color:#475569;
+        line-height:1.35;
+    }
+    .kbf-cta-check > i{
+        width:18px;
+        height:18px;
+        border-radius:50%;
+        background:#e7f1ff;
+        color:#2563eb;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        flex:0 0 18px;
+    }
+    .kbf-cta-check > i > i{
+        font-size:10px;
+        line-height:1;
+    }
+    .kbf-cta-right{
+        display:flex;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+        min-width:220px;
+    }
+    .kbf-cta-actions{
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        width:100%;
+    }
+    .kbf-cta-actions{
+        align-items:stretch;
+    }
+    .kbf-cta-actions .kbf-btn{
+        width:230px !important;
+        justify-content:center;
+    }
+    .kbf-cta-note{
+        font-size:12px;
+        color:#64748b;
+        max-width:220px;
+    }
+    @media (max-width: 900px){
+        .kbf-cta-card{
+            flex-direction:column;
+            align-items:stretch;
+        }
+        .kbf-cta-right{
+            align-items:flex-start;
+        }
+        .kbf-cta-actions .kbf-btn{
+            width:100%;
+        }
     }
     .kbf-hero-card{
         background:linear-gradient(180deg,#ffffff 0%,#f7faff 100%);
@@ -1209,6 +1304,17 @@
     .kbf-user-ui .kbf-photo-thumb img{
         width:100%;height:100%;
         object-fit:cover;display:block;
+    }
+    .kbf-user-ui .kbf-milestone-photo-input{
+        display:none;
+    }
+    .kbf-user-ui .kbf-milestone-photo-grid{
+        grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));
+    }
+    .kbf-user-ui .kbf-milestone-photo-grid .kbf-photo-thumb,
+    .kbf-user-ui .kbf-milestone-photo-grid .kbf-photo-add{
+        aspect-ratio:4/3;
+        height:auto;
     }
     .kbf-user-ui .kbf-benefits-list{
         display:grid;

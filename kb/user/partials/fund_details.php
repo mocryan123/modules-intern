@@ -1118,7 +1118,12 @@ function bntm_shortcode_kbf_fund_details() {
                   $ms_title = isset($ms['title']) ? $ms['title'] : '';
                   $ms_body = isset($ms['body']) ? $ms['body'] : '';
                   $ms_date = isset($ms['created_at']) ? $ms['created_at'] : '';
-                  $ms_photos = isset($ms['photos']) && is_array($ms['photos']) ? $ms['photos'] : [];
+                  $ms_photos = isset($ms['photos']) ? $ms['photos'] : [];
+                  if (is_string($ms_photos)) {
+                    $decoded = json_decode($ms_photos, true);
+                    $ms_photos = is_array($decoded) ? $decoded : [];
+                  }
+                  if (!is_array($ms_photos)) $ms_photos = [];
                 ?>
                   <div style="border:1px solid var(--kbf-border);border-radius:12px;padding:12px;background:#fff;">
                     <?php if($ms_title !== ''): ?><div style="font-weight:600;color:var(--kbf-navy);margin-bottom:4px;"><?php echo esc_html($ms_title); ?></div><?php endif; ?>
@@ -1126,8 +1131,17 @@ function bntm_shortcode_kbf_fund_details() {
                     <?php if($ms_body !== ''): ?><div style="font-size:13px;color:var(--kbf-text-sm);line-height:1.6;"><?php echo nl2br(esc_html(wp_unslash($ms_body))); ?></div><?php endif; ?>
                     <?php if(!empty($ms_photos)): ?>
                       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
-                        <?php foreach($ms_photos as $p): ?>
-                          <img src="<?php echo esc_url($p); ?>" alt="Story photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">
+                        <?php foreach($ms_photos as $p):
+                          $url = '';
+                          if (is_array($p) && isset($p['url'])) {
+                            $url = $p['url'];
+                          } elseif (is_string($p)) {
+                            $url = $p;
+                          }
+                          $url = $url ? wp_unslash($url) : '';
+                          if (!$url) continue;
+                        ?>
+                          <img src="<?php echo esc_url($url); ?>" alt="Story photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">
                         <?php endforeach; ?>
                       </div>
                     <?php endif; ?>
