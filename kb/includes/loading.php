@@ -19,13 +19,38 @@ if (!function_exists('kbf_render_loading_overlay')) {
           </div>
         </div>
         <script>
-          window.addEventListener('load', function(){
-            var el = document.getElementById('kbf-loading-overlay');
-            var legacy = document.getElementById('bntmLoadingOverlay');
-            if (legacy) { legacy.classList.add('hidden'); legacy.style.display = 'none'; }
-            if (!el) return;
-            setTimeout(function(){ el.style.display = 'none'; }, 600);
-          });
+          (function(){
+            var html = document.documentElement;
+            var body = document.body;
+            var locked = false;
+            var isScrollable = function(){
+              var doc = document.documentElement;
+              var scrollHeight = (doc && doc.scrollHeight) || document.body.scrollHeight || 0;
+              var clientHeight = (doc && doc.clientHeight) || window.innerHeight || 0;
+              return scrollHeight > clientHeight;
+            };
+            var hasScrolled = function(){
+              return (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0) > 0;
+            };
+            if (!isScrollable() && !hasScrolled()) {
+              if (html) html.style.overflow = 'hidden';
+              if (body) body.style.overflow = 'hidden';
+              locked = true;
+            }
+            window.addEventListener('load', function(){
+              var el = document.getElementById('kbf-loading-overlay');
+              var legacy = document.getElementById('bntmLoadingOverlay');
+              if (legacy) { legacy.classList.add('hidden'); legacy.style.display = 'none'; }
+              if (!el) return;
+              setTimeout(function(){
+                el.style.display = 'none';
+                if (locked) {
+                  if (html) html.style.overflow = '';
+                  if (body) body.style.overflow = '';
+                }
+              }, 600);
+            });
+          })();
         </script>
         <?php
         return ob_get_clean();

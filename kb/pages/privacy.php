@@ -493,7 +493,7 @@ function bntm_kbf_render_privacy() {
           <ul>
             <li>Campaign title, description, photos, and updates</li>
             <li>Fundraising goal and deadline</li>
-            <li>Milestone information</li>
+            <li>Story information</li>
           </ul>
           <h3>2.5 Transaction Data</h3>
           <ul>

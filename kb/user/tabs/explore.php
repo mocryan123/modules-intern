@@ -369,7 +369,7 @@ function kbf_dashboard_find_funds_tab() {
       .kbf-explore-more-menu .kbf-btn-secondary:hover{
         background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
         color:#0f172a !important;
-        transform:translateX(1px);
+        transform:none;
         box-shadow:
           inset 0 0 0 1px #bfdbfe,
           0 8px 18px rgba(59,130,246,.16);
@@ -989,7 +989,7 @@ function kbf_dashboard_find_funds_tab() {
             'Tip: Share to your closest circles first for momentum.',
             'Tip: Use real photos to improve credibility.',
             'Tip: Thank early sponsors to build social proof.',
-            'Tip: Post updates after big milestones.',
+            'Tip: Post updates after big stories.',
             'Tip: Found a malicious campaign? Report it to us.'
         ];
         function pickRandom(){

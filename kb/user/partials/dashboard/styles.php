@@ -200,7 +200,7 @@
     .kbf-card-more-menu .kbf-btn-secondary:hover{
         background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
         color:#0f172a !important;
-        transform:translateX(1px);
+        transform:none;
         box-shadow:
           inset 0 0 0 1px #bfdbfe,
           0 8px 18px rgba(59,130,246,.16);
@@ -511,7 +511,7 @@
           radial-gradient(140% 160% at 0% 0%, #4f93ff47 0%, #4f93ff00 55%),
           radial-gradient(140% 160% at 100% 0%, #a1d2ff4c 0%, #a1d2ff00 55%),
           linear-gradient(135deg,#edf4ff 0%,#ffffff 50%,#e5f0ff 100%);
-        border:1.5px solid #cfe0f7;
+        border:1px solid var(--kbf-border);
         border-radius:22px;
         padding:22px 24px;
         box-shadow:none;
@@ -709,8 +709,8 @@
         bottom:0;
         background:#ffffff;
     }
-    .kbf-user-ui #kbf-modal-create .kbf-modal-footer .kbf-btn-secondary,
-    .kbf-user-ui #kbf-modal-edit .kbf-modal-footer .kbf-btn-secondary{
+    .kbf-user-ui #kbf-modal-create .kbf-modal-footer .kbf-btn-secondary.kbf-modal-left,
+    .kbf-user-ui #kbf-modal-edit .kbf-modal-footer .kbf-btn-secondary.kbf-modal-left{
         margin-right:auto;
     }
     .kbf-user-ui .kbf-modal-footer .kbf-btn{

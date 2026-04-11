@@ -2147,7 +2147,7 @@ function bntm_kbf_render_landing() {
                 <ul class="kbf-list">
                   <li>Create a campaign for yourself, someone else, or a cause.</li>
                   <li>Share your link to group chats and social media.</li>
-                  <li>Post updates with receipts and milestones.</li>
+                  <li>Post updates with receipts and stories.</li>
                   <li>Receive funds after verification.</li>
                 </ul>
               </div>

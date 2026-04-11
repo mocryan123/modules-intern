@@ -127,6 +127,7 @@
         if (id === 'kbf-modal-create') {
             kbfSetCreateStep(1);
             if (window.kbfApplyCreateDraft) window.kbfApplyCreateDraft(true);
+            if (typeof window.kbfUpdateSaveCloseState === 'function') window.kbfUpdateSaveCloseState();
         }
     }
     window.kbfOpenModal = kbfOpenModal;
@@ -1209,6 +1210,21 @@
                 }
             }
         }
+        function kbfDraftComparable(draft){
+            if (!draft) return '';
+            var photos = Array.isArray(draft.photos) ? draft.photos.map(function(p){
+                return {
+                    dataUrl: p && p.dataUrl ? p.dataUrl : '',
+                    name: p && p.name ? p.name : '',
+                    type: p && p.type ? p.type : ''
+                };
+            }) : [];
+            return JSON.stringify({
+                fields: draft.fields || {},
+                step: draft.step || 1,
+                photos: photos
+            });
+        }
         function kbfCreateHasValue(){
             if (!createForm) return false;
             var fields = createForm.querySelectorAll('input[name], select[name], textarea[name]');
@@ -1335,64 +1351,38 @@
             kbfSetCreateDraft(null);
         };
     window.kbfRequestCloseCreate = function(){
-        var createModal = document.getElementById('kbf-modal-create');
-        if (kbfCreateHasValue()) {
-            if (createModal) {
-                createModal.classList.remove('is-open');
-                setTimeout(function(){ createModal.style.display = 'none'; }, 220);
-            }
-            kbfOpenModal('kbf-modal-draft');
-            return;
-        }
         kbfCloseModal('kbf-modal-create');
     };
-    window.kbfCancelDraftPrompt = function(){
-        kbfCloseModal('kbf-modal-draft');
-        var createModal = document.getElementById('kbf-modal-create');
-        if (createModal) {
-            createModal.style.display = 'flex';
-            requestAnimationFrame(function(){ createModal.classList.add('is-open'); });
-            // keep page scroll enabled
-        }
-    };
-        window.kbfSaveCreateDraft = function(){
-            var data = kbfBuildCreateDraft();
-            if (data) kbfSetCreateDraft(data);
-            kbfCloseModal('kbf-modal-draft');
-            kbfCloseModal('kbf-modal-create');
-        };
-                var draftDiscardBtn = document.getElementById('kbf-draft-discard');
-        if (draftDiscardBtn) draftDiscardBtn.addEventListener('click', function(){
-            window.kbfDiscardCreateDraft();
-        });
-        var draftSaveBtn = document.getElementById('kbf-draft-save');
-        if (draftSaveBtn) draftSaveBtn.addEventListener('click', function(){
-            window.kbfSaveCreateDraft();
-        });
-        window.kbfDiscardCreateDraft = function(){
-            if (createForm) createForm.reset();
-            kbfCreateFiles = [];
-            if (photoInput) {
-                kbfSyncCreateFiles();
-            }
-        if (photoWrap) kbfRenderCreateThumbs();
-        if (createForm) {
-            createForm.querySelectorAll('.kbf-field-error').forEach(function(el){ el.textContent = ''; });
-            createForm.querySelectorAll('.kbf-input-error').forEach(function(el){ el.classList.remove('kbf-input-error'); });
-            var t = createForm.querySelector('.kbf-title-counter');
-            if (t) t.textContent = '0 / 150';
-            var d = createForm.querySelector('.kbf-desc-counter');
-            if (d) d.textContent = '0 / 800';
-        }
-        if (window.kbfBenefitsEditors && window.kbfBenefitsEditors.create) {
-            window.kbfBenefitsEditors.create.set([]);
-        }
-        kbfSetCreateStep(1);
-        kbfSetCreateDraft(null);
-        kbfCloseModal('kbf-modal-draft');
+    window.kbfSaveAndCloseCreateDraft = function(){
+        var data = kbfBuildCreateDraft();
+        if (data) kbfSetCreateDraft(data);
         kbfCloseModal('kbf-modal-create');
     };
+        var saveCloseBtn = document.getElementById('kbf-create-save-close');
+        var lastSavedDraftHash = kbfDraftComparable(kbfGetCreateDraft());
+        function kbfUpdateSaveCloseState(){
+            if (!saveCloseBtn) return;
+            if (!kbfCreateHasValue()) {
+                saveCloseBtn.disabled = true;
+                return;
+            }
+            var currentHash = kbfDraftComparable(kbfBuildCreateDraft());
+            saveCloseBtn.disabled = currentHash === lastSavedDraftHash;
+        }
+        window.kbfUpdateSaveCloseState = kbfUpdateSaveCloseState;
         if (next) kbfSetCreateStep(1);
+        if (saveCloseBtn) {
+            saveCloseBtn.addEventListener('click', function(){
+                if (window.kbfSaveAndCloseCreateDraft) window.kbfSaveAndCloseCreateDraft();
+                lastSavedDraftHash = kbfDraftComparable(kbfGetCreateDraft());
+                kbfUpdateSaveCloseState();
+            });
+        }
+        if (createForm) {
+            createForm.addEventListener('input', kbfUpdateSaveCloseState);
+            createForm.addEventListener('change', kbfUpdateSaveCloseState);
+        }
+        kbfUpdateSaveCloseState();
     })();;
     function kbfSetBtnLoading(btn, on, label) {
         if (!btn) return;

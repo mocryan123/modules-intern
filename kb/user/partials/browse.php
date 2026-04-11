@@ -302,7 +302,7 @@ function bntm_shortcode_kbf_browse() {
           radial-gradient(140% 160% at 0% 0%, rgba(79,147,255,0.28) 0%, rgba(79,147,255,0) 55%),
           radial-gradient(140% 160% at 100% 0%, rgba(161,210,255,0.30) 0%, rgba(161,210,255,0) 55%),
           linear-gradient(135deg,#edf4ff 0%,#ffffff 50%,#e5f0ff 100%);
-        border:1.5px solid #cfe0f7;
+        border:1px solid var(--kbf-border);
         border-radius:22px;
         padding:22px 24px;
         box-shadow:none;

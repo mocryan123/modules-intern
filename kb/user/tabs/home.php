@@ -334,7 +334,7 @@
         .kbf-card-more-menu .kbf-btn-secondary:hover{
           background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
           color:#0f172a !important;
-          transform:translateX(1px);
+          transform:none;
           box-shadow:
             inset 0 0 0 1px #bfdbfe,
             0 8px 18px rgba(59,130,246,.16);
@@ -363,10 +363,10 @@
       </style>
         <div class="kbf-section-header">
          <h3 class="kbf-section-title">Dashboard Overview</h3>
-         <button class="kbf-btn kbf-btn-primary kbf-btn-sm" style="padding:0 14px;" onclick="kbfOpenModal('kbf-modal-create')">
-           <i class="ph ph-plus kbf-icon" style="font-size:12px; filter:invert(100%)" aria-hidden="true"></i>
-           Create Fund
-         </button>
+          <button class="kbf-btn kbf-btn-primary kbf-btn-sm" style="padding:0 14px;" onclick="kbfOpenModal('kbf-modal-create')">
+            <i class="ph ph-plus kbf-icon" style="font-size:12px; color:#ffffff;" aria-hidden="true"></i>
+            Create Fund
+          </button>
         </div>
       <?php if($pending_funds > 0): ?>
       <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;">
@@ -401,7 +401,7 @@
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
-            <i class="ph-fill ph-eye kbf-stat-icon-img kbf-icon" style="font-size:20px" aria-hidden="true"></i>
+            <i class="ph ph-eye kbf-stat-icon-img kbf-icon" style="font-size:20px" aria-hidden="true"></i>
           </div>
           <div><div class="kbf-stat-label">Active Now</div><div class="kbf-stat-value"><?php echo $active_funds; ?></div></div>
         </div>
@@ -547,13 +547,12 @@
               ?>
               <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : ''; ?>
               <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
-                <i class="ph ph-arrow-square-right kbf-icon" style="font-size:12px; filter:invert(100%)" aria-hidden="true"></i>
                 View Details
               </a>
               <?php if($f->status==='completed'): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
-                  <i class="ph ph-plus kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-                  Add Milestone
+                  <i class="ph ph-plus kbf-icon" style="font-size:12px; color:currentColor;" aria-hidden="true"></i>
+                  Add Story
                 </button>
               <?php endif; ?>
               <?php if($f->status==='active' && $f->escrow_status==='holding' && $deadline_passed && $f->raised_amount < $f->goal_amount): ?>
@@ -594,8 +593,8 @@
                 <?php endif; ?>
                 <?php if($f->status==='completed'): ?>
                 <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-more-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
-                  <i class="ph ph-plus kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-                  Add Milestone
+                  <i class="ph ph-plus kbf-icon" style="font-size:12px; color:currentColor;" aria-hidden="true"></i>
+                  Add Story
                 </button>
                 <?php endif; ?>
                 <?php if($f->status==='active' && $f->raised_amount>=$f->goal_amount): ?>
@@ -691,7 +690,7 @@
             </div>
             <div class="kbf-cta-check">
               <i><i class="ph-bold ph-check kbf-icon" aria-hidden="true"></i></i>
-              Post a quick update every milestone
+              Post a quick update every story
             </div>
           </div>
         </div>
@@ -903,12 +902,6 @@
     </div>
     <?php return ob_get_clean();
 }
-
-
-
-
-
-
 
 
 

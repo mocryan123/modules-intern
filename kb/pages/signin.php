@@ -350,5 +350,3 @@ function bntm_kbf_render_signin() {
 }
 
 
-
-

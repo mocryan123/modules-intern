@@ -145,29 +145,10 @@
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" id="kbf-create-prev" type="button">Back</button>
+          <button class="kbf-btn kbf-btn-secondary kbf-modal-left" id="kbf-create-prev" type="button">Back</button>
+          <button class="kbf-btn kbf-btn-secondary" id="kbf-create-save-close" type="button">Save &amp; Close</button>
           <button class="kbf-btn kbf-btn-primary" id="kbf-create-next" type="button">Next</button>
           <button class="kbf-btn kbf-btn-primary" id="kbf-create-submit" type="button" style="display:none;">Finish</button>
-        </div>
-      </div>
-    </div>
-
-    
-    
-
-    
-    <div id="kbf-modal-draft" class="kbf-modal-overlay" style="display:none;">
-      <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header">
-          <h3>Save as Draft?</h3>
-          <button class="kbf-modal-close" type="button" onclick="kbfCancelDraftPrompt()">&times;</button>
-        </div>
-        <div class="kbf-modal-body">
-          <p style="margin:0;color:var(--kbf-slate);font-size:13px;">Do you want to save your progress so you can continue later?</p>
-        </div>
-        <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" id="kbf-draft-discard" type="button" onclick="kbfDiscardCreateDraft()">No, discard</button>
-          <button class="kbf-btn kbf-btn-primary" id="kbf-draft-save" type="button" onclick="kbfSaveCreateDraft()">Yes, save draft</button>
         </div>
       </div>
     </div>
@@ -198,11 +179,11 @@
       </div>
     </div>
 
-    <!-- ===== MODAL: Add Milestone ===== -->
+    <!-- ===== MODAL: Add Story ===== -->
     <div id="kbf-modal-milestone" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
         <div class="kbf-modal-header">
-          <h3>Add Milestone</h3>
+          <h3>Add Story</h3>
           <button class="kbf-modal-close" type="button" onclick="kbfCloseModal('kbf-modal-milestone')">&times;</button>
         </div>
         <div class="kbf-modal-body">
@@ -210,7 +191,7 @@
           <form id="kbf-milestone-form" onsubmit="return false;" enctype="multipart/form-data">
             <input type="hidden" id="kbf-milestone-fund-id" name="fund_id">
             <div class="kbf-form-group">
-              <label>Milestone Title</label>
+              <label>Story Title</label>
               <input type="text" name="milestone_title" placeholder="e.g., Goal reached!" maxlength="120">
             </div>
             <div class="kbf-form-group">
@@ -224,11 +205,11 @@
             </div>
           </form>
           <div id="kbf-milestone-msg" style="margin-top:10px;"></div>
-          <div class="kbf-meta">This will appear in the Milestones & Updates section.</div>
+          <div class="kbf-meta">This will appear in the Stories & Updates section.</div>
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfCloseModal('kbf-modal-milestone')">Cancel</button>
-          <button class="kbf-btn kbf-btn-primary" type="button" id="kbf-milestone-save">Save Milestone</button>
+          <button class="kbf-btn kbf-btn-primary" type="button" id="kbf-milestone-save">Save Story</button>
         </div>
       </div>
     </div>
@@ -321,7 +302,7 @@
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" id="kbf-edit-prev" type="button">Back</button>
+          <button class="kbf-btn kbf-btn-secondary kbf-modal-left" id="kbf-edit-prev" type="button">Back</button>
           <button class="kbf-btn kbf-btn-primary" id="kbf-edit-next" type="button">Next</button>
           <button class="kbf-btn kbf-btn-primary" id="kbf-edit-submit" type="button" style="display:none;" onclick="kbfSubmitEdit()">Save Changes</button>
         </div>

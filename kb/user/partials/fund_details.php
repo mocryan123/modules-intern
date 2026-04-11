@@ -695,7 +695,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-more-menu .kbf-btn-secondary:hover{
         background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
         color:#0f172a !important;
-        transform:translateX(1px);
+        transform:none;
         box-shadow:
           inset 0 0 0 1px #bfdbfe,
           0 8px 18px rgba(59,130,246,.16);
@@ -1099,7 +1099,7 @@ function bntm_shortcode_kbf_fund_details() {
     <div class="kbf-detail-tabs" style="margin-top:18px;">
       <div class="kbf-detail-tab-list" role="tablist" aria-label="Fund details tabs">
         <button class="kbf-detail-tab is-active" type="button" data-kbf-tab="desc" role="tab" aria-selected="true">Description</button>
-        <button class="kbf-detail-tab" type="button" data-kbf-tab="milestones" role="tab" aria-selected="false">Milestones</button>
+        <button class="kbf-detail-tab" type="button" data-kbf-tab="milestones" role="tab" aria-selected="false">Stories</button>
         <button class="kbf-detail-tab" type="button" data-kbf-tab="benefits" role="tab" aria-selected="false">Benefits</button>
       </div>
       <div class="kbf-detail-tab-panels">
@@ -1111,7 +1111,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
         <div class="kbf-detail-tab-panel" data-kbf-panel="milestones" role="tabpanel">
           <div class="kbf-card kbf-section-milestones" style="padding:18px;">
-            <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">Milestones &amp; Updates</h3>
+            <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">Stories &amp; Updates</h3>
             <?php if(!empty($milestones)): ?>
               <div style="display:grid;gap:12px;">
                 <?php foreach($milestones as $ms):
@@ -1127,7 +1127,7 @@ function bntm_shortcode_kbf_fund_details() {
                     <?php if(!empty($ms_photos)): ?>
                       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
                         <?php foreach($ms_photos as $p): ?>
-                          <img src="<?php echo esc_url($p); ?>" alt="Milestone photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">
+                          <img src="<?php echo esc_url($p); ?>" alt="Story photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">
                         <?php endforeach; ?>
                       </div>
                     <?php endif; ?>

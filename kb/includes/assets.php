@@ -84,6 +84,8 @@ function kbf_global_assets() {
         align-items:center;
         justify-content:center;
         background:#f8fafcbf;
+        width:100vw;
+        height:100vh;
         
     }
     #kbf-loading-overlay .kbf-loading-mark{
@@ -741,6 +743,14 @@ function kbf_global_assets() {
     .kbf-btn-warning:hover:not(:disabled) { background: #fde68a; border-color: #fbbf24; }
     .kbf-btn-secondary { background: #f8fafc; color: #334155; border-color: #e5e7eb; }
     .kbf-btn-secondary:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+    .kbf-btn-secondary .kbf-icon,
+    .kbf-btn-secondary i,
+    .kbf-btn-secondary svg{
+        color: currentColor !important;
+        fill: currentColor;
+        stroke: currentColor;
+        filter: none !important;
+    }
     .kbf-btn-danger    { background: #fff1f2; color: #9f1239; border-color: #fecdd3; }
     .kbf-btn-danger:hover:not(:disabled) { background: #ffe4e6; border-color: #fda4af; }
     .kbf-btn-success   { background: #ecfdf3; color: #166534; border-color: #bbf7d0; }
