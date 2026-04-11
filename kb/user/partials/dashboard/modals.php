@@ -8,131 +8,177 @@
         </div>
         <div class="kbf-modal-body">
           <form id="kbf-create-fund-form" enctype="multipart/form-data">
-            <div class="kbf-stepper" aria-label="Create fund steps">
-              <div class="kbf-step is-active" data-step="1"><span>1</span> Type</div>
-              <div class="kbf-step" data-step="2"><span>2</span> Details</div>
-              <div class="kbf-step" data-step="3"><span>3</span> Location</div>
+            <div class="kbf-create-stepper" id="kbf-create-stepper" aria-label="Create campaign steps">
+              <button class="kbf-create-step is-active" type="button" data-step="1">
+                <span class="kbf-step-index">1</span>
+                <span class="kbf-step-label">Who &amp; Category</span>
+              </button>
+              <span class="kbf-create-step-line"></span>
+              <button class="kbf-create-step" type="button" data-step="2">
+                <span class="kbf-step-index">2</span>
+                <span class="kbf-step-label">Campaign Info</span>
+              </button>
+              <span class="kbf-create-step-line"></span>
+              <button class="kbf-create-step" type="button" data-step="3">
+                <span class="kbf-step-index">3</span>
+                <span class="kbf-step-label">Photos &amp; Tiers</span>
+              </button>
+              <span class="kbf-create-step-line"></span>
+              <button class="kbf-create-step" type="button" data-step="4">
+                <span class="kbf-step-index">4</span>
+                <span class="kbf-step-label">Goal &amp; Contact</span>
+              </button>
             </div>
 
-            <div class="kbf-step-content is-active" data-step="1">
-              <div class="kbf-step-note">Step 1: Select fundraiser type and category, then set title and description.</div>
-              <div class="kbf-form-row">
-                <div class="kbf-form-group">
-                  <label>Funding For *</label>
-                  <select name="funder_type" required>
-                    <option value="yourself">Yourself</option>
-                    <option value="someone_else">Someone Else</option>
-                    <option value="animal_care">Animal Care</option>
-                    <option value="charity_event">Charity or Event</option>
-                  </select>
+            <div class="kbf-create-panel is-active" data-step="1">
+              <div class="kbf-step-note">Step 1 - Choose who you are raising for and a category.</div>
+              <div class="kbf-form-group">
+                <label>Funding For *</label>
+                <div class="kbf-choice-grid" id="kbf-funder-grid">
+                  <button type="button" class="kbf-choice-card" data-value="yourself">Yourself</button>
+                  <button type="button" class="kbf-choice-card" data-value="someone_else">Someone Else</button>
+                  <button type="button" class="kbf-choice-card" data-value="animal_care">Animal Care</button>
+                  <button type="button" class="kbf-choice-card" data-value="charity">Charity</button>
+                  <button type="button" class="kbf-choice-card" data-value="event">Event</button>
                 </div>
-                <div class="kbf-form-group">
-                  <label>Category *</label>
-                  <select name="category" required>
-                    <?php foreach (kbf_get_categories() as $c): ?>
-                      <option value="<?php echo $c; ?>"><?php echo $c; ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                </div>
+                <input type="hidden" name="funder_type" id="kbf-create-funder">
+                <div class="kbf-field-error"></div>
               </div>
               <div class="kbf-form-group">
-                <label>Fund Title *</label>
-                <input type="text" name="title" id="kbf-create-title" placeholder="Clear, compelling title" maxlength="150" required>
-                <small class="kbf-title-counter">0 / 150</small>
-              </div>
-              <div class="kbf-form-group">
-                <label>Description *</label>
-                <textarea name="description" rows="10" maxlength="800" placeholder="Tell your story and why this fund matters..." required></textarea>
-                <small class="kbf-desc-counter">0 / 800</small>
+                <label>Category *</label>
+                <div class="kbf-category-grid" id="kbf-category-grid">
+                  <button type="button" class="kbf-category-card" data-value="Community">
+                    <i class="ph ph-users"></i><span>Community</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Sports">
+                    <i class="ph ph-soccer-ball"></i><span>Sports</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Family">
+                    <i class="ph ph-house"></i><span>Family</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Medical">
+                    <i class="ph ph-heartbeat"></i><span>Medical</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Education">
+                    <i class="ph ph-graduation-cap"></i><span>Education</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Emergency">
+                    <i class="ph ph-siren"></i><span>Emergency</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Business">
+                    <i class="ph ph-briefcase"></i><span>Business</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Religion">
+                    <i class="ph ph-cross"></i><span>Religion</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Arts &amp; Culture">
+                    <i class="ph ph-palette"></i><span>Arts &amp; Culture</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Environment">
+                    <i class="ph ph-leaf"></i><span>Environment</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Animals">
+                    <i class="ph ph-paw-print"></i><span>Animals</span>
+                  </button>
+                  <button type="button" class="kbf-category-card" data-value="Others">
+                    <i class="ph ph-dots-three"></i><span>Others</span>
+                  </button>
+                </div>
+                <input type="hidden" name="category" id="kbf-create-category">
                 <div class="kbf-field-error"></div>
               </div>
             </div>
 
-            <div class="kbf-step-content kbf-step-content-flex" data-step="2">
-              <div class="kbf-step-note">Step 2: Set amount, deadline, and photos.</div>
+            <div class="kbf-create-panel" data-step="2">
+              <div class="kbf-step-note">Step 2 - Add the campaign name and description.</div>
+              <div class="kbf-form-group">
+                <label>Campaign Name *</label>
+                <input type="text" name="title" id="kbf-create-title" maxlength="150" data-max="150" required>
+                <small class="kbf-counter" data-counter-for="kbf-create-title">0 / 150</small>
+                <div class="kbf-field-error"></div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Campaign Description *</label>
+                <textarea name="description" id="kbf-create-description" rows="7" maxlength="800" data-max="800" required></textarea>
+                <small class="kbf-counter" data-counter-for="kbf-create-description">0 / 800</small>
+                <div class="kbf-field-error"></div>
+              </div>
+            </div>
+
+            <div class="kbf-create-panel" data-step="3">
+              <div class="kbf-step-note">Step 3 - Add photos and optional support tiers.</div>
+              <div class="kbf-form-group">
+                <label>Photos (up to 5)</label>
+                <input type="file" id="kbf-create-photos" name="photos[]" accept="image/*" multiple style="display:none;">
+                <div class="kbf-photo-grid" id="kbf-create-photo-grid"></div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Support Tiers (optional)</label>
+                <div id="kbf-tier-list" class="kbf-tier-list"></div>
+                <button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm" id="kbf-add-tier">+ Add Tier</button>
+                <input type="hidden" name="benefits" id="kbf-create-benefits-input">
+                <small>Max 5 tiers. Add a name, amount, and what supporters receive.</small>
+              </div>
+            </div>
+
+            <div class="kbf-create-panel" data-step="4">
+              <div class="kbf-step-note">Step 4 - Set your goal, deadline, and contact details.</div>
               <div class="kbf-form-row">
                 <div class="kbf-form-group">
                   <label>Goal Amount (PHP) *</label>
-                  <input type="text" name="goal_amount" id="kbf-goal-amount" placeholder="0.00" inputmode="decimal" autocomplete="off" required>
+                  <input type="text" name="goal_amount" id="kbf-goal-amount" inputmode="decimal" autocomplete="off" required>
                   <small class="kbf-text-sm" id="kbf-fee-note">
-                    <?php echo $fee_disabled ? 'Platform fee: 0% (disabled).' : 'Platform fee: 5% per transaction.'; ?>
+                    <?php echo $fee_disabled ? 'Platform fee: 0% (disabled).' : 'Platform fee: 3% per transaction.'; ?>
                   </small>
                   <div class="kbf-meta" id="kbf-fee-preview" style="margin-top:6px;">
-                    Platform cut: ?0.00 &nbsp;•&nbsp; Net goal: ?0.00
+                    Platform cut: ?0.00 - Net goal: ?0.00
                   </div>
+                  <div class="kbf-field-error"></div>
                 </div>
-              <div class="kbf-form-group">
-                <label>Deadline *</label>
-                <input type="date" name="deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" required>
-                <small>Required — set an end date (minimum 7 days from today).</small>
-              </div>
-              </div>
-              <div class="kbf-form-group">
-                <label>Add Photos (up to 5)</label>
-                <input type="file" id="kbf-create-photos" name="photos[]" accept="image/*" multiple required style="display:none;">
-                <small></small>
-                <div class="kbf-field-error"></div>
-                <div class="kbf-photo-previews" id="kbf-create-photo-previews">
-                  <button class="kbf-photo-add" type="button" id="kbf-create-photo-add" aria-label="Add photos">+</button>
+                <div class="kbf-form-group">
+                  <label>Deadline *</label>
+                  <input type="date" name="deadline" id="kbf-create-deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" required>
+                  <small>Minimum 7 days from today.</small>
+                  <div class="kbf-field-error"></div>
                 </div>
               </div>
-              <div class="kbf-form-group kbf-benefits-group">
-                <label>Benefits / Reward Tiers (optional)</label>
-                <div class="kbf-benefits-list" id="kbf-create-benefits"></div>
-                <button class="kbf-btn kbf-btn-secondary kbf-benefit-add" type="button" id="kbf-create-benefit-add">+ Add Benefit</button>
-                <input type="hidden" name="benefits" id="kbf-create-benefits-input">
-                <small>Add tiers supporters receive (e.g., merch, thank-you note, exclusive updates).</small>
-              </div>
-              <div class="kbf-photo-tips kbf-photo-tips-bottom">
-                <div class="kbf-photo-tips-title">
-                  <span class="kbf-photo-tips-icon">i</span>
-                  Photo tips checklist
-                </div>
-                <div class="kbf-photo-tips-list">
-                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">?</span> Use clear, well-lit images (avoid blur).</div>
-                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">?</span> Add at least 2 photos to build trust.</div>
-                  <div class="kbf-photo-tip-item"><span class="kbf-photo-tip-check">?</span> Show the cause, not just text graphics.</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="kbf-step-content" data-step="3">
-              <div class="kbf-step-note">Step 3: Location and terms.</div>
               <div class="kbf-form-row">
                 <div class="kbf-form-group">
                   <label>Contact Email *</label>
-                  <input type="email" name="email" required>
+                  <?php $kbf_user = wp_get_current_user(); ?>
+                  <input type="email" name="email" id="kbf-create-email" value="<?php echo esc_attr($kbf_user ? $kbf_user->user_email : ''); ?>" required>
+                  <div class="kbf-field-error"></div>
                 </div>
                 <div class="kbf-form-group">
                   <label>Contact Phone *</label>
-                  <input type="text" name="phone" placeholder="+63 9XX XXX XXXX" required>
+                  <input type="text" name="phone" id="kbf-create-phone" placeholder="+63 9XX XXX XXXX" required>
+                  <div class="kbf-field-error"></div>
                 </div>
               </div>
               <div class="kbf-form-group">
                 <label>Province *</label>
-                <select name="location" id="kbf-province" required>
+                <select name="province" id="kbf-province" required>
                   <option value="">Select Province</option>
                   <?php foreach (kbf_get_provinces() as $p): ?>
                     <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
                   <?php endforeach; ?>
                 </select>
-                <small>Select your province first.</small>
+                <div class="kbf-field-error"></div>
               </div>
               <div class="kbf-form-group">
                 <label>Municipality *</label>
                 <select name="municipality" id="kbf-municipality" required disabled>
                   <option value="">Select Municipality</option>
                 </select>
-                <small>Municipality list will load based on province.</small>
+                <div class="kbf-field-error"></div>
               </div>
               <div class="kbf-form-group">
                 <label>Barangay *</label>
                 <select name="barangay" id="kbf-barangay" required disabled>
                   <option value="">Select Barangay</option>
                 </select>
-                <small>Barangay list will load based on municipality.</small>
+                <div class="kbf-field-error"></div>
               </div>
-              <!-- Auto-return UI removed -->
               <div class="kbf-form-group">
                 <label class="kbf-checkbox-row">
                   <input type="checkbox" name="agree_terms" id="kbf-agree-terms" required>
@@ -141,14 +187,31 @@
                 <div class="kbf-field-error"></div>
               </div>
             </div>
+
             <div id="kbf-create-msg"></div>
           </form>
+
+          <div class="kbf-create-success" id="kbf-create-success" aria-live="polite">
+            <div class="kbf-success-icon">
+              <svg viewBox="0 0 52 52" aria-hidden="true">
+                <circle class="kbf-success-ring" cx="26" cy="26" r="25" fill="none"></circle>
+                <path class="kbf-success-check" fill="none" d="M14 27 L22 35 L38 19"></path>
+              </svg>
+            </div>
+            <h3>Campaign Created!</h3>
+            <p>Your campaign is under review. We'll email you within 24 hours once it's approved.</p>
+            <div class="kbf-success-actions">
+              <a href="#" class="kbf-btn kbf-btn-primary" id="kbf-success-view">View Campaign</a>
+              <a href="#" class="kbf-btn kbf-btn-secondary" id="kbf-success-share">Share Campaign</a>
+            </div>
+          </div>
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary kbf-modal-left" id="kbf-create-prev" type="button">Back</button>
-          <button class="kbf-btn kbf-btn-secondary" id="kbf-create-save-close" type="button">Save &amp; Close</button>
-          <button class="kbf-btn kbf-btn-primary" id="kbf-create-next" type="button">Next</button>
-          <button class="kbf-btn kbf-btn-primary" id="kbf-create-submit" type="button" style="display:none;">Finish</button>
+          <div class="kbf-create-footer-actions">
+            <button class="kbf-btn kbf-btn-primary" id="kbf-create-next" type="button">Next -&gt;</button>
+            <button class="kbf-btn kbf-btn-secondary" id="kbf-create-save-close" type="button">Save &amp; Close</button>
+          </div>
         </div>
       </div>
     </div>

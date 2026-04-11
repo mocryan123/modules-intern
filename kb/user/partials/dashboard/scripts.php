@@ -23,6 +23,822 @@
         if (modal && e.target === modal) window.kbfCloseAuthModal();
       });
     </script>
+
+    <script>
+      // ===== CREATE MODAL REDESIGN =====
+      document.addEventListener('DOMContentLoaded', function(){
+        var modal = document.getElementById('kbf-modal-create');
+        var form = document.getElementById('kbf-create-fund-form');
+        if (!modal || !form || !form.querySelector('.kbf-create-panel')) return;
+
+        var stepper = document.getElementById('kbf-create-stepper');
+        var stepButtons = stepper ? Array.from(stepper.querySelectorAll('.kbf-create-step')) : [];
+        var stepLines = stepper ? Array.from(stepper.querySelectorAll('.kbf-create-step-line')) : [];
+        var panels = Array.from(form.querySelectorAll('.kbf-create-panel'));
+        var btnPrev = document.getElementById('kbf-create-prev');
+        var btnNext = document.getElementById('kbf-create-next');
+        var btnSave = document.getElementById('kbf-create-save-close');
+        var msg = document.getElementById('kbf-create-msg');
+        var success = document.getElementById('kbf-create-success');
+        var successView = document.getElementById('kbf-success-view');
+        var successShare = document.getElementById('kbf-success-share');
+
+        var funderGrid = document.getElementById('kbf-funder-grid');
+        var funderInput = document.getElementById('kbf-create-funder');
+        var categoryGrid = document.getElementById('kbf-category-grid');
+        var categoryInput = document.getElementById('kbf-create-category');
+        var categoryMore = document.getElementById('kbf-category-more');
+
+        var titleInput = document.getElementById('kbf-create-title');
+        var descInput = document.getElementById('kbf-create-description');
+        var goalInput = document.getElementById('kbf-goal-amount');
+        var deadlineInput = document.getElementById('kbf-create-deadline');
+        var photoInput = document.getElementById('kbf-create-photos');
+        var photoGrid = document.getElementById('kbf-create-photo-grid');
+        var tierList = document.getElementById('kbf-tier-list');
+        var addTierBtn = document.getElementById('kbf-add-tier');
+        var benefitsInput = document.getElementById('kbf-create-benefits-input');
+        var emailInput = document.getElementById('kbf-create-email');
+        var phoneInput = document.getElementById('kbf-create-phone');
+        var provInput = document.getElementById('kbf-province');
+        var muniInput = document.getElementById('kbf-municipality');
+        var brgyInput = document.getElementById('kbf-barangay');
+        var termsInput = document.getElementById('kbf-agree-terms');
+
+        var campaignData = {
+          step: 1,
+          maxStepReached: 1,
+          funder_type: '',
+          category: '',
+          title: '',
+          description: '',
+          goal_amount: '',
+          deadline: '',
+          photos: [],
+          tiers: [],
+          email: '',
+          phone: '',
+          province: '',
+          municipality: '',
+          barangay: '',
+          agree_terms: false
+        };
+        window.campaignData = campaignData;
+
+        var draftKey = 'kbf_create_draft_<?php echo (int)$business_id; ?>';
+        var lastSavedHash = '';
+
+        function draftStorageOk(){
+          try {
+            var t = '__kbf__';
+            localStorage.setItem(t, '1');
+            localStorage.removeItem(t);
+            return true;
+          } catch(e) { return false; }
+        }
+
+        function setError(el, message){
+          if (!el) return;
+          var group = el.closest('.kbf-form-group');
+          if (!group) return;
+          var msgEl = group.querySelector('.kbf-field-error');
+          if (msgEl) {
+            msgEl.textContent = message || 'This field is required.';
+            msgEl.style.display = 'block';
+          }
+        }
+
+        function clearError(el){
+          if (!el) return;
+          var group = el.closest('.kbf-form-group');
+          if (!group) return;
+          var msgEl = group.querySelector('.kbf-field-error');
+          if (msgEl) {
+            msgEl.textContent = '';
+            msgEl.style.display = '';
+          }
+        }
+
+        function updateCounter(input){
+          if (!input || !input.id) return;
+          var max = parseInt(input.getAttribute('data-max') || input.getAttribute('maxlength') || '0', 10);
+          if (!max) return;
+          var counter = form.querySelector('[data-counter-for=\"' + input.id + '\"]');
+          if (!counter) return;
+          counter.textContent = (input.value || '').length + ' / ' + max;
+        }
+
+        function bindCounter(input){
+          if (!input) return;
+          updateCounter(input);
+          input.addEventListener('input', function(){ updateCounter(input); });
+        }
+
+        function setStep(step){
+          var nextStep = Math.max(1, Math.min(4, parseInt(step || '1', 10) || 1));
+          campaignData.step = nextStep;
+          campaignData.maxStepReached = Math.max(campaignData.maxStepReached, nextStep);
+
+          panels.forEach(function(panel){
+            var pStep = parseInt(panel.getAttribute('data-step') || '0', 10);
+            panel.classList.toggle('is-active', pStep === nextStep);
+          });
+
+          stepButtons.forEach(function(btn, idx){
+            var s = parseInt(btn.getAttribute('data-step') || (idx + 1), 10);
+            var indexEl = btn.querySelector('.kbf-step-index');
+            var isActive = s === nextStep;
+            var isComplete = s < nextStep || (s <= campaignData.maxStepReached && s !== nextStep);
+            btn.classList.toggle('is-active', isActive);
+            btn.classList.toggle('is-complete', isComplete);
+            btn.disabled = s > campaignData.maxStepReached;
+            if (indexEl) indexEl.textContent = isComplete ? '✓' : String(s);
+          });
+
+          stepLines.forEach(function(line, idx){
+            line.classList.toggle('is-complete', idx + 1 < campaignData.maxStepReached);
+          });
+
+          if (btnPrev) btnPrev.style.visibility = nextStep === 1 ? 'hidden' : 'visible';
+          if (btnNext) {
+            btnNext.textContent = nextStep === 4 ? 'Review & Submit 🚀' : 'Next ->';
+          }
+
+          var body = modal.querySelector('.kbf-modal-body');
+          if (body) body.scrollTop = 0;
+          updateSaveCloseState();
+        }
+
+        function hasValue(){
+          return !!(
+            campaignData.funder_type ||
+            campaignData.category ||
+            campaignData.title ||
+            campaignData.description ||
+            campaignData.goal_amount ||
+            campaignData.deadline ||
+            campaignData.email ||
+            campaignData.phone ||
+            campaignData.province ||
+            campaignData.municipality ||
+            campaignData.barangay ||
+            campaignData.agree_terms ||
+            campaignData.photos.length ||
+            campaignData.tiers.length
+          );
+        }
+
+        function draftComparable(draft){
+          if (!draft) return '';
+          return JSON.stringify({
+            data: draft.data || {},
+            photos: Array.isArray(draft.photos) ? draft.photos.map(function(p){ return p && p.dataUrl ? p.dataUrl : ''; }) : []
+          });
+        }
+
+        function buildDraft(){
+          return {
+            data: Object.assign({}, campaignData),
+            photos: campaignData.photos.map(function(file){
+              return {
+                dataUrl: file && file._kbfDataUrl ? file._kbfDataUrl : '',
+                name: file && file.name ? file.name : 'photo.jpg',
+                type: file && file.type ? file.type : 'image/jpeg'
+              };
+            }),
+            saved_at: Date.now()
+          };
+        }
+
+        function dataUrlToFile(dataUrl, name, type){
+          if (!dataUrl || dataUrl.indexOf('data:') !== 0) return null;
+          var parts = dataUrl.split(',');
+          if (parts.length < 2) return null;
+          var mime = type || (parts[0].match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+          var binary = atob(parts[1]);
+          var len = binary.length;
+          var bytes = new Uint8Array(len);
+          for (var i=0;i<len;i++) bytes[i] = binary.charCodeAt(i);
+          return new File([bytes], name || ('photo-' + Date.now() + '.jpg'), { type: mime });
+        }
+
+        function ensurePhotoData(){
+          var promises = campaignData.photos.map(function(file){
+            return new Promise(function(resolve){
+              if (!file) return resolve();
+              if (file._kbfDataUrl) return resolve();
+              var reader = new FileReader();
+              reader.onload = function(e){
+                file._kbfDataUrl = e && e.target ? e.target.result : '';
+                resolve();
+              };
+              reader.onerror = function(){ resolve(); };
+              reader.readAsDataURL(file);
+            });
+          });
+          return Promise.all(promises);
+        }
+
+        function getDraft(){
+          if (!draftStorageOk()) return null;
+          try {
+            var raw = localStorage.getItem(draftKey);
+            return raw ? JSON.parse(raw) : null;
+          } catch(e) { return null; }
+        }
+
+        function setDraft(data){
+          if (!draftStorageOk()) return;
+          if (!data) {
+            localStorage.removeItem(draftKey);
+            lastSavedHash = '';
+            updateSaveCloseState();
+            return;
+          }
+          try {
+            localStorage.setItem(draftKey, JSON.stringify(data));
+          } catch(e) {
+            try {
+              var safe = Object.assign({}, data, { photos: [] });
+              localStorage.setItem(draftKey, JSON.stringify(safe));
+            } catch(e2) {}
+          }
+          lastSavedHash = draftComparable(data);
+          updateSaveCloseState();
+        }
+
+        function applyDraft(draft){
+          if (!draft || !draft.data) return false;
+          Object.assign(campaignData, draft.data);
+          if (campaignData.tagline !== undefined) delete campaignData.tagline;
+          campaignData.photos = [];
+
+          if (funderInput) funderInput.value = campaignData.funder_type || '';
+          if (categoryInput) categoryInput.value = campaignData.category || '';
+          if (titleInput) titleInput.value = campaignData.title || '';
+          if (descInput) descInput.value = campaignData.description || '';
+          if (goalInput) goalInput.value = campaignData.goal_amount || '';
+          if (deadlineInput) deadlineInput.value = campaignData.deadline || '';
+          if (emailInput) emailInput.value = campaignData.email || emailInput.value || '';
+          if (phoneInput) phoneInput.value = campaignData.phone || '';
+          if (provInput) provInput.value = campaignData.province || '';
+
+          if (funderGrid) {
+            funderGrid.querySelectorAll('.kbf-choice-card').forEach(function(btn){
+              btn.classList.toggle('is-selected', btn.getAttribute('data-value') === campaignData.funder_type);
+            });
+          }
+          if (categoryGrid) {
+            categoryGrid.querySelectorAll('.kbf-category-card').forEach(function(btn){
+              btn.classList.toggle('is-selected', btn.getAttribute('data-value') === campaignData.category);
+            });
+          }
+
+          if (goalInput) goalInput.dispatchEvent(new Event('input'));
+          if (titleInput) updateCounter(titleInput);
+          if (descInput) updateCounter(descInput);
+
+          if (draft.photos && Array.isArray(draft.photos)) {
+            draft.photos.slice(0, 5).forEach(function(p){
+              var file = dataUrlToFile(p.dataUrl, p.name, p.type);
+              if (file) {
+                file._kbfDataUrl = p.dataUrl;
+                campaignData.photos.push(file);
+              }
+            });
+          }
+          renderPhotoGrid();
+
+          campaignData.tiers = Array.isArray(campaignData.tiers) ? campaignData.tiers : [];
+          renderTiers();
+
+          if (provInput && muniInput && brgyInput) {
+            var parts = [];
+            if (campaignData.barangay) parts.push(campaignData.barangay);
+            if (campaignData.municipality) parts.push(campaignData.municipality);
+            if (campaignData.province) parts.push(campaignData.province);
+            if (parts.length && typeof window.kbfApplyLocationSelection === 'function') {
+              window.kbfApplyLocationSelection(provInput, muniInput, brgyInput, parts.join(', '));
+            }
+          }
+
+          if (termsInput) termsInput.checked = !!campaignData.agree_terms;
+          setStep(campaignData.step || 1);
+          return true;
+        }
+
+        function updateSaveCloseState(){
+          if (!btnSave) return;
+          if (!hasValue()) {
+            btnSave.disabled = true;
+            return;
+          }
+          var hash = draftComparable(buildDraft());
+          btnSave.disabled = hash === lastSavedHash;
+        }
+
+        function setTierData(index, field, value){
+          if (!campaignData.tiers[index]) return;
+          campaignData.tiers[index][field] = value;
+          updateBenefitsInput();
+          updateSaveCloseState();
+        }
+
+        function updateBenefitsInput(){
+          if (!benefitsInput) return;
+          var clean = campaignData.tiers.filter(function(t){
+            return (t.name || '').trim() || (t.amount || '').toString().trim() || (t.perks || '').trim();
+          }).map(function(t){
+            return { title: t.name || '', amount: t.amount || '', description: t.perks || '' };
+          });
+          benefitsInput.value = clean.length ? JSON.stringify(clean) : '';
+        }
+
+        function renderTiers(){
+          if (!tierList) return;
+          tierList.innerHTML = '';
+          campaignData.tiers.forEach(function(tier, idx){
+            var card = document.createElement('div');
+            card.className = 'kbf-tier-card';
+
+            var header = document.createElement('div');
+            header.className = 'kbf-tier-header';
+            header.textContent = 'Tier ' + (idx + 1);
+
+            var remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'kbf-tier-remove';
+            remove.textContent = 'Remove';
+            remove.addEventListener('click', function(){
+              campaignData.tiers.splice(idx, 1);
+              renderTiers();
+              updateSaveCloseState();
+            });
+            header.appendChild(remove);
+
+            var name = document.createElement('input');
+            name.type = 'text';
+            name.placeholder = 'Tier name';
+            name.value = tier.name || '';
+            name.id = 'kbf-tier-name-' + idx;
+            name.setAttribute('maxlength', '80');
+            name.setAttribute('data-max', '80');
+            name.addEventListener('input', function(){
+              setTierData(idx, 'name', name.value);
+              updateCounter(name);
+            });
+
+            var amount = document.createElement('input');
+            amount.type = 'number';
+            amount.min = '1';
+            amount.placeholder = 'Amount (PHP)';
+            amount.value = tier.amount || '';
+            amount.addEventListener('input', function(){
+              setTierData(idx, 'amount', amount.value);
+            });
+
+            var perks = document.createElement('textarea');
+            perks.rows = 2;
+            perks.placeholder = 'What supporters get';
+            perks.value = tier.perks || '';
+            perks.id = 'kbf-tier-perks-' + idx;
+            perks.setAttribute('maxlength', '200');
+            perks.setAttribute('data-max', '200');
+            perks.addEventListener('input', function(){
+              setTierData(idx, 'perks', perks.value);
+              updateCounter(perks);
+            });
+
+            var nameCounter = document.createElement('small');
+            nameCounter.className = 'kbf-counter';
+            nameCounter.setAttribute('data-counter-for', name.id);
+            var perksCounter = document.createElement('small');
+            perksCounter.className = 'kbf-counter';
+            perksCounter.setAttribute('data-counter-for', perks.id);
+
+            card.appendChild(header);
+            card.appendChild(name);
+            card.appendChild(nameCounter);
+            card.appendChild(amount);
+            card.appendChild(perks);
+            card.appendChild(perksCounter);
+            tierList.appendChild(card);
+
+            updateCounter(name);
+            updateCounter(perks);
+          });
+          updateBenefitsInput();
+        }
+
+        function addTier(){
+          if (campaignData.tiers.length >= 5) return;
+          campaignData.tiers.push({ name: '', amount: '', perks: '' });
+          renderTiers();
+          updateSaveCloseState();
+        }
+
+        function syncPhotoInput(){
+          if (!photoInput) return;
+          var dt = new DataTransfer();
+          campaignData.photos.forEach(function(file){
+            if (file) dt.items.add(file);
+          });
+          photoInput.files = dt.files;
+        }
+
+        function renderPhotoGrid(){
+          if (!photoGrid) return;
+          photoGrid.innerHTML = '';
+          for (var i=0;i<5;i++){
+            (function(idx){
+              var slot = document.createElement('button');
+              slot.type = 'button';
+              slot.className = 'kbf-photo-slot';
+              var file = campaignData.photos[idx];
+              if (file && file._kbfDataUrl) {
+                var img = document.createElement('img');
+                img.alt = '';
+                img.src = file._kbfDataUrl;
+                slot.appendChild(img);
+                var edit = document.createElement('button');
+                edit.type = 'button';
+                edit.className = 'kbf-photo-edit';
+                edit.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg>';
+                edit.addEventListener('click', function(e){
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (typeof window.kbfOpenPhotoEditor === 'function') {
+                    window.kbfOpenPhotoEditor(file, 'create-redesign', idx);
+                  }
+                });
+                slot.appendChild(edit);
+                var remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'kbf-photo-remove';
+                remove.textContent = '×';
+                remove.addEventListener('click', function(e){
+                  e.preventDefault();
+                  e.stopPropagation();
+                  campaignData.photos.splice(idx, 1);
+                  syncPhotoInput();
+                  renderPhotoGrid();
+                  updateSaveCloseState();
+                });
+                slot.appendChild(remove);
+                if (idx === 0) {
+                  var cover = document.createElement('span');
+                  cover.className = 'kbf-photo-cover';
+                  cover.textContent = 'Cover';
+                  slot.appendChild(cover);
+                }
+              } else {
+                slot.textContent = idx === 0 ? 'Add cover' : 'Add photo';
+              }
+              slot.addEventListener('click', function(){
+                if (photoInput) photoInput.click();
+              });
+              photoGrid.appendChild(slot);
+            })(i);
+          }
+        }
+
+        function handlePhotoFiles(files){
+          var incoming = Array.from(files || []);
+          if (!incoming.length) return;
+          var room = Math.max(0, 5 - campaignData.photos.length);
+          incoming.slice(0, room).forEach(function(file){
+            campaignData.photos.push(file);
+            var reader = new FileReader();
+            reader.onload = function(e){
+              file._kbfDataUrl = e && e.target ? e.target.result : '';
+              renderPhotoGrid();
+            };
+            reader.readAsDataURL(file);
+          });
+          syncPhotoInput();
+          updateSaveCloseState();
+        }
+
+        function validateStep(step){
+          var current = parseInt(step || campaignData.step || 1, 10);
+          var valid = true;
+
+          function invalidate(el, message){
+            valid = false;
+            setError(el, message);
+          }
+
+          if (current === 1) {
+            clearError(funderGrid);
+            clearError(categoryGrid);
+            if (!campaignData.funder_type) invalidate(funderGrid, 'Please choose who you are raising for.');
+            if (!campaignData.category) invalidate(categoryGrid, 'Please choose a category.');
+          }
+          if (current === 2) {
+            clearError(titleInput);
+            clearError(descInput);
+            if (!campaignData.title.trim()) invalidate(titleInput, 'Campaign name is required.');
+            if (!campaignData.description.trim()) invalidate(descInput, 'Campaign description is required.');
+          }
+          if (current === 4) {
+            clearError(goalInput);
+            clearError(deadlineInput);
+            clearError(emailInput);
+            clearError(phoneInput);
+            clearError(provInput);
+            clearError(muniInput);
+            clearError(brgyInput);
+            clearError(termsInput);
+            var goalVal = parseFloat(String(campaignData.goal_amount || '').replace(/,/g, ''));
+            if (isNaN(goalVal) || goalVal < 500) invalidate(goalInput, 'Minimum goal amount is 500.');
+            if (!campaignData.deadline) invalidate(deadlineInput, 'Please set a deadline.');
+            if (!campaignData.email.trim()) invalidate(emailInput, 'Email is required.');
+            if (!campaignData.phone.trim()) invalidate(phoneInput, 'Phone is required.');
+            if (!campaignData.province.trim()) invalidate(provInput, 'Please select a province.');
+            if (!campaignData.municipality.trim()) invalidate(muniInput, 'Please select a municipality.');
+            if (!campaignData.barangay.trim()) invalidate(brgyInput, 'Please select a barangay.');
+            if (!campaignData.agree_terms) invalidate(termsInput, 'You must accept the terms and refund policy.');
+          }
+
+          if (!valid) {
+            var panel = form.querySelector('.kbf-create-panel.is-active');
+            if (panel) {
+              var firstError = panel.querySelector('.kbf-field-error');
+              if (firstError) firstError.focus && firstError.focus();
+            }
+          }
+          return valid;
+        }
+
+        function updateCampaignData(){
+          campaignData.title = titleInput ? titleInput.value : '';
+          campaignData.description = descInput ? descInput.value : '';
+          campaignData.goal_amount = goalInput ? (goalInput.dataset.kbfRaw || goalInput.value || '') : '';
+          campaignData.deadline = deadlineInput ? deadlineInput.value : '';
+          campaignData.email = emailInput ? emailInput.value : '';
+          campaignData.phone = phoneInput ? phoneInput.value : '';
+          campaignData.province = provInput ? provInput.value : '';
+          campaignData.municipality = muniInput ? muniInput.value : '';
+          campaignData.barangay = brgyInput ? brgyInput.value : '';
+          campaignData.agree_terms = termsInput ? termsInput.checked : false;
+          updateSaveCloseState();
+        }
+
+        function submitCreate(){
+          if (!validateStep(4)) return;
+          if (typeof window.ajaxurl === 'undefined' || !window.ajaxurl) {
+            if (msg) msg.innerHTML = '<div class=\"kbf-alert kbf-alert-error\">Submit failed: ajaxurl is not defined.</div>';
+            return;
+          }
+          if (msg) msg.innerHTML = '';
+          if (btnNext) kbfSetBtnLoading(btnNext, true, 'Submitting...');
+          if (typeof kbfSetLoadingPage === 'function') kbfSetLoadingPage(true);
+
+          if (funderInput) funderInput.value = campaignData.funder_type || '';
+          if (categoryInput) categoryInput.value = campaignData.category || '';
+          if (benefitsInput) updateBenefitsInput();
+
+          var fd = new FormData(form);
+          var goalRaw = (goalInput && goalInput.dataset.kbfRaw) ? goalInput.dataset.kbfRaw : (campaignData.goal_amount || '');
+          if (goalRaw) fd.set('goal_amount', String(goalRaw).replace(/,/g, ''));
+
+          var parts = [];
+          if (campaignData.barangay) parts.push(campaignData.barangay);
+          if (campaignData.municipality) parts.push(campaignData.municipality);
+          if (campaignData.province) parts.push(campaignData.province);
+          if (parts.length) fd.set('location_full', parts.join(', '));
+
+          fd.set('action', 'kbf_create_fund');
+          fd.set('nonce', '<?php echo $nonce_create; ?>');
+
+          fetch(ajaxurl, { method: 'POST', body: fd })
+            .then(function(r){
+              return r.text().then(function(t){ return { ok: r.ok, status: r.status, text: t }; });
+            })
+            .then(function(res){
+              var json = null;
+              try { json = JSON.parse(res.text); } catch(e) {}
+              var ok = false;
+              if (json) {
+                ok = (json.success === true || json.success === 1 || json.success === '1' || json.success === 'true' || json.status === 'success');
+                if (!ok && json.data && (json.data.success === true || json.data.success === 1 || json.data.success === '1')) ok = true;
+                if (!ok && json.data && json.data.status === 'success') ok = true;
+                if (!ok && json.data && json.data.message && !/error|fail|invalid/i.test(String(json.data.message))) ok = true;
+              } else if (res.ok) {
+                ok = true;
+              }
+              if (ok) {
+                setDraft(null);
+                modal.classList.add('is-success');
+                if (success) success.classList.add('is-visible');
+                var dashUrl = '<?php echo esc_url(add_query_arg('kbf_tab','overview', function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/'))); ?>';
+                if (successView) successView.href = dashUrl;
+                if (successShare) successShare.href = dashUrl;
+              } else if (msg) {
+                var message = json && json.data && json.data.message ? json.data.message : 'Submission failed. Please try again.';
+                msg.innerHTML = '<div class=\"kbf-alert kbf-alert-error\">' + message + '</div>';
+              }
+            })
+            .catch(function(){
+              if (msg) msg.innerHTML = '<div class=\"kbf-alert kbf-alert-error\">Submission failed. Please try again.</div>';
+            })
+            .finally(function(){
+              if (btnNext) kbfSetBtnLoading(btnNext, false);
+              if (typeof kbfSetLoadingPage === 'function') kbfSetLoadingPage(false);
+            });
+        }
+
+        if (funderGrid) {
+          funderGrid.querySelectorAll('.kbf-choice-card').forEach(function(card){
+            card.addEventListener('click', function(){
+              campaignData.funder_type = card.getAttribute('data-value') || '';
+              if (funderInput) funderInput.value = campaignData.funder_type;
+              funderGrid.querySelectorAll('.kbf-choice-card').forEach(function(btn){
+                btn.classList.toggle('is-selected', btn === card);
+              });
+              clearError(funderGrid);
+              updateSaveCloseState();
+            });
+          });
+        }
+
+        if (categoryGrid) {
+          categoryGrid.querySelectorAll('.kbf-category-card').forEach(function(card){
+            card.addEventListener('click', function(){
+              campaignData.category = card.getAttribute('data-value') || '';
+              if (categoryInput) categoryInput.value = campaignData.category;
+              categoryGrid.querySelectorAll('.kbf-category-card').forEach(function(btn){
+                btn.classList.toggle('is-selected', btn === card);
+              });
+              clearError(categoryGrid);
+              updateSaveCloseState();
+            });
+          });
+        }
+
+        categoryMore = null;
+
+        [titleInput, descInput].forEach(function(input){
+          if (!input) return;
+          bindCounter(input);
+          input.addEventListener('input', function(){
+            updateCampaignData();
+            clearError(input);
+          });
+        });
+
+        if (goalInput) {
+          goalInput.addEventListener('input', function(){
+            updateCampaignData();
+            clearError(goalInput);
+          });
+        }
+
+        if (deadlineInput) {
+          deadlineInput.addEventListener('change', function(){
+            updateCampaignData();
+            clearError(deadlineInput);
+          });
+        }
+
+        if (photoInput) {
+          photoInput.addEventListener('change', function(){
+            handlePhotoFiles(photoInput.files);
+          });
+        }
+
+        if (addTierBtn) addTierBtn.addEventListener('click', addTier);
+
+        if (emailInput) emailInput.addEventListener('input', function(){
+          updateCampaignData();
+          clearError(emailInput);
+        });
+        if (phoneInput) phoneInput.addEventListener('input', function(){
+          updateCampaignData();
+          clearError(phoneInput);
+        });
+        if (provInput) provInput.addEventListener('change', function(){
+          updateCampaignData();
+          clearError(provInput);
+        });
+        if (muniInput) muniInput.addEventListener('change', function(){
+          updateCampaignData();
+          clearError(muniInput);
+        });
+        if (brgyInput) brgyInput.addEventListener('change', function(){
+          updateCampaignData();
+          clearError(brgyInput);
+        });
+        if (termsInput) termsInput.addEventListener('change', function(){
+          updateCampaignData();
+          clearError(termsInput);
+        });
+
+        if (stepButtons.length) {
+          stepButtons.forEach(function(btn){
+            btn.addEventListener('click', function(){
+              var target = parseInt(btn.getAttribute('data-step') || '1', 10);
+              if (target <= campaignData.maxStepReached) setStep(target);
+            });
+          });
+        }
+
+        if (btnPrev) {
+          btnPrev.addEventListener('click', function(){
+            setStep(Math.max(1, campaignData.step - 1));
+          });
+        }
+        if (btnNext) {
+          btnNext.addEventListener('click', function(){
+            if (campaignData.step < 4) {
+              if (!validateStep(campaignData.step)) return;
+              setStep(campaignData.step + 1);
+              updateCampaignData();
+              return;
+            }
+            submitCreate();
+          });
+        }
+
+        if (btnSave) {
+          btnSave.addEventListener('click', function(){
+            if (!hasValue()) return;
+            ensurePhotoData().then(function(){
+              setDraft(buildDraft());
+              if (typeof kbfCloseModal === 'function') kbfCloseModal('kbf-modal-create');
+            });
+          });
+        }
+
+        if (typeof window.kbfInitLocationPicker === 'function' && provInput && muniInput && brgyInput) {
+          window.kbfCreateLocPicker = window.kbfInitLocationPicker(provInput, muniInput, brgyInput);
+        }
+
+        function openCreateModal(){
+          modal.style.display = 'flex';
+          requestAnimationFrame(function(){ modal.classList.add('is-open'); });
+          modal.classList.remove('is-success');
+          var draft = getDraft();
+          if (draft) {
+            applyDraft(draft);
+          } else {
+            campaignData.step = 1;
+            campaignData.maxStepReached = 1;
+            setStep(1);
+          }
+          updateCampaignData();
+          lastSavedHash = draftComparable(draft || buildDraft());
+          updateSaveCloseState();
+        }
+
+        window.kbfCreateOpen = openCreateModal;
+        window.kbfCreateSetStep = setStep;
+        window.kbfCreateValidateStep = validateStep;
+        window.kbfCreateSubmit = submitCreate;
+        window.kbfUpdateSaveCloseState = updateSaveCloseState;
+        window.kbfCreateRedesignApplyPhoto = function(index, nextFile){
+          if (!nextFile || typeof index !== 'number') return;
+          campaignData.photos[index] = nextFile;
+          var reader = new FileReader();
+          reader.onload = function(e){
+            nextFile._kbfDataUrl = e && e.target ? e.target.result : '';
+            syncPhotoInput();
+            renderPhotoGrid();
+            updateSaveCloseState();
+          };
+          reader.onerror = function(){
+            syncPhotoInput();
+            renderPhotoGrid();
+            updateSaveCloseState();
+          };
+          reader.readAsDataURL(nextFile);
+        };
+        window.kbfApplyCreateDraft = function(force){
+          var draft = getDraft();
+          if (!draft) return false;
+          if (!force && hasValue()) return false;
+          return applyDraft(draft);
+        };
+        window.kbfSaveAndCloseCreateDraft = function(){
+          if (!hasValue()) return;
+          ensurePhotoData().then(function(){
+            setDraft(buildDraft());
+            if (typeof kbfCloseModal === 'function') kbfCloseModal('kbf-modal-create');
+          });
+        };
+        window.kbfClearCreateDraft = function(){ setDraft(null); };
+        window.kbfRequestCloseCreate = function(){
+          if (typeof kbfCloseModal === 'function') kbfCloseModal('kbf-modal-create');
+        };
+
+        renderPhotoGrid();
+        renderTiers();
+        bindCounter(titleInput);
+        bindCounter(descInput);
+        setStep(1);
+        updateCampaignData();
+      });
+    </script>
     <script>
       (function(){
         var btn = document.getElementById('kbf-user-menu-btn');
@@ -125,6 +941,10 @@
         el.style.display = 'flex';
         requestAnimationFrame(function(){ el.classList.add('is-open'); });
         if (id === 'kbf-modal-create') {
+            if (typeof window.kbfCreateOpen === 'function') {
+                window.kbfCreateOpen();
+                return;
+            }
             kbfSetCreateStep(1);
             if (window.kbfApplyCreateDraft) window.kbfApplyCreateDraft(true);
             if (typeof window.kbfUpdateSaveCloseState === 'function') window.kbfUpdateSaveCloseState();
@@ -134,6 +954,10 @@
     window.kbfCloseModal = kbfCloseModal;
 
     function kbfSetCreateStep(step) {
+        if (typeof window.kbfCreateSetStep === 'function') {
+            window.kbfCreateSetStep(step);
+            return;
+        }
         var form = document.getElementById('kbf-create-fund-form');
         if (!form) return;
         var n = parseInt(step || '1', 10);
@@ -484,27 +1308,30 @@
         var next = document.getElementById('kbf-create-next');
         var submit = document.getElementById('kbf-create-submit');
         var createForm = document.getElementById('kbf-create-fund-form');
+        var isCreateRedesign = createForm && createForm.querySelector('.kbf-create-panel');
         var editPrev = document.getElementById('kbf-edit-prev');
         var editNext = document.getElementById('kbf-edit-next');
         var editSubmit = document.getElementById('kbf-edit-submit');
         var photoInput = document.getElementById('kbf-create-photos');
         var photoWrap = document.getElementById('kbf-create-photo-previews');
         var kbfCreateFiles = [];
-        if (prev) prev.addEventListener('click', function(){
-            var step = parseInt(prev.dataset.step || '1', 10);
-            kbfSetCreateStep(Math.max(1, step - 1));
-        });
-        if (next) next.addEventListener('click', function(){
-            var step = parseInt(next.dataset.step || '1', 10);
-            if (!kbfValidateCreateStep(step)) return;
-            kbfSetCreateStep(Math.min(3, step + 1));
-        });
-        if (submit) submit.addEventListener('click', function(){
-            if (!kbfValidateCreateStep(3)) return;
-            kbfSetLoadingPage(true);
-            kbfSetBtnLoading(submit, true, 'Submitting...');
-            kbfSubmitCreate();
-        });
+        if (!isCreateRedesign) {
+            if (prev) prev.addEventListener('click', function(){
+                var step = parseInt(prev.dataset.step || '1', 10);
+                kbfSetCreateStep(Math.max(1, step - 1));
+            });
+            if (next) next.addEventListener('click', function(){
+                var step = parseInt(next.dataset.step || '1', 10);
+                if (!kbfValidateCreateStep(step)) return;
+                kbfSetCreateStep(Math.min(3, step + 1));
+            });
+            if (submit) submit.addEventListener('click', function(){
+                if (!kbfValidateCreateStep(3)) return;
+                kbfSetLoadingPage(true);
+                kbfSetBtnLoading(submit, true, 'Submitting...');
+                kbfSubmitCreate();
+            });
+        }
         if (editPrev) editPrev.addEventListener('click', function(){
             var step = parseInt(editPrev.dataset.step || '1', 10);
             kbfSetEditStep(Math.max(1, step - 1));
@@ -932,6 +1759,10 @@
                         kbfCreateFiles[editorState.index] = nextFile;
                         kbfSyncCreateFiles();
                         kbfRenderCreateThumbs();
+                    } else if (editorState.mode === 'create-redesign') {
+                        if (typeof window.kbfCreateRedesignApplyPhoto === 'function') {
+                            window.kbfCreateRedesignApplyPhoto(editorState.index, nextFile);
+                        }
                     } else if (editorState.mode === 'edit') {
                         kbfEditFiles[editorState.index] = nextFile;
                         kbfSyncEditFiles();
@@ -1066,7 +1897,7 @@
         if (removedInput) removedInput.value = '';
         if (editPhotoWrap) kbfRenderEditThumbs();
     };
-        if (photoInput && photoWrap) {
+        if (!isCreateRedesign && photoInput && photoWrap) {
             photoWrap.addEventListener('click', function(e){
                 if (!e.target || !e.target.classList.contains('kbf-photo-add')) return;
                 e.preventDefault();
@@ -1166,12 +1997,14 @@
             return { set: set, sync: sync };
         }
         window.kbfBenefitsEditors = window.kbfBenefitsEditors || {};
-        window.kbfBenefitsEditors.create = kbfInitBenefitsEditor('kbf-create-benefits','kbf-create-benefits-input','kbf-create-benefit-add');
+        if (!isCreateRedesign) {
+            window.kbfBenefitsEditors.create = kbfInitBenefitsEditor('kbf-create-benefits','kbf-create-benefits-input','kbf-create-benefit-add');
+        }
         window.kbfBenefitsEditors.edit = kbfInitBenefitsEditor('kbf-edit-benefits','kbf-edit-benefits-input','kbf-edit-benefit-add');
         var createProv = document.getElementById('kbf-province');
         var createMuni = document.getElementById('kbf-municipality');
         var createBrgy = document.getElementById('kbf-barangay');
-        if (createProv && createMuni && createBrgy) {
+        if (!isCreateRedesign && createProv && createMuni && createBrgy) {
             window.kbfCreateLocPicker = kbfInitLocationPicker(createProv, createMuni, createBrgy);
         }
         var editProv = document.getElementById('kbf-edit-province');
@@ -1180,6 +2013,7 @@
         if (editProv && editMuni && editBrgy) {
             window.kbfEditLocPicker = kbfInitLocationPicker(editProv, editMuni, editBrgy);
         }
+        if (!isCreateRedesign) {
         var kbfDraftKey = 'kbf_create_draft_<?php echo (int)$business_id; ?>';
         function kbfDraftStorageOk(){
             try {
@@ -1383,6 +2217,7 @@
             createForm.addEventListener('change', kbfUpdateSaveCloseState);
         }
         kbfUpdateSaveCloseState();
+        }
     })();;
     function kbfSetBtnLoading(btn, on, label) {
         if (!btn) return;
@@ -1490,6 +2325,9 @@
     }
 
     function kbfValidateCreateStep(step) {
+        if (typeof window.kbfCreateValidateStep === 'function') {
+            return window.kbfCreateValidateStep(step);
+        }
         var form = document.getElementById('kbf-create-fund-form');
         if (!form) return true;
         var n = parseInt(step || '1', 10);
@@ -1596,30 +2434,34 @@
             update();
         }
     (function(){
-        kbfInitDescCounter(document.querySelector('#kbf-create-fund-form textarea[name="description"]'));
-        kbfInitDescCounter(document.getElementById('edit-fund-desc'));
-        kbfInitTitleCounter(document.querySelector('#kbf-create-fund-form input[name="title"]'));
-        kbfInitTitleCounter(document.getElementById('edit-fund-title'));
-        var funderSelect = document.querySelector('#kbf-create-fund-form select[name="funder_type"]');
-        var titleInput = document.getElementById('kbf-create-title');
-        if (funderSelect && titleInput) {
-            var placeholders = {
-                yourself: 'e.g., Help with my medical bills',
-                someone_else: 'e.g., Support Maria’s recovery',
-                charity_event: 'e.g., Barangay relief drive 2026'
-            };
-            var updatePlaceholder = function(){
-                var key = funderSelect.value || 'yourself';
-                titleInput.placeholder = placeholders[key] || 'Clear, compelling title';
-            };
-            funderSelect.addEventListener('change', updatePlaceholder);
-            updatePlaceholder();
+        var createForm = document.getElementById('kbf-create-fund-form');
+        var isCreateRedesign = createForm && createForm.querySelector('.kbf-create-panel');
+        if (!isCreateRedesign) {
+            kbfInitDescCounter(document.querySelector('#kbf-create-fund-form textarea[name="description"]'));
+            kbfInitTitleCounter(document.querySelector('#kbf-create-fund-form input[name="title"]'));
+            var funderSelect = document.querySelector('#kbf-create-fund-form select[name="funder_type"]');
+            var titleInput = document.getElementById('kbf-create-title');
+            if (funderSelect && titleInput) {
+                var placeholders = {
+                    yourself: 'e.g., Help with my medical bills',
+                    someone_else: 'e.g., Support Maria’s recovery',
+                    charity_event: 'e.g., Barangay relief drive 2026'
+                };
+                var updatePlaceholder = function(){
+                    var key = funderSelect.value || 'yourself';
+                    titleInput.placeholder = placeholders[key] || 'Clear, compelling title';
+                };
+                funderSelect.addEventListener('change', updatePlaceholder);
+                updatePlaceholder();
+            }
         }
+        kbfInitDescCounter(document.getElementById('edit-fund-desc'));
+        kbfInitTitleCounter(document.getElementById('edit-fund-title'));
         (function(){
             var input = document.getElementById('kbf-goal-amount');
             var out = document.getElementById('kbf-fee-preview');
             if(!input || !out) return;
-              var rate = <?php echo (bool)kbf_get_setting('kbf_disable_platform_fee', false) ? '0' : '0.05'; ?>;
+              var rate = <?php echo (bool)kbf_get_setting('kbf_disable_platform_fee', false) ? '0' : '0.03'; ?>;
             function sanitizeMoney(value){
                 var v = String(value || '').replace(/[^\d.]/g, '');
                 var parts = v.split('.');
@@ -1668,6 +2510,10 @@
     })();
 
     function kbfSubmitCreate() {
+        if (typeof window.kbfCreateSubmit === 'function') {
+            window.kbfCreateSubmit();
+            return;
+        }
         const form = document.getElementById('kbf-create-fund-form');
         const btn  = document.getElementById('kbf-create-submit');
         const msg  = document.getElementById('kbf-create-msg');
