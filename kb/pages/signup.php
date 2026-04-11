@@ -8,6 +8,8 @@ if (!defined('ABSPATH')) exit;
 function bntm_kbf_render_signup() {
     kbf_global_assets();
     $signin_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : '#';
+    $privacy_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('privacy') : '#';
+    $terms_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('terms') : '#';
     $signup_error = '';
     $signup_success = '';
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action']) && $_POST['kbf_auth_action'] === 'signup') {
@@ -24,10 +26,9 @@ function bntm_kbf_render_signup() {
             if (!$signup_error && function_exists('kbf_auth_register_signup_attempt')) {
                 kbf_auth_register_signup_attempt($ip);
             }
-            $full_name = isset($_POST['full_name']) ? sanitize_text_field(wp_unslash($_POST['full_name'])) : '';
             $email = isset($_POST['user_email']) ? sanitize_email(wp_unslash($_POST['user_email'])) : '';
             $password = isset($_POST['user_password']) ? (string) wp_unslash($_POST['user_password']) : '';
-            if (!$full_name || !$email || !$password) {
+            if (!$email || !$password) {
                 $signup_error = 'Please complete all required fields.';
             } elseif (!is_email($email)) {
                 $signup_error = 'Please enter a valid email address.';
@@ -41,6 +42,7 @@ function bntm_kbf_render_signup() {
                 if (!$base_login) {
                     $base_login = 'user';
                 }
+                $display_name = $base_login;
                 $login = $base_login;
                 $suffix = 1;
                 while (username_exists($login)) {
@@ -51,8 +53,7 @@ function bntm_kbf_render_signup() {
                     'user_login' => $login,
                     'user_email' => $email,
                     'user_pass' => $password,
-                    'display_name' => $full_name,
-                    'first_name' => $full_name,
+                    'display_name' => $display_name,
                     'role' => 'subscriber',
                 ]);
                 if (is_wp_error($user_id)) {
@@ -73,7 +74,7 @@ function bntm_kbf_render_signup() {
                             'uid' => $user_id,
                         ], function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url());
                         $subject = 'Verify your Fundora account';
-                        $message = "Hi {$full_name},\n\nPlease verify your email by clicking the link below:\n{$verify_url}\n\nThis link expires in 24 hours.\n\nIf you did not create this account, you can ignore this email.";
+                        $message = "Hi {$display_name},\n\nPlease verify your email by clicking the link below:\n{$verify_url}\n\nThis link expires in 24 hours.\n\nIf you did not create this account, you can ignore this email.";
                         wp_mail($email, $subject, $message);
                         $signup_success = 'Account created. Please check your email to verify before signing in.';
                     }
@@ -184,41 +185,30 @@ function bntm_kbf_render_signup() {
       @keyframes kbfGlowFloat{}
       .kbf-auth-card{
         width:100%;
-        max-width:1100px;
+        max-width:500px;
         margin:0 auto;
         background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: var(--kbf-glass-shadow);
         border:1px solid rgba(37,99,235,.12);
         border-radius:32px; overflow:hidden; transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);
         display:grid;
-        grid-template-columns:1.15fr .85fr;
+        grid-template-columns:1fr;
         overflow:hidden;
         transition:max-width .3s ease,width .3s ease,transform .3s ease,box-shadow .3s ease;
         backdrop-filter:blur(4px);
       }
       .kbf-auth-card:hover{transform:none;box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);}
       .kbf-auth-left{padding:40px 42px 44px;}
-      .kbf-auth-right{
-        background: linear-gradient(135deg, rgba(74, 152, 255, 0.9) 0%, rgba(47, 123, 220, 0.95) 100%); backdrop-filter: blur(12px);
-        color:#ffffff;
-        padding:36px 34px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:flex-start;
-        text-align:left;
-        gap:14px;
-        border-left:1px solid rgba(255,255,255,.2);
-      }
-      .kbf-auth-brand{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--kbf-auth-ink);font-size:15px;margin-bottom:14px;letter-spacing:.2px;}
+      .kbf-auth-brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;color:var(--kbf-auth-ink);font-size:15px;margin-bottom:14px;letter-spacing:.2px;}
       .kbf-auth-brand img{width:140px;height:auto;max-height:36px;object-fit:contain;}
       .kbf-auth-title{font-size:26px;font-weight:500;color:var(--kbf-auth-ink);margin:0 0 8px;}
       .kbf-auth-sub{font-size:14px;color:var(--kbf-slate);margin:0 0 22px;line-height:1.7;max-width:440px;}
       .kbf-auth-form .kbf-form-group{margin-bottom:14px;}
-      .kbf-auth-input{display:flex;align-items:center;gap:10px;background:#ffffff;border:1px solid rgba(37,99,235,0.2); background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px);border-radius:14px;padding:12px 14px;box-shadow:0 6px 16px rgba(30,64,175,.06);}
+      .kbf-auth-input{display:flex;align-items:center;gap:10px;background:#ffffff;border:0; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px);border-radius:14px;padding:0 0 12px;box-shadow:none;position:relative;}
+      .kbf-auth-input .kbf-icon{position:absolute;left:12px;top:38%;transform:translateY(-50%);}
       .kbf-auth-input input{background:#ffffff;}
       .kbf-auth-input img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
-      .kbf-auth-input input{border:0;background:transparent;outline:none;font-size:13.5px;width:100%;}
+      .kbf-auth-input input{border:1px solid rgba(37,99,235,0.2);background:transparent;outline:none;font-size:13.5px;width:100%;padding-left:36px;padding-right:34px;}
       .kbf-auth-input input:focus{outline:none;box-shadow:none;}
       .kbf-auth-input input:-webkit-autofill,
       .kbf-auth-input input:-webkit-autofill:hover,
@@ -228,34 +218,40 @@ function bntm_kbf_render_signup() {
         transition: background-color 9999s ease-in-out 0s;
         box-shadow:0 0 0 1000px #ffffff inset;
       }
-      .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;}
+      .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:absolute;right:40px;top:38%;transform:translateY(-50%);}
       .kbf-auth-toggle img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-cta{margin-top:14px;}
-      .kbf-auth-right h3{font-size:20px;margin:0;font-weight:500;color:#ffffff;}
-      .kbf-auth-right p{font-size:13.5px;margin:0;color:rgba(255,255,255,.85);line-height:1.7;}
-      .kbf-auth-points{display:grid;gap:10px;margin-top:6px;}
-      .kbf-auth-point{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#ffffff;}
-      .kbf-auth-point span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.2);color:#ffffff;font-size:12px;font-weight:600;}
+      .kbf-auth-cta .kbf-btn.kbf-btn-primary{width:100%;display:block;}
+      .kbf-auth-legal{display:flex;gap:6px;align-items:center;justify-content:center;font-size:13px;color:var(--kbf-slate);margin-top:2px;cursor:pointer;}
+      .kbf-auth-legal input{width:14px;height:14px;accent-color:var(--kbf-blue);cursor:pointer;}
+      .kbf-auth-legal a{color:var(--kbf-blue);text-decoration:none;font-weight:600;}
+      .kbf-auth-legal a:hover{text-decoration:underline;}
+      .kbf-field-error{margin-top:6px;font-size:11.5px;color:#e11d48;display:none;}
+      .kbf-input-error{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.12);}
+      .kbf-pass-req{margin-top:8px;background:rgba(15,23,42,0.04);border-radius:10px;padding:10px 12px;font-size:14px;color:#475569;}
+      .kbf-pass-req ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;}
+      .kbf-pass-req li{font-size:13px;display:flex;align-items:center;gap:6px;}
+      .kbf-pass-req .kbf-pass-icon{font-size:12px;color:#e11d48;}
+      .kbf-pass-req .is-ok{color:#166534;}
+      .kbf-pass-req .is-ok .kbf-pass-icon{color:#16a34a;}
+      .kbf-pass-error{margin-top:6px;font-size:11.5px;color:#e11d48;display:none;}
       .kbf-auth-footer{margin-top:14px;font-size:12.5px;color:var(--kbf-slate);}
       .kbf-auth-footer a{color:var(--kbf-blue);font-weight:600;text-decoration:none;}
       @media (max-width: 900px){
         .kbf-auth-card{grid-template-columns:1fr;}
-        .kbf-auth-right{order:-1;padding:24px 22px;}
       }
       @media (max-width: 900px){
         .kbf-auth-wrap{padding:0 14px;}
         .kbf-auth-card{border-radius:20px;}
         .kbf-auth-left{padding:26px 20px 28px;}
-        .kbf-auth-right{padding:20px;}
         .kbf-auth-brand img{width:120px;}
         .kbf-auth-title{font-size:24px;}
         .kbf-auth-sub{font-size:13.5px;line-height:1.6;margin-bottom:18px;}
-        .kbf-auth-input{padding:10px 12px;border-radius:12px;}
+        .kbf-auth-input{padding:0 0 12px;border-radius:12px;}
         .kbf-auth-point{font-size:12.5px;}
       }
       @media (max-width: 520px){
         .kbf-auth-card{box-shadow:0 18px 50px rgba(15,23,42,.12), 0 6px 18px rgba(37,99,235,.08);}
-        .kbf-auth-right{display:none;}
       }
       @media (max-height: 760px){
         .kbf-auth-wrap{padding:0 16px;}
@@ -285,18 +281,12 @@ function bntm_kbf_render_signup() {
               <input type="hidden" name="kbf_auth_action" value="signup">
               <input type="hidden" name="kbf_auth_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_signup')); ?>">
               <div class="kbf-form-group">
-                <label>Name</label>
-                <div class="kbf-auth-input">
-                  <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
-                  <input type="text" name="full_name" placeholder="Full name" required>
-                </div>
-              </div>
-              <div class="kbf-form-group">
                 <label>Email</label>
                 <div class="kbf-auth-input">
                   <i class="ph ph-envelope-simple kbf-icon" aria-hidden="true"></i>
                   <input type="email" name="user_email" placeholder="you@example.com" required>
                 </div>
+                <div class="kbf-field-error" aria-live="polite">This field is required.</div>
               </div>
                 <div class="kbf-form-group">
                   <label>Password</label>
@@ -307,24 +297,28 @@ function bntm_kbf_render_signup() {
                       <i class="ph ph-eye-slash kbf-icon" aria-hidden="true"></i>
                     </button>
                   </div>
+                  <div class="kbf-field-error" aria-live="polite">This field is required.</div>
+                  <div class="kbf-pass-req" aria-live="polite">
+                    <ul>
+                      <li data-rule="length"><i class="ph ph-x kbf-pass-icon" aria-hidden="true"></i> Minimum 8 characters</li>
+                      <li data-rule="upper"><i class="ph ph-x kbf-pass-icon" aria-hidden="true"></i> 1 uppercase letter</li>
+                      <li data-rule="lower"><i class="ph ph-x kbf-pass-icon" aria-hidden="true"></i> 1 lowercase letter</li>
+                      <li data-rule="number"><i class="ph ph-x kbf-pass-icon" aria-hidden="true"></i> 1 number</li>
+                    </ul>
+                  </div>
+                  <div class="kbf-pass-error" aria-live="polite">Password does not meet requirements.</div>
                 </div>
-              <label style="display:flex;gap:6px;align-items:center;font-size:var(--kbf-type-body);color:var(--kbf-slate);margin-top:2px;">
-                <input type="checkbox" style="width:14px;height:14px;" required> I agree to the Terms & Conditions
-              </label>
+              <div class="kbf-form-group">
+                <label class="kbf-auth-legal">
+                  <input type="checkbox" required> I agree to the <a href="<?php echo esc_url($terms_url); ?>">Terms &amp; Conditions</a> and <a href="<?php echo esc_url($privacy_url); ?>">Privacy Policy</a>
+                </label>
+                <div class="kbf-field-error" aria-live="polite">This field is required.</div>
+              </div>
               <div class="kbf-auth-cta">
                 <button class="kbf-btn kbf-btn-primary" type="submit">Create Account</button>
               </div>
               <div class="kbf-auth-footer">Already have an account? <a href="<?php echo esc_url($signin_url); ?>">Sign In</a></div>
             </form>
-          </div>
-          <div class="kbf-auth-right">
-            <h3>Build impact faster</h3>
-            <p>Launch fundraisers, share updates, and grow a trusted supporter base.</p>
-            <div class="kbf-auth-points">
-              <div class="kbf-auth-point"><span>&#10003;</span> Verified profiles build trust</div>
-              <div class="kbf-auth-point"><span>&#10003;</span> Seamless donation tracking</div>
-              <div class="kbf-auth-point"><span>&#10003;</span> Transparent progress updates</div>
-            </div>
           </div>
         </div>
       </div>
@@ -349,15 +343,78 @@ function bntm_kbf_render_signup() {
               btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
             });
           });
+
+          function setupValidation(form){
+            if (!form) return;
+            var required = form.querySelectorAll('input[required], select[required], textarea[required]');
+            var password = form.querySelector('#kbf-signup-password');
+            var passReq = form.querySelector('.kbf-pass-req');
+            var passError = form.querySelector('.kbf-pass-error');
+            function setError(input, hasError){
+              var group = input.closest('.kbf-form-group');
+              var errorEl = group ? group.querySelector('.kbf-field-error') : null;
+              if (hasError) {
+                input.classList.add('kbf-input-error');
+                if (errorEl) errorEl.style.display = 'block';
+              } else {
+                input.classList.remove('kbf-input-error');
+                if (errorEl) errorEl.style.display = 'none';
+              }
+            }
+            function evalPassword(value){
+              return {
+                length: value.length >= 8,
+                upper: /[A-Z]/.test(value),
+                lower: /[a-z]/.test(value),
+                number: /[0-9]/.test(value)
+              };
+            }
+            function updatePassList(value){
+              if (!passReq) return true;
+              var rules = evalPassword(value);
+              Object.keys(rules).forEach(function(key){
+                var item = passReq.querySelector('[data-rule="'+ key +'"]');
+                if (!item) return;
+                item.classList.toggle('is-ok', !!rules[key]);
+                var icon = item.querySelector('.kbf-pass-icon');
+                if (icon) {
+                  icon.classList.remove('ph-check','ph-x');
+                  icon.classList.add(rules[key] ? 'ph-check' : 'ph-x');
+                }
+              });
+              return rules.length && rules.upper && rules.lower && rules.number;
+            }
+            if (password) {
+              updatePassList(password.value || '');
+              password.addEventListener('input', function(){
+                updatePassList(password.value || '');
+                if (passError) passError.style.display = 'none';
+              });
+            }
+            form.addEventListener('submit', function(e){
+              var firstInvalid = null;
+              required.forEach(function(input){
+                var valid = input.type === 'checkbox' ? input.checked : input.value.trim() !== '';
+                if (!valid && !firstInvalid) firstInvalid = input;
+                setError(input, !valid);
+              });
+              if (password) {
+                var passOk = updatePassList(password.value || '');
+                if (!passOk && !firstInvalid) firstInvalid = password;
+                if (passError) passError.style.display = passOk ? 'none' : 'block';
+                if (!passOk) password.classList.add('kbf-input-error');
+              }
+              if (firstInvalid) {
+                e.preventDefault();
+                firstInvalid.focus();
+              }
+            });
+          }
+
+          setupValidation(document.querySelector('.kbf-auth-form'));
         })();
       </script>
     </div>
     <?php
     return ob_get_clean();
 }
-
-
-
-
-
-
