@@ -214,7 +214,7 @@ function bntm_kbf_render_privacy() {
       }
       .kbf-legal h1 {
         font-size: 24px;
-        font-weight: 700;
+        font-weight: 600;
         margin: 0 0 4px;
       }
       .kbf-legal .kbf-legal-sub {
@@ -296,12 +296,27 @@ function bntm_kbf_render_privacy() {
         border-top: 1px solid rgba(255,255,255,0.07) !important;
         border-radius: 22px;
         padding: 20px 22px;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: center;
-        gap: 14px;
+        gap: 18px;
+        display: flex;
+        flex-direction: column;
       }
-      .kbf-footer-left{ display:flex; flex-direction:column; gap:6px; }
+      .kbf-footer-top{
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        column-gap: 14px;
+        row-gap: 4px;
+      }
+      .kbf-footer-left{ display:flex; flex-direction:column; gap:0; text-align:left; }
+      .kbf-footer-left p{ margin-top:0; }
+      .kbf-footer-left.kbf-footer-brand{ grid-column: 1; justify-self: start; }
+      .kbf-footer-bottom{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
       .kbf-footer,
       .kbf-footer p,
       .kbf-footer small,
@@ -317,8 +332,8 @@ function bntm_kbf_render_privacy() {
       .kbf-footer .kbf-brand img{
         filter: invert(100%) brightness(1.1);
       }
-      .kbf-footer .kbf-social { display: flex; gap: 8px; }
-            .kbf-footer .kbf-social a {
+      .kbf-footer .kbf-social { display: flex; gap: 8px; justify-self: end; }
+      .kbf-footer .kbf-social a {
         width: 40px;
         height: 40px;
         padding: 0;
@@ -326,9 +341,10 @@ function bntm_kbf_render_privacy() {
         align-items: center;
         justify-content: center;
         color: #fff;
-        font-size: 20px;
+        font-size: 28px;
+        text-decoration: none;
       }
-      .kbf-footer .kbf-social img { width: 16px; height: 16px; display:block; filter: invert(100%); }
+      .kbf-footer .kbf-social i { font-size: 25px; }
       .kbf-footer .kbf-footer-links{
         display:flex;
         gap:12px;
@@ -339,8 +355,28 @@ function bntm_kbf_render_privacy() {
         color:#ffffff !important;
         font-size:12.5px !important;
         text-decoration:none;
+        position: relative;
+        padding-bottom: 2px;
       }
-      .kbf-footer .kbf-footer-links a:hover{ color:#ffffff !important; }
+      .kbf-footer .kbf-footer-links a::after{
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 2px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.9);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .25s ease;
+      }
+      .kbf-footer .kbf-footer-links a:hover{
+        color:#ffffff !important;
+      }
+      .kbf-footer .kbf-footer-links a:hover::after{
+        transform: scaleX(1);
+      }
       .kbf-container {
         overflow: visible;
         max-width: 1120px;
@@ -353,9 +389,19 @@ function bntm_kbf_render_privacy() {
           text-align: center;
           margin: 18px auto;
         }
+        .kbf-footer-top{
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
         .kbf-footer-left{ align-items:center; }
+        .kbf-footer-left.kbf-footer-brand{ grid-column: auto; }
+        .kbf-footer-bottom{
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+        }
         .kbf-footer .kbf-footer-links{ justify-content:center; }
-        .kbf-social{ justify-content:center; }
+        .kbf-footer .kbf-social{ justify-content:center; justify-self: center; }
         .kbf-brand{ justify-content:center; }
       }
     </style>
@@ -415,6 +461,7 @@ function bntm_kbf_render_privacy() {
           <a class="kbf-legal-link" href="#cookies">8. Cookies and Tracking</a>
           <a class="kbf-legal-link" href="#changes">9. Changes to This Policy</a>
           <a class="kbf-legal-link" href="#contact">10. Contact and Complaints</a>
+          <hr style="border: none; border-top: 1px solid #edf0f4; margin: 24px 0;">
           <div style="margin-top:14px;">
             <a class="kbf-btn kbf-btn-primary kbf-btn-block" href="<?php echo esc_url(BNTM_KBF_URL . 'assets/legal/Fundora-Privacy-Policy.docx'); ?>" download>Download PDF</a>
           </div>
@@ -527,28 +574,32 @@ function bntm_kbf_render_privacy() {
       </div>
        <!-- FOOTER -->
         <footer class="kbf-footer kbf-reveal delay-3" style="margin-top:80px;">
-          <div class="kbf-footer-left">
-            <div class="kbf-brand" style="margin-bottom:8px;">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:30px;object-fit:contain;border-radius:6px;filter:brightness(0) invert(1);">
+          <div class="kbf-footer-top">
+            <div class="kbf-footer-left kbf-footer-brand">
+              <div class="kbf-brand" style="margin-bottom:8px;">
+                <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:30px;object-fit:contain;border-radius:6px;filter:brightness(0) invert(1);">
+              </div>
+              <p>Community fundraising rooted in bayanihan.</p>
             </div>
-            <p>Community fundraising rooted in bayanihan.</p>
+            <div class="kbf-social">
+            <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+              <i class="ph ph-instagram-logo" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.facebook.com/bentamosabentamo" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+              <i class="ph ph-facebook-logo" aria-hidden="true"></i>
+            </a>
+            <a href="https://www.linkedin.com/company/bentamo/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+              <i class="ph ph-linkedin-logo" aria-hidden="true"></i>
+            </a>
+            </div>
+          </div>
+          <div class="kbf-footer-bottom">
             <div class="kbf-footer-links">
               <a href="<?php echo esc_url(kbf_get_page_url('privacy')); ?>">Privacy Policy</a>
               <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>">Terms of Service</a>
               <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>">Refund Policy</a>
             </div>
             <small>&copy; fundora. All rights reserved.</small>
-          </div>
-          <div class="kbf-social">
-            <a href="https://www.instagram.com/bntmtechnologiesinc/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-              <i class="ph ph-instagram-logo kbf-icon" aria-hidden="true"></i>
-            </a>
-            <a href="https://www.facebook.com/bentamosabentamo" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-              <i class="ph ph-facebook-logo kbf-icon" aria-hidden="true"></i>
-            </a>
-            <a href="https://www.linkedin.com/company/bentamo/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
-              <i class="ph ph-linkedin-logo kbf-icon" aria-hidden="true"></i>
-            </a>
           </div>
         </footer>
       </div>

@@ -984,7 +984,7 @@ function bntm_kbf_render_landing() {
     }
     .kbf-stat h3 { font-size: 72px; font-weight: 800; margin: 10px 0 6px; }
     .kbf-stat p { margin: 0 0 16px; color: var(--kbf-muted); }
-    .kbf-stat .kbf-photo-grid { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+    .kbf-stat .kbf-photo-grid { position: absolute; inset: 6% 0; pointer-events: none; z-index: 1; }
     .kbf-stat .kbf-photo-grid img {
         width: 90px; height: 110px; border-radius: var(--kbf-radius-lg);
         object-fit: cover; filter: grayscale(100%);
@@ -1002,10 +1002,10 @@ function bntm_kbf_render_landing() {
         0%, 100% { translate: 0 0; }
         50% { translate: 0 -8px; }
     }
-    .kbf-stat .kbf-photo-grid img:nth-child(1) { left: 4%; top: 6%; }
-    .kbf-stat .kbf-photo-grid img:nth-child(2) { right: 4%; top: 6%; }
-    .kbf-stat .kbf-photo-grid img:nth-child(3) { left: 8%; bottom: 6%; }
-    .kbf-stat .kbf-photo-grid img:nth-child(4) { right: 8%; bottom: 6%; }
+    .kbf-stat .kbf-photo-grid img:nth-child(1) { left: 4%; top: -8%; }
+    .kbf-stat .kbf-photo-grid img:nth-child(2) { right: 4%; top: -8%; }
+    .kbf-stat .kbf-photo-grid img:nth-child(3) { left: 8%; bottom: -8%; }
+    .kbf-stat .kbf-photo-grid img:nth-child(4) { right: 8%; bottom: -8%; }
     .kbf-stat .kbf-stat-content { position: relative; z-index: 2; }
     .kbf-stat .kbf-btn-primary { margin-top: 6px; }
 
@@ -1635,7 +1635,6 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-compare-table tbody td, .kbf-compare-row > p {
-        font-weight: 400 !important;
         font-size: 13px !important;
         color: #0f1115 !important;
     }
@@ -1748,9 +1747,11 @@ function bntm_kbf_render_landing() {
         font-size: 14px !important;
         color: #0d1a2e !important;
     }
+    .kbf-compare-row .kbf-strong {
+        font-size: 13px !important;
+    }
     
     .kbf-compare-row > p:not(.kbf-compare-head > p) {
-        font-weight: 500 !important;
         font-size: 13.5px !important;
         color: #4f5a6b !important;
         line-height:1.5 !important;
@@ -1965,28 +1966,28 @@ function bntm_kbf_render_landing() {
           <div class="kbf-feature-grid">
             <div class="kbf-card kbf-card--soft">
                 <div class="kbf-chip" aria-hidden="true">
-                  <i class="ph ph-book-open kbf-icon" aria-hidden="true"></i>
+                  <i class="ph ph-check-fat kbf-icon" aria-hidden="true"></i>
                 </div>
                <h4 style="font-weight: 500;">Verified account profiles</h4>
                <p>Anyone raising funds completes ID verification before going live. A visible checkmark builds instant donor confidence.</p>
             </div>
             <div class="kbf-card kbf-card--glass">
               <div class="kbf-chip" aria-hidden="true">
-                <i class="ph ph-megaphone kbf-icon" aria-hidden="true"></i>
+                <i class="ph ph-circle-half-tilt kbf-icon" aria-hidden="true"></i>
               </div>
                 <h4 style="font-weight: 500;">Transparent fund tracking</h4>
                <p>Every peso is logged. Organizers post receipts, photos, and spending breakdowns that donors can view anytime.</p>
             </div>
             <div class="kbf-card kbf-card--outline">
               <div class="kbf-chip" aria-hidden="true">
-                <i class="ph-fill ph-thumbs-up kbf-icon" aria-hidden="true"></i>
+                  <i class="ph ph-book-open kbf-icon" aria-hidden="true"></i>
               </div>
                 <h4 style="font-weight: 500;">Public update log</h4>
                <p>Updates are timestamped on the campaign page so supporters see progress, receipts, and outcomes in one place.</p>
             </div>
             <div class="kbf-card kbf-card--split">
               <div class="kbf-chip" aria-hidden="true">
-                <i class="ph ph-circle-half-tilt kbf-icon" aria-hidden="true"></i>
+                <i class="ph ph-megaphone kbf-icon" aria-hidden="true"></i>
               </div>
                 <h4 style="font-weight: 500;">Campaign reporting system</h4>
                <p>Suspicious activity can be flagged directly. Reports are reviewed by the Fundora team to protect donors.</p>
