@@ -180,7 +180,7 @@
                 <div class="kbf-field-error"></div>
               </div>
               <div class="kbf-form-group">
-                <label class="kbf-checkbox-row">
+                <label class="kbf-auth-legal">
                   <input type="checkbox" name="agree_terms" id="kbf-agree-terms" required>
                   I agree to the <a href="<?php echo esc_url(kbf_get_page_url('terms')); ?>" target="_blank" rel="noopener noreferrer">Terms &amp; Agreement</a> and <a href="<?php echo esc_url(kbf_get_page_url('refund')); ?>" target="_blank" rel="noopener noreferrer">Refund Policy</a>.
                 </label>
@@ -199,10 +199,9 @@
               </svg>
             </div>
             <h3>Campaign Created!</h3>
-            <p>Your campaign is under review. We'll email you within 24 hours once it's approved.</p>
+            <p>Your campaign is under review. Usually takes 3–5 days or more during peak hours.</p>
             <div class="kbf-success-actions">
-              <a href="#" class="kbf-btn kbf-btn-primary" id="kbf-success-view">View Campaign</a>
-              <a href="#" class="kbf-btn kbf-btn-secondary" id="kbf-success-share">Share Campaign</a>
+              <a href="#" class="kbf-btn kbf-btn-primary" id="kbf-success-view">Back to Home</a>
             </div>
           </div>
         </div>
@@ -286,45 +285,50 @@
         <div class="kbf-modal-body">
           <form id="kbf-edit-fund-form" enctype="multipart/form-data">
             <input type="hidden" name="fund_id" id="edit-fund-id">
-            <div class="kbf-stepper" aria-label="Edit fund steps">
-              <div class="kbf-step is-active" data-step="1"><span>1</span> Details</div>
-              <div class="kbf-step" data-step="2"><span>2</span> Location</div>
+            <div class="kbf-stepper kbf-create-stepper" aria-label="Edit fund steps">
+              <div class="kbf-step is-active" data-step="1"><span>1</span> Campaign Info</div>
+              <div class="kbf-step" data-step="2"><span>2</span> Photos &amp; Tiers</div>
+              <div class="kbf-step" data-step="3"><span>3</span> Goal &amp; Contact</div>
             </div>
 
             <div class="kbf-step-content is-active" data-step="1">
-              <div class="kbf-step-note">Step 1: Update title, description, and photos.</div>
+              <div class="kbf-step-note">Step 1 - Add the campaign name and description.</div>
               <div class="kbf-form-group">
-                <label>Title</label>
+                <label>Campaign Name *</label>
                 <input type="text" name="title" id="edit-fund-title" maxlength="150" required>
                 <small class="kbf-title-counter">0 / 150</small>
                 <div class="kbf-field-error"></div>
               </div>
               <div class="kbf-form-group">
-                <label>Description</label>
-                <textarea name="description" id="edit-fund-desc" rows="10" maxlength="800" required></textarea>
+                <label>Campaign Description *</label>
+                <textarea name="description" id="edit-fund-desc" rows="7" maxlength="800" required></textarea>
                 <small class="kbf-desc-counter">0 / 800</small>
                 <div class="kbf-field-error"></div>
-              </div>
-              <div class="kbf-form-group">
-                <label>Add Photos (up to 5)</label>
-                <input type="file" id="kbf-edit-photos" name="photos[]" accept="image/*" multiple style="display:none;">
-                <small></small>
-                <div class="kbf-field-error"></div>
-                <div class="kbf-photo-previews" id="kbf-edit-photo-previews">
-                  <button class="kbf-photo-add" type="button" id="kbf-edit-photo-add" aria-label="Add photos">+</button>
-                </div>
-              </div>
-              <div class="kbf-form-group kbf-benefits-group">
-                <label>Benefits / Reward Tiers (optional)</label>
-                <div class="kbf-benefits-list" id="kbf-edit-benefits"></div>
-                <button class="kbf-btn kbf-btn-secondary kbf-benefit-add" type="button" id="kbf-edit-benefit-add">+ Add Benefit</button>
-                <input type="hidden" name="benefits" id="kbf-edit-benefits-input">
-                <small>Update the supporter benefits shown on the fund details page.</small>
               </div>
             </div>
 
             <div class="kbf-step-content" data-step="2">
-              <div class="kbf-step-note">Step 2: Update location and deadline.</div>
+              <div class="kbf-step-note">Step 2 - Add photos and optional support tiers.</div>
+              <div class="kbf-form-group">
+                <label>Photos (up to 5)</label>
+                <input type="file" id="kbf-edit-photos" name="photos[]" accept="image/*" multiple style="display:none;">
+                <small></small>
+                <div class="kbf-field-error"></div>
+                <div class="kbf-photo-previews kbf-photo-grid" id="kbf-edit-photo-previews">
+                  <button class="kbf-photo-add" type="button" id="kbf-edit-photo-add" aria-label="Add photos">+</button>
+                </div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Support Tiers (optional)</label>
+                <div class="kbf-benefits-list" id="kbf-edit-benefits"></div>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-benefit-add" type="button" id="kbf-edit-benefit-add">+ Add Tier</button>
+                <input type="hidden" name="benefits" id="kbf-edit-benefits-input">
+                <small>Max 5 tiers. Add a name, amount, and what supporters receive.</small>
+              </div>
+            </div>
+
+            <div class="kbf-step-content" data-step="3">
+              <div class="kbf-step-note">Step 3: Update deadline and address.</div>
               <div class="kbf-form-group">
                 <label>Province</label>
                 <select id="kbf-edit-province" name="province" required>

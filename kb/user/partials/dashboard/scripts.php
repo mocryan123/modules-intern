@@ -161,7 +161,7 @@
 
           if (btnPrev) btnPrev.style.visibility = nextStep === 1 ? 'hidden' : 'visible';
           if (btnNext) {
-            btnNext.textContent = nextStep === 4 ? 'Review & Submit 🚀' : 'Next';
+            btnNext.textContent = nextStep === 4 ? 'Review & Submit' : 'Next';
           }
 
           var body = modal.querySelector('.kbf-modal-body');
@@ -1006,7 +1006,7 @@
         if (!form) return;
         var n = parseInt(step || '1', 10);
         if (isNaN(n)) n = 1;
-        n = Math.min(2, Math.max(1, n));
+        n = Math.min(3, Math.max(1, n));
         var steps = form.querySelectorAll('.kbf-step');
         for (var i=0;i<steps.length;i++) {
             var s = steps[i];
@@ -1030,10 +1030,10 @@
         }
         if (next) {
             next.dataset.step = String(n);
-            next.style.display = n === 2 ? 'none' : '';
+            next.style.display = n === 3 ? 'none' : '';
         }
         if (submit) {
-            submit.style.display = n === 2 ? '' : 'none';
+            submit.style.display = n === 3 ? '' : 'none';
         }
     }
     window.kbfSetEditStep = kbfSetEditStep;
@@ -1339,10 +1339,10 @@
         if (editNext) editNext.addEventListener('click', function(){
             var step = parseInt(editNext.dataset.step || '1', 10);
             if (!kbfValidateEditStep(step)) return;
-            kbfSetEditStep(Math.min(2, step + 1));
+            kbfSetEditStep(Math.min(3, step + 1));
         });
         if (editSubmit) editSubmit.addEventListener('click', function(){
-            if (!kbfValidateEditStep(2)) return;
+            if (!kbfValidateEditStep(3)) return;
             kbfSubmitEdit();
         });
         function kbfSyncCreateFiles(){
@@ -1433,7 +1433,7 @@
             kbfEditExistingUrls.forEach(function(src, idx){
                 if (!src) return;
                 var thumb = document.createElement('div');
-                thumb.className = 'kbf-photo-thumb kbf-photo-thumb-existing';
+                thumb.className = 'kbf-photo-thumb kbf-photo-thumb-existing kbf-photo-slot';
                 var img = document.createElement('img');
                 img.alt = '';
                 img.src = src;
@@ -1485,7 +1485,7 @@
                 var reader = new FileReader();
                 reader.onload = function(e){
                     var thumb = document.createElement('div');
-                    thumb.className = 'kbf-photo-thumb';
+                    thumb.className = 'kbf-photo-thumb kbf-photo-slot';
                     thumb.setAttribute('data-index', String(idx));
                     var img = document.createElement('img');
                     img.alt = '';
@@ -1520,12 +1520,14 @@
             });
             var totalCount = existingCount + kbfEditFiles.length;
             if (totalCount < 5) {
-                var addBtn = document.createElement('button');
-                addBtn.type = 'button';
-                addBtn.className = 'kbf-photo-add';
-                addBtn.setAttribute('aria-label', 'Add photos');
-                addBtn.innerHTML = '+';
-                editPhotoWrap.appendChild(addBtn);
+                for (var s = totalCount; s < 5; s++) {
+                    var addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'kbf-photo-add kbf-photo-slot';
+                    addBtn.setAttribute('aria-label', 'Add photos');
+                    addBtn.textContent = 'Add photo';
+                    editPhotoWrap.appendChild(addBtn);
+                }
             }
             if (editPhotoInput) {
                 editPhotoInput.disabled = (totalCount >= 5);
