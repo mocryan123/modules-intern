@@ -161,7 +161,7 @@
 
           if (btnPrev) btnPrev.style.visibility = nextStep === 1 ? 'hidden' : 'visible';
           if (btnNext) {
-            btnNext.textContent = nextStep === 4 ? 'Review & Submit 🚀' : 'Next ->';
+            btnNext.textContent = nextStep === 4 ? 'Review & Submit 🚀' : 'Next';
           }
 
           var body = modal.querySelector('.kbf-modal-body');

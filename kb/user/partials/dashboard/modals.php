@@ -51,7 +51,7 @@
                     <i class="ph ph-users"></i><span>Community</span>
                   </button>
                   <button type="button" class="kbf-category-card" data-value="Sports">
-                    <i class="ph ph-soccer-ball"></i><span>Sports</span>
+                    <i class="ph ph-tennis-ball"></i><span>Sports</span>
                   </button>
                   <button type="button" class="kbf-category-card" data-value="Family">
                     <i class="ph ph-house"></i><span>Family</span>
@@ -209,8 +209,8 @@
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary kbf-modal-left" id="kbf-create-prev" type="button">Back</button>
           <div class="kbf-create-footer-actions">
-            <button class="kbf-btn kbf-btn-primary" id="kbf-create-next" type="button">Next -&gt;</button>
             <button class="kbf-btn kbf-btn-secondary" id="kbf-create-save-close" type="button">Save &amp; Close</button>
+            <button class="kbf-btn kbf-btn-primary" id="kbf-create-next" type="button">Next</button>
           </div>
         </div>
       </div>
