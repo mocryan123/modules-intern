@@ -447,7 +447,7 @@ function bntm_kbf_render_privacy() {
         </div>
       </div>
       <h1>Privacy Policy</h1>
-      <p class="kbf-legal-sub">FUNDORA â€” How Fundora collects, uses, and protects your data.</p>
+      <p class="kbf-legal-sub">FUNDORA - How Fundora collects, uses, and protects your data.</p>
       <div class="kbf-legal-grid">
         <aside class="kbf-legal-card kbf-legal-nav">
           <h4>Sections</h4>

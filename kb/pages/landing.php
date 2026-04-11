@@ -541,17 +541,27 @@ function bntm_kbf_render_landing() {
         color: #334155; line-height: 1.7; margin: 0;
     }
     
-    .kbf-hero-cta-btn { width: fit-content; padding: 14px 28px; gap: 10px; }
-    .kbf-hero-cta-btn img {
+    .kbf-hero-cta-btn {
+        width: fit-content;
+        padding: 14px 28px;
+        gap: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .kbf-hero-cta-btn img,
+    .kbf-hero-cta-btn .kbf-icon {
         width: 17px;
         height: 17px;
         margin-left: 8px;
-        filter: invert(100%);
         display: inline-block;
         transform: scale(1);
         transition: transform .2s ease;
     }
-    .kbf-hero-cta-btn:hover img {
+    .kbf-hero-cta-btn img { filter: invert(100%); }
+    .kbf-hero-cta-btn .kbf-icon { color: #ffffff; filter: none; position: relative; top: 3px; }
+    .kbf-hero-cta-btn:hover img,
+    .kbf-hero-cta-btn:hover .kbf-icon {
         transform: scale(1) rotate(45deg);
     }
     .kbf-hero-arrow {
@@ -657,7 +667,7 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-pcard-img {
-        width: 100%; height: calc(100% - 50px);
+        width: 100%; height: calc(95% - 50px);
         display: flex; align-items: center; justify-content: center;
         position: relative;
         background: #e9eef6;
@@ -683,25 +693,13 @@ function bntm_kbf_render_landing() {
         filter: grayscale(100%) contrast(0.95);
     }
     .kbf-pcard-bar {
-        padding: 7px 12px; background: linear-gradient(180deg, #f9fafb 0%, #eef2f7 100%);
-        display: flex; align-items: center; gap: 8px;
-        border-top: 1px solid #e1e7f0; height: 50px;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px;
+        justify-content: center;
     }
-    .kbf-pcard-av {
-        width: 22px; height: 22px; border-radius: 50%;
-        background: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 17px; flex-shrink: 0;
-        border: 1px solid #dde3ee;
-        box-shadow: 0 4px 10px rgba(15, 40, 80, 0.12);
-    }
-    .kbf-pcard-av img {
-        width: 12px;
-        height: 12px;
-        display: block;
-        filter: grayscale(100%) brightness(0.6);
-    }
+    
     .kbf-pcard-name { font-size: 10px; font-weight: 600; color: #0d1a2e; line-height: 1.5; }
     .kbf-pcard-sub  { font-size: 17px; color: #8aa0b8; }
     .kbf-pcard-play {
@@ -1588,7 +1586,7 @@ function bntm_kbf_render_landing() {
     
     .kbf-landing p, .kbf-landing li {
         font-weight: 400 !important;
-        font-size: 10px !important;
+        font-size: 13.5px !important;
         line-height: 1.75 !important;
         color: #4f5a6b !important;
     }
@@ -1665,14 +1663,12 @@ function bntm_kbf_render_landing() {
         font-size: 10px !important;
         font-weight: 600 !important;
         color: #0d1a2e !important;
-        line-height: 1.2 !important;
         margin: 0 !important;
     }
     p.kbf-pcard-sub {
         font-size: 12.5px !important;
         font-weight: 500 !important;
         color: #8b97aa !important;
-        line-height: 1.2 !important;
         margin: 0 !important;
     }
 
@@ -2061,9 +2057,7 @@ function bntm_kbf_render_landing() {
                     <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/patient.jpg'); ?>" alt="Patient support">
                   </div>
                   <div class="kbf-pcard-bar">
-                    <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
-                    <div><h4 class="kbf-pcard-name">Yourself</h4><p class="kbf-pcard-sub">Health</p></div>
-                    
+                    <h4> Yourself </h4>
                   </div>
                 </div>
                 <div class="kbf-pcard kbf-pcard-main">
@@ -2071,9 +2065,7 @@ function bntm_kbf_render_landing() {
                     <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/basketball.jpg'); ?>" alt="Basketball community">
                   </div>
                   <div class="kbf-pcard-bar">
-                    <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
-                    <div><h4 class="kbf-pcard-name">Charity or Events</h4><p class="kbf-pcard-sub">Community</p></div>
-                    
+                    <h4> Charity or Events </h4>
                   </div>
                 </div>
                 <div class="kbf-pcard kbf-pcard-br">
@@ -2081,9 +2073,7 @@ function bntm_kbf_render_landing() {
                     <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/graduation.jpg'); ?>" alt="Graduation moment">
                   </div>
                   <div class="kbf-pcard-bar">
-                    <div class="kbf-pcard-av"><img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt=""></div>
-                    <div><h4 class="kbf-pcard-name">Someone Else</h4><p class="kbf-pcard-sub">Protected</p></div>
-                    
+                    <h4> Someone Else </h4>
                   </div>
                 </div>
               </div>
