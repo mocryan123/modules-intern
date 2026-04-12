@@ -115,6 +115,19 @@ function bntm_shortcode_kbf_fund_details() {
         $sf = $wpdb->prefix.'kbf_saved_funds';
         $is_saved = (bool)$wpdb->get_var($wpdb->prepare("SELECT id FROM {$sf} WHERE user_id=%d AND fund_id=%d", $current_user_id, $fund->id));
     }
+    // ===== RULE 3A: CHECK IF USER ALREADY RATED =====
+    $rt = $wpdb->prefix.'kbf_ratings';
+    $current_user_email = $current_user_id ? wp_get_current_user()->user_email : '';
+    $already_rated = false;
+    if ($current_user_id && $current_user_email && $fund->business_id) {
+        $already_rated = (bool)$wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$rt} WHERE organizer_id=%d AND sponsor_email=%s",
+            (int)$fund->business_id,
+            $current_user_email
+        ));
+    }
+    $is_self = $current_user_id && $current_user_id === (int)$fund->business_id;
+    $prefill_email = $current_user_id ? wp_get_current_user()->user_email : '';
 
     // Open Graph meta for social share previews
     if (!empty($fund)) {
@@ -810,14 +823,31 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-detail-right .kbf-card{
       box-shadow:none !important;
       overflow:visible !important;
+      position:relative !important;
+      z-index:1 !important;
     }
-    .kbf-detail-right .kbf-card-actions{overflow:visible !important;}
+    .kbf-detail-right .kbf-card-actions{overflow:visible !important; position:relative; z-index:10;}
     .kbf-detail-right .kbf-more-wrap{
       position:relative;
-      z-index:100;
+      z-index:200;
+      flex-shrink:0;
+      pointer-events:auto !important;
     }
     .kbf-detail-right .kbf-more-wrap.open{
       z-index:1000;
+    }
+    .kbf-detail-right .kbf-more-wrap .kbf-btn{
+      position:relative;
+      z-index:201;
+      pointer-events:auto !important;
+      cursor:pointer !important;
+      user-select:none;
+      touch-action:manipulation;
+      transform:translateZ(0);
+      background-clip:padding-box;
+    }
+    .kbf-detail-right .kbf-more-wrap .kbf-btn i{
+      pointer-events:none;
     }
 
     /* ===== FIX 5: COLLAPSE EMPTY LEADERBOARD ===== */
@@ -961,9 +991,16 @@ function bntm_shortcode_kbf_fund_details() {
     </div>
 
     <!-- Rating Modal -->
+    <?php if($is_self): ?>
+      <!-- Credibility modal hidden for organizer -->
+    <?php else: ?>
     <div id="kbf-modal-rating" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3>Credibility Score</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-rating')">&times;</button></div>
+        <div class="kbf-modal-header">
+          <h3>Credibility Score</h3>
+          <button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-rating')">&times;</button>
+          <p style="font-size:12.5px;color:var(--kbf-slate);margin:2px 0 0;">Rate this organizer's trustworthiness. You can only submit once.</p>
+        </div>
         <div class="kbf-modal-body">
           <form id="kbf-rating-form">
             <input type="hidden" name="organizer_id" value="<?php echo $fund->business_id; ?>">
@@ -976,7 +1013,12 @@ function bntm_shortcode_kbf_fund_details() {
               </div>
               <input type="hidden" name="rating" id="kbf-rating-val" value="5">
             </div>
-            <div class="kbf-form-group"><label>Your Email *</label><input type="email" name="sponsor_email" required placeholder="your@email.com"></div>
+            <div class="kbf-form-group"><label>Your Email *</label>
+              <input type="email" name="sponsor_email" required placeholder="your@email.com" value="<?php echo esc_attr($prefill_email); ?>"<?php echo $current_user_id ? ' readonly style="background:#f8fafc;color:var(--kbf-slate);"' : ''; ?>>
+              <?php if($current_user_id): ?>
+                <small class="kbf-meta" style="margin-top:4px;display:block;">Submitting as your account email. This cannot be changed.</small>
+              <?php endif; ?>
+            </div>
             <div class="kbf-form-group"><label>Comment (optional)</label><textarea name="review" rows="3" placeholder="Share your thoughts..."></textarea></div>
             <div id="kbf-rate-msg"></div>
           </form>
@@ -987,6 +1029,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
       </div>
     </div>
+    <?php endif; ?>
 
     <!-- Poster Modal -->
     <div id="kbf-modal-poster" class="kbf-modal-overlay kbf-poster-modal" style="display:none;">
@@ -1215,7 +1258,7 @@ function bntm_shortcode_kbf_fund_details() {
                   <span class="kbf-save-label"><?php echo $is_saved ? 'Saved' : 'Save Fund'; ?></span>
                 </button>
                 <div class="kbf-more-wrap">
-                  <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfToggleMoreMenu(event)">
+                  <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfToggleMoreMenu(event)" style="pointer-events:auto !important; cursor:pointer !important; position:relative; z-index:201; touch-action:manipulation;">
                     <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     More
                   </button>
@@ -1223,7 +1266,21 @@ function bntm_shortcode_kbf_fund_details() {
                     <button type="button" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">Share</button>
                     <button type="button" onclick="kbfCreatePoster('<?php echo esc_js($org_token ?: $fund->business_id); ?>','<?php echo esc_js($fund->title); ?>')">Create Poster</button>
                       <button type="button" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.style.display='flex';m.classList.add('is-open');}">Report Abuse</button>
-                    <button type="button" onclick="kbfShowModal('kbf-modal-rating')">Credibility Score</button>
+                    <?php if($already_rated): ?>
+                      <button type="button" disabled style="opacity:0.7;cursor:not-allowed;" data-tooltip="You have already rated this organizer">
+                        <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:13px;color:#3b82f6;" aria-hidden="true"></i>
+                        Score Submitted
+                      </button>
+                    <?php elseif($is_self): ?>
+                      <!-- Hidden for self -->
+                    <?php elseif(!$current_user_id): ?>
+                      <button type="button" disabled style="opacity:0.6;cursor:not-allowed;" data-tooltip="Sign in to rate this organizer">
+                        <i class="ph ph-thumbs-up kbf-icon" style="font-size:13px;" aria-hidden="true"></i>
+                        Credibility Score
+                      </button>
+                    <?php else: ?>
+                      <button type="button" onclick="kbfShowModal('kbf-modal-rating')">Credibility Score</button>
+                    <?php endif; ?>
                   </div>
                 </div>
               </div>
@@ -1795,12 +1852,25 @@ function bntm_shortcode_kbf_fund_details() {
         btn.disabled=true;btn.textContent='Submitting...';
         const fd=new FormData(form);fd.append('action','kbf_submit_rating');fd.append('nonce',nonce);
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
-        document.getElementById('kbf-rate-msg').innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
-        if(j.success)setTimeout(()=>{kbfHideModal('kbf-modal-rating');},1800);else{btn.disabled=false;btn.textContent='Submit Score';}
+            // ===== RULE 3C: HANDLE DUPLICATE ERROR =====
+            if (!j.success && j.data && j.data.message && j.data.message.indexOf('already submitted') !== -1) {
+                document.getElementById('kbf-rate-msg').innerHTML = '<div class="kbf-alert kbf-alert-warning">' + j.data.message + '</div>';
+                setTimeout(function(){ kbfHideModal('kbf-modal-rating'); }, 2000);
+                document.querySelectorAll('[onclick*="kbf-modal-rating"],[onclick*="kbf-modal-rating\'"]').forEach(function(el){
+                    if(el.tagName === 'BUTTON' && !el.closest('.kbf-modal')) {
+                        el.disabled = true;
+                        el.innerHTML = '<i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:13px;color:#3b82f6;" aria-hidden="true"></i> Score Submitted';
+                    }
+                });
+                return;
+            }
+            document.getElementById('kbf-rate-msg').innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
+            if(j.success)setTimeout(()=>{kbfHideModal('kbf-modal-rating');},1800);else{btn.disabled=false;btn.textContent='Submit Score';}
         });
     };
     window.kbfToggleMoreMenu=function(e){
-        if(e){ e.stopPropagation(); }
+        e = e || window.event;
+        if(e) { e.stopPropagation(); e.preventDefault(); }
         var menu = document.getElementById('kbf-more-menu');
         if(!menu) return;
         var wrap = menu.closest('.kbf-more-wrap');

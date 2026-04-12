@@ -59,6 +59,7 @@ function kbf_dashboard_profile_tab($business_id) {
 
       /* ── Main two-column grid ── */
       .kbf-profile-grid {
+        padding-top:30px;
         display: grid;
         grid-template-columns: 320px minmax(0, 1fr);
         gap: 18px;

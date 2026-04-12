@@ -77,6 +77,7 @@ function bntm_shortcode_kbf_organizer_profile() {
     $nonce_rating = wp_create_nonce('kbf_rating');
     $current_user = wp_get_current_user();
     $current_email = $current_user && !empty($current_user->user_email) ? $current_user->user_email : '';
+    $current_user_id = $current_user ? (int)$current_user->ID : 0;
     $has_reviewed = false;
     if ($current_email) {
         $has_reviewed = (bool)$wpdb->get_var($wpdb->prepare(
@@ -84,6 +85,8 @@ function bntm_shortcode_kbf_organizer_profile() {
             $biz_id, $current_email
         ));
     }
+    $is_self = $current_user_id && $current_user_id === (int)$biz_id;
+    $prefill_email = $current_user_id ? $current_email : '';
     $bio_text = '';
     if ($profile && trim((string)$profile->bio) !== '') {
         $bio_text = (string)$profile->bio;
@@ -565,12 +568,14 @@ function bntm_shortcode_kbf_organizer_profile() {
               <span style="font-size:12.5px;" class="kbf-strong"><?php echo number_format((float)$profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
             </div>
           </div>
-          <?php if(is_user_logged_in() && !$has_reviewed): ?>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="margin-bottom:10px;padding:6px 12px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Score</button>
-          <?php elseif(is_user_logged_in() && $has_reviewed): ?>
+          <?php if($has_reviewed): ?>
             <span class="kbf-meta" style="font-size:11.5px;display:block;margin-bottom:10px;">Already scored</span>
+          <?php elseif($is_self): ?>
+            <!-- Hidden for self -->
+          <?php elseif(!is_user_logged_in()): ?>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" disabled style="margin-bottom:10px;padding:6px 12px;opacity:0.6;cursor:not-allowed;">Log in to score</button>
           <?php else: ?>
-            <span class="kbf-meta" style="font-size:11.5px;display:block;margin-bottom:10px;">Log in to score</span>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="margin-bottom:10px;padding:6px 12px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Score</button>
           <?php endif; ?>
           <?php if(empty($reviews)): ?>
             <div class="kbf-empty" style="padding:18px 10px;"><p>No scores yet.</p></div>
@@ -600,9 +605,16 @@ function bntm_shortcode_kbf_organizer_profile() {
     </div>
     </div>
     <!-- Rating Modal -->
+    <?php if($is_self): ?>
+      <!-- Credibility modal hidden for organizer -->
+    <?php else: ?>
     <div id="kbf-modal-rating" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3>Credibility Score</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-rating').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-header">
+          <h3>Credibility Score</h3>
+          <button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-rating').style.display='none'">&times;</button>
+          <p style="font-size:12.5px;color:var(--kbf-slate);margin:2px 0 0;">Rate this organizer's trustworthiness. You can only submit once.</p>
+        </div>
         <div class="kbf-modal-body">
           <form id="kbf-rating-form" onsubmit="return false;">
             <input type="hidden" name="organizer_id" value="<?php echo (int)$biz_id; ?>">
@@ -615,7 +627,12 @@ function bntm_shortcode_kbf_organizer_profile() {
               </div>
               <input type="hidden" name="rating" id="kbf-rating-val" value="5">
             </div>
-            <div class="kbf-form-group"><label>Your Email *</label><input type="email" name="sponsor_email" required placeholder="your@email.com" value="<?php echo esc_attr($current_email); ?>"></div>
+            <div class="kbf-form-group"><label>Your Email *</label>
+              <input type="email" name="sponsor_email" required placeholder="your@email.com" value="<?php echo esc_attr($prefill_email); ?>"<?php echo $current_user_id ? ' readonly style="background:#f8fafc;color:var(--kbf-slate);"' : ''; ?>>
+              <?php if($current_user_id): ?>
+                <small class="kbf-meta" style="margin-top:4px;display:block;">Submitting as your account email. This cannot be changed.</small>
+              <?php endif; ?>
+            </div>
             <div class="kbf-form-group"><label>Comment (optional)</label><textarea name="review" rows="3" placeholder="Share your thoughts..."></textarea></div>
             <div id="kbf-rate-msg"></div>
           </form>
@@ -626,6 +643,7 @@ function bntm_shortcode_kbf_organizer_profile() {
         </div>
       </div>
     </div>
+    <?php endif; ?>
     <script>
     (function(){
       window.kbfSetRating = function(v){
@@ -654,6 +672,20 @@ function bntm_shortcode_kbf_organizer_profile() {
         btn.textContent = 'Submitting...';
         window.kbfFetchJson(ajaxurl, fd, function(j){
           var msg = document.getElementById('kbf-rate-msg');
+          // ===== RULE 3C: HANDLE DUPLICATE ERROR =====
+          if (!j.success && j.data && j.data.message && j.data.message.indexOf('already submitted') !== -1) {
+            if(msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-warning kbf-alert-compact">' + j.data.message + '</div>';
+            setTimeout(function(){ document.getElementById('kbf-modal-rating').style.display='none'; }, 2000);
+            document.querySelectorAll('[onclick*="kbf-modal-rating"]').forEach(function(el){
+              if(el.tagName === 'BUTTON' && !el.closest('.kbf-modal')) {
+                el.disabled = true;
+                el.textContent = 'Already Scored';
+              }
+            });
+            btn.disabled = false;
+            btn.textContent = old;
+            return;
+          }
           if(msg) msg.innerHTML = '<div class="kbf-alert ' + (j.success?'kbf-alert-success':'kbf-alert-error') + ' kbf-alert-compact">' + (j.data && j.data.message ? j.data.message : (j.success?'Submitted':'Failed')) + '</div>';
           if(j.success) setTimeout(function(){ window.location.reload(); }, 800);
           btn.disabled = false;
