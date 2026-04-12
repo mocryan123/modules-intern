@@ -51,10 +51,10 @@ if (!function_exists('kbf_dashboard_get_blocked_label')) {
 if (!function_exists('kbf_dashboard_handle_payment_success')) {
     function kbf_dashboard_handle_payment_success($payment_state, $user_id) {
         if ($payment_state !== 'success' || !$user_id) return false;
-        $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
-        if (!$demo_mode) return true;
+
         $sid = isset($_GET['sid']) ? intval($_GET['sid']) : 0;
         $ref = isset($_GET['ref']) ? sanitize_text_field($_GET['ref']) : '';
+
         if ($sid > 0) {
             kbf_mark_sponsorship_completed($sid);
         } elseif ($ref !== '') {
@@ -116,11 +116,19 @@ function bntm_shortcode_kbf_dashboard() {
     $nonce_refresh = $nonces['refresh'];
     $payment_state = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
 
-    if ($is_logged_in && kbf_dashboard_handle_payment_success($payment_state, $business_id)) {
+    // Confirm payment in demo mode (webhook is disabled in demo, so we confirm on redirect).
+    if ($is_logged_in && $payment_state === 'success') {
+        kbf_dashboard_handle_payment_success($payment_state, $business_id);
+    }
+
+    // Show "Thank You" card only when opened as a popup tab from Maya.
+    // Regular same-tab redirect shows the premium banner in Find Funds instead.
+    $is_popup = !empty($_GET['kbf_popup']) && $_GET['kbf_popup'] === '1';
+    if ($is_logged_in && $is_popup && $payment_state === 'success') {
         $find_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
         ob_start();
     ?>
-    
+
     <div class="kbf-user-ui">
           <div class="kbf-card" style="max-width:640px;margin:50px auto;padding:34px 30px;text-align:center;">
             <div style="font-size:26px;font-weight:800;color:var(--kbf-navy);margin-bottom:8px;">Thank You</div>

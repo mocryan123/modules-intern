@@ -47,8 +47,8 @@ function bntm_shortcode_kbf_fund_details() {
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
     $pct      = $fund->goal_amount>0 ? min(100,($fund->raised_amount/$fund->goal_amount)*100) : 0;
     $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND message IS NOT NULL AND message != '' ORDER BY created_at DESC LIMIT 20",$fund->id));
-    $sponsor_count = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$fund->id));
-    // Leaderboard: group by sponsor name/email, sum total contributed, rank by total DESC
+    $sponsor_count = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND is_anonymous=0",$fund->id));
+    // Leaderboard: non-anonymous grouped by name, each anonymous donation as separate row
     $leaderboard = $wpdb->get_results($wpdb->prepare(
         "SELECT
             CASE WHEN is_anonymous=1 THEN 'Anonymous' ELSE COALESCE(NULLIF(sponsor_name,''),'Anonymous') END AS display_name,
@@ -58,7 +58,9 @@ function bntm_shortcode_kbf_fund_details() {
             MAX(created_at) AS last_donated
          FROM {$st}
          WHERE fund_id=%d AND payment_status='completed'
-         GROUP BY display_name, is_anonymous
+         GROUP BY
+             is_anonymous,
+             CASE WHEN is_anonymous=0 THEN COALESCE(NULLIF(sponsor_name,''),'Anonymous') ELSE id END
          ORDER BY total_given DESC
          LIMIT 10",
         $fund->id
@@ -332,7 +334,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;flex-wrap:wrap;}
   .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
 .kbf-detail-left{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;}
-.kbf-detail-right{display:flex;flex-direction:column;}
+.kbf-detail-right{display:flex;flex-direction:column;align-self:flex-start;}
   .kbf-detail-panels.kbf-detail-stack{
       display:flex;
       flex-direction:column;
@@ -398,7 +400,15 @@ function bntm_shortcode_kbf_fund_details() {
   .kbf-detail-tab-panel{width:100%;}
   .kbf-detail-tab-panel .kbf-card{width:100%; box-sizing:border-box;}
   .kbf-detail-secondary{width:100%;}
-.kbf-detail-sticky{display:flex;flex-direction:column;gap:14px;flex:1;box-sizing:border-box;}
+.kbf-detail-sticky{display:flex;flex-direction:column;gap:14px;box-sizing:border-box;align-self:flex-start;width:100%;}
+    .kbf-detail-sticky > .kbf-card{
+      flex:none;
+      margin:0;
+    }
+    .kbf-detail-sticky > .kbf-section-leaderboard{
+      flex:0 0 auto;
+      min-height:0;
+    }
     .kbf-detail-sticky > *{margin-top:0 !important;margin-bottom:0 !important;}
     .kbf-poster-modal .kbf-modal{max-width:980px;width:980px;}
     .kbf-poster-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px;align-items:stretch;}
@@ -479,9 +489,58 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-save-btn.is-saved i{
       color:#3b82f6;
     }
-    .kbf-leaderboard-card{flex:1;display:flex;flex-direction:column;justify-content:flex-end;max-height:none;}
-      .kbf-leaderboard-body{flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto;padding-right:6px;}
-    .kbf-leaderboard-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);}
+    /* ===== LEADERBOARD: NO FORCED STRETCH ===== */
+    .kbf-detail-sticky{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      min-height:0;
+    }
+    .kbf-detail-sticky > .kbf-card{
+      margin:0;
+      flex:none;
+    }
+    .kbf-leaderboard-card{
+      display:flex;
+      flex-direction:column;
+    }
+    .kbf-leaderboard-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:0 0 12px;
+      margin-bottom:0;
+      border-bottom:1px solid var(--kbf-border);
+      flex-shrink:0;
+    }
+    .kbf-leaderboard-body{
+      margin-top:12px;
+      flex:none;
+      height:auto !important;
+      min-height:0 !important;
+    }
+    /* Empty state - override inline flex centering */
+    .kbf-leaderboard-body > div[style*="text-align:center"]{
+      display:block !important;
+      padding:16px 10px !important;
+      text-align:center;
+      height:auto !important;
+      min-height:0 !important;
+      justify-content:unset !important;
+      align-items:unset !important;
+      flex-direction:unset !important;
+      flex:0 0 auto !important;
+    }
+    .kbf-leaderboard-body > div[style*="text-align:center"] i{
+      font-size:28px;
+      margin-bottom:8px;
+      opacity:.3;
+      display:block;
+    }
+    .kbf-leaderboard-body > div[style*="text-align:center"] p{
+      margin:2px 0;
+    }
     .kbf-leaderboard-title{display:flex;align-items:center;gap:10px;min-width:0;}
     .kbf-leaderboard-icon{width:28px;height:28px;border-radius:8px;background:#eef4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .kbf-leaderboard-icon i{font-size:14px;color:#3b82f6;}
@@ -850,18 +909,29 @@ function bntm_shortcode_kbf_fund_details() {
       pointer-events:none;
     }
 
-    /* ===== FIX 5: COLLAPSE EMPTY LEADERBOARD ===== */
-    .kbf-detail-sticky > .kbf-section-leaderboard{flex:1;display:flex;flex-direction:column;min-height:0;}
-    .kbf-detail-sticky > .kbf-section-leaderboard .kbf-leaderboard-body{flex:1;min-height:0;overflow-y:auto;}
-    .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"]{
-      padding:14px 10px;
+    /* ===== LEADERBOARD FIX 5: PIN HEAD TO TOP, CENTER EMPTY STATE ===== */
+    .kbf-detail-sticky > .kbf-section-leaderboard{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      height:100%;
     }
     .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"]{
-      padding:14px 10px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:20px 10px;
     }
     .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"] i{
-      font-size:24px;
-      margin-bottom:6px;
+      font-size:28px;
+      margin-bottom:8px;
+      opacity:.3;
+    }
+    .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"] p{
+      margin:2px 0;
     }
 
     /* ===== FIX 9: COMPACT LEADERBOARD ITEM ===== */
@@ -1212,7 +1282,12 @@ function bntm_shortcode_kbf_fund_details() {
                 <?php $pos=0; foreach($leaderboard as $row): $pos++; ?>
                   <div class="kbf-leaderboard-item">
                     <span class="kbf-lb-rank">#<?php echo $pos; ?></span>
-                    <span class="kbf-lb-name"><?php echo esc_html($row->display_name); ?></span>
+                    <span class="kbf-lb-name">
+                      <?php if ($row->is_anonymous): ?>
+                        <i class="ph-fill ph-mask-happy" style="color:#94a3b8;margin-right:4px;font-size:13px;vertical-align:middle;" aria-hidden="true"></i>
+                      <?php endif; ?>
+                      <?php echo esc_html($row->display_name); ?>
+                    </span>
                     <span class="kbf-lb-amount">&#8369;<?php echo number_format((float)$row->total_given, 0); ?></span>
                   </div>
                 <?php endforeach; ?>
@@ -1652,12 +1727,7 @@ function bntm_shortcode_kbf_fund_details() {
         const msg=kbfGetActiveSponsorMsg();
         if(!kbfValidateRequired(form)) return;
         const amountEl = form.querySelector('input[name="amount"]');
-        const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
-        if (maxVal && amt > maxVal) {
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ?' + maxVal.toLocaleString() + ' for this fund.</div>';
-            return;
-        }
         kbfSetBtnLoading(btn,true,'Processing...');
         kbfSetSkeleton(msg,true);
         const fd=new FormData(form);

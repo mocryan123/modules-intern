@@ -119,14 +119,14 @@ function kbf_mark_sponsorship_completed($sponsorship_id, $payment_reference = ''
                 ['id' => $fund->id], ['%s','%s'], ['%d']);
             do_action('kbf_fund_goal_reached', $fund->id);
         }
-        // Update organizer stats
+        // Update organizer stats (exclude anonymous donations)
         $pt = $wpdb->prefix . 'kbf_organizer_profiles';
         $total = $wpdb->get_var($wpdb->prepare(
-            "SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            "SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",
             $fund->business_id
         ));
         $cnt = (int)$wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",
             $fund->business_id
         ));
         $wpdb->update($pt, ['total_raised' => $total, 'total_sponsors' => $cnt],
@@ -218,15 +218,6 @@ function bntm_ajax_kbf_create_checkout() {
 
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'", $fund_id));
     if (!$fund) wp_send_json_error(['message' => 'Fund not found or not accepting sponsorships.']);
-    if ($fund->goal_amount > 0) {
-        $remaining = max(0, floatval($fund->goal_amount) - floatval($fund->raised_amount));
-        if ($remaining <= 0) {
-            wp_send_json_error(['message' => 'This fund has already reached its goal.']);
-        }
-        if ($amount > $remaining) {
-            wp_send_json_error(['message' => 'Maximum allowed sponsorship is &#8369;' . number_format($remaining, 2) . ' for this fund.']);
-        }
-    }
 
     // Save sponsorship
     $rand_id = bntm_rand_id();
@@ -249,9 +240,10 @@ function bntm_ajax_kbf_create_checkout() {
     // Redirect URLs -- Maya sends buyer back after payment
     // Use a stable absolute URL (home_url) to avoid invalid redirectUrl errors in AJAX context.
     $base_return = kbf_get_page_url('dashboard');
-    $success_url = add_query_arg(['kbf_payment' => 'success', 'kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'ref' => $rand_id, 'fund_id' => $fund_id], $base_return);
-    $failure_url = add_query_arg(['kbf_payment' => 'failed',  'kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'fund_id' => $fund_id], $base_return);
-    $cancel_url  = add_query_arg(['kbf_payment' => 'cancelled','kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'fund_id' => $fund_id], $base_return);
+    $fund_token  = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($fund_id) : '';
+    $success_url = add_query_arg(['kbf_payment' => 'success', 'kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'ref' => $rand_id, 'fund_id' => $fund_id, 'fund' => $fund_token], $base_return);
+    $failure_url = add_query_arg(['kbf_payment' => 'failed',  'kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'fund_id' => $fund_id, 'fund' => $fund_token], $base_return);
+    $cancel_url  = add_query_arg(['kbf_payment' => 'cancelled','kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'fund_id' => $fund_id, 'fund' => $fund_token], $base_return);
 
     // Maya amounts are in PHP (not centavos), as decimal strings
     $amount_str = number_format($amount, 2, '.', '');
@@ -466,14 +458,14 @@ function kbf_maya_webhook_handler(WP_REST_Request $request) {
                 ['id' => $fund->id], ['%s','%s'], ['%d']);
             do_action('kbf_fund_goal_reached', $fund->id);
         }
-        // Update organizer stats
+        // Update organizer stats (exclude anonymous donations)
         $pt = $wpdb->prefix . 'kbf_organizer_profiles';
         $total = $wpdb->get_var($wpdb->prepare(
-            "SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            "SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",
             $fund->business_id
         ));
         $cnt = (int)$wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
+            "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",
             $fund->business_id
         ));
         $wpdb->update($pt, ['total_raised' => $total, 'total_sponsors' => $cnt],

@@ -649,15 +649,6 @@ function bntm_ajax_kbf_sponsor_fund() {
     if($amount<50) wp_send_json_error(['message'=>'Minimum sponsorship is &#8369;50.']);
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'",$id));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found or not accepting sponsorships.']);
-    if ($fund->goal_amount > 0) {
-        $remaining = max(0, floatval($fund->goal_amount) - floatval($fund->raised_amount));
-        if ($remaining <= 0) {
-            wp_send_json_error(['message'=>'This fund has already reached its goal.']);
-        }
-        if ($amount > $remaining) {
-            wp_send_json_error(['message'=>'Maximum allowed sponsorship is &#8369;'.number_format($remaining,2).' for this fund.']);
-        }
-    }
     $anon=intval($_POST['is_anonymous']??0);
     $method=sanitize_text_field($_POST['payment_method']??'');
     $email = sanitize_email($_POST['email'] ?? '');
@@ -700,8 +691,8 @@ function bntm_ajax_kbf_sponsor_fund() {
             do_action('kbf_fund_goal_reached', $id);
         }
         $pt=$wpdb->prefix.'kbf_organizer_profiles';
-        $total=$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$fund->business_id));
-        $cnt=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$fund->business_id));
+        $total=$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",$fund->business_id));
+        $cnt=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",$fund->business_id));
         $wpdb->update($pt,['total_raised'=>$total,'total_sponsors'=>$cnt],['business_id'=>$fund->business_id],['%f','%d'],['%d']);
         $msg = $just_completed
             ? 'Sponsorship confirmed! &#8369;'.number_format($amount,2).' added. This fund has now reached its goal!'

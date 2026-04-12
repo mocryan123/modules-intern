@@ -720,12 +720,11 @@ function bntm_shortcode_kbf_browse() {
     window.kbfOpenSponsor=function(id,title,goal,raised,img){
         document.getElementById('sponsor-fund-id').value=id;
         const pct=goal>0?Math.min(100,Math.round((raised/goal)*100)):0;
-        const remaining = goal>0 ? Math.max(0, goal - raised) : 0;
         const limitEl = document.getElementById('kbf-sponsor-limit');
         const amountEl = document.querySelector('#kbf-sponsor-form input[name="amount"]');
-        if (remaining > 0) {
-            if (limitEl) limitEl.textContent = 'Max allowed: ?' + parseFloat(remaining).toLocaleString() + ' (remaining goal)';
-            if (amountEl) amountEl.max = remaining;
+        if (goal > 0) {
+            if (limitEl) limitEl.textContent = 'Goal: ?' + parseFloat(goal).toLocaleString();
+            if (amountEl) amountEl.removeAttribute('max');
         } else {
             if (limitEl) limitEl.textContent = '';
             if (amountEl) amountEl.removeAttribute('max');
@@ -792,12 +791,7 @@ function bntm_shortcode_kbf_browse() {
         const msg=kbfGetActiveSponsorMsg();
         if(!kbfValidateRequired(form)) return;
         const amountEl = form.querySelector('input[name="amount"]');
-        const maxVal = amountEl && amountEl.max ? parseFloat(amountEl.max) : null;
         const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
-        if (maxVal && amt > maxVal) {
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-error">You cannot give more than ?' + maxVal.toLocaleString() + ' for this fund.</div>';
-            return;
-        }
         kbfSetBtnLoading(btn,true,'Processing...');
         kbfSetSkeleton(msg,true);
         const fd=new FormData(form);
