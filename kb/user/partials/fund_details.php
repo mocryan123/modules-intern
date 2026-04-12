@@ -46,7 +46,7 @@ function bntm_shortcode_kbf_fund_details() {
     $st = $wpdb->prefix.'kbf_sponsorships';
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
     $pct      = $fund->goal_amount>0 ? min(100,($fund->raised_amount/$fund->goal_amount)*100) : 0;
-    $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' ORDER BY created_at DESC LIMIT 20",$fund->id));
+    $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND message IS NOT NULL AND message != '' ORDER BY created_at DESC LIMIT 20",$fund->id));
     $sponsor_count = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$fund->id));
     // Leaderboard: group by sponsor name/email, sum total contributed, rank by total DESC
     $leaderboard = $wpdb->get_results($wpdb->prepare(
@@ -158,7 +158,7 @@ function bntm_shortcode_kbf_fund_details() {
     <style>
     .kbf-detail-wrap{max-width:1000px;margin:0 auto;padding-top:30px;}
     .kbf-wrap{
-      padding-top:30px !important;
+      padding:0 !important;
       margin-top:0 !important;
     }
     .kbf-photo-main{
@@ -285,6 +285,11 @@ function bntm_shortcode_kbf_fund_details() {
       box-shadow:none !important;
       border-color:var(--kbf-border) !important;
     }
+    .kbf-detail-right .kbf-card:hover{
+      transform:none !important;
+      box-shadow:none !important;
+      border-color:var(--kbf-border) !important;
+    }
     .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;flex-wrap:wrap;}
   .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
 .kbf-detail-left{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;}
@@ -317,12 +322,18 @@ function bntm_shortcode_kbf_fund_details() {
   .kbf-detail-tab{
       background:none;
       border:none;
-      padding:6px 2px;
+      padding:8px 12px;
       font-size:14px;
-      font-weight:700;
+      font-weight:600;
       color:var(--kbf-slate);
       cursor:pointer;
       position:relative;
+      border-radius:8px 8px 0 0;
+      transition:background .15s ease, color .15s ease;
+  }
+  .kbf-detail-tab:hover{
+      background:#f8fafc;
+      color:var(--kbf-navy);
   }
   .kbf-detail-tab::after{
       content:'';
@@ -336,7 +347,8 @@ function bntm_shortcode_kbf_fund_details() {
       transition:width .2s ease;
   }
   .kbf-detail-tab.is-active{
-      color:var(--kbf-navy);
+      background:#eef4ff;
+      color:var(--kbf-blue);
   }
   .kbf-detail-tab.is-active::after{
       width:100%;
@@ -449,111 +461,33 @@ function bntm_shortcode_kbf_fund_details() {
       flex-shrink:0;
     }
     .kbf-photo-gallery{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
-    .kbf-photo-main{border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;}
-    .kbf-photo-main img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease;transform:translateX(0);}
+    .kbf-photo-main{border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;cursor:pointer;aspect-ratio:4/3;}
+    .kbf-photo-slides{position:relative;width:100%;height:100%;overflow:hidden;}
+    .kbf-photo-slide{position:absolute;inset:0;opacity:0;transition:opacity .45s ease, transform .45s ease;transform:scale(1.03);z-index:1;}
+    .kbf-photo-slide.is-active{opacity:1;transform:scale(1);z-index:2;}
+    .kbf-photo-slide img{width:100%;height:100%;object-fit:cover;display:block;}
     .kbf-photo-nav{
-        position:absolute;
-        top:50%;
-        transform:translateY(-50%);
-        width:36px;
-        height:36px;
-        border-radius:50%;
-        border:0;
-        background:#fff;
-        box-shadow:0 8px 18px rgba(15,23,42,0.18);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        cursor:pointer;
-        z-index:4;
-        opacity:.96;
+        position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:0;
+        background:rgba(255,255,255,.9);box-shadow:0 4px 16px rgba(15,23,42,.15);
+        display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;opacity:.85;transition:opacity .2s, transform .2s;
     }
-    .kbf-photo-nav img{
-        width:14px;
-        height:14px;
-        min-width:14px;
-        min-height:14px;
-        display:block;
-        object-fit:contain;
-        filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);
-    }
+    .kbf-photo-nav:hover{opacity:1;transform:translateY(-50%) scale(1.08);}
+    .kbf-photo-nav i{font-size:18px;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);}
     .kbf-photo-prev{left:12px;}
     .kbf-photo-next{right:12px;}
-    .kbf-photo-count{
-        position:absolute;
-        right:10px;
-        bottom:10px;
-        background:rgba(15,23,42,0.7);
-        color:#fff;
-        font-size:11.5px;
-        font-weight:600;
-        padding:6px 10px;
-        border-radius:999px;
-        z-index:2;
+    .kbf-photo-dots{
+        position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10;padding:6px 10px;
+        background:rgba(15,23,42,.35);border-radius:99px;backdrop-filter:blur(4px);
     }
-    .kbf-photo-main.is-lightbox-open .kbf-photo-count{display:none;}
-    .kbf-photo-main img.is-sliding{transform:translateX(18px);}
-    .kbf-photo-thumbs-wrap{
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:10px;
+    .kbf-photo-dot{
+        width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.45);cursor:pointer;transition:all .25s ease;flex-shrink:0;
     }
-    .kbf-photo-thumbs{
-        display:flex;
-        gap:10px;
-        overflow-x:auto;
-        padding-bottom:4px;
-        justify-content:center;
-        max-width:100%;
+    .kbf-photo-dot.is-active{background:#fff;width:20px;border-radius:4px;}
+    .kbf-photo-dot:hover{background:rgba(255,255,255,.8);}
+    .kbf-photo-progress-bar{
+        position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(15,23,42,.15);z-index:10;border-radius:0 0 16px 16px;overflow:hidden;
     }
-    .kbf-photo-thumbs::-webkit-scrollbar{height:6px;}
-    .kbf-photo-thumbs::-webkit-scrollbar-thumb{background:#dbeafe;border-radius:999px;}
-    .kbf-photo-thumbs::-webkit-scrollbar-track{background:transparent;}
-    .kbf-thumb-nav{
-        width:28px;
-        height:28px;
-        border-radius:50%;
-        border:1px solid var(--kbf-border);
-        background:#fff;
-        color:#1f2a44;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        cursor:pointer;
-        flex-shrink:0;
-        padding:0;
-        line-height:1;
-    }
-    .kbf-thumb-nav:hover{border-color:#cfe0f7;box-shadow:0 6px 14px rgba(15,23,42,0.12);}
-    .kbf-thumb-nav img{width:12px;height:12px;display:block;filter:invert(18%) sepia(19%) saturate(1128%) hue-rotate(182deg) brightness(93%) contrast(92%);}
-    .kbf-photo-thumb{border-radius:12px;overflow:hidden;border:1px solid var(--kbf-border);background:#f8fafc;transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;}
-    .kbf-photo-thumb img{width:100%;height:90px;object-fit:cover;display:block;}
-    .kbf-photo-thumb:hover{
-        transform:translateY(-2px);
-        border-color:#cfe0f7;
-        box-shadow:0 8px 18px rgba(15,23,42,0.12);
-    }
-    .kbf-photo-thumb.is-active{
-        border-color:#60a5fa;
-        box-shadow:0 0 0 2px rgba(96,165,250,0.35),0 8px 18px rgba(15,23,42,0.12);
-    }
-    .kbf-photo-main{cursor:pointer;position:relative;}
-    .kbf-photo-main::after{
-        content:'Click to expand';
-        position:absolute;
-        bottom:10px;
-        left:12px;
-        font-size:11px;
-        font-weight:600;
-        color:#f8fafc;
-        background:rgba(15,23,42,0.45);
-        padding:6px 10px;
-        border-radius:999px;
-        opacity:0;
-        transition:opacity .2s ease;
-    }
-    .kbf-photo-main:hover::after{opacity:1;}
+    .kbf-photo-progress-fill{display:block;height:100%;width:0;background:linear-gradient(90deg,#60a5fa,#3b82f6);border-radius:0 0 16px 16px;transition:none;}
     .kbf-photo-lightbox{
         position:fixed;
         inset:0;
@@ -681,12 +615,12 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-org-verified i{font-size:13px;}
 .kbf-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);margin-bottom:20px;padding-top:30px;}
     .kbf-breadcrumb a{color:var(--kbf-blue);text-decoration:none;font-weight:600;}
-    .kbf-breadcrumb a:hover{text-decoration:underline;}
-    .kbf-more-wrap{position:relative;}
+    .kbf-breadcrumb a:hover{text-decoration:none;}
+    .kbf-more-wrap{position:relative;z-index:50;}
     .kbf-more-menu{
-        position:absolute;
-        right:0;
-        top:calc(100% + 8px);
+        position:fixed;
+        right:auto;
+        top:auto;
         background:rgba(255,255,255,0.98);
         border:1px solid #e2e8f0;
         border-radius:14px;
@@ -695,7 +629,7 @@ function bntm_shortcode_kbf_fund_details() {
           0 4px 10px rgba(15,23,42,.08);
         padding:8px;
         min-width:170px;
-        z-index:20;
+        z-index:99999;
         opacity:0;
         visibility:hidden;
         pointer-events:none;
@@ -708,6 +642,7 @@ function bntm_shortcode_kbf_fund_details() {
         visibility:visible;
         pointer-events:auto;
         transform:translateY(0) scale(1);
+        overflow:visible !important;
     }
     .kbf-more-menu button{
         width:100%;
@@ -722,6 +657,7 @@ function bntm_shortcode_kbf_fund_details() {
         font-weight:600;
         color:#0f172a;
         text-align:left;
+        cursor:pointer;
         transition:background .15s ease, color .15s ease, transform .15s ease;
     }
     .kbf-more-menu .kbf-btn,
@@ -810,6 +746,123 @@ function bntm_shortcode_kbf_fund_details() {
             justify-content:flex-start;
         }
     }
+
+    /* ===== IMPROVEMENTS APPLIED =====
+       Fix 1: Organizer card moved to sidebar
+       Fix 2: Tabs moved above messages
+       Fix 3: Progress bar styling enhanced
+       Fix 4: Sidebar made sticky
+       Fix 5: Empty leaderboard height collapsed
+       Fix 6: Sponsor button label updated
+       Fix 7: Pills refined
+    ===== END ===== */
+
+    /* ===== FIX 3: PROGRESS BAR ENHANCED ===== */
+    .kbf-detail-right .kbf-progress-wrap{
+      height:14px !important;
+      background:#e8f0fe !important;
+      border-radius:999px;
+    }
+    .kbf-detail-right .kbf-progress-bar{
+      height:14px !important;
+      border-radius:999px;
+      background:linear-gradient(90deg, #5ba8f5 0%, #3d8ef0 50%, #2070e0 100%) !important;
+    }
+
+    /* ===== FIX 4: SIDEBAR ===== */
+    .kbf-detail-right{
+      display:flex;
+      flex-direction:column;
+      overflow:visible !important;
+      z-index:10;
+    }
+    .kbf-detail-secondary{
+      position:relative;
+      z-index:1;
+    }
+    .kbf-detail-sticky{overflow:visible !important;}
+    .kbf-detail-right .kbf-card{
+      box-shadow:none !important;
+      overflow:visible !important;
+    }
+    .kbf-detail-right .kbf-card-actions{overflow:visible !important;}
+    .kbf-detail-right .kbf-more-wrap{
+      position:relative;
+      z-index:100;
+    }
+    .kbf-detail-right .kbf-more-wrap.open{
+      z-index:1000;
+    }
+
+    /* ===== FIX 5: COLLAPSE EMPTY LEADERBOARD ===== */
+    .kbf-detail-sticky > .kbf-section-leaderboard{flex:1;display:flex;flex-direction:column;min-height:0;}
+    .kbf-detail-sticky > .kbf-section-leaderboard .kbf-leaderboard-body{flex:1;min-height:0;overflow-y:auto;}
+    .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"]{
+      padding:14px 10px;
+    }
+    .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"]{
+      padding:14px 10px;
+    }
+    .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"] i{
+      font-size:24px;
+      margin-bottom:6px;
+    }
+
+    /* ===== FIX 9: COMPACT LEADERBOARD ITEM ===== */
+    .kbf-leaderboard-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 0;
+      border-bottom:1px solid var(--kbf-border);
+    }
+    .kbf-leaderboard-item:last-child{border-bottom:none;}
+    .kbf-lb-rank{
+      font-size:11px;
+      font-weight:700;
+      color:#92400e;
+      background:#fef3c7;
+      border-radius:4px;
+      padding:2px 6px;
+      min-width:24px;
+      text-align:center;
+      flex-shrink:0;
+      line-height:1.2;
+    }
+    .kbf-lb-name{
+      flex:1;
+      min-width:0;
+      font-size:12.5px;
+      font-weight:500;
+      color:var(--kbf-navy);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .kbf-lb-amount{
+      font-size:12px;
+      font-weight:700;
+      color:var(--kbf-blue);
+      flex-shrink:0;
+    }
+
+    /* ===== FIX 7: PILL STYLING ===== */
+    .kbf-category-pill{
+      background:#eef4ff;
+      color:#1e40af;
+      border:1px solid #c7d8f7;
+      font-weight:700;
+      font-size:10.5px;
+      padding:4px 10px;
+    }
+    .kbf-fundtype-pill{
+      background:#f1f5f9;
+      color:#475569;
+      border:1px solid #e2e8f0;
+      font-weight:600;
+      font-size:10.5px;
+      padding:4px 10px;
+    }
  </style>
     <!-- ================== HTML ================== -->
     <div class="kbf-wrap">
@@ -831,7 +884,8 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ?50" min="50" step="1" max="<?php echo $fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''; ?>" required>
+              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" max="<?php echo $fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''; ?>" required>
+              <div class="kbf-meta" style="margin-top:4px;">Minimum sponsorship: &#8369;50.00</div>
               <?php if($fund->goal_amount>0): ?>
                 <div class="kbf-meta" style="margin-top:4px;">Max allowed: &#8369;<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
               <?php endif; ?>
@@ -908,10 +962,64 @@ function bntm_shortcode_kbf_fund_details() {
       </div>
     </div>
 
+    <!-- Poster Modal -->
+    <div id="kbf-modal-poster" class="kbf-modal-overlay kbf-poster-modal" style="display:none;">
+      <div class="kbf-modal">
+        <div class="kbf-modal-header"><h3>Create Campaign Poster</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-poster')">&times;</button></div>
+        <div class="kbf-modal-body">
+          <div class="kbf-poster-grid">
+            <div class="kbf-poster-left">
+              <div class="kbf-poster-preview" id="kbf-poster-print" style="border:1px solid var(--kbf-border);border-radius:12px;padding:18px;background:#fff;">
+                <div class="kbf-poster-brand">
+                  <div class="kbf-poster-brand-logo">
+                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="Fundora">
+                  </div>
+                  <span class="kbf-poster-brand-name">fundora</span>
+                </div>
+                <?php if(!empty($photos)): ?>
+                  <div class="kbf-poster-cover">
+                    <img src="<?php echo esc_url($photos[0]); ?>" alt="<?php echo esc_attr($fund->title); ?>">
+                  </div>
+                <?php endif; ?>
+                <div class="kbf-poster-title" id="kbf-poster-title"><?php echo esc_html($fund->title); ?></div>
+                <div class="kbf-poster-desc" id="kbf-poster-desc"><?php echo esc_html($poster_desc); ?></div>
+                <div class="kbf-poster-qr">
+                  <div class="kbf-poster-note">Scan to support this campaign</div>
+                  <div class="kbf-poster-qr-canvas" id="kbf-poster-qr"></div>
+                </div>
+              </div>
+            </div>
+            <div class="kbf-poster-right">
+              <div class="kbf-form-group">
+                <label>Campaign Title</label>
+                <input type="text" id="kbf-poster-title-input" value="<?php echo esc_attr($fund->title); ?>" maxlength="40">
+                <div class="kbf-poster-count" id="kbf-poster-title-count"><?php echo strlen($fund->title); ?>/40</div>
+              </div>
+              <div class="kbf-form-group">
+                <label>Description</label>
+                <textarea id="kbf-poster-desc-input" rows="4" maxlength="150"><?php echo esc_html(wp_strip_all_tags($fund->description)); ?></textarea>
+                <div class="kbf-poster-count" id="kbf-poster-desc-count">0/150</div>
+              </div>
+              <div style="font-size:12px;color:var(--kbf-slate);margin-top:8px;line-height:1.5;">
+                Customize your poster text, then export as PDF to share on social media or print.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="kbf-modal-footer">
+          <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-poster')">Cancel</button>
+          <button class="kbf-btn kbf-btn-primary" onclick="kbfExportPoster()">
+            <i class="ph ph-download-simple kbf-icon" style="font-size:14px;color:#fff;" aria-hidden="true"></i>
+            Export PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Breadcrumb -->
     <div class="kbf-breadcrumb">
       <a href="<?php echo esc_url($browse_url); ?>" style="display:inline-flex;align-items:center;gap:6px;">
-        <i class="ph ph-arrow-left kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
+        <i class="ph ph-arrow-left kbf-icon" style="font-size:14px;color:inherit" aria-hidden="true"></i>
         Back to Browse
       </a>
     </div>
@@ -929,20 +1037,29 @@ function bntm_shortcode_kbf_fund_details() {
         <!-- Photo gallery -->
         <?php if(!empty($photos)): ?>
         <div class="kbf-photo-gallery kbf-section-photo">
-          <div class="kbf-photo-main" id="kbf-photo-main" data-photos='<?php echo esc_attr(wp_json_encode(array_values($photos))); ?>'>
-            <img src="<?php echo esc_url($photos[0]); ?>" alt="<?php echo esc_attr($fund->title); ?>">
+          <div class="kbf-photo-main" id="kbf-photo-main" data-photos='<?php echo esc_attr(wp_json_encode(array_values($photos))); ?>' data-current="0">
+            <div class="kbf-photo-slides">
+              <?php foreach($photos as $idx => $ph): ?>
+                <div class="kbf-photo-slide<?php echo $idx===0?' is-active':''; ?>" data-index="<?php echo $idx; ?>">
+                  <img src="<?php echo esc_url($ph); ?>" alt="<?php echo esc_attr($fund->title); ?> photo <?php echo $idx+1; ?>" loading="<?php echo $idx===0?'eager':'lazy'; ?>">
+                </div>
+              <?php endforeach; ?>
+            </div>
             <?php if(count($photos)>1): ?>
-              <button type="button" class="kbf-photo-nav kbf-photo-prev" id="kbf-photo-prev" aria-label="Previous photo">
+              <button type="button" class="kbf-photo-nav kbf-photo-prev" aria-label="Previous photo">
                 <i class="ph ph-caret-left kbf-icon" aria-hidden="true"></i>
               </button>
-              <button type="button" class="kbf-photo-nav kbf-photo-next" id="kbf-photo-next" aria-label="Next photo">
+              <button type="button" class="kbf-photo-nav kbf-photo-next" aria-label="Next photo">
                 <i class="ph ph-caret-right kbf-icon" aria-hidden="true"></i>
               </button>
-              <span class="kbf-photo-count" id="kbf-photo-count">1/<?php echo count($photos); ?></span>
+              <div class="kbf-photo-dots">
+                <?php foreach($photos as $idx => $ph): ?>
+                  <span class="kbf-photo-dot<?php echo $idx===0?' is-active':''; ?>" data-index="<?php echo $idx; ?>" role="button" aria-label="Photo <?php echo $idx+1; ?>"></span>
+                <?php endforeach; ?>
+              </div>
+              <div class="kbf-photo-progress-bar"><span class="kbf-photo-progress-fill"></span></div>
             <?php endif; ?>
           </div>
-          <?php if(false): ?>
-          <?php endif; ?>
         </div>
         <?php else: ?>
         <div class="kbf-photo-gallery kbf-section-photo">
@@ -977,47 +1094,15 @@ function bntm_shortcode_kbf_fund_details() {
               </span>
             <?php endif; ?>
             <?php if(!empty($fund->organizer_name)): ?>
-              <span class="kbf-detail-meta-item">
-                <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
-                <?php echo esc_html($fund->organizer_name); ?>
-              </span>
+              <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--kbf-blue);text-decoration:none;font-weight:600;">
+                <span class="kbf-detail-meta-item">
+                  <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
+                  <?php echo esc_html($fund->organizer_name); ?>
+                </span>
+              </a>
             <?php endif; ?>
           </div>
         </div>
-
-
-           <!-- Organizer card -->
-<?php if($fund->organizer_name): ?>
-<div class="kbf-card kbf-section-organizer" style="margin-bottom:0;">
-  <div class="kbf-account-header-row" style="display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);gap:10px;flex-wrap:nowrap;">
-    <h3 class="kbf-section-title" style="margin:0;">About the Account</h3>
-    <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--kbf-blue);text-decoration:none;font-weight:600;">
-      <i class="ph ph-user kbf-icon" style="font-size:13px; filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%)" aria-hidden="true"></i>
-      <span class="kbf-account-profile-text">View Full Profile</span>
-    </a>
-  </div>
-  <div class="kbf-organizer-row" style="display:flex;gap:12px;align-items:center;">
-    <div class="kbf-org-avatar">
-      <?php if($organizer && !empty($organizer->avatar_url)): ?>
-        <img src="<?php echo esc_url($organizer->avatar_url); ?>" alt="">
-      <?php else: ?>
-        <div style="width:52px;height:52px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;">
-          <i class="ph ph-user kbf-icon" style="font-size:24px; filter:invert(100%)" aria-hidden="true"></i>
-        </div>
-      <?php endif; ?>
-      <?php if($organizer && $organizer->is_verified): ?><span class="kbf-org-verified" aria-hidden="true"><i class="ph-fill ph-seal-check kbf-icon" aria-hidden="true"></i></span><?php endif; ?>
-    </div>
-    <div class="kbf-org-text">
-      <div style="font-weight:600;color:var(--kbf-navy);"><?php echo esc_html($fund->organizer_name); ?></div>
-      <?php if($organizer && $organizer->bio): ?>
-        <p style="font-size:13px;color:var(--kbf-text-sm);margin:4px 0 0;line-height:1.55;">
-          <?php echo esc_html(wp_trim_words(str_replace('\\', '', wp_unslash($organizer->bio)),30)); ?>
-        </p>
-      <?php endif; ?>
-    </div>
-  </div>
-</div>
-<?php endif; ?>
 
 </div> <!-- .kbf-detail-left -->
       <div class="kbf-detail-right">
@@ -1030,24 +1115,20 @@ function bntm_shortcode_kbf_fund_details() {
                   <div class="kbf-leaderboard-sub">Recent supporters</div>
                 </div>
               </div>
-              <span class="kbf-leaderboard-pill">Listed</span>
             </div>
             <?php if(!empty($leaderboard)): ?>
               <div class="kbf-leaderboard-body" data-kbf-leaderboard-list>
                 <?php $pos=0; foreach($leaderboard as $row): $pos++; ?>
-                  <div class="kbf-leaderboard-item" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--kbf-border);">
-                    <div style="width:28px;height:28px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:800;color:#fff;"><?php echo $pos; ?></div>
-                    <div style="flex:1;min-width:0;">
-                      <div style="font-weight:600;font-size:13px;color:var(--kbf-navy);"><?php echo esc_html($row->display_name); ?></div>
-                      <div style="font-size:11.5px;color:var(--kbf-slate);">Last support: <?php echo date('M d, Y g:ia', strtotime($row->last_donated)); ?></div>
-                    </div>
-                    <div style="font-weight:700;color:var(--kbf-blue);font-size:13px;">&#8369;<?php echo number_format((float)$row->total_given, 0); ?></div>
+                  <div class="kbf-leaderboard-item">
+                    <span class="kbf-lb-rank">#<?php echo $pos; ?></span>
+                    <span class="kbf-lb-name"><?php echo esc_html($row->display_name); ?></span>
+                    <span class="kbf-lb-amount">&#8369;<?php echo number_format((float)$row->total_given, 0); ?></span>
                   </div>
                 <?php endforeach; ?>
               </div>
               <div class="kbf-table-pager kbf-table-pager-inline" data-kbf-leaderboard-pager></div>
             <?php else: ?>
-              <div style="text-align:center;padding:20px 10px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <div style="text-align:center;padding:16px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                 <i class="ph-fill ph-heart kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No sponsors yet</p>
                 <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to support!</p>
@@ -1076,12 +1157,11 @@ function bntm_shortcode_kbf_fund_details() {
               </div>
             </div>
             <div style="margin-top:14px;">
-              <button class="kbf-btn kbf-btn-primary" style="width:100%;" onclick="kbfShowModal('kbf-modal-sponsor')">
+              <button class="kbf-btn kbf-btn-primary" style="width:100%;font-weight:600;" onclick="kbfShowModal('kbf-modal-sponsor')">
                 <i class="ph-fill ph-heart kbf-icon" style="font-size:16px;color:#ffffff;" aria-hidden="true"></i>
-                <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Fund'; ?>
+                <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Campaign'; ?>
               </button>
-              <div style="font-size:11.5px;color:var(--kbf-slate);margin:8px 0 10px;">Sponsors get a receipt instantly after checkout.</div>
-              <div class="kbf-card-actions" style="display:flex;gap:10px;">
+              <div class="kbf-card-actions" style="display:flex;gap:10px;margin-top:10px;">
                 <button class="kbf-btn kbf-btn-secondary kbf-save-btn" type="button" data-fund-id="<?php echo (int)$fund->id; ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" data-save-label="Save Fund" onclick="kbfSaveFund('<?php echo (int)$fund->id; ?>', this)">
                   <i class="<?php echo $is_saved ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple'; ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
                   <span class="kbf-save-label"><?php echo $is_saved ? 'Saved' : 'Save Fund'; ?></span>
@@ -1092,63 +1172,29 @@ function bntm_shortcode_kbf_fund_details() {
                     More
                   </button>
                   <div class="kbf-more-menu" id="kbf-more-menu">
-                    <button type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('<?php echo esc_js($share_url); ?>');">Share</button>
-                    <button type="button" onclick="kbfShowModal('kbf-modal-poster')">Create Poster</button>
+                    <button type="button" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">Share</button>
+                    <button type="button" onclick="kbfCreatePoster('<?php echo esc_js($org_token ?: $fund->business_id); ?>','<?php echo esc_js($fund->title); ?>')">Create Poster</button>
                       <button type="button" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.style.display='flex';m.classList.add('is-open');}">Report Abuse</button>
                     <button type="button" onclick="kbfShowModal('kbf-modal-rating')">Credibility Score</button>
                   </div>
                 </div>
+              </div>
+              <div style="font-size:11.5px;color:var(--kbf-slate);margin-top:10px;display:flex;align-items:center;gap:5px;justify-content:center;">
+                <i class="ph ph-check-circle kbf-icon" style="font-size:13px;color:#22c55e;" aria-hidden="true"></i>
+                Sponsors get a receipt instantly after checkout.
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  <div class="kbf-detail-secondary"><!-- Message (full width) -->
-    <div class="kbf-card kbf-section-message" style="padding:18px;margin-top:18px;">
-      <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
-        Message <span style="background:var(--kbf-green-lt);color:var(--kbf-blue);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;">
-          <?php echo $sponsor_count; ?>
-        </span>
-      </h3>
-      <?php if(!empty($sponsors)): ?>
-      <div class="kbf-sponsor-wall">
-        <?php foreach($sponsors as $sp):
-          $initials = $sp->is_anonymous ? '?' : strtoupper(substr(isset($sp->sponsor_name) ? $sp->sponsor_name : 'A',0,1));
-        ?>
-        <div class="kbf-sponsor-item">
-          <div class="kbf-sponsor-avatar">
-            <?php if($sp->is_anonymous || empty($sp->sponsor_name)): ?>
-              <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
-            <?php else: ?>
-              <?php echo $initials; ?>
-            <?php endif; ?>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:500;font-size:13.5px;color:var(--kbf-text);">
-              <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?>
-              <span style="color:var(--kbf-slate);font-weight:400;"> • <?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
-            </div>
-            <?php if($sp->message): ?><div class="kbf-sponsor-msg">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
-          </div>
-        </div>
-        <?php endforeach; ?>
-      </div>
-      <?php else: ?>
-      <div style="text-align:center;padding:24px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-        <i class="ph ph-chat kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-        <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No messages yet</p>
-        <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to leave a message.</p>
-      </div>
-      <?php endif; ?>
-    </div>
-
+  <div class="kbf-detail-secondary">
     <!-- Tabs (full width) -->
     <div class="kbf-detail-tabs" style="margin-top:18px;">
       <div class="kbf-detail-tab-list" role="tablist" aria-label="Fund details tabs">
         <button class="kbf-detail-tab is-active" type="button" data-kbf-tab="desc" role="tab" aria-selected="true">Description</button>
         <button class="kbf-detail-tab" type="button" data-kbf-tab="milestones" role="tab" aria-selected="false">Stories</button>
-        <button class="kbf-detail-tab" type="button" data-kbf-tab="benefits" role="tab" aria-selected="false">Benefits</button>
+        <button class="kbf-detail-tab" type="button" data-kbf-tab="benefits" role="tab" aria-selected="false">Rewards</button>
       </div>
       <div class="kbf-detail-tab-panels">
         <div class="kbf-detail-tab-panel is-active" data-kbf-panel="desc" role="tabpanel">
@@ -1197,13 +1243,17 @@ function bntm_shortcode_kbf_fund_details() {
                 <?php endforeach; ?>
               </div>
             <?php else: ?>
-              <div style="font-size:13px;color:var(--kbf-slate);">No updates yet.</div>
+              <div style="text-align:center;padding:24px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <i class="ph ph-article kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
+                <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No updates yet</p>
+                <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">The organizer hasn't posted any stories yet.</p>
+              </div>
             <?php endif; ?>
           </div>
         </div>
         <div class="kbf-detail-tab-panel" data-kbf-panel="benefits" role="tabpanel">
-          <div class="kbf-card kbf-section-description" style="padding:18px;">
-            <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">Benefits</h3>
+          <div class="kbf-card kbf-section-rewards" style="padding:18px;">
+            <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">Rewards</h3>
             <?php if(!empty($benefits)): ?>
               <ul class="kbf-benefits-view">
                 <?php foreach($benefits as $b):
@@ -1219,11 +1269,55 @@ function bntm_shortcode_kbf_fund_details() {
                 <?php endforeach; ?>
               </ul>
             <?php else: ?>
-              <div style="font-size:13px;color:var(--kbf-slate);">No benefits added yet.</div>
+              <div style="text-align:center;padding:24px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <i class="ph ph-star kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
+                <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No rewards yet</p>
+                <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">The organizer hasn't added any sponsor rewards.</p>
+              </div>
             <?php endif; ?>
           </div>
         </div>
       </div>
+    </div>
+    <!-- Message (full width) -->
+    <div class="kbf-card kbf-section-message" style="padding:18px;margin-top:18px;">
+      <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">
+        Message <span style="background:var(--kbf-green-lt);color:var(--kbf-blue);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:6px;">
+          <?php echo $sponsor_count; ?>
+        </span>
+      </h3>
+      <?php if(!empty($sponsors)): ?>
+      <div class="kbf-sponsor-wall">
+        <?php foreach($sponsors as $sp):
+          $initials = $sp->is_anonymous ? '?' : strtoupper(substr(isset($sp->sponsor_name) ? $sp->sponsor_name : 'A',0,1));
+        ?>
+        <div class="kbf-sponsor-item">
+          <div class="kbf-sponsor-avatar">
+            <?php if($sp->is_anonymous || empty($sp->sponsor_name)): ?>
+              <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
+            <?php else: ?>
+              <?php echo $initials; ?>
+            <?php endif; ?>
+          </div>
+          <div style="flex:1;min-width:0;padding-left:4px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-weight:600;font-size:13.5px;color:var(--kbf-navy);">
+                <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?>
+              </span>
+              <span style="font-size:12px;color:var(--kbf-slate);"><?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
+            </div>
+            <?php if($sp->message): ?><div class="kbf-sponsor-msg" style="margin-top:6px;">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
+          </div>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <?php else: ?>
+      <div style="text-align:center;padding:24px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <i class="ph ph-chat kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
+        <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No messages yet</p>
+        <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to leave a message.</p>
+      </div>
+      <?php endif; ?>
     </div>
 </div><!-- .kbf-detail-secondary -->
 </div><!-- .kbf-wrap -->
@@ -1259,183 +1353,129 @@ function bntm_shortcode_kbf_fund_details() {
                 });
             }
         }
+        /* ===== PHOTO SLIDER ===== */
         var mainWrap = document.getElementById('kbf-photo-main');
-        var mainImg = mainWrap ? mainWrap.querySelector('img') : null;
         var lightbox = document.getElementById('kbf-photo-lightbox');
         var lightImg = document.getElementById('kbf-photo-lightbox-img');
-        var closeBtn = document.getElementById('kbf-photo-lightbox-close');
-        var prevBtn = document.getElementById('kbf-photo-lightbox-prev');
-        var nextBtn = document.getElementById('kbf-photo-lightbox-next');
-        var mainPrev = document.getElementById('kbf-photo-prev');
-        var mainNext = document.getElementById('kbf-photo-next');
-        var countEl = document.getElementById('kbf-photo-count');
-        var thumbsWrap = document.getElementById('kbf-photo-thumbs');
-        var thumbPrev = document.getElementById('kbf-thumb-prev');
-        var thumbNext = document.getElementById('kbf-thumb-next');
-        if (!mainWrap || !mainImg || !lightbox || !lightImg) return;
+        if (!mainWrap || !lightbox || !lightImg) return;
 
-        var thumbs = Array.prototype.slice.call(document.querySelectorAll('.kbf-photo-thumb img'));
-        var sources = [];
-        var dataPhotos = [];
-        if (mainWrap && mainWrap.dataset && mainWrap.dataset.photos) {
-            try {
-                var parsed = JSON.parse(mainWrap.dataset.photos);
-                if (Array.isArray(parsed)) dataPhotos = parsed;
-            } catch (e) {}
-        }
+        var slides = Array.prototype.slice.call(mainWrap.querySelectorAll('.kbf-photo-slide'));
+        var dots = Array.prototype.slice.call(mainWrap.querySelectorAll('.kbf-photo-dot'));
+        var prevBtn = mainWrap.querySelector('.kbf-photo-prev');
+        var nextBtn = mainWrap.querySelector('.kbf-photo-next');
+        var progressFill = mainWrap.querySelector('.kbf-photo-progress-fill');
+        var total = slides.length;
         var currentIndex = 0;
-
-        function pushSrc(src){
-            if (!src) return;
-            if (sources.indexOf(src) === -1) sources.push(src);
-        }
-
-        function rebuildSources(){
-            sources = [];
-            thumbs.forEach(function(img){
-                pushSrc(img.getAttribute('data-full') || img.getAttribute('src'));
-            });
-            if (!sources.length && dataPhotos.length) {
-                dataPhotos.forEach(function(src){ pushSrc(src); });
-            }
-            if (!sources.length) pushSrc(mainImg.getAttribute('src'));
-        }
-
-        function updateActiveThumb(){
-            var activeSrc = mainImg.getAttribute('src');
-            var activeBox = null;
-            thumbs.forEach(function(img){
-                var box = img.closest('.kbf-photo-thumb');
-                if (!box) return;
-                var src = img.getAttribute('data-full') || img.getAttribute('src');
-                if (src === activeSrc) {
-                    box.classList.add('is-active');
-                    activeBox = box;
-                } else {
-                    box.classList.remove('is-active');
-                }
-            });
-            if (activeBox && thumbsWrap && activeBox.scrollIntoView) {
-                activeBox.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
-            }
-            if(countEl){
-                countEl.textContent = (currentIndex + 1) + '/' + sources.length;
-            }
-        }
-
-        function setIndexBySrc(src){
-            var i = sources.indexOf(src);
-            currentIndex = i > -1 ? i : 0;
-            updateActiveThumb();
-        }
-
-        function swapMainImage(src){
-            if (!src) return;
-            mainImg.classList.add('is-sliding');
-            var onLoad = function(){
-                requestAnimationFrame(function(){
-                    mainImg.classList.remove('is-sliding');
-                });
-                mainImg.removeEventListener('load', onLoad);
-            };
-            mainImg.addEventListener('load', onLoad);
-            mainImg.src = src;
-        }
-
-        function syncMainByIndex(idx){
-            if (!sources.length) return;
-            currentIndex = (idx + sources.length) % sources.length;
-            swapMainImage(sources[currentIndex]);
-            updateActiveThumb();
-        }
-
-        rebuildSources();
-        setIndexBySrc(mainImg.getAttribute('src'));
-        updateActiveThumb();
-
-        thumbs.forEach(function(img){
-            img.addEventListener('click', function(){
-                var src = img.getAttribute('data-full') || img.getAttribute('src');
-                if (src) {
-                    swapMainImage(src);
-                    setIndexBySrc(src);
-                }
-            });
-        });
-        if (thumbPrev) thumbPrev.addEventListener('click', goPrev);
-        if (thumbNext) thumbNext.addEventListener('click', goNext);
-        if (mainPrev) mainPrev.addEventListener('click', function(e){ e.stopPropagation(); goPrev(); });
-        if (mainNext) mainNext.addEventListener('click', function(e){ e.stopPropagation(); goNext(); });
-
         var autoTimer = null;
         var autoPaused = false;
+        var isTransitioning = false;
+        var touchStartX = 0;
+        var touchEndX = 0;
+
+        function goTo(index, animate){
+            if(isTransitioning || index === currentIndex || !slides.length) return;
+            isTransitioning = true;
+            slides[currentIndex].classList.remove('is-active');
+            if(dots[currentIndex]) dots[currentIndex].classList.remove('is-active');
+            currentIndex = (index + total) % total;
+            slides[currentIndex].classList.add('is-active');
+            if(dots[currentIndex]) dots[currentIndex].classList.add('is-active');
+            if(lightImg) lightImg.src = slides[currentIndex].querySelector('img').src;
+            mainWrap.setAttribute('data-current', currentIndex);
+            resetAuto();
+            setTimeout(function(){ isTransitioning = false; }, animate !== false ? 500 : 0);
+        }
+
+        function goNext(){ goTo(currentIndex + 1); }
+        function goPrev(){ goTo(currentIndex - 1); }
+
+        function scheduleAuto(){
+            if(total < 2 || autoPaused || !progressFill) return;
+            clearAutoTimer();
+            progressFill.style.transition = 'none';
+            progressFill.style.width = '0%';
+            var delay = 5000;
+            requestAnimationFrame(function(){
+                requestAnimationFrame(function(){
+                    progressFill.style.transition = 'width ' + delay + 'ms linear';
+                    progressFill.style.width = '100%';
+                });
+            });
+            autoTimer = setTimeout(function(){
+                if(autoPaused) return;
+                goNext();
+            }, delay);
+        }
         function clearAutoTimer(){
-            if (!autoTimer) return;
+            if(!autoTimer) return;
             clearTimeout(autoTimer);
             autoTimer = null;
         }
-        function scheduleAuto(){
-            if (sources.length < 2 || autoPaused) return;
-            clearAutoTimer();
-            autoTimer = setTimeout(function(){
-                if (autoPaused) return;
-                goNext();
-                scheduleAuto();
-            }, 5000);
-        }
+        function resetAuto(){ clearAutoTimer(); scheduleAuto(); }
         function pauseAuto(){
             autoPaused = true;
             clearAutoTimer();
+            if(progressFill){
+                var computed = window.getComputedStyle(progressFill);
+                var currentWidth = computed.width;
+                progressFill.style.transition = 'none';
+                progressFill.style.width = currentWidth;
+            }
+            mainWrap.classList.add('is-paused');
         }
         function resumeAuto(){
-            if (lightbox && lightbox.classList.contains('open')) return;
+            if(lightbox.classList.contains('open')) return;
             autoPaused = false;
-            scheduleAuto();
-        }
-        function resetAuto(){
-            if (autoPaused) return;
+            mainWrap.classList.remove('is-paused');
             scheduleAuto();
         }
 
-        function openLightbox(){
-            rebuildSources();
-            var src = mainImg.getAttribute('src');
-            if (!src) return;
-            setIndexBySrc(src);
-            lightImg.src = src;
+        // Events
+        if(prevBtn) prevBtn.addEventListener('click', function(e){ e.stopPropagation(); goPrev(); });
+        if(nextBtn) nextBtn.addEventListener('click', function(e){ e.stopPropagation(); goNext(); });
+        dots.forEach(function(dot){
+            dot.addEventListener('click', function(e){
+                e.stopPropagation();
+                goTo(parseInt(dot.getAttribute('data-index'), 10), false);
+            });
+        });
+        // Click on main image opens lightbox
+        mainWrap.addEventListener('click', function(e){
+            if(e.target.closest('.kbf-photo-nav') || e.target.closest('.kbf-photo-dot')) return;
+            lightImg.src = slides[currentIndex].querySelector('img').src;
             lightbox.classList.add('open');
             lightbox.setAttribute('aria-hidden','false');
-            if (mainWrap) mainWrap.classList.add('is-lightbox-open');
             pauseAuto();
-        }
+        });
+        mainWrap.addEventListener('mouseenter', pauseAuto);
+        mainWrap.addEventListener('mouseleave', resumeAuto);
+
+        // Touch/swipe
+        mainWrap.addEventListener('touchstart', function(e){ touchStartX = e.changedTouches[0].screenX; }, {passive:true});
+        mainWrap.addEventListener('touchend', function(e){
+            touchEndX = e.changedTouches[0].screenX;
+            var diff = touchStartX - touchEndX;
+            if(Math.abs(diff) > 50){ diff > 0 ? goNext() : goPrev(); }
+        }, {passive:true});
+
+        // Lightbox controls
+        var lbClose = document.getElementById('kbf-photo-lightbox-close');
+        var lbPrev = document.getElementById('kbf-photo-lightbox-prev');
+        var lbNext = document.getElementById('kbf-photo-lightbox-next');
         function closeLightbox(){
             lightbox.classList.remove('open');
             lightbox.setAttribute('aria-hidden','true');
-            if (mainWrap) mainWrap.classList.remove('is-lightbox-open');
             resumeAuto();
         }
-        function goNext(){
-            syncMainByIndex(currentIndex + 1);
-            lightImg.src = mainImg.getAttribute('src');
-        }
-        function goPrev(){
-            syncMainByIndex(currentIndex - 1);
-            lightImg.src = mainImg.getAttribute('src');
-        }
-        mainWrap.addEventListener('click', openLightbox);
-        mainWrap.addEventListener('mouseenter', function(){ pauseAuto(); });
-        mainWrap.addEventListener('mouseleave', function(){ resumeAuto(); });
-        if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
-        if (prevBtn) prevBtn.addEventListener('click', function(){ goPrev(); resetAuto(); });
-        if (nextBtn) nextBtn.addEventListener('click', function(){ goNext(); resetAuto(); });
-        lightbox.addEventListener('click', function(e){
-            if (e.target === lightbox) closeLightbox();
-        });
+        if(lbClose) lbClose.addEventListener('click', closeLightbox);
+        if(lbPrev) lbPrev.addEventListener('click', function(e){ e.stopPropagation(); goPrev(); lightImg.src = slides[currentIndex].querySelector('img').src; });
+        if(lbNext) lbNext.addEventListener('click', function(e){ e.stopPropagation(); goNext(); lightImg.src = slides[currentIndex].querySelector('img').src; });
+        lightbox.addEventListener('click', function(e){ if(e.target === lightbox) closeLightbox(); });
         document.addEventListener('keydown', function(e){
-            if (e.key === 'Escape') closeLightbox();
-            if (!lightbox.classList.contains('open')) return;
-            if (e.key === 'ArrowRight') { goNext(); }
-            if (e.key === 'ArrowLeft') { goPrev(); }
+            if(!lightbox.classList.contains('open')) return;
+            if(e.key === 'Escape') closeLightbox();
+            if(e.key === 'ArrowRight') { goNext(); if(lightImg) lightImg.src = slides[currentIndex].querySelector('img').src; }
+            if(e.key === 'ArrowLeft') { goPrev(); if(lightImg) lightImg.src = slides[currentIndex].querySelector('img').src; }
         });
 
         scheduleAuto();
@@ -1712,14 +1752,37 @@ function bntm_shortcode_kbf_fund_details() {
         });
     };
     window.kbfToggleMoreMenu=function(e){
-        if(e) e.stopPropagation();
+        if(e){ e.stopPropagation(); }
         var menu = document.getElementById('kbf-more-menu');
         if(!menu) return;
+        var wrap = menu.closest('.kbf-more-wrap');
+        var isOpen = menu.classList.contains('open');
+        if(!isOpen){
+            var rect = wrap.getBoundingClientRect();
+            menu.style.left = (rect.left + rect.width - 180) + 'px';
+            menu.style.top = (rect.bottom + 8) + 'px';
+            menu.style.right = 'auto';
+            menu.style.width = '180px';
+        } else {
+            menu.style.left = '';
+            menu.style.top = '';
+            menu.style.right = '';
+            menu.style.width = '';
+        }
         menu.classList.toggle('open');
+        if(wrap) wrap.classList.toggle('open', !isOpen);
     };
-    document.addEventListener('click', function(){
+    document.addEventListener('click', function(e){
         var menu = document.getElementById('kbf-more-menu');
-        if(menu) menu.classList.remove('open');
+        if(!menu || !menu.classList.contains('open')) return;
+        var wrap = menu.closest('.kbf-more-wrap');
+        if(wrap && wrap.contains(e.target)) return;
+        menu.classList.remove('open');
+        menu.style.left = '';
+        menu.style.top = '';
+        menu.style.right = '';
+        menu.style.width = '';
+        if(wrap) wrap.classList.remove('open');
     });
     var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
     var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
@@ -1788,7 +1851,7 @@ function bntm_shortcode_kbf_fund_details() {
             pageLabel.textContent = page + ' / ' + pages;
             prevBtn.disabled = page <= 1;
             nextBtn.disabled = page >= pages;
-            pager.style.display = total > perPage ? 'flex' : 'flex';
+            pager.style.display = total > perPage ? 'flex' : 'none';
         }
         select.addEventListener('change', function(){
             perPage = parseInt(this.value, 10) || 5;

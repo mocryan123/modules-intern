@@ -98,7 +98,7 @@ function bntm_shortcode_kbf_organizer_profile() {
       <style>
         .kbf-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);margin-bottom:20px;}
         .kbf-breadcrumb a{color:var(--kbf-blue);text-decoration:none;font-weight:600;}
-        .kbf-breadcrumb a:hover{text-decoration:underline;}
+        .kbf-breadcrumb a:hover{text-decoration:none;}
         .kbf-card-title{
           font-size:15px;
           font-weight:600;
@@ -326,7 +326,7 @@ function bntm_shortcode_kbf_organizer_profile() {
       <!-- Breadcrumb -->
       <div class="kbf-breadcrumb">
         <a href="<?php echo esc_url($back_url); ?>" style="display:inline-flex;align-items:center;gap:6px;">
-          <i class="ph ph-arrow-left kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
+          <i class="ph ph-arrow-left kbf-icon" style="font-size:14px;color:inherit" aria-hidden="true"></i>
           <?php echo esc_html($back_label); ?>
         </a>
       </div>
