@@ -61,6 +61,10 @@ function kbf_dashboard_find_funds_tab() {
         $saved_ids = $wpdb->get_col($wpdb->prepare("SELECT fund_id FROM {$sf} WHERE user_id=%d", $current_user_id));
         $saved_ids = array_map('intval', $saved_ids);
     }
+    $active_filters = 0;
+    if ($cat) $active_filters++;
+    if ($sort && $sort !== 'newest') $active_filters++;
+    if ($saved_only) $active_filters++;
 
     ob_start();
     ?>
@@ -457,6 +461,119 @@ function kbf_dashboard_find_funds_tab() {
         color:#1f2a44;
       }
       .kbf-explore-pager .kbf-page-gap{padding:0 2px;color:#94a3b8;font-weight:600;}
+      /* ===== MOBILE FILTER ===== */
+      .kbff-filter-btn{
+        display:none;
+        height:38px;
+        border:1.5px solid var(--kbf-border);
+        gap:8px;
+        align-items:center;
+      }
+      .kbff-filter-btn.has-filters{
+        border-color:var(--kbf-accent);
+        background:var(--kbf-accent-lt);
+      }
+      .kbff-filter-badge{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-width:18px;
+        height:18px;
+        padding:0 6px;
+        border-radius:999px;
+        background:var(--kbf-accent);
+        color:#fff;
+        font-size:11px;
+        font-weight:700;
+        margin-left:2px;
+      }
+      .kbff-filter-badge.is-hidden{display:none;}
+      #kbff-sheet-overlay{
+        position:fixed;
+        inset:0;
+        background:rgba(10,16,32,0.45);
+        backdrop-filter:blur(2px);
+        z-index:9998;
+        display:none;
+      }
+      #kbff-sheet-overlay.open{display:block;}
+      #kbff-sheet{
+        position:fixed;
+        left:0;
+        right:0;
+        bottom:0;
+        background:#fff;
+        z-index:9999;
+        transform:translateY(100%);
+        transition:transform 0.3s cubic-bezier(.4,0,.2,1);
+        max-height:80vh;
+        overflow-y:auto;
+        padding:0 0 32px;
+        box-shadow:var(--kbf-shadow-lg);
+      }
+      #kbff-sheet.open{transform:translateY(0);}
+      .kbff-sheet-handle{
+        width:44px;
+        height:5px;
+        border-radius:999px;
+        background:#e2e8f0;
+        margin:10px auto 6px;
+      }
+      .kbff-sheet-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:8px 20px 6px;
+      }
+      .kbff-sheet-body{
+        padding:0 20px 12px;
+        display:grid;
+        gap:12px;
+      }
+        .kbff-sheet-apply{
+          height:44px;
+          border-radius:12px;
+          background:linear-gradient(135deg,#5ba8f5,#3d8ef0,#2070e0);
+          box-shadow:0 4px 14px rgba(42,120,220,0.28);
+        }
+        .kbff-sheet-clear{ }
+        .kbff-sheet-actions{
+          display:flex;
+          gap:10px;
+          padding:8px 20px 0;
+        }
+        .kbff-sheet-actions .kbff-sheet-apply,
+        .kbff-sheet-actions .kbff-sheet-clear{
+          flex:1;
+          width:auto;
+          margin:0;
+        }
+        .kbf-user-ui #kbff-sheet .kbf-btn-primary::before{
+          display:none;
+          content:none;
+        }
+        .kbf-user-ui .kbff-sheet-body [data-kbff-group]{
+          background:#fff !important;
+          color:var(--kbf-text) !important;
+          border-color:var(--kbf-border) !important;
+          box-shadow:none !important;
+          border-radius:12px !important;
+          font-weight:600;
+          text-align:left;
+          justify-content:flex-start;
+          transition:none !important;
+        }
+        .kbf-user-ui .kbff-sheet-body [data-kbff-group].is-active{
+          border-color:#60a5fa !important;
+          background:#eff6ff !important;
+          color:#0f172a !important;
+        }
+      @media (max-width: 720px){
+        #kbff-cat-select-wrap,
+        #kbff-sort-select-wrap,
+        #kbff-saved-select-wrap{ display:none !important; }
+        .kbff-filter-btn{ display:inline-flex; }
+      }
     </style>
 
     <!-- ================== HTML ================== -->
@@ -543,6 +660,13 @@ function kbf_dashboard_find_funds_tab() {
           <?php if($sort && $sort!=='newest'): ?><input type="hidden" name="ff_sort" value="<?php echo esc_attr($sort); ?>"><?php endif; ?>
           <?php if($saved_only): ?><input type="hidden" name="ff_saved" value="<?php echo esc_attr($saved_only); ?>"><?php endif; ?>
 
+          <button type="button" id="kbff-filter-btn" class="kbf-btn kbf-btn-secondary kbff-filter-btn <?php echo $active_filters ? 'has-filters' : ''; ?>" onclick="kbffOpenSheet()">
+            <i class="ph ph-sliders kbf-icon" style="font-size:14px" aria-hidden="true"></i>
+            Filters
+            <span class="kbff-filter-badge <?php echo $active_filters ? '' : 'is-hidden'; ?>" id="kbff-filter-badge"><?php echo (int)$active_filters; ?></span>
+          </button>
+
+          <div id="kbff-cat-select-wrap">
           <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:140px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <i class="ph ph-tag kbf-icon" style="font-size:14px" aria-hidden="true"></i>
@@ -554,6 +678,8 @@ function kbf_dashboard_find_funds_tab() {
               <?php endforeach; ?>
             </select>
           </div>
+          </div>
+          <div id="kbff-sort-select-wrap">
           <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:130px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <i class="ph ph-funnel kbf-icon" style="font-size:14px" aria-hidden="true"></i>
@@ -564,7 +690,9 @@ function kbf_dashboard_find_funds_tab() {
               <option value="ending_soon" <?php echo $sort==='ending_soon'?'selected':''; ?>>Ending Soon</option>
             </select>
           </div>
+          </div>
 
+          <div id="kbff-saved-select-wrap">
           <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:130px;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <i class="ph-fill ph-bookmark-simple kbf-icon" style="font-size:14px" aria-hidden="true"></i>
@@ -573,6 +701,7 @@ function kbf_dashboard_find_funds_tab() {
               <option value="">All Funds</option>
               <option value="1" <?php echo $saved_only ? 'selected' : ''; ?>>Saved</option>
             </select>
+          </div>
           </div>
 
           <input type="text" name="ff_q" id="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer..." style="flex:1 1 220px;min-width:200px;height:38px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
@@ -587,6 +716,83 @@ function kbf_dashboard_find_funds_tab() {
       </div>
       <div class="kbf-cta-note" id="kbf-explore-tip" style="font-size:12.5px;color:var(--kbf-slate);margin-top:10px;">
         <span class="kbf-strong">Tip:</span> Funds with regular updates raise up to 3x more.
+      </div>
+    </div>
+    <!-- ===== MOBILE FILTER SHEET ===== -->
+    <div id="kbff-sheet-overlay" onclick="kbffCloseSheet()"></div>
+    <div id="kbff-sheet" data-kbff-cat="<?php echo esc_attr($cat); ?>" data-kbff-sort="<?php echo esc_attr($sort ? $sort : 'newest'); ?>" data-kbff-saved="<?php echo esc_attr($saved_only); ?>">
+      <div class="kbff-sheet-handle"></div>
+      <div class="kbff-sheet-header">
+        <h3 class="kbf-section-title" style="margin:0;">Filter Campaigns</h3>
+        <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbffCloseSheet()">&times;</button>
+      </div>
+      <div class="kbff-sheet-body">
+          <div class="kbf-form-group">
+            <label>Category</label>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+              <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo $cat ? '' : 'is-active'; ?>" data-kbff-group="cat" data-kbff-value="" style="justify-content:flex-start;text-align:left;">
+                <i class="ph ph-app-window kbf-icon" aria-hidden="true"></i>
+                All
+              </button>
+              <?php foreach($cats as $c):
+                $active = $cat===$c;
+                $cat_icon_map = [
+                  'Community' => 'ph ph-users',
+                  'Sports' => 'ph ph-tennis-ball',
+                  'Family' => 'ph ph-house',
+                  'Medical' => 'ph ph-heartbeat',
+                  'Education' => 'ph ph-graduation-cap',
+                  'Emergency' => 'ph ph-siren',
+                  'Business' => 'ph ph-briefcase',
+                  'Religion' => 'ph ph-cross',
+                  'Arts & Culture' => 'ph ph-palette',
+                  'Environment' => 'ph ph-leaf',
+                  'Animals' => 'ph ph-paw-print',
+                  'Others' => 'ph ph-dots-three'
+                ];
+                $cat_icon = isset($cat_icon_map[$c]) ? $cat_icon_map[$c] : 'ph ph-tag';
+              ?>
+                <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo $active ? 'is-active' : ''; ?>" data-kbff-group="cat" data-kbff-value="<?php echo esc_attr($c); ?>" style="justify-content:flex-start;text-align:left;">
+                  <i class="<?php echo esc_attr($cat_icon); ?> kbf-icon" aria-hidden="true"></i>
+                  <?php echo esc_html($c); ?>
+                </button>
+              <?php endforeach; ?>
+            </div>
+          </div>
+          <div class="kbf-form-group">
+            <label>Sort By</label>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+              <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo ($sort==='newest'||!$sort)?'is-active':''; ?>" data-kbff-group="sort" data-kbff-value="newest">
+                <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
+                Newest
+              </button>
+              <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo $sort==='most_funded'?'is-active':''; ?>" data-kbff-group="sort" data-kbff-value="most_funded">
+                <i class="ph ph-chart-line-up kbf-icon" aria-hidden="true"></i>
+                Most Funded
+              </button>
+              <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo $sort==='ending_soon'?'is-active':''; ?>" data-kbff-group="sort" data-kbff-value="ending_soon">
+                <i class="ph ph-timer kbf-icon" aria-hidden="true"></i>
+                Ending Soon
+              </button>
+          </div>
+          </div>
+          <div class="kbf-form-group">
+            <label>Show</label>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+              <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo $saved_only ? '' : 'is-active'; ?>" data-kbff-group="saved" data-kbff-value="">
+                <i class="ph ph-cards kbf-icon" aria-hidden="true"></i>
+                All Funds
+              </button>
+              <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo $saved_only ? 'is-active' : ''; ?>" data-kbff-group="saved" data-kbff-value="1">
+                <i class="ph ph-bookmark-simple kbf-icon" aria-hidden="true"></i>
+                Saved
+              </button>
+          </div>
+        </div>
+      </div>
+      <div class="kbff-sheet-actions">
+        <button type="button" class="kbf-btn kbf-btn-primary kbff-sheet-apply" id="kbff-sheet-apply">Apply Filters</button>
+        <button type="button" class="kbf-btn kbf-btn-secondary kbff-sheet-clear" id="kbff-sheet-clear">Clear all filters</button>
       </div>
     </div>
 
@@ -751,9 +957,79 @@ function kbf_dashboard_find_funds_tab() {
             if (params.length) url += '&' + params.join('&');
             return url;
         }
+        window.kbffBuildUrl = buildUrl;
         catSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
         sortSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
         savedSel.addEventListener('change', function(){ window.location.href = buildUrl(); });
+
+        // ===== BOTTOM SHEET =====
+        var sheet = document.getElementById('kbff-sheet');
+        var overlay = document.getElementById('kbff-sheet-overlay');
+        var btn = document.getElementById('kbff-filter-btn');
+        var badge = document.getElementById('kbff-filter-badge');
+        var applyBtn = document.getElementById('kbff-sheet-apply');
+        var clearBtn = document.getElementById('kbff-sheet-clear');
+        var sheetCatVal = sheet ? (sheet.getAttribute('data-kbff-cat') || '') : '';
+        var sheetSortVal = sheet ? (sheet.getAttribute('data-kbff-sort') || 'newest') : 'newest';
+        var sheetSavedVal = sheet ? (sheet.getAttribute('data-kbff-saved') || '') : '';
+
+        function updateFilterBtnState(){
+            if (!btn || !badge || !catSel || !sortSel || !savedSel) return;
+            var count = 0;
+            if (catSel.value) count++;
+            if (sortSel.value && sortSel.value !== 'newest') count++;
+            if (savedSel.value) count++;
+            btn.classList.toggle('has-filters', count > 0);
+            badge.textContent = String(count);
+            badge.classList.toggle('is-hidden', count === 0);
+        }
+        updateFilterBtnState();
+
+        window.kbffOpenSheet = function(){
+            if (sheet) sheet.classList.add('open');
+            if (overlay) overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        };
+        window.kbffCloseSheet = function(){
+            if (sheet) sheet.classList.remove('open');
+            if (overlay) overlay.classList.remove('open');
+            document.body.style.overflow = '';
+        };
+        window.kbffApplySheet = function(){
+            if (catSel) catSel.value = sheetCatVal || '';
+            if (sortSel) sortSel.value = sheetSortVal || 'newest';
+            if (savedSel) savedSel.value = sheetSavedVal || '';
+            updateFilterBtnState();
+            window.kbffCloseSheet();
+            window.location.href = buildUrl();
+        };
+        window.kbffClearSheet = function(){
+            sheetCatVal = '';
+            sheetSortVal = 'newest';
+            sheetSavedVal = '';
+            window.kbffApplySheet();
+        };
+        if (applyBtn) applyBtn.addEventListener('click', window.kbffApplySheet);
+        if (clearBtn) clearBtn.addEventListener('click', window.kbffClearSheet);
+
+        function setGroupValue(group, value){
+            var buttons = document.querySelectorAll('[data-kbff-group="'+group+'"]');
+            buttons.forEach(function(b){
+                var isActive = (b.getAttribute('data-kbff-value') === value);
+                b.classList.toggle('is-active', isActive);
+                b.disabled = false;
+            });
+            if (group === 'cat') sheetCatVal = value;
+            if (group === 'sort') sheetSortVal = value || 'newest';
+            if (group === 'saved') sheetSavedVal = value;
+        }
+        document.querySelectorAll('[data-kbff-group]').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                var group = btn.getAttribute('data-kbff-group') || '';
+                var value = btn.getAttribute('data-kbff-value') || '';
+                setGroupValue(group, value);
+            });
+        });
     })();
 
     // Ensure Near Me fills the single search input
@@ -1066,10 +1342,3 @@ function kbf_dashboard_find_funds_tab() {
     <?php
     return ob_get_clean();
 }
-
-
-
-
-
-
-
