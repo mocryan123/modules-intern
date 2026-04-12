@@ -502,10 +502,6 @@ function bntm_shortcode_kbf_organizer_profile() {
                       <?php echo esc_html($f->category); ?>
                     </span>
                     <span class="kbf-meta-divider"></span>
-                    <span class="kbf-meta-item">
-                      <i class="ph ph-map-pin kbf-icon" aria-hidden="true"></i>
-                      <?php echo esc_html($f->location); ?>
-                    </span>
                   </div>
                   <div class="kbf-meta-row">
                     <?php if($days_left!==null): ?>
@@ -520,11 +516,6 @@ function bntm_shortcode_kbf_organizer_profile() {
                       <?php echo $sc; ?> sponsors
                     </span>
                     <span class="kbf-meta-divider"></span>
-                    <span class="kbf-meta-item">
-                      <i class="ph ph-shield kbf-icon" aria-hidden="true"></i>
-                      Escrow
-                      <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
-                    </span>
                   </div>
                 </div>
               </div>
@@ -541,7 +532,6 @@ function bntm_shortcode_kbf_organizer_profile() {
                 }
               ?>
               <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
-                <i class="ph ph-arrow-square-right kbf-icon" style="font-size:12px; filter:invert(100%)" aria-hidden="true"></i>
                 View Details
               </a>
             </div>
