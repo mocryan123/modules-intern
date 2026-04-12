@@ -76,17 +76,19 @@
 
     <div class="kbf-dashboard-shell">
 
-    <div class="kbf-hero-wrap">
-      <div class="kbf-hero-banner">
-        <?php if($is_logged_in): ?>
-          <h2 class="kbf-hero-title">Welcome, <?php echo esc_html($user->display_name); ?></h2>
-          <p class="kbf-hero-sub">Empower change today. Oversee and manage your community-driven impact initiatives.</p>
-        <?php else: ?>
-          <h2 class="kbf-hero-title">Explore fundraisers</h2>
-          <p class="kbf-hero-sub">Browse verified campaigns and sign in when you're ready to save or manage funds.</p>
-        <?php endif; ?>
+    <?php if ($tab !== 'fund_details' && $tab !== 'profile'): ?>
+      <div class="kbf-hero-wrap">
+        <div class="kbf-hero-banner">
+          <?php if($is_logged_in): ?>
+            <h2 class="kbf-hero-title">Welcome, <?php echo esc_html($user->display_name); ?></h2>
+            <p class="kbf-hero-sub">Empower change today. Oversee and manage your community-driven impact initiatives.</p>
+          <?php else: ?>
+            <h2 class="kbf-hero-title">Explore fundraisers</h2>
+            <p class="kbf-hero-sub">Browse verified campaigns and sign in when you're ready to save or manage funds.</p>
+          <?php endif; ?>
+        </div>
       </div>
-    </div>
+    <?php endif; ?>
     <div class="kbf-tab-content">
       <?php
       if ($tab === 'overview')         echo kbf_dashboard_overview_tab($business_id);

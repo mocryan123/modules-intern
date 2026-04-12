@@ -106,6 +106,11 @@ function bntm_shortcode_kbf_fund_details() {
     $nonce_rating  = wp_create_nonce('kbf_rating');
     $nonce_save   = wp_create_nonce('kbf_save_fund');
     $is_saved = false;
+    $funder_type_raw = isset($fund->funder_type) ? (string)$fund->funder_type : '';
+    if ($funder_type_raw === '') {
+        $funder_type_raw = 'yourself';
+    }
+    $funder_type_label = ucwords(str_replace('_', ' ', $funder_type_raw));
     if($current_user_id){
         $sf = $wpdb->prefix.'kbf_saved_funds';
         $is_saved = (bool)$wpdb->get_var($wpdb->prepare("SELECT id FROM {$sf} WHERE user_id=%d AND fund_id=%d", $current_user_id, $fund->id));
@@ -151,7 +156,11 @@ function bntm_shortcode_kbf_fund_details() {
 
     <!-- ================== CSS ================== -->
     <style>
-    .kbf-detail-wrap{max-width:1000px;margin:0 auto;}
+    .kbf-detail-wrap{max-width:1000px;margin:0 auto;padding-top:30px;}
+    .kbf-wrap{
+      padding-top:30px !important;
+      margin-top:0 !important;
+    }
     .kbf-photo-main{
       width:100%;
       aspect-ratio:4 / 3;
@@ -162,6 +171,30 @@ function bntm_shortcode_kbf_fund_details() {
       height:100%;
       object-fit:cover;
       display:block;
+    }
+    .kbf-detail-title{
+      font-size:28px;
+      font-weight:700;
+      color:var(--kbf-navy);
+      margin:0 0 8px;
+      line-height:1.25;
+      letter-spacing:-0.2px;
+    }
+    .kbf-detail-meta{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      font-size:12.5px;
+      color:#64748b;
+    }
+    .kbf-detail-meta-item{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .kbf-detail-meta-item i{
+      font-size:14px;
+      filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);
     }
     .kbf-category-pill,
     .kbf-badge{
@@ -201,6 +234,13 @@ function bntm_shortcode_kbf_fund_details() {
       width:10px;
       height:10px;
       flex-shrink:0;
+    }
+    .kbf-btn.kbf-btn-primary .kbf-icon,
+    .kbf-btn.kbf-btn-primary i,
+    .kbf-btn.kbf-btn-primary svg{
+      color:#ffffff !important;
+      fill:#ffffff !important;
+      stroke:#ffffff !important;
     }
     .kbf-section-description,
     .kbf-section-organizer,
@@ -394,7 +434,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-leaderboard-title{display:flex;align-items:center;gap:10px;min-width:0;}
     .kbf-leaderboard-icon{width:28px;height:28px;border-radius:8px;background:#eef4ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .kbf-leaderboard-icon i{font-size:14px;color:#3b82f6;}
-    .kbf-leaderboard-text{font-size:14px;font-weight:800;color:var(--kbf-navy);line-height:1;}
+    .kbf-leaderboard-text{font-size:14px;font-weight:500;color:var(--kbf-navy);line-height:1;}
     .kbf-leaderboard-sub{font-size:11.5px;color:var(--kbf-slate);margin-top:3px;}
     .kbf-leaderboard-pill{
       background:#eef2ff;
@@ -639,7 +679,7 @@ function bntm_shortcode_kbf_fund_details() {
         color:#1d4ed8;
     }
     .kbf-org-verified i{font-size:13px;}
-    .kbf-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);margin-bottom:20px;}
+.kbf-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);margin-bottom:20px;padding-top:30px;}
     .kbf-breadcrumb a{color:var(--kbf-blue);text-decoration:none;font-weight:600;}
     .kbf-breadcrumb a:hover{text-decoration:underline;}
     .kbf-more-wrap{position:relative;}
@@ -812,7 +852,7 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-sponsor')">Cancel</button>
           <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSpdSponsor('<?php echo $nonce_sponsor; ?>')">
-            <i class="ph-fill ph-heart kbf-icon" style="font-size:14px; filter:invert(100%)" aria-hidden="true"></i>
+            <i class="ph-fill ph-heart kbf-icon" style="font-size:14px;color:#ffffff;" aria-hidden="true"></i>
             Confirm Sponsorship
           </button>
         </div>
@@ -926,14 +966,22 @@ function bntm_shortcode_kbf_fund_details() {
                 <i class="ph ph-tag kbf-icon" style="font-size:11px; filter:invert(34%) sepia(8%) saturate(1386%) hue-rotate(182deg) brightness(93%) contrast(85%)" aria-hidden="true"></i>
                 <?php echo esc_html(ucfirst(strtolower((string)$fund->category))); ?>
               </span>
-              <span class="kbf-fundtype-pill"><?php echo ucwords(str_replace('_',' ',$fund->funder_type)); ?></span>
+              <span class="kbf-fundtype-pill"><?php echo esc_html($funder_type_label); ?></span>
             </div>
-          <h1 style="font-size:24px;font-weight:600;color:var(--kbf-navy);margin:0 0 10px;line-height:1.3;"><?php echo esc_html($fund->title); ?></h1>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--kbf-slate);">
-            <span style="display:flex;align-items:center;gap:5px;">
-              <i class="ph ph-map-pin kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-              <?php echo esc_html($fund->location); ?>
-            </span>
+          <h1 class="kbf-detail-title"><?php echo esc_html($fund->title); ?></h1>
+          <div class="kbf-detail-meta">
+            <?php if(!empty($fund->location)): ?>
+              <span class="kbf-detail-meta-item">
+                <i class="ph ph-map-pin kbf-icon" aria-hidden="true"></i>
+                <?php echo esc_html($fund->location); ?>
+              </span>
+            <?php endif; ?>
+            <?php if(!empty($fund->organizer_name)): ?>
+              <span class="kbf-detail-meta-item">
+                <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
+                <?php echo esc_html($fund->organizer_name); ?>
+              </span>
+            <?php endif; ?>
           </div>
         </div>
 
@@ -1029,7 +1077,7 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
             <div style="margin-top:14px;">
               <button class="kbf-btn kbf-btn-primary" style="width:100%;" onclick="kbfShowModal('kbf-modal-sponsor')">
-                <i class="ph-fill ph-heart kbf-icon" style="font-size:16px; filter:invert(100%)" aria-hidden="true"></i>
+                <i class="ph-fill ph-heart kbf-icon" style="font-size:16px;color:#ffffff;" aria-hidden="true"></i>
                 <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Fund'; ?>
               </button>
               <div style="font-size:11.5px;color:var(--kbf-slate);margin:8px 0 10px;">Sponsors get a receipt instantly after checkout.</div>
@@ -1790,42 +1838,3 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
