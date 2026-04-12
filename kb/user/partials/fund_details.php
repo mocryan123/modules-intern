@@ -334,7 +334,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;flex-wrap:wrap;}
   .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
 .kbf-detail-left{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;}
-.kbf-detail-right{display:flex;flex-direction:column;align-self:flex-start;}
+.kbf-detail-right{display:flex;flex-direction:column;align-self:stretch;}
   .kbf-detail-panels.kbf-detail-stack{
       display:flex;
       flex-direction:column;
@@ -400,15 +400,6 @@ function bntm_shortcode_kbf_fund_details() {
   .kbf-detail-tab-panel{width:100%;}
   .kbf-detail-tab-panel .kbf-card{width:100%; box-sizing:border-box;}
   .kbf-detail-secondary{width:100%;}
-.kbf-detail-sticky{display:flex;flex-direction:column;gap:14px;box-sizing:border-box;align-self:flex-start;width:100%;}
-    .kbf-detail-sticky > .kbf-card{
-      flex:none;
-      margin:0;
-    }
-    .kbf-detail-sticky > .kbf-section-leaderboard{
-      flex:0 0 auto;
-      min-height:0;
-    }
     .kbf-detail-sticky > *{margin-top:0 !important;margin-bottom:0 !important;}
     .kbf-poster-modal .kbf-modal{max-width:980px;width:980px;}
     .kbf-poster-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:20px;align-items:stretch;}
@@ -489,20 +480,21 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-save-btn.is-saved i{
       color:#3b82f6;
     }
-    /* ===== LEADERBOARD: NO FORCED STRETCH ===== */
+    /* ===== LEADERBOARD + PROGRESS CARDS ===== */
     .kbf-detail-sticky{
       display:flex;
       flex-direction:column;
       gap:14px;
       min-height:0;
+      flex:1;
     }
-    .kbf-detail-sticky > .kbf-card{
-      margin:0;
-      flex:none;
-    }
+    .kbf-section-leaderboard,
     .kbf-leaderboard-card{
       display:flex;
       flex-direction:column;
+      min-height:0;
+      margin:0;
+      flex:1 1 auto;
     }
     .kbf-leaderboard-head{
       display:flex;
@@ -515,30 +507,32 @@ function bntm_shortcode_kbf_fund_details() {
       flex-shrink:0;
     }
     .kbf-leaderboard-body{
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding-right:6px;
       margin-top:12px;
-      flex:none;
-      height:auto !important;
-      min-height:0 !important;
     }
-    /* Empty state - override inline flex centering */
-    .kbf-leaderboard-body > div[style*="text-align:center"]{
-      display:block !important;
-      padding:16px 10px !important;
+    /* Empty state fills card and centers */
+    .kbf-leaderboard-empty{
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:24px 10px;
       text-align:center;
-      height:auto !important;
-      min-height:0 !important;
-      justify-content:unset !important;
-      align-items:unset !important;
-      flex-direction:unset !important;
-      flex:0 0 auto !important;
+      min-height:260px;
     }
-    .kbf-leaderboard-body > div[style*="text-align:center"] i{
+    .kbf-leaderboard-empty i{
       font-size:28px;
       margin-bottom:8px;
       opacity:.3;
-      display:block;
     }
-    .kbf-leaderboard-body > div[style*="text-align:center"] p{
+    .kbf-leaderboard-empty p{
       margin:2px 0;
     }
     .kbf-leaderboard-title{display:flex;align-items:center;gap:10px;min-width:0;}
@@ -909,31 +903,6 @@ function bntm_shortcode_kbf_fund_details() {
       pointer-events:none;
     }
 
-    /* ===== LEADERBOARD FIX 5: PIN HEAD TO TOP, CENTER EMPTY STATE ===== */
-    .kbf-detail-sticky > .kbf-section-leaderboard{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      min-height:0;
-      height:100%;
-    }
-    .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"]{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      padding:20px 10px;
-    }
-    .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"] i{
-      font-size:28px;
-      margin-bottom:8px;
-      opacity:.3;
-    }
-    .kbf-leaderboard-card .kbf-leaderboard-body > div[style*="text-align:center"] p{
-      margin:2px 0;
-    }
-
     /* ===== FIX 9: COMPACT LEADERBOARD ITEM ===== */
     .kbf-leaderboard-item{
       display:flex;
@@ -1284,7 +1253,6 @@ function bntm_shortcode_kbf_fund_details() {
                     <span class="kbf-lb-rank">#<?php echo $pos; ?></span>
                     <span class="kbf-lb-name">
                       <?php if ($row->is_anonymous): ?>
-                        <i class="ph-fill ph-mask-happy" style="color:#94a3b8;margin-right:4px;font-size:13px;vertical-align:middle;" aria-hidden="true"></i>
                       <?php endif; ?>
                       <?php echo esc_html($row->display_name); ?>
                     </span>
@@ -1294,7 +1262,7 @@ function bntm_shortcode_kbf_fund_details() {
               </div>
               <div class="kbf-table-pager kbf-table-pager-inline" data-kbf-leaderboard-pager></div>
             <?php else: ?>
-              <div style="text-align:center;padding:16px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <div class="kbf-leaderboard-empty">
                 <i class="ph-fill ph-heart kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 <p style="font-size:13px;color:var(--kbf-slate);margin:0;font-weight:600;">No sponsors yet</p>
                 <p style="font-size:12px;color:var(--kbf-slate);margin:4px 0 0;opacity:.7;">Be the first to support!</p>
