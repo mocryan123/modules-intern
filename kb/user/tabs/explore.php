@@ -580,7 +580,7 @@ function kbf_dashboard_find_funds_tab() {
             <i class="ph ph-map-pin kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
           </button>
           <button type="submit" class="kbf-btn kbf-btn-primary">
-            <i class="ph ph-magnifying-glass kbf-icon" style="font-size:14px; filter:invert(100%);margin-right:6px" aria-hidden="true"></i>
+            <i class="ph ph-magnifying-glass kbf-icon" style="font-size:14px;color:#ffffff;filter:none;margin-right:6px" aria-hidden="true"></i>
             Search
           </button>
         </form>
