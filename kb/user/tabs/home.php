@@ -940,6 +940,9 @@
         });
         if (applyBtn) applyBtn.addEventListener('click', window.kbfHomeApplySheet);
         if (clearBtn) clearBtn.addEventListener('click', window.kbfHomeClearSheet);
+        window.addEventListener('resize', function(){
+          if (window.innerWidth >= 720) window.kbfHomeCloseSheet();
+        });
       })();
 
       (function(){

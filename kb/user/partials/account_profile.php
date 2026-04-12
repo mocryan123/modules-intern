@@ -811,6 +811,9 @@ function bntm_shortcode_kbf_organizer_profile() {
     });
     if (applyBtn) applyBtn.addEventListener('click', window.kbfAccountProfileApplySheet);
     if (clearBtn) clearBtn.addEventListener('click', window.kbfAccountProfileClearSheet);
+    window.addEventListener('resize', function(){
+      if (window.innerWidth >= 720) window.kbfAccountProfileCloseSheet();
+    });
   })();
     </script>
     <?php

@@ -1011,6 +1011,9 @@ function kbf_dashboard_find_funds_tab() {
         };
         if (applyBtn) applyBtn.addEventListener('click', window.kbffApplySheet);
         if (clearBtn) clearBtn.addEventListener('click', window.kbffClearSheet);
+        window.addEventListener('resize', function(){
+          if (window.innerWidth >= 720) window.kbffCloseSheet();
+        });
 
         function setGroupValue(group, value){
             var buttons = document.querySelectorAll('[data-kbff-group="'+group+'"]');
