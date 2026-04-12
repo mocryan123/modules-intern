@@ -245,6 +245,83 @@ function bntm_shortcode_kbf_organizer_profile() {
           .kbf-org-avatar > .kbf-org-avatar-fallback img{width:24px;height:24px;}
           .kbf-breadcrumb{font-size:12px;flex-wrap:wrap;}
         }
+        .kbf-ap-filter-btn{display:none;}
+        .kbf-ap-sheet-overlay{
+          position:fixed;
+          inset:0;
+          background:rgba(10,16,32,0.45);
+          backdrop-filter:blur(2px);
+          z-index:9998;
+          display:none;
+        }
+        .kbf-ap-sheet-overlay.open{display:block;}
+        .kbf-ap-sheet{
+          position:fixed;
+          left:0;
+          right:0;
+          bottom:0;
+          background:#fff;
+          z-index:9999;
+          transform:translateY(100%);
+          transition:transform .3s cubic-bezier(.4,0,.2,1);
+          max-height:80vh;
+          overflow-y:auto;
+          padding:0 0 24px;
+        }
+        .kbf-ap-sheet.open{transform:translateY(0);}
+        .kbf-ap-sheet-handle{
+          width:44px;
+          height:5px;
+          border-radius:999px;
+          background:#e2e8f0;
+          margin:10px auto 6px;
+        }
+        .kbf-ap-sheet-header{
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          padding:6px 20px 10px;
+        }
+        .kbf-ap-sheet-body{
+          padding:0 20px 10px;
+          display:grid;
+          gap:12px;
+        }
+        .kbf-ap-sheet-body [data-kbf-ap-group]{
+          background:#fff !important;
+          color:var(--kbf-text) !important;
+          border-color:var(--kbf-border) !important;
+          box-shadow:none !important;
+          border-radius:12px !important;
+          font-weight:600;
+          text-align:left;
+          justify-content:flex-start;
+          transition:none !important;
+        }
+        .kbf-ap-sheet-body [data-kbf-ap-group].is-active{
+          border-color:#60a5fa !important;
+          background:#eff6ff !important;
+          color:#0f172a !important;
+        }
+        .kbf-ap-sheet-actions{
+          display:flex;
+          gap:10px;
+          padding:8px 20px 0;
+        }
+        .kbf-ap-sheet-actions .kbf-btn{
+          flex:1;
+          height:44px;
+          border-radius:12px;
+        }
+        .kbf-user-ui .kbf-ap-sheet .kbf-btn-primary::before{
+          display:none;
+          content:none;
+        }
+        @media (max-width: 720px){
+          #kbf-ap-filter-status-wrap,
+          #kbf-ap-filter-escrow-wrap{ display:none !important; }
+          .kbf-ap-filter-btn{ display:inline-flex; }
+        }
       </style>
       <!-- Breadcrumb -->
       <div class="kbf-breadcrumb">
@@ -310,10 +387,14 @@ function bntm_shortcode_kbf_organizer_profile() {
       <div class="kbf-profile-sidebar">
         <?php if(false): ?><div></div><?php endif; ?>
 
-        <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;">
+        <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;display:flex;justify-content:space-between;width:100%;">
           <h3 class="kbf-section-title">Campaigns</h3>
-          <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-            <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;">
+          <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;">
+            <button type="button" class="kbf-btn kbf-btn-secondary kbf-ap-filter-btn" onclick="kbfAccountProfileOpenSheet()">
+              <i class="ph ph-sliders kbf-icon" style="font-size:14px" aria-hidden="true"></i>
+              Filters
+            </button>
+            <div class="kbf-form-group" id="kbf-ap-filter-status-wrap" style="display:flex;align-items:center;gap:8px;margin:0;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
                 <i class="ph ph-tag kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
@@ -326,7 +407,7 @@ function bntm_shortcode_kbf_organizer_profile() {
                 <option value="completed">Completed</option>
               </select>
             </div>
-            <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;">
+            <div class="kbf-form-group" id="kbf-ap-filter-escrow-wrap" style="display:flex;align-items:center;gap:8px;margin:0;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
                 <i class="ph ph-funnel kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
@@ -336,6 +417,66 @@ function bntm_shortcode_kbf_organizer_profile() {
                 <option value="released">Released</option>
               </select>
             </div>
+          </div>
+        </div>
+        <div class="kbf-ap-sheet-overlay" id="kbf-ap-sheet-overlay" onclick="kbfAccountProfileCloseSheet()"></div>
+        <div class="kbf-ap-sheet" id="kbf-ap-sheet">
+          <div class="kbf-ap-sheet-handle"></div>
+          <div class="kbf-ap-sheet-header">
+            <h3 class="kbf-section-title" style="margin:0;">Filter Campaigns</h3>
+            <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfAccountProfileCloseSheet()">&times;</button>
+          </div>
+          <div class="kbf-ap-sheet-body">
+            <div class="kbf-form-group">
+              <label>Status</label>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="status" data-kbf-ap-value="all">
+                  <i class="ph ph-app-window kbf-icon" aria-hidden="true"></i>
+                  All
+                </button>
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="status" data-kbf-ap-value="active">
+                  <i class="ph ph-check-circle kbf-icon" aria-hidden="true"></i>
+                  Active
+                </button>
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="status" data-kbf-ap-value="pending">
+                  <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
+                  Pending
+                </button>
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="status" data-kbf-ap-value="suspended">
+                  <i class="ph ph-pause-circle kbf-icon" aria-hidden="true"></i>
+                  Suspended
+                </button>
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="status" data-kbf-ap-value="cancelled">
+                  <i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>
+                  Cancelled
+                </button>
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="status" data-kbf-ap-value="completed">
+                  <i class="ph ph-flag-checkered kbf-icon" aria-hidden="true"></i>
+                  Completed
+                </button>
+              </div>
+            </div>
+            <div class="kbf-form-group">
+              <label>Escrow</label>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="escrow" data-kbf-ap-value="all">
+                  <i class="ph ph-cards kbf-icon" aria-hidden="true"></i>
+                  All
+                </button>
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="escrow" data-kbf-ap-value="holding">
+                  <i class="ph ph-lock-key kbf-icon" aria-hidden="true"></i>
+                  Holding
+                </button>
+                <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-ap-group="escrow" data-kbf-ap-value="released">
+                  <i class="ph ph-lock-open kbf-icon" aria-hidden="true"></i>
+                  Released
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="kbf-ap-sheet-actions">
+            <button type="button" class="kbf-btn kbf-btn-primary" id="kbf-ap-sheet-apply">Apply Filters</button>
+            <button type="button" class="kbf-btn kbf-btn-secondary" id="kbf-ap-sheet-clear">Clear all</button>
           </div>
         </div>
         <?php if(empty($funds)): ?>
@@ -608,11 +749,69 @@ function bntm_shortcode_kbf_organizer_profile() {
         }
         render();
       }
-      document.addEventListener('DOMContentLoaded', function(){
-        initCardPager('organizer-campaigns');
-        initCardPager('organizer-reviews');
+    document.addEventListener('DOMContentLoaded', function(){
+      initCardPager('organizer-campaigns');
+      initCardPager('organizer-reviews');
+    });
+  })();
+
+  (function(){
+    var sheet = document.getElementById('kbf-ap-sheet');
+    var overlay = document.getElementById('kbf-ap-sheet-overlay');
+    var statusEl = document.getElementById('kbf-filter-status');
+    var escrowEl = document.getElementById('kbf-filter-escrow');
+    var applyBtn = document.getElementById('kbf-ap-sheet-apply');
+    var clearBtn = document.getElementById('kbf-ap-sheet-clear');
+    if(!sheet || !overlay || !statusEl || !escrowEl) return;
+
+    function setGroupValue(group, value){
+      var buttons = document.querySelectorAll('[data-kbf-ap-group="'+group+'"]');
+      buttons.forEach(function(b){
+        var isActive = (b.getAttribute('data-kbf-ap-value') === value);
+        b.classList.toggle('is-active', isActive);
       });
-    })();
+    }
+    function syncFromSelects(){
+      setGroupValue('status', statusEl.value || 'all');
+      setGroupValue('escrow', escrowEl.value || 'all');
+    }
+    window.kbfAccountProfileOpenSheet = function(){
+      syncFromSelects();
+      sheet.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    window.kbfAccountProfileCloseSheet = function(){
+      sheet.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    };
+    function getActiveValue(group){
+      var active = sheet.querySelector('[data-kbf-ap-group="'+group+'"].is-active');
+      return active ? active.getAttribute('data-kbf-ap-value') : '';
+    }
+    window.kbfAccountProfileApplySheet = function(){
+      var statusVal = getActiveValue('status') || 'all';
+      var escrowVal = getActiveValue('escrow') || 'all';
+      statusEl.value = statusVal;
+      escrowEl.value = escrowVal;
+      statusEl.dispatchEvent(new Event('change'));
+      escrowEl.dispatchEvent(new Event('change'));
+      window.kbfAccountProfileCloseSheet();
+    };
+    window.kbfAccountProfileClearSheet = function(){
+      setGroupValue('status', 'all');
+      setGroupValue('escrow', 'all');
+      window.kbfAccountProfileApplySheet();
+    };
+    sheet.querySelectorAll('[data-kbf-ap-group]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        setGroupValue(btn.getAttribute('data-kbf-ap-group') || '', btn.getAttribute('data-kbf-ap-value') || '');
+      });
+    });
+    if (applyBtn) applyBtn.addEventListener('click', window.kbfAccountProfileApplySheet);
+    if (clearBtn) clearBtn.addEventListener('click', window.kbfAccountProfileClearSheet);
+  })();
     </script>
     <?php
     $c=ob_get_clean();
