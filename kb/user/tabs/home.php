@@ -377,6 +377,85 @@
           }
         }
       </style>
+      <style>
+        .kbf-home-filter-btn{display:none;}
+        .kbf-home-sheet-overlay{
+          position:fixed;
+          inset:0;
+          background:rgba(10,16,32,0.45);
+          backdrop-filter:blur(2px);
+          z-index:9998;
+          display:none;
+        }
+        .kbf-home-sheet-overlay.open{display:block;}
+        .kbf-home-sheet{
+          position:fixed;
+          left:0;
+          right:0;
+          bottom:0;
+          background:#fff;
+          z-index:9999;
+          transform:translateY(100%);
+          transition:transform .3s cubic-bezier(.4,0,.2,1);
+          max-height:80vh;
+          overflow-y:auto;
+          padding:0 0 24px;
+        }
+        .kbf-home-sheet.open{transform:translateY(0);}
+        .kbf-home-sheet-handle{
+          width:44px;
+          height:5px;
+          border-radius:999px;
+          background:#e2e8f0;
+          margin:10px auto 6px;
+        }
+        .kbf-home-sheet-header{
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          padding:6px 20px 10px;
+        }
+        .kbf-home-sheet-body{
+          padding:0 20px 10px;
+          display:grid;
+          gap:12px;
+        }
+        .kbf-home-sheet-body [data-kbf-home-group]{
+          background:#fff !important;
+          color:var(--kbf-text) !important;
+          border-color:var(--kbf-border) !important;
+          box-shadow:none !important;
+          border-radius:12px !important;
+          font-weight:600;
+          text-align:left;
+          justify-content:flex-start;
+          transition:none !important;
+        }
+        .kbf-home-sheet-body [data-kbf-home-group].is-active{
+          border-color:#60a5fa !important;
+          background:#eff6ff !important;
+          color:#0f172a !important;
+        }
+        .kbf-home-sheet-actions{
+          display:flex;
+          gap:10px;
+          padding:8px 20px 0;
+        }
+        .kbf-home-sheet-actions .kbf-btn{
+          flex:1;
+          height:44px;
+          border-radius:12px;
+        }
+        .kbf-user-ui .kbf-home-sheet .kbf-btn-primary::before{
+          display:none;
+          content:none;
+        }
+        @media (max-width: 720px){
+          #kbf-filter-status-wrap,
+          #kbf-filter-escrow-wrap{ display:none !important; }
+          .kbf-home-filter-btn{ display:inline-flex; }
+        }
+      </style>
         <div class="kbf-section-header">
          <h3 class="kbf-section-title">Dashboard Overview</h3>
           <button class="kbf-btn kbf-btn-primary kbf-btn-sm" style="padding:0 14px;" onclick="kbfOpenModal('kbf-modal-create')">
@@ -426,7 +505,11 @@
       <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;">
         <h3 class="kbf-section-title">All My Funds</h3>
         <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
-            <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;min-width:160px;">
+            <button type="button" class="kbf-btn kbf-btn-secondary kbf-home-filter-btn" onclick="kbfHomeOpenSheet()">
+              <i class="ph ph-sliders kbf-icon" style="font-size:14px" aria-hidden="true"></i>
+              Filters
+            </button>
+            <div class="kbf-form-group" id="kbf-filter-status-wrap" style="display:flex;align-items:center;gap:8px;margin:0;min-width:160px;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
                 <i class="ph ph-tag kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
@@ -439,7 +522,7 @@
               <option value="completed">Completed</option>
             </select>
           </div>
-            <div class="kbf-form-group" style="display:flex;align-items:center;gap:8px;margin:0;min-width:160px;">
+            <div class="kbf-form-group" id="kbf-filter-escrow-wrap" style="display:flex;align-items:center;gap:8px;margin:0;min-width:160px;">
               <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;">
                 <i class="ph ph-funnel kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
@@ -449,6 +532,66 @@
               <option value="released">Released</option>
             </select>
           </div>
+        </div>
+      </div>
+      <div class="kbf-home-sheet-overlay" id="kbf-home-sheet-overlay" onclick="kbfHomeCloseSheet()"></div>
+      <div class="kbf-home-sheet" id="kbf-home-sheet">
+        <div class="kbf-home-sheet-handle"></div>
+        <div class="kbf-home-sheet-header">
+          <h3 class="kbf-section-title" style="margin:0;">Filter Campaigns</h3>
+          <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfHomeCloseSheet()">&times;</button>
+        </div>
+        <div class="kbf-home-sheet-body">
+          <div class="kbf-form-group">
+            <label>Status</label>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="status" data-kbf-home-value="all">
+                <i class="ph ph-app-window kbf-icon" aria-hidden="true"></i>
+                All
+              </button>
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="status" data-kbf-home-value="active">
+                <i class="ph ph-check-circle kbf-icon" aria-hidden="true"></i>
+                Active
+              </button>
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="status" data-kbf-home-value="pending">
+                <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
+                Pending
+              </button>
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="status" data-kbf-home-value="suspended">
+                <i class="ph ph-pause-circle kbf-icon" aria-hidden="true"></i>
+                Suspended
+              </button>
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="status" data-kbf-home-value="cancelled">
+                <i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>
+                Cancelled
+              </button>
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="status" data-kbf-home-value="completed">
+                <i class="ph ph-flag-checkered kbf-icon" aria-hidden="true"></i>
+                Completed
+              </button>
+            </div>
+          </div>
+          <div class="kbf-form-group">
+            <label>Escrow</label>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="escrow" data-kbf-home-value="all">
+                <i class="ph ph-cards kbf-icon" aria-hidden="true"></i>
+                All
+              </button>
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="escrow" data-kbf-home-value="holding">
+                <i class="ph ph-lock-key kbf-icon" aria-hidden="true"></i>
+                Holding
+              </button>
+              <button type="button" class="kbf-btn kbf-btn-secondary" data-kbf-home-group="escrow" data-kbf-home-value="released">
+                <i class="ph ph-lock-open kbf-icon" aria-hidden="true"></i>
+                Released
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="kbf-home-sheet-actions">
+          <button type="button" class="kbf-btn kbf-btn-primary" id="kbf-home-sheet-apply">Apply Filters</button>
+          <button type="button" class="kbf-btn kbf-btn-secondary" id="kbf-home-sheet-clear">Clear all</button>
         </div>
       </div>
       <?php if(empty($funds)): ?>
@@ -739,6 +882,64 @@
         statusEl.addEventListener('change', applyFilters);
         escrowEl.addEventListener('change', applyFilters);
         applyFilters();
+      })();
+
+      (function(){
+        var sheet = document.getElementById('kbf-home-sheet');
+        var overlay = document.getElementById('kbf-home-sheet-overlay');
+        var statusEl = document.getElementById('kbf-filter-status');
+        var escrowEl = document.getElementById('kbf-filter-escrow');
+        var applyBtn = document.getElementById('kbf-home-sheet-apply');
+        var clearBtn = document.getElementById('kbf-home-sheet-clear');
+        if(!sheet || !overlay || !statusEl || !escrowEl) return;
+
+        function setGroupValue(group, value){
+          var buttons = document.querySelectorAll('[data-kbf-home-group="'+group+'"]');
+          buttons.forEach(function(b){
+            var isActive = (b.getAttribute('data-kbf-home-value') === value);
+            b.classList.toggle('is-active', isActive);
+          });
+        }
+        function syncFromSelects(){
+          setGroupValue('status', statusEl.value || 'all');
+          setGroupValue('escrow', escrowEl.value || 'all');
+        }
+        window.kbfHomeOpenSheet = function(){
+          syncFromSelects();
+          sheet.classList.add('open');
+          overlay.classList.add('open');
+          document.body.style.overflow = 'hidden';
+        };
+        window.kbfHomeCloseSheet = function(){
+          sheet.classList.remove('open');
+          overlay.classList.remove('open');
+          document.body.style.overflow = '';
+        };
+        function getActiveValue(group){
+          var active = sheet.querySelector('[data-kbf-home-group="'+group+'"].is-active');
+          return active ? active.getAttribute('data-kbf-home-value') : '';
+        }
+        window.kbfHomeApplySheet = function(){
+          var statusVal = getActiveValue('status') || 'all';
+          var escrowVal = getActiveValue('escrow') || 'all';
+          statusEl.value = statusVal;
+          escrowEl.value = escrowVal;
+          if (window.kbfHomeApplyFilters) window.kbfHomeApplyFilters();
+          if (window.kbfHomeRenderCards) window.kbfHomeRenderCards();
+          window.kbfHomeCloseSheet();
+        };
+        window.kbfHomeClearSheet = function(){
+          setGroupValue('status', 'all');
+          setGroupValue('escrow', 'all');
+          window.kbfHomeApplySheet();
+        };
+        sheet.querySelectorAll('[data-kbf-home-group]').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            setGroupValue(btn.getAttribute('data-kbf-home-group') || '', btn.getAttribute('data-kbf-home-value') || '');
+          });
+        });
+        if (applyBtn) applyBtn.addEventListener('click', window.kbfHomeApplySheet);
+        if (clearBtn) clearBtn.addEventListener('click', window.kbfHomeClearSheet);
       })();
 
       (function(){
