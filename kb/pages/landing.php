@@ -323,6 +323,7 @@ function bntm_kbf_render_landing() {
     .kbf-btn.kbf-btn-primary {
         background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 55%, #1f6fe0 100%);
         color: #ffffff;
+        border-radius: var(--kbf-radius-sm);
         box-shadow: 0 4px 15px rgba(61, 142, 240, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.03em; }
     .kbf-btn.kbf-btn-primary::before {
         content: '';
@@ -1194,9 +1195,12 @@ function bntm_kbf_render_landing() {
         display: flex;
         flex-direction: row;
         gap: 8px;
+        align-items: center;
+        height: 68px;
         padding: 12px 14px;
         border-top: 1px solid var(--kbf-border);
         background: var(--kbf-soft);
+        box-sizing: border-box;
     }
     .kbf-mobile-menu-actions .kbf-btn { flex: 1; justify-content: center; }
     
@@ -1963,7 +1967,10 @@ function bntm_kbf_render_landing() {
     .kbf-mobile-menu a:last-of-type{ border-bottom:none; }
     .kbf-mobile-menu-actions{
         display:flex;flex-direction:row;gap:8px;
+        align-items:center;
+        height:68px;
         padding:12px 14px;border-top:1px solid #e2e8f0;background:#f8fafc;
+        box-sizing:border-box;
     }
     .kbf-mobile-menu-actions .kbf-btn{ flex:1; justify-content:center; }
     @media (max-width: 860px){
@@ -2011,7 +2018,7 @@ function bntm_kbf_render_landing() {
               
             </div>
             <button class="kbf-hamburger" onclick="document.getElementById('kbf-hamburger-btn').click()" aria-label="Close menu" style="display:inline-flex;">
-              <i class="ph-bold ph-x kbf-icon" role="img" aria-label="Close"></i>
+              <i class="ph ph-x kbf-icon" role="img" aria-label="Close"></i>
             </button>
           </div>
             <a href="#kbf-home" onclick="kbfMobileNav('kbf-home')">Home</a>
@@ -2457,7 +2464,7 @@ function bntm_kbf_render_landing() {
 
         function setIcon(stateOpen){
             if (!icon) return;
-            var openCls = ['ph-bold','ph-x'];
+            var openCls = ['ph','ph-x'];
             var closeCls = ['ph','ph-list'];
             icon.classList.remove.apply(icon.classList, openCls);
             icon.classList.remove.apply(icon.classList, closeCls);

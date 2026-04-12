@@ -17,15 +17,15 @@
       <a href="?kbf_tab=sponsorships" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Supporters" onclick="kbfCloseMobileMenu()">Supporters</a>
       <a href="?kbf_tab=withdrawals" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Cashout" onclick="kbfCloseMobileMenu()">Cashout</a>
       <a href="?kbf_tab=find_funds" onclick="kbfCloseMobileMenu()">Explore</a>
-      <div class="kbf-mobile-menu-actions">
-        <?php if($is_logged_in): ?>
-          <a class="kbf-btn kbf-btn-secondary" href="?kbf_tab=profile">Profile</a>
-          <a class="kbf-btn kbf-btn-primary" href="?kbf_tab=find_funds">Find Funds</a>
-        <?php else: ?>
-          <a class="kbf-btn kbf-btn-secondary kbf-auth-required" data-auth-tab="Profile" href="?kbf_tab=profile">Profile</a>
-          <a class="kbf-btn kbf-btn-primary" href="?kbf_tab=find_funds">Find Funds</a>
-        <?php endif; ?>
-      </div>
+        <div class="kbf-mobile-menu-actions">
+          <?php if($is_logged_in): ?>
+            <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url(add_query_arg('kbf_tab','profile', kbf_get_page_url('dashboard'))); ?>">Profile</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($logout_url); ?>">Sign out</a>
+          <?php else: ?>
+            <a class="kbf-btn kbf-btn-secondary kbf-auth-required" data-auth-tab="Profile" href="<?php echo esc_url(add_query_arg('kbf_tab','profile', kbf_get_page_url('dashboard'))); ?>">Profile</a>
+            <a class="kbf-btn kbf-btn-primary" href="?kbf_tab=find_funds">Find Funds</a>
+          <?php endif; ?>
+        </div>
     </div>
 
     <div class="kbf-topbar">
@@ -43,7 +43,7 @@
       </div>
       <div class="kbf-actions">
         <button class="kbf-hamburger" type="button" onclick="kbfToggleMobileMenu()">
-          <i id="kbf-mobile-menu-icon" data-open="ph-bold ph-x" data-close="ph ph-list" class="ph ph-list kbf-icon" aria-hidden="true"></i>
+          <i id="kbf-mobile-menu-icon" data-open="ph ph-x" data-close="ph ph-list" class="ph ph-list kbf-icon" aria-hidden="true"></i>
         </button>
         <?php if($is_logged_in): ?>
           <div class="kbf-user-menu" id="kbf-user-menu">

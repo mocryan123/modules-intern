@@ -104,6 +104,7 @@ function bntm_kbf_render_refund() {
       .kbf-btn.kbf-btn-primary {
         background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 55%, #1f6fe0 100%);
         color: #ffffff;
+        border-radius: 8px !important;
         box-shadow:
           0 1px 2px rgba(32, 112, 224, 0.20),
           0 4px 14px rgba(42, 120, 220, 0.28),
@@ -201,7 +202,10 @@ function bntm_kbf_render_refund() {
       .kbf-mobile-menu a:last-of-type{ border-bottom:none; }
       .kbf-mobile-menu-actions{
         display:flex;flex-direction:row;gap:8px;
+        align-items:center;
+        height:68px;
         padding:12px 14px;border-top:1px solid #e2e8f0;background:#f8fafc;
+        box-sizing:border-box;
       }
       .kbf-mobile-menu-actions .kbf-btn{ flex:1; justify-content:center; }
       .kbf-legal {
@@ -435,7 +439,7 @@ function bntm_kbf_render_refund() {
             
           </div>
           <button class="kbf-hamburger" type="button" id="kbf-hamburger-close" aria-label="Close menu" style="display:inline-flex;">
-            <i class="ph-bold ph-x kbf-icon" role="img" aria-label="Close"></i>
+            <i class="ph ph-x kbf-icon" role="img" aria-label="Close"></i>
           </button>
         </div>
         <a href="<?php echo esc_url($landing_url); ?>#kbf-home">Home</a>
@@ -570,7 +574,7 @@ function bntm_kbf_render_refund() {
         var open = false;
         function setIcon(stateOpen){
           if (!icon) return;
-          var openCls = ['ph-bold','ph-x'];
+          var openCls = ['ph','ph-x'];
           var closeCls = ['ph','ph-list'];
           icon.classList.remove.apply(icon.classList, openCls);
           icon.classList.remove.apply(icon.classList, closeCls);

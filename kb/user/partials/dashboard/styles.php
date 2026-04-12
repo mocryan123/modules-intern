@@ -46,6 +46,8 @@
         box-shadow:var(--kbf-shadow-lg);
     }
     .kbf-user-ui .kbf-btn-primary{
+        height:43px;
+        line-height:43px;
         background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 50%, #2070e0 100%);
         color: #ffffff;
         border-color: transparent;
@@ -90,6 +92,8 @@
         transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
     }
     .kbf-user-ui .kbf-btn-secondary{
+        height:43px;
+        line-height:43px;
         background:#f8fafc;
         border:1px solid #e5e7eb;
         color:#334155;
@@ -326,7 +330,7 @@
         border:1px solid var(--kbf-border);
         box-shadow:0 10px 26px #0f28502e;
     }
-    .kbf-mobile-menu.kbf-menu-open{transform:translateY(56px);display:flex;}
+    .kbf-mobile-menu.kbf-menu-open{transform:translateY(65px);display:flex;}
     .kbf-mobile-menu-header{
         display:flex;align-items:center;justify-content:space-between;
         padding:14px 16px;border-bottom:1px solid var(--kbf-border);
@@ -343,10 +347,23 @@
     .kbf-mobile-menu a:last-of-type{border-bottom:none;}
     .kbf-mobile-menu-actions{
         display:flex;flex-direction:row;gap:8px;
-        padding:12px 14px;border-top:1px solid var(--kbf-border);
+        align-items:center;
+        height:auto !important;
+        min-height:43px !important;
+        padding:12px 14px !important;border-top:1px solid var(--kbf-border);
         background:var(--kbf-slate-lt);
+        box-sizing:border-box;
     }
-    .kbf-mobile-menu-actions .kbf-btn{flex:1;justify-content:center;}
+    .kbf-mobile-menu-actions .kbf-btn{
+        flex:1;
+        justify-content:center;
+        align-items:center;
+        height:43px !important;
+        min-height:43px !important;
+        padding:0 12px !important;
+        line-height:1 !important;
+        box-sizing:border-box;
+    }
 
     .kbf-dashboard-avatar-wrap{position:relative;width:34px;height:34px;flex-shrink:0;}
     .kbf-dashboard-avatar-wrap .kbf-dashboard-avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--kbf-border);object-fit:cover;box-shadow:0 8px 18px #1018281f;display:block;}
