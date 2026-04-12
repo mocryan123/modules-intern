@@ -23,9 +23,9 @@ function kbf_dashboard_find_funds_tab() {
     $sort = $get_param('ff_sort', 'newest');
     $saved_only = $get_param('ff_saved', '');
 
-    $where = "WHERE f.status='active'"; $params = [];
+    $where = "WHERE f.status='active' AND (f.deadline IS NULL OR f.deadline > NOW())"; $params = [];
     if($saved_only) {
-        $where = "WHERE f.status IN ('active','completed')";
+        $where = "WHERE f.status IN ('active','completed') AND (f.status!='active' OR f.deadline IS NULL OR f.deadline > NOW())";
     }
     if($q)  {
         $like = $build_like($q);
@@ -101,6 +101,20 @@ function kbf_dashboard_find_funds_tab() {
           order:3;
           flex:0 0 auto;
         }
+      }
+      @media (max-width: 720px){
+        .kbff-filter-btn{
+          order:3;
+          margin-right:auto;
+        }
+        #kbff-near-me-btn,
+        #kbff-search-form .kbf-btn.kbf-btn-primary{
+          order:4;
+        }
+      }
+      #kbf-explore-tip{
+        display:block;
+        width:100%;
       }
       .kbf-explore-grid{
         display:grid;
@@ -631,7 +645,7 @@ function kbf_dashboard_find_funds_tab() {
     <!-- MODAL: Report -->
     <div id="kbff-modal-report" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3 class="kbf-section-title">Report This Fund</h3><button class="kbf-modal-close" onclick="document.getElementById('kbff-modal-report').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-header"><h3 class="kbf-section-title">Report This Fund</h3><button class="kbf-modal-close" onclick="var m=document.getElementById('kbff-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}">&times;</button></div>
         <div class="kbf-modal-body">
           <form id="kbff-report-form">
             <input type="hidden" name="fund_id" id="kbff-report-fund-id">
@@ -645,7 +659,7 @@ function kbf_dashboard_find_funds_tab() {
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbff-modal-report').style.display='none'">Cancel</button>
+          <button class="kbf-btn kbf-btn-secondary" onclick="var m=document.getElementById('kbff-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}">Cancel</button>
           <button class="kbf-btn kbf-btn-danger" onclick="kbffSubmitReport('<?php echo $nonce_report; ?>')">Submit Report</button>
         </div>
       </div>
@@ -714,7 +728,7 @@ function kbf_dashboard_find_funds_tab() {
           </button>
         </form>
       </div>
-      <div class="kbf-cta-note" id="kbf-explore-tip" style="font-size:12.5px;color:var(--kbf-slate);margin-top:10px;">
+      <div class="kbf-cta-note" id="kbf-explore-tip" style="font-size:12.5px;color:var(--kbf-slate);margin-top:10px;width:100%;">
         <span class="kbf-strong">Tip:</span> Funds with regular updates raise up to 3x more.
       </div>
     </div>
@@ -890,7 +904,7 @@ function kbf_dashboard_find_funds_tab() {
                   <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Share
                 </button>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();console.log('KBF Report Abuse click (explore)', <?php echo (int)$f->id; ?>);var m=document.getElementById('kbff-modal-report');if(m){document.getElementById('kbff-report-fund-id').value=<?php echo (int)$f->id; ?>;m.style.display='flex';m.classList.add('is-open');}else{console.warn('KBF report modal not found');}">
                   <i class="ph ph-flag kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Report Abuse
                 </button>
@@ -912,7 +926,7 @@ function kbf_dashboard_find_funds_tab() {
                   <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Share
                 </button>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffOpenReport(<?php echo $f->id; ?>)">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();console.log('KBF Report Abuse click (explore)', <?php echo (int)$f->id; ?>);var m=document.getElementById('kbff-modal-report');if(m){document.getElementById('kbff-report-fund-id').value=<?php echo (int)$f->id; ?>;m.style.display='flex';m.classList.add('is-open');}else{console.warn('KBF report modal not found');}">
                   <i class="ph ph-flag kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Report Abuse
                 </button>
@@ -1186,7 +1200,13 @@ function kbf_dashboard_find_funds_tab() {
         });
     });
 
-    window.kbffOpenReport=function(id){document.getElementById('kbff-report-fund-id').value=id;document.getElementById('kbff-modal-report').style.display='flex';};
+      window.kbffOpenReport=function(id){
+        var m=document.getElementById('kbff-modal-report');
+        if(!m) return;
+        document.getElementById('kbff-report-fund-id').value=id;
+        m.style.display='flex';
+        m.classList.add('is-open');
+      };
     window.kbffOpenSponsor=function(id,title,goal,raised,img){
         document.getElementById('kbff-fund-id').value=id;
         document.getElementById('kbff-sponsor-form').reset();
@@ -1277,14 +1297,30 @@ function kbf_dashboard_find_funds_tab() {
         const form=document.getElementById('kbff-report-form');
         const btn=document.querySelector('#kbff-modal-report .kbf-modal-footer .kbf-btn-danger');
         const msg=document.getElementById('kbff-report-msg');
+        if(!form || !btn || !msg) return;
+        var reasonEl = form.querySelector('[name="reason"]');
+        var detailsEl = form.querySelector('[name="details"]');
+        if(!reasonEl || !detailsEl || !reasonEl.value || !detailsEl.value.trim()){
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">Please fill all required fields.</div>';
+            return;
+        }
         kbfSetBtnLoading(btn,true,'Submitting...');
         kbfSetSkeleton(msg,true);
         const fd=new FormData(form);fd.append('action','kbf_report_fund');fd.append('nonce',nonce);
-        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
-            msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
-            if(j.success)setTimeout(()=>{document.getElementById('kbff-modal-report').style.display='none';},1800);
+        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>{
+            return r.json().catch(function(){
+                return r.text().then(function(t){
+                    return {success:false,data:{message:t && t.trim() ? t.trim() : 'Request failed.'}};
+                });
+            });
+        }).then(j=>{
+            msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+(j.data && j.data.message ? j.data.message : 'Request failed.')+'</div>';
+            if(j.success)setTimeout(()=>{var m=document.getElementById('kbff-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}},1800);
             else{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
-        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
+        }).catch(()=>{
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">Request failed. Please try again.</div>';
+            kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false);
+        });
     };
     (function(){
         var tipEl = document.getElementById('kbf-explore-tip');

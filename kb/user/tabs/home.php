@@ -602,6 +602,7 @@
         $pct = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
         $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
         $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
+        $is_inactive = ($days_left !== null && $days_left <= 0);
         $photo_list = $f->photos ? json_decode($f->photos, true) : [];
         $photo_json = wp_json_encode(array_values(array_filter(is_array($photo_list) ? $photo_list : [])));
         $benefit_list = $f->benefits ? json_decode($f->benefits, true) : [];
@@ -664,7 +665,7 @@
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
                   <span class="kbf-clamp-2 kbf-strong" style="font-size:15px;max-width:520px;"><?php echo esc_html($f->title); ?></span>
-                <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
+                <span class="kbf-badge kbf-badge-<?php echo $is_inactive ? 'suspended' : $f->status; ?>"><?php echo $is_inactive ? 'Inactive' : ucfirst($f->status); ?></span>
               </div>
               <div class="kbf-meta">
                 <div class="kbf-meta-row">

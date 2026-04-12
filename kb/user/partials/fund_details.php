@@ -822,7 +822,7 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- Report Modal -->
     <div id="kbf-modal-report" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3>Report This Fund</h3><button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-report')">&times;</button></div>
+        <div class="kbf-modal-header"><h3>Report This Fund</h3><button class="kbf-modal-close" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}">&times;</button></div>
         <div class="kbf-modal-body">
           <form id="kbf-report-form">
             <input type="hidden" name="fund_id" value="<?php echo $fund->id; ?>">
@@ -834,7 +834,7 @@ function bntm_shortcode_kbf_fund_details() {
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-report')">Cancel</button>
+          <button class="kbf-btn kbf-btn-secondary" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}">Cancel</button>
           <button class="kbf-btn kbf-btn-danger" onclick="kbfSpdReport('<?php echo $nonce_report; ?>')">Submit Report</button>
         </div>
       </div>
@@ -1046,7 +1046,7 @@ function bntm_shortcode_kbf_fund_details() {
                   <div class="kbf-more-menu" id="kbf-more-menu">
                     <button type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('<?php echo esc_js($share_url); ?>');">Share</button>
                     <button type="button" onclick="kbfShowModal('kbf-modal-poster')">Create Poster</button>
-                    <button type="button" onclick="kbfShowModal('kbf-modal-report')">Report Abuse</button>
+                      <button type="button" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.style.display='flex';m.classList.add('is-open');}">Report Abuse</button>
                     <button type="button" onclick="kbfShowModal('kbf-modal-rating')">Credibility Score</button>
                   </div>
                 </div>
@@ -1507,14 +1507,28 @@ function bntm_shortcode_kbf_fund_details() {
         const form=document.getElementById('kbf-report-form');
         const btn=document.querySelector('#kbf-modal-report .kbf-modal-footer .kbf-btn-danger');
         const msg=document.getElementById('kbf-rpt-msg');
+        if(!form || !btn || !msg) return;
+        var reasonEl = form.querySelector('[name="reason"]');
+        var detailsEl = form.querySelector('[name="details"]');
+        if(!reasonEl || !detailsEl || !reasonEl.value || !detailsEl.value.trim()){
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">Please fill all required fields.</div>';
+            return;
+        }
         kbfSetBtnLoading(btn,true,'Submitting...');
         kbfSetSkeleton(msg,true);
         kbfSetLoadingPage(true);
         const fd=new FormData(form);fd.append('action','kbf_report_fund');fd.append('nonce',nonce);
-        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
-            msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
+        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>{
+            return r.json().catch(function(){
+                return r.text().then(function(t){
+                    return {success:false,data:{message:t && t.trim() ? t.trim() : 'Request failed.'}};
+                });
+            });
+        }).then(j=>{
+            msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+(j.data && j.data.message ? j.data.message : 'Request failed.')+'</div>';
         if(j.success){
-            kbfHideModal('kbf-modal-report');
+            var m=document.getElementById('kbf-modal-report');
+            if(m){m.classList.remove('is-open');m.style.display='none';}
             if(form) form.reset();
         } else {
                 kbfSetBtnLoading(btn,false); 
@@ -1522,6 +1536,7 @@ function bntm_shortcode_kbf_fund_details() {
             }
             kbfSetLoadingPage(false);
         }).catch(()=>{ 
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">Request failed. Please try again.</div>';
             kbfSetBtnLoading(btn,false); 
             kbfSetSkeleton(msg,false);
             kbfSetLoadingPage(false);
