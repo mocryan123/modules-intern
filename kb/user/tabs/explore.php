@@ -366,7 +366,6 @@ function kbf_dashboard_find_funds_tab() {
       .kbf-explore-more-menu .kbf-btn-sm{
         width:100%;
         min-width:0;
-        height:auto;
         padding:8px 10px;
         justify-content:flex-start;
         border:0;

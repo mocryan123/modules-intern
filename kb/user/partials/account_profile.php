@@ -111,6 +111,7 @@ function bntm_shortcode_kbf_organizer_profile() {
           max-width:100%;
         }
         .kbf-org-avatar{position:relative;width:70px;height:70px;flex-shrink:0;}
+        .kbf-meta{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
         .kbf-org-avatar > img,
         .kbf-org-avatar > .kbf-org-avatar-fallback{
           width:70px;height:70px;border-radius:50%;object-fit:cover;display:block;
@@ -494,19 +495,17 @@ function bntm_shortcode_kbf_organizer_profile() {
           <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status ?? ''); ?>">
             <div class="kbf-card-header">
               <div style="flex:1;">
-                <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px;">
+                <div style="display:flex;flex-direction:row;gap:6px;margin-bottom:4px;">
                   <span class="kbf-card-title kbf-strong"><?php echo esc_html($f->title); ?></span>
                   <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>" style="width:max-content;"><?php echo ucfirst($f->status); ?></span>
                 </div>
                 <div class="kbf-meta">
                   <div class="kbf-meta-row">
-                    <span class="kbf-meta-item">
+                      <span class="kbf-meta-item">
                       <i class="ph ph-tag kbf-icon" aria-hidden="true"></i>
                       <?php echo esc_html($f->category); ?>
                     </span>
                     <span class="kbf-meta-divider"></span>
-                  </div>
-                  <div class="kbf-meta-row">
                     <?php if($days_left!==null): ?>
                       <span class="kbf-meta-item kbf-meta-strong" style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;">
                         <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
@@ -518,7 +517,6 @@ function bntm_shortcode_kbf_organizer_profile() {
                       <i class="ph ph-users kbf-icon" aria-hidden="true"></i>
                       <?php echo $sc; ?> sponsors
                     </span>
-                    <span class="kbf-meta-divider"></span>
                   </div>
                 </div>
               </div>
@@ -559,23 +557,33 @@ function bntm_shortcode_kbf_organizer_profile() {
         <?php endif; ?>
 
         <div class="kbf-card" style="margin-bottom:16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
-            <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin:0;text-transform:uppercase;letter-spacing:.5px;">Credibility Score</h4>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span style="display:inline-flex;gap:2px;line-height:1;font-size:12px;">
-                <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:12px; filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)" aria-hidden="true"></i>
-              </span>
-              <span style="font-size:12.5px;" class="kbf-strong"><?php echo number_format((float)$profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
+          <div class="kbf-card-header">
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin:0;text-transform:uppercase;letter-spacing:.5px;">Credibility Score</h4>
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:14px;color:#3b82f6;" aria-hidden="true"></i>
+                  <span style="font-size:15px;font-weight:700;color:var(--kbf-navy);"><?php echo number_format((float)$profile->rating,1); ?></span>
+                  <span style="font-size:12px;color:var(--kbf-slate);">/5 (<?php echo (int)$profile->rating_count; ?>)</span>
+                </div>
+              </div>
             </div>
           </div>
           <?php if($has_reviewed): ?>
-            <span class="kbf-meta" style="font-size:11.5px;display:block;margin-bottom:10px;">Already scored</span>
+            <div class="kbf-meta" style="margin-bottom:10px;">
+              <span class="kbf-meta-item" style="color:#3b82f6;font-weight:600;">
+                <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:13px;" aria-hidden="true"></i>
+                Already scored
+              </span>
+            </div>
           <?php elseif($is_self): ?>
             <!-- Hidden for self -->
           <?php elseif(!is_user_logged_in()): ?>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" disabled style="margin-bottom:10px;padding:6px 12px;opacity:0.6;cursor:not-allowed;">Log in to score</button>
           <?php else: ?>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="margin-bottom:10px;padding:6px 12px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Score</button>
+            <div class="kbf-card-actions">
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="padding:6px 12px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Score</button>
+            </div>
           <?php endif; ?>
           <?php if(empty($reviews)): ?>
             <div class="kbf-empty" style="padding:18px 10px;"><p>No scores yet.</p></div>

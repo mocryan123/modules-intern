@@ -230,9 +230,9 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-fund-header-rating{display:flex;align-items:center;gap:6px;margin-top:4px;}
     .kbf-fund-rating-pill{
       display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;
-      font-size:12px;font-weight:700;color:#fff;background:#6fb6ff;
+      font-size:12px;font-weight:700;color:#3b82f6;background:#e0eaff;
     }
-    .kbf-fund-rating-pill i{font-size:12px;}
+    .kbf-fund-rating-pill i{font-size:12px;color:#3b82f6;}
     .kbf-fund-rating-empty{background:#f1f5f9;color:var(--kbf-slate);}
     .kbf-fund-rating-label{font-size:11.5px;color:var(--kbf-slate);font-weight:500;}
     .kbf-category-pill,
