@@ -180,22 +180,48 @@ function bntm_shortcode_kbf_fund_details() {
       line-height:1.25;
       letter-spacing:-0.2px;
     }
-    .kbf-detail-meta{
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-      font-size:12.5px;
-      color:#64748b;
+    .kbf-fund-header{margin-bottom:20px;}
+    .kbf-fund-header-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap; padding-top: 10px;}
+    .kbf-fund-organizer-link{text-decoration:none !important;}
+    .kbf-fund-organizer-avatar{
+      position:relative;width:44px;height:44px;flex-shrink:0;cursor:pointer;
+      transition:transform .2s ease;border-radius:50%;
     }
-    .kbf-detail-meta-item{
-      display:flex;
-      align-items:center;
-      gap:6px;
+    .kbf-fund-organizer-avatar:hover{transform:scale(1.06);}
+    .kbf-fund-organizer-avatar img{
+      width:44px;height:44px;border-radius:50%;object-fit:cover;display:block;border:2px solid var(--kbf-border);
     }
-    .kbf-detail-meta-item i{
-      font-size:14px;
-      filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%);
+    .kbf-fund-organizer-avatar-placeholder{
+      width:44px;height:44px;border-radius:50%;background:var(--kbf-navy);
+      display:flex;align-items:center;justify-content:center;border:2px solid var(--kbf-border);
     }
+    .kbf-fund-organizer-avatar-placeholder i{font-size:20px;color:#fff;}
+    .kbf-fund-verified-badge{
+      position:absolute;bottom:-1px;right:-1px;width:16px;height:16px;border-radius:50%;
+      background:#22c55e;border:2px solid #fff;display:flex;align-items:center;justify-content:center;
+      box-shadow:0 2px 6px rgba(34,197,94,.3);line-height:1;
+    }
+    .kbf-fund-verified-badge i{font-size:10px;color:#fff;}
+    .kbf-fund-header-info{flex:1;min-width:0;}
+    .kbf-fund-organizer-name-row{
+      display:flex;align-items:baseline;gap:6px;margin-bottom:4px;flex-wrap:wrap;
+    }
+    .kbf-fund-organizer-label{font-size:11.5px;color:var(--kbf-slate);font-weight:500;}
+    .kbf-fund-header-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+    .kbf-fund-tag{
+      display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;
+      font-size:11px;font-weight:500;color:var(--kbf-slate);background:#f1f5f9;
+    }
+    .kbf-fund-tag i{font-size:12px;opacity:.7;}
+    .kbf-fund-tag-type{background:#eef4ff;color:#1e40af;font-weight:600;}
+    .kbf-fund-header-rating{display:flex;align-items:center;gap:6px;margin-top:4px;}
+    .kbf-fund-rating-pill{
+      display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;
+      font-size:12px;font-weight:700;color:#fff;background:#6fb6ff;
+    }
+    .kbf-fund-rating-pill i{font-size:12px;}
+    .kbf-fund-rating-empty{background:#f1f5f9;color:var(--kbf-slate);}
+    .kbf-fund-rating-label{font-size:11.5px;color:var(--kbf-slate);font-weight:500;}
     .kbf-category-pill,
     .kbf-badge{
       display:inline-flex;
@@ -1077,30 +1103,52 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
 
         <!-- Title + Meta -->
-        <div class="kbf-section-title" style="margin-bottom:20px;">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
-              <span class="kbf-category-pill">
-                <i class="ph ph-tag kbf-icon" style="font-size:11px; filter:invert(34%) sepia(8%) saturate(1386%) hue-rotate(182deg) brightness(93%) contrast(85%)" aria-hidden="true"></i>
-                <?php echo esc_html(ucfirst(strtolower((string)$fund->category))); ?>
-              </span>
-              <span class="kbf-fundtype-pill"><?php echo esc_html($funder_type_label); ?></span>
-            </div>
-          <h1 class="kbf-detail-title"><?php echo esc_html($fund->title); ?></h1>
-          <div class="kbf-detail-meta">
-            <?php if(!empty($fund->location)): ?>
-              <span class="kbf-detail-meta-item">
-                <i class="ph ph-map-pin kbf-icon" aria-hidden="true"></i>
-                <?php echo esc_html($fund->location); ?>
-              </span>
-            <?php endif; ?>
-            <?php if(!empty($fund->organizer_name)): ?>
-              <a href="<?php echo esc_url($profile_url); ?>" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--kbf-blue);text-decoration:none;font-weight:600;">
-                <span class="kbf-detail-meta-item">
-                  <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
+        <div class="kbf-fund-header">
+          <div class="kbf-fund-header-tags" style="margin-top:10px;">
+            <span class="kbf-fund-tag">
+              <i class="ph ph-tag kbf-icon"></i>
+              <?php echo esc_html(ucfirst(strtolower((string)$fund->category))); ?>
+            </span>
+            <span class="kbf-fund-tag kbf-fund-tag-type"><?php echo esc_html($funder_type_label); ?></span>
+          </div>
+          <h1 class="kbf-detail-title" style="margin:4px 0 0;"><?php echo esc_html($fund->title); ?></h1>
+          <div class="kbf-fund-header-top">
+            <a href="<?php echo esc_url($profile_url); ?>" class="kbf-fund-organizer-link" style="text-decoration:none;">
+              <div class="kbf-fund-organizer-avatar">
+                <?php if($organizer && !empty($organizer->avatar_url)): ?>
+                  <img src="<?php echo esc_url($organizer->avatar_url); ?>" alt="<?php echo esc_attr($fund->organizer_name); ?>">
+                <?php else: ?>
+                  <div class="kbf-fund-organizer-avatar-placeholder">
+                    <i class="ph ph-user kbf-icon"></i>
+                  </div>
+                <?php endif; ?>
+                <?php if($organizer && $organizer->is_verified): ?>
+                  <span class="kbf-fund-verified-badge" aria-label="Verified"><i class="ph-fill ph-seal-check kbf-icon"></i></span>
+                <?php endif; ?>
+              </div>
+            </a>
+            <div class="kbf-fund-header-info">
+              <div class="kbf-fund-organizer-name-row">
+                <a href="<?php echo esc_url($profile_url); ?>" style="color:var(--kbf-blue);text-decoration:none;font-weight:600;font-size:14px;">
                   <?php echo esc_html($fund->organizer_name); ?>
-                </span>
-              </a>
-            <?php endif; ?>
+                </a>
+              </div>
+              <div class="kbf-fund-header-rating">
+                <?php $cred_score = $organizer && isset($organizer->rating) ? (float)$organizer->rating : 0; ?>
+                <?php if($cred_score > 0): ?>
+                  <span class="kbf-fund-rating-pill">
+                    <i class="ph-fill ph-thumbs-up kbf-icon"></i>
+                    <?php echo number_format($cred_score, 1); ?>
+                  </span>
+                  <span class="kbf-fund-rating-label">Credibility Score</span>
+                <?php else: ?>
+                  <span class="kbf-fund-rating-pill kbf-fund-rating-empty">
+                    <i class="ph-fill ph-thumbs-up kbf-icon"></i>
+                    Not rated yet
+                  </span>
+                <?php endif; ?>
+              </div>
+            </div>
           </div>
         </div>
 
