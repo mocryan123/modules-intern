@@ -1858,9 +1858,10 @@ function bntm_shortcode_bae() {
                     <p id="bae-confirm-msg"></p>
                 </div>
                 <div class="bae-modal-footer">
-                    <button class="bae-btn bae-btn-outline" id="bae-confirm-cancel">Cancel</button>
-                    <button class="bae-btn bae-btn-danger" id="bae-confirm-ok">Confirm</button>
-                </div>
+    <button class="bae-btn bae-btn-outline" id="bae-modal-cancel">Close</button>
+    <button class="bae-btn bae-btn-outline" id="bae-modal-download-png">Download PNG</button>  <!-- ADD THIS -->
+    <button class="bae-btn bae-btn-primary" id="bae-modal-copy">Copy HTML</button>
+</div>
             </div>
         </div>
 
@@ -3600,6 +3601,52 @@ function bntm_shortcode_bae() {
                 });
             });
         }
+
+
+           // Load html2canvas lazily then download
+var dlPngBtn = document.getElementById('bae-modal-download-png');
+if (dlPngBtn) {
+    dlPngBtn.addEventListener('click', function() {
+        var target = modalBody.querySelector('.bae-ai-asset') || modalBody;
+        dlPngBtn.textContent = 'Rendering...';
+        dlPngBtn.disabled = true;
+
+        // Load html2canvas if not already loaded
+        function doCapture() {
+            html2canvas(target, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            }).then(function(canvas) {
+                var link = document.createElement('a');
+                var title = (modalTitle.textContent || 'asset').toLowerCase().replace(/\s+/g, '-');
+                link.download = title + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                dlPngBtn.textContent = 'Download PNG';
+                dlPngBtn.disabled = false;
+            }).catch(function() {
+                dlPngBtn.textContent = 'Failed — retry';
+                dlPngBtn.disabled = false;
+            });
+        }
+
+        if (window.html2canvas) {
+            doCapture();
+        } else {
+            var s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            s.onload = doCapture;
+            s.onerror = function() {
+                dlPngBtn.textContent = 'Failed — retry';
+                dlPngBtn.disabled = false;
+            };
+            document.head.appendChild(s);
+        }
+    });
+}                                                                                                                                                                                                                                                                                           
+                    
 
         // ── Confirm Modal ──────────────────────────────────────────────────
         var confirmOverlay = document.getElementById('bae-confirm-overlay');
