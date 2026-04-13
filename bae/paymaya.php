@@ -165,10 +165,14 @@ function bae_pm_handle_redirect() {
             delete_user_meta($user_id, 'bae_pm_pending_ref');
             delete_user_meta($user_id, 'bae_pm_pending_plan');
             set_transient('bae_pm_success_' . $user_id, $pending_plan, 60);
+
+            $mothie_page = get_page_by_path('mothie');
+            $clean_url   = $mothie_page ? get_permalink($mothie_page->ID) : (get_site_url() . '/mothie/');
+            wp_redirect($clean_url . '?bae_upgraded=1');
+            exit;
         }
     }
 }
-
 add_action('init', 'bae_pm_webhook_listener');
 
 function bae_pm_webhook_listener() {
