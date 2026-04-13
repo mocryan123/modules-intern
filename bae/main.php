@@ -4233,7 +4233,7 @@ function bae_overview_tab($user_id, $profile) {
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                 Logo Studio
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div class="bae-logo-studio-grid">
 
                 <!-- Sub-panel A: Upload -->
                 <div style="padding:20px;background:var(--bg-3);border:2px dashed var(--border-2);border-radius:18px;transition:border-color .2s;" id="bae-logo-upload-area">
@@ -4373,6 +4373,17 @@ function bae_overview_tab($user_id, $profile) {
         </div><!-- /bae-bento-grid -->
 
         <style>
+            .bae-logo-studio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 700px) {
+    .bae-logo-studio-grid {
+        grid-template-columns: 1fr;
+    }
+}
         .bae-icon-tile:hover { border-color: rgba(139,92,246,.4) !important; background: rgba(139,92,246,.08) !important; }
         .bae-icon-tile.selected { border-color: #8b5cf6 !important; background: rgba(139,92,246,.15) !important; }
         #bae-icon-picker::-webkit-scrollbar { width: 4px; }
