@@ -200,6 +200,11 @@ function kbf_auth_signup_rate_limit_key($ip) {
     return 'kbf_signup_' . md5((string) $ip);
 }
 
+function kbf_auth_signup_cooldown($strikes) {
+    $cooldowns = [0 => 3 * MINUTE_IN_SECONDS, 1 => 15 * MINUTE_IN_SECONDS, 2 => 30 * MINUTE_IN_SECONDS];
+    return $cooldowns[$strikes] ?? 60 * MINUTE_IN_SECONDS;
+}
+
 function kbf_auth_is_signup_rate_limited($ip, &$retry_after = 0) {
     $key = kbf_auth_signup_rate_limit_key($ip);
     $state = get_transient($key);
@@ -217,16 +222,17 @@ function kbf_auth_register_signup_attempt($ip) {
     if (!$ip) return;
     $key = kbf_auth_signup_rate_limit_key($ip);
     $state = get_transient($key);
-    if (!$state) {
+    $now = time();
+    if (!$state || empty($state['expires']) || $state['expires'] < $now) {
+        // New block or previous window expired → increment strikes.
+        $strikes = isset($state['strikes']) ? (int) $state['strikes'] + 1 : 0;
         $state = [
-            'count' => 1,
-            'expires' => time() + KBF_AUTH_SIGNUP_WINDOW,
+            'count'   => 1,
+            'strikes' => $strikes,
+            'expires' => $now + kbf_auth_signup_cooldown($strikes),
         ];
     } else {
         $state['count'] = (int) $state['count'] + 1;
-        if (empty($state['expires']) || $state['expires'] < time()) {
-            $state['expires'] = time() + KBF_AUTH_SIGNUP_WINDOW;
-        }
     }
     set_transient($key, $state, KBF_AUTH_SIGNUP_WINDOW);
 }
