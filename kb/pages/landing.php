@@ -2024,7 +2024,7 @@ function bntm_kbf_render_landing() {
             <a href="#kbf-home" onclick="kbfMobileNav('kbf-home')">Home</a>
             <a href="#kbf-how" onclick="kbfMobileNav('kbf-how')">Features</a>
             <a href="#kbf-donation" onclick="kbfMobileNav('kbf-donation')">About</a>
-            <a href="#kbf-faq" onclick="kbfMobileNav('kbf-faq')">FAQ</a>  
+            <a href="#kbf-faq" onclick="kbfMobileNav('kbf-faq')">FAQs</a>  
           <div class="kbf-mobile-menu-actions">
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
           </div>
