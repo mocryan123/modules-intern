@@ -3130,7 +3130,6 @@ function bntm_shortcode_bae() {
         rgba(from var(--bg) r g b / 0.75) 50%,
         transparent 100%
     );
-    backdrop-filter: blur(0px);
     opacity: 0;
     transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
     z-index: 1;
@@ -3141,7 +3140,6 @@ function bntm_shortcode_bae() {
 /* Trigger on hover */
 .bae-asset-card:hover::after {
     opacity: 1;
-    backdrop-filter: blur(4px);
 }
 .bae-asset-card:hover .bae-asset-info,
 .bae-asset-card:hover .bae-asset-actions {
