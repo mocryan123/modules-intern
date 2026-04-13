@@ -2621,7 +2621,6 @@ function bae_admin_dashboard() {
         function baeAdmSaveAllSettings() {
     var btn = document.getElementById('bae-settings-save');
     if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
-
     var fd = new FormData();
     fd.append('action', 'bae_admin_save_all_settings');
     fd.append('nonce', _baeAdmNonce);
@@ -2632,8 +2631,7 @@ function bae_admin_dashboard() {
     fd.append('stripe_public',  document.getElementById('bae-stripe-public') ? document.getElementById('bae-stripe-public').value.trim() : '');
     fd.append('stripe_secret',  document.getElementById('bae-stripe-secret') ? document.getElementById('bae-stripe-secret').value.trim() : '');
     fd.append('stripe_webhook', document.getElementById('bae-stripe-webhook') ? document.getElementById('bae-stripe-webhook').value.trim() : '');
-
-    fetch(ajaxurl, { method: 'POST', body: fd })
+    fetch(_baeAdmAj, { method: 'POST', body: fd })
         .then(function(r) { return r.json(); })
         .then(function(j) {
             if (btn) { btn.textContent = 'Save All Settings'; btn.disabled = false; }
@@ -2643,7 +2641,7 @@ function bae_admin_dashboard() {
             if (btn) { btn.textContent = 'Save All Settings'; btn.disabled = false; }
             baeAdmToast('Network error. Try again.', 'error');
         });
-}
+        }
 
     // ── Save PayMaya
     function baeAdmSavePaymongo() {
