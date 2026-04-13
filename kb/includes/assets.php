@@ -186,6 +186,21 @@ function kbf_global_assets() {
         visibility:hidden !important;
         pointer-events:none !important;
     }
+    /* Override: Kill default plugin preloader globally (before KBF loads) */
+    #bntmLoadingOverlay,
+    .bntm-loading-overlay,
+    body > #bntmLoadingOverlay,
+    #bntmLoadingOverlay *,
+    .bntm-loading-overlay *{
+        display:none !important;
+        opacity:0 !important;
+        visibility:hidden !important;
+        width:0 !important;
+        height:0 !important;
+        position:absolute !important;
+        left:-9999px !important;
+        pointer-events:none !important;
+    }
     /* Kill any top offset/white strip */
     .bntm-topbar{
         height:0 !important;
