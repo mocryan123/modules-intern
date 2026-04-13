@@ -477,6 +477,290 @@ function bntm_ajax_ch_get_posts() {
     wp_send_json_success(['posts' => $posts]);
 }
 
+// ============================================================
+// FEED SORT — returns rendered post-card HTML for AJAX tab switching
+// ============================================================
+function bntm_ajax_ch_feed_sort() {
+    global $wpdb;
+
+    check_ajax_referer('ch_feed_nonce', 'nonce');
+
+    $user_id  = get_current_user_id();
+    $sort     = sanitize_text_field($_POST['sort']     ?? 'new');
+    $cat_slug = sanitize_text_field($_POST['cat']      ?? '');
+    $search   = sanitize_text_field($_POST['s']        ?? '');
+    $location = sanitize_text_field($_POST['location'] ?? '');
+    $page     = max(1, (int)($_POST['paged'] ?? 1));
+    $per_page = 15;
+    $offset   = ($page - 1) * $per_page;
+
+    // Sort order
+    $order_by = match($sort) {
+        'top'      => "p.vote_count DESC",
+        'trending' => "(p.vote_count + p.comment_count * 2) DESC",
+        default    => "p.created_at DESC",
+    };
+
+    // Category filter
+    $cat_filter = '';
+    if ($cat_slug) {
+        $cat_obj = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}ch_categories WHERE slug = %s AND (status='active' OR status='' OR status IS NULL)",
+            $cat_slug
+        ));
+        if ($cat_obj) $cat_filter = " AND p.category_id = {$cat_obj->id}";
+    }
+
+    // Location filter
+    $location_filter = '';
+    if ($location) {
+        $location_filter = $wpdb->prepare(" AND up.location = %s", $location);
+    }
+
+    // Search filter
+    $search_filter = '';
+    if ($search) {
+        $like = '%' . $wpdb->esc_like($search) . '%';
+        $search_filter = $wpdb->prepare(" AND (p.title LIKE %s OR p.content LIKE %s)", $like, $like);
+    }
+
+    // Privacy filter
+    $privacy_filter = '';
+    $followed = [];
+    if (!$user_id) {
+        $privacy_filter = " AND (c.is_private = 0 OR c.is_private IS NULL)";
+    } elseif (!current_user_can('manage_options')) {
+        $fids = $wpdb->get_col($wpdb->prepare(
+            "SELECT category_id FROM {$wpdb->prefix}ch_follows WHERE user_id = %d", $user_id
+        ));
+        $followed = array_flip($fids);
+        $followed_ids = empty($fids) ? [0] : $fids;
+        $phs = implode(',', array_fill(0, count($followed_ids), '%d'));
+        $privacy_filter = $wpdb->prepare(
+            " AND (c.is_private = 0 OR c.is_private IS NULL OR p.category_id IN ($phs))",
+            ...$followed_ids
+        );
+    }
+
+    $base_where = "WHERE p.status = 'active' $cat_filter $location_filter $search_filter$privacy_filter";
+
+    $posts = $wpdb->get_results(
+        "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
+                u.display_name as author_name, u.karma_points as author_karma, u.location as author_location
+         FROM {$wpdb->prefix}ch_posts p
+         LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+         LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
+         LEFT JOIN {$wpdb->prefix}ch_user_profiles up ON p.user_id = up.user_id
+         $base_where
+         ORDER BY p.is_pinned DESC, $order_by
+         LIMIT {$per_page} OFFSET {$offset}"
+    );
+
+    // User votes for active state
+    $user_post_votes = [];
+    if ($user_id && !empty($posts)) {
+        $post_ids = array_map(fn($p) => (int)$p->id, $posts);
+        $phs = implode(',', array_fill(0, count($post_ids), '%d'));
+        $vote_rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT target_id, value FROM {$wpdb->prefix}ch_votes
+             WHERE user_id = %d AND target_type = 'post' AND target_id IN ($phs)",
+            array_merge([$user_id], $post_ids)
+        ));
+        foreach ($vote_rows as $vr) {
+            $user_post_votes[(int)$vr->target_id] = (int)$vr->value;
+        }
+    }
+
+    // User bookmarks
+    $user_bookmarks = [];
+    if ($user_id) {
+        $bms = $wpdb->get_col($wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->prefix}ch_bookmarks WHERE user_id = %d", $user_id
+        ));
+        $user_bookmarks = array_flip($bms);
+    }
+
+    $nonce = wp_create_nonce('ch_feed_nonce');
+    $pv_nonce = wp_create_nonce('ch_post_view_nonce');
+
+    ob_start();
+    if (empty($posts)) { ?>
+        <div class="ch-empty-state">
+            <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>No posts yet. Be the first to start a discussion!</p>
+        </div>
+    <?php } else {
+        foreach ($posts as $post) {
+            $uv = $user_post_votes[$post->id] ?? 0;
+            $permalink = get_permalink(); ?>
+            <article class="ch-post-card" data-id="<?php echo (int)$post->id; ?>" data-category="<?php echo $post->category_id; ?>" data-anonymous="<?php echo $post->is_anonymous; ?>">
+                <?php if ($post->is_pinned): ?>
+                <div class="ch-post-pinned-ribbon">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Pinned
+                </div>
+                <?php endif; ?>
+                <div class="ch-post-vote-col">
+                    <?php if ($user_id): ?>
+                    <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                    </button>
+                    <?php endif; ?>
+                    <span class="ch-vote-count"><?php echo (int)$post->vote_count; ?></span>
+                    <?php if ($user_id): ?>
+                    <button class="ch-vote-btn ch-vote-down <?php echo $uv === -1 ? 'active-down' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="-1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <?php endif; ?>
+                </div>
+                <div class="ch-post-body">
+                    <div class="ch-post-meta-row">
+                        <span class="ch-cat-badge" style="background:<?php echo esc_attr($post->cat_color ?? '#FF7551'); ?>20;color:<?php echo esc_attr($post->cat_color ?? '#FF7551'); ?>">
+                            <?php echo esc_html($post->cat_name ?? 'General'); ?>
+                        </span>
+                        <span class="ch-post-author">
+                            <?php echo $post->is_anonymous ? 'Anonymous' : esc_html($post->author_name ?? 'Community Member'); ?>
+                        </span>
+                        <?php if (!$post->is_anonymous && !empty($post->author_location)): ?>
+                        <span class="ch-post-location">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <?php echo esc_html($post->author_location); ?>
+                        </span>
+                        <?php endif; ?>
+                        <span class="ch-post-time"><?php echo human_time_diff(strtotime($post->created_at), current_time('timestamp')); ?> ago</span>
+                    </div>
+                    <h3 class="ch-post-title">
+                        <a href="?view_post=<?php echo $post->rand_id; ?>"><?php echo esc_html($post->title); ?></a>
+                    </h3>
+                    <?php if (function_exists('ch_render_post_media_preview')) echo ch_render_post_media_preview($post->media_urls ?? '', 'feed'); ?>
+                    <p class="ch-post-preview"><?php echo esc_html(wp_trim_words(strip_tags($post->content), 25)); ?></p>
+                    <?php if ($post->tags): ?>
+                    <div class="ch-post-tags" data-tags="<?php echo esc_attr($post->tags); ?>">
+                        <?php foreach (explode(',', $post->tags) as $tag): ?>
+                        <span class="ch-tag">#<?php echo esc_html(trim($tag)); ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                    <div class="ch-post-actions-row">
+                        <a href="?view_post=<?php echo $post->rand_id; ?>" class="ch-post-action">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <?php echo (int)$post->comment_count; ?> comments
+                        </a>
+                        <?php if ($user_id): ?>
+                        <button class="ch-post-action ch-bookmark-btn <?php echo isset($user_bookmarks[$post->id]) ? 'ch-bookmarked' : ''; ?>"
+                                data-post-id="<?php echo (int)$post->id; ?>"
+                                onclick="chBookmark(<?php echo (int)$post->id; ?>, this, '<?php echo esc_attr($nonce); ?>')">
+                            <svg width="14" height="14" fill="<?php echo isset($user_bookmarks[$post->id]) ? 'currentColor' : 'none'; ?>" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                            <?php echo isset($user_bookmarks[$post->id]) ? 'Saved' : 'Save'; ?>
+                        </button>
+                        <button class="ch-post-action" onclick="chReportPost(<?php echo (int)$post->id; ?>, '<?php echo esc_attr($nonce); ?>')">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                            Report
+                        </button>
+                        <?php if ($post->user_id !== 0 && $post->user_id == $user_id || current_user_can('manage_options')): ?>
+                        <button class="ch-post-action ch-post-action-edit" onclick="chOpenEditPostModal(<?php echo (int)$post->id; ?>)">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Edit
+                        </button>
+                        <button class="ch-post-action ch-post-action-delete" onclick="chDeletePost(<?php echo (int)$post->id; ?>, '<?php echo esc_attr($pv_nonce); ?>')">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            Delete
+                        </button>
+                        <?php endif; ?>
+                        <?php endif; ?>
+                        <div class="ch-share-dropdown">
+                            <button class="ch-post-action ch-share-btn" onclick="chToggleShareMenu(this)">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                Share
+                            </button>
+                            <div class="ch-share-menu">
+                                <button class="ch-share-option" onclick="chShareToSocial('twitter', '<?php echo $permalink; ?>?view_post=<?php echo $post->rand_id; ?>', '<?php echo esc_attr($post->title); ?>')">Twitter</button>
+                                <button class="ch-share-option" onclick="chShareToSocial('facebook', '<?php echo $permalink; ?>?view_post=<?php echo $post->rand_id; ?>', '<?php echo esc_attr($post->title); ?>')">Facebook</button>
+                                <button class="ch-share-option" onclick="chShareToSocial('copy', '<?php echo $permalink; ?>?view_post=<?php echo $post->rand_id; ?>')">Copy Link</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        <?php }
+    }
+
+    $html = ob_get_clean();
+
+    // Build the category header HTML
+    $user_id_h = get_current_user_id();
+    $cat_obj_h = null;
+    if ($cat_slug) {
+        $cat_obj_h = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}ch_categories WHERE slug = %s AND (status='active' OR status='' OR status IS NULL)",
+            $cat_slug
+        ));
+    }
+
+    $followed_h = [];
+    if ($user_id_h) {
+        $fids_h = $wpdb->get_col($wpdb->prepare(
+            "SELECT category_id FROM {$wpdb->prefix}ch_follows WHERE user_id = %d", $user_id_h
+        ));
+        $followed_h = array_flip($fids_h);
+    }
+
+    ob_start();
+    if ($cat_obj_h): ?>
+    <div class="ch-cat-hero" style="border-left: 4px solid <?php echo esc_attr($cat_obj_h->color); ?>">
+        <div class="ch-cat-hero-main">
+            <div class="ch-cat-hero-text">
+                <h1><?php echo esc_html($cat_obj_h->name); ?></h1>
+                <p><?php echo esc_html($cat_obj_h->description); ?></p>
+            </div>
+        </div>
+        <div class="ch-cat-hero-meta">
+            <div class="ch-cat-meta-item">
+                <span class="ch-cat-meta-num"><?php echo number_format($cat_obj_h->post_count); ?></span>
+                <span class="ch-cat-meta-label">discussions</span>
+            </div>
+            <div class="ch-cat-meta-item">
+                <span class="ch-cat-meta-num ch-cat-followers" data-cat-id="<?php echo (int)$cat_obj_h->id; ?>"><?php echo number_format($cat_obj_h->follower_count); ?></span>
+                <span class="ch-cat-meta-label">followers</span>
+            </div>
+            <?php if ($user_id_h):
+                $is_following_h = isset($followed_h[$cat_obj_h->id]); ?>
+            <button class="ch-btn ch-btn-sm ch-follow-toggle <?php echo $is_following_h ? 'ch-btn-outline' : 'ch-btn-primary'; ?>"
+                    data-follow-cat-id="<?php echo (int)$cat_obj_h->id; ?>"
+                    data-follow-cat-slug="<?php echo esc_attr($cat_obj_h->slug); ?>"
+                    data-follow-cat-name="<?php echo esc_attr($cat_obj_h->name); ?>"
+                    data-follow-cat-color="<?php echo esc_attr($cat_obj_h->color); ?>"
+                    onclick="chToggleFollowCategory(<?php echo (int)$cat_obj_h->id; ?>, this, '<?php echo esc_attr($nonce); ?>')">
+                <?php echo $is_following_h ? 'Following' : 'Follow'; ?>
+            </button>
+            <button class="ch-btn ch-btn-sm ch-btn-primary"
+                    onclick="chOpenPostInCategory(<?php echo (int)$cat_obj_h->id; ?>)">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Post
+            </button>
+            <?php if ($cat_obj_h->business_id == $user_id_h || current_user_can('manage_options')): ?>
+            <button class="ch-btn ch-btn-sm ch-btn-outline"
+                    onclick="chFeedOpenEditCat(<?php echo (int)$cat_obj_h->id; ?>, '<?php echo esc_js($cat_obj_h->name); ?>', '<?php echo esc_js($cat_obj_h->description ?? ''); ?>', '<?php echo esc_attr($cat_obj_h->color); ?>', <?php echo (int)$cat_obj_h->is_private; ?>, <?php echo (int)$cat_obj_h->require_post_approval; ?>)">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+            </button>
+            <button class="ch-btn ch-btn-sm" style="color:#ef4444;border-color:#fca5a5;"
+                    onclick="chFeedDeleteCat(<?php echo (int)$cat_obj_h->id; ?>, '<?php echo esc_js($cat_obj_h->name); ?>', '<?php echo esc_attr(wp_create_nonce('ch_category_nonce')); ?>')">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Delete
+            </button>
+            <?php endif; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php else: ?>
+    <h2>Community Forum</h2>
+    <?php endif;
+    $header_html = ob_get_clean();
+
+    wp_send_json_success(['html' => $html, 'header' => $header_html]);
+}
+
 function bntm_ajax_ch_get_post_detail() {
     global $wpdb;
     $post_id = (int)($_POST['post_id'] ?? 0);

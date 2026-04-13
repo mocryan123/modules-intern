@@ -449,7 +449,7 @@ function ch_guest_landing_page() {
 
     <?php /* Guaranteed inline fallback for themes without wp_head/wp_footer */ ?>
     <?php
-    echo ch_global_styles();
+    ch_output_global_styles_fallback();
     echo ch_global_scripts();
     $content = ob_get_clean();
     return bntm_universal_container('CivicHub', $content);
@@ -549,7 +549,7 @@ function bntm_shortcode_ch() {
     </div>
 
     <?php
-    echo ch_global_styles();
+    ch_output_global_styles_fallback();
     echo ch_global_scripts();
 
     $content = ob_get_clean();
@@ -2704,7 +2704,7 @@ function ch_public_user_profile($view_uid) {
     $joined     = $wp_user->user_registered ? date('F Y', strtotime($wp_user->user_registered)) : 'Unknown';
 
     ob_start();
-    echo ch_global_styles();
+    ch_output_global_styles_fallback();
     echo ch_global_scripts();
     ?>
     <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
@@ -2836,7 +2836,7 @@ function bntm_shortcode_ch_feed() {
             echo '<script>try{if(localStorage.getItem("ch_dark_mode")==="1"){document.documentElement.classList.add("ch-dark");document.documentElement.style.background="var(--ch-bg,#121214)";document.body&&(document.body.style.background="var(--ch-bg,#121214)");}}catch(e){}</script>';
         }, 1);
         ob_start();
-        echo ch_global_styles();
+        ch_output_global_styles_fallback();
         echo ch_global_scripts();
         $current_profile_p = $wpdb->get_row($wpdb->prepare("SELECT avatar_url FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $user_id));
         $feed_url_back = ch_get_feed_url();
@@ -3045,7 +3045,18 @@ function bntm_shortcode_ch_feed() {
 
     ob_start();
     ?>
-    <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>'; var chFeedUrl = '<?php echo esc_js($feed_url); ?>';</script>
+    <script>
+    var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+    var chFeedUrl = '<?php echo esc_js($feed_url); ?>';
+    window.chFeedState = {
+        nonce:    '<?php echo esc_js($nonce); ?>',
+        sort:     '<?php echo esc_js($sort); ?>',
+        cat:      '<?php echo esc_js($cat_slug); ?>',
+        s:        '<?php echo esc_js($search); ?>',
+        location: '<?php echo esc_js($location); ?>',
+        paged:    <?php echo (int)$page; ?>
+    };
+    </script>
     <nav class="ch-top-nav">
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '#ch-feed-drawer');">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
@@ -3387,7 +3398,7 @@ function bntm_shortcode_ch_feed() {
                     <button type="submit" class="ch-btn ch-btn-secondary" style="width:100%;">Apply</button>
                 </form>
 
-                <a href="<?php echo get_permalink(); ?>" class="ch-cat-link <?php echo !$cat_slug ? 'active' : ''; ?>">
+                <a href="<?php echo get_permalink(); ?>" class="ch-cat-link <?php echo !$cat_slug ? 'active' : ''; ?>" data-cat-slug="">
                     All Topics
                 </a>
                 <?php foreach ($categories as $cat):
@@ -3397,7 +3408,7 @@ function bntm_shortcode_ch_feed() {
                     }
                 ?>
                     <div class="ch-cat-item" style="display:flex; align-items:center; justify-content:space-between; gap:4px;">
-                        <a href="?cat=<?php echo esc_attr($cat->slug); ?>" class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>" style="flex:1;min-width:0;">
+                        <a href="?cat=<?php echo esc_attr($cat->slug); ?>" class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>" style="flex:1;min-width:0;" data-cat-slug="<?php echo esc_attr($cat->slug); ?>">
                             <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
                             <?php echo esc_html($cat->name); ?>
                             <?php if ($cat->is_private): ?>
@@ -3436,7 +3447,7 @@ function bntm_shortcode_ch_feed() {
                     <?php foreach ($followed as $cat_id => $dummy): ?>
                         <?php $cat = $categories_by_id[(int)$cat_id] ?? null; ?>
                         <?php if ($cat): ?>
-                        <a href="?cat=<?php echo esc_attr($cat->slug); ?>" class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>" style="font-size: 14px;" data-followed-cat-id="<?php echo (int)$cat->id; ?>">
+                        <a href="?cat=<?php echo esc_attr($cat->slug); ?>" class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>" style="font-size: 14px;" data-followed-cat-id="<?php echo (int)$cat->id; ?>" data-cat-slug="<?php echo esc_attr($cat->slug); ?>">
                             <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
                             <?php echo esc_html($cat->name); ?>
                         </a>
@@ -3466,6 +3477,7 @@ function bntm_shortcode_ch_feed() {
         <!-- Main Feed -->
         <main class="ch-feed-main">
             <div class="ch-feed-header">
+                <div id="ch-feed-header-inner">
                 <?php if ($cat_obj): ?>
                 <div class="ch-cat-hero" style="border-left: 4px solid <?php echo esc_attr($cat_obj->color); ?>">
                     <div class="ch-cat-hero-main">
@@ -3520,6 +3532,7 @@ function bntm_shortcode_ch_feed() {
                 <?php else: ?>
                 <h2>Community Forum</h2>
                 <?php endif; ?>
+                </div><!-- /ch-feed-header-inner -->
 
                 <div class="ch-feed-toolbar-card">
                     <form method="get" class="ch-search-form">
@@ -3541,10 +3554,10 @@ function bntm_shortcode_ch_feed() {
                                 <?php endforeach; ?>
                             </select>
                         </form>
-                        <div class="ch-sort-tabs">
-                            <a href="?sort=new<?php echo $cat_slug ? '&cat='.$cat_slug : ''; ?><?php echo $location ? '&location='.urlencode($location) : ''; ?><?php echo $search ? '&s='.urlencode($search) : ''; ?>"      class="ch-sort-tab <?php echo $sort==='new'      ?'active':''; ?>">New</a>
-                            <a href="?sort=top<?php echo $cat_slug ? '&cat='.$cat_slug : ''; ?><?php echo $location ? '&location='.urlencode($location) : ''; ?><?php echo $search ? '&s='.urlencode($search) : ''; ?>"      class="ch-sort-tab <?php echo $sort==='top'      ?'active':''; ?>">Top</a>
-                            <a href="?sort=trending<?php echo $cat_slug ? '&cat='.$cat_slug : ''; ?><?php echo $location ? '&location='.urlencode($location) : ''; ?><?php echo $search ? '&s='.urlencode($search) : ''; ?>" class="ch-sort-tab <?php echo $sort==='trending' ?'active':''; ?>">Trending</a>
+                        <div class="ch-sort-tabs" id="ch-sort-tabs">
+                            <button type="button" class="ch-sort-tab <?php echo $sort==='new'      ?'active':''; ?>" data-sort="new">New</button>
+                            <button type="button" class="ch-sort-tab <?php echo $sort==='top'      ?'active':''; ?>" data-sort="top">Top</button>
+                            <button type="button" class="ch-sort-tab <?php echo $sort==='trending' ?'active':''; ?>" data-sort="trending">Trending</button>
                         </div>
                         <a href="#" class="ch-guidelines-link" onclick="chShowGuidelines(); return false;" style="margin-left:auto;">
                             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -3559,7 +3572,7 @@ function bntm_shortcode_ch_feed() {
             $popular_cats = $wpdb->get_results(
                 "SELECT * FROM {$wpdb->prefix}ch_categories
                  WHERE status='active' AND (is_private = 0 OR is_private IS NULL)
-                 ORDER BY post_count DESC LIMIT 6"
+                 ORDER BY post_count DESC LIMIT 3"
             );
             if (!empty($popular_cats) && !$cat_slug && !$search && $page === 1): ?>
             <div class="ch-popular-cats-card">
@@ -3569,7 +3582,7 @@ function bntm_shortcode_ch_feed() {
                 </div>
                 <div class="ch-popular-cats-grid">
                     <?php foreach ($popular_cats as $pcat): ?>
-                    <a href="?cat=<?php echo esc_attr($pcat->slug); ?>" class="ch-pop-cat-chip">
+                    <a href="?cat=<?php echo esc_attr($pcat->slug); ?>" class="ch-pop-cat-chip" data-cat-slug="<?php echo esc_attr($pcat->slug); ?>">
                         <span class="ch-pop-cat-dot" style="background:<?php echo esc_attr($pcat->color); ?>"></span>
                         <span class="ch-pop-cat-name"><?php echo esc_html($pcat->name); ?></span>
                         <span class="ch-pop-cat-count"><?php echo (int)$pcat->post_count; ?></span>
@@ -4568,7 +4581,7 @@ function bntm_shortcode_ch_feed() {
 
     
     <?php
-    echo ch_global_styles();
+    ch_output_global_styles_fallback();
     echo ch_global_scripts();
     echo ch_feed_scripts();
     return ob_get_clean();
@@ -5053,7 +5066,7 @@ function bntm_shortcode_ch_post_view() {
 
     
     <?php
-    echo ch_global_styles();
+    ch_output_global_styles_fallback();
     echo ch_global_scripts();
     echo ch_feed_scripts();
     echo ch_post_view_scripts();

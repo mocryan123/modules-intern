@@ -108,6 +108,17 @@ function bntm_ch_logo_url() {
     return BNTM_CH_URL . rawurlencode('logo.png');
 }
 
+function ch_output_global_styles_fallback() {
+    // Only print once per request. The wp_head hook (priority 2) is the
+    // canonical place; all shortcode/body calls become no-ops after that.
+    static $printed = false;
+    if ($printed) return;
+    $printed = true;
+    if (function_exists('ch_global_styles')) {
+        echo ch_global_styles();
+    }
+}
+
 function ch_get_email_verification_template_id() {
     return (int) apply_filters('ch_email_verification_template_id', 2);
 }
@@ -369,6 +380,27 @@ add_action('wp_enqueue_scripts', function() {
         }
     }
 }, 20);
+
+add_action('wp_head', function() {
+    if (!bntm_ch_is_frontend_context()) return;
+    ?>
+    <script>
+    (function() {
+        try {
+            if (localStorage.getItem('ch_dark_mode') === '1') {
+                document.documentElement.classList.add('ch-dark');
+            }
+        } catch (e) {}
+    })();
+    </script>
+    <?php
+}, 1);
+
+add_action('wp_head', function() {
+    if (!bntm_ch_is_frontend_context()) return;
+    if (!function_exists('ch_global_styles')) return;
+    echo ch_global_styles();
+}, 2);
 
 // ============================================================
 // CORE MODULE FUNCTIONS
@@ -1170,7 +1202,7 @@ function bntm_shortcode_ch_auth() {
     });
     </script>
     <?php
-    echo ch_global_styles();
+    ch_output_global_styles_fallback();
     echo ch_global_scripts();
     return ob_get_clean();
 }
@@ -1442,6 +1474,7 @@ $ajax_actions = [
     'ch_get_announcements'   => ['bntm_ajax_ch_get_announcements', true],
     'ch_get_announcement'    => ['bntm_ajax_ch_get_announcement', true],
     'ch_mention_search'      => ['bntm_ajax_ch_mention_search', false],
+    'ch_feed_sort'           => ['bntm_ajax_ch_feed_sort', false],
 ];
 
 foreach ($ajax_actions as $action => [$callback, $admin_only]) {

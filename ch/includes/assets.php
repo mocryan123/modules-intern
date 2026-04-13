@@ -50,6 +50,20 @@ function ch_global_styles() {
         scroll-padding-top: 80px;
     }
 
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: clip;
+    }
+
+
+
 
     .ch-dashboard-wrap,.ch-feed-wrap,.ch-post-view-wrap,
     .ch-auth-wrap,.ch-my-feed-wrap,.ch-public-profile-wrap,
@@ -1077,6 +1091,37 @@ function ch_global_styles() {
 
     /* ── Small tablet / phablet: 780px ───────────────────────── */
     @media (max-width: 780px) {
+        .ch-top-nav,
+        .ch-dashboard-wrap,
+        .ch-feed-wrap,
+        .ch-post-view-wrap,
+        .ch-auth-wrap,
+        .ch-my-feed-wrap,
+        .ch-public-profile-wrap,
+        .ch-guest-landing-wrap,
+        .ch-mf-page-wrap,
+        .ch-main-content,
+        .ch-feed-main,
+        .ch-post-full,
+        .ch-card,
+        .ch-sidebar-widget,
+        .ch-welcome-card,
+        .ch-auth-card,
+        .ch-modal,
+        .ch-page-header,
+        .ch-page-header-actions,
+        .ch-toolbar,
+        .ch-toolbar-right {
+            max-width: 100%;
+            min-width: 0;
+        }
+        .ch-top-nav {
+            width: 100%;
+            max-width: 100vw;
+            padding-left: 14px;
+            padding-right: 14px;
+            overflow-x: clip;
+        }
         .ch-dashboard-wrap { flex-direction: column; }
         .ch-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--ch-border); padding: 10px 0; }
         .ch-burger-menu-btn { display: flex; align-items: center; justify-content: center; }
@@ -1101,7 +1146,7 @@ function ch_global_styles() {
         .ch-categories-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
         .ch-page-header { flex-direction: column; gap: 12px; }
         .ch-page-header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-        .ch-page-header-actions .ch-btn { flex: 1; justify-content: center; min-width: 120px; }
+        .ch-page-header-actions .ch-btn { flex: 1 1 0; justify-content: center; min-width: 0; }
         .ch-toolbar { flex-direction: column; align-items: flex-start; gap: 8px; }
         .ch-toolbar-right { width: 100%; }
         .ch-toolbar-filters { flex-wrap: wrap; }
@@ -1124,6 +1169,7 @@ function ch_global_styles() {
         .ch-sort-tabs { flex-wrap: wrap; }
         .ch-location-form { width: 100%; }
         .ch-location-select { width: 100%; }
+        .ch-dropdown-panel { min-width: 0; max-width: calc(100vw - 24px); }
         .ch-post-view-grid { grid-template-columns: 1fr; }
         .ch-post-view-wrap { padding: 14px 12px; }
         .ch-post-full { padding: 18px 16px; }
@@ -1177,7 +1223,7 @@ function ch_global_styles() {
 
     /* ── Mobile: 480px ────────────────────────────────────────── */
     @media (max-width: 480px) {
-        .ch-top-nav { padding: 0 16px; height: 56px; }
+        .ch-top-nav { padding: 0 12px; height: 56px; }
         .ch-nav-link { padding: 5px 9px; font-size: 12px; gap: 5px; }
         .ch-nav-label { display: none; }
         .ch-stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -3955,6 +4001,139 @@ function ch_feed_scripts() {
                 if (btn) { btn.disabled = false; btn.textContent = 'Save Profile'; }
             });
         };
+    })();
+    </script>
+
+    <script>
+    // ── Category sidebar AJAX (no full-page reload) ──────────────────────
+    (function() {
+        var state = window.chFeedState;
+        if (!state) return;
+
+        var list = document.getElementById('ch-posts-list');
+        if (!list) return;
+
+        function loadCat(slug) {
+            // Update active state on all [data-cat-slug] links
+            document.querySelectorAll('[data-cat-slug]').forEach(function(el) {
+                el.classList.toggle('active', el.dataset.catSlug === slug);
+            });
+
+            list.style.opacity = '0.45';
+            list.style.pointerEvents = 'none';
+
+            // Reset sort tabs to "new" when switching category
+            var tabs = document.getElementById('ch-sort-tabs');
+            if (tabs) {
+                tabs.querySelectorAll('.ch-sort-tab').forEach(function(t) {
+                    t.classList.toggle('active', t.dataset.sort === 'new');
+                });
+            }
+
+            var fd = new FormData();
+            fd.append('action',   'ch_feed_sort');
+            fd.append('nonce',    state.nonce);
+            fd.append('sort',     'new');
+            fd.append('cat',      slug);
+            fd.append('s',        state.s);
+            fd.append('location', state.location);
+            fd.append('paged',    1);
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        list.innerHTML = json.data.html;
+                        var headerInner = document.getElementById('ch-feed-header-inner');
+                        if (headerInner && json.data.header !== undefined) headerInner.innerHTML = json.data.header;
+                        state.cat   = slug;
+                        state.sort  = 'new';
+                        state.paged = 1;
+
+                        // Update URL
+                        var url = new URL(window.location.href);
+                        if (slug) {
+                            url.searchParams.set('cat', slug);
+                        } else {
+                            url.searchParams.delete('cat');
+                        }
+                        url.searchParams.set('sort', 'new');
+                        url.searchParams.delete('paged');
+                        history.replaceState(null, '', url.toString());
+                    }
+                })
+                .catch(function() {})
+                .finally(function() {
+                    list.style.opacity = '';
+                    list.style.pointerEvents = '';
+                });
+        }
+
+        document.addEventListener('click', function(e) {
+            var link = e.target.closest('[data-cat-slug]');
+            if (!link) return;
+            e.preventDefault();
+            loadCat(link.dataset.catSlug);
+        });
+    })();
+    </script>
+    (function() {
+        var state = window.chFeedState;
+        if (!state) return;
+
+        var list   = document.getElementById('ch-posts-list');
+        var tabs   = document.getElementById('ch-sort-tabs');
+        if (!list || !tabs) return;
+
+        tabs.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-sort]');
+            if (!btn || btn.classList.contains('active')) return;
+
+            var sort = btn.dataset.sort;
+
+            // Update active highlight immediately
+            tabs.querySelectorAll('.ch-sort-tab').forEach(function(t) {
+                t.classList.toggle('active', t === btn);
+            });
+
+            // Skeleton loading state
+            list.style.opacity = '0.45';
+            list.style.pointerEvents = 'none';
+
+            var fd = new FormData();
+            fd.append('action',   'ch_feed_sort');
+            fd.append('nonce',    state.nonce);
+            fd.append('sort',     sort);
+            fd.append('cat',      state.cat);
+            fd.append('s',        state.s);
+            fd.append('location', state.location);
+            fd.append('paged',    1);
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        list.innerHTML = json.data.html;
+                        var headerInner = document.getElementById('ch-feed-header-inner');
+                        if (headerInner && json.data.header !== undefined) headerInner.innerHTML = json.data.header;
+                        state.sort = sort;
+                        state.paged = 1;
+
+                        // Update URL without reload
+                        var url = new URL(window.location.href);
+                        url.searchParams.set('sort', sort);
+                        url.searchParams.delete('paged');
+                        history.replaceState(null, '', url.toString());
+                    }
+                })
+                .catch(function() {
+                    // Silent fail — tabs still show active state, user can retry
+                })
+                .finally(function() {
+                    list.style.opacity = '';
+                    list.style.pointerEvents = '';
+                });
+        });
     })();
     </script>
     <?php
