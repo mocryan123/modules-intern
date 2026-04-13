@@ -413,6 +413,30 @@ function kbf_dashboard_profile_tab($business_id) {
         if(sn) sn.addEventListener('input', function(){ if(/\s/.test(this.value)) this.value = this.value.replace(/\s+/g,''); });
     })();
 
+    // Address Dropdowns -> Update Hidden Input
+    (function(){
+        const prov = document.getElementById('kbf-profile-province');
+        const muni = document.getElementById('kbf-profile-municipality');
+        const brgy = document.getElementById('kbf-profile-barangay');
+        const hidden = document.getElementById('kbf-profile-address');
+        if(!prov || !hidden) return;
+
+        function updateAddress(){
+            const parts = [];
+            if(brgy && brgy.value) parts.push(brgy.value);
+            if(muni && muni.value) parts.push(muni.value);
+            if(prov && prov.value) parts.push(prov.value);
+            hidden.value = parts.join(', ');
+        }
+
+        prov.addEventListener('change', updateAddress);
+        if(muni) muni.addEventListener('change', updateAddress);
+        if(brgy) brgy.addEventListener('change', updateAddress);
+        
+        // Run on load to catch initial values
+        setTimeout(updateAddress, 500);
+    })();
+
     // Verify Identity Button
     (function(){
         const btn = document.getElementById('fundora-didit-start');
