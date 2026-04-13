@@ -36,6 +36,12 @@ function bntm_kbf_render_signin() {
                 if ($user_by_email && !is_wp_error($user_by_email)) {
                     $login = $user_by_email->user_login;
                 }
+            } elseif ($raw_login) {
+                $social = ltrim($raw_login, '@');
+                $social_user = get_users(['meta_key' => 'kbf_social_name', 'meta_value' => $social, 'number' => 1]);
+                if (!empty($social_user)) {
+                    $login = $social_user[0]->user_login;
+                }
             }
             $retry_after = 0;
             if ($login && function_exists('kbf_auth_is_rate_limited') && kbf_auth_is_rate_limited($login, kbf_auth_get_ip(), $retry_after)) {
@@ -262,10 +268,10 @@ function bntm_kbf_render_signin() {
               <input type="hidden" name="kbf_auth_action" value="signin">
               <input type="hidden" name="kbf_auth_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_signin')); ?>">
               <div class="kbf-form-group">
-                <label>Account name or email</label>
+                <label>Account name, social name, or email</label>
                 <div class="kbf-auth-input">
                   <i class="ph ph-envelope-simple kbf-icon" aria-hidden="true"></i>
-                  <input type="text" name="user_login" placeholder="Account name or email" required>
+                  <input type="text" name="user_login" placeholder="Account name, social name, or email" required>
                 </div>
                 <div class="kbf-field-error" aria-live="polite">This field is required.</div>
               </div>

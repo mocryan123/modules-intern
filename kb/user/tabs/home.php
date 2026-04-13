@@ -13,15 +13,19 @@
       $profile = $business_id ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,social_links,payout_type,payout_name,payout_number,is_verified FROM {$pt} WHERE business_id=%d", $business_id)) : null;
       $show_onboarding = $business_id ? (bool) get_user_meta($business_id, 'kbf_show_onboarding', true) : false;
       $address = $business_id ? get_user_meta($business_id, 'kbf_address', true) : '';
+      $user = $business_id ? get_userdata($business_id) : null;
+      $social_name = $business_id ? (string) get_user_meta($business_id, 'kbf_social_name', true) : '';
       $socials = $profile && $profile->social_links ? json_decode($profile->social_links, true) : [];
       $has_avatar = $profile && !empty($profile->avatar_url);
+      $has_display_name = $user && !empty(trim((string) $user->display_name));
+      $has_social_name = !empty(trim($social_name));
       $has_bio = $profile && !empty(trim((string) $profile->bio));
       $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
       $has_address = !empty(trim((string) $address));
       $has_social = !empty($socials['facebook']) || !empty($socials['instagram']) || !empty($socials['twitter']) || !empty($socials['website']);
       $nonce_onboard = wp_create_nonce('kbf_onboarding');
-      $onboard_required = 3;
-      $onboard_done = ($has_bio ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
+      $onboard_required = 5;
+      $onboard_done = ($has_display_name ? 1 : 0) + ($has_social_name ? 1 : 0) + ($has_bio ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
       $onboard_pct = round(($onboard_done / $onboard_required) * 100);
       $onboard_complete = ($onboard_done >= $onboard_required);
       // Always show onboarding modal if profile is incomplete, even if previously dismissed.
@@ -262,12 +266,20 @@
                 <h4 id="kbf-onboard-title">Set up your account profile</h4>
                 <p>Complete the essentials below to unlock withdrawals and build supporter trust.</p>
                 <div class="kbf-onboard-progress">
-                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/3</span></div>
+                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/5</span></div>
                   <div class="kbf-onboard-bar"><span style="width:<?php echo (int) $onboard_pct; ?>%;"></span></div>
                 </div>
               </div>
               <div class="kbf-onboard-right">
                 <ul class="kbf-onboard-step-list">
+                  <li class="kbf-onboard-step <?php echo $has_display_name ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Display name</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_display_name ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_social_name ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Social name</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_social_name ? 'Done' : 'Pending'; ?></span>
+                  </li>
                   <li class="kbf-onboard-step <?php echo $has_bio ? 'is-done' : ''; ?>">
                     <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>About/Bio</span>
                     <span class="kbf-onboard-meta"><?php echo $has_bio ? 'Done' : 'Pending'; ?></span>

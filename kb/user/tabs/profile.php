@@ -514,13 +514,23 @@ function kbf_dashboard_profile_tab($business_id) {
               </div>
               <div class="kbf-form-group">
               <label>Display Name</label>
-              <input type="text" value="<?php echo esc_attr($user->display_name); ?>" disabled style="background:var(--kbf-slate-lt);">
+              <input type="text" name="display_name" value="<?php echo esc_attr($user->display_name); ?>" placeholder="Your display name" maxlength="50">
+            </div>
+            <div class="kbf-form-group">
+              <label>Social Name</label>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span style="color:var(--kbf-slate);font-size:13px;">@</span>
+                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr(get_user_meta($business_id, 'kbf_social_name', true)); ?>" placeholder="yourname" maxlength="30" style="flex:1;">
+              </div>
+              <small style="color:var(--kbf-slate);font-size:11.5px;">Letters, numbers, underscores only. Used for signing in and your public profile URL.</small>
+              <div class="kbf-field-error" id="kbf-social-name-error" aria-live="polite"></div>
             </div>
 
             <div class="kbf-profile-bio">
               <div class="kbf-profile-card-title">Bio / About</div>
               <textarea id="kbf-profile-bio" name="bio" rows="10" maxlength="250" placeholder="Tell sponsors about yourself or your account..."><?php echo esc_textarea(isset($profile->bio) ? str_replace('\\', '', wp_unslash($profile->bio)) : ''); ?></textarea>
               <div class="kbf-char-count" id="kbf-profile-bio-count">0 / 250</div>
+              <div class="kbf-field-error" style="margin-top:6px;"></div>
             </div>
 
             <div class="kbf-form-group">
@@ -562,11 +572,13 @@ function kbf_dashboard_profile_tab($business_id) {
                     <option value="gcash" data-desc="GCash payouts are sent to the mobile number linked to your GCash account." <?php echo $payout_type==='gcash'?'selected':''; ?>>GCash</option>
                     <option value="card" data-desc="Card payouts use your cardholder name and card number. Ensure the card can receive payouts." <?php echo $payout_type==='card'?'selected':''; ?>>Credit/Debit Card</option>
                   </select>
+                  <div class="kbf-field-error" style="margin-top:6px;"></div>
                   <div class="kbf-payout-desc" id="kbf-payout-desc"></div>
                 </div>
                 <div class="kbf-form-group" id="kbf-payout-name-group">
                   <label id="kbf-payout-name-label">Account Name</label>
                   <input type="text" name="payout_name" id="kbf-payout-name" value="<?php echo esc_attr($payout_name); ?>" placeholder="Account name" autocomplete="off" autocapitalize="none" spellcheck="false" <?php echo $payout_type===''?'disabled':''; ?>>
+                  <div class="kbf-field-error" style="margin-top:6px;"></div>
                 </div>
                 <div class="kbf-form-group" id="kbf-payout-number-group">
                   <label id="kbf-payout-number-label">Account Number</label>
@@ -574,6 +586,7 @@ function kbf_dashboard_profile_tab($business_id) {
                     <input type="password" name="payout_number" id="kbf-payout-number" value="<?php echo esc_attr($payout_number); ?>" placeholder="Account number" autocomplete="new-password" autocapitalize="none" spellcheck="false" <?php echo $payout_type===''?'disabled':''; ?>>
                     <button type="button" class="kbf-toggle-visibility" onclick="kbfTogglePayoutNumber()">Show</button>
                   </div>
+                  <div class="kbf-field-error" style="margin-top:6px;"></div>
                 </div>
               </div>
               <div class="kbf-payout-hint">We’ll use this for payouts. Double‑check your details to avoid delays.</div>
@@ -591,6 +604,7 @@ function kbf_dashboard_profile_tab($business_id) {
                       <option value="<?php echo esc_attr($p); ?>"><?php echo esc_html($p); ?></option>
                     <?php endforeach; ?>
                   </select>
+                  <div class="kbf-field-error" style="margin-top:6px;"></div>
                 </div>
                 <div class="kbf-form-group">
                   <label>Municipality</label>
@@ -1270,11 +1284,121 @@ document.addEventListener('DOMContentLoaded', function(){
 
       window.kbfSaveProfile = function(nonce) {
         const form = document.getElementById('kbf-profile-form');
-        if (!window.kbfValidateSocialLinks()) {
-            document.getElementById('kbf-profile-msg').innerHTML =
-                '<div class="kbf-alert kbf-alert-error">Please fix the highlighted social links.</div>';
+        const msgEl = document.getElementById('kbf-profile-msg');
+        const btn = form.querySelector('.kbf-btn-primary');
+        let isValid = true;
+        let errors = [];
+
+        // Helper to show inline error
+        function showErr(input, msg) {
+            input.classList.add('kbf-input-error');
+            const group = input.closest('.kbf-form-group') || input.closest('.kbf-profile-bio');
+            if (group) {
+                let errDiv = group.querySelector('.kbf-field-error');
+                if (!errDiv) {
+                    errDiv = document.createElement('div');
+                    errDiv.className = 'kbf-field-error';
+                    errDiv.style.marginTop = '6px';
+                    group.appendChild(errDiv);
+                }
+                errDiv.textContent = msg;
+                errDiv.style.display = 'block';
+            }
+            errors.push(msg);
+        }
+
+        // Helper to clear errors
+        function clearErr(input) {
+            input.classList.remove('kbf-input-error');
+            const group = input.closest('.kbf-form-group') || input.closest('.kbf-profile-bio');
+            if (group) {
+                const errDiv = group.querySelector('.kbf-field-error');
+                if (errDiv) { errDiv.textContent = ''; errDiv.style.display = 'none'; }
+            }
+        }
+
+        // Clear all errors first
+        form.querySelectorAll('.kbf-input-error').forEach(clearErr);
+        form.querySelectorAll('.kbf-field-error').forEach(el => { el.textContent = ''; el.style.display = 'none'; });
+        msgEl.innerHTML = '';
+
+        // 1. Display Name
+        const displayName = form.querySelector('input[name="display_name"]');
+        if (!displayName.value.trim()) {
+            showErr(displayName, 'Display Name is required.');
+            isValid = false;
+        }
+
+        // 2. Social Name
+        const socialName = form.querySelector('input[name="kbf_social_name"]');
+        const snVal = socialName.value.trim();
+        if (!snVal) {
+            showErr(socialName, 'Social Name is required.');
+            isValid = false;
+        } else if (!/^[a-zA-Z0-9_]{2,30}$/.test(snVal)) {
+            showErr(socialName, 'Social Name must be 2-30 chars (letters, numbers, underscores, no spaces).');
+            isValid = false;
+        }
+
+        // 3. Bio
+        const bio = form.querySelector('textarea[name="bio"]');
+        if (!bio.value.trim()) {
+            showErr(bio, 'Bio/About is required.');
+            isValid = false;
+        }
+
+        // 4. Payout Type
+        const payoutType = form.querySelector('select[name="payout_type"]');
+        const ptVal = payoutType.value.trim();
+        if (!ptVal) {
+            showErr(payoutType, 'Please select a Payout Type.');
+            isValid = false;
+        }
+
+        // 5. Payout Name (required if Type selected)
+        const payoutName = form.querySelector('input[name="payout_name"]');
+        if (ptVal && !payoutName.value.trim()) {
+            showErr(payoutName, 'Payout Account Name is required.');
+            isValid = false;
+        }
+
+        // 6. Payout Number (required if Type selected)
+        const payoutNum = form.querySelector('input[name="payout_number"]');
+        if (ptVal && !payoutNum.value.trim()) {
+            showErr(payoutNum, 'Payout Account Number is required.');
+            isValid = false;
+        }
+
+        // 7. Address (Province)
+        const province = form.querySelector('#kbf-profile-province');
+        const addressHidden = document.getElementById('kbf-profile-address');
+        // Check province or the constructed address string
+        if (!province.value.trim() && (!addressHidden || !addressHidden.value.trim())) {
+            showErr(province, 'Please complete your Address.');
+            isValid = false;
+        }
+
+        // Also validate social links if that function exists
+        if (typeof window.kbfValidateSocialLinks === 'function' && !window.kbfValidateSocialLinks()) {
+             errors.push('Please fix the highlighted social links.');
+             isValid = false;
+        }
+
+        if (!isValid) {
+            // Show first error in main message box for visibility
+            if (errors.length > 0) {
+                msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">' + errors[0] + '</div>';
+            }
+            // Scroll to first error
+            const firstErr = form.querySelector('.kbf-input-error');
+            if (firstErr) {
+                firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstErr.focus();
+            }
             return;
         }
+
+        // If validation passes, proceed with AJAX
         const fd = new FormData(form);
         const typeSel = document.getElementById('kbf-payout-type');
         const nameEl = document.getElementById('kbf-payout-name');
@@ -1292,7 +1416,6 @@ document.addEventListener('DOMContentLoaded', function(){
         }
         fd.append('action', 'kbf_save_organizer_profile');
         fd.append('nonce', nonce);
-        const btn = form.querySelector('.kbf-btn-primary');
         btn.disabled = true;
         btn.textContent = 'Saving...';
         fetch(ajaxurl, {method: 'POST', body: fd})
@@ -1307,12 +1430,35 @@ document.addEventListener('DOMContentLoaded', function(){
                 }
             })
               .then(function(j){
-                  document.getElementById('kbf-profile-msg').innerHTML =
-                      '<div class="kbf-alert kbf-alert-' + (j.success ? 'success' : 'error') + '">' + j.data.message + '</div>';
-                if (j && j.success) {
-                    setTimeout(function(){ location.reload(); }, 400);
-                }
-                })
+                  const msgEl = document.getElementById('kbf-profile-msg');
+                  const socialNameInput = document.getElementById('kbf-social-name');
+                  const socialNameErr = document.getElementById('kbf-social-name-error');
+                  
+                  // Clear previous specific errors
+                  if(socialNameErr) { socialNameErr.textContent = ''; socialNameErr.style.display = 'none'; }
+                  if(socialNameInput) socialNameInput.classList.remove('kbf-input-error');
+
+                  if (j && !j.success) {
+                      const msg = j.data.message || 'Unknown error.';
+                      // If error mentions social name, show inline.
+                      if (msg.toLowerCase().includes('social name')) {
+                          if (socialNameErr) {
+                              socialNameErr.textContent = msg;
+                              socialNameErr.style.display = 'block';
+                          }
+                          if (socialNameInput) socialNameInput.classList.add('kbf-input-error');
+                          msgEl.innerHTML = ''; // Keep general area clean
+                      } else {
+                          msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">' + msg + '</div>';
+                      }
+                      return;
+                  }
+                  
+                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-success">' + j.data.message + '</div>';
+                  if (j && j.success) {
+                      setTimeout(function(){ location.reload(); }, 400);
+                  }
+              })
             .catch(function(err){
                 console.error('kbfSaveProfile: request failed', err);
                 document.getElementById('kbf-profile-msg').innerHTML =
@@ -1323,6 +1469,17 @@ document.addEventListener('DOMContentLoaded', function(){
                 btn.textContent = 'Save Changes';
             });
       };
+        // Prevent spaces in social name input
+        (function(){
+            var snInput = document.getElementById('kbf-social-name');
+            if (snInput) {
+                snInput.addEventListener('input', function(){
+                    if (/\s/.test(this.value)) {
+                        this.value = this.value.replace(/\s+/g, '');
+                    }
+                });
+            }
+        })();
         // Preloader intentionally disabled on profile page.
       </script>
     <?php return ob_get_clean();

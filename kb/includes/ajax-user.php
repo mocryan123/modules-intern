@@ -569,6 +569,28 @@ function bntm_ajax_kbf_save_organizer_profile() {
     if($avatar) $data['avatar_url']=$avatar;
     if(isset($_POST['phone'])) update_user_meta($biz,'kbf_phone',sanitize_text_field($_POST['phone']));
     if(isset($_POST['address'])) update_user_meta($biz,'kbf_address',sanitize_text_field($_POST['address']));
+    if(!empty($_POST['display_name'])) {
+        $new_name = sanitize_text_field($_POST['display_name']);
+        $current_user = wp_get_current_user();
+        if ($new_name !== $current_user->display_name) {
+            wp_update_user(['ID' => $biz, 'display_name' => $new_name]);
+        }
+    }
+    // Social Name: validate format, uniqueness, then save.
+    $raw_social = isset($_POST['kbf_social_name']) ? trim(sanitize_text_field($_POST['kbf_social_name'])) : '';
+    $raw_social = ltrim($raw_social, '@');
+    if ($raw_social !== '') {
+        if (!preg_match('/^[a-zA-Z0-9_]{2,30}$/', $raw_social)) {
+            wp_send_json_error(['message' => 'Social name must be 2–30 characters: letters, numbers, and underscores only.']);
+        }
+        $existing = $wpdb->get_var($wpdb->prepare("SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key='kbf_social_name' AND meta_value=%s AND user_id != %d", $raw_social, $biz));
+        if ($existing) {
+            wp_send_json_error(['message' => 'That social name is already taken. Please choose another.']);
+        }
+        update_user_meta($biz, 'kbf_social_name', $raw_social);
+    } else {
+        delete_user_meta($biz, 'kbf_social_name');
+    }
     $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz));
     if($exists) {
         unset($data['business_id']);

@@ -238,8 +238,6 @@ function bntm_kbf_render_landing() {
             radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),
             var(--kbf-surface);
         width: 100%;
-        max-width: 1240px;
-        margin: 0 auto 18px;
         padding: 26px 22px 64px;
         border-radius: var(--kbf-radius-lg);
         overflow: visible;
