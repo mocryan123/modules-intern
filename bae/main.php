@@ -81,6 +81,11 @@ add_action('wp_head', function() {
     echo '<link rel="apple-touch-icon" href="' . $logo_url . '">' . "\n";
 }, 5);
 
+
+add_action('wp_head', function() {
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1">' . "\n";
+}, 1);
+
 // Load ticketing system
 require_once BNTM_BAE_PATH . 'ticket.php';
 
