@@ -1487,7 +1487,7 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
 
     </style>
 
-
+<div id="bae-adm-toast" style="display:none;position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;font-family:'Geist',sans-serif;background:var(--surface);border:1px solid var(--border-2);box-shadow:0 8px 24px rgba(0,0,0,.3);"></div>
     <div class="bae-adm" id="bae-adm-wrap">
 
         <div class="bae-adm-shell">
@@ -2410,6 +2410,8 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
                                     <div class="bae-dynamic-list" id="list-or"></div>
                                     <button type="button" class="bae-add-btn" id="add-or" onclick="baeAddKey('or', 3, 'OpenRouter API Key')">+ Add OpenRouter Key</button>
                                 </div>
+
+                <button type="button" class="bae-adm-save-btn" style="margin-top:12px;" onclick="baeAdmSaveSection('ai')">Save AI Keys</button>
                             </div>
 
                             <div class="bae-env-group">
@@ -2418,6 +2420,8 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
                                 <div class="bae-adm-field"><label>Secret Key</label><input type="password" id="bae-pm-secret" value="<?php echo esc_attr($paymaya_secret); ?>" placeholder="sk-..."></div>
                                 <div class="bae-adm-field"><label>Webhook Secret</label><input type="password" id="bae-pm-webhook" value="<?php echo esc_attr($paymaya_webhook); ?>" placeholder="Webhook secret..."></div>
                                 <div class="bae-adm-field"><label>Base URL</label><input type="text" id="bae-pm-base" value="<?php echo esc_attr($paymaya_base); ?>" placeholder="https://pg-sandbox.paymaya.com"></div>
+                     
+                           <button type="button" class="bae-adm-save-btn" style="margin-top:12px;" onclick="baeAdmSaveSection('paymaya')">Save PayMaya</button> 
                             </div>
 
                             <div class="bae-env-group">
@@ -2638,20 +2642,68 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
         });
     }
 
+function baeAdmSaveSection(section) {
+    var fd = new FormData();
+    fd.append('action', 'bae_admin_save_all_settings');
+    fd.append('nonce', _baeAdmNonce);
+
+    if (section === 'ai') {
+        document.querySelectorAll('#list-gemini input').forEach(function(i){ fd.append('gemini_keys[]', i.value.trim()); });
+        document.querySelectorAll('#list-groq input').forEach(function(i){ fd.append('groq_keys[]', i.value.trim()); });
+        document.querySelectorAll('#list-or input').forEach(function(i){ fd.append('or_keys[]', i.value.trim()); });
+    } else if (section === 'paymaya') {
+        fd.append('pm_public',  document.getElementById('bae-pm-public')?.value.trim() || '');
+        fd.append('pm_secret',  document.getElementById('bae-pm-secret')?.value.trim() || '');
+        fd.append('pm_webhook', document.getElementById('bae-pm-webhook')?.value.trim() || '');
+        fd.append('pm_base',    document.getElementById('bae-pm-base')?.value.trim() || '');
+    } else if (section === 'stripe') {
+        fd.append('stripe_public',  document.getElementById('bae-stripe-public')?.value.trim() || '');
+        fd.append('stripe_secret',  document.getElementById('bae-stripe-secret')?.value.trim() || '');
+        fd.append('stripe_webhook', document.getElementById('bae-stripe-webhook')?.value.trim() || '');
+    }
+
+    fetch(_baeAdmAj, { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
+            baeAdmToast(j.success ? 'Saved.' : (j.data?.message || 'Failed.'), j.success ? 'success' : 'error');
+        })
+        .catch(function() {
+            baeAdmToast('Network error.', 'error');
+        });
+}
+
+        
 
         function baeAdmSaveAllSettings() {
     var btn = document.getElementById('bae-settings-save');
     if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+
     var fd = new FormData();
     fd.append('action', 'bae_admin_save_all_settings');
     fd.append('nonce', _baeAdmNonce);
-    fd.append('pm_public',  document.getElementById('bae-pm-public').value.trim());
-    fd.append('pm_secret',  document.getElementById('bae-pm-secret').value.trim());
-    fd.append('pm_webhook', document.getElementById('bae-pm-webhook') ? document.getElementById('bae-pm-webhook').value.trim() : '');
-    fd.append('pm_base',    document.getElementById('bae-pm-base').value.trim());
-    fd.append('stripe_public',  document.getElementById('bae-stripe-public') ? document.getElementById('bae-stripe-public').value.trim() : '');
-    fd.append('stripe_secret',  document.getElementById('bae-stripe-secret') ? document.getElementById('bae-stripe-secret').value.trim() : '');
-    fd.append('stripe_webhook', document.getElementById('bae-stripe-webhook') ? document.getElementById('bae-stripe-webhook').value.trim() : '');
+
+    // AI Keys
+    document.querySelectorAll('#list-gemini input').forEach(function(i) {
+        fd.append('gemini_keys[]', i.value.trim());
+    });
+    document.querySelectorAll('#list-groq input').forEach(function(i) {
+        fd.append('groq_keys[]', i.value.trim());
+    });
+    document.querySelectorAll('#list-or input').forEach(function(i) {
+        fd.append('or_keys[]', i.value.trim());
+    });
+
+    // PayMaya
+    fd.append('pm_public',  document.getElementById('bae-pm-public')?.value.trim() || '');
+    fd.append('pm_secret',  document.getElementById('bae-pm-secret')?.value.trim() || '');
+    fd.append('pm_webhook', document.getElementById('bae-pm-webhook')?.value.trim() || '');
+    fd.append('pm_base',    document.getElementById('bae-pm-base')?.value.trim() || '');
+
+    // Stripe
+    fd.append('stripe_public',  document.getElementById('bae-stripe-public')?.value.trim() || '');
+    fd.append('stripe_secret',  document.getElementById('bae-stripe-secret')?.value.trim() || '');
+    fd.append('stripe_webhook', document.getElementById('bae-stripe-webhook')?.value.trim() || '');
+
     fetch(_baeAdmAj, { method: 'POST', body: fd })
         .then(function(r) { return r.json(); })
         .then(function(j) {
@@ -2662,7 +2714,7 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
             if (btn) { btn.textContent = 'Save All Settings'; btn.disabled = false; }
             baeAdmToast('Network error. Try again.', 'error');
         });
-        }
+}
 
     // ── Save PayMaya
     function baeAdmSavePaymongo() {
