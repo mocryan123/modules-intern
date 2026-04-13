@@ -3049,41 +3049,137 @@ function bntm_shortcode_bae() {
     /* ── ASSET GRID ── */
     .bae-assets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
-    .bae-asset-card {
-        background: var(--surface); border: 1px solid var(--border);
-        border-radius: 18px; overflow: hidden;
-        transition: background 0.5s, border-color 0.5s, transform 0.2s, box-shadow 0.2s;
-    }
-    .bae-asset-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--border-2); }
+.bae-asset-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    position: relative;
+    cursor: pointer;
+}
+.bae-asset-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px rgba(0,0,0,.35);
+    border-color: rgba(139,92,246,.35);
+}
 
-    .bae-asset-preview {
-        height: 160px; position: relative; overflow: hidden;
-        display: flex; align-items: center; justify-content: center;
-        border-bottom: 1px solid var(--border);
-        background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(236,72,153,0.04));
-        transition: border-color 0.5s;
-    }
-    .bae-asset-preview-inner {
-        transform: scale(0.4); transform-origin: center center;
-        width: 250%; pointer-events: none;
-        overflow: hidden; isolation: isolate;
-    }
-    .bae-asset-preview-empty {
-        height: 160px; display: flex; align-items: center; justify-content: center;
-        font-size: 36px; background: var(--bg-3);
-        border-bottom: 1px solid var(--border);
-        transition: background 0.5s;
-    }
+/* Thumbnail fills the whole card */
+.bae-asset-preview {
+    height: 240px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(139,92,246,.08), rgba(236,72,153,.05));
+    border-bottom: none;
+}
+.bae-asset-preview-inner {
+    transform: scale(0.4);
+    transform-origin: center center;
+    width: 250%;
+    pointer-events: none;
+    overflow: hidden;
+    isolation: isolate;
+}
+.bae-asset-preview-empty {
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    background: var(--bg-3);
+    border-bottom: none;
+}
 
-    .bae-asset-info { padding: 14px 16px; }
-    .bae-asset-name { font-size: 13px; font-weight: 600; color: var(--text); transition: color 0.5s; }
-    .bae-asset-meta { font-size: 12px; color: var(--text-3); margin-top: 3px; transition: color 0.5s; }
+/* Hover overlay — slides up from bottom */
+.bae-asset-info,
+.bae-asset-actions {
+    position: absolute;
+    left: 0; right: 0;
+    z-index: 2;
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+}
+.bae-asset-info {
+    bottom: 48px; /* sits just above actions */
+    padding: 12px 16px 0;
+    transform: translateY(20px);
+    opacity: 0;
+}
+.bae-asset-actions {
+    bottom: 0;
+    padding: 10px 16px 14px;
+    transform: translateY(20px);
+    opacity: 0;
+    border-top: none;
+}
+
+/* Frosted glass backdrop — only visible on hover */
+.bae-asset-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(10,10,15,.92) 0%,
+        rgba(10,10,15,.75) 50%,
+        transparent 100%
+    );
+    backdrop-filter: blur(0px);
+    opacity: 0;
+    transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+    z-index: 1;
+    border-radius: 18px;
+    pointer-events: none;
+}
+
+/* Trigger on hover */
+.bae-asset-card:hover::after {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+}
+.bae-asset-card:hover .bae-asset-info,
+.bae-asset-card:hover .bae-asset-actions {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Text colors inside overlay */
+.bae-asset-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+}
+.bae-asset-meta {
+    font-size: 12px;
+    color: rgba(255,255,255,.6);
+    margin-top: 3px;
+}
+
+/* Mobile — always show info, no hover needed */
+@media (max-width: 680px) {
+    .bae-asset-card::after {
+        opacity: 1;
+        backdrop-filter: blur(4px);
+    }
+    .bae-asset-info,
     .bae-asset-actions {
-        display: flex; gap: 8px;
-        padding: 12px 16px;
-        border-top: 1px solid var(--border);
-        transition: border-color 0.5s;
+        transform: translateY(0);
+        opacity: 1;
     }
+}
+
+
+        #bae-card-social_kit .bae-asset-info,
+#bae-card-social_kit .bae-asset-actions,
+#bae-card-social_kit::after {
+    position: static;
+    transform: none;
+    opacity: 1;
+    backdrop-filter: none;
+    background: none;
+}
 
     /* ── GENERATE ROW ── */
     .bae-generate-row {
