@@ -94,13 +94,7 @@ function bntm_shortcode_kbf_fund_details() {
     $fund_details_url = kbf_get_page_url('fund_details');
     $share_url = kbf_fund_details_share_url($fund_details_url, $fund);
     $profile_url = $fund
-        ? add_query_arg(
-            [
-                'organizer' => $org_token ?: $fund->business_id,
-                'fund'      => $fund_token ?: $fund->id,
-            ],
-            kbf_get_page_url('organizer_profile')
-        )
+        ? kbf_get_organizer_profile_url($fund->business_id)
         : kbf_get_page_url('organizer_profile');
     $demo_mode  = (bool)kbf_get_setting('kbf_demo_mode',true);
     $nonce_sponsor = wp_create_nonce('kbf_sponsor');

@@ -15,6 +15,10 @@ if (!function_exists('kbf_browse_fund_detail_url')) {
 
 if (!function_exists('kbf_browse_organizer_url')) {
     function kbf_browse_organizer_url($business_id) {
+        if (function_exists('kbf_get_organizer_profile_url')) {
+            return esc_url(kbf_get_organizer_profile_url($business_id));
+        }
+        // Fallback
         $org_token = function_exists('kbf_get_or_create_organizer_token') ? kbf_get_or_create_organizer_token($business_id) : '';
         $params = $org_token ? ['organizer'=>$org_token] : ['organizer_id'=>$business_id];
         return esc_url(add_query_arg($params, kbf_get_page_url('organizer_profile')));

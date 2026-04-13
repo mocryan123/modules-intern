@@ -1552,9 +1552,31 @@ function kbf_global_assets() {
     .kbf-star { color: #f43f5e; }
     .kbf-star-empty { color: #fecdd3; }
 
-    /* Page header */
-    .kbf-page-header { background: radial-gradient(1200px 200px at 0% 0%, #eef5ff 0%, #ffffff 55%, #ffffff 100%); border: 1px solid var(--kbf-border); border-color: var(--kbf-border); border-radius: 20px; padding: 26px 28px; margin-bottom: 18px; color: var(--kbf-text); box-shadow: none; }
-    .kbf-page-header p  { margin: 0; color: var(--kbf-text-sm); font-size: 13.5px; line-height: 1.6; }
+    /* Page header — redesigned (clean, minimal card) */
+    .kbf-page-header {
+        position: relative;
+        background: #fff;
+        border: 1px solid var(--kbf-border);
+        border-radius: 16px;
+        padding: 24px 26px;
+        margin-bottom: 20px;
+        color: var(--kbf-text);
+        box-shadow: 0 1px 2px rgba(15,23,42,.04);
+        overflow: visible;
+    }
+    .kbf-page-header h2 {
+        margin: 0 0 4px;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--kbf-text);
+        line-height: 1.3;
+    }
+    .kbf-page-header p {
+        margin: 0;
+        color: var(--kbf-text-sm);
+        font-size: 13.5px;
+        line-height: 1.6;
+    }
 
     @media(max-width:800px) {
         .kbf-stats { grid-template-columns: 1fr 1fr; }
@@ -1602,12 +1624,6 @@ function kbf_global_assets() {
     .kbf-table-pager-btn,
     .kbf-table-pager select{
         border-radius: var(--kbf-radius-sm);
-    }
-    .kbf-input-with-toggle input,
-    .kbf-form-group input,
-    .kbf-form-group select,
-    .kbf-form-group textarea{
-        border-radius: var(--kbf-radius-md);
     }
     </style>
     <script>

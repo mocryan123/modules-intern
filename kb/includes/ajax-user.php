@@ -603,7 +603,32 @@ function bntm_ajax_kbf_save_organizer_profile() {
     if (function_exists('kbf_get_or_create_organizer_token')) {
         kbf_get_or_create_organizer_token($biz);
     }
-    wp_send_json_success(['message'=>'Profile saved successfully!']);
+
+    // Clear onboarding flag if all 5 required fields are now filled.
+    // Check from POST data (what we just wrote) to avoid DB cache timing issues.
+    $post_display_name = isset($_POST['display_name']) ? trim(sanitize_text_field($_POST['display_name'])) : '';
+    $post_social_name  = isset($_POST['kbf_social_name']) ? trim(ltrim(sanitize_text_field($_POST['kbf_social_name']), '@')) : '';
+    $post_bio          = isset($_POST['bio']) ? trim(sanitize_textarea_field($_POST['bio'])) : '';
+    $post_payout_type  = isset($_POST['payout_type']) ? trim(sanitize_text_field($_POST['payout_type'])) : '';
+    $post_payout_name  = isset($_POST['payout_name']) ? trim(sanitize_text_field($_POST['payout_name'])) : '';
+    $post_payout_num   = isset($_POST['payout_number']) ? trim(sanitize_text_field($_POST['payout_number'])) : '';
+    $post_address      = isset($_POST['address']) ? trim(sanitize_text_field($_POST['address'])) : (string) get_user_meta($biz, 'kbf_address', true);
+
+    $has_display_name = !empty($post_display_name);
+    $has_social_name  = !empty($post_social_name) && preg_match('/^[a-zA-Z0-9_]{2,30}$/', $post_social_name);
+    $has_bio          = !empty($post_bio);
+    $has_payout       = !empty($post_payout_type) && !empty($post_payout_name) && !empty($post_payout_num);
+    $has_address      = !empty($post_address);
+
+    $onboarding_done = ($has_display_name && $has_social_name && $has_bio && $has_payout && $has_address);
+    if ($onboarding_done) {
+        delete_user_meta($biz, 'kbf_show_onboarding');
+        // Force cache flush so the next page load sees the deletion immediately.
+        wp_cache_delete($biz, 'user_meta');
+        wp_cache_delete($biz, 'users');
+    }
+
+    wp_send_json_success(['message'=>'Profile saved successfully!', 'data' => ['onboarding_done' => $onboarding_done]]);
 }
 
 function bntm_ajax_kbf_dismiss_onboarding() {

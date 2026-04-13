@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * Fundora public page: Privacy Policy
  */

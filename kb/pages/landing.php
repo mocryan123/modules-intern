@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF landing page template (HTML/CSS/JS).
  */
@@ -2559,14 +2559,3 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
-
-
-
-
-
-
-
-
-
-
-

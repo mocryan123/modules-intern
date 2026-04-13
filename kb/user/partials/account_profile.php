@@ -3,15 +3,41 @@
 if (!function_exists('kbf_account_profile_get_biz_id')) {
     function kbf_account_profile_get_biz_id($wpdb) {
         $biz_id = 0;
+        // Try organizer token first
         $org_token = !empty($_GET['organizer']) ? sanitize_text_field($_GET['organizer']) : '';
         if ($org_token) {
             $pt = $wpdb->prefix.'kbf_organizer_profiles';
             $biz_id = (int)$wpdb->get_var($wpdb->prepare("SELECT business_id FROM {$pt} WHERE organizer_token=%s", $org_token));
         }
+        // Try social name (e.g. ?organizer=myname)
+        if (!$biz_id && $org_token) {
+            $biz_id = (int)$wpdb->get_var($wpdb->prepare(
+                "SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key='kbf_social_name' AND meta_value=%s LIMIT 1",
+                $org_token
+            ));
+        }
         if(!$biz_id && isset($_GET['organizer_id'])) {
             $biz_id = intval($_GET['organizer_id']);
         }
         return $biz_id;
+    }
+}
+
+if (!function_exists('kbf_get_organizer_profile_url')) {
+    function kbf_get_organizer_profile_url($biz_id) {
+        $social_name = get_user_meta($biz_id, 'kbf_social_name', true);
+        $base_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('organizer_profile') : home_url('/');
+        if (!empty($social_name)) {
+            return add_query_arg('organizer', $social_name, $base_url);
+        }
+        // Fallback to token
+        global $wpdb;
+        $pt = $wpdb->prefix.'kbf_organizer_profiles';
+        $token = $wpdb->get_var($wpdb->prepare("SELECT organizer_token FROM {$pt} WHERE business_id=%d", $biz_id));
+        if (!empty($token)) {
+            return add_query_arg('organizer', $token, $base_url);
+        }
+        return add_query_arg('organizer_id', $biz_id, $base_url);
     }
 }
 
@@ -110,15 +136,25 @@ function bntm_shortcode_kbf_organizer_profile() {
           text-overflow:ellipsis;
           max-width:100%;
         }
-        .kbf-org-avatar{position:relative;width:70px;height:70px;flex-shrink:0;}
+        .kbf-org-avatar{
+          position:relative;
+          width:70px;
+          height:70px;
+          flex-shrink:0;
+        }
         .kbf-meta{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
         .kbf-org-avatar > img,
         .kbf-org-avatar > .kbf-org-avatar-fallback{
-          width:70px;height:70px;border-radius:50%;object-fit:cover;display:block;
-          border:3px solid rgba(255,255,255,.3);
+          width:70px;
+          height:70px;
+          border-radius:50%;
+          object-fit:cover;
+          display:block;
+          border:3px solid rgba(255,255,255,.4);
+          box-shadow:0 2px 8px rgba(15,23,42,.1);
         }
         .kbf-org-avatar > .kbf-org-avatar-fallback{
-          background: var(--kbf-navy);
+          background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);
           display:flex;
           align-items:center;
           justify-content:center;
@@ -145,11 +181,20 @@ function bntm_shortcode_kbf_organizer_profile() {
           display:inline-flex;
           align-items:center;
           justify-content:center;
+          transition:all .15s ease;
+        }
+        .kbf-social-icon:hover{
+          border-color:#3b82f6;
+          background:#eff6ff;
         }
         .kbf-social-icon i{
           font-size:18px;
           display:block;
           color:#64748b;
+          transition:color .15s ease;
+        }
+        .kbf-social-icon:hover i{
+          color:#3b82f6;
         }
         .kbf-profile-sidebar{
           position:sticky;
@@ -165,21 +210,38 @@ function bntm_shortcode_kbf_organizer_profile() {
           align-items:start;
           overflow:visible;
         }
+
+        /* Page header — organizer profile redesign */
+        .kbf-page-header {
+          background: #fff;
+          border: 1px solid var(--kbf-border);
+          border-radius: 16px;
+          padding: 24px 26px;
+          box-shadow: 0 1px 2px rgba(15,23,42,.04);
+        }
+        .kbf-page-header h2 {
+          font-size: 20px;
+          font-weight: 600;
+          margin: 0 0 4px;
+          line-height: 1.3;
+        }
+
         @media(max-width:900px){
           .kbf-profile-sidebar{position:static;top:auto;}
         }
         @media(max-width:620px){
+          .kbf-page-header {
+            text-align: center;
+          }
           .kbf-page-header > div{
             flex-direction:column !important;
             align-items:center !important;
             text-align:center;
-            justify-content:center;
             width:100%;
           }
           .kbf-page-header .kbf-org-avatar{
             display:block;
-            margin-left:auto !important;
-            margin-right:auto !important;
+            margin:0 auto;
             align-self:center;
           }
           .kbf-page-header .kbf-org-avatar > img,
@@ -188,7 +250,6 @@ function bntm_shortcode_kbf_organizer_profile() {
           }
           .kbf-page-header > div > div{
             flex-direction:column;
-            justify-content:center;
             align-items:center;
             text-align:center;
             width:100%;
@@ -200,6 +261,9 @@ function bntm_shortcode_kbf_organizer_profile() {
           }
         }
         @media(max-width:820px){
+          .kbf-page-header {
+            text-align: left;
+          }
           .kbf-page-header > div{
             flex-direction:column;
             align-items:flex-start;

@@ -1112,6 +1112,7 @@
         if (!provinceEl || !muniEl || !brgyEl) return;
         var muniData = [];
         function handleProvinceChange(){
+            if (window._kbf_applying_location) return;
             var val = provinceEl.value || '';
             if (!val){
                 muniEl.disabled = true;
@@ -1133,6 +1134,7 @@
                 window.kbfRefreshSelect(brgyEl);
             }
             kbfEnsurePsgc(function(){
+                if (window._kbf_applying_location) return;
                 muniData = kbfBuildMunicipalities(String(val).toUpperCase());
                 kbfSetMuniOptions(muniEl, muniData);
                 muniEl.disabled = muniData.length === 0;
@@ -1140,6 +1142,7 @@
             });
         }
         function handleMunicipalityChange(){
+            if (window._kbf_applying_location) return;
             var val = muniEl.value || '';
             if (!val){
                 brgyEl.disabled = true;
@@ -1176,6 +1179,10 @@
         var province = '';
         var municipality = '';
         var barangay = '';
+        console.log('[KBF ApplyLoc] Input parts:', parts);
+
+        // Flag to prevent kbfInitLocationPicker change handlers from interfering.
+        window._kbf_applying_location = true;
 
         function findOptionMatch(el, value){
             if (!el || !value) return '';
@@ -1219,11 +1226,14 @@
                 window.kbfRefreshSelect(muniEl);
                 window.kbfRefreshSelect(brgyEl);
             }
+            window._kbf_applying_location = false;
             return;
         }
 
         kbfEnsurePsgc(function(){
+            console.log('[KBF ApplyLoc] PSGC data loaded, province:', province);
             var muniData = kbfBuildMunicipalities(String(province).toUpperCase());
+            console.log('[KBF ApplyLoc] Municipalities found:', muniData.length);
             kbfSetMuniOptions(muniEl, muniData);
             muniEl.disabled = muniData.length === 0;
             if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
@@ -1298,6 +1308,7 @@
                 kbfSetBrgyOptions(brgyEl, []);
                 if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
             }
+            window._kbf_applying_location = false;
         });
     }
         (function(){
