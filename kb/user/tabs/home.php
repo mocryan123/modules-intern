@@ -68,13 +68,6 @@
         $saved_ids = array_map('intval', $saved_ids);
     }
 
-    // Gate: if profile setup is incomplete, force profile tab regardless of onboarding state.
-    $current_tab = isset($_GET['kbf_tab']) ? sanitize_text_field(wp_unslash($_GET['kbf_tab'])) : 'overview';
-    if (!$onboard_complete && $current_tab !== 'profile') {
-        wp_safe_redirect(add_query_arg('kbf_tab', 'profile', kbf_get_page_url('dashboard')));
-        exit;
-    }
-
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -312,6 +305,13 @@
               .then(() => { if (backdrop) backdrop.remove(); if (card) card.remove(); })
               .catch(() => { if (backdrop) backdrop.remove(); if (card) card.remove(); });
           }
+          // Prevent dismissing by clicking outside the modal.
+          (function(){
+            var backdrop = document.getElementById('kbf-onboard-backdrop');
+            if (backdrop) {
+              backdrop.addEventListener('click', function(e){ e.stopPropagation(); });
+            }
+          })();
         </script>
       <?php endif; ?>
       <style>

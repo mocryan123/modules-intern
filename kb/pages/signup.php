@@ -34,7 +34,12 @@ function bntm_kbf_render_signup() {
                 $signup_error = 'Please enter a valid email address.';
             } elseif (strlen($password) < 8) {
                 $signup_error = 'Password must be at least 8 characters.';
-                // TODO: Consider enforcing stronger password policy (complexity/strength meter).
+            } elseif (!preg_match('/[A-Z]/', $password)) {
+                $signup_error = 'Password must contain at least 1 uppercase letter.';
+            } elseif (!preg_match('/[a-z]/', $password)) {
+                $signup_error = 'Password must contain at least 1 lowercase letter.';
+            } elseif (!preg_match('/[0-9]/', $password)) {
+                $signup_error = 'Password must contain at least 1 number.';
             } elseif (email_exists($email)) {
                 $signup_error = 'An account with that email already exists.';
             } else {
