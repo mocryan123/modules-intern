@@ -59,11 +59,27 @@ add_action('wp_ajax_nopriv_bae_admin_get_assets', 'bae_ajax_admin_get_assets');
 add_action('wp_ajax_bae_admin_stats',        'bae_ajax_admin_stats');
 add_action('wp_ajax_nopriv_bae_admin_stats', 'bae_ajax_admin_stats');
 add_action('wp_ajax_bae_admin_save_all_settings', 'bae_ajax_admin_save_all_settings');
+add_action('wp_ajax_bae_admin_save_smtp',        'bae_ajax_admin_save_smtp');
+add_action('wp_ajax_nopriv_bae_admin_save_smtp', 'bae_ajax_admin_save_smtp');
+
 
 function bae_admin_auth_check() {
     if (!bae_admin_check_session()) {
         wp_send_json_error(['message' => 'Unauthorized.'], 401);
     }
+}
+
+function bae_ajax_admin_save_smtp() {
+    bae_admin_auth_check();
+    check_ajax_referer(BAE_ADMIN_NONCE, 'nonce');
+    
+    $from_email = sanitize_email($_POST['smtp_from'] ?? '');
+    $password   = sanitize_text_field($_POST['smtp_pass'] ?? '');
+    
+    update_option('bae_smtp_from', $from_email);
+    update_option('bae_smtp_pass', $password);
+    
+    wp_send_json_success(['message' => 'SMTP settings saved.']);
 }
 
 function bae_ajax_admin_login() {
@@ -2437,10 +2453,19 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
                             </div>
 
                             <div class="bae-env-group">
-                                <h3 style="margin:0 0 16px;">SMTP Settings</h3>
-                                <div class="bae-adm-field"><label>From Email</label><input type="email" id="bae-smtp-from" value="<?php echo esc_attr($smtp_from); ?>" placeholder="email@example.com" autocomplete="off" data-1p-ignore data-lpignore="true"></div>
-                                <div class="bae-adm-field"><label>Password</label><input type="password" id="bae-smtp-pass" value="<?php echo esc_attr($smtp_pass); ?>" placeholder="App password" autocomplete="new-password"></div>
-                            </div>
+    <h3 style="margin:0 0 16px;">SMTP Settings</h3>
+    <div class="bae-adm-field">
+        <label>From Email</label>
+        <input type="email" id="bae-smtp-from" value="<?php echo esc_attr($smtp_from); ?>" placeholder="email@example.com" autocomplete="off" data-1p-ignore data-lpignore="true">
+    </div>
+    <div class="bae-adm-field">
+        <label>Password</label>
+        <input type="password" id="bae-smtp-pass" value="<?php echo esc_attr($smtp_pass); ?>" placeholder="App password" autocomplete="new-password">
+    </div>
+    <button type="button" class="bae-adm-save-btn" style="margin-top:8px; background: linear-gradient(135deg, #3b82f6, #2563eb);" onclick="baeAdmSaveSmtp()">
+        Save SMTP
+    </button>
+</div>
 
                             <button class="bae-adm-save-btn" id="bae-settings-save" onclick="baeAdmSaveAllSettings()">Save All Settings</button>
                         </div>
@@ -2703,6 +2728,13 @@ function baeAdmSaveSection(section) {
     fd.append('stripe_public',  document.getElementById('bae-stripe-public')?.value.trim() || '');
     fd.append('stripe_secret',  document.getElementById('bae-stripe-secret')?.value.trim() || '');
     fd.append('stripe_webhook', document.getElementById('bae-stripe-webhook')?.value.trim() || '');
+    fd.append('stripe_starter_m', document.getElementById('bae-stripe-starter-m')?.value.trim() || '');
+    fd.append('stripe_starter_l', document.getElementById('bae-stripe-starter-l')?.value.trim() || '');
+    fd.append('stripe_pro_m',     document.getElementById('bae-stripe-pro-m')?.value.trim() || '');
+
+    // SMTP (NEW)
+    fd.append('smtp_from', document.getElementById('bae-smtp-from')?.value.trim() || '');
+    fd.append('smtp_pass', document.getElementById('bae-smtp-pass')?.value.trim() || '');
 
     fetch(_baeAdmAj, { method: 'POST', body: fd })
         .then(function(r) { return r.json(); })
@@ -2715,6 +2747,23 @@ function baeAdmSaveSection(section) {
             baeAdmToast('Network error. Try again.', 'error');
         });
 }
+
+
+    <div class="bae-env-group">
+    <h3 style="margin:0 0 16px;">SMTP Settings</h3>
+    <div class="bae-adm-field">
+        <label>From Email</label>
+        <input type="email" id="bae-smtp-from" value="<?php echo esc_attr($smtp_from); ?>" placeholder="email@example.com" autocomplete="off" data-1p-ignore data-lpignore="true">
+    </div>
+    <div class="bae-adm-field">
+        <label>Password</label>
+        <input type="password" id="bae-smtp-pass" value="<?php echo esc_attr($smtp_pass); ?>" placeholder="App password" autocomplete="new-password">
+    </div>
+    <button type="button" class="bae-adm-save-btn" style="margin-top:8px; background: linear-gradient(135deg, #3b82f6, #2563eb);" onclick="baeAdmSaveSmtp()">
+        Save SMTP
+    </button>
+</div>    
+        
 
     // ── Save PayMaya
     function baeAdmSavePaymongo() {
