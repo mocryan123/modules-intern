@@ -383,8 +383,9 @@ add_action('wp_enqueue_scripts', function() {
 
 add_action('wp_head', function() {
     if (!bntm_ch_is_frontend_context()) return;
+    // Synchronous FOUC prevention: keep body invisible immediately
     echo '<script>document.documentElement.classList.add("ch-ui-pending");</script>';
-    echo '<style>html.ch-ui-pending body{visibility:hidden}html.ch-ui-ready body{visibility:visible}</style>';
+    echo '<style>html.ch-ui-pending{opacity:0}html.ch-ui-ready{opacity:1}html.ch-ui-ready body,html.ch-ui-pending body{visibility:visible!important;opacity:inherit}html.ch-ui-pending body{opacity:0}html.ch-ui-ready body{opacity:1;transition:opacity .15s ease}</style>';
 }, -1);
 
 add_action('wp_head', function() {
@@ -393,6 +394,7 @@ add_action('wp_head', function() {
     <script>
     (function() {
         function chRevealCommunityUi() {
+            if (document.documentElement.classList.contains('ch-ui-ready')) return;
             document.documentElement.classList.remove('ch-ui-pending');
             document.documentElement.classList.add('ch-ui-ready');
         }
@@ -401,13 +403,19 @@ add_action('wp_head', function() {
                 document.documentElement.classList.add('ch-dark');
             }
         } catch (e) {}
+        // Reveal immediately if DOM is ready, otherwise wait for DOMContentLoaded
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
                 requestAnimationFrame(chRevealCommunityUi);
             }, { once: true });
         } else {
-            requestAnimationFrame(chRevealCommunityUi);
+            // DOM is already loaded, reveal immediately
+            chRevealCommunityUi();
         }
+        // Safety fallback: reveal after 3s even if DOMContentLoaded hasn't fired
+        setTimeout(function() {
+            chRevealCommunityUi();
+        }, 3000);
     })();
     </script>
     <?php

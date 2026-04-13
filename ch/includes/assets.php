@@ -3292,12 +3292,17 @@ function ch_settings_modal_html($logout_url = '') {
             window.chLoadAdminShell = chLoadAdminShell;
 
             document.addEventListener('click', function(e) {
-                var adminLink = e.target.closest('.ch-dashboard-wrap a[href*="tab="]');
+                // Intercept all links inside .ch-dashboard-wrap that navigate to the same origin
+                var adminLink = e.target.closest('.ch-dashboard-wrap a[href]');
                 if (!adminLink || !chCanSoftNavigate(adminLink)) return;
-
+                
                 try {
                     var adminUrl = new URL(adminLink.href, window.location.href);
-                    if (!adminUrl.searchParams.get('tab')) return;
+                    // Only soft-navigate if URL has tab parameter or is on the same page
+                    var hasTab = adminUrl.searchParams.get('tab');
+                    var isCurrentPage = adminUrl.pathname === window.location.pathname;
+                    if (!hasTab && !isCurrentPage) return; // Let regular links work normally
+                    
                     e.preventDefault();
                     chLoadAdminShell(adminUrl.toString(), true).catch(function() {
                         window.location.href = adminLink.href;
@@ -3354,12 +3359,17 @@ function ch_settings_modal_html($logout_url = '') {
             window.chLoadMyFeedShell = chLoadMyFeedShell;
 
             document.addEventListener('click', function(e) {
-                var myFeedLink = e.target.closest('.ch-my-feed-wrap a.ch-mf-subnav-item[href*="subtab="]');
+                // Intercept subnav links with broader selector
+                var myFeedLink = e.target.closest('a.ch-mf-subnav-item[href]');
                 if (!myFeedLink || !chCanSoftNavigate(myFeedLink)) return;
-
+                
                 try {
                     var myFeedUrl = new URL(myFeedLink.href, window.location.href);
-                    if (!myFeedUrl.searchParams.get('subtab')) return;
+                    var hasSubtab = myFeedUrl.searchParams.get('subtab');
+                    var hasTab = myFeedUrl.searchParams.get('tab');
+                    // Only soft-navigate if URL has subtab parameter
+                    if (!hasSubtab) return;
+                    
                     e.preventDefault();
                     chLoadMyFeedShell(myFeedUrl.toString(), true).catch(function() {
                         window.location.href = myFeedLink.href;
