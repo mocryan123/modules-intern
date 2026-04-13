@@ -1208,6 +1208,21 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
     #bae-adm-toast.error   { border-color: rgba(251,113,133,.3); color: var(--red); }
 
     @media (max-width: 700px) {
+.bae-adm-welcome {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+    gap: 14px;
+}
+.bae-adm-quick-actions {
+    width: 100%;
+    flex-wrap: wrap;
+}
+.bae-adm-quick-btn {
+    flex: 1;
+    justify-content: center;
+}
+        
         .bae-adm {
             padding: 18px 12px;
             gap: 14px;
