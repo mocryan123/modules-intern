@@ -3122,8 +3122,8 @@ function bntm_shortcode_bae() {
     inset: 0;
     background: linear-gradient(
         to top,
-        rgba(10,10,15,.92) 0%,
-        rgba(10,10,15,.75) 50%,
+        var(--bg) 0%,
+        rgba(from var(--bg) r g b / 0.75) 50%,
         transparent 100%
     );
     backdrop-filter: blur(0px);
@@ -3157,18 +3157,7 @@ function bntm_shortcode_bae() {
     margin-top: 3px;
 }
 
-/* Mobile — always show info, no hover needed */
-@media (max-width: 680px) {
-    .bae-asset-card::after {
-        opacity: 1;
-        backdrop-filter: blur(4px);
-    }
-    .bae-asset-info,
-    .bae-asset-actions {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
+
 
 
         #bae-card-social_kit .bae-asset-info,
