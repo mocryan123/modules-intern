@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Module Name: Fundora Platform
  * Module Slug: kbf
@@ -585,6 +585,13 @@ function kbf_refund_all_sponsors($fund_id) {
     // Auto-refund disabled.
     return;
 }
+
+// Hide legacy sidebar on both frontend and admin
+function kbf_hide_bntm_sidebar() {
+    echo '<style>.bntm-sidebar{display:none!important}</style>';
+}
+add_action('wp_head', 'kbf_hide_bntm_sidebar', 999);
+add_action('admin_head', 'kbf_hide_bntm_sidebar', 999);
 
 
 
