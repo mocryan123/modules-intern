@@ -3113,6 +3113,10 @@ function bntm_shortcode_bae() {
     transform: translateY(20px);
     opacity: 0;
     border-top: none;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 /* Frosted glass backdrop — only visible on hover */
@@ -3149,13 +3153,23 @@ function bntm_shortcode_bae() {
 .bae-asset-name {
     font-size: 13px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text);
+    transition: color 0.5s;
 }
 .bae-asset-meta {
     font-size: 12px;
-    color: rgba(255,255,255,.6);
+    color: var(--text-3);
     margin-top: 3px;
+    transition: color 0.5s;
 }
+
+/* On hover, text flips to white so it's readable over the dark overlay */
+.bae-asset-card:hover .bae-asset-name { color: #fff; }
+.bae-asset-card:hover .bae-asset-meta { color: rgba(255,255,255,.65); }
+
+/* Light mode hover keeps dark text since overlay is lighter */
+.bae-wrap.bae-light .bae-asset-card:hover .bae-asset-name { color: var(--text); }
+.bae-wrap.bae-light .bae-asset-card:hover .bae-asset-meta { color: var(--text-2); }
 
 
 
