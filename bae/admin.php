@@ -191,9 +191,7 @@ function bae_admin_login_screen() {
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <style>
-div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="z-index:99999"] {
-    display: none !important;
-}
+
         
     .bae-adm-login {
         font-family: 'Geist', -apple-system, sans-serif;
@@ -563,6 +561,10 @@ function bae_admin_dashboard() {
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <style>
+div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="z-index:99999"] {
+    display: none !important;
+}
+        
     .bae-adm {
         font-family: 'Geist', -apple-system, sans-serif;
         --bg:       #0c0a16;
