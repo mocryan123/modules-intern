@@ -2028,6 +2028,13 @@
         if (editProv && editMuni && editBrgy) {
             window.kbfEditLocPicker = kbfInitLocationPicker(editProv, editMuni, editBrgy);
         }
+        // Profile page address dropdowns
+        var profileProv = document.getElementById('kbf-profile-province');
+        var profileMuni = document.getElementById('kbf-profile-municipality');
+        var profileBrgy = document.getElementById('kbf-profile-barangay');
+        if (profileProv && profileMuni && profileBrgy) {
+            window.kbfProfileLocPicker = kbfInitLocationPicker(profileProv, profileMuni, profileBrgy);
+        }
         if (!isCreateRedesign) {
         var kbfDraftKey = 'kbf_create_draft_<?php echo (int)$business_id; ?>';
         function kbfDraftStorageOk(){

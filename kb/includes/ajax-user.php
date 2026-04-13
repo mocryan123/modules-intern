@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF user-facing AJAX handlers (funds, sponsor actions, lookups).
  */

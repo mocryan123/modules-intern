@@ -16,6 +16,7 @@ add_action('wp_ajax_kbf_toggle_auto_return',         'bntm_ajax_kbf_toggle_auto_
 add_action('wp_ajax_kbf_save_organizer_profile',     'bntm_ajax_kbf_save_organizer_profile');
 add_action('wp_ajax_kbf_dismiss_onboarding',         'bntm_ajax_kbf_dismiss_onboarding');
 add_action('wp_ajax_kbf_request_verification',      'bntm_ajax_kbf_request_verification');
+add_action('wp_ajax_fundora_ajax_start_verification', 'fundora_ajax_start_verification');
 add_action('wp_ajax_kbf_mark_fund_complete',         'bntm_ajax_kbf_mark_fund_complete');
 
 add_action('wp_ajax_kbf_sponsor_fund',               'bntm_ajax_kbf_sponsor_fund');
