@@ -2617,6 +2617,34 @@ function bae_admin_dashboard() {
         });
     }
 
+
+        function baeAdmSaveAllSettings() {
+    var btn = document.getElementById('bae-settings-save');
+    if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+
+    var fd = new FormData();
+    fd.append('action', 'bae_admin_save_all_settings');
+    fd.append('nonce', _baeAdmNonce);
+    fd.append('pm_public',  document.getElementById('bae-pm-public').value.trim());
+    fd.append('pm_secret',  document.getElementById('bae-pm-secret').value.trim());
+    fd.append('pm_webhook', document.getElementById('bae-pm-webhook') ? document.getElementById('bae-pm-webhook').value.trim() : '');
+    fd.append('pm_base',    document.getElementById('bae-pm-base').value.trim());
+    fd.append('stripe_public',  document.getElementById('bae-stripe-public') ? document.getElementById('bae-stripe-public').value.trim() : '');
+    fd.append('stripe_secret',  document.getElementById('bae-stripe-secret') ? document.getElementById('bae-stripe-secret').value.trim() : '');
+    fd.append('stripe_webhook', document.getElementById('bae-stripe-webhook') ? document.getElementById('bae-stripe-webhook').value.trim() : '');
+
+    fetch(ajaxurl, { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
+            if (btn) { btn.textContent = 'Save All Settings'; btn.disabled = false; }
+            baeAdmToast(j.success ? 'Settings saved.' : (j.data?.message || 'Failed to save.'), j.success ? 'success' : 'error');
+        })
+        .catch(function() {
+            if (btn) { btn.textContent = 'Save All Settings'; btn.disabled = false; }
+            baeAdmToast('Network error. Try again.', 'error');
+        });
+}
+
     // ── Save PayMaya
     function baeAdmSavePaymongo() {
         var pub = document.getElementById('bae-pm-public').value.trim();
