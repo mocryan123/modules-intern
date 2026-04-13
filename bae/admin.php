@@ -2749,21 +2749,27 @@ function baeAdmSaveSection(section) {
 }
 
 
-    <div class="bae-env-group">
-    <h3 style="margin:0 0 16px;">SMTP Settings</h3>
-    <div class="bae-adm-field">
-        <label>From Email</label>
-        <input type="email" id="bae-smtp-from" value="<?php echo esc_attr($smtp_from); ?>" placeholder="email@example.com" autocomplete="off" data-1p-ignore data-lpignore="true">
-    </div>
-    <div class="bae-adm-field">
-        <label>Password</label>
-        <input type="password" id="bae-smtp-pass" value="<?php echo esc_attr($smtp_pass); ?>" placeholder="App password" autocomplete="new-password">
-    </div>
-    <button type="button" class="bae-adm-save-btn" style="margin-top:8px; background: linear-gradient(135deg, #3b82f6, #2563eb);" onclick="baeAdmSaveSmtp()">
-        Save SMTP
-    </button>
-</div>    
-        
+    // ── Save SMTP
+    function baeAdmSaveSmtp() {
+        var fromEl = document.getElementById('bae-smtp-from');
+        var passEl = document.getElementById('bae-smtp-pass');
+        if (!fromEl || !passEl) { baeAdmToast('SMTP fields not found.', 'error'); return; }
+
+        var fd = new FormData();
+        fd.append('action', 'bae_admin_save_smtp');
+        fd.append('nonce', _baeAdmNonce);
+        fd.append('smtp_from', fromEl.value.trim());
+        fd.append('smtp_pass', passEl.value.trim());
+
+        fetch(_baeAdmAj, { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(j) {
+                baeAdmToast(j.success ? 'SMTP settings saved.' : (j.data?.message || 'Failed.'), j.success ? 'success' : 'error');
+            })
+            .catch(function() {
+                baeAdmToast('Network error. Try again.', 'error');
+            });
+    }
 
     // ── Save PayMaya
     function baeAdmSavePaymongo() {
