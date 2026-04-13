@@ -809,7 +809,27 @@ function bntm_shortcode_ch_auth() {
     $redirect = isset($_GET['redirect_to']) ? esc_url($_GET['redirect_to']) : '';
     $active   = isset($_GET['tab']) && $_GET['tab'] === 'register' ? 'register' : 'login';
 
-    ob_start(); ?>
+    ob_start();
+    $feed_url_auth = ch_get_feed_url();
+    $auth_user_id  = get_current_user_id();
+    ?>
+    <nav class="ch-top-nav" style="position:relative;">
+        <div class="ch-top-nav-logo" style="margin:0 16px 0 0;display:flex;align-items:center;">
+            <a href="<?php echo esc_url($feed_url_auth); ?>" style="display:flex;align-items:center;text-decoration:none;">
+                <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo" style="height:28px;">
+            </a>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+            <?php if (!$auth_user_id): ?>
+            <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>"    class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+            <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary  ch-btn-sm">Join</a>
+            <?php endif; ?>
+            <a href="<?php echo esc_url($feed_url_auth); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Forum
+            </a>
+        </div>
+    </nav>
     <div class="ch-auth-wrap">
         <div class="ch-auth-card">
 
@@ -1263,59 +1283,85 @@ function bntm_ch_og_meta_tags() {
 }
 
 function bntm_ajax_ch_login() {
-    check_ajax_referer('ch_auth_nonce', 'nonce');
-
-    $username    = sanitize_text_field($_POST['username'] ?? '');
+    check_ajax_referer( 'ch_auth_nonce', 'nonce' );
+ 
+    $username    = sanitize_text_field( $_POST['username'] ?? '' );
     $password    = $_POST['password'] ?? '';
-    $remember    = !empty($_POST['remember']);
-    $redirect_to = esc_url_raw($_POST['redirect_to'] ?? '');
-
-    if (!$username || !$password) {
-        wp_send_json_error(['message' => 'Username and password are required.']);
+    $remember    = ! empty( $_POST['remember'] );
+    $redirect_to = esc_url_raw( $_POST['redirect_to'] ?? '' );
+ 
+    if ( ! $username || ! $password ) {
+        wp_send_json_error( [ 'message' => 'Username and password are required.' ] );
     }
-
-    $credentials = [
-        'user_login'    => $username,
-        'user_password' => $password,
-        'remember'      => $remember,
-    ];
-
-    $user = wp_signon($credentials, is_ssl());
-
-    if (is_wp_error($user)) {
-        if ($user->get_error_code() === 'ch_account_restricted') {
-            wp_send_json_error([
-                'message' => 'Your account has been restricted. Please contact support.',
-                'account_restricted' => true,
-            ]);
+ 
+    // ── Step 1: Authenticate (does NOT set any cookie) ──────────────────────
+    $user = wp_authenticate( $username, $password );
+ 
+    if ( is_wp_error( $user ) ) {
+        // Surface the ch_email_unverified and ch_account_restricted errors
+        // that are injected by the ch_block_unverified_login filter.
+        $code = $user->get_error_code();
+ 
+        if ( $code === 'ch_account_restricted' ) {
+            wp_send_json_error( [
+                'message'             => 'Your account has been restricted. Please contact support.',
+                'account_restricted'  => true,
+            ] );
         }
-
-        if ($user->get_error_code() === 'ch_email_unverified') {
-            $blocked_user = get_user_by('login', $username);
-            if (!$blocked_user && is_email($username)) {
-                $blocked_user = get_user_by('email', $username);
+ 
+        if ( $code === 'ch_email_unverified' ) {
+            // Try to resolve the email address so the front-end can show a
+            // "Resend verification" prompt pre-filled with the user's email.
+            $blocked_user = get_user_by( 'login', $username );
+            if ( ! $blocked_user && is_email( $username ) ) {
+                $blocked_user = get_user_by( 'email', $username );
             }
-
-            wp_send_json_error([
-                'message' => 'Verify your email before signing in.',
-                'requires_verification' => true,
-                'email' => $blocked_user ? $blocked_user->user_email : (is_email($username) ? $username : ''),
-            ]);
+ 
+            wp_send_json_error( [
+                'message'                => 'Verify your email before signing in.',
+                'requires_verification'  => true,
+                'email'                  => $blocked_user ? $blocked_user->user_email
+                                                          : ( is_email( $username ) ? $username : '' ),
+            ] );
         }
-
-        $msg = $user->get_error_code() === 'incorrect_password' || $user->get_error_code() === 'invalid_username'
+ 
+        $msg = in_array( $code, [ 'incorrect_password', 'invalid_username', 'invalid_email' ], true )
             ? 'Incorrect username or password.'
             : $user->get_error_message();
-        wp_send_json_error(['message' => strip_tags($msg)]);
+ 
+        wp_send_json_error( [ 'message' => strip_tags( $msg ) ] );
     }
-
-    // Ensure CivicHub profile exists
-    ch_ensure_profile($user->ID);
-
+ 
+    // ── Step 2: Profile / status check ──────────────────────────────────────
+    global $wpdb;
+    $profile_row = $wpdb->get_row( $wpdb->prepare(
+        "SELECT status FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d",
+        $user->ID
+    ) );
+ 
+    if ( $profile_row && in_array( $profile_row->status, [ 'banned', 'suspended' ], true ) ) {
+        wp_send_json_error( [
+            'message'            => 'Your account has been restricted. Please contact support.',
+            'account_restricted' => true,
+        ] );
+    }
+ 
+    // ── Step 3: Set auth cookie explicitly ──────────────────────────────────
+    //
+    // Use is_ssl() so the Secure flag always matches the site's actual
+    // protocol. This is the key fix for live servers behind proxies or
+    // load balancers where wp_signon()'s internal check can disagree.
+    wp_set_current_user( $user->ID );
+    wp_set_auth_cookie( $user->ID, $remember, is_ssl() );
+    do_action( 'wp_login', $user->user_login, $user );
+ 
+    // ── Step 4: Ensure CivicHub profile row exists ──────────────────────────
+    ch_ensure_profile( $user->ID );
+ 
     $default_url = ch_get_feed_url();
     $redirect    = $redirect_to ?: $default_url;
-
-    wp_send_json_success(['redirect' => $redirect]);
+ 
+    wp_send_json_success( [ 'redirect' => $redirect ] );
 }
 
 function bntm_ajax_ch_register() {
