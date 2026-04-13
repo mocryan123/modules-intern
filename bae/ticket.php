@@ -712,6 +712,10 @@ function bntm_bae_ticket_screen() {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="z-index:99999"] {
+    display: none !important;
+}
+		
     .baetk { font-family:'Geist',-apple-system,sans-serif; background:#09090e; color:#ede9ff; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px 24px; position:relative; overflow:hidden; border-radius:0; isolation:isolate; }
     .baetk::before { content:''; position:absolute; width:480px; height:480px; border-radius:50%; background:radial-gradient(circle,rgba(139,92,246,.13) 0%,transparent 70%); top:-160px; right:-80px; pointer-events:none; z-index:0; }
     .baetk::after  { content:''; position:absolute; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(236,72,153,.08) 0%,transparent 70%); bottom:-80px; left:-80px; pointer-events:none; z-index:0; }
