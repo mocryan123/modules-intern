@@ -281,6 +281,17 @@ function ch_block_unverified_login($user, $username, $password) {
     if ($password === '') {
         return $user;
     }
+
+    global $wpdb;
+    $profile_row = $wpdb->get_row($wpdb->prepare(
+        "SELECT status FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d",
+        $user->ID
+    ));
+
+    if ($profile_row && in_array($profile_row->status, ['banned', 'suspended'])) {
+        return new WP_Error('ch_account_restricted', 'Your account has been restricted. Please contact support.');
+    }
+
     if (ch_is_user_email_verified($user)) {
         return $user;
     }
@@ -1335,6 +1346,13 @@ function bntm_ajax_ch_login() {
     $user = wp_signon($credentials, is_ssl());
 
     if (is_wp_error($user)) {
+        if ($user->get_error_code() === 'ch_account_restricted') {
+            wp_send_json_error([
+                'message' => 'Your account has been restricted. Please contact support.',
+                'account_restricted' => true,
+            ]);
+        }
+
         if ($user->get_error_code() === 'ch_email_unverified') {
             $blocked_user = get_user_by('login', $username);
             if (!$blocked_user && is_email($username)) {
