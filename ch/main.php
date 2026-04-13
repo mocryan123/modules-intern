@@ -994,7 +994,7 @@ function bntm_shortcode_ch_auth() {
             fd.append('redirect_to', redirect);
             fd.append('nonce',       nonce);
 
-            fetch(ajaxurl, {method:'POST', body:fd})
+            fetch(ajaxurl, {method:'POST', body:fd, credentials: 'same-origin'})
             .then(r => r.json())
             .then(json => {
                 if (json.success) {
@@ -1003,6 +1003,14 @@ function bntm_shortcode_ch_auth() {
                     setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 800);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
+                    if (json.data?.requires_verification && json.data?.email) {
+                        const resendWrap = document.getElementById('ch-auth-resend-wrap');
+                        if (resendWrap) {
+                            resendWrap.dataset.email = json.data.email;
+                            resendWrap.style.display = 'block';
+                            resendWrap.innerHTML = '<div class="ch-auth-resend-copy">Need another verification email for <strong>' + json.data.email + '</strong>?</div><button type="button" class="ch-btn ch-btn-secondary ch-btn-full" id="ch-resend-verification-btn" onclick="chResendVerification(\'' + nonce + '\')">Resend Verification Email</button>';
+                        }
+                    }
                     btn.disabled = false; btn.textContent = 'Sign In';
                 }
             })
@@ -1041,123 +1049,11 @@ function bntm_shortcode_ch_auth() {
             fd.append('redirect_to',redirect);
             fd.append('nonce',      nonce);
 
-            fetch(ajaxurl, {method:'POST', body:fd})
+            fetch(ajaxurl, {method:'POST', body:fd, credentials: 'same-origin'})
             .then(r => r.json())
             .then(json => {
                 if (json.success) {
                     msgEl.innerHTML = '<div class="bntm-notice-success">Account created! Signing you in…</div>';
-                    if(window.chNavBarStart) window.chNavBarStart();
-                    setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 1000);
-                } else {
-                    msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Registration failed. Please try again.') + '</div>';
-                    btn.disabled = false; btn.textContent = 'Create Account';
-                }
-            })
-            .catch(() => {
-                msgEl.innerHTML = '<div class="bntm-notice-error">Network error. Please try again.</div>';
-                btn.disabled = false; btn.textContent = 'Create Account';
-            });
-        };
-
-        // Submit login on Enter
-        ['ch-login-user','ch-login-pass'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') document.getElementById('ch-login-btn')?.click();
-            });
-        });
-        ['ch-reg-username','ch-reg-email','ch-reg-pass','ch-reg-location'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') document.getElementById('ch-register-btn')?.click();
-            });
-        });
-    })();
-    </script>
-    <script>
-    (function(){
-        var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
-
-        window.chSubmitLogin = function(nonce, redirect) {
-            const user     = document.getElementById('ch-login-user').value.trim();
-            const pass     = document.getElementById('ch-login-pass').value;
-            const remember = document.getElementById('ch-login-remember').checked ? 1 : 0;
-            const msgEl    = document.getElementById('ch-auth-msg');
-            const btn      = document.getElementById('ch-login-btn');
-
-            if (!user || !pass) { msgEl.innerHTML = '<div class="bntm-notice-error">Please fill in all fields.</div>'; return; }
-
-            btn.disabled = true; btn.textContent = 'Signing in...';
-            msgEl.innerHTML = '';
-
-            const fd = new FormData();
-            fd.append('action', 'ch_login');
-            fd.append('username', user);
-            fd.append('password', pass);
-            fd.append('remember', remember);
-            fd.append('redirect_to', redirect);
-            fd.append('nonce', nonce);
-
-            fetch(ajaxurl, {method:'POST', body:fd})
-            .then(r => r.json())
-            .then(json => {
-                if (json.success) {
-                    msgEl.innerHTML = '<div class="bntm-notice-success">Welcome back! Redirecting...</div>';
-                    if(window.chNavBarStart) window.chNavBarStart();
-                    setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 800);
-                } else {
-                    msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
-                    if (json.data?.requires_verification && json.data?.email) {
-                        const resendWrap = document.getElementById('ch-auth-resend-wrap');
-                        if (resendWrap) {
-                            resendWrap.dataset.email = json.data.email;
-                            resendWrap.style.display = 'block';
-                            resendWrap.innerHTML = '<div class="ch-auth-resend-copy">Need another verification email for <strong>' + json.data.email + '</strong>?</div><button type="button" class="ch-btn ch-btn-secondary ch-btn-full" id="ch-resend-verification-btn" onclick="chResendVerification(\'' + nonce + '\')">Resend Verification Email</button>';
-                        }
-                    }
-                    btn.disabled = false; btn.textContent = 'Sign In';
-                }
-            })
-            .catch(() => {
-                msgEl.innerHTML = '<div class="bntm-notice-error">Network error. Please try again.</div>';
-                btn.disabled = false; btn.textContent = 'Sign In';
-            });
-        };
-
-        window.chSubmitRegister = function(nonce, redirect) {
-            const username  = document.getElementById('ch-reg-username').value.trim();
-            const email     = document.getElementById('ch-reg-email').value.trim();
-            const pass      = document.getElementById('ch-reg-pass').value;
-            const firstname = document.getElementById('ch-reg-firstname').value.trim();
-            const lastname  = document.getElementById('ch-reg-lastname').value.trim();
-            const location  = document.getElementById('ch-reg-location').value.trim();
-            const terms     = document.getElementById('ch-reg-terms').checked;
-            const msgEl     = document.getElementById('ch-auth-msg');
-            const btn       = document.getElementById('ch-register-btn');
-
-            if (!username || !email || !pass) { msgEl.innerHTML = '<div class="bntm-notice-error">Username, email, and password are required.</div>'; return; }
-            if (!terms) { msgEl.innerHTML = '<div class="bntm-notice-error">Please agree to the Community Guidelines.</div>'; return; }
-            if (pass.length < 8) { msgEl.innerHTML = '<div class="bntm-notice-error">Password must be at least 8 characters.</div>'; return; }
-
-            btn.disabled = true; btn.textContent = 'Creating account...';
-            msgEl.innerHTML = '';
-
-            const fd = new FormData();
-            fd.append('action', 'ch_register');
-            fd.append('username', username);
-            fd.append('email', email);
-            fd.append('password', pass);
-            fd.append('first_name', firstname);
-            fd.append('last_name', lastname);
-            fd.append('location', location);
-            fd.append('redirect_to', redirect);
-            fd.append('nonce', nonce);
-
-            fetch(ajaxurl, {method:'POST', body:fd})
-            .then(r => r.json())
-            .then(json => {
-                if (json.success) {
-                    msgEl.innerHTML = '<div class="bntm-notice-success">' + (json.data?.message || 'Account created! Redirecting...') + '</div>';
                     if(window.chNavBarStart) window.chNavBarStart();
                     setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 1000);
                 } else {
@@ -1189,7 +1085,7 @@ function bntm_shortcode_ch_auth() {
             fd.append('email', email);
             fd.append('nonce', nonce);
 
-            fetch(ajaxurl, {method:'POST', body:fd})
+            fetch(ajaxurl, {method:'POST', body:fd, credentials: 'same-origin'})
             .then(r => r.json())
             .then(json => {
                 msgEl.innerHTML = '<div class="bntm-notice-' + (json.success ? 'success' : 'error') + '">' + (json.data?.message || 'Unable to resend verification email.') + '</div>';
@@ -1200,6 +1096,20 @@ function bntm_shortcode_ch_auth() {
                 if (btn) { btn.disabled = false; btn.textContent = 'Resend Verification Email'; }
             });
         };
+
+        // Submit login on Enter
+        ['ch-login-user','ch-login-pass'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') document.getElementById('ch-login-btn')?.click();
+            });
+        });
+        ['ch-reg-username','ch-reg-email','ch-reg-pass','ch-reg-location'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') document.getElementById('ch-register-btn')?.click();
+            });
+        });
     })();
     </script>
 

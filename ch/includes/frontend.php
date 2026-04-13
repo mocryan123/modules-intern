@@ -281,7 +281,7 @@ function ch_guest_landing_page() {
         var chFeedUrl = '<?php echo esc_js(remove_query_arg('view_post')); ?>';
     </script>
 
-    <nav class="ch-top-nav" style="position: relative;">
+    <nav class="ch-top-nav">
         <!-- Burger Menu Toggle -->
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '#ch-guest-drawer');">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
