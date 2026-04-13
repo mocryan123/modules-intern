@@ -1634,7 +1634,7 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
 							</div>
 						</div>
 						<div class="baetk-surface">
-							<img src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?auto=format&fit=crop&w=1200&q=80" alt="Brand design workspace">
+							<img src="<?php echo esc_url(add_query_arg('ver', filemtime(BNTM_BAE_PATH . '3.jpg'), BNTM_BAE_URL . '3.jpg')); ?>" alt="Brand design workspace">
 							<div class="baetk-caption">Asset Generator</div>
 						</div>
 					</div>
@@ -1667,7 +1667,7 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
                                 </div>
                             </div>
                             <div class="baetk-surface" style="min-height:560px; background:rgba(255,255,255,.56);">
-                                <img src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=80" alt="Brand asset glow">
+                                <img src="<?php echo esc_url(add_query_arg('ver', filemtime(BNTM_BAE_PATH . '4.jpg'), BNTM_BAE_URL . '4.jpg')); ?>" alt="Brand asset glow">
                                 <div class="baetk-caption">Brand kit glow</div>
                             </div>
                         </div>
@@ -1685,7 +1685,7 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
                             <p class="baetk-copy-sm">BAE helps a small business move from rough ideas into a usable identity system. Every logo, color choice, and layout cue should feel like part of the same brand family, not a one-off file.</p>
                         </div>
                         <div class="baetk-surface">
-                            <img src="https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1600&q=80" alt="Quiet workspace">
+                            <img src="<?php echo esc_url(add_query_arg('ver', filemtime(BNTM_BAE_PATH . '2.jpg'), BNTM_BAE_URL . '2.jpg')); ?>" alt="Quiet workspace">
                             <div class="baetk-caption">Identity flow</div>
                         </div>
                     </div>
@@ -1702,10 +1702,10 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
                         <p>The asset set moves like a reel so the brand pieces feel alive, but each frame still speaks the same visual language.</p>
                     </div>
                     <div class="baetk-rail">
-                        <div class="baetk-railcard"><img src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=1200&q=80" alt="Brand board 1"><div class="meta"><span class="n">01</span><h4>Logo suite</h4><p>Primary mark, lockup, and variants.</p></div></div>
-                        <div class="baetk-railcard"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80" alt="Brand board 2"><div class="meta"><span class="n">02</span><h4>Color logic</h4><p>Soft neutrals with depth and contrast.</p></div></div>
-                        <div class="baetk-railcard"><img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=80" alt="Brand board 3"><div class="meta"><span class="n">03</span><h4>Type system</h4><p>Elegant hierarchy for brand clarity.</p></div></div>
-                        <div class="baetk-railcard"><img src="https://images.unsplash.com/photo-1487887235947-a955ef187fcc?auto=format&fit=crop&w=1200&q=80" alt="Brand board 4"><div class="meta"><span class="n">04</span><h4>Asset export</h4><p>Ready to use across touchpoints.</p></div></div>
+                        <div class="baetk-railcard"><img src="<?php echo esc_url(add_query_arg('ver', filemtime(BNTM_BAE_PATH . '3.jpg'), BNTM_BAE_URL . '3.jpg')); ?>" alt="Brand board 1"><div class="meta"><span class="n">01</span><h4>Logo suite</h4><p>Primary mark, lockup, and variants.</p></div></div>
+                        <div class="baetk-railcard"><img src="<?php echo esc_url(add_query_arg('ver', filemtime(BNTM_BAE_PATH . '4.jpg'), BNTM_BAE_URL . '4.jpg')); ?>" alt="Brand board 2"><div class="meta"><span class="n">02</span><h4>Color logic</h4><p>Soft neutrals with depth and contrast.</p></div></div>
+                        <div class="baetk-railcard"><img src="<?php echo esc_url(add_query_arg('ver', filemtime(BNTM_BAE_PATH . '2.jpg'), BNTM_BAE_URL . '2.jpg')); ?>" alt="Brand board 3"><div class="meta"><span class="n">03</span><h4>Type system</h4><p>Elegant hierarchy for brand clarity.</p></div></div>
+                        <div class="baetk-railcard"><img src="<?php echo esc_url(add_query_arg('ver', filemtime(BNTM_BAE_PATH . '1.jpg'), BNTM_BAE_URL . '1.jpg')); ?>" alt="Brand board 4"><div class="meta"><span class="n">04</span><h4>Asset export</h4><p>Ready to use across touchpoints.</p></div></div>
                     </div>
                 </div>
             </section>
@@ -1737,7 +1737,7 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
                         <a class="btn" href="javascript:void(0)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Back to ticket gate</a>
                     </div>
                     <div class="baetk-surface" style="min-height:420px;">
-                        <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1400&q=80" alt="Soft landing image">
+                        <img src="<?php echo esc_url(add_query_arg('ver', filemtime(BNTM_BAE_PATH . '1.jpg'), BNTM_BAE_URL . '1.jpg')); ?>" alt="Soft landing image">
                         <div class="baetk-caption">Brand Asset Engine</div>
                     </div>
                 </div>
