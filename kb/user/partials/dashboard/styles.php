@@ -315,6 +315,7 @@
     }
     .kbf-mobile-overlay.kbf-overlay-open{display:block;}
     @keyframes kbfOverlayIn{from{opacity:0}to{opacity:1}}
+    @keyframes kbfFadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
     .kbf-mobile-menu{
         position:fixed;
         top:0;left:0;right:0;

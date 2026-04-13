@@ -3059,7 +3059,14 @@
             if (saveBtn) kbfSetBtnLoading(saveBtn, false);
             kbfSetSkeleton(msg, false);
             if (json.success) {
-                // Temporarily disable auto-refresh after save
+                // Dynamic refresh: update milestones tab without full page reload
+                if (json.data && json.data.milestone) {
+                    kbfPrependMilestoneToUI(json.data.milestone);
+                }
+                msg.innerHTML = '<div class="kbf-alert kbf-alert-success">Story saved!</div>';
+                setTimeout(function(){
+                    kbfCloseModal('kbf-modal-milestone');
+                }, 900);
             }
         }).catch(()=>{
             if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed.</div>';
@@ -3074,6 +3081,38 @@
         fd.append('action','kbf_cancel_fund'); fd.append('fund_id',fundId);
         fd.append('nonce','<?php echo $nonce_cancel; ?>');
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{alert(j.data.message);if(j.success)location.reload();});
+    };
+
+    /**
+     * Dynamically prepends a new milestone to the Stories tab without page reload.
+     * @param {Object} ms - Milestone object from server response
+     */
+    window.kbfPrependMilestoneToUI = function(ms){
+        var container = document.querySelector('.kbf-section-milestones');
+        if (!container) return;
+        var dateStr = ms.created_at ? new Date(ms.created_at.replace(' ','T')).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+        var photosHtml = '';
+        if (ms.photos && Array.isArray(ms.photos) && ms.photos.length) {
+            photosHtml = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">';
+            ms.photos.forEach(function(p){
+                var url = (typeof p === 'object' && p.url) ? p.url : (typeof p === 'string' ? p : '');
+                if (url) photosHtml += '<img src="'+url.replace(/"/g,'&quot;')+'" alt="Story photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">';
+            });
+            photosHtml += '</div>';
+        }
+        var titleHtml = ms.title ? '<div style="font-weight:600;color:var(--kbf-navy);margin-bottom:4px;">'+ms.title.replace(/</g,'&lt;')+'</div>' : '';
+        var dateHtml = dateStr ? '<div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:6px;">'+dateStr+'</div>' : '';
+        var bodyHtml = ms.body ? '<div style="font-size:13px;color:var(--kbf-text-sm);line-height:1.6;">'+ms.body.replace(/\n/g,'<br>').replace(/</g,'&lt;')+'</div>' : '';
+        var cardHtml = '<div style="border:1px solid var(--kbf-border);border-radius:12px;padding:12px;background:#fff;animation:kbfFadeIn .3s ease;">'+titleHtml+dateHtml+bodyHtml+photosHtml+'</div>';
+        var grid = container.querySelector('div[style*="display:grid"]');
+        if (!grid) {
+            var emptyMsg = container.querySelector('div[style*="text-align:center"]');
+            if (emptyMsg) emptyMsg.remove();
+            grid = document.createElement('div');
+            grid.style.cssText = 'display:grid;gap:12px;';
+            container.appendChild(grid);
+        }
+        grid.insertAdjacentHTML('afterbegin', cardHtml);
     };
 
     var kbfTrashFundId = null;
