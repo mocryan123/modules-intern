@@ -1501,6 +1501,15 @@ function bae_wizard_shortcode($user_id) {
 }
 
 function bntm_shortcode_bae() {
+// FORCE NO CACHE – bypass BNTM Hub and all other caching layers
+if (!defined('DONOTCACHEPAGE')) define('DONOTCACHEPAGE', true);
+if (!defined('DONOTCACHEDB')) define('DONOTCACHEDB', true);
+if (!defined('DONOTCACHEOBJECT')) define('DONOTCACHEOBJECT', true);
+header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+
+    
     if (!is_user_logged_in()) {
         return '<div class="bntm-notice">Please log in to access the Mothie.</div>';
     }
