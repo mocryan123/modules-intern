@@ -347,16 +347,12 @@ function kbf_dashboard_find_funds_tab() {
           transition:none;
         }
       }
-      #kbff-search-form select,
-      #kbff-search-form .kbf-select-display{
+      #kbff-search-form select{
         height:38px;
         min-height:38px;
         padding:0 36px 0 12px;
         line-height:38px;
         white-space:nowrap;
-      }
-      #kbff-search-form .kbf-select-display{
-        padding-right:36px;
       }
       @media (max-width: 900px){
         #kbff-search-form{
