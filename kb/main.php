@@ -651,6 +651,23 @@ function kbf_hide_bntm_sidebar_js() {
 }
 add_action('wp_footer', 'kbf_hide_bntm_sidebar_js', 99999);
 
+/**
+ * Ensure wp_usermeta has an index for (meta_key, meta_value) to speed up @username lookups.
+ * Runs once safely.
+ */
+function kbf_ensure_usermeta_index() {
+    if (get_option('kbf_usermeta_index_checked')) return;
+    global $wpdb;
+    $table = $wpdb->usermeta;
+    $index_name = 'meta_key_value';
+    $index_exists = $wpdb->get_results($wpdb->prepare("SHOW INDEX FROM {$table} WHERE Key_name = %s", $index_name));
+    if (empty($index_exists)) {
+        $wpdb->query("ALTER TABLE {$table} ADD INDEX {$index_name} (meta_key(191), meta_value(191))");
+    }
+    update_option('kbf_usermeta_index_checked', 1);
+}
+add_action('admin_init', 'kbf_ensure_usermeta_index');
+
 
 
 

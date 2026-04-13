@@ -6,6 +6,15 @@
 if (!defined('ABSPATH')) exit;
 
 if (!function_exists('bntm_kbf_landing_seo_meta')) {
+    /**
+     * @function  bntm_kbf_landing_seo_meta
+     * @purpose   Injects SEO meta tags into the <head> from global state.
+     * @used-by   add_action('wp_head', 'bntm_kbf_landing_seo_meta', 1)
+     * @calls     None
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function bntm_kbf_landing_seo_meta() {
         if (empty($GLOBALS['kbf_landing_seo'])) return;
         $seo = $GLOBALS['kbf_landing_seo'];
@@ -33,6 +42,15 @@ if (!function_exists('bntm_kbf_landing_seo_meta')) {
 }
 
 if (!function_exists('kbf_landing_get_urls')) {
+    /**
+     * @function  kbf_landing_get_urls
+     * @purpose   Retrieves URLs for landing page navigation and actions.
+     * @used-by   bntm_kbf_render_landing
+     * @calls     kbf_get_page_url, home_url
+     * @params    none
+     * @returns   array<string, string> Map of URL keys to absolute URLs
+     * @status    ACTIVE
+     */
     function kbf_landing_get_urls() {
         $site_url = home_url('/');
         return [
@@ -46,6 +64,15 @@ if (!function_exists('kbf_landing_get_urls')) {
 }
 
 if (!function_exists('kbf_landing_get_faq_items')) {
+    /**
+     * @function  kbf_landing_get_faq_items
+     * @purpose   Returns the default FAQ items for the landing page.
+     * @used-by   kbf_landing_build_schema, kbf_landing_render_faq
+     * @calls     None
+     * @params    none
+     * @returns   array<int, array<string, string>> List of question/answer pairs
+     * @status    ACTIVE
+     */
     function kbf_landing_get_faq_items() {
         return [
             [
@@ -81,6 +108,15 @@ if (!function_exists('kbf_landing_get_faq_items')) {
 }
 
 if (!function_exists('kbf_landing_build_schema')) {
+    /**
+     * @function  kbf_landing_build_schema
+     * @purpose   Builds the JSON-LD schema array for landing page SEO.
+     * @used-by   bntm_kbf_render_landing
+     * @calls     None
+     * @params    string $site_name, string $site_url, string $logo_url, array $faq_items
+     * @returns   array<string, mixed> Schema.org compatible array
+     * @status    ACTIVE
+     */
     function kbf_landing_build_schema($site_name, $site_url, $logo_url, $faq_items) {
         $faq_entities = array_map(function($item){
             return [
@@ -122,6 +158,15 @@ if (!function_exists('kbf_landing_build_schema')) {
 }
 
 if (!function_exists('kbf_landing_register_seo')) {
+    /**
+     * @function  kbf_landing_register_seo
+     * @purpose   Registers SEO data globally and hooks meta output.
+     * @used-by   bntm_kbf_render_landing
+     * @calls     add_action, has_action
+     * @params    array<string, mixed> $seo
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbf_landing_register_seo($seo) {
         $GLOBALS['kbf_landing_seo'] = $seo;
         if (!has_action('wp_head', 'bntm_kbf_landing_seo_meta')) {
@@ -131,6 +176,15 @@ if (!function_exists('kbf_landing_register_seo')) {
 }
 
 if (!function_exists('kbf_landing_get_image_sets')) {
+    /**
+     * @function  kbf_landing_get_image_sets
+     * @purpose   Returns image sets used in hero and gallery sections.
+     * @used-by   bntm_kbf_render_landing
+     * @calls     None
+     * @params    none
+     * @returns   array<string, array<int, string>> Nested array of image URLs
+     * @status    ACTIVE
+     */
     function kbf_landing_get_image_sets() {
         return [
             'urgent' => [
@@ -149,6 +203,15 @@ if (!function_exists('kbf_landing_get_image_sets')) {
 }
 
 if (!function_exists('kbf_landing_render_faq')) {
+    /**
+     * @function  kbf_landing_render_faq
+     * @purpose   Renders the FAQ HTML section.
+     * @used-by   bntm_kbf_render_landing (inline PHP call)
+     * @calls     None
+     * @params    array<int, array<string, string>> $faq_items
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbf_landing_render_faq($faq_items) {
         foreach ($faq_items as $item) {
             ?>
@@ -163,6 +226,16 @@ if (!function_exists('kbf_landing_render_faq')) {
     }
 }
 
+/**
+ * @function  bntm_kbf_render_landing
+ * @purpose   Main entry point — renders entire landing page HTML.
+ * @used-by   WordPress shortcode [kbf_landing] (registered in includes/shortcodes.php)
+ * @calls     kbf_landing_get_urls, kbf_landing_get_faq_items, kbf_landing_build_schema, 
+ *            kbf_landing_register_seo, kbf_landing_get_image_sets, kbf_landing_render_faq, ob_start
+ * @params    none
+ * @returns   string Buffered HTML content
+ * @status    ACTIVE
+ */
 function bntm_kbf_render_landing() {
     $urls = kbf_landing_get_urls();
     $cta_url = $urls['cta'];
@@ -2635,6 +2708,15 @@ function bntm_kbf_render_landing() {
             statsIO.observe(el);
         });
 
+        /**
+         * @function  animateStatNumbers
+         * @purpose   Animates counter numbers with easing effect.
+         * @used-by   statsIO IntersectionObserver callback
+         * @calls     requestAnimationFrame
+         * @params    DOMElement container — Element containing stat numbers
+         * @returns   void
+         * @status    ACTIVE
+         */
         function animateStatNumbers(container) {
             container.querySelectorAll('.kbf-about-stat-num').forEach(function (el, i) {
                 var raw = el.textContent.trim();
@@ -2707,18 +2789,45 @@ function bntm_kbf_render_landing() {
         var hamburgerIcon = document.getElementById('kbf-hamburger-icon');
         if (hamburgerBtn && menu) {
             var menuOpen = false;
+            /**
+             * @function  setIcon
+             * @purpose   Updates hamburger menu icon classes based on open state.
+             * @used-by   openMobileMenu, closeMobileMenu
+             * @calls     None
+             * @params    boolean stateOpen — True for open (X icon), false for closed (hamburger icon)
+             * @returns   void
+             * @status    ACTIVE
+             */
             function setIcon(stateOpen) {
                 if (!hamburgerIcon) return;
                 hamburgerIcon.className = '';
                 var classes = stateOpen ? ['ph','ph-x'] : ['ph','ph-list'];
                 classes.forEach(function(c) { hamburgerIcon.classList.add(c); });
             }
+            /**
+             * @function  openMobileMenu
+             * @purpose   Opens mobile navigation menu and updates icon.
+             * @used-by   hamburgerBtn click handler
+             * @calls     setIcon
+             * @params    none
+             * @returns   void
+             * @status    ACTIVE
+             */
             function openMobileMenu() {
                 menuOpen = true;
                 menu.classList.add('kbf-menu-open');
                 if (menuOverlay) menuOverlay.classList.add('kbf-overlay-open');
                 setIcon(true);
             }
+            /**
+             * @function  closeMobileMenu
+             * @purpose   Closes mobile navigation menu and resets icon.
+             * @used-by   hamburgerBtn click handler, overlay click handler, resize event
+             * @calls     setIcon
+             * @params    none
+             * @returns   void
+             * @status    ACTIVE
+             */
             function closeMobileMenu() {
                 menuOpen = false;
                 menu.classList.remove('kbf-menu-open');
@@ -2752,6 +2861,15 @@ function bntm_kbf_render_landing() {
     (function() {
         var table = document.querySelector('.kbf-compare-table');
         if (!table) return;
+        /**
+         * @function  inView
+         * @purpose   Checks if element is currently visible in viewport.
+         * @used-by   Compare table scroll-jack IIFE
+         * @calls     getBoundingClientRect
+         * @params    DOMElement el — Element to check
+         * @returns   boolean True if element overlaps with viewport
+         * @status    ACTIVE
+         */
         function inView(el) {
             var r = el.getBoundingClientRect();
             return r.top < window.innerHeight && r.bottom > 0;
@@ -2784,10 +2902,28 @@ function bntm_kbf_render_landing() {
         var closeBtn = document.getElementById('kbf-cookie-close');
         if (!overlay || !banner || !acceptBtn) return;
 
+        /**
+         * @function  setCookieState
+         * @purpose   Saves cookie consent choice to localStorage.
+         * @used-by   acceptBtn click handler, manageBtn click handler, closeBtn click handler
+         * @calls     localStorage.setItem
+         * @params    string state — 'accepted' or 'declined'
+         * @returns   void
+         * @status    ACTIVE
+         */
         function setCookieState(state) {
             localStorage.setItem(STORAGE_KEY, state);
         }
 
+        /**
+         * @function  showBanner
+         * @purpose   Displays cookie consent banner with fade-in animation.
+         * @used-by   Cookie consent IIFE (on page load if no consent exists)
+         * @calls     requestAnimationFrame
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function showBanner() {
             overlay.style.display = 'block';
             banner.style.display = 'block';
@@ -2797,6 +2933,15 @@ function bntm_kbf_render_landing() {
             });
         }
 
+        /**
+         * @function  hideBanner
+         * @purpose   Hides cookie consent banner with slide-out animation.
+         * @used-by   acceptBtn click handler, manageBtn click handler, closeBtn click handler
+         * @calls     setTimeout
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function hideBanner() {
             overlay.classList.remove('kbf-cookie-overlay-visible');
             banner.classList.remove('kbf-cookie-visible');

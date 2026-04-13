@@ -64,6 +64,9 @@ function bntm_kbf_render_signup() {
                 if (is_wp_error($user_id)) {
                     $signup_error = 'Unable to create account. Please try again.';
                 } else {
+                    // CRITICAL FIX: Save social name so users can login with @username
+                    update_user_meta($user_id, 'kbf_social_name', $base_login);
+
                     if (defined('KBF_EMAIL_VERIFY_DISABLED') && KBF_EMAIL_VERIFY_DISABLED) {
                         update_user_meta($user_id, 'kbf_email_verified', '1');
                         delete_user_meta($user_id, 'kbf_email_verify_hash');
@@ -328,7 +331,7 @@ function bntm_kbf_render_signup() {
               <?php elseif ($signup_success): ?>
                 <div class="kbf-alert kbf-alert-success kbf-alert-compact" style="margin-bottom:12px;"><?php echo esc_html($signup_success); ?></div>
               <?php elseif (!empty($_GET['verify']) && $_GET['verify'] === 'failed'): ?>
-                <div class="kbf-alert kbf-alert-error kbf-alert-compact" style="margin-bottom:12px;">Verification link is invalid or expired. Please sign up again or request a new link. TODO: add resend verification.</div>
+                <div class="kbf-alert kbf-alert-error kbf-alert-compact" style="margin-bottom:12px;">Verification link is invalid or expired. Please sign up again.</div>
               <?php endif; ?>
               <input type="hidden" name="kbf_auth_action" value="signup">
               <input type="hidden" name="kbf_auth_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_signup')); ?>">
@@ -336,7 +339,7 @@ function bntm_kbf_render_signup() {
                 <label>Email</label>
                 <div class="kbf-auth-input">
                   <i class="ph ph-envelope-simple kbf-icon" aria-hidden="true"></i>
-                  <input type="email" name="user_email" placeholder="you@example.com" required>
+                  <input type="email" name="user_email" placeholder="you@example.com" required autocomplete="email">
                 </div>
                 <div class="kbf-field-error" aria-live="polite">This field is required.</div>
               </div>
@@ -344,7 +347,7 @@ function bntm_kbf_render_signup() {
                   <label>Password</label>
                   <div class="kbf-auth-input">
                     <i class="ph ph-lock kbf-icon" aria-hidden="true"></i>
-                    <input type="password" id="kbf-signup-password" name="user_password" placeholder="Create a password" required>
+                    <input type="password" id="kbf-signup-password" name="user_password" placeholder="Create a password" required autocomplete="new-password">
                     <button type="button" class="kbf-auth-toggle" data-target="kbf-signup-password" aria-label="Show password">
                       <i class="ph ph-eye-slash kbf-icon" aria-hidden="true"></i>
                     </button>

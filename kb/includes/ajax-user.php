@@ -8,17 +8,22 @@ if (!defined('ABSPATH')) exit;
 if (!function_exists('kbf_get_client_ip')) {
     function kbf_get_client_ip() {
         $remote_addr = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '';
-        if ($remote_addr === '') {
-            return '';
+        
+        // Cloudflare always sends the real visitor IP in this header.
+        if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+            $cf_ip = sanitize_text_field($_SERVER['HTTP_CF_CONNECTING_IP']);
+            if (filter_var($cf_ip, FILTER_VALIDATE_IP)) {
+                return $cf_ip;
+            }
         }
 
-        // Only trust forwarded headers if behind a known proxy.
-        $trusted_proxies = ['127.0.0.1'];
+        // Fallback: trust X-Forwarded-For only if behind a known local proxy.
+        $trusted_proxies = ['127.0.0.1', '::1'];
         if (!in_array($remote_addr, $trusted_proxies, true)) {
-            return $remote_addr;
+            return $remote_addr !== '' ? $remote_addr : '';
         }
 
-        $keys = ['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_CLIENT_IP'];
+        $keys = ['HTTP_X_FORWARDED_FOR','HTTP_CLIENT_IP'];
         foreach ($keys as $key) {
             if (empty($_SERVER[$key])) {
                 continue;
@@ -29,7 +34,7 @@ if (!function_exists('kbf_get_client_ip')) {
                 return $ip;
             }
         }
-        return $remote_addr;
+        return $remote_addr !== '' ? $remote_addr : '';
     }
 }
 
@@ -246,14 +251,30 @@ function bntm_ajax_kbf_update_fund() {
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
+    if(!in_array($fund->status, ['pending', 'active'])) wp_send_json_error(['message'=>'Only pending or active funds can be updated.']);
     $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? $_POST['location_full'] : (isset($_POST['location']) ? $_POST['location'] : '');
+    $deadline = !empty($_POST['deadline']) ? sanitize_text_field($_POST['deadline']) : null;
+    if ($deadline) {
+        $min_deadline = strtotime('+7 days', current_time('timestamp'));
+        if(strtotime($deadline) < $min_deadline) {
+            wp_send_json_error(['message'=>'Deadline must be at least 7 days from today.']);
+        }
+    }
     $data=[
         'title'=>sanitize_text_field($_POST['title']),
         'description'=>sanitize_textarea_field($_POST['description']),
         'location'=>sanitize_text_field($location_full),
-        'deadline'=>!empty($_POST['deadline']) ? sanitize_text_field($_POST['deadline']) : null,
+        'deadline'=>$deadline,
         'auto_return'=>isset($_POST['auto_return']) ? 1 : 0
     ];
+    // Allow goal_amount edits, but reset to 'pending' if changed to force admin review
+    if (isset($_POST['goal_amount']) && is_numeric($_POST['goal_amount'])) {
+        $new_goal = floatval($_POST['goal_amount']);
+        if ($new_goal >= 100 && $new_goal !== floatval($fund->goal_amount)) {
+            $data['goal_amount'] = $new_goal;
+            $data['status'] = 'pending';
+        }
+    }
     if (isset($_POST['benefits'])) {
         $benefits_raw = wp_unslash($_POST['benefits']);
         $benefits_clean = [];
@@ -322,13 +343,14 @@ function bntm_ajax_kbf_cancel_fund() {
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if(in_array($fund->status,['cancelled','completed'])) wp_send_json_error(['message'=>'This fund cannot be cancelled.']);
+    if($fund->raised_amount > 0) wp_send_json_error(['message'=>'Cannot cancel fund with existing sponsorships. Contact support.']);
     // Auto-refund disabled.
     $wpdb->update($t,['status'=>'cancelled'],['id'=>$id],['%s'],['%d']);
     wp_send_json_success(['message'=>'Fund cancelled.']);
 }
 
 function bntm_ajax_kbf_trash_fund() {
-    check_ajax_referer('kbf_cancel_fund','nonce');
+    check_ajax_referer('kbf_trash_fund','nonce');
     if (!kbf_rate_limit_ok('trash_fund', 6, 300)) {
         wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
     }
@@ -339,7 +361,7 @@ function bntm_ajax_kbf_trash_fund() {
     $biz = get_current_user_id();
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
-    if($fund->status !== 'cancelled') wp_send_json_error(['message'=>'Only cancelled funds can be trashed.']);
+    if(!in_array($fund->status, ['cancelled', 'suspended'])) wp_send_json_error(['message'=>'Only cancelled or suspended funds can be trashed.']);
 
     // Clean related records to avoid orphans.
     $wpdb->delete($wpdb->prefix.'kbf_sponsorships', ['fund_id'=>$id], ['%d']);
@@ -384,7 +406,7 @@ function bntm_ajax_kbf_request_escrow() {
 }
 
 function bntm_ajax_kbf_mark_fund_complete() {
-    check_ajax_referer('kbf_cancel_fund','nonce');
+    check_ajax_referer('kbf_mark_fund_complete','nonce');
     if (!kbf_rate_limit_ok('mark_complete', 6, 300)) {
         wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
     }
@@ -393,6 +415,7 @@ function bntm_ajax_kbf_mark_fund_complete() {
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund||$fund->status!=='active') wp_send_json_error(['message'=>'Fund not found or not active.']);
+    if($fund->raised_amount < $fund->goal_amount) wp_send_json_error(['message'=>'Cannot complete fund until goal amount is reached.']);
     $wpdb->update($t,['status'=>'completed','escrow_status'=>'released'],['id'=>$id],['%s','%s'],['%d']);
     wp_send_json_success(['message'=>'Fund marked as complete!']);
 }
@@ -526,7 +549,7 @@ function bntm_ajax_kbf_extend_deadline() {
 }
 
 function bntm_ajax_kbf_toggle_auto_return() {
-    check_ajax_referer('kbf_cancel_fund','nonce');
+    check_ajax_referer('kbf_auto_return','nonce');
     if (!kbf_rate_limit_ok('auto_return', 12, 300)) {
         wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
     }

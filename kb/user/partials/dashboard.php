@@ -32,6 +32,9 @@ if (!function_exists('kbf_dashboard_build_nonces')) {
             'appeal'  => wp_create_nonce('kbf_appeal'),
             'escrow'  => wp_create_nonce('kbf_request_escrow'),
             'refresh' => wp_create_nonce('kbf_user_refresh'),
+            'trash'   => wp_create_nonce('kbf_trash_fund'),
+            'complete'=> wp_create_nonce('kbf_mark_fund_complete'),
+            'auto_return' => wp_create_nonce('kbf_auto_return'),
         ];
     }
 }

@@ -3112,11 +3112,11 @@
         const fd = new FormData();
         fd.append('action', kbfTrashMode === 'trash' ? 'kbf_trash_fund' : 'kbf_cancel_fund');
         fd.append('fund_id', kbfTrashFundId);
-        fd.append('nonce','<?php echo $nonce_cancel; ?>');
+        fd.append('nonce', kbfTrashMode === 'trash' ? '<?php echo $nonces['trash']; ?>' : '<?php echo $nonce_cancel; ?>');
         console.log('kbfConfirmTrashFund: payload', {
             action: kbfTrashMode === 'trash' ? 'kbf_trash_fund' : 'kbf_cancel_fund',
             fund_id: kbfTrashFundId,
-            nonce: '<?php echo $nonce_cancel; ?>'
+            nonce: kbfTrashMode === 'trash' ? '<?php echo $nonces['trash']; ?>' : '<?php echo $nonce_cancel; ?>'
         });
         kbfCloseModal('kbf-modal-trash-fund');
         kbfSetLoadingPage(true);
@@ -3206,7 +3206,7 @@
         if(!confirm('Mark this fund as complete?')) return;
         const fd = new FormData();
         fd.append('action','kbf_mark_fund_complete'); fd.append('fund_id',fundId);
-        fd.append('nonce','<?php echo wp_create_nonce('kbf_cancel_fund'); ?>');
+        fd.append('nonce','<?php echo $nonces['complete']; ?>');
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{alert(j.data.message);if(j.success)location.reload();});
     };
     </script>
