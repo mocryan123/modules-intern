@@ -50,18 +50,6 @@ function ch_global_styles() {
         scroll-padding-top: 80px;
     }
 
-    *,
-    *::before,
-    *::after {
-        box-sizing: border-box;
-    }
-
-    html,
-    body {
-        max-width: 100%;
-        overflow-x: clip;
-    }
-
 
 
 
@@ -1091,37 +1079,6 @@ function ch_global_styles() {
 
     /* ── Small tablet / phablet: 780px ───────────────────────── */
     @media (max-width: 780px) {
-        .ch-top-nav,
-        .ch-dashboard-wrap,
-        .ch-feed-wrap,
-        .ch-post-view-wrap,
-        .ch-auth-wrap,
-        .ch-my-feed-wrap,
-        .ch-public-profile-wrap,
-        .ch-guest-landing-wrap,
-        .ch-mf-page-wrap,
-        .ch-main-content,
-        .ch-feed-main,
-        .ch-post-full,
-        .ch-card,
-        .ch-sidebar-widget,
-        .ch-welcome-card,
-        .ch-auth-card,
-        .ch-modal,
-        .ch-page-header,
-        .ch-page-header-actions,
-        .ch-toolbar,
-        .ch-toolbar-right {
-            max-width: 100%;
-            min-width: 0;
-        }
-        .ch-top-nav {
-            width: 100%;
-            max-width: 100vw;
-            padding-left: 14px;
-            padding-right: 14px;
-            overflow-x: clip;
-        }
         .ch-dashboard-wrap { flex-direction: column; }
         .ch-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--ch-border); padding: 10px 0; }
         .ch-burger-menu-btn { display: flex; align-items: center; justify-content: center; }
@@ -1146,7 +1103,7 @@ function ch_global_styles() {
         .ch-categories-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
         .ch-page-header { flex-direction: column; gap: 12px; }
         .ch-page-header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-        .ch-page-header-actions .ch-btn { flex: 1 1 0; justify-content: center; min-width: 0; }
+        .ch-page-header-actions .ch-btn { flex: 1; justify-content: center; min-width: 120px; }
         .ch-toolbar { flex-direction: column; align-items: flex-start; gap: 8px; }
         .ch-toolbar-right { width: 100%; }
         .ch-toolbar-filters { flex-wrap: wrap; }
@@ -1169,7 +1126,6 @@ function ch_global_styles() {
         .ch-sort-tabs { flex-wrap: wrap; }
         .ch-location-form { width: 100%; }
         .ch-location-select { width: 100%; }
-        .ch-dropdown-panel { min-width: 0; max-width: calc(100vw - 24px); }
         .ch-post-view-grid { grid-template-columns: 1fr; }
         .ch-post-view-wrap { padding: 14px 12px; }
         .ch-post-full { padding: 18px 16px; }
@@ -1223,7 +1179,7 @@ function ch_global_styles() {
 
     /* ── Mobile: 480px ────────────────────────────────────────── */
     @media (max-width: 480px) {
-        .ch-top-nav { padding: 0 12px; height: 56px; }
+        .ch-top-nav { padding: 0 16px; height: 56px; }
         .ch-nav-link { padding: 5px 9px; font-size: 12px; gap: 5px; }
         .ch-nav-label { display: none; }
         .ch-stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -2584,26 +2540,12 @@ function ch_global_scripts() {
             ].join(';');
             document.body.appendChild(bar);
 
-            const label = document.createElement('div');
-            label.id = 'ch-page-loading-label';
-            label.textContent = 'Loading...';
-            label.style.cssText = [
-                'position:fixed','top:8px','right:10px','padding:3px 8px',
-                'font-size:11px','font-weight:700','letter-spacing:.2px',
-                'background:rgba(255,117,81,.92)','color:#fff','border-radius:999px',
-                'z-index:100000','opacity:0','transform:translateY(-6px)',
-                'transition:opacity .2s ease,transform .2s ease','pointer-events:none'
-            ].join(';');
-            document.body.appendChild(label);
-
             let _navTimer = null;
 
             function chStartNavBar() {
                 bar.style.transition = 'width 0.25s ease, opacity 0.1s ease';
                 bar.style.opacity = '1';
                 bar.style.width = '0%';
-                label.style.opacity = '1';
-                label.style.transform = 'translateY(0)';
                 // Animate to 85% quickly then slow down
                 requestAnimationFrame(() => {
                     bar.style.transition = 'width 6s cubic-bezier(0.1,0.4,0.3,1), opacity 0.1s ease';
@@ -2614,8 +2556,6 @@ function ch_global_scripts() {
             function chFinishNavBar() {
                 bar.style.transition = 'width 0.2s ease, opacity 0.5s ease 0.2s';
                 bar.style.width = '100%';
-                label.style.opacity = '0';
-                label.style.transform = 'translateY(-6px)';
                 setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => { bar.style.width = '0%'; }, 500); }, 200);
             }
 
@@ -3267,6 +3207,114 @@ function ch_settings_modal_html($logout_url = '') {
                 m.style.display = 'none';
             }
         });
+
+        // ============================================================
+        // ADMIN PANEL — tab switching without full page reload
+        // ============================================================
+        (function() {
+            var mainContent = document.querySelector('.ch-dashboard-wrap .ch-main-content');
+            var nav = document.querySelector('.ch-dashboard-wrap .ch-nav');
+            if (!mainContent || !nav) return;
+
+            nav.addEventListener('click', function(e) {
+                var link = e.target.closest('a.ch-nav-item[href*="tab="]');
+                if (!link) return;
+
+                var url = new URL(link.href, window.location.href);
+                var tab = url.searchParams.get('tab');
+                if (!tab) return;
+
+                e.preventDefault();
+
+                // Update active state immediately
+                nav.querySelectorAll('.ch-nav-item').forEach(function(el) {
+                    el.classList.toggle('active', el === link);
+                });
+
+                mainContent.style.opacity = '0.45';
+                mainContent.style.pointerEvents = 'none';
+
+                fetch(link.href, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+                    .then(function(r) { return r.text(); })
+                    .then(function(html) {
+                        var parser = new DOMParser();
+                        var doc = parser.parseFromString(html, 'text/html');
+                        var newContent = doc.querySelector('.ch-dashboard-wrap .ch-main-content');
+                        if (newContent) {
+                            mainContent.innerHTML = newContent.innerHTML;
+                            // Re-run any inline scripts in the new content
+                            mainContent.querySelectorAll('script').forEach(function(s) {
+                                var ns = document.createElement('script');
+                                ns.textContent = s.textContent;
+                                document.body.appendChild(ns);
+                                ns.remove();
+                            });
+                        }
+                        history.pushState(null, '', link.href);
+                    })
+                    .catch(function() { window.location.href = link.href; })
+                    .finally(function() {
+                        mainContent.style.opacity = '';
+                        mainContent.style.pointerEvents = '';
+                    });
+            });
+
+            // Handle browser back/forward
+            window.addEventListener('popstate', function() {
+                window.location.reload();
+            });
+        })();
+
+        // ============================================================
+        // MY FEED — subtab switching without full page reload
+        // ============================================================
+        (function() {
+            var mfContent = document.querySelector('.ch-mf-content');
+            var mfSubnav  = document.querySelector('.ch-mf-subnav');
+            if (!mfContent || !mfSubnav) return;
+
+            mfSubnav.addEventListener('click', function(e) {
+                var link = e.target.closest('a.ch-mf-subnav-item[href*="subtab="]');
+                if (!link) return;
+
+                var url = new URL(link.href, window.location.href);
+                var subtab = url.searchParams.get('subtab');
+                if (!subtab) return;
+
+                e.preventDefault();
+
+                mfSubnav.querySelectorAll('.ch-mf-subnav-item').forEach(function(el) {
+                    el.classList.toggle('active', el === link);
+                });
+
+                mfContent.style.opacity = '0.45';
+                mfContent.style.pointerEvents = 'none';
+
+                fetch(link.href, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+                    .then(function(r) { return r.text(); })
+                    .then(function(html) {
+                        var parser = new DOMParser();
+                        var doc = parser.parseFromString(html, 'text/html');
+                        var newContent = doc.querySelector('.ch-mf-content');
+                        if (newContent) {
+                            mfContent.innerHTML = newContent.innerHTML;
+                            newContent.querySelectorAll('script').forEach(function(s) {
+                                var ns = document.createElement('script');
+                                ns.textContent = s.textContent;
+                                document.body.appendChild(ns);
+                                ns.remove();
+                            });
+                        }
+                        history.pushState(null, '', link.href);
+                    })
+                    .catch(function() { window.location.href = link.href; })
+                    .finally(function() {
+                        mfContent.style.opacity = '';
+                        mfContent.style.pointerEvents = '';
+                    });
+            });
+        })();
+
     })();
     </script>
     <?php
@@ -4077,12 +4125,9 @@ function ch_feed_scripts() {
         });
     })();
     </script>
+    <script>
+    // ── Sort-tab AJAX (no full-page reload) ──────────────────────────────
     (function() {
-        var state = window.chFeedState;
-        if (!state) return;
-
-        var list   = document.getElementById('ch-posts-list');
-        var tabs   = document.getElementById('ch-sort-tabs');
         if (!list || !tabs) return;
 
         tabs.addEventListener('click', function(e) {
