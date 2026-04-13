@@ -66,11 +66,11 @@ function bntm_ajax_bae_pm_checkout() {
     update_user_meta($user_id, 'bae_pm_pending_ref', $ref);
     update_user_meta($user_id, 'bae_pm_pending_plan', $plan);
 
-    $site_url = get_site_url();
-    $success_url = add_query_arg(['bae_pm' => 'success', 'ref' => $ref], $site_url . '/brand-asset-engine');
-    $failure_url = add_query_arg(['bae_pm' => 'failure', 'ref' => $ref], $site_url . '/brand-asset-engine');
-    $cancel_url = add_query_arg(['bae_pm' => 'cancel', 'ref' => $ref], $site_url . '/brand-asset-engine');
-
+    $mothie_page = get_page_by_path('mothie');
+$mothie_url  = $mothie_page ? get_permalink($mothie_page->ID) : (get_site_url() . '/mothie/');
+$success_url = add_query_arg(['bae_pm' => 'success', 'ref' => $ref], $mothie_url);
+$failure_url = add_query_arg(['bae_pm' => 'failure', 'ref' => $ref], $mothie_url);
+$cancel_url  = add_query_arg(['bae_pm' => 'cancel',  'ref' => $ref], $mothie_url);
     // Maya Checkout uses the public key and a flat payload shape.
     $payload = [
         'totalAmount' => [
