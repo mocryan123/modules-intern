@@ -12,7 +12,11 @@ function bntm_kbf_render_privacy() {
     $login_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url();
     ob_start();
     ?>
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
     <style>
       /* Typography scale (match landing) */
@@ -173,7 +177,7 @@ function bntm_kbf_render_privacy() {
       .kbf-mobile-overlay.kbf-overlay-open{ display:block; }
       .kbf-mobile-menu{
         position:fixed;
-        top:0;left:0;right:0;
+        top:60px;left:0;right:0;
         z-index:999;
         border-radius:0;
         margin-top:0;
@@ -187,10 +191,6 @@ function bntm_kbf_render_privacy() {
         box-shadow:0 10px 26px rgba(15,40,80,.18);
       }
       .kbf-mobile-menu.kbf-menu-open{ transform:translateY(0); display:flex; }
-      .kbf-mobile-menu-header{
-        display:flex;align-items:center;justify-content:space-between;
-        padding:14px 16px;border-bottom:1px solid #e2e8f0;background:#fff;
-      }
       .kbf-mobile-menu a{
         padding:13px 18px;
         font-size:13.5px;
@@ -389,24 +389,36 @@ function bntm_kbf_render_privacy() {
       }
       @media (max-width: 720px){
         .kbf-footer{
-          grid-template-columns: 1fr;
-          text-align: center;
-          margin: 18px auto;
+          margin: 18px 0;
+          padding: 16px 14px;
+          border-radius: 14px;
         }
         .kbf-footer-top{
-          grid-template-columns: 1fr;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
           gap: 10px;
         }
         .kbf-footer-left{ align-items:center; }
-        .kbf-footer-left.kbf-footer-brand{ grid-column: auto; }
+        .kbf-footer-left.kbf-footer-brand{ justify-self: center; }
         .kbf-footer-bottom{
           flex-direction: column;
           align-items: center;
-          gap: 10px;
+          text-align: center;
+          gap: 12px;
+          padding-top: 12px;
+          border-top: 1px solid rgba(255, 255, 255, 0.15);
         }
         .kbf-footer .kbf-footer-links{ justify-content:center; }
-        .kbf-footer .kbf-social{ justify-content:center; justify-self: center; }
+        .kbf-footer .kbf-social{ justify-content:center; }
         .kbf-brand{ justify-content:center; }
+        .kbf-footer .kbf-social a {
+          width: 36px;
+          height: 36px;
+        }
+        .kbf-footer .kbf-social i { font-size: 22px; }
+        .kbf-footer .kbf-footer-links{ gap: 8px; }
       }
     </style>
     <!-- ================== HTML ================== -->
@@ -433,15 +445,6 @@ function bntm_kbf_render_privacy() {
         </button>
       </div>
       <div class="kbf-mobile-menu" id="kbf-mobile-menu">
-        <div class="kbf-mobile-menu-header">
-          <div class="kbf-brand">
-            <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:24px;height:24px;object-fit:contain;border-radius:6px;">
-            
-          </div>
-          <button class="kbf-hamburger" type="button" id="kbf-hamburger-close" aria-label="Close menu" style="display:inline-flex;">
-            <i class="ph ph-x kbf-icon" role="img" aria-label="Close"></i>
-          </button>
-        </div>
         <a href="<?php echo esc_url($landing_url); ?>#kbf-home">Home</a>
         <a href="<?php echo esc_url($landing_url); ?>#kbf-how">Features</a>
         <a href="<?php echo esc_url($landing_url); ?>#kbf-donation">About</a>
@@ -611,7 +614,6 @@ function bntm_kbf_render_privacy() {
     <script>
       (function(){
         var btn = document.getElementById('kbf-hamburger-btn');
-        var closeBtn = document.getElementById('kbf-hamburger-close');
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
         var icon = document.getElementById('kbf-hamburger-icon');
@@ -641,7 +643,6 @@ function bntm_kbf_render_privacy() {
           if (open) closeMenu();
           else openMenu();
         });
-        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
         if (overlay) overlay.addEventListener('click', closeMenu);
         window.addEventListener('resize', function(){
           if (window.innerWidth > 900 && open) closeMenu();

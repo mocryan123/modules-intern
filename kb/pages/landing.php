@@ -198,13 +198,16 @@ function bntm_kbf_render_landing() {
     ob_start();
     ?>
     <!-- ================== CSS ================== -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://upload.wikimedia.org">
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="preload" as="image" href="<?php echo esc_url(BNTM_KBF_URL . 'assets/hero.jpg'); ?>">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Shippori+Antique+B1&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Shippori+Antique+B1&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Shippori+Antique+B1&display=swap');
-    @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css');
-    @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css');
     .ph{font-family:'Phosphor' !important;font-style:normal;font-weight:400;line-height:1;}
     .ph-bold{font-weight:700;}
     .ph-fill{font-weight:400;}
@@ -244,7 +247,7 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
-    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 62px 22px 0; }
+    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 62px 0px 0; }
     .kbf-landing a { color: inherit; text-decoration: none; }
     .kbf-brand-text{ color:#3d8ef0; font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif; }
         .kbf-divider {
@@ -1155,14 +1158,6 @@ function bntm_kbf_render_landing() {
         align-items: center;
         justify-content: center;
     }
-    .kbf-mobile-menu-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 14px 16px;
-        border-bottom: 1px solid var(--kbf-border);
-        background: #fff;
-    }
     .kbf-hamburger i {
         font-size: 18px;
         display: block;
@@ -1675,15 +1670,15 @@ function bntm_kbf_render_landing() {
     }
 
     /* --- GLOBAL CARD HOVER TRANSITIONS --- */
-    .kbf-card, 
-    .kbf-audience-card, 
-    .kbf-pcard, 
+    .kbf-card,
+    .kbf-audience-card,
+    .kbf-pcard,
     .kbf-compare-row {
-        transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 1s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 1s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
     }
-    
+
     .kbf-btn {
-        transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+        transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 1s cubic-bezier(0.2, 0.8, 0.2, 1), background 1s cubic-bezier(0.2, 0.8, 0.2, 1), filter 1s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
     }
 
     /* --- COMPARE TABLE CONSISTENCY FIX --- */
@@ -1894,25 +1889,235 @@ function bntm_kbf_render_landing() {
     }
     @media (max-width: 720px){
         .kbf-footer{
-            grid-template-columns: 1fr;
-            text-align: center;
-            margin: 18px auto;
+            margin: 18px 0;
+            padding: 16px 14px;
+            border-radius: 14px;
         }
         .kbf-footer-top{
-            grid-template-columns: 1fr;
-            gap: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
         }
-        .kbf-footer-left{ align-items:center; }
-        .kbf-footer-left.kbf-footer-brand{ grid-column: auto; }
+        .kbf-footer-left{
+            align-items: center;
+        }
+        .kbf-footer-left.kbf-footer-brand{ justify-self: center; }
+        .kbf-footer-left p{
+            margin: 0 auto;
+            max-width: 340px;
+        }
         .kbf-footer-bottom{
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            text-align: center;
+            gap: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.15);
         }
-        .kbf-footer .kbf-footer-links{ justify-content:center; }
-        .kbf-footer .kbf-social{ justify-content:center; justify-self: center; }
-        .kbf-brand{ justify-content:center; }
+        .kbf-footer .kbf-footer-links{
+            justify-content: center;
+            gap: 8px 16px;
+        }
+        .kbf-footer .kbf-social{
+            justify-content: center;
+            gap: 4px;
+        }
+        .kbf-brand{ justify-content: center; }
+        .kbf-footer .kbf-social a {
+            width: 36px;
+            height: 36px;
+        }
+        .kbf-footer .kbf-social i { font-size: 22px; }
     }
+    @media (max-width: 480px){
+        .kbf-footer{
+            padding: 14px 10px;
+            margin: 14px 0;
+            border-radius: 12px;
+        }
+        .kbf-footer-top{ gap: 10px; }
+        .kbf-footer-bottom{
+            gap: 10px;
+            padding-top: 10px;
+        }
+        .kbf-footer .kbf-footer-links{
+            flex-direction: column;
+            gap: 6px;
+        }
+        .kbf-footer .kbf-social{ gap: 2px; }
+    }
+    /* Cookie Consent Banner */
+    .kbf-cookie-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 17, 21, 0.45);
+        z-index: 9997;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .kbf-cookie-overlay.kbf-cookie-overlay-visible {
+        opacity: 1;
+    }
+    .kbf-cookie-banner {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        z-index: 9998;
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid var(--kbf-border);
+        box-shadow: 0 24px 64px rgba(15, 23, 42, 0.18), 0 8px 20px rgba(15, 23, 42, 0.10);
+        padding: 24px 28px 24px 32px;
+        max-width: 720px;
+        width: calc(100% - 32px);
+        display: none;
+        opacity: 0;
+        transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .kbf-cookie-banner.kbf-cookie-visible {
+        display: block;
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    .kbf-cookie-banner.kbf-cookie-hidden {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+        pointer-events: none;
+    }
+    .kbf-cookie-inner {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+    .kbf-cookie-content {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding-right: 4px;
+    }
+    .kbf-cookie-actions {
+        flex: 0 0 auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    .kbf-cookie-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: var(--kbf-soft);
+        border-radius: 50%;
+        color: #64748b;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease;
+    }
+    .kbf-cookie-close:hover {
+        background: #e8ecf1;
+        color: #334155;
+    }
+    .kbf-cookie-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--kbf-ink);
+        margin: 0 0 6px 0;
+        line-height: 1.3;
+    }
+    .kbf-cookie-message {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--kbf-muted);
+        margin: 0;
+    }
+    .kbf-cookie-message a {
+        color: #3d8ef0;
+        text-decoration: underline;
+        text-decoration-color: rgba(61, 142, 240, 0.3);
+        text-underline-offset: 2px;
+        transition: text-decoration-color 0.2s ease;
+    }
+    .kbf-cookie-message a:hover {
+        text-decoration-color: #3d8ef0;
+    }
+    .kbf-cookie-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 20px;
+        border-radius: 10px;
+        font-weight: 500;
+        font-size: 13.5px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, filter 0.2s ease;
+        white-space: nowrap;
+    }
+    .kbf-cookie-btn.kbf-cookie-accept {
+        background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 55%, #1f6fe0 100%);
+        color: #ffffff;
+        box-shadow: 0 4px 15px rgba(61, 142, 240, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    .kbf-cookie-btn.kbf-cookie-accept:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 1px 3px rgba(32, 112, 224, 0.15), 0 8px 24px rgba(42, 120, 220, 0.45), 0 16px 40px rgba(61, 142, 240, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        filter: brightness(1.06);
+    }
+    .kbf-cookie-btn.kbf-cookie-accept:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(32, 112, 224, 0.30), 0 2px 8px rgba(61, 142, 240, 0.28), 0 0 0 2px rgba(111, 182, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        filter: brightness(0.96);
+    }
+    .kbf-cookie-btn.kbf-cookie-manage {
+        background: transparent;
+        border: 1px solid var(--kbf-border);
+        color: #64748b;
+    }
+    .kbf-cookie-btn.kbf-cookie-manage:hover {
+        background: var(--kbf-soft);
+        color: #334155;
+        border-color: #d5dbe4;
+    }
+    @media (max-width: 720px) {
+        .kbf-cookie-banner {
+            bottom: 16px;
+            padding: 20px 18px;
+            max-width: calc(100% - 24px);
+            border-radius: 14px;
+        }
+        .kbf-cookie-inner {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+        }
+        .kbf-cookie-content {
+            padding-right: 28px;
+        }
+        .kbf-cookie-actions {
+            flex-direction: row;
+            justify-content: flex-end;
+        }
+        .kbf-cookie-btn {
+            flex: 1;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .kbf-cookie-banner,
+        .kbf-cookie-overlay,
+        .kbf-cookie-btn {
+            transition: none !important;
+        }
+    }
+
     /* ===== LEGAL MOBILE MENU (MATCH LEGAL PAGES) ===== */
     .kbf-hamburger{
         display:none !important;
@@ -1939,7 +2144,7 @@ function bntm_kbf_render_landing() {
     .kbf-mobile-overlay.kbf-overlay-open{ display:block; }
     .kbf-mobile-menu{
         position:fixed;
-        top:0;left:0;right:0;
+        top:60px;left:0;right:0;
         z-index:999;
         background:#fff;
         border-bottom:1px solid #e2e8f0;
@@ -1951,10 +2156,6 @@ function bntm_kbf_render_landing() {
         box-shadow:0 10px 26px rgba(15,40,80,.18);
     }
     .kbf-mobile-menu.kbf-menu-open{ transform:translateY(0); display:flex; }
-    .kbf-mobile-menu-header{
-        display:flex;align-items:center;justify-content:space-between;
-        padding:14px 16px;border-bottom:1px solid #e2e8f0;background:#fff;
-    }
     .kbf-mobile-menu a{
         padding:13px 18px;
         font-size:13.5px;
@@ -1996,10 +2197,10 @@ function bntm_kbf_render_landing() {
               <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:25px;object-fit:contain;border-radius:6px;">
             </div>
             <nav class="kbf-nav">
-              <a href="#kbf-home" onclick="return kbfScrollTo('kbf-home')">Home</a>
-              <a href="#kbf-how" onclick="return kbfScrollTo('kbf-how')">Features</a>
-              <a href="#kbf-donation" onclick="return kbfScrollTo('kbf-donation')">About</a>
-              <a href="#kbf-faq" onclick="return kbfScrollTo('kbf-faq')">FAQ</a>
+              <a href="#kbf-home" data-kbf-scroll="kbf-home">Home</a>
+              <a href="#kbf-how" data-kbf-scroll="kbf-how">Features</a>
+              <a href="#kbf-donation" data-kbf-scroll="kbf-donation">About</a>
+              <a href="#kbf-faq" data-kbf-scroll="kbf-faq">FAQ</a>
             </nav>
           </div>
           <div class="kbf-actions">
@@ -2009,20 +2210,11 @@ function bntm_kbf_render_landing() {
             <i id="kbf-hamburger-icon" class="ph ph-list kbf-icon" role="img" aria-label="Menu"></i>
           </button>
         </div>
-              <div class="kbf-mobile-menu" id="kbf-mobile-menu">
-          <div class="kbf-mobile-menu-header">
-            <div class="kbf-brand">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logo.png'); ?>" alt="fundora" style="width:24px;height:24px;object-fit:contain;border-radius:6px;">
-              
-            </div>
-            <button class="kbf-hamburger" onclick="document.getElementById('kbf-hamburger-btn').click()" aria-label="Close menu" style="display:inline-flex;">
-              <i class="ph ph-x kbf-icon" role="img" aria-label="Close"></i>
-            </button>
-          </div>
-            <a href="#kbf-home" onclick="kbfMobileNav('kbf-home')">Home</a>
-            <a href="#kbf-how" onclick="kbfMobileNav('kbf-how')">Features</a>
-            <a href="#kbf-donation" onclick="kbfMobileNav('kbf-donation')">About</a>
-            <a href="#kbf-faq" onclick="kbfMobileNav('kbf-faq')">FAQs</a>  
+            <div class="kbf-mobile-menu" id="kbf-mobile-menu">
+            <a href="#kbf-home" data-kbf-mobile-nav="kbf-home">Home</a>
+            <a href="#kbf-how" data-kbf-mobile-nav="kbf-how">Features</a>
+            <a href="#kbf-donation" data-kbf-mobile-nav="kbf-donation">About</a>
+            <a href="#kbf-faq" data-kbf-mobile-nav="kbf-faq">FAQs</a>  
           <div class="kbf-mobile-menu-actions">
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
           </div>
@@ -2059,7 +2251,7 @@ function bntm_kbf_render_landing() {
               <div class="kbf-cards-wrap">
                 <div class="kbf-pcard kbf-pcard-tl">
                   <div class="kbf-pcard-img kbf-pimg-1">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/patient.jpg'); ?>" alt="Patient support">
+                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/patient.jpg'); ?>" alt="Patient support" width="200" height="140">
                   </div>
                   <div class="kbf-pcard-bar">
                     <h4> Yourself </h4>
@@ -2067,7 +2259,7 @@ function bntm_kbf_render_landing() {
                 </div>
                 <div class="kbf-pcard kbf-pcard-main">
                   <div class="kbf-pcard-img kbf-pimg-2">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/basketball.jpg'); ?>" alt="Basketball community">
+                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/basketball.jpg'); ?>" alt="Basketball community" width="200" height="140">
                   </div>
                   <div class="kbf-pcard-bar">
                     <h4> Charity or Events </h4>
@@ -2075,7 +2267,7 @@ function bntm_kbf_render_landing() {
                 </div>
                 <div class="kbf-pcard kbf-pcard-br">
                   <div class="kbf-pcard-img kbf-pimg-4">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/graduation.jpg'); ?>" alt="Graduation moment">
+                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/graduation.jpg'); ?>" alt="Graduation moment" width="124" height="100">
                   </div>
                   <div class="kbf-pcard-bar">
                     <h4> Someone Else </h4>
@@ -2173,12 +2365,26 @@ function bntm_kbf_render_landing() {
         <div id="kbf-donation" class="kbf-section kbf-reveal delay-2">
           <div class="kbf-about-grid">
             <div class="kbf-about-photo">
-              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/bayanihan.jpg'); ?>" alt="Bayanihan">
+              <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/bayanihan.jpg'); ?>" alt="Bayanihan" loading="lazy" width="600" height="400">
             </div>
             <div class="kbf-about-card">
               <h2 style="font-size: 1.5em; font-weight: 500;">What is Fundora?</h2>
               <p>Fundora is a community-powered crowdfunding platform built for Filipino families, organizations, and communities. It supports local payment methods, a community-first experience, and the cultural value of bayanihan.</p>
               <p style="margin-top:10px;">Instead of informal posts, organizers get a dedicated campaign page with progress tracking, proof uploads, and an update log. Donors get confidence that their money is reaching the right person, for the right reason.</p>
+              <div class="kbf-trust-badges" style="margin-top:20px; display:flex; gap:16px; flex-wrap:wrap;">
+                <div class="kbf-trust-badge" style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:#0f172a;">
+                  <i class="ph-fill ph-check-circle" style="font-size:18px; color:#3d8ef0;"></i>
+                  <span>Maya Payments</span>
+                </div>
+                <div class="kbf-trust-badge" style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:#0f172a;">
+                  <i class="ph-fill ph-check-circle" style="font-size:18px; color:#3d8ef0;"></i>
+                  <span>Verified Organizers</span>
+                </div>
+                <div class="kbf-trust-badge" style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:#0f172a;">
+                  <i class="ph-fill ph-check-circle" style="font-size:18px; color:#3d8ef0;"></i>
+                  <span>Transparent Tracking</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2276,10 +2482,10 @@ function bntm_kbf_render_landing() {
         <div class="kbf-divider"></div>
         <div class="kbf-section kbf-stat kbf-reveal delay-2">
           <div class="kbf-photo-grid" aria-hidden="true">
-            <img src="<?php echo esc_url($bw_1); ?>" alt="">
-            <img src="<?php echo esc_url($bw_2); ?>" alt="">
-            <img src="<?php echo esc_url($bw_3); ?>" alt="">
-            <img src="<?php echo esc_url($bw_4); ?>" alt="">
+            <img src="<?php echo esc_url($bw_1); ?>" alt="" loading="lazy" width="400" height="300">
+            <img src="<?php echo esc_url($bw_2); ?>" alt="" loading="lazy" width="400" height="300">
+            <img src="<?php echo esc_url($bw_3); ?>" alt="" loading="lazy" width="400" height="300">
+            <img src="<?php echo esc_url($bw_4); ?>" alt="" loading="lazy" width="400" height="300">
           </div>
           <div class="kbf-stat-content">
             <p>Designed for trust</p>
@@ -2354,14 +2560,29 @@ function bntm_kbf_render_landing() {
           </div>
         </footer>
 
+        <!-- Cookie Consent Banner -->
+        <div id="kbf-cookie-overlay" class="kbf-cookie-overlay"></div>
+        <div id="kbf-cookie-banner" class="kbf-cookie-banner" role="dialog" aria-label="Cookie Consent">
+            <button id="kbf-cookie-close" class="kbf-cookie-close" type="button" aria-label="Close">
+                <i class="ph ph-x" aria-hidden="true"></i>
+            </button>
+            <div class="kbf-cookie-inner">
+                <div class="kbf-cookie-content">
+                    <h3 class="kbf-cookie-title">Cookie Consent</h3>
+                    <p class="kbf-cookie-message">By clicking "Accept All Cookies", you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and assist in our marketing efforts. <a href="<?php echo esc_url(kbf_get_page_url('privacy')); ?>">Privacy policy</a></p>
+                </div>
+                <div class="kbf-cookie-actions">
+                    <button id="kbf-cookie-manage" class="kbf-cookie-btn kbf-cookie-manage" type="button">Manage cookies</button>
+                    <button id="kbf-cookie-accept" class="kbf-cookie-btn kbf-cookie-accept" type="button">Accept all</button>
+                </div>
+            </div>
+        </div>
+
       </div>
     </section>
     <!-- ================== JS ================== -->
     <script>
     (function () {
-        if ('scrollRestoration' in history) {
-            history.scrollRestoration = 'manual';
-        }
         window.scrollTo(0, 0);
         // Page load: mark immediately so hero animations fire
         requestAnimationFrame(function () {
@@ -2439,88 +2660,94 @@ function bntm_kbf_render_landing() {
                 }, delay);
             });
         }
-    })();
-    window.kbfScrollTo = function(id) {
-        if (id === 'kbf-home') {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return false;
-        }
-        var target = document.getElementById(id);
-        if (!target) return false;
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return false;
-    };
 
-    // Hamburger menu toggle
-      (function() {
-          var btn = document.getElementById('kbf-hamburger-btn');
-          var menu = document.getElementById('kbf-mobile-menu');
-          var overlay = document.getElementById('kbf-mobile-overlay');
-          var icon = document.getElementById('kbf-hamburger-icon');
-          if (!btn || !menu) return;
-          var open = false;
+        // -- Smooth scroll nav links (replaces onclick handlers) --
+        document.querySelectorAll('[data-kbf-scroll]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var id = this.getAttribute('data-kbf-scroll');
+                if (id === 'kbf-home') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    var target = document.getElementById(id);
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
 
-        function setIcon(stateOpen){
-            if (!icon) return;
-            var openCls = ['ph','ph-x'];
-            var closeCls = ['ph','ph-list'];
-            icon.classList.remove.apply(icon.classList, openCls);
-            icon.classList.remove.apply(icon.classList, closeCls);
-            icon.classList.add.apply(icon.classList, stateOpen ? openCls : closeCls);
-        }
-        function openMenu() {
-            open = true;
-            menu.classList.add('kbf-menu-open');
-            if (overlay) overlay.classList.add('kbf-overlay-open');
-            setIcon(true);
-        }
+        // -- Mobile nav links (replaces onclick handlers) --
+        document.querySelectorAll('[data-kbf-mobile-nav]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var id = this.getAttribute('data-kbf-mobile-nav');
+                // Close mobile menu
+                var menu = document.getElementById('kbf-mobile-menu');
+                var overlay = document.getElementById('kbf-mobile-overlay');
+                var icon = document.getElementById('kbf-hamburger-icon');
+                if (menu) menu.classList.remove('kbf-menu-open');
+                if (overlay) overlay.classList.remove('kbf-overlay-open');
+                if (icon) {
+                    icon.classList.remove('ph-bold','ph-x');
+                    icon.classList.add('ph','ph-list');
+                }
+                // Scroll to target
+                if (id === 'kbf-home') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    var target = document.getElementById(id);
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
 
-        function closeMenu() {
-            open = false;
-            menu.classList.remove('kbf-menu-open');
-            if (overlay) overlay.classList.remove('kbf-overlay-open');
-            setIcon(false);
-        }
-
-          btn.addEventListener('click', function() {
-              open ? closeMenu() : openMenu();
-          });
-
-          if (overlay) overlay.addEventListener('click', closeMenu);
-          window.addEventListener('resize', function(){
-              if (window.innerWidth > 900 && open) {
-                  closeMenu();
-              }
-          });
-      })();
-
-        // Sticky navbar scroll effect
-    (function() {
-        var topbar = document.querySelector('.kbf-topbar');
-        if (!topbar) return;
-        window.addEventListener('scroll', function() {
-            if (window.scrollY > 10) {
-                topbar.classList.add('kbf-topbar-scrolled');
-            } else {
-                topbar.classList.remove('kbf-topbar-scrolled');
-            }
-        }, { passive: true });
-    })();
-
-    window.kbfMobileNav = function(id) {
+        // -- Hamburger menu toggle --
+        var hamburgerBtn = document.getElementById('kbf-hamburger-btn');
         var menu = document.getElementById('kbf-mobile-menu');
-        var overlay = document.getElementById('kbf-mobile-overlay');
-        var icon = document.getElementById('kbf-hamburger-icon');
-        if (menu) menu.classList.remove('kbf-menu-open');
-        if (overlay) overlay.classList.remove('kbf-overlay-open');
-        if (icon) {
-            icon.classList.remove('ph-bold','ph-x');
-            icon.classList.add('ph','ph-list');
+        var menuOverlay = document.getElementById('kbf-mobile-overlay');
+        var hamburgerIcon = document.getElementById('kbf-hamburger-icon');
+        if (hamburgerBtn && menu) {
+            var menuOpen = false;
+            function setIcon(stateOpen) {
+                if (!hamburgerIcon) return;
+                hamburgerIcon.className = '';
+                var classes = stateOpen ? ['ph','ph-x'] : ['ph','ph-list'];
+                classes.forEach(function(c) { hamburgerIcon.classList.add(c); });
+            }
+            function openMobileMenu() {
+                menuOpen = true;
+                menu.classList.add('kbf-menu-open');
+                if (menuOverlay) menuOverlay.classList.add('kbf-overlay-open');
+                setIcon(true);
+            }
+            function closeMobileMenu() {
+                menuOpen = false;
+                menu.classList.remove('kbf-menu-open');
+                if (menuOverlay) menuOverlay.classList.remove('kbf-overlay-open');
+                setIcon(false);
+            }
+            hamburgerBtn.addEventListener('click', function() {
+                menuOpen ? closeMobileMenu() : openMobileMenu();
+            });
+            if (menuOverlay) menuOverlay.addEventListener('click', closeMobileMenu);
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 900 && menuOpen) closeMobileMenu();
+            });
         }
-        var target = document.getElementById(id);
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return false;
-    };
+
+        // -- Sticky navbar scroll effect --
+        var topbar = document.querySelector('.kbf-topbar');
+        if (topbar) {
+            var lastScrolled = false;
+            window.addEventListener('scroll', function() {
+                var isScrolled = window.scrollY > 10;
+                if (isScrolled !== lastScrolled) {
+                    topbar.classList.toggle('kbf-topbar-scrolled', isScrolled);
+                    lastScrolled = isScrolled;
+                }
+            }, { passive: true });
+        }
+    })();
+
     // Scroll-jack compare table: horizontal scroll first, then resume vertical
     (function() {
         var table = document.querySelector('.kbf-compare-table');
@@ -2544,17 +2771,91 @@ function bntm_kbf_render_landing() {
             }
         }, { passive: false });
     })();
-    function openMenu() {
-            open = true;
-            menu.classList.add('kbf-menu-open');
-            if (overlay) overlay.classList.add('kbf-overlay-open');
+    </script>
+
+    <!-- Cookie Consent Logic -->
+    <script>
+    (function() {
+        var STORAGE_KEY = 'kbf_cookie_consent';
+        var overlay = document.getElementById('kbf-cookie-overlay');
+        var banner = document.getElementById('kbf-cookie-banner');
+        var acceptBtn = document.getElementById('kbf-cookie-accept');
+        var manageBtn = document.getElementById('kbf-cookie-manage');
+        var closeBtn = document.getElementById('kbf-cookie-close');
+        if (!overlay || !banner || !acceptBtn) return;
+
+        function setCookieState(state) {
+            localStorage.setItem(STORAGE_KEY, state);
         }
 
-        function closeMenu() {
-            open = false;
-            menu.classList.remove('kbf-menu-open');
-            if (overlay) overlay.classList.remove('kbf-overlay-open');
+        function showBanner() {
+            overlay.style.display = 'block';
+            banner.style.display = 'block';
+            requestAnimationFrame(function() {
+                overlay.classList.add('kbf-cookie-overlay-visible');
+                banner.classList.add('kbf-cookie-visible');
+            });
         }
+
+        function hideBanner() {
+            overlay.classList.remove('kbf-cookie-overlay-visible');
+            banner.classList.remove('kbf-cookie-visible');
+            banner.classList.add('kbf-cookie-hidden');
+            setTimeout(function() {
+                overlay.style.display = 'none';
+                banner.style.display = 'none';
+                banner.classList.remove('kbf-cookie-hidden');
+            }, 350);
+        }
+
+        // Show banner if no previous choice
+        var existing = localStorage.getItem(STORAGE_KEY);
+        if (!existing) {
+            showBanner();
+        }
+
+        // Accept all
+        acceptBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            setCookieState('accepted');
+            hideBanner();
+        });
+
+        // Manage cookies — for now same as accept; can be extended
+        if (manageBtn) {
+            manageBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                setCookieState('accepted');
+                hideBanner();
+            });
+        }
+
+        // Close button (same as accept)
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                setCookieState('accepted');
+                hideBanner();
+            });
+        }
+
+        // Close button (same as accept)
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                setCookieState('accepted');
+                hideBanner();
+            });
+        }
+
+        // Click overlay to dismiss
+        overlay.addEventListener('click', function() {
+            setCookieState('accepted');
+            hideBanner();
+        });
+    })();
     </script>
     <?php
     return ob_get_clean();
