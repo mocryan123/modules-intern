@@ -48,7 +48,6 @@ require_once(BNTM_KBF_PATH . 'user.php');
 require_once(BNTM_KBF_PATH . 'admin.php');
 require_once(BNTM_KBF_PATH . 'includes/pages.php');
 require_once(BNTM_KBF_PATH . 'includes/shortcodes.php');
-require_once(BNTM_KBF_PATH . 'pages/verification-complete.php');
 require_once(BNTM_KBF_PATH . 'includes/db.php');
 require_once(BNTM_KBF_PATH . 'includes/ajax-hooks.php');
 require_once KB_PATH . 'includes/didit.php';

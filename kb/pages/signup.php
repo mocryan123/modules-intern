@@ -74,8 +74,55 @@ function bntm_kbf_render_signup() {
                             'uid' => $user_id,
                         ], function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url());
                         $subject = 'Verify your Fundora account';
-                        $message = "Hi {$display_name},\n\nPlease verify your email by clicking the link below:\n{$verify_url}\n\nThis link expires in 24 hours.\n\nIf you did not create this account, you can ignore this email.";
-                        wp_mail($email, $subject, $message);
+                        $message = '
+<div style="font-family:Poppins,Arial,sans-serif;max-width:520px;
+            margin:0 auto;background:#f3f6fb;">
+  <div style="background:#fff;border-radius:16px;margin:24px auto;
+              overflow:hidden;border:1px solid #edf0f4;">
+
+    <div style="background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
+                padding:28px 32px;text-align:center;">
+      <span style="font-size:22px;font-weight:800;color:#fff;
+                   letter-spacing:-0.5px;">Fundora</span>
+      <div style="font-size:12px;color:rgba(255,255,255,0.8);
+                  margin-top:4px;">Filipino Crowdfunding Platform</div>
+    </div>
+
+    <div style="padding:32px;">
+      <h2 style="font-size:20px;font-weight:700;color:#0f1115;
+                 margin:0 0 10px;">Verify your email</h2>
+      <p style="font-size:14px;color:#6f7785;line-height:1.65;
+                margin:0 0 24px;">
+        Thanks for signing up! Click the button below to verify 
+        your email address and get started on Fundora.
+      </p>
+      <a href="' . esc_url($verify_url) . '"
+         style="display:inline-block;padding:13px 28px;
+                background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
+                color:#fff;border-radius:10px;text-decoration:none;
+                font-weight:600;font-size:14px;letter-spacing:0.01em;">
+        Verify my email
+      </a>
+      <p style="margin:20px 0 0;font-size:12px;color:#6f7785;
+                line-height:1.6;">
+        This link expires in <strong>24 hours</strong>. 
+        If you did not create a Fundora account, 
+        you can safely ignore this email.
+      </p>
+    </div>
+
+    <div style="padding:16px 32px;border-top:1px solid #edf0f4;
+                text-align:center;">
+      <p style="font-size:11px;color:#94a3b8;margin:0;">
+        &copy; ' . date('Y') . ' Fundora &middot; 
+        Maramag, Bukidnon, Philippines
+      </p>
+    </div>
+
+  </div>
+</div>';
+                        $headers = ['Content-Type: text/html; charset=UTF-8'];
+                        wp_mail($email, $subject, $message, $headers);
                         $signup_success = 'Account created. Please check your email to verify before signing in.';
                     }
                 }
