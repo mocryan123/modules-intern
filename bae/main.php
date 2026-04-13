@@ -3618,7 +3618,7 @@ if (dlPngBtn) {
             html2canvas(target, {
                 scale: 2,
                 useCORS: true,
-                backgroundColor: null,
+                backgroundColor: #ffffff,
                 logging: false
             }).then(function(canvas) {
                 var link = document.createElement('a');
