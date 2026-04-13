@@ -20,8 +20,14 @@
       $has_address = !empty(trim((string) $address));
       $has_social = !empty($socials['facebook']) || !empty($socials['instagram']) || !empty($socials['twitter']) || !empty($socials['website']);
       $nonce_onboard = wp_create_nonce('kbf_onboarding');
-      $onboard_done = ($has_avatar ? 1 : 0) + ($has_bio ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0) + ($has_social ? 1 : 0);
-      $onboard_pct = round(($onboard_done / 5) * 100);
+      $onboard_required = 3;
+      $onboard_done = ($has_bio ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
+      $onboard_pct = round(($onboard_done / $onboard_required) * 100);
+      $onboard_complete = ($onboard_done >= $onboard_required);
+      // Always show onboarding modal if profile is incomplete, even if previously dismissed.
+      if (!$onboard_complete && !$show_onboarding) {
+          $show_onboarding = true;
+      }
       $format_currency = function($amount, $decimals = 2) {
           return number_format((float)$amount, $decimals);
       };
@@ -60,6 +66,13 @@
         $sf = $wpdb->prefix.'kbf_saved_funds';
         $saved_ids = $wpdb->get_col($wpdb->prepare("SELECT fund_id FROM {$sf} WHERE user_id=%d", $business_id));
         $saved_ids = array_map('intval', $saved_ids);
+    }
+
+    // Gate: if profile setup is incomplete, force profile tab regardless of onboarding state.
+    $current_tab = isset($_GET['kbf_tab']) ? sanitize_text_field(wp_unslash($_GET['kbf_tab'])) : 'overview';
+    if (!$onboard_complete && $current_tab !== 'profile') {
+        wp_safe_redirect(add_query_arg('kbf_tab', 'profile', kbf_get_page_url('dashboard')));
+        exit;
     }
 
     ob_start();
@@ -254,18 +267,14 @@
                 </div>
                 <div class="kbf-onboard-badge">Onboarding</div>
                 <h4 id="kbf-onboard-title">Set up your account profile</h4>
-                <p>Complete a few essentials to unlock withdrawals and build supporter trust.</p>
+                <p>Complete the essentials below to unlock withdrawals and build supporter trust.</p>
                 <div class="kbf-onboard-progress">
-                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/5</span></div>
+                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/3</span></div>
                   <div class="kbf-onboard-bar"><span style="width:<?php echo (int) $onboard_pct; ?>%;"></span></div>
                 </div>
               </div>
               <div class="kbf-onboard-right">
                 <ul class="kbf-onboard-step-list">
-                  <li class="kbf-onboard-step <?php echo $has_avatar ? 'is-done' : ''; ?>">
-                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Upload photo</span>
-                    <span class="kbf-onboard-meta"><?php echo $has_avatar ? 'Done' : 'Pending'; ?></span>
-                  </li>
                   <li class="kbf-onboard-step <?php echo $has_bio ? 'is-done' : ''; ?>">
                     <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>About/Bio</span>
                     <span class="kbf-onboard-meta"><?php echo $has_bio ? 'Done' : 'Pending'; ?></span>
@@ -278,14 +287,9 @@
                     <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Address</span>
                     <span class="kbf-onboard-meta"><?php echo $has_address ? 'Done' : 'Pending'; ?></span>
                   </li>
-                  <li class="kbf-onboard-step <?php echo $has_social ? 'is-done' : ''; ?>">
-                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Social links</span>
-                    <span class="kbf-onboard-meta"><?php echo $has_social ? 'Done' : 'Pending'; ?></span>
-                  </li>
                 </ul>
                 <div class="kbf-onboard-actions">
                   <a class="kbf-btn kbf-btn-primary" href="?kbf_tab=profile">Complete Profile</a>
-                  <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfDismissOnboarding()">Skip for now</button>
                 </div>
               </div>
             </div>
