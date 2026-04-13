@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF user dashboard tab: Find Funds.
  */

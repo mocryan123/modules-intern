@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* Public browse shortcode */
 if (!function_exists('kbf_browse_get_fund_token')) {
     function kbf_browse_get_fund_token($fund_id) {

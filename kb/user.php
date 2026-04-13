@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF user wrapper: loads user UI, payments, and user AJAX handlers.
  */

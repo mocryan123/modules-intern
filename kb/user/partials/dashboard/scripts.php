@@ -1,4 +1,4 @@
-﻿        <!-- ================== JS ================== -->
+        <!-- ================== JS ================== -->
     <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <script>
       window.kbfIsLoggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;

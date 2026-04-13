@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF landing wrapper: includes the landing page template.
  */

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF payment helpers and Maya checkout/webhook handlers.
  */

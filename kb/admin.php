@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF admin wrapper: loads admin UI and admin AJAX handlers.
  */

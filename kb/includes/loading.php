@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF shared loading overlay markup.
  */

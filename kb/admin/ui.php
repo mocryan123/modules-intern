@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF admin UI rendering and shortcode output.
  */

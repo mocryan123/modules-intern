@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* User dashboard shortcode */
 if (!function_exists('kbf_dashboard_public_tabs')) {
     function kbf_dashboard_public_tabs() {

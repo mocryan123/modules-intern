@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF Sign In page.
  */

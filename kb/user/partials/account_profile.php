@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* Organizer profile shortcode */
 if (!function_exists('kbf_account_profile_get_biz_id')) {
     function kbf_account_profile_get_biz_id($wpdb) {

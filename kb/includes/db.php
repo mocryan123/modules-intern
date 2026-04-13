@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!defined('ABSPATH')) exit;
 
 function bntm_kbf_get_tables() {

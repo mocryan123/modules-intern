@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* Admin embed in user dashboard */
 if (!function_exists('kbf_admin_embed_tabs')) {
     function kbf_admin_embed_tabs() {
