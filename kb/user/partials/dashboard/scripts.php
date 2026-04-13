@@ -3034,11 +3034,6 @@
         }
         if (milestoneInput) milestoneInput.disabled = false;
         var fd = new FormData(form);
-        if (Array.isArray(kbfMilestoneFiles) && kbfMilestoneFiles.length) {
-            kbfMilestoneFiles.slice(0, 5).forEach(function(file){
-                fd.append('milestone_photos[]', file, file.name);
-            });
-        }
         fd.append('action','kbf_add_milestone');
         fd.append('nonce','<?php echo wp_create_nonce('kbf_add_milestone'); ?>');
         if (saveBtn) kbfSetBtnLoading(saveBtn, true, 'Saving...');

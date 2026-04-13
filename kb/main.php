@@ -127,17 +127,26 @@ if (!defined('KBF_AUTH_SIGNUP_WINDOW')) {
 
 function kbf_auth_get_ip() {
     $remote_addr = isset($_SERVER['REMOTE_ADDR']) ? preg_replace('/[^0-9a-fA-F:\.]/', '', (string) $_SERVER['REMOTE_ADDR']) : '';
+
+    // Cloudflare always sends the real visitor IP in this header.
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        $cf_ip = preg_replace('/[^0-9a-fA-F:\.]/', '', (string) $_SERVER['HTTP_CF_CONNECTING_IP']);
+        if (filter_var($cf_ip, FILTER_VALIDATE_IP)) {
+            return $cf_ip;
+        }
+    }
+
     if ($remote_addr === '') {
         return '0.0.0.0';
     }
 
     // Only trust forwarded headers if behind a known proxy.
-    $trusted_proxies = ['127.0.0.1'];
+    $trusted_proxies = ['127.0.0.1', '::1'];
     if (!in_array($remote_addr, $trusted_proxies, true)) {
         return $remote_addr;
     }
 
-    foreach (['HTTP_CF_CONNECTING_IP','HTTP_X_FORWARDED_FOR','HTTP_CLIENT_IP'] as $key) {
+    foreach (['HTTP_X_FORWARDED_FOR','HTTP_CLIENT_IP'] as $key) {
         if (empty($_SERVER[$key])) {
             continue;
         }

@@ -109,6 +109,7 @@ if (!function_exists('kbf_handle_image_upload')) {
         $path = $upload['file'];
         $url  = $upload['url'];
         $type = $upload['type'];
+        $original_path = $path; // Keep reference to delete later if replaced
 
         $editor = wp_get_image_editor($path);
         if (!is_wp_error($editor)) {
@@ -123,17 +124,21 @@ if (!function_exists('kbf_handle_image_upload')) {
             $editor->set_quality((int) $cfg['quality']);
             $saved = $editor->save();
             if (!is_wp_error($saved) && !empty($saved['path']) && !empty($saved['url'])) {
+                if ($saved['path'] !== $original_path && file_exists($original_path)) {
+                    @unlink($original_path);
+                }
                 $path = $saved['path'];
                 $url  = $saved['url'];
                 $type = $saved['mime-type'];
+                $original_path = $path; // Update reference for next step
             }
 
             if (!empty($cfg['convert_webp']) && method_exists($editor, 'supports_mime_type') && $editor->supports_mime_type('image/webp')) {
                 $editor->set_quality((int) $cfg['quality']);
                 $webp = $editor->save(null, 'image/webp');
                 if (!is_wp_error($webp) && !empty($webp['path']) && !empty($webp['url'])) {
-                    if ($webp['path'] !== $path && file_exists($path)) {
-                        @unlink($path);
+                    if ($webp['path'] !== $original_path && file_exists($original_path)) {
+                        @unlink($original_path);
                     }
                     $path = $webp['path'];
                     $url  = $webp['url'];
@@ -363,12 +368,52 @@ function bntm_ajax_kbf_trash_fund() {
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if(!in_array($fund->status, ['cancelled', 'suspended'])) wp_send_json_error(['message'=>'Only cancelled or suspended funds can be trashed.']);
 
-    // Clean related records to avoid orphans.
+    // === STORAGE CLEANUP: Collect all associated image URLs ===
+    $files_to_delete = [];
+
+    // 1. Main fund photos
+    if (!empty($fund->photos)) {
+        $decoded = json_decode($fund->photos, true);
+        if (is_array($decoded)) $files_to_delete = array_merge($files_to_delete, $decoded);
+    }
+
+    // 2. Milestone photos
+    if (!empty($fund->milestones)) {
+        $decoded_ms = json_decode($fund->milestones, true);
+        if (is_array($decoded_ms)) {
+            foreach ($decoded_ms as $ms) {
+                if (!empty($ms['photos']) && is_array($ms['photos'])) {
+                    $files_to_delete = array_merge($files_to_delete, $ms['photos']);
+                }
+            }
+        }
+    }
+
+    // Clean related database records to avoid orphans.
     $wpdb->delete($wpdb->prefix.'kbf_sponsorships', ['fund_id'=>$id], ['%d']);
     $wpdb->delete($wpdb->prefix.'kbf_withdrawals', ['fund_id'=>$id], ['%d']);
     $wpdb->delete($wpdb->prefix.'kbf_reports', ['fund_id'=>$id], ['%d']);
     $wpdb->delete($wpdb->prefix.'kbf_appeals', ['fund_id'=>$id], ['%d']);
     $wpdb->delete($wpdb->prefix.'kbf_saved_funds', ['fund_id'=>$id], ['%d']);
+
+    // === DELETE FILES FROM DISK ===
+    if (!empty($files_to_delete)) {
+        $upload_dir = wp_upload_dir();
+        $base_url   = trailingslashit($upload_dir['baseurl']);
+        $base_dir   = trailingslashit($upload_dir['basedir']);
+
+        foreach (array_unique($files_to_delete) as $file_url) {
+            if (!is_string($file_url) || empty($file_url)) continue;
+            if (strpos($file_url, $base_url) === 0) {
+                $relative  = str_replace($base_url, '', $file_url);
+                $file_path = $base_dir . ltrim($relative, '/');
+                // Security check: ensure path resolves safely within upload dir
+                if (file_exists($file_path) && strpos(wp_normalize_path($file_path), wp_normalize_path($base_dir)) === 0) {
+                    @unlink($file_path);
+                }
+            }
+        }
+    }
 
     $res = $wpdb->delete($t, ['id'=>$id, 'business_id'=>$biz], ['%d','%d']);
     if($res) wp_send_json_success(['message'=>'Fund trashed.']);
@@ -465,6 +510,9 @@ function bntm_ajax_kbf_request_withdrawal() {
 function bntm_ajax_kbf_add_milestone() {
     check_ajax_referer('kbf_add_milestone','nonce');
     if (!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
+    if (!kbf_rate_limit_ok('add_milestone', 10, 300)) {
+        wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
+    }
     if (function_exists('bntm_kbf_ensure_fund_columns')) {
         bntm_kbf_ensure_fund_columns();
     }
@@ -482,8 +530,9 @@ function bntm_ajax_kbf_add_milestone() {
     if (!in_array($fund->status, ['active','completed'], true)) {
         wp_send_json_error(['message'=>'Milestones can only be added for active or completed fundraisers.']);
     }
-    $title = isset($_POST['milestone_title']) ? sanitize_text_field($_POST['milestone_title']) : '';
-    $body  = isset($_POST['milestone_body']) ? sanitize_textarea_field($_POST['milestone_body']) : '';
+    // Sanitize and enforce max lengths (matches frontend maxlength)
+    $title = mb_substr(sanitize_text_field($_POST['milestone_title'] ?? ''), 0, 150);
+    $body  = mb_substr(sanitize_textarea_field($_POST['milestone_body'] ?? ''), 0, 300);
     if ($title === '' && $body === '') {
         wp_send_json_error(['message'=>'Please add a title or update details.']);
     }
@@ -504,7 +553,10 @@ function bntm_ajax_kbf_add_milestone() {
         }
     }
     $existing = $fund->milestones ? json_decode($fund->milestones, true) : [];
-    if (!is_array($existing)) $existing = [];
+    if (!is_array($existing)) {
+        error_log('[KBF][Milestone] Corrupted milestones JSON for fund_id=' . $fund_id . ': ' . substr($fund->milestones, 0, 200));
+        $existing = [];
+    }
     $milestone = [
         'id'        => bntm_rand_id(),
         'title'     => $title,
