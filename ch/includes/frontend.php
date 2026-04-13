@@ -483,7 +483,10 @@ function bntm_shortcode_ch() {
 
     ob_start();
     ?>
-    <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
+    <script>
+    var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+    window.chAdminTabNonce = '<?php echo wp_create_nonce('ch_admin_tab_nonce'); ?>';
+    </script>
     <div class="ch-dashboard-wrap">
         <div class="ch-sidebar">
             <div class="ch-sidebar-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -2449,6 +2452,7 @@ function bntm_shortcode_ch_my_feed() {
     );
 
     ob_start(); ?>
+    <script>window.chMyFeedNonce = '<?php echo wp_create_nonce('ch_myfeed_nonce'); ?>';</script>
     <div class="ch-my-feed-wrap">
         <div style="margin-bottom:18px;">
             <a href="<?php echo esc_url($feed_url); ?>" class="ch-back-link">

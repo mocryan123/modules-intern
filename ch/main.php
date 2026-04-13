@@ -383,14 +383,31 @@ add_action('wp_enqueue_scripts', function() {
 
 add_action('wp_head', function() {
     if (!bntm_ch_is_frontend_context()) return;
+    echo '<script>document.documentElement.classList.add("ch-ui-pending");</script>';
+    echo '<style>html.ch-ui-pending body{visibility:hidden}html.ch-ui-ready body{visibility:visible}</style>';
+}, -1);
+
+add_action('wp_head', function() {
+    if (!bntm_ch_is_frontend_context()) return;
     ?>
     <script>
     (function() {
+        function chRevealCommunityUi() {
+            document.documentElement.classList.remove('ch-ui-pending');
+            document.documentElement.classList.add('ch-ui-ready');
+        }
         try {
             if (localStorage.getItem('ch_dark_mode') === '1') {
                 document.documentElement.classList.add('ch-dark');
             }
         } catch (e) {}
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                requestAnimationFrame(chRevealCommunityUi);
+            }, { once: true });
+        } else {
+            requestAnimationFrame(chRevealCommunityUi);
+        }
     })();
     </script>
     <?php
@@ -1475,6 +1492,8 @@ $ajax_actions = [
     'ch_get_announcement'    => ['bntm_ajax_ch_get_announcement', true],
     'ch_mention_search'      => ['bntm_ajax_ch_mention_search', false],
     'ch_feed_sort'           => ['bntm_ajax_ch_feed_sort', false],
+    'ch_admin_tab'           => ['bntm_ajax_ch_admin_tab', false],
+    'ch_myfeed_subtab'       => ['bntm_ajax_ch_myfeed_subtab', false],
 ];
 
 foreach ($ajax_actions as $action => [$callback, $admin_only]) {

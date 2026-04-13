@@ -478,8 +478,52 @@ function bntm_ajax_ch_get_posts() {
 }
 
 // ============================================================
-// FEED SORT — returns rendered post-card HTML for AJAX tab switching
+// ADMIN TAB — returns rendered tab HTML for AJAX nav switching
 // ============================================================
+function bntm_ajax_ch_admin_tab() {
+    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
+    check_ajax_referer('ch_admin_tab_nonce', 'nonce');
+
+    $user_id  = get_current_user_id();
+    $is_admin = current_user_can('manage_options') || current_user_can('administrator');
+    $tab      = sanitize_text_field($_POST['tab'] ?? 'overview');
+
+    // Non-admins can only access these tabs
+    $allowed_non_admin = ['overview', 'categories', 'posts', 'users', 'reports'];
+    if (!$is_admin && !in_array($tab, $allowed_non_admin, true)) {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
+
+    $html = '';
+    switch ($tab) {
+        case 'overview':      $html = ch_admin_overview_tab($user_id, $is_admin); break;
+        case 'categories':    $html = ch_categories_tab($user_id, $is_admin);     break;
+        case 'posts':         $html = ch_posts_tab($user_id, $is_admin);          break;
+        case 'users':         $html = ch_users_tab($user_id, $is_admin);          break;
+        case 'reports':       $html = ch_reports_tab($user_id, $is_admin);        break;
+        case 'moderation':    $html = $is_admin ? ch_moderation_tab($user_id) : ''; break;
+        case 'activity':      $html = $is_admin ? ch_activity_tab($user_id) : '';   break;
+        case 'announcements': $html = $is_admin ? ch_announcements_tab() : '';       break;
+        default:              $html = ch_admin_overview_tab($user_id, $is_admin);    break;
+    }
+
+    wp_send_json_success(['html' => $html]);
+}
+
+// ============================================================
+// MY FEED SUBTAB — returns rendered subtab content HTML
+// ============================================================
+function bntm_ajax_ch_myfeed_subtab() {
+    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
+    check_ajax_referer('ch_myfeed_nonce', 'nonce');
+
+    // Spoof the GET param so bntm_shortcode_ch_my_feed reads the right subtab
+    $_GET['subtab'] = sanitize_text_field($_POST['subtab'] ?? 'posts');
+    $_GET['tab']    = 'my_feed';
+
+    $html = bntm_shortcode_ch_my_feed();
+    wp_send_json_success(['html' => $html]);
+}
 function bntm_ajax_ch_feed_sort() {
     global $wpdb;
 

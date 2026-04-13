@@ -2065,6 +2065,49 @@ function ch_global_scripts() {
         }
         window.chFetchJson = chFetchJson;
 
+        async function chFetchDocument(url) {
+            const response = await fetch(url, {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const text = await response.text();
+            if (!response.ok) {
+                throw new Error(text || ('HTTP ' + response.status));
+            }
+            return new DOMParser().parseFromString(text, 'text/html');
+        }
+
+        function chRunInlineScripts(root) {
+            if (!root) return;
+            root.querySelectorAll('script').forEach(function(script) {
+                var next = document.createElement('script');
+                Array.from(script.attributes || []).forEach(function(attr) {
+                    next.setAttribute(attr.name, attr.value);
+                });
+                next.textContent = script.textContent;
+                document.body.appendChild(next);
+                next.remove();
+            });
+        }
+
+        function chCanSoftNavigate(link) {
+            if (!link || !link.href) return false;
+            if (link.target && link.target !== '_self') return false;
+            if (link.hasAttribute('download')) return false;
+            try {
+                var url = new URL(link.href, window.location.href);
+                return url.origin === window.location.origin;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        window.chFetchDocument = chFetchDocument;
+        window.chRunInlineScripts = chRunInlineScripts;
+        window.chCanSoftNavigate = chCanSoftNavigate;
+
         function chUpdateCurrentUserAvatars(avatarUrl) {
             if (!avatarUrl) return;
             const freshUrl = avatarUrl + '?t=' + Date.now();
@@ -3209,109 +3252,126 @@ function ch_settings_modal_html($logout_url = '') {
         });
 
         // ============================================================
-        // ADMIN PANEL — tab switching without full page reload
+        // ADMIN PANEL — tab switching via AJAX
         // ============================================================
         (function() {
-            var mainContent = document.querySelector('.ch-dashboard-wrap .ch-main-content');
-            var nav = document.querySelector('.ch-dashboard-wrap .ch-nav');
-            if (!mainContent || !nav) return;
+            var adminRequestUrl = '';
 
-            nav.addEventListener('click', function(e) {
-                var link = e.target.closest('a.ch-nav-item[href*="tab="]');
-                if (!link) return;
+            async function chLoadAdminShell(url, shouldPush) {
+                var currentWrap = document.querySelector('.ch-dashboard-wrap');
+                if (!currentWrap) return false;
 
-                var url = new URL(link.href, window.location.href);
-                var tab = url.searchParams.get('tab');
-                if (!tab) return;
+                currentWrap.style.opacity = '0.45';
+                currentWrap.style.pointerEvents = 'none';
 
-                e.preventDefault();
+                try {
+                    adminRequestUrl = url;
+                    var doc = await chFetchDocument(url);
+                    if (adminRequestUrl !== url) return true;
 
-                // Update active state immediately
-                nav.querySelectorAll('.ch-nav-item').forEach(function(el) {
-                    el.classList.toggle('active', el === link);
-                });
+                    var nextWrap = doc.querySelector('.ch-dashboard-wrap');
+                    if (!nextWrap) throw new Error('Missing admin dashboard markup');
 
-                mainContent.style.opacity = '0.45';
-                mainContent.style.pointerEvents = 'none';
+                    currentWrap.replaceWith(nextWrap);
+                    chRunInlineScripts(nextWrap);
 
-                fetch(link.href, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
-                    .then(function(r) { return r.text(); })
-                    .then(function(html) {
-                        var parser = new DOMParser();
-                        var doc = parser.parseFromString(html, 'text/html');
-                        var newContent = doc.querySelector('.ch-dashboard-wrap .ch-main-content');
-                        if (newContent) {
-                            mainContent.innerHTML = newContent.innerHTML;
-                            // Re-run any inline scripts in the new content
-                            mainContent.querySelectorAll('script').forEach(function(s) {
-                                var ns = document.createElement('script');
-                                ns.textContent = s.textContent;
-                                document.body.appendChild(ns);
-                                ns.remove();
-                            });
-                        }
-                        history.pushState(null, '', link.href);
-                    })
-                    .catch(function() { window.location.href = link.href; })
-                    .finally(function() {
-                        mainContent.style.opacity = '';
-                        mainContent.style.pointerEvents = '';
+                    if (shouldPush !== false) {
+                        history.pushState({ chSoftNav: 'admin' }, '', url);
+                    }
+                    return true;
+                } finally {
+                    adminRequestUrl = '';
+                    var freshWrap = document.querySelector('.ch-dashboard-wrap');
+                    if (freshWrap) {
+                        freshWrap.style.opacity = '';
+                        freshWrap.style.pointerEvents = '';
+                    }
+                }
+            }
+
+            window.chLoadAdminShell = chLoadAdminShell;
+
+            document.addEventListener('click', function(e) {
+                var adminLink = e.target.closest('.ch-dashboard-wrap a[href*="tab="]');
+                if (!adminLink || !chCanSoftNavigate(adminLink)) return;
+
+                try {
+                    var adminUrl = new URL(adminLink.href, window.location.href);
+                    if (!adminUrl.searchParams.get('tab')) return;
+                    e.preventDefault();
+                    chLoadAdminShell(adminUrl.toString(), true).catch(function() {
+                        window.location.href = adminLink.href;
                     });
+                } catch (err) {}
             });
 
-            // Handle browser back/forward
             window.addEventListener('popstate', function() {
-                window.location.reload();
+                if (!document.querySelector('.ch-dashboard-wrap')) return;
+                chLoadAdminShell(window.location.href, false).catch(function() {
+                    window.location.reload();
+                });
             });
         })();
 
         // ============================================================
-        // MY FEED — subtab switching without full page reload
+        // MY FEED — subtab switching via AJAX
         // ============================================================
         (function() {
-            var mfContent = document.querySelector('.ch-mf-content');
-            var mfSubnav  = document.querySelector('.ch-mf-subnav');
-            if (!mfContent || !mfSubnav) return;
+            var myFeedRequestUrl = '';
 
-            mfSubnav.addEventListener('click', function(e) {
-                var link = e.target.closest('a.ch-mf-subnav-item[href*="subtab="]');
-                if (!link) return;
+            async function chLoadMyFeedShell(url, shouldPush) {
+                var currentWrap = document.querySelector('.ch-my-feed-wrap');
+                if (!currentWrap) return false;
 
-                var url = new URL(link.href, window.location.href);
-                var subtab = url.searchParams.get('subtab');
-                if (!subtab) return;
+                currentWrap.style.opacity = '0.45';
+                currentWrap.style.pointerEvents = 'none';
 
-                e.preventDefault();
+                try {
+                    myFeedRequestUrl = url;
+                    var doc = await chFetchDocument(url);
+                    if (myFeedRequestUrl !== url) return true;
 
-                mfSubnav.querySelectorAll('.ch-mf-subnav-item').forEach(function(el) {
-                    el.classList.toggle('active', el === link);
-                });
+                    var nextWrap = doc.querySelector('.ch-my-feed-wrap');
+                    if (!nextWrap) throw new Error('Missing My Feed markup');
 
-                mfContent.style.opacity = '0.45';
-                mfContent.style.pointerEvents = 'none';
+                    currentWrap.replaceWith(nextWrap);
+                    chRunInlineScripts(nextWrap);
 
-                fetch(link.href, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
-                    .then(function(r) { return r.text(); })
-                    .then(function(html) {
-                        var parser = new DOMParser();
-                        var doc = parser.parseFromString(html, 'text/html');
-                        var newContent = doc.querySelector('.ch-mf-content');
-                        if (newContent) {
-                            mfContent.innerHTML = newContent.innerHTML;
-                            newContent.querySelectorAll('script').forEach(function(s) {
-                                var ns = document.createElement('script');
-                                ns.textContent = s.textContent;
-                                document.body.appendChild(ns);
-                                ns.remove();
-                            });
-                        }
-                        history.pushState(null, '', link.href);
-                    })
-                    .catch(function() { window.location.href = link.href; })
-                    .finally(function() {
-                        mfContent.style.opacity = '';
-                        mfContent.style.pointerEvents = '';
+                    if (shouldPush !== false) {
+                        history.pushState({ chSoftNav: 'my_feed' }, '', url);
+                    }
+                    return true;
+                } finally {
+                    myFeedRequestUrl = '';
+                    var freshWrap = document.querySelector('.ch-my-feed-wrap');
+                    if (freshWrap) {
+                        freshWrap.style.opacity = '';
+                        freshWrap.style.pointerEvents = '';
+                    }
+                }
+            }
+
+            window.chLoadMyFeedShell = chLoadMyFeedShell;
+
+            document.addEventListener('click', function(e) {
+                var myFeedLink = e.target.closest('.ch-my-feed-wrap a.ch-mf-subnav-item[href*="subtab="]');
+                if (!myFeedLink || !chCanSoftNavigate(myFeedLink)) return;
+
+                try {
+                    var myFeedUrl = new URL(myFeedLink.href, window.location.href);
+                    if (!myFeedUrl.searchParams.get('subtab')) return;
+                    e.preventDefault();
+                    chLoadMyFeedShell(myFeedUrl.toString(), true).catch(function() {
+                        window.location.href = myFeedLink.href;
                     });
+                } catch (err) {}
+            });
+
+            window.addEventListener('popstate', function() {
+                if (!document.querySelector('.ch-my-feed-wrap')) return;
+                chLoadMyFeedShell(window.location.href, false).catch(function() {
+                    window.location.reload();
+                });
             });
         })();
 
