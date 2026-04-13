@@ -587,14 +587,45 @@ function kbf_refund_all_sponsors($fund_id) {
 }
 
 // Hide legacy sidebar on both frontend and admin
-function kbf_hide_bntm_sidebar() {
-    echo '<style>
-        .bntm-sidebar, .kbf-admin-sidebar, .kbf-admin-sidebar-brand, .kbf-admin-sidebar-note, .kbf-admin-layout aside { display:none !important; }
-        .kbf-admin-layout { grid-template-columns: 1fr !important; }
+function kbf_hide_bntm_sidebar_styles() {
+    echo '<style type="text/css">
+        .bntm-sidebar, #bntmSidebar,
+        aside.bntm-sidebar, div.bntm-sidebar {
+            display: none !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+        }
+        .bntm-main, .bntm-container, main.bntm-main, #bntmMain {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
     </style>';
 }
-add_action('wp_head', 'kbf_hide_bntm_sidebar', 999);
-add_action('admin_head', 'kbf_hide_bntm_sidebar', 999);
+add_action('wp_head', 'kbf_hide_bntm_sidebar_styles', 99999);
+add_action('admin_head', 'kbf_hide_bntm_sidebar_styles', 99999);
+
+function kbf_hide_bntm_sidebar_js() {
+    echo '<script type="text/javascript">(function(){
+        console.log("KBF Sidebar Hider JS: Executed");
+        var sb = document.querySelector(".bntm-sidebar, #bntmSidebar");
+        if (sb) {
+            sb.style.setProperty("display", "none", "important");
+            sb.style.setProperty("width", "0", "important");
+            sb.style.setProperty("visibility", "hidden", "important");
+            sb.style.setProperty("opacity", "0", "important");
+        }
+        var main = document.querySelector(".bntm-main, #bntmMain, .bntm-container");
+        if (main) {
+            main.style.marginLeft = "0";
+            main.style.width = "100%";
+        }
+    })();</script>';
+}
+add_action('wp_footer', 'kbf_hide_bntm_sidebar_js', 99999);
 
 
 
