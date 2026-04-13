@@ -588,7 +588,10 @@ function kbf_refund_all_sponsors($fund_id) {
 
 // Hide legacy sidebar on both frontend and admin
 function kbf_hide_bntm_sidebar() {
-    echo '<style>.bntm-sidebar{display:none!important}</style>';
+    echo '<style>
+        .bntm-sidebar, .kbf-admin-sidebar, .kbf-admin-sidebar-brand, .kbf-admin-sidebar-note, .kbf-admin-layout aside { display:none !important; }
+        .kbf-admin-layout { grid-template-columns: 1fr !important; }
+    </style>';
 }
 add_action('wp_head', 'kbf_hide_bntm_sidebar', 999);
 add_action('admin_head', 'kbf_hide_bntm_sidebar', 999);
