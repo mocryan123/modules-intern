@@ -1842,12 +1842,14 @@ function bntm_shortcode_bae() {
                 </div>
                 <div class="bae-modal-body" id="bae-modal-body"></div>
                 <div class="bae-modal-footer">
-                    <button class="bae-btn bae-btn-outline" id="bae-modal-cancel">Close</button>
-                    <button class="bae-btn bae-btn-primary" id="bae-modal-copy">Copy HTML</button>
-                </div>
+    <button class="bae-btn bae-btn-outline" id="bae-modal-cancel">Close</button>
+    <button class="bae-btn bae-btn-outline" id="bae-modal-download-png">Download PNG</button>
+    <button class="bae-btn bae-btn-primary" id="bae-modal-copy">Copy HTML</button>
+</div>
             </div>
         </div>
 
+        
         <!-- Confirm Modal -->
         <div id="bae-confirm-overlay" class="bae-modal-overlay" style="display:none;">
             <div class="bae-modal bae-modal-sm">
@@ -1858,12 +1860,12 @@ function bntm_shortcode_bae() {
                     <p id="bae-confirm-msg"></p>
                 </div>
                 <div class="bae-modal-footer">
-    <button class="bae-btn bae-btn-outline" id="bae-modal-cancel">Close</button>
-    <button class="bae-btn bae-btn-outline" id="bae-modal-download-png">Download PNG</button>  <!-- ADD THIS -->
-    <button class="bae-btn bae-btn-primary" id="bae-modal-copy">Copy HTML</button>
-</div>
+                    <button class="bae-btn bae-btn-outline" id="bae-confirm-cancel">Cancel</button>
+                    <button class="bae-btn bae-btn-danger" id="bae-confirm-ok">Confirm</button>
+                </div>
             </div>
         </div>
+
 
         <!-- Pricing Modal -->
         <div id="bae-pricing-overlay" class="bae-pricing-overlay" style="display:none;">
