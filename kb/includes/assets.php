@@ -118,6 +118,37 @@ function kbf_global_assets() {
     .bntm-header{
         display:none !important;
     }
+    /* Override: Hide BNTM sidebar on KBF pages */
+    .bntm-sidebar,
+    aside#bntmSidebar,
+    .bntm-layout > .bntm-sidebar,
+    body .bntm-sidebar,
+    .kbf-wrap ~ .bntm-sidebar,
+    .kbf-wrap .bntm-sidebar,
+    .kbf-admin-wrap ~ .bntm-sidebar,
+    .kbf-admin-wrap .bntm-sidebar{
+        display:none !important;
+        width:0 !important;
+        min-width:0 !important;
+        max-width:0 !important;
+        visibility:hidden !important;
+        opacity:0 !important;
+        position:absolute !important;
+        left:-9999px !important;
+        transform:none !important;
+        overflow:hidden !important;
+        pointer-events:none !important;
+    }
+    @media (min-width: 769px){
+        .bntm-sidebar,
+        aside#bntmSidebar,
+        .bntm-layout > .bntm-sidebar{
+            display:none !important;
+            transform:none !important;
+            opacity:0 !important;
+            visibility:hidden !important;
+        }
+    }
     /* KBF-only: force content full width and no padding */
     .bntm-content{
         width:100% !important;

@@ -589,20 +589,26 @@ function kbf_refund_all_sponsors($fund_id) {
 // Hide legacy sidebar on both frontend and admin
 function kbf_hide_bntm_sidebar_styles() {
     echo '<style type="text/css">
-        .bntm-sidebar, #bntmSidebar,
-        aside.bntm-sidebar, div.bntm-sidebar {
-            display: none !important;
-            width: 0 !important;
-            min-width: 0 !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
+        .bntm-layout { display: block !important; flex-direction: column !important; }
+        .bntm-sidebar, #bntmSidebar, 
+        aside.bntm-sidebar, div.bntm-sidebar { 
+            display: none !important; 
+            width: 0 !important; 
+            min-width: 0 !important; 
+            visibility: hidden !important; 
+            opacity: 0 !important; 
+            position: absolute !important; 
+            left: -9999px !important; 
         }
         .bntm-main, .bntm-container, main.bntm-main, #bntmMain {
             margin-left: 0 !important;
+            margin-right: 0 !important;
             width: 100% !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
+            float: none !important;
         }
+        .bntm-sidebar-overlay, #bntmSidebarOverlay { display: none !important; }
     </style>';
 }
 add_action('wp_head', 'kbf_hide_bntm_sidebar_styles', 99999);
@@ -611,18 +617,36 @@ add_action('admin_head', 'kbf_hide_bntm_sidebar_styles', 99999);
 function kbf_hide_bntm_sidebar_js() {
     echo '<script type="text/javascript">(function(){
         console.log("KBF Sidebar Hider JS: Executed");
-        var sb = document.querySelector(".bntm-sidebar, #bntmSidebar");
-        if (sb) {
-            sb.style.setProperty("display", "none", "important");
-            sb.style.setProperty("width", "0", "important");
-            sb.style.setProperty("visibility", "hidden", "important");
-            sb.style.setProperty("opacity", "0", "important");
+        
+        // 1. Remove Sidebar from DOM immediately
+        var sb = document.getElementById("bntmSidebar") || document.querySelector(".bntm-sidebar");
+        if (sb && sb.parentNode) {
+            sb.parentNode.removeChild(sb);
+            console.log("KBF Sidebar Hider: Sidebar removed from DOM");
         }
-        var main = document.querySelector(".bntm-main, #bntmMain, .bntm-container");
+
+        // 2. Fix Layout Container to single column
+        var layout = document.querySelector(".bntm-layout");
+        if (layout) {
+            layout.style.display = "block";
+            layout.style.flexDirection = "column";
+            layout.style.flexWrap = "nowrap";
+        }
+
+        // 3. Force Main Content to full width
+        var main = document.getElementById("bntmMain") || document.querySelector(".bntm-main");
         if (main) {
             main.style.marginLeft = "0";
+            main.style.marginRight = "0";
             main.style.width = "100%";
+            main.style.maxWidth = "100%";
+            main.style.flex = "none";
+            main.style.float = "none";
         }
+
+        // 4. Hide Overlay
+        var overlay = document.getElementById("bntmSidebarOverlay") || document.querySelector(".bntm-sidebar-overlay");
+        if (overlay) overlay.style.display = "none";
     })();</script>';
 }
 add_action('wp_footer', 'kbf_hide_bntm_sidebar_js', 99999);
