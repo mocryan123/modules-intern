@@ -915,8 +915,9 @@ function bntm_shortcode_ch_auth() {
                 </div>
                 <div class="ch-field-group">
                     <label class="ch-checkbox-label">
-                        <input type="checkbox" id="ch-reg-terms" required>
-                        I agree to the <a href="#" class="ch-auth-link" onclick="chOpenModal('ch-modal-guidelines'); return false;">Community Guidelines</a>
+                        <input type="checkbox" id="ch-reg-terms" required disabled>
+                        I agree to the <a href="#" class="ch-auth-link" id="ch-guidelines-link" onclick="chOpenGuidelinesModal(); return false;">Community Guidelines</a>
+                        <span id="ch-guidelines-hint" style="display:block;font-size:11px;color:var(--ch-text-subtle);margin-top:3px;">Please read the Community Guidelines before agreeing.</span>
                     </label>
                 </div>
                 <button class="ch-btn ch-btn-primary ch-btn-full ch-auth-submit" id="ch-register-btn"
@@ -1208,14 +1209,14 @@ function bntm_shortcode_ch_auth() {
         <div class="ch-modal" style="background:#fff;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
             <div class="ch-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f3f4f6;">
                 <h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ch-text);">Community Guidelines</h3>
-                <button onclick="document.getElementById('ch-modal-guidelines').style.display='none';document.body.style.overflow='';"
+                <button onclick="chCloseGuidelinesModal()"
                         style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button>
             </div>
             <div style="padding:24px;font-size:14px;color:var(--ch-text-muted);line-height:1.7;">
                 <?php echo ch_get_guidelines_html(); ?>
             </div>
             <div style="padding:16px 24px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;">
-                <button onclick="document.getElementById('ch-modal-guidelines').style.display='none';document.body.style.overflow='';"
+                <button onclick="chCloseGuidelinesModal()"
                         class="ch-btn ch-btn-primary">I Understand</button>
             </div>
         </div>
@@ -1229,11 +1230,37 @@ function bntm_shortcode_ch_auth() {
         var el = document.getElementById(id);
         if (el) { el.style.display = 'none'; document.body.style.overflow = ''; }
     };
+
+    // Guidelines modal with checkbox enable logic
+    window.chOpenGuidelinesModal = function() {
+        var modal = document.getElementById('ch-modal-guidelines');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    };
+    window.chCloseGuidelinesModal = function() {
+        var modal = document.getElementById('ch-modal-guidelines');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        // Enable checkbox and hide hint after viewing guidelines
+        var terms = document.getElementById('ch-reg-terms');
+        var hint = document.getElementById('ch-guidelines-hint');
+        if (terms) {
+            terms.disabled = false;
+            terms.title = 'You can now agree to the Community Guidelines';
+        }
+        if (hint) {
+            hint.style.display = 'none';
+        }
+    };
+
     // Close on overlay click
     document.addEventListener('click', function(e) {
         if (e.target.id === 'ch-modal-guidelines') {
-            e.target.style.display = 'none';
-            document.body.style.overflow = '';
+            chCloseGuidelinesModal();
         }
     });
     </script>

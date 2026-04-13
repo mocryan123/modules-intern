@@ -255,6 +255,8 @@ function ch_global_styles() {
         padding: 8px 12px; border-radius: var(--ch-radius-sm);
         text-decoration: none; font-size: 13.5px; font-weight: 500;
         color: var(--ch-text-muted); transition: all 0.15s;
+        background: none; border: none; cursor: pointer; width: 100%; text-align: left;
+        font-family: inherit;
     }
     .ch-nav-item svg { opacity: 0.7; flex-shrink: 0; }
     .ch-nav-item:hover { background: var(--ch-accent-light); color: var(--ch-accent); }
@@ -926,7 +928,12 @@ function ch_global_styles() {
     .ch-mf-stat-num { display: block; font-size: 20px; font-weight: 800; color: var(--ch-accent); letter-spacing: -0.3px; }
     .ch-mf-stat-label { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; color: var(--ch-text-subtle); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600; }
     .ch-mf-subnav { display: flex; gap: 3px; background: var(--ch-bg); border-radius: var(--ch-radius); padding: 3px; margin-bottom: 18px; border: 1px solid var(--ch-border); }
-    .ch-mf-subnav-item { flex: 1; text-align: center; padding: 7px 0; border-radius: var(--ch-radius-sm); font-size: 13px; font-weight: 600; text-decoration: none; color: var(--ch-text-muted); transition: all .18s; }
+    .ch-mf-subnav-item {
+        flex: 1; text-align: center; padding: 7px 0; border-radius: var(--ch-radius-sm);
+        font-size: 13px; font-weight: 600; text-decoration: none; color: var(--ch-text-muted);
+        transition: all .18s; background: none; border: none; cursor: pointer;
+        font-family: inherit;
+    }
     .ch-mf-subnav-item.active { background: var(--ch-surface); color: var(--ch-accent); box-shadow: var(--ch-shadow-sm); }
     .ch-mf-content { display: flex; flex-direction: column; gap: 10px; }
     .ch-mf-post-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 16px 18px; transition: border-color 0.15s, box-shadow 0.15s; box-shadow: var(--ch-shadow-sm); }
@@ -1048,6 +1055,36 @@ function ch_global_styles() {
     /* ============================================================
     RESPONSIVE — comprehensive mobile/tablet fixes
     ============================================================ */
+
+    /* Global overflow prevention — stops horizontal scroll on mobile */
+    html, body {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+    /* Prevent containers from breaking viewport */
+    @media (max-width: 780px) {
+        html, body { overflow-x: hidden; }
+        .ch-feed-wrap, .ch-dashboard-wrap, .ch-my-feed-wrap,
+        .ch-auth-wrap, .ch-public-profile-wrap, .ch-guest-landing-wrap,
+        .ch-special-page-wrap, .ch-profile-standalone {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+        /* Force flexible widths */
+        img, video, iframe, svg {
+            max-width: 100%;
+            height: auto;
+        }
+        /* Prevent pre/code blocks from breaking layout */
+        pre, code, .bntm-table-wrapper {
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
 
     /* Filter form helper classes */
     .ch-categories-filter-row { align-items: flex-end; flex-wrap: wrap; }
@@ -3357,32 +3394,6 @@ function ch_settings_modal_html($logout_url = '') {
             }
 
             window.chLoadMyFeedShell = chLoadMyFeedShell;
-
-            document.addEventListener('click', function(e) {
-                // Intercept subnav links with broader selector
-                var myFeedLink = e.target.closest('a.ch-mf-subnav-item[href]');
-                if (!myFeedLink || !chCanSoftNavigate(myFeedLink)) return;
-                
-                try {
-                    var myFeedUrl = new URL(myFeedLink.href, window.location.href);
-                    var hasSubtab = myFeedUrl.searchParams.get('subtab');
-                    var hasTab = myFeedUrl.searchParams.get('tab');
-                    // Only soft-navigate if URL has subtab parameter
-                    if (!hasSubtab) return;
-                    
-                    e.preventDefault();
-                    chLoadMyFeedShell(myFeedUrl.toString(), true).catch(function() {
-                        window.location.href = myFeedLink.href;
-                    });
-                } catch (err) {}
-            });
-
-            window.addEventListener('popstate', function() {
-                if (!document.querySelector('.ch-my-feed-wrap')) return;
-                chLoadMyFeedShell(window.location.href, false).catch(function() {
-                    window.location.reload();
-                });
-            });
         })();
 
     })();
@@ -4198,6 +4209,11 @@ function ch_feed_scripts() {
     <script>
     // ── Sort-tab AJAX (no full-page reload) ──────────────────────────────
     (function() {
+        var state = window.chFeedState;
+        if (!state) return;
+
+        var list = document.getElementById('ch-posts-list');
+        var tabs = document.getElementById('ch-sort-tabs');
         if (!list || !tabs) return;
 
         tabs.addEventListener('click', function(e) {

@@ -487,6 +487,7 @@ function bntm_ajax_ch_admin_tab() {
     $user_id  = get_current_user_id();
     $is_admin = current_user_can('manage_options') || current_user_can('administrator');
     $tab      = sanitize_text_field($_POST['tab'] ?? 'overview');
+    $mode     = sanitize_text_field($_POST['mode'] ?? 'full'); // 'full' or 'content'
 
     // Non-admins can only access these tabs
     $allowed_non_admin = ['overview', 'categories', 'posts', 'users', 'reports'];
@@ -496,15 +497,37 @@ function bntm_ajax_ch_admin_tab() {
 
     $html = '';
     switch ($tab) {
-        case 'overview':      $html = ch_admin_overview_tab($user_id, $is_admin); break;
-        case 'categories':    $html = ch_categories_tab($user_id, $is_admin);     break;
-        case 'posts':         $html = ch_posts_tab($user_id, $is_admin);          break;
-        case 'users':         $html = ch_users_tab($user_id, $is_admin);          break;
-        case 'reports':       $html = ch_reports_tab($user_id, $is_admin);        break;
-        case 'moderation':    $html = $is_admin ? ch_moderation_tab($user_id) : ''; break;
-        case 'activity':      $html = $is_admin ? ch_activity_tab($user_id) : '';   break;
-        case 'announcements': $html = $is_admin ? ch_announcements_tab() : '';       break;
-        default:              $html = ch_admin_overview_tab($user_id, $is_admin);    break;
+        case 'overview':
+            $html = $mode === 'content' ? ch_admin_overview_tab_content($user_id, $is_admin) : ch_admin_overview_tab($user_id, $is_admin);
+            break;
+        case 'categories':
+            $html = $mode === 'content' ? ch_categories_tab_content($user_id, $is_admin) : ch_categories_tab($user_id, $is_admin);
+            break;
+        case 'posts':
+            // Spoof GET params so ch_posts_tab reads the right filter
+            if (isset($_POST['filter'])) $_GET['filter'] = sanitize_text_field($_POST['filter']);
+            if (isset($_POST['s'])) $_GET['s'] = sanitize_text_field($_POST['s']);
+            if (isset($_POST['cat'])) $_GET['cat'] = (int)$_POST['cat'];
+            if (isset($_POST['paged'])) $_GET['paged'] = (int)$_POST['paged'];
+            $html = $mode === 'content' ? ch_posts_tab_content($user_id, $is_admin) : ch_posts_tab($user_id, $is_admin);
+            break;
+        case 'users':
+            // Spoof GET params so ch_users_tab reads the right status
+            if (isset($_POST['status'])) $_GET['status'] = sanitize_text_field($_POST['status']);
+            if (isset($_POST['s'])) $_GET['s'] = sanitize_text_field($_POST['s']);
+            if (isset($_POST['paged'])) $_GET['paged'] = (int)$_POST['paged'];
+            $html = $mode === 'content' ? ch_users_tab_content($user_id, $is_admin) : ch_users_tab($user_id, $is_admin);
+            break;
+        case 'reports':
+            // Spoof GET params so ch_reports_tab reads the right rstatus
+            if (isset($_POST['rstatus'])) $_GET['rstatus'] = sanitize_text_field($_POST['rstatus']);
+            if (isset($_POST['paged'])) $_GET['paged'] = (int)$_POST['paged'];
+            $html = $mode === 'content' ? ch_reports_tab_content($user_id, $is_admin) : ch_reports_tab($user_id, $is_admin);
+            break;
+        case 'moderation':    $html = $is_admin ? ($mode === 'content' ? ch_moderation_tab_content($user_id) : ch_moderation_tab($user_id)) : ''; break;
+        case 'activity':      $html = $is_admin ? ($mode === 'content' ? ch_activity_tab_content($user_id) : ch_activity_tab($user_id)) : '';   break;
+        case 'announcements': $html = $is_admin ? ($mode === 'content' ? ch_announcements_tab_content() : ch_announcements_tab()) : '';       break;
+        default:              $html = $mode === 'content' ? ch_admin_overview_tab_content($user_id, $is_admin) : ch_admin_overview_tab($user_id, $is_admin);    break;
     }
 
     wp_send_json_success(['html' => $html]);
@@ -517,11 +540,174 @@ function bntm_ajax_ch_myfeed_subtab() {
     if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
     check_ajax_referer('ch_myfeed_nonce', 'nonce');
 
-    // Spoof the GET param so bntm_shortcode_ch_my_feed reads the right subtab
-    $_GET['subtab'] = sanitize_text_field($_POST['subtab'] ?? 'posts');
-    $_GET['tab']    = 'my_feed';
+    $subtab = sanitize_text_field($_POST['subtab'] ?? 'posts');
 
-    $html = bntm_shortcode_ch_my_feed();
+    // Instead of rendering full page and extracting, build only the content portion
+    global $wpdb;
+
+    $viewer_id = get_current_user_id();
+    $target_id = $viewer_id;
+    $is_own    = true;
+
+    $profile = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d", $target_id
+    ));
+    $wp_user = get_userdata($target_id);
+    if (!$profile || !$wp_user) {
+        wp_send_json_error(['message' => 'User not found.']);
+    }
+
+    $feed_url = ch_get_feed_url();
+
+    $user_posts = $wpdb->get_results($wpdb->prepare(
+        "SELECT p.*, c.name as cat_name, c.color as cat_color
+         FROM {$wpdb->prefix}ch_posts p
+         LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+         WHERE p.user_id = %d AND p.status = 'active'
+         ORDER BY p.created_at DESC LIMIT 50",
+        $target_id
+    ));
+
+    $bookmarked_posts = [];
+    $upvoted_posts    = [];
+    $user_comments    = [];
+
+    if ($is_own) {
+        $bookmarked_posts = $wpdb->get_results($wpdb->prepare(
+            "SELECT p.*, c.name as cat_name, c.color as cat_color
+             FROM {$wpdb->prefix}ch_posts p
+             JOIN {$wpdb->prefix}ch_bookmarks b ON p.id = b.post_id
+             LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+             WHERE b.user_id = %d AND p.status = 'active'
+             ORDER BY b.created_at DESC LIMIT 50",
+            $target_id
+        ));
+
+        $upvoted_posts = $wpdb->get_results($wpdb->prepare(
+            "SELECT p.*, c.name as cat_name, c.color as cat_color
+             FROM {$wpdb->prefix}ch_posts p
+             JOIN {$wpdb->prefix}ch_votes v ON p.id = v.target_id AND v.target_type = 'post'
+             LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+             WHERE v.user_id = %d AND v.value = 1 AND p.status = 'active'
+             ORDER BY v.created_at DESC LIMIT 50",
+            $target_id
+        ));
+
+        $user_comments = $wpdb->get_results($wpdb->prepare(
+            "SELECT cm.*, p.title as post_title, p.rand_id as post_rand_id
+             FROM {$wpdb->prefix}ch_comments cm
+             JOIN {$wpdb->prefix}ch_posts p ON cm.post_id = p.id
+             WHERE cm.user_id = %d AND cm.status = 'active'
+             ORDER BY cm.created_at DESC LIMIT 20",
+            $target_id
+        ));
+    }
+
+    $upvotes_given = (int)$wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}ch_votes WHERE user_id=%d AND value=1", $target_id
+    ));
+    $saved_count = (int)$wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}ch_bookmarks WHERE user_id=%d", $target_id
+    ));
+
+    $categories_for_modal = $wpdb->get_results(
+        "SELECT * FROM {$wpdb->prefix}ch_categories WHERE status='active' ORDER BY name ASC"
+    );
+
+    // Render only the ch-mf-content portion, not the whole page
+    ob_start();
+
+    if ($subtab === 'posts'): ?>
+        <?php if (empty($user_posts)): ?>
+        <div class="ch-mf-empty">
+            <svg width="40" height="40" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p><?php echo "You haven't posted anything yet."; ?></p>
+            <a href="<?php echo esc_url($feed_url); ?>" class="ch-btn ch-btn-primary">Go to Forum Feed</a>
+        </div>
+        <?php else: foreach ($user_posts as $p): ?>
+        <div class="ch-mf-post-card">
+            <div class="ch-mf-post-top">
+                <span class="ch-cat-badge" style="background:<?php echo esc_attr($p->cat_color??'#FF7551'); ?>20;color:<?php echo esc_attr($p->cat_color??'#FF7551'); ?>"><?php echo esc_html($p->cat_name??'General'); ?></span>
+                <?php if ($p->is_pinned): ?><span class="ch-mf-pinned-badge">📌 Pinned</span><?php endif; ?>
+                <span class="ch-mf-time"><?php echo human_time_diff(strtotime($p->created_at), current_time('timestamp')); ?> ago</span>
+                <div class="ch-mf-post-actions">
+                    <button class="ch-btn-xs ch-btn-secondary" onclick="chOpenEditPostModal(<?php echo (int)$p->id; ?>)">Edit</button>
+                    <button class="ch-btn-xs ch-btn-danger" onclick="chDeletePost(<?php echo (int)$p->id; ?>, '<?php echo esc_attr(wp_create_nonce('ch_post_view_nonce')); ?>')">Delete</button>
+                </div>
+            </div>
+            <a href="<?php echo esc_url(add_query_arg('view_post', $p->rand_id, $feed_url)); ?>" class="ch-mf-post-title"><?php echo esc_html($p->title); ?></a>
+            <p class="ch-mf-post-excerpt"><?php echo esc_html(wp_trim_words(strip_tags($p->content), 22)); ?></p>
+            <div class="ch-mf-post-footer">
+                <span>▲ <?php echo (int)$p->vote_count; ?> upvotes</span>
+                <span>💬 <?php echo (int)$p->comment_count; ?> comments</span>
+                <span>👁 <?php echo number_format($p->view_count); ?> views</span>
+            </div>
+        </div>
+        <?php endforeach; endif; ?>
+
+    <?php elseif ($subtab === 'saved'): ?>
+        <?php if (empty($bookmarked_posts)): ?>
+        <div class="ch-mf-empty">
+            <svg width="40" height="40" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <p>You haven't saved any posts yet.</p>
+        </div>
+        <?php else: foreach ($bookmarked_posts as $p): ?>
+        <div class="ch-mf-post-card">
+            <div class="ch-mf-post-top">
+                <span class="ch-cat-badge" style="background:<?php echo esc_attr($p->cat_color??'#FF7551'); ?>20;color:<?php echo esc_attr($p->cat_color??'#FF7551'); ?>"><?php echo esc_html($p->cat_name??'General'); ?></span>
+                <span class="ch-mf-time"><?php echo human_time_diff(strtotime($p->created_at), current_time('timestamp')); ?> ago</span>
+            </div>
+            <a href="<?php echo esc_url(add_query_arg('view_post', $p->rand_id, $feed_url)); ?>" class="ch-mf-post-title"><?php echo esc_html($p->title); ?></a>
+            <p class="ch-mf-post-excerpt"><?php echo esc_html(wp_trim_words(strip_tags($p->content), 22)); ?></p>
+            <div class="ch-mf-post-footer">
+                <span>▲ <?php echo (int)$p->vote_count; ?></span>
+                <span>💬 <?php echo (int)$p->comment_count; ?></span>
+            </div>
+        </div>
+        <?php endforeach; endif; ?>
+
+    <?php elseif ($subtab === 'upvoted'): ?>
+        <?php if (empty($upvoted_posts)): ?>
+        <div class="ch-mf-empty">
+            <svg width="40" height="40" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5"><polyline points="18 15 12 9 6 15"/></svg>
+            <p>You haven't upvoted any posts yet.</p>
+        </div>
+        <?php else: foreach ($upvoted_posts as $p): ?>
+        <div class="ch-mf-post-card">
+            <div class="ch-mf-post-top">
+                <span class="ch-cat-badge" style="background:<?php echo esc_attr($p->cat_color??'#FF7551'); ?>20;color:<?php echo esc_attr($p->cat_color??'#FF7551'); ?>"><?php echo esc_html($p->cat_name??'General'); ?></span>
+                <span class="ch-mf-time"><?php echo human_time_diff(strtotime($p->created_at), current_time('timestamp')); ?> ago</span>
+            </div>
+            <a href="<?php echo esc_url(add_query_arg('view_post', $p->rand_id, $feed_url)); ?>" class="ch-mf-post-title"><?php echo esc_html($p->title); ?></a>
+            <p class="ch-mf-post-excerpt"><?php echo esc_html(wp_trim_words(strip_tags($p->content), 22)); ?></p>
+            <div class="ch-mf-post-footer">
+                <span>▲ <?php echo (int)$p->vote_count; ?></span>
+                <span>💬 <?php echo (int)$p->comment_count; ?></span>
+            </div>
+        </div>
+        <?php endforeach; endif; ?>
+
+    <?php elseif ($subtab === 'comments'): ?>
+        <?php if (empty($user_comments)): ?>
+        <div class="ch-mf-empty">
+            <svg width="40" height="40" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <p>You haven't commented on anything yet.</p>
+        </div>
+        <?php else: foreach ($user_comments as $cm): ?>
+        <div class="ch-mf-comment-card">
+            <div class="ch-mf-comment-post-ref">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                On: <a href="<?php echo esc_url(add_query_arg('view_post', $cm->post_rand_id, $feed_url)); ?>" class="ch-mf-ref-link"><?php echo esc_html(wp_trim_words($cm->post_title, 8)); ?></a>
+                <span class="ch-mf-time" style="margin-left:auto;"><?php echo human_time_diff(strtotime($cm->created_at), current_time('timestamp')); ?> ago</span>
+            </div>
+            <p class="ch-mf-comment-content"><?php echo esc_html($cm->content); ?></p>
+            <div class="ch-mf-post-footer"><span>▲ <?php echo (int)$cm->vote_count; ?> votes</span></div>
+        </div>
+        <?php endforeach; endif; ?>
+    <?php endif; ?>
+
+    <?php
+    $html = ob_get_clean();
     wp_send_json_success(['html' => $html]);
 }
 function bntm_ajax_ch_feed_sort() {

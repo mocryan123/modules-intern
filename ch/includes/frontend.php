@@ -496,45 +496,45 @@ function bntm_shortcode_ch() {
                 <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo">
                 <span>CivicHub</span>
             </div>
-            <nav class="ch-nav">
-                <a href="?tab=overview"    class="ch-nav-item <?php echo $active_tab==='overview'    ?'active':''; ?>">
+            <nav class="ch-nav" id="ch-admin-nav">
+                <button type="button" class="ch-nav-item <?php echo $active_tab==='overview'    ?'active':''; ?>" data-tab="overview">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                     Overview
-                </a>
-                <a href="?tab=categories"  class="ch-nav-item <?php echo $active_tab==='categories'  ?'active':''; ?>">
+                </button>
+                <button type="button" class="ch-nav-item <?php echo $active_tab==='categories'  ?'active':''; ?>" data-tab="categories">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h8m-8 6h16"/></svg>
                     Categories
-                </a>
-                <a href="?tab=posts"       class="ch-nav-item <?php echo $active_tab==='posts'       ?'active':''; ?>">
+                </button>
+                <button type="button" class="ch-nav-item <?php echo $active_tab==='posts'       ?'active':''; ?>" data-tab="posts">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     Posts
-                </a>
-                <a href="?tab=users"       class="ch-nav-item <?php echo $active_tab==='users'       ?'active':''; ?>">
+                </button>
+                <button type="button" class="ch-nav-item <?php echo $active_tab==='users'       ?'active':''; ?>" data-tab="users">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     Users
-                </a>
-                <a href="?tab=reports"     class="ch-nav-item <?php echo $active_tab==='reports'     ?'active':''; ?>">
+                </button>
+                <button type="button" class="ch-nav-item <?php echo $active_tab==='reports'     ?'active':''; ?>" data-tab="reports">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     Reports
-                </a>
+                </button>
                 <?php if ($is_admin): ?>
-                <a href="?tab=moderation"  class="ch-nav-item <?php echo $active_tab==='moderation'  ?'active':''; ?>">
+                <button type="button" class="ch-nav-item <?php echo $active_tab==='moderation'  ?'active':''; ?>" data-tab="moderation">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     Moderation
-                </a>
-                <a href="?tab=activity"    class="ch-nav-item <?php echo $active_tab==='activity'    ?'active':''; ?>">
+                </button>
+                <button type="button" class="ch-nav-item <?php echo $active_tab==='activity'    ?'active':''; ?>" data-tab="activity">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                     Activity Log
-                </a>
-                <a href="?tab=announcements" class="ch-nav-item <?php echo $active_tab==='announcements' ?'active':''; ?>">
+                </button>
+                <button type="button" class="ch-nav-item <?php echo $active_tab==='announcements' ?'active':''; ?>" data-tab="announcements">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
                     Announcements
-                </a>
+                </button>
                 <?php endif; ?>
             </nav>
         </div>
 
-        <div class="ch-main-content">
+        <div class="ch-main-content" id="ch-admin-content">
             <?php
             switch ($active_tab) {
                 case 'overview':      echo ch_admin_overview_tab($user_id, $is_admin);     break;
@@ -550,6 +550,485 @@ function bntm_shortcode_ch() {
             ?>
         </div>
     </div>
+
+    <script>
+    // ── Admin tab AJAX loader ──────────────────────────────
+    (function() {
+        var nav = document.getElementById('ch-admin-nav');
+        var content = document.getElementById('ch-admin-content');
+        if (!nav || !content) return;
+
+        // Reinitialize all tab-specific event listeners after AJAX content loads
+        window.chInitTabListeners = function() {
+            // ── Posts filter AJAX loader ──────────────────────────────
+            var postsFilters = document.getElementById('ch-posts-filter');
+            var postsContent = document.getElementById('ch-posts-content');
+            if (postsFilters && postsContent) {
+                var newPostsFilters = postsFilters.cloneNode(true);
+                postsFilters.parentNode.replaceChild(newPostsFilters, postsFilters);
+                postsFilters = newPostsFilters;
+
+                postsFilters.addEventListener('click', function(e) {
+                    var btn = e.target.closest('[data-filter]');
+                    if (!btn || btn.classList.contains('active')) return;
+
+                    var filter = btn.dataset.filter;
+
+                    postsFilters.querySelectorAll('.ch-filter-btn').forEach(function(t) {
+                        t.classList.toggle('active', t === btn);
+                    });
+
+                    postsContent.style.opacity = '0.45';
+                    postsContent.style.pointerEvents = 'none';
+
+                    var fd = new FormData();
+                    fd.append('action', 'ch_admin_tab');
+                    fd.append('nonce', window.chAdminTabNonce || '');
+                    fd.append('tab', 'posts');
+                    fd.append('mode', 'content');
+                    fd.append('filter', filter);
+
+                    fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                        .then(function(r) { return r.json(); })
+                        .then(function(json) {
+                            if (json.success) {
+                                postsContent.innerHTML = json.data.html;
+
+                                var url = new URL(window.location.href);
+                                url.searchParams.set('filter', filter);
+                                history.replaceState(null, '', url.toString());
+                            }
+                        })
+                        .catch(function() {})
+                        .finally(function() {
+                            postsContent.style.opacity = '';
+                            postsContent.style.pointerEvents = '';
+                        });
+                });
+            }
+
+            // ── Posts search AJAX loader ──────────────────────────────
+            var postsSearchBtn = document.getElementById('ch-posts-search-btn');
+            postsContent = document.getElementById('ch-posts-content');
+            if (postsSearchBtn && postsContent) {
+                var newPostsSearchBtn = postsSearchBtn.cloneNode(true);
+                postsSearchBtn.parentNode.replaceChild(newPostsSearchBtn, postsSearchBtn);
+                postsSearchBtn = newPostsSearchBtn;
+
+                function chPostsSearch() {
+                    var search = document.getElementById('ch-posts-search-input').value.trim();
+                    var cat = document.getElementById('ch-posts-search-cat').value;
+
+                    postsContent.style.opacity = '0.45';
+                    postsContent.style.pointerEvents = 'none';
+
+                    var fd = new FormData();
+                    fd.append('action', 'ch_admin_tab');
+                    fd.append('nonce', window.chAdminTabNonce || '');
+                    fd.append('tab', 'posts');
+                    fd.append('mode', 'content');
+                    fd.append('s', search);
+                    fd.append('cat', cat);
+
+                    fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                        .then(function(r) { return r.json(); })
+                        .then(function(json) {
+                            if (json.success) {
+                                postsContent.innerHTML = json.data.html;
+                                var url = new URL(window.location.href);
+                                url.searchParams.set('s', search);
+                                url.searchParams.set('cat', cat);
+                                history.replaceState(null, '', url.toString());
+                            }
+                        })
+                        .catch(function() {})
+                        .finally(function() {
+                            postsContent.style.opacity = '';
+                            postsContent.style.pointerEvents = '';
+                        });
+                }
+
+                postsSearchBtn.addEventListener('click', chPostsSearch);
+                var postsSearchInput = document.getElementById('ch-posts-search-input');
+                if (postsSearchInput) {
+                    postsSearchInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            chPostsSearch();
+                        }
+                    });
+                }
+            }
+
+            // ── Users status filter AJAX loader ──────────────────────────────
+            var usersFilters = document.getElementById('ch-users-status-filters');
+            var usersContent = document.getElementById('ch-users-content');
+            if (usersFilters && usersContent) {
+                var newUsersFilters = usersFilters.cloneNode(true);
+                usersFilters.parentNode.replaceChild(newUsersFilters, usersFilters);
+                usersFilters = newUsersFilters;
+
+                usersFilters.addEventListener('click', function(e) {
+                    var btn = e.target.closest('[data-status]');
+                    if (!btn || btn.classList.contains('active')) return;
+
+                    var status = btn.dataset.status;
+
+                    usersFilters.querySelectorAll('.ch-filter-btn').forEach(function(t) {
+                        t.classList.toggle('active', t === btn);
+                    });
+
+                    usersContent.style.opacity = '0.45';
+                    usersContent.style.pointerEvents = 'none';
+
+                    var fd = new FormData();
+                    fd.append('action', 'ch_admin_tab');
+                    fd.append('nonce', window.chAdminTabNonce || '');
+                    fd.append('tab', 'users');
+                    fd.append('mode', 'content');
+                    fd.append('status', status);
+
+                    fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                        .then(function(r) { return r.json(); })
+                        .then(function(json) {
+                            if (json.success) {
+                                usersContent.innerHTML = json.data.html;
+
+                                var url = new URL(window.location.href);
+                                url.searchParams.set('status', status);
+                                history.replaceState(null, '', url.toString());
+                            }
+                        })
+                        .catch(function() {})
+                        .finally(function() {
+                            usersContent.style.opacity = '';
+                            usersContent.style.pointerEvents = '';
+                        });
+                });
+            }
+
+            // ── Users search AJAX loader ──────────────────────────────
+            var usersSearchBtn = document.getElementById('ch-users-search-btn');
+            if (usersSearchBtn && usersContent) {
+                var newUsersSearchBtn = usersSearchBtn.cloneNode(true);
+                usersSearchBtn.parentNode.replaceChild(newUsersSearchBtn, usersSearchBtn);
+                usersSearchBtn = newUsersSearchBtn;
+
+                function chUsersSearch() {
+                    var search = document.getElementById('ch-users-search-input').value.trim();
+
+                    usersContent.style.opacity = '0.45';
+                    usersContent.style.pointerEvents = 'none';
+
+                    var fd = new FormData();
+                    fd.append('action', 'ch_admin_tab');
+                    fd.append('nonce', window.chAdminTabNonce || '');
+                    fd.append('tab', 'users');
+                    fd.append('mode', 'content');
+                    fd.append('s', search);
+
+                    fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                        .then(function(r) { return r.json(); })
+                        .then(function(json) {
+                            if (json.success) {
+                                usersContent.innerHTML = json.data.html;
+                                var url = new URL(window.location.href);
+                                url.searchParams.set('s', search);
+                                history.replaceState(null, '', url.toString());
+                            }
+                        })
+                        .catch(function() {})
+                        .finally(function() {
+                            usersContent.style.opacity = '';
+                            usersContent.style.pointerEvents = '';
+                        });
+                }
+
+                usersSearchBtn.addEventListener('click', chUsersSearch);
+                var usersSearchInput = document.getElementById('ch-users-search-input');
+                if (usersSearchInput) {
+                    usersSearchInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            chUsersSearch();
+                        }
+                    });
+                }
+            }
+
+            // ── Reports filter AJAX loader ──────────────────────────────
+            var reportsFilters = document.getElementById('ch-reports-status-filters');
+            var reportsContent = document.getElementById('ch-reports-content');
+            if (reportsFilters && reportsContent) {
+                var newReportsFilters = reportsFilters.cloneNode(true);
+                reportsFilters.parentNode.replaceChild(newReportsFilters, reportsFilters);
+                reportsFilters = newReportsFilters;
+
+                reportsFilters.addEventListener('click', function(e) {
+                    var btn = e.target.closest('[data-rstatus]');
+                    if (!btn || btn.classList.contains('active')) return;
+
+                    var rstatus = btn.dataset.rstatus;
+
+                    reportsFilters.querySelectorAll('.ch-filter-btn').forEach(function(t) {
+                        t.classList.toggle('active', t === btn);
+                    });
+
+                    reportsContent.style.opacity = '0.45';
+                    reportsContent.style.pointerEvents = 'none';
+
+                    var fd = new FormData();
+                    fd.append('action', 'ch_admin_tab');
+                    fd.append('nonce', window.chAdminTabNonce || '');
+                    fd.append('tab', 'reports');
+                    fd.append('rstatus', rstatus);
+
+                    fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                        .then(function(r) { return r.json(); })
+                        .then(function(json) {
+                            if (json.success) {
+                                reportsContent.innerHTML = json.data.html;
+
+                                var url = new URL(window.location.href);
+                                url.searchParams.set('rstatus', rstatus);
+                                history.replaceState(null, '', url.toString());
+                            }
+                        })
+                        .catch(function() {})
+                        .finally(function() {
+                            reportsContent.style.opacity = '';
+                            reportsContent.style.pointerEvents = '';
+                        });
+                });
+            }
+        };
+
+        nav.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-tab]');
+            if (!btn || btn.classList.contains('active')) return;
+
+            var tab = btn.dataset.tab;
+
+            nav.querySelectorAll('.ch-nav-item').forEach(function(t) {
+                t.classList.toggle('active', t === btn);
+            });
+
+            content.style.opacity = '0.45';
+            content.style.pointerEvents = 'none';
+
+            var fd = new FormData();
+            fd.append('action', 'ch_admin_tab');
+            fd.append('nonce', window.chAdminTabNonce || '');
+            fd.append('tab', tab);
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        content.innerHTML = json.data.html;
+
+                        var url = new URL(window.location.href);
+                        url.searchParams.set('tab', tab);
+                        history.replaceState(null, '', url.toString());
+
+                        if (window.chInitTabListeners) {
+                            window.chInitTabListeners();
+                        }
+                    }
+                })
+                .catch(function() {})
+                .finally(function() {
+                    content.style.opacity = '';
+                    content.style.pointerEvents = '';
+                });
+        });
+
+        if (window.chInitTabListeners) {
+            window.chInitTabListeners();
+        }
+    })();
+    </script>
+
+    <!-- Moderation Modal (persistent across AJAX tab switches) -->
+    <div id="ch-moderation-modal" class="ch-modal-overlay" style="display:none;">
+        <div class="ch-modal" style="max-width:480px;">
+            <div class="ch-modal-header">
+                <h3 id="ch-moderation-modal-title">Moderate User</h3>
+                <button onclick="chCloseModerationModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--ch-text-subtle);">&times;</button>
+            </div>
+            <div class="ch-modal-body">
+                <p id="ch-moderation-user-info" style="font-size:14px;font-weight:600;margin:0 0 12px;color:var(--ch-text);"></p>
+                <div class="ch-field-group">
+                    <label class="ch-label">Reason <span class="ch-required">*</span></label>
+                    <textarea id="ch-moderation-reason" class="ch-input ch-textarea" rows="3" placeholder="Provide a reason for this action..." style="min-height:80px;"></textarea>
+                </div>
+                <div id="ch-moderation-options" style="display:none;margin-top:12px;">
+                    <div class="ch-field-group">
+                        <label class="ch-label">Duration</label>
+                        <select id="ch-moderation-duration" class="ch-input">
+                            <option value="1">1 day</option>
+                            <option value="3">3 days</option>
+                            <option value="7" selected>7 days</option>
+                            <option value="14">14 days</option>
+                            <option value="30">30 days</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="ch-moderation-ban-options" style="display:none;margin-top:12px;">
+                    <div class="ch-field-group">
+                        <label class="ch-label">Ban Type</label>
+                        <select id="ch-moderation-ban-type" class="ch-input">
+                            <option value="permanent">Permanent Ban</option>
+                            <option value="temporary">Temporary Ban</option>
+                        </select>
+                    </div>
+                    <div id="ch-moderation-ban-duration" style="display:none;margin-top:10px;">
+                        <label class="ch-label">Duration</label>
+                        <select id="ch-moderation-ban-days" class="ch-input">
+                            <option value="7">7 days</option>
+                            <option value="14">14 days</option>
+                            <option value="30" selected>30 days</option>
+                            <option value="90">90 days</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="ch-modal-footer">
+                <button onclick="chCloseModerationModal()" class="ch-btn ch-btn-secondary">Cancel</button>
+                <button onclick="chSubmitModeration()" id="ch-moderation-submit-btn" class="ch-btn ch-btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ── Moderation modal functions (global, persist across AJAX) ──
+    (function() {
+        var chModerationState = {uid: null, action: null, nonce: null, username: ''};
+
+        window.chModerateUser = function(uid, action, nonce, username) {
+            chModerationState = {uid: uid, action: action, nonce: nonce, username: username || 'User'};
+
+            var modal = document.getElementById('ch-moderation-modal');
+            var title = document.getElementById('ch-moderation-modal-title');
+            var userInfo = document.getElementById('ch-moderation-user-info');
+            var reason = document.getElementById('ch-moderation-reason');
+            var options = document.getElementById('ch-moderation-options');
+            var banOptions = document.getElementById('ch-moderation-ban-options');
+
+            userInfo.textContent = chModerationState.username;
+            reason.value = '';
+
+            if (action === 'suspend_user') {
+                title.textContent = 'Suspend User';
+                options.style.display = 'block';
+                banOptions.style.display = 'none';
+            } else if (action === 'ban_user') {
+                title.textContent = 'Ban User';
+                options.style.display = 'none';
+                banOptions.style.display = 'block';
+            } else {
+                title.textContent = 'Restore User';
+                options.style.display = 'none';
+                banOptions.style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.chCloseModerationModal = function() {
+            var modal = document.getElementById('ch-moderation-modal');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        };
+
+        // Ban type change handler
+        var banTypeEl = document.getElementById('ch-moderation-ban-type');
+        if (banTypeEl) {
+            banTypeEl.addEventListener('change', function() {
+                document.getElementById('ch-moderation-ban-duration').style.display = this.value === 'temporary' ? 'block' : 'none';
+            });
+        }
+
+        window.chSubmitModeration = function() {
+            var reason = document.getElementById('ch-moderation-reason').value.trim();
+            if (!reason) {
+                alert('A reason is required for this action.');
+                return;
+            }
+
+            var finalReason = reason;
+            if (chModerationState.action === 'suspend_user') {
+                var days = document.getElementById('ch-moderation-duration').value;
+                finalReason += ' (Suspended for ' + days + ' day' + (days > 1 ? 's' : '') + ')';
+            } else if (chModerationState.action === 'ban_user') {
+                var banType = document.getElementById('ch-moderation-ban-type').value;
+                if (banType === 'temporary') {
+                    var days = document.getElementById('ch-moderation-ban-days').value;
+                    finalReason += ' (Temporary ban for ' + days + ' days)';
+                } else {
+                    finalReason += ' (Permanent ban)';
+                }
+            }
+
+            var fd = new FormData();
+            fd.append('action', 'ch_moderate_action');
+            fd.append('mod_action', chModerationState.action);
+            fd.append('target_id', chModerationState.uid);
+            fd.append('reason', finalReason);
+            fd.append('nonce', chModerationState.nonce);
+
+            var btn = document.getElementById('ch-moderation-submit-btn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            fetch(ajaxurl, {method:'POST', body:fd})
+            .then(function(r) { return r.json(); })
+            .then(function(json) {
+                if (json.success) {
+                    chCloseModerationModal();
+                    // If users tab/content exists, reload it via AJAX instead of full page reload
+                    var usersContent = document.getElementById('ch-users-content');
+                    if (usersContent) {
+                        var activeStatusBtn = document.querySelector('#ch-users-status-filters .ch-filter-btn.active');
+                        var status = activeStatusBtn ? activeStatusBtn.dataset.status : 'all';
+                        var fd2 = new FormData();
+                        fd2.append('action', 'ch_admin_tab');
+                        fd2.append('nonce', window.chAdminTabNonce || '');
+                        fd2.append('tab', 'users');
+                        fd2.append('status', status);
+                        fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd2})
+                            .then(function(r2) { return r2.json(); })
+                            .then(function(json2) {
+                                if (json2.success) {
+                                    usersContent.innerHTML = json2.data.html;
+                                }
+                            })
+                            .catch(function() {});
+                    } else {
+                        // Fallback to reload if users tab not present
+                        if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                    }
+                } else {
+                    alert(json.data?.message || 'Action failed.');
+                }
+            })
+            .catch(function() { alert('Network error.'); })
+            .finally(function() {
+                btn.disabled = false;
+                btn.textContent = 'Confirm';
+            });
+        };
+
+        // Close on overlay click
+        var modOverlay = document.getElementById('ch-moderation-modal');
+        if (modOverlay) {
+            modOverlay.addEventListener('click', function(e) {
+                if (e.target === this) chCloseModerationModal();
+            });
+        }
+    })();
+    </script>
 
     <?php
     ch_output_global_styles_fallback();
@@ -1304,9 +1783,9 @@ function ch_posts_tab($user_id, $is_admin) {
     $page     = max(1, (int) ($_GET['paged'] ?? 1));
     $per_page = 20;
     $offset   = ($page - 1) * $per_page;
-    $filter   = sanitize_text_field($_GET['filter'] ?? 'all');
-    $search   = sanitize_text_field($_GET['s'] ?? '');
-    $cat_id   = (int) ($_GET['cat'] ?? 0);
+    $filter   = sanitize_text_field($_GET['filter'] ?? $_POST['filter'] ?? 'all');
+    $search   = sanitize_text_field($_GET['s'] ?? $_POST['s'] ?? '');
+    $cat_id   = (int) ($_GET['cat'] ?? $_POST['cat'] ?? 0);
 
     $where = "WHERE p.status != 'removed'";
     if ($filter === 'pinned')  $where .= " AND p.is_pinned = 1";
@@ -1340,16 +1819,16 @@ function ch_posts_tab($user_id, $is_admin) {
     </div>
 
     <div class="ch-toolbar">
-        <div class="ch-toolbar-filters">
-            <a href="?tab=posts&filter=all"     class="ch-filter-btn <?php echo $filter==='all'    ?'active':''; ?>">All</a>
-            <a href="?tab=posts&filter=pending" class="ch-filter-btn <?php echo $filter==='pending'?'active':''; ?>">Pending</a>
-            <a href="?tab=posts&filter=pinned"  class="ch-filter-btn <?php echo $filter==='pinned' ?'active':''; ?>">Pinned</a>
-            <a href="?tab=posts&filter=removed" class="ch-filter-btn <?php echo $filter==='removed'?'active':''; ?>">Removed</a>
+        <div class="ch-toolbar-filters" id="ch-posts-filter">
+            <button type="button" class="ch-filter-btn <?php echo $filter==='all'    ?'active':''; ?>" data-filter="all">All</button>
+            <button type="button" class="ch-filter-btn <?php echo $filter==='pending'?'active':''; ?>" data-filter="pending">Pending</button>
+            <button type="button" class="ch-filter-btn <?php echo $filter==='pinned' ?'active':''; ?>" data-filter="pinned">Pinned</button>
+            <button type="button" class="ch-filter-btn <?php echo $filter==='removed'?'active':''; ?>" data-filter="removed">Removed</button>
         </div>
         <div class="ch-toolbar-right">
-            <form method="get" class="ch-search-form">
+            <form method="get" class="ch-search-form" id="ch-posts-search-form" onsubmit="return false;">
                 <input type="hidden" name="tab" value="posts">
-                <select name="cat" class="ch-input ch-select-sm">
+                <select name="cat" class="ch-input ch-select-sm" id="ch-posts-search-cat">
                     <option value="">All Categories</option>
                     <?php foreach ($categories as $cat): ?>
                     <option value="<?php echo (int)$cat->id; ?>" <?php selected($cat_id, $cat->id); ?>>
@@ -1357,13 +1836,13 @@ function ch_posts_tab($user_id, $is_admin) {
                     </option>
                     <?php endforeach; ?>
                 </select>
-                <input type="text" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Search posts..." class="ch-input ch-search-input">
-                <button type="submit" class="ch-btn ch-btn-secondary">Search</button>
+                <input type="text" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Search posts..." class="ch-input ch-search-input" id="ch-posts-search-input">
+                <button type="button" class="ch-btn ch-btn-secondary" id="ch-posts-search-btn">Search</button>
             </form>
         </div>
     </div>
 
-    <div class="ch-card">
+    <div class="ch-card" id="ch-posts-content">
         <div class="bntm-table-wrapper">
             <table class="bntm-table ch-table">
                 <thead>
@@ -1530,8 +2009,8 @@ function ch_users_tab($user_id, $is_admin) {
     $page     = max(1, (int) ($_GET['paged'] ?? 1));
     $per_page = 20;
     $offset   = ($page - 1) * $per_page;
-    $search   = sanitize_text_field($_GET['s'] ?? '');
-    $status   = sanitize_text_field($_GET['status'] ?? 'all');
+    $search   = sanitize_text_field($_GET['s'] ?? $_POST['s'] ?? '');
+    $status   = sanitize_text_field($_GET['status'] ?? $_POST['status'] ?? 'all');
 
     $where = "WHERE 1=1";
     if ($status !== 'all') $where .= $wpdb->prepare(" AND p.status = %s", $status);
@@ -1564,20 +2043,20 @@ function ch_users_tab($user_id, $is_admin) {
     </div>
 
     <div class="ch-toolbar">
-        <div class="ch-toolbar-filters">
-            <a href="?tab=users&status=all"       class="ch-filter-btn <?php echo $status==='all'       ?'active':''; ?>">All</a>
-            <a href="?tab=users&status=active"    class="ch-filter-btn <?php echo $status==='active'    ?'active':''; ?>">Active</a>
-            <a href="?tab=users&status=suspended" class="ch-filter-btn <?php echo $status==='suspended' ?'active':''; ?>">Suspended</a>
-            <a href="?tab=users&status=banned"    class="ch-filter-btn <?php echo $status==='banned'    ?'active':''; ?>">Banned</a>
+        <div class="ch-toolbar-filters" id="ch-users-status-filters">
+            <button type="button" class="ch-filter-btn <?php echo $status==='all'       ?'active':''; ?>" data-status="all">All</button>
+            <button type="button" class="ch-filter-btn <?php echo $status==='active'    ?'active':''; ?>" data-status="active">Active</button>
+            <button type="button" class="ch-filter-btn <?php echo $status==='suspended' ?'active':''; ?>" data-status="suspended">Suspended</button>
+            <button type="button" class="ch-filter-btn <?php echo $status==='banned'    ?'active':''; ?>" data-status="banned">Banned</button>
         </div>
-        <form method="get" class="ch-search-form">
+        <form method="get" class="ch-search-form" id="ch-users-search-form" onsubmit="return false;">
             <input type="hidden" name="tab" value="users">
-            <input type="text" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Search users..." class="ch-input ch-search-input">
-            <button type="submit" class="ch-btn ch-btn-secondary">Search</button>
+            <input type="text" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Search users..." class="ch-input ch-search-input" id="ch-users-search-input">
+            <button type="button" class="ch-btn ch-btn-secondary" id="ch-users-search-btn">Search</button>
         </form>
     </div>
 
-    <div class="ch-card">
+    <div class="ch-card" id="ch-users-content">
         <div class="bntm-table-wrapper">
             <table class="bntm-table ch-table">
                 <thead>
@@ -1617,10 +2096,10 @@ function ch_users_tab($user_id, $is_admin) {
                             <div class="ch-actions-row">
                                 <a href="<?php echo esc_url(add_query_arg(['tab' => 'user_profile', 'uid' => (int)$u->user_id], $user_dashboard_base)); ?>" target="_blank" class="ch-btn-xs ch-btn-secondary">View Dashboard</a>
                                 <?php if ($u->status === 'active'): ?>
-                                <button class="ch-btn-xs ch-btn-warning" onclick="chModerateUser(<?php echo (int)$u->user_id; ?>, 'suspend_user', '<?php echo esc_attr($nonce); ?>')">Suspend</button>
-                                <button class="ch-btn-xs ch-btn-danger"  onclick="chModerateUser(<?php echo (int)$u->user_id; ?>, 'ban_user', '<?php echo esc_attr($nonce); ?>')">Ban</button>
+                                <button class="ch-btn-xs ch-btn-warning" onclick="chModerateUser(<?php echo (int)$u->user_id; ?>, 'suspend_user', '<?php echo esc_attr($nonce); ?>', '<?php echo addslashes($u->display_name ?? $u->user_login); ?>')">Suspend</button>
+                                <button class="ch-btn-xs ch-btn-danger"  onclick="chModerateUser(<?php echo (int)$u->user_id; ?>, 'ban_user', '<?php echo esc_attr($nonce); ?>', '<?php echo addslashes($u->display_name ?? $u->user_login); ?>')">Ban</button>
                                 <?php else: ?>
-                                <button class="ch-btn-xs ch-btn-success" onclick="chModerateUser(<?php echo (int)$u->user_id; ?>, 'unsuspend_user', '<?php echo esc_attr($nonce); ?>')">Restore</button>
+                                <button class="ch-btn-xs ch-btn-success" onclick="chModerateUser(<?php echo (int)$u->user_id; ?>, 'unsuspend_user', '<?php echo esc_attr($nonce); ?>', '<?php echo addslashes($u->display_name ?? $u->user_login); ?>')">Restore</button>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -1644,30 +2123,6 @@ function ch_users_tab($user_id, $is_admin) {
         <?php endif; ?>
     </div>
 
-    <script>
-    (function() {
-        window.chModerateUser = function(uid, action, nonce) {
-            const labels = {suspend_user:'suspend', ban_user:'ban', unsuspend_user:'restore'};
-            const reason = prompt('Please provide a reason for this action:');
-            if (reason === null) return; // User cancelled
-            if (!reason.trim()) {
-                alert('A reason is required for this action.');
-                return;
-            }
-
-            const fd = new FormData();
-            fd.append('action', 'ch_moderate_action');
-            fd.append('mod_action', action);
-            fd.append('target_id', uid);
-            fd.append('reason', reason.trim());
-            fd.append('nonce', nonce);
-            fetch(ajaxurl, {method:'POST', body:fd})
-            .then(r => r.json())
-            .then(json => { if (json.success) chReloadAfterSuccess(0); else alert(json.data?.message); })
-            .catch(() => alert('Network error.'));
-        };
-    })();
-    </script>
     <?php
     return ob_get_clean();
 }
@@ -1679,7 +2134,7 @@ function ch_users_tab($user_id, $is_admin) {
 function ch_reports_tab($user_id, $is_admin) {
     global $wpdb;
 
-    $status = sanitize_text_field($_GET['rstatus'] ?? 'pending');
+    $status = sanitize_text_field($_GET['rstatus'] ?? $_POST['rstatus'] ?? 'pending');
 
     $reports = $wpdb->get_results($wpdb->prepare(
         "SELECT r.*,
@@ -1743,15 +2198,15 @@ function ch_reports_tab($user_id, $is_admin) {
     </div>
 
     <div class="ch-toolbar">
-        <div class="ch-toolbar-filters">
-            <a href="?tab=reports&rstatus=pending"   class="ch-filter-btn <?php echo $status==='pending'   ?'active':''; ?>">Pending</a>
-            <a href="?tab=reports&rstatus=reviewed"  class="ch-filter-btn <?php echo $status==='reviewed'  ?'active':''; ?>">Reviewed</a>
-            <a href="?tab=reports&rstatus=resolved"  class="ch-filter-btn <?php echo $status==='resolved'  ?'active':''; ?>">Resolved</a>
-            <a href="?tab=reports&rstatus=dismissed" class="ch-filter-btn <?php echo $status==='dismissed' ?'active':''; ?>">Dismissed</a>
+        <div class="ch-toolbar-filters" id="ch-reports-status-filters">
+            <button type="button" class="ch-filter-btn <?php echo $status==='pending'   ?'active':''; ?>" data-rstatus="pending">Pending</button>
+            <button type="button" class="ch-filter-btn <?php echo $status==='reviewed'  ?'active':''; ?>" data-rstatus="reviewed">Reviewed</button>
+            <button type="button" class="ch-filter-btn <?php echo $status==='resolved'  ?'active':''; ?>" data-rstatus="resolved">Resolved</button>
+            <button type="button" class="ch-filter-btn <?php echo $status==='dismissed' ?'active':''; ?>" data-rstatus="dismissed">Dismissed</button>
         </div>
     </div>
 
-    <div class="ch-card">
+    <div class="ch-card" id="ch-reports-content">
         <div class="bntm-table-wrapper">
             <table class="bntm-table ch-table">
                 <thead>
@@ -2542,16 +2997,16 @@ function bntm_shortcode_ch_my_feed() {
             <?php endif; ?>
         </div>
 
-        <div class="ch-mf-subnav">
-            <a href="?tab=my_feed&subtab=posts"    class="ch-mf-subnav-item <?php echo $subtab==='posts'    ?'active':''; ?>">My Posts</a>
+        <div class="ch-mf-subnav" id="ch-mf-subnav">
+            <button type="button" class="ch-mf-subnav-item <?php echo $subtab==='posts'    ?'active':''; ?>" data-subtab="posts">My Posts</button>
             <?php if ($is_own): ?>
-            <a href="?tab=my_feed&subtab=saved"    class="ch-mf-subnav-item <?php echo $subtab==='saved'    ?'active':''; ?>">Saved</a>
-            <a href="?tab=my_feed&subtab=upvoted"  class="ch-mf-subnav-item <?php echo $subtab==='upvoted'  ?'active':''; ?>">Upvoted</a>
-            <a href="?tab=my_feed&subtab=comments" class="ch-mf-subnav-item <?php echo $subtab==='comments' ?'active':''; ?>">Comments</a>
+            <button type="button" class="ch-mf-subnav-item <?php echo $subtab==='saved'    ?'active':''; ?>" data-subtab="saved">Saved</button>
+            <button type="button" class="ch-mf-subnav-item <?php echo $subtab==='upvoted'  ?'active':''; ?>" data-subtab="upvoted">Upvoted</button>
+            <button type="button" class="ch-mf-subnav-item <?php echo $subtab==='comments' ?'active':''; ?>" data-subtab="comments">Comments</button>
             <?php endif; ?>
         </div>
 
-        <div class="ch-mf-content">
+        <div class="ch-mf-content" id="ch-mf-content">
             <?php if ($subtab === 'posts'): ?>
                 <?php if (empty($user_posts)): ?>
                 <div class="ch-mf-empty">
@@ -2671,6 +3126,59 @@ function bntm_shortcode_ch_my_feed() {
         ]);
         ?>
     </div><!-- .ch-my-feed-wrap -->
+
+    <script>
+    // ── My Feed subtab AJAX loader ──────────────────────────────
+    (function() {
+        var subnav = document.getElementById('ch-mf-subnav');
+        var content = document.getElementById('ch-mf-content');
+        if (!subnav || !content) return;
+
+        subnav.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-subtab]');
+            if (!btn || btn.classList.contains('active')) return;
+
+            var subtab = btn.dataset.subtab;
+
+            // Update active state
+            subnav.querySelectorAll('.ch-mf-subnav-item').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            // Loading state
+            content.style.opacity = '0.45';
+            content.style.pointerEvents = 'none';
+
+            var fd = new FormData();
+            fd.append('action', 'ch_myfeed_subtab');
+            fd.append('nonce', window.chMyFeedNonce || '');
+            fd.append('subtab', subtab);
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        content.innerHTML = json.data.html;
+
+                        // Update URL
+                        var url = new URL(window.location.href);
+                        url.searchParams.set('subtab', subtab);
+                        history.replaceState(null, '', url.toString());
+                    } else {
+                        content.innerHTML = '<p class="ch-empty" style="padding:20px;text-align:center;color:var(--ch-text-muted);">' + (json.data?.message || 'Failed to load content.') + '</p>';
+                    }
+                })
+                .catch(function() {
+                    content.innerHTML = '<p class="ch-empty" style="padding:20px;text-align:center;color:var(--ch-text-muted);">Network error. Please try again.</p>';
+                })
+                .finally(function() {
+                    content.style.opacity = '';
+                    content.style.pointerEvents = '';
+                });
+        });
+    })();
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -5076,5 +5584,64 @@ function bntm_shortcode_ch_post_view() {
     echo ch_post_view_scripts();
     return ob_get_clean();
 }
+
+// ============================================================
+// CONTENT-ONLY TAB HELPERS (for AJAX filter reloads)
+// ============================================================
+
+function _ch_extract_content_html($full_html) {
+    $dom = new DOMDocument();
+    libxml_use_internal_errors(true);
+    $dom->loadHTML('<?xml encoding="UTF-8"><div>' . $full_html . '</div>', LIBXML_HTML_NODEFDTD | LIBXML_HTML_NOIMPLIED);
+    libxml_clear_errors();
+
+    $xpath = new DOMXPath($dom);
+    // Find the main content card (ch-card div)
+    $card_nodes = $xpath->query("//div[contains(@class, 'ch-card')]");
+
+    if ($card_nodes->length > 0) {
+        $card = $card_nodes->item(0);
+        // Return inner HTML of the card (without the ch-card wrapper)
+        $inner_html = '';
+        foreach ($card->childNodes as $node) {
+            $inner_html .= $dom->saveHTML($node);
+        }
+        return $inner_html;
+    }
+    return $full_html;
+}
+
+function ch_admin_overview_tab_content($user_id, $is_admin) {
+    return _ch_extract_content_html(ch_admin_overview_tab($user_id, $is_admin));
+}
+
+function ch_categories_tab_content($user_id, $is_admin) {
+    return _ch_extract_content_html(ch_categories_tab($user_id, $is_admin));
+}
+
+function ch_posts_tab_content($user_id, $is_admin) {
+    return _ch_extract_content_html(ch_posts_tab($user_id, $is_admin));
+}
+
+function ch_users_tab_content($user_id, $is_admin) {
+    return _ch_extract_content_html(ch_users_tab($user_id, $is_admin));
+}
+
+function ch_reports_tab_content($user_id, $is_admin) {
+    return _ch_extract_content_html(ch_reports_tab($user_id, $is_admin));
+}
+
+function ch_moderation_tab_content($user_id) {
+    return _ch_extract_content_html(ch_moderation_tab($user_id));
+}
+
+function ch_activity_tab_content($user_id) {
+    return _ch_extract_content_html(ch_activity_tab($user_id));
+}
+
+function ch_announcements_tab_content() {
+    return _ch_extract_content_html(ch_announcements_tab());
+}
+
 require_once __DIR__ . '/ajax.php';
 require_once __DIR__ . '/assets.php';
