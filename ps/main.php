@@ -171,6 +171,91 @@ function bntm_shortcode_ps_dashboard() {
 
     <style>
     .bntm-ps-container { font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    /* ── PrintEase Brand Overrides ── */
+    .bntm-btn-primary {
+        background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+        border-color: #16a34a !important;
+        box-shadow: 0 2px 8px rgba(22,163,74,.25) !important;
+    }
+    .bntm-btn-primary:hover {
+        background: linear-gradient(135deg, #15803d, #16a34a) !important;
+        box-shadow: 0 4px 14px rgba(22,163,74,.35) !important;
+    }
+    .bntm-tab.active {
+        color: #1a3c8f !important;
+        border-bottom-color: #1a3c8f !important;
+    }
+    .bntm-tab:hover { color: #1a3c8f !important; }
+    .bntm-input:focus, .bntm-select:focus { border-color: #1a3c8f !important; outline-color: #1a3c8f !important; }
+    .bntm-stat-card .stat-number { color: #1a3c8f !important; }
+    a.bntm-btn-secondary:hover { border-color: #1a3c8f !important; color: #1a3c8f !important; }
+    .ps-view-btn { background: linear-gradient(135deg,#f59e0b,#d97706) !important; border-color: #d97706 !important; color: #fff !important; box-shadow: 0 2px 6px rgba(217,119,6,.3) !important; }
+    .ps-view-btn:hover { background: linear-gradient(135deg,#d97706,#b45309) !important; }
+    .ps-pickup-btn { background: linear-gradient(135deg,#16a34a,#22c55e) !important; border-color: #16a34a !important; color: #fff !important; box-shadow: 0 2px 6px rgba(22,163,74,.3) !important; }
+    .ps-pickup-btn:hover { background: linear-gradient(135deg,#15803d,#16a34a) !important; }
+
+    .bntm-stats-row {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 12px !important;
+        margin-bottom: 24px !important;
+    }
+    .bntm-stat-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        gap: 10px !important;
+        overflow: hidden !important;
+        flex: 1 1 160px !important;
+        min-width: 140px !important;
+        padding: 16px 12px !important;
+    }
+    .bntm-stat-card .stat-icon {
+        width: 52px !important;
+        height: 52px !important;
+        min-width: 52px !important;
+        min-height: 52px !important;
+        border-radius: 14px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
+        margin: 0 auto !important;
+    }
+    .bntm-stat-card .stat-icon svg {
+        display: block !important;
+        flex-shrink: 0 !important;
+    }
+    .bntm-stat-card .stat-content {
+        flex: unset !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        text-align: center !important;
+    }
+    .bntm-stat-card .stat-content h3 {
+        text-align: center !important;
+        margin: 0 0 4px !important;
+    }
+    .bntm-stat-card .stat-content .stat-number {
+        text-align: center !important;
+        margin: 0 0 4px !important;
+    }
+    .bntm-stat-card .stat-content .stat-label {
+        text-align: center !important;
+        display: block !important;
+    }
+    @media (max-width: 640px) {
+        .bntm-stats-row { flex-direction: column !important; }
+        .bntm-stat-card { flex: 1 1 100% !important; flex-direction: row !important; text-align: left !important; }
+        .bntm-stat-card .stat-content { text-align: left !important; }
+    }
+
+    /* ── Modal ── */
     .ps-modal-overlay {
         position: fixed; inset: 0;
         background: rgba(0,0,0,0.55);
@@ -189,10 +274,12 @@ function bntm_shortcode_ps_dashboard() {
         background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280; line-height: 1;
     }
     .ps-modal-close:hover { color: #111; }
+
+    /* ── Badges ── */
     .ps-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; letter-spacing:.3px; text-transform:capitalize; }
     .ps-badge-pending   { background:#fef3c7; color:#92400e; }
-    .ps-badge-printing  { background:#dbeafe; color:#1e40af; }
-    .ps-badge-ready     { background:#d1fae5; color:#065f46; }
+    .ps-badge-printing  { background:#e8eeff; color:#1a3c8f; }
+    .ps-badge-ready     { background:#dcfce7; color:#15803d; }
     .ps-badge-picked_up { background:#e5e7eb; color:#374151; }
     .ps-badge-cancelled { background:#fee2e2; color:#991b1b; }
     .ps-options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -252,7 +339,7 @@ function ps_overview_tab($business_id) {
             <svg id="ps-copy-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
             </svg>
-            <svg id="ps-check-icon" width="14" height="14" fill="none" stroke="#059669" stroke-width="2.5" viewBox="0 0 24 24" style="display:none;">
+            <svg id="ps-check-icon" width="14" height="14" fill="none" stroke="#16a34a" stroke-width="2.5" viewBox="0 0 24 24" style="display:none;">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
             </svg>
             <span id="ps-copy-label">Copy link</span>
@@ -261,7 +348,7 @@ function ps_overview_tab($business_id) {
 
     <div class="bntm-stats-row">
         <div class="bntm-stat-card">
-            <div class="stat-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#1a3c8f,#0d2466);">
                 <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0120 9.414V19a2 2 0 01-2 2z"/></svg>
             </div>
             <div class="stat-content"><h3>Total Orders</h3><p class="stat-number"><?php echo number_format($total); ?></p><span class="stat-label">All time</span></div>
@@ -273,19 +360,19 @@ function ps_overview_tab($business_id) {
             <div class="stat-content"><h3>Pending</h3><p class="stat-number"><?php echo number_format($pending); ?></p><span class="stat-label">Awaiting print</span></div>
         </div>
         <div class="bntm-stat-card">
-            <div class="stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#2563eb,#1a3c8f);">
                 <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17H17.01M17 20H5a2 2 0 01-2-2V9a2 2 0 012-2h2V5a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v7a2 2 0 01-2 2z"/></svg>
             </div>
             <div class="stat-content"><h3>Printing</h3><p class="stat-number"><?php echo number_format($printing); ?></p><span class="stat-label">In progress</span></div>
         </div>
         <div class="bntm-stat-card">
-            <div class="stat-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
                 <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div class="stat-content"><h3>Ready</h3><p class="stat-number"><?php echo number_format($ready); ?></p><span class="stat-label">For pickup</span></div>
         </div>
         <div class="bntm-stat-card">
-            <div class="stat-icon" style="background:linear-gradient(135deg,#ec4899,#be185d);">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#0f766e,#0d9488);">
                 <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
             <div class="stat-content"><h3>Revenue</h3><p class="stat-number">&#8369;<?php echo number_format($revenue, 2); ?></p><span class="stat-label">Total paid</span></div>
@@ -335,8 +422,8 @@ function ps_overview_tab($business_id) {
                 copyIcon.style.display  = 'none';
                 checkIcon.style.display = 'inline';
                 label.textContent       = 'Copied!';
-                btn.style.borderColor   = '#10b981';
-                btn.style.color         = '#059669';
+                btn.style.borderColor   = '#22c55e';
+                btn.style.color         = '#16a34a';
                 setTimeout(function() {
                     copyIcon.style.display  = 'inline';
                     checkIcon.style.display = 'none';
@@ -443,7 +530,7 @@ function ps_orders_tab($business_id) {
                         <div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr($o->file_name); ?>"><?php echo esc_html($o->file_name); ?></div>
                         <div style="font-size:11px;color:#9ca3af;"><?php echo ps_format_filesize($o->file_size); ?></div>
                         <?php if ($o->file_path && file_exists($o->file_path)): ?>
-                            <a href="<?php echo esc_url(ps_get_file_url($o->file_path)); ?>" target="_blank" style="font-size:11px;color:#3b82f6;">Download</a>
+                            <a href="<?php echo esc_url(ps_get_file_url($o->file_path)); ?>" target="_blank" style="font-size:11px;color:#1a3c8f;">Download</a>
                         <?php endif; ?>
                     </td>
                     <td style="font-size:12px;">
@@ -481,7 +568,7 @@ function ps_orders_tab($business_id) {
                             <button class="bntm-btn-small bntm-btn-secondary ps-pickup-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>">Picked Up</button>
                             <?php endif; ?>
                             <?php if ($o->payment_status === 'unpaid'): ?>
-                            <button class="bntm-btn-small bntm-btn-primary ps-markpaid-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>" style="background:#059669;">Mark Paid</button>
+                            <button class="bntm-btn-small bntm-btn-primary ps-markpaid-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>" style="background:linear-gradient(135deg,#16a34a,#22c55e);border-color:#16a34a;">Mark Paid</button>
                             <?php endif; ?>
                             <button class="bntm-btn-small bntm-btn-danger ps-delete-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>">Delete</button>
                         </div>
@@ -753,7 +840,7 @@ function ps_settings_tab($business_id) {
         </div>
 
         <button type="button" id="ps-add-svc-row" class="bntm-btn-secondary" style="margin-top:4px;">+ Add Service</button>
-        <div style="margin-top:10px;padding:10px 14px;background:#f0f9ff;border-left:3px solid #3b82f6;border-radius:6px;font-size:12px;color:#1e40af;">
+        <div style="margin-top:10px;padding:10px 14px;background:#e8eeff;border-left:3px solid #1a3c8f;border-radius:6px;font-size:12px;color:#1a3c8f;">
             Services appear as checkboxes on the order form and are added to the order total.
         </div>
         <button id="ps-save-services-btn" class="bntm-btn-primary" data-nonce="<?php echo esc_attr($nonce); ?>" style="margin-top:16px;">Save Additional Services</button>
@@ -931,7 +1018,7 @@ function bntm_shortcode_ps_order() {
                     </div>
                     <div>
                         <div class="pso-brand-name"><?php echo esc_html($shop_name); ?></div>
-                        <div class="pso-brand-sub">Online Print Orders</div>
+                        <div class="pso-brand-sub">Fast &amp; Easy Online Printing</div>
                     </div>
                 </div>
 
@@ -1235,8 +1322,8 @@ function bntm_shortcode_ps_order() {
                 <!-- GCash Details Panel -->
                 <div id="pso-gcash-panel" style="display:none;margin-top:16px;padding:20px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:var(--pso-radius-sm);">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-                        <svg width="20" height="20" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                        <strong style="font-size:13px;color:#065f46;">Send payment via GCash</strong>
+                        <svg width="20" height="20" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        <strong style="font-size:13px;color:#15803d;">Send payment via GCash</strong>
                     </div>
                     <?php if ($gcash_qr_url): ?>
                     <div style="text-align:center;margin-bottom:14px;">
@@ -1249,13 +1336,13 @@ function bntm_shortcode_ps_order() {
                         <?php if ($gcash_name): ?>
                         <div style="display:flex;justify-content:space-between;">
                             <span style="color:#6b7280;">Account Name</span>
-                            <strong style="color:#065f46;"><?php echo esc_html($gcash_name); ?></strong>
+                            <strong style="color:#15803d;"><?php echo esc_html($gcash_name); ?></strong>
                         </div>
                         <?php endif; ?>
                         <?php if ($gcash_number): ?>
                         <div style="display:flex;justify-content:space-between;">
                             <span style="color:#6b7280;">GCash Number</span>
-                            <strong style="color:#065f46;"><?php echo esc_html($gcash_number); ?></strong>
+                            <strong style="color:#15803d;"><?php echo esc_html($gcash_number); ?></strong>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -1265,8 +1352,8 @@ function bntm_shortcode_ps_order() {
                     <?php endif; ?>
                     <p style="font-size:11px;color:#6b7280;margin:10px 0 0;font-style:italic;">Send the exact amount and include your name as reference.</p>
                     <label id="pso-gcash-confirm-wrap" style="display:flex;align-items:center;gap:10px;margin-top:16px;padding:12px 16px;background:#fff;border:1.5px solid #86efac;border-radius:8px;cursor:pointer;">
-                        <input type="checkbox" id="pso-gcash-confirm" style="width:18px;height:18px;accent-color:#059669;cursor:pointer;flex-shrink:0;">
-                        <span style="font-size:13px;font-weight:600;color:#065f46;">I have already sent the GCash payment</span>
+                        <input type="checkbox" id="pso-gcash-confirm" style="width:18px;height:18px;accent-color:#16a34a;cursor:pointer;flex-shrink:0;">
+                        <span style="font-size:13px;font-weight:600;color:#15803d;">I have already sent the GCash payment</span>
                     </label>
                     <div id="pso-gcash-confirm-error" style="display:none;margin-top:8px;font-size:12px;color:#dc2626;font-weight:500;">⚠ Please confirm your GCash payment before proceeding.</div>
                 </div>
@@ -1374,22 +1461,22 @@ function bntm_shortcode_ps_order() {
     @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
     :root {
         --pso-ink:#0d1117; --pso-ink-2:#374151; --pso-ink-3:#6b7280; --pso-ink-4:#9ca3af;
-        --pso-surface:#fff; --pso-surface-2:#f8f9fa; --pso-border:#e5e7eb;
-        --pso-accent:#1a56db; --pso-accent-2:#1e40af; --pso-accent-bg:#eff6ff;
-        --pso-green:#059669; --pso-green-bg:#ecfdf5; --pso-red:#dc2626; --pso-red-bg:#fef2f2;
+        --pso-surface:#fff; --pso-surface-2:#f0f4ff; --pso-border:#dde3f0;
+        --pso-accent:#1a3c8f; --pso-accent-2:#0d2466; --pso-accent-bg:#e8eeff;
+        --pso-green:#16a34a; --pso-green-light:#22c55e; --pso-green-bg:#dcfce7; --pso-red:#dc2626; --pso-red-bg:#fef2f2;
         --pso-sidebar-w:300px; --pso-radius:12px; --pso-radius-sm:8px;
         --pso-shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
-        --pso-shadow-lg:0 8px 32px rgba(0,0,0,.12);
+        --pso-shadow-lg:0 8px 40px rgba(13,36,102,.15);
         --pso-font-body:'DM Sans',system-ui,sans-serif;
         --pso-font-head:'DM Serif Display',Georgia,serif;
     }
-    .pso-root { display:flex; min-height:600px; font-family:var(--pso-font-body); color:var(--pso-ink); background:var(--pso-surface); border-radius:var(--pso-radius); overflow:hidden; box-shadow:var(--pso-shadow-lg); border:1px solid var(--pso-border); }
-    .pso-sidebar { width:var(--pso-sidebar-w); background:var(--pso-ink); flex-shrink:0; position:relative; overflow:hidden; }
-    .pso-sidebar::before { content:''; position:absolute; bottom:-80px; right:-80px; width:260px; height:260px; border-radius:50%; background:rgba(255,255,255,.03); pointer-events:none; }
-    .pso-sidebar::after  { content:''; position:absolute; top:-60px; left:-60px; width:200px; height:200px; border-radius:50%; background:rgba(26,86,219,.12); pointer-events:none; }
-    .pso-sidebar-inner { padding:36px 28px; height:100%; display:flex; flex-direction:column; gap:40px; position:relative; z-index:1; }
+    .pso-root { display:flex; min-height:100vh; height:100vh; font-family:var(--pso-font-body); color:var(--pso-ink); background:var(--pso-surface); border-radius:0; overflow:hidden; box-shadow:none; border:none; position:fixed; inset:0; z-index:9990; }
+    .pso-sidebar { width:var(--pso-sidebar-w); background:linear-gradient(160deg,#0d2466 0%,#1a3c8f 60%,#0f5c3a 100%); flex-shrink:0; position:relative; overflow-y:auto; overflow-x:hidden; height:100%; box-sizing:border-box; }
+    .pso-sidebar::before { content:''; position:absolute; bottom:-80px; right:-80px; width:260px; height:260px; border-radius:50%; background:rgba(34,197,94,.08); pointer-events:none; }
+    .pso-sidebar::after  { content:''; position:absolute; top:-60px; left:-60px; width:200px; height:200px; border-radius:50%; background:rgba(255,255,255,.05); pointer-events:none; }
+    .pso-sidebar-inner { padding:36px 28px 32px; min-height:100%; height:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:32px; position:relative; z-index:1; }
     .pso-brand { display:flex; align-items:center; gap:12px; }
-    .pso-brand-icon { width:48px; height:48px; background:rgba(255,255,255,.1); border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+    .pso-brand-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(34,197,94,.3),rgba(22,163,74,.5)); border:1px solid rgba(34,197,94,.4); border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
     .pso-brand-name { font-family:var(--pso-font-head); font-size:16px; color:#fff; line-height:1.2; }
     .pso-brand-sub { font-size:11px; color:rgba(255,255,255,.45); margin-top:2px; letter-spacing:.3px; }
     .pso-step-nav { display:flex; flex-direction:column; gap:0; }
@@ -1398,7 +1485,7 @@ function bntm_shortcode_ps_order() {
     .pso-step-item.done   { opacity:.7; }
     .pso-step-connector { width:2px; height:20px; background:rgba(255,255,255,.1); margin-left:19px; }
     .pso-step-dot { width:38px; height:38px; border-radius:50%; border:2px solid rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .25s; }
-    .pso-step-item.active .pso-step-dot { border-color:var(--pso-accent); background:var(--pso-accent); }
+    .pso-step-item.active .pso-step-dot { border-color:var(--pso-green-light); background:var(--pso-green-light); }
     .pso-step-item.done   .pso-step-dot { border-color:var(--pso-green); background:var(--pso-green); }
     .pso-step-num { font-size:13px; font-weight:600; color:rgba(255,255,255,.6); }
     .pso-step-item.active .pso-step-num { color:#fff; }
@@ -1409,19 +1496,19 @@ function bntm_shortcode_ps_order() {
     .pso-step-label { font-size:10px; color:rgba(255,255,255,.4); letter-spacing:.5px; text-transform:uppercase; }
     .pso-step-title { font-size:13px; color:rgba(255,255,255,.8); font-weight:500; margin-top:1px; }
     .pso-step-item.active .pso-step-title { color:#fff; font-weight:600; }
-    .pso-info-card { margin-top:auto; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); border-radius:var(--pso-radius-sm); padding:16px; font-size:12px; color:rgba(255,255,255,.6); line-height:1.6; }
+    .pso-info-card { margin-top:auto; background:rgba(34,197,94,.07); border:1px solid rgba(34,197,94,.2); border-radius:var(--pso-radius-sm); padding:16px; font-size:12px; color:rgba(255,255,255,.7); line-height:1.6; flex-shrink:0; }
     .pso-info-card-title { display:flex; align-items:center; gap:6px; color:rgba(255,255,255,.9); font-weight:600; font-size:11px; letter-spacing:.4px; text-transform:uppercase; margin-bottom:10px; }
     .pso-info-card-text { margin-bottom:4px; }
     .pso-info-card-note { margin-top:8px; font-size:11px; color:rgba(255,255,255,.35); font-style:italic; }
-    .pso-main { flex:1; padding:48px 52px; overflow-y:auto; display:flex; flex-direction:column; }
+    .pso-main { flex:1; padding:48px 52px; overflow-y:auto; display:flex; flex-direction:column; height:100%; box-sizing:border-box; }
     .pso-panel { display:flex; flex-direction:column; flex:1; animation:psoFadeIn .3s ease; }
     @keyframes psoFadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .pso-panel-header { margin-bottom:32px; }
     .pso-heading { font-family:var(--pso-font-head); font-size:30px; font-weight:400; color:var(--pso-ink); margin:0 0 6px; line-height:1.2; }
     .pso-subheading { font-size:14px; color:var(--pso-ink-3); margin:0; }
     .pso-panel-footer { display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:32px; border-top:1px solid var(--pso-border); }
-    .pso-btn-primary { display:inline-flex; align-items:center; gap:8px; background:var(--pso-accent); color:#fff; border:none; border-radius:var(--pso-radius-sm); padding:12px 24px; font-size:14px; font-weight:600; font-family:var(--pso-font-body); cursor:pointer; text-decoration:none; transition:background .2s,transform .1s,box-shadow .2s; box-shadow:0 2px 8px rgba(26,86,219,.25); }
-    .pso-btn-primary:hover { background:var(--pso-accent-2); box-shadow:0 4px 16px rgba(26,86,219,.35); }
+    .pso-btn-primary { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; border:none; border-radius:var(--pso-radius-sm); padding:12px 24px; font-size:14px; font-weight:600; font-family:var(--pso-font-body); cursor:pointer; text-decoration:none; transition:background .2s,transform .1s,box-shadow .2s; box-shadow:0 2px 8px rgba(22,163,74,.3); }
+    .pso-btn-primary:hover { background:linear-gradient(135deg,#15803d,#16a34a); box-shadow:0 4px 16px rgba(22,163,74,.4); }
     .pso-btn-primary:active { transform:scale(.98); }
     .pso-btn-primary:disabled { background:#9ca3af; box-shadow:none; cursor:not-allowed; }
     .pso-btn-ghost { display:inline-flex; align-items:center; gap:8px; background:none; border:1px solid var(--pso-border); color:var(--pso-ink-3); border-radius:var(--pso-radius-sm); padding:11px 20px; font-size:14px; font-weight:500; font-family:var(--pso-font-body); cursor:pointer; transition:border-color .2s,color .2s,background .2s; }
@@ -1431,7 +1518,7 @@ function bntm_shortcode_ps_order() {
     .pso-upload-zone { border:2px dashed var(--pso-border); border-radius:var(--pso-radius); padding:56px 32px; text-align:center; transition:border-color .2s,background .2s; background:var(--pso-surface-2); position:relative; }
     .pso-upload-zone.idle { cursor:pointer; }
     .pso-upload-zone.idle:hover,.pso-upload-zone.dragging { border-color:var(--pso-accent); background:var(--pso-accent-bg); }
-    .pso-upload-zone.has-file { border-color:var(--pso-green); background:var(--pso-green-bg); cursor:default; }
+    .pso-upload-zone.has-file { border-color:var(--pso-green-light); background:var(--pso-green-bg); cursor:default; }
     .pso-upload-graphic { position:relative; display:inline-block; margin-bottom:16px; }
     .pso-upload-circle { width:72px; height:72px; border-radius:50%; background:#fff; border:1.5px solid var(--pso-border); display:flex; align-items:center; justify-content:center; color:var(--pso-accent); box-shadow:var(--pso-shadow); margin:0 auto; }
     .pso-upload-arrows { position:absolute; top:-8px; left:50%; transform:translateX(-50%); display:flex; gap:4px; }
@@ -1520,7 +1607,7 @@ function bntm_shortcode_ps_order() {
     .pso-textarea:focus { outline:none; border-color:var(--pso-accent); }
     .pso-textarea::placeholder { color:var(--pso-ink-4); }
     .pso-price-card { position:relative; overflow:hidden; border-radius:var(--pso-radius); margin-top:20px; }
-    .pso-price-card-bg { position:absolute; inset:0; background:linear-gradient(135deg,#0d1117 0%,#1a2744 60%,#1a3a6b 100%); }
+    .pso-price-card-bg { position:absolute; inset:0; background:linear-gradient(135deg,#0d2466 0%,#1a3c8f 60%,#0f5c3a 100%); }
     .pso-price-card-content { position:relative; padding:24px 28px; }
     .pso-price-rows { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
     .pso-price-row { display:flex; justify-content:space-between; font-size:13px; color:rgba(255,255,255,.65); }
@@ -1545,7 +1632,7 @@ function bntm_shortcode_ps_order() {
     .pso-review-item { display:flex; justify-content:space-between; align-items:baseline; font-size:12px; color:var(--pso-ink-3); padding:5px 0; border-bottom:1px solid var(--pso-border); }
     .pso-review-item:last-child { border-bottom:none; }
     .pso-review-item strong { font-size:13px; color:var(--pso-ink); font-weight:600; text-align:right; }
-    .pso-total-banner { display:flex; justify-content:space-between; align-items:center; background:var(--pso-ink); color:#fff; border-radius:var(--pso-radius-sm); padding:20px 28px; margin-bottom:20px; }
+    .pso-total-banner { display:flex; justify-content:space-between; align-items:center; background:linear-gradient(135deg,#0d2466,#1a3c8f); color:#fff; border-radius:var(--pso-radius-sm); padding:20px 28px; margin-bottom:20px; }
     .pso-total-label { font-size:12px; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:.5px; }
     .pso-total-note  { font-size:13px; color:rgba(255,255,255,.7); margin-top:3px; }
     .pso-total-amount { font-family:var(--pso-font-head); font-size:36px; color:#fff; }
@@ -1553,16 +1640,16 @@ function bntm_shortcode_ps_order() {
     .pso-btn-submit { padding:14px 32px; font-size:15px; }
     .pso-success-panel { justify-content:center; }
     .pso-success-inner { max-width:480px; margin:0 auto; text-align:center; padding:32px 0; }
-    .pso-success-icon { width:80px; height:80px; border-radius:50%; background:var(--pso-green); color:#fff; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; box-shadow:0 8px 24px rgba(5,150,105,.3); }
+    .pso-success-icon { width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; box-shadow:0 8px 24px rgba(34,197,94,.35); }
     .pso-success-heading { font-family:var(--pso-font-head); font-size:32px; font-weight:400; color:var(--pso-ink); margin:0 0 10px; }
     .pso-success-sub { font-size:14px; color:var(--pso-ink-3); margin:0 0 28px; }
-    .pso-order-id-chip { display:inline-flex; align-items:center; gap:12px; background:var(--pso-surface-2); border:1px solid var(--pso-border); border-radius:99px; padding:10px 20px; margin-bottom:28px; }
+    .pso-order-id-chip { display:inline-flex; align-items:center; gap:12px; background:#e8eeff; border:1px solid #c7d4f7; border-radius:99px; padding:10px 20px; margin-bottom:28px; }
     .pso-order-id-label { font-size:11px; color:var(--pso-ink-4); text-transform:uppercase; letter-spacing:.5px; }
-    .pso-order-id-value { font-size:16px; font-weight:800; color:var(--pso-ink); letter-spacing:1px; }
+    .pso-order-id-value { font-size:16px; font-weight:800; color:#1a3c8f; letter-spacing:1px; }
     .pso-copy-btn { background:none; border:none; cursor:pointer; color:var(--pso-ink-4); padding:2px; transition:color .2s; }
-    .pso-copy-btn:hover { color:var(--pso-accent); }
-    .pso-pickup-box { background:var(--pso-surface-2); border:1px solid var(--pso-border); border-radius:var(--pso-radius-sm); padding:20px; text-align:left; font-size:13px; line-height:1.7; margin-bottom:28px; }
-    .pso-pickup-box-title { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--pso-ink-3); margin-bottom:10px; }
+    .pso-copy-btn:hover { color:#1a3c8f; }
+    .pso-pickup-box { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:var(--pso-radius-sm); padding:20px; text-align:left; font-size:13px; line-height:1.7; margin-bottom:28px; }
+    .pso-pickup-box-title { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#16a34a; margin-bottom:10px; }
     .pso-pickup-note { font-size:11px; color:var(--pso-ink-4); margin-top:6px; font-style:italic; }
     .pso-extra-svc-label:has(input:checked) { border-color:var(--pso-accent) !important; background:var(--pso-accent-bg) !important; }
     @media(max-width:1100px){
@@ -1571,7 +1658,7 @@ function bntm_shortcode_ps_order() {
         .pso-preview-stage { flex-direction:row; flex-wrap:wrap; justify-content:center; padding:20px; }
     }
     @media(max-width:900px){
-        .pso-root { flex-direction:column; }
+        .pso-root { flex-direction:column; position:fixed; inset:0; overflow-y:auto; }
         .pso-sidebar { width:100%; }
         .pso-sidebar-inner { padding:24px 24px 20px; gap:20px; }
         .pso-step-nav { flex-direction:row; gap:0; overflow-x:auto; }
@@ -2076,7 +2163,7 @@ function bntm_shortcode_ps_order() {
 
         document.getElementById('pso-copy-id').addEventListener('click', function() {
             const val = document.getElementById('pso-order-id-display').textContent;
-            navigator.clipboard.writeText(val).then(() => { this.style.color = '#059669'; setTimeout(() => this.style.color = '', 1500); });
+            navigator.clipboard.writeText(val).then(() => { this.style.color = '#16a34a'; setTimeout(() => this.style.color = '', 1500); });
         });
 
         document.getElementById('pso-new-order').addEventListener('click', () => location.reload());
@@ -2114,11 +2201,11 @@ function bntm_shortcode_ps_tracking() {
     <script>var ajaxurl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';</script>
 
     <div style="max-width:560px;margin:0 auto;font-family:'Segoe UI',system-ui,sans-serif;">
-        <h2 style="font-size:24px;font-weight:700;margin-bottom:8px;">Track Your Order</h2>
+        <h2 style="font-size:24px;font-weight:700;margin-bottom:8px;color:#1a3c8f;">Track Your Order</h2>
         <p style="color:#6b7280;margin-bottom:24px;">Enter your Order ID to check the status of your print job.</p>
         <div style="display:flex;gap:10px;margin-bottom:24px;">
             <input type="text" id="ps-track-input" class="bntm-input" placeholder="e.g. PS-XXXXXXX" style="flex:1;">
-            <button id="ps-track-btn" class="bntm-btn-primary" data-nonce="<?php echo $nonce; ?>">Track</button>
+            <button id="ps-track-btn" class="bntm-btn-primary" style="background:linear-gradient(135deg,#16a34a,#22c55e);border-color:#16a34a;" data-nonce="<?php echo $nonce; ?>">Track</button>
         </div>
         <div id="ps-track-result"></div>
     </div>
@@ -2126,8 +2213,8 @@ function bntm_shortcode_ps_tracking() {
     <style>
     .ps-badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; text-transform:capitalize; letter-spacing:.3px; }
     .ps-badge-pending   { background:#fef3c7; color:#92400e; }
-    .ps-badge-printing  { background:#dbeafe; color:#1e40af; }
-    .ps-badge-ready     { background:#d1fae5; color:#065f46; }
+    .ps-badge-printing  { background:#e8eeff; color:#1a3c8f; }
+    .ps-badge-ready     { background:#dcfce7; color:#15803d; }
     .ps-badge-picked_up { background:#e5e7eb; color:#374151; }
     .ps-badge-cancelled { background:#fee2e2; color:#991b1b; }
     </style>
@@ -2161,22 +2248,22 @@ function bntm_shortcode_ps_tracking() {
                     let stepsHtml = '<div style="display:flex;flex-direction:column;">';
                     steps.forEach((step, i) => {
                         const done = i <= currentIdx, active = i === currentIdx;
-                        const lineColor = i < currentIdx ? '#10b981' : '#e5e7eb';
+                        const lineColor = i < currentIdx ? '#22c55e' : '#e5e7eb';
                         stepsHtml += `<div style="display:flex;align-items:flex-start;gap:16px;">
                             <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
-                                <div style="width:40px;height:40px;border-radius:50%;background:${active?'#3b82f6':done?'#10b981':'#e5e7eb'};display:flex;align-items:center;justify-content:center;">
+                                <div style="width:40px;height:40px;border-radius:50%;background:${active?'#1a3c8f':done?'#22c55e':'#e5e7eb'};display:flex;align-items:center;justify-content:center;">
                                     <svg width="20" height="20" fill="none" stroke="${done||active?'#fff':'#9ca3af'}" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="${step.icon}"/></svg>
                                 </div>
                                 ${i < steps.length-1 ? `<div style="width:2px;height:40px;background:${lineColor};"></div>` : ''}
                             </div>
-                            <div style="padding-top:10px;"><div style="font-weight:${active?'700':'500'};font-size:14px;color:${active?'#1e40af':done?'#065f46':'#9ca3af'};">${step.label}</div></div>
+                            <div style="padding-top:10px;"><div style="font-weight:${active?'700':'500'};font-size:14px;color:${active?'#1a3c8f':done?'#15803d':'#9ca3af'};">${step.label}</div></div>
                         </div>`;
                     });
                     stepsHtml += '</div>';
 
                     resultEl.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-                            <div><div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;">Order ID</div><div style="font-size:20px;font-weight:800;color:#111827;">${o.rand_id}</div></div>
+                            <div><div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;">Order ID</div><div style="font-size:20px;font-weight:800;color:#1a3c8f;">${o.rand_id}</div></div>
                             <span class="ps-badge ps-badge-${o.status}">${o.status.replace('_',' ')}</span>
                         </div>
                         <div style="margin-bottom:24px;font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -2184,11 +2271,11 @@ function bntm_shortcode_ps_tracking() {
                             <div><span style="color:#9ca3af;">Customer: </span><span style="color:#374151;">${o.customer_name}</span></div>
                             <div><span style="color:#9ca3af;">Copies: </span><span style="color:#374151;">${o.copies}</span></div>
                             <div><span style="color:#9ca3af;">Paper: </span><span style="color:#374151;">${o.paper_size} ${o.color_mode==='color'?'Color':'B&W'}</span></div>
-                            <div><span style="color:#9ca3af;">Total: </span><span style="font-weight:700;color:#1d4ed8;">₱${parseFloat(o.total_price).toFixed(2)}</span></div>
+                            <div><span style="color:#9ca3af;">Total: </span><span style="font-weight:700;color:#1a3c8f;">₱${parseFloat(o.total_price).toFixed(2)}</span></div>
                             <div><span style="color:#9ca3af;">Payment: </span><span style="color:#374151;">${o.payment_status}</span></div>
                         </div>
                         ${stepsHtml}
-                        ${o.status==='ready'?'<div style="margin-top:20px;padding:12px 16px;background:#d1fae5;border-radius:8px;color:#065f46;font-weight:600;font-size:14px;">Your order is ready! Please visit the shop to pick it up.</div>':''}
+                        ${o.status==='ready'?'<div style="margin-top:20px;padding:12px 16px;background:#dcfce7;border:1px solid #bbf7d0;border-radius:8px;color:#15803d;font-weight:600;font-size:14px;">✓ Your order is ready! Please visit the shop to pick it up.</div>':''}
                     </div>`;
                 } else {
                     resultEl.innerHTML = '<div class="bntm-notice bntm-notice-error">' + json.data.message + '</div>';
@@ -2396,7 +2483,7 @@ function bntm_ajax_ps_get_orders() {
             <div><span style="color:#9ca3af;">File name: </span><?php echo esc_html($o->file_name); ?></div>
             <div><span style="color:#9ca3af;">Size: </span><?php echo ps_format_filesize($o->file_size); ?></div>
             <div><span style="color:#9ca3af;">Doc pages: </span><?php echo $o->page_count ?: 'N/A'; ?></div>
-            <?php if ($file_url): ?><div><a href="<?php echo esc_url($file_url); ?>" target="_blank" style="color:#3b82f6;">Download File</a></div><?php endif; ?>
+            <?php if ($file_url): ?><div><a href="<?php echo esc_url($file_url); ?>" target="_blank" style="color:#1a3c8f;">Download File</a></div><?php endif; ?>
         </div>
     </div>
     <div style="background:#f9fafb;border-radius:10px;padding:16px;margin-bottom:20px;">
@@ -2414,7 +2501,7 @@ function bntm_ajax_ps_get_orders() {
     </div>
     <div style="background:#f0fdf4;border-radius:10px;padding:16px;">
         <div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:#6b7280;">Unit Price</span><span>&#8369;<?php echo number_format($o->unit_price, 2); ?>/pg</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin-top:8px;"><span>Total</span><span style="color:#059669;">&#8369;<?php echo number_format($o->total_price, 2); ?></span></div>
+        <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;margin-top:8px;"><span>Total</span><span style="color:#16a34a;">&#8369;<?php echo number_format($o->total_price, 2); ?></span></div>
         <div style="font-size:12px;color:#6b7280;margin-top:4px;">Payment: <?php echo ucfirst($o->payment_method); ?> &bull; <?php echo ucfirst($o->payment_status); ?></div>
     </div>
     <?php if ($o->admin_notes): ?><div style="margin-top:16px;padding:12px;background:#fef3c7;border-radius:8px;font-size:13px;"><strong>Admin Notes:</strong> <?php echo esc_html($o->admin_notes); ?></div><?php endif; ?>
