@@ -650,10 +650,8 @@ function bntm_ajax_kbf_save_organizer_profile() {
     if(!empty($_POST['display_name'])) {
         $new_name = sanitize_text_field($_POST['display_name']);
         $current_user = wp_get_current_user();
-        error_log('KBF Profile - Display name: "' . $new_name . '" vs current: "' . $current_user->display_name . '"');
         if ($new_name !== $current_user->display_name) {
-            $update_user_result = wp_update_user(['ID' => $biz, 'display_name' => $new_name]);
-            error_log('KBF Profile - wp_update_user result: ' . print_r($update_user_result, true));
+            wp_update_user(['ID' => $biz, 'display_name' => $new_name]);
             // Clear user cache
             clean_user_cache($biz);
             wp_cache_delete($biz, 'users');
@@ -678,12 +676,10 @@ function bntm_ajax_kbf_save_organizer_profile() {
     if($exists) {
         unset($data['business_id']);
         $formats = array_fill(0, count($data), '%s');
-        $update_result = $wpdb->update($pt, $data, ['business_id'=>$biz], $formats, ['%d']);
-        error_log('KBF Profile UPDATE - Rows affected: ' . $wpdb->rows_affected . ' | Data: ' . print_r($data, true));
+        $wpdb->update($pt, $data, ['business_id'=>$biz], $formats, ['%d']);
     } else {
         $insert_formats = array_fill(0, count($data), '%s');
-        $insert_result = $wpdb->insert($pt, $data, $insert_formats);
-        error_log('KBF Profile INSERT - ID: ' . $wpdb->insert_id . ' | Data: ' . print_r($data, true));
+        $wpdb->insert($pt, $data, $insert_formats);
     }
     if (function_exists('kbf_get_or_create_organizer_token')) {
         kbf_get_or_create_organizer_token($biz);
@@ -717,23 +713,16 @@ function bntm_ajax_kbf_save_organizer_profile() {
     clean_user_cache($biz);
     wp_cache_delete($biz, 'user_meta');
     wp_cache_delete($biz, 'users');
-    
+
     $updated_user = get_userdata($biz);
     $updated_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url FROM {$pt} WHERE business_id=%d", $biz));
-    
-    error_log('KBF Profile - Final response - display_name: ' . ($updated_user ? $updated_user->display_name : 'null'));
-    error_log('KBF Profile - Final response - avatar_url: ' . ($updated_profile ? $updated_profile->avatar_url : 'empty'));
-    
+
     wp_send_json_success([
         'message' => 'Profile saved successfully!',
         'data' => [
             'onboarding_done' => $onboarding_done,
             'avatar_url' => $updated_profile ? $updated_profile->avatar_url : '',
             'display_name' => $updated_user ? $updated_user->display_name : '',
-            'debug' => [
-                'exists' => $exists,
-                'user_id' => $biz,
-            ]
         ]
     ]);
 }

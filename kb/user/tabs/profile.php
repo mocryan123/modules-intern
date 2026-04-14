@@ -3,6 +3,15 @@
  * KBF user dashboard tab: Profile (Enhanced UX)
  */
 
+/**
+ * @function  kbf_dashboard_profile_tab
+ * @purpose   Renders the full profile edit page (form, cropper, save bar) for the organizer dashboard
+ * @used-by   sections.php → kbf_dashboard_profile_tab($business_id)
+ * @calls     $wpdb->get_row, get_userdata, get_user_meta, wp_create_nonce, kbf_get_page_url, ob_start/ob_get_clean
+ * @params    int $business_id — WordPress user ID of the organizer
+ * @returns   string — buffered HTML output of the profile tab
+ * @status    ACTIVE
+ */
 function kbf_dashboard_profile_tab($business_id) {
     global $wpdb;
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
@@ -18,6 +27,7 @@ function kbf_dashboard_profile_tab($business_id) {
     $payout_number = $profile_value('payout_number', '');
     $phone = get_user_meta($business_id, 'kbf_phone', true);
     $address = get_user_meta($business_id, 'kbf_address', true);
+    $social_name = get_user_meta($business_id, 'kbf_social_name', true);
     $nonce = wp_create_nonce('kbf_organizer_profile');
     $didit_status = get_user_meta($business_id, 'fundora_didit_verification_status', true);
     $stats_total_raised = (float) $profile_value('total_raised', 0);
@@ -27,7 +37,7 @@ function kbf_dashboard_profile_tab($business_id) {
 
     // Profile completion
     $has_name = !empty(trim($user->display_name));
-    $has_social = !empty(trim(get_user_meta($business_id, 'kbf_social_name', true)));
+    $has_social = !empty(trim($social_name));
     $has_bio = $profile && !empty(trim((string)$profile->bio));
     $has_payout = !empty($payout_type) && !empty($payout_name) && !empty($payout_number);
     $has_address = !empty(trim($address));
@@ -236,7 +246,7 @@ function kbf_dashboard_profile_tab($business_id) {
       }
       .kbf-form-group input:disabled,
       .kbf-form-group select:disabled {
-        width: 100% !important;
+        width: 100%;
         min-width: 0;
         box-sizing: border-box;
       }
@@ -513,7 +523,7 @@ function kbf_dashboard_profile_tab($business_id) {
               <label>Social Name</label>
               <div class="kbf-input-with-prefix">
                 <span class="kbf-input-prefix">@</span>
-                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr(get_user_meta($business_id, 'kbf_social_name', true)); ?>" placeholder="yourname" maxlength="30">
+                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr($social_name); ?>" placeholder="yourname" maxlength="30">
               </div>
               <div class="kbf-form-hint">Letters, numbers, underscores only. Used for signing in.</div>
               <div class="kbf-field-error" id="kbf-social-name-error"></div>
@@ -596,7 +606,7 @@ function kbf_dashboard_profile_tab($business_id) {
 
         <!-- Social Links (Collapsible) -->
         <div class="kbf-profile-section kbf-social-section">
-          <div class="kbf-social-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open');">
+          <div class="kbf-social-toggle" id="kbf-social-toggle">
             <div class="kbf-profile-section-title"><i class="ph ph-share-network"></i> Social Links</div>
             <i class="ph ph-caret-down"></i>
           </div>
@@ -662,7 +672,7 @@ function kbf_dashboard_profile_tab($business_id) {
       <?php else: ?>
         <button type="button" class="kbf-btn kbf-btn-secondary" id="fundora-didit-start"><i class="ph ph-shield-check" style="margin-right:4px;"></i> Verify Identity</button>
       <?php endif; ?>
-      <button type="button" class="kbf-btn kbf-btn-primary" id="kbf-profile-save-btn" onclick="kbfSaveProfile('<?php echo $nonce; ?>')">Save Changes</button>
+      <button type="button" class="kbf-btn kbf-btn-primary" id="kbf-profile-save-btn" onclick="kbfSaveProfile('<?php echo esc_js($nonce); ?>')">Save Changes</button>
     </div>
 
     <!-- Image Cropper -->
@@ -692,7 +702,16 @@ function kbf_dashboard_profile_tab($business_id) {
     if (typeof ajaxurl === 'undefined') var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
     window.fundoraDidit = { ajaxurl: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>', nonce: '<?php echo esc_js(wp_create_nonce('fundora_didit_nonce')); ?>' };
 
-    // Payout fields
+    // ===== PAYOUT FIELDS =====
+    /**
+     * @function  kbfUpdatePayoutFields
+     * @purpose   Dynamically updates payout field labels, placeholders, and hints based on selected payout method
+     * @used-by   onchange event on #kbf-payout-type; called once on page load
+     * @calls     DOM manipulation (no external functions)
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfUpdatePayoutFields = function(){
         const typeSel = document.getElementById('kbf-payout-type');
         const fieldsWrap = document.getElementById('kbf-payout-fields');
@@ -724,7 +743,7 @@ function kbf_dashboard_profile_tab($business_id) {
     document.getElementById('kbf-payout-type')?.addEventListener('change', window.kbfUpdatePayoutFields);
     window.kbfUpdatePayoutFields();
 
-    // Auto-format payout number
+    // ===== AUTO-FORMAT PAYOUT NUMBER =====
     (function(){
         const numEl = document.getElementById('kbf-payout-number');
         const typeSel = document.getElementById('kbf-payout-type');
@@ -745,7 +764,7 @@ function kbf_dashboard_profile_tab($business_id) {
         });
     })();
 
-    // Auto-format phone number (remove leading 0 after +63)
+    // ===== AUTO-FORMAT PHONE NUMBER =====
     (function(){
         const phone = document.querySelector('[name="phone"]');
         if(!phone) return;
@@ -769,31 +788,184 @@ function kbf_dashboard_profile_tab($business_id) {
         });
     })();
 
-    // Avatar preview: replace fallback/img immediately when file is selected
+    // ===== IMAGE CROPPER =====
+    /**
+     * @function  Image Cropper IIFE
+     * @purpose   Provides drag-to-pan, zoom, and circular crop for avatar photos; replaces file input with cropped blob
+     * @used-by   onchange on #kbf-avatar file input; onclick on #kbf-cropper-close, #kbf-cropper-cancel, #kbf-cropper-apply; click on backdrop
+     * @calls     FileReader, Canvas API, DataTransfer, DOM event listeners
+     * @params    none (self-contained IIFE with internal private functions)
+     * @returns   void
+     * @status    ACTIVE
+     */
     (function(){
         const fileInput = document.getElementById('kbf-avatar');
-        const avatarWrap = document.querySelector('.kbf-avatar-wrap');
-        if(!fileInput || !avatarWrap) return;
+        const backdrop = document.getElementById('kbf-cropper-backdrop');
+        const stage = document.getElementById('kbf-cropper-stage');
+        const img = document.getElementById('kbf-cropper-image');
+        const zoomSlider = document.getElementById('kbf-cropper-zoom');
+        const closeBtn = document.getElementById('kbf-cropper-close');
+        const cancelBtn = document.getElementById('kbf-cropper-cancel');
+        const applyBtn = document.getElementById('kbf-cropper-apply');
+
+        let imageSrc = null;
+        let scale = 1;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX, startY;
+        let stageSize = 240;
+
+        function openCropper(src){
+            imageSrc = src;
+            img.src = src;
+            scale = 1;
+            panX = 0;
+            panY = 0;
+            zoomSlider.value = 1;
+            img.addEventListener('load', fitImage, { once: true });
+            renderImage();
+            backdrop.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCropper(){
+            backdrop.style.display = 'none';
+            document.body.style.overflow = '';
+            imageSrc = null;
+            img.removeAttribute('src');
+        }
+
+        function renderImage(){
+            if(!img.src) return;
+            img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+        }
+
+        function fitImage(){
+            const natW = img.naturalWidth || 1;
+            const natH = img.naturalHeight || 1;
+            const minScale = Math.max(stageSize / natW, stageSize / natH);
+            scale = minScale;
+            zoomSlider.min = minScale;
+            zoomSlider.max = minScale * 3;
+            zoomSlider.step = minScale / 100;
+            zoomSlider.value = minScale;
+            panX = (stageSize - natW * scale) / 2;
+            panY = (stageSize - natH * scale) / 2;
+            renderImage();
+        }
+
+        function getCroppedCanvas(){
+            const canvas = document.createElement('canvas');
+            const size = 300;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+            ctx.clip();
+
+            const natW = img.naturalWidth || 1;
+            const natH = img.naturalHeight || 1;
+            const centerX = (stageSize / 2 - panX) / scale;
+            const centerY = (stageSize / 2 - panY) / scale;
+            const cropHalf = (stageSize / 2) / scale;
+
+            const sx = centerX - cropHalf;
+            const sy = centerY - cropHalf;
+            const sw = cropHalf * 2;
+            const sh = cropHalf * 2;
+
+            ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+            ctx.restore();
+            return canvas;
+        }
+
+        // File input opens cropper
         fileInput.addEventListener('change', function(){
             if(!this.files || !this.files[0]) return;
             const reader = new FileReader();
-            reader.onload = function(e){
-                // Remove existing fallback or img
+            reader.onload = function(e){ openCropper(e.target.result); };
+            reader.readAsDataURL(this.files[0]);
+        });
+
+        // Zoom slider
+        zoomSlider.addEventListener('input', function(){
+            const newScale = parseFloat(this.value);
+            const ratio = newScale / scale;
+            panX = stageSize / 2 - (stageSize / 2 - panX) * ratio;
+            panY = stageSize / 2 - (stageSize / 2 - panY) * ratio;
+            scale = newScale;
+            renderImage();
+        });
+
+        // Drag to pan
+        stage.addEventListener('mousedown', function(e){
+            e.preventDefault();
+            isDragging = true;
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+        });
+        window.addEventListener('mousemove', function(e){
+            if(!isDragging) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            renderImage();
+        });
+        window.addEventListener('mouseup', function(){ isDragging = false; });
+
+        // Touch support
+        stage.addEventListener('touchstart', function(e){
+            const t = e.touches[0];
+            isDragging = true;
+            startX = t.clientX - panX;
+            startY = t.clientY - panY;
+        }, {passive: true});
+        window.addEventListener('touchmove', function(e){
+            if(!isDragging) return;
+            const t = e.touches[0];
+            panX = t.clientX - startX;
+            panY = t.clientY - startY;
+            renderImage();
+        }, {passive: true});
+        window.addEventListener('touchend', function(){ isDragging = false; });
+
+        // Buttons
+        closeBtn.addEventListener('click', closeCropper);
+        cancelBtn.addEventListener('click', closeCropper);
+        applyBtn.addEventListener('click', function(){
+            const canvas = getCroppedCanvas();
+            canvas.toBlob(function(blob){
+                // Replace the file input's file with cropped blob
+                const file = new File([blob], 'avatar.png', {type: 'image/png'});
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+
+                // Update avatar preview in header
+                const avatarWrap = document.querySelector('.kbf-avatar-wrap');
                 const oldImg = avatarWrap.querySelector('img');
                 const oldFallback = avatarWrap.querySelector('.kbf-avatar-fallback');
                 if(oldImg) oldImg.remove();
                 if(oldFallback) oldFallback.remove();
-                // Create new preview image
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.alt = 'Profile';
-                avatarWrap.insertBefore(img, avatarWrap.firstChild);
-            };
-            reader.readAsDataURL(this.files[0]);
+                const previewImg = document.createElement('img');
+                previewImg.src = canvas.toDataURL('image/png');
+                previewImg.alt = 'Profile';
+                avatarWrap.insertBefore(previewImg, avatarWrap.firstChild);
+
+                closeCropper();
+            }, 'image/png');
+        });
+
+        // Click backdrop to close
+        backdrop.addEventListener('click', function(e){
+            if(e.target === backdrop) closeCropper();
         });
     })();
 
-    // Bio char count
+    // ===== BIO CHAR COUNT =====
     (function(){
         const bio = document.querySelector('textarea[name="bio"]');
         const count = document.getElementById('kbf-profile-bio-count');
@@ -802,14 +974,26 @@ function kbf_dashboard_profile_tab($business_id) {
         bio.addEventListener('input', update); update();
     })();
 
-    // Prevent spaces in social name
+    // ===== SOCIAL TOGGLE =====
+    (function(){
+        const toggle = document.getElementById('kbf-social-toggle');
+        if(!toggle) return;
+        toggle.addEventListener('click', function(){
+            this.classList.toggle('open');
+            const body = this.nextElementSibling;
+            if(body && body.classList.contains('kbf-social-body')){
+                body.classList.toggle('open');
+            }
+        });
+    })();
+
+    // ===== PREVENT SPACES IN SOCIAL NAME =====
     (function(){
         const sn = document.getElementById('kbf-social-name');
         if(sn) sn.addEventListener('input', function(){ if(/\s/.test(this.value)) this.value = this.value.replace(/\s+/g,''); });
     })();
 
-    // Address: hidden input <-> dropdowns
-    // Restore saved address after PSGC data loads and picker initializes.
+    // ===== ADDRESS SYNC =====
     (function(){
         const prov = document.getElementById('kbf-profile-province');
         const muni = document.getElementById('kbf-profile-municipality');
@@ -818,22 +1002,16 @@ function kbf_dashboard_profile_tab($business_id) {
         if(!prov || !hidden) return;
 
         const savedAddr = (hidden.value || '').trim();
-        if(!savedAddr) return;
 
-        function tryRestore(){
-            if(typeof window.kbfApplyLocationSelection !== 'function') return false;
-            window.kbfApplyLocationSelection(prov, muni, brgy, savedAddr);
-            return true;
-        }
-
-        var attempts = 0;
-        var timer = setInterval(function(){
-            if(tryRestore() || ++attempts > 60){
-                clearInterval(timer);
-            }
-        }, 200);
-
-        // Also listen for change events to update hidden input.
+        /**
+         * @function  updateAddress
+         * @purpose   Reads selected province/municipality/barangay dropdowns and writes the combined address to the hidden input
+         * @used-by   onchange events on dropdowns; called by kbfSaveProfile before form submission
+         * @calls     none
+         * @params    none (reads from DOM, writes to hidden input)
+         * @returns   void
+         * @status    ACTIVE
+         */
         function updateAddress(){
             const parts = [];
             if(brgy && brgy.value) parts.push(brgy.value);
@@ -841,13 +1019,39 @@ function kbf_dashboard_profile_tab($business_id) {
             if(prov && prov.value) parts.push(prov.value);
             hidden.value = parts.join(', ');
         }
+        // Expose globally for kbfSaveProfile
+        window.updateAddress = updateAddress;
+
+        if(savedAddr){
+            function tryRestore(){
+                if(typeof window.kbfApplyLocationSelection !== 'function') return false;
+                window.kbfApplyLocationSelection(prov, muni, brgy, savedAddr);
+                return true;
+            }
+            var attempts = 0;
+            var timer = setInterval(function(){
+                if(tryRestore() || ++attempts > 60){
+                    clearInterval(timer);
+                }
+            }, 200);
+        }
+
         prov.addEventListener('change', updateAddress);
         if(muni) muni.addEventListener('change', updateAddress);
         if(brgy) brgy.addEventListener('change', updateAddress);
         setTimeout(updateAddress, 500);
     })();
 
-    // Verify button
+    // ===== VERIFY BUTTON (DIDIT) =====
+    /**
+     * @function  Verify Button IIFE
+     * @purpose   Starts the Didit identity verification flow via AJAX; opens verification URL in new tab
+     * @used-by   onclick on #fundora-didit-start (Verify Identity button)
+     * @calls     fetch(ajaxurl), JSON.parse, window.open
+     * @params    none
+     * @returns   void
+     * @status    NEEDS REVIEW — fundora_didit_verification_status user meta is never written by any webhook in the codebase
+     */
     (function(){
         const btn = document.getElementById('fundora-didit-start');
         if(!btn) return;
@@ -875,23 +1079,31 @@ function kbf_dashboard_profile_tab($business_id) {
                   }
               })
               .catch(err => {
-                  console.error('Didit Error:', err);
                   msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed.</div>';
               })
               .finally(() => { btn.disabled=false; btn.textContent='Verify Identity'; });
         });
     })();
 
-    // Save profile
+    // ===== SAVE PROFILE =====
+    /**
+     * @function  kbfSaveProfile
+     * @purpose   Validates the profile form, submits it via AJAX, and reloads the page on success
+     * @used-by   onclick on #kbf-profile-save-btn (Save Changes button)
+     * @calls     window.updateAddress, fetch(ajaxurl), FormData, JSON.parse
+     * @params    string nonce — WordPress AJAX nonce string
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfSaveProfile = function(nonce){
-        console.log('=== SAVE PROFILE START ===');
         const form = document.getElementById('kbf-profile-form');
         const msgEl = document.getElementById('kbf-profile-msg');
         const btn = document.getElementById('kbf-profile-save-btn') || document.querySelector('.kbf-profile-save-bar .kbf-btn-primary');
-        console.log('Form:', form);
-        console.log('Button:', btn);
-        if(!btn){ console.error('Save button not found'); return; }
-        if(!form){ console.error('Form not found'); return; }
+        if(!btn || !form) return;
+
+        // Ensure address hidden field is synced before submit
+        if(typeof updateAddress === 'function') updateAddress();
+
         let isValid = true, errors = [];
         function showErr(input, msg){
             input.classList.add('kbf-input-error');
@@ -902,103 +1114,48 @@ function kbf_dashboard_profile_tab($business_id) {
                 err.textContent=msg; err.style.display='block';
             }
             errors.push(msg); isValid = false;
-            console.warn('Validation error:', msg);
         }
         // Validation: Display Name
         const dn = form.querySelector('[name="display_name"]');
-        console.log('Display name:', dn ? dn.value : 'NOT FOUND');
         if(!dn || !dn.value.trim()) showErr(dn, 'Display name is required.');
         // Validation: Bio
         const bio = form.querySelector('textarea[name="bio"]');
-        console.log('Bio length:', bio ? bio.value.length : 0);
         if(bio && bio.value.length > 250) showErr(bio, 'Bio must be 250 characters or less.');
         // Validation: Payout
         const pType = form.querySelector('[name="payout_type"]');
         const pName = form.querySelector('[name="payout_name"]');
         const pNum = form.querySelector('[name="payout_number"]');
-        console.log('Payout type:', pType ? pType.value : 'empty');
         if(pType && pType.value){
             if(!pName.value.trim()) showErr(pName, 'Account name is required.');
             if(!pNum.value.trim()) showErr(pNum, 'Account number is required.');
         }
-        console.log('Is valid:', isValid);
         if(!isValid){
             msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+errors[0]+'</div>';
             msgEl.scrollIntoView({behavior:'smooth', block:'center'});
-            console.log('=== SAVE PROFILE FAILED (VALIDATION) ===');
             return;
         }
-        console.log('Disabling button and sending request...');
         btn.disabled = true; btn.textContent = 'Saving...';
         const fd = new FormData(form);
         fd.append('action', 'kbf_save_organizer_profile');
         fd.append('_ajax_nonce', nonce);
-        const formDataObj = Object.fromEntries(fd);
-        console.log('Form data to send:', formDataObj);
-        console.log('AJAX URL:', ajaxurl);
         fetch(ajaxurl, {method:'POST', body:fd})
           .then(r => r.text())
           .then(text => {
-              // Strip BOM characters that sometimes appear in PHP responses
               const cleanText = text.replace(/^\uFEFF+/, '').trim();
-              console.log('Cleaned response text (first 100 chars):', cleanText.substring(0, 100));
-              try {
-                  return JSON.parse(cleanText);
-              } catch(e) {
-                  console.error('JSON parse error:', e);
-                  console.error('Raw text:', cleanText);
-                  throw e;
-              }
+              return JSON.parse(cleanText);
           })
           .then(j => {
-              console.log('=== RESPONSE DATA ===');
-              console.log('Success:', j.success);
-              console.log('Message:', j.data?.message || j.message);
-              console.log('Full response:', j);
               if(j.success){
-                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-success">Profile saved successfully!</div>';
-                  console.log('Success message displayed');
-                  // Update topbar avatar and name immediately
-                  if(j.data && j.data.avatar_url){
-                      console.log('Updating avatar:', j.data.avatar_url);
-                      var navbarAvatar = document.getElementById('kbf-navbar-avatar');
-                      if(navbarAvatar){
-                          navbarAvatar.src = j.data.avatar_url;
-                          var fallback = navbarAvatar.parentElement.querySelector('.kbf-dashboard-avatar-fallback');
-                          if(fallback) fallback.style.display = 'none';
-                          navbarAvatar.style.display = 'block';
-                          console.log('Avatar updated successfully');
-                      } else {
-                          console.warn('Navbar avatar element not found');
-                      }
-                  }
-                  if(j.data && j.data.display_name){
-                      console.log('Updating display name:', j.data.display_name);
-                      var navbarName = document.querySelector('.kbf-dashboard-name');
-                      if(navbarName) navbarName.textContent = j.data.display_name;
-                      console.log('Display name updated successfully');
-                  }
-                  // If onboarding is now complete, remove the modal and its backdrop from DOM.
-                  if(j.data && j.data.onboarding_done){
-                      var backdrop = document.getElementById('kbf-onboard-backdrop');
-                      var card = document.getElementById('kbf-onboard-card');
-                      if(backdrop) backdrop.remove();
-                      if(card) card.remove();
-                      document.documentElement.classList.remove('kbf-onboard-open');
-                  }
-                  setTimeout(() => location.reload(), 1200);
+                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-success">Profile saved successfully! Reloading...</div>';
+                  setTimeout(() => location.reload(), 800);
               } else {
-                  console.error('Save failed - server returned error');
                   msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+((j.data && j.data.message) || 'Save failed.')+'</div>';
                   btn.disabled = false; btn.textContent = 'Save Changes';
-                  console.log('=== SAVE PROFILE COMPLETED (ERROR) ===');
               }
           })
           .catch(err => {
-              console.error('Fetch error:', err);
               msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed.</div>';
               btn.disabled = false; btn.textContent = 'Save Changes';
-              console.log('=== SAVE PROFILE COMPLETED (EXCEPTION) ===');
           });
     };
     </script>
