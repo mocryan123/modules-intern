@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
     function kbf_fund_details_load_fund($wpdb, $ft, $current_user_id) {
@@ -45,8 +45,8 @@ function bntm_shortcode_kbf_fund_details() {
 
     $st = $wpdb->prefix.'kbf_sponsorships';
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
-    $pct      = $fund->goal_amount>0 ? min(100,($fund->raised_amount/$fund->goal_amount)*100) : 0;
-    $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND message IS NOT NULL AND message != '' ORDER BY created_at DESC LIMIT 20",$fund->id));
+    $pct = $fund->goal_amount > 0 ? min(100, round(($fund->raised_amount / $fund->goal_amount) * 100)) 
+    : 0;    $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND message IS NOT NULL AND message != '' ORDER BY created_at DESC LIMIT 20",$fund->id));
     $sponsor_count = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND is_anonymous=0",$fund->id));
     // Leaderboard: non-anonymous grouped by name, each anonymous donation as separate row
     $leaderboard = $wpdb->get_results($wpdb->prepare(

@@ -222,15 +222,18 @@
         max-width:1120px;
         margin:0 auto;
         padding:0;
+        padding-top:84px;
         box-sizing:border-box;
     }
     @media (max-width: 1200px){
         .kbf-dashboard-shell{
             padding:0;
+            padding-top:84px;
         }
     }
     .kbf-tab-content{
         margin-bottom:24px;
+        overflow:visible !important;
     }
     .kbf-topbar{
         display:flex;
@@ -548,6 +551,10 @@
     }
     .kbf-user-ui{
         background-image:none !important;
+    }
+    .kbf-user-ui .kbf-wrap{
+        padding:0 !important;
+        overflow:visible !important;
     }
     .kbf-user-ui{
     font-family: "Poppins",system-ui,-apple-system,sans-serif;

@@ -218,7 +218,6 @@ function kbf_global_assets() {
         padding:0 !important;
         top:0 !important;
         background: transparent;
-        overflow:auto;
     }
     body.admin-bar{
         margin-top:0 !important;
@@ -2151,10 +2150,9 @@ function kbf_global_assets() {
                 .then(r => r.json())
                 .then(data => {
                     const a = data.address || {};
-                    // Build a readable city/province string from Nominatim result
-                    const city     = a.city || a.municipality || a.town || a.village || a.county || '';
-                    const province = a.state || a.province || a.region || '';
-                    const place    = province && city ? province + ', ' + city : (province || city || data.display_name.split(',').slice(0,2).join(',').trim());
+                    // Only municipality/city level (skip province/region)
+                    const city = a.city || a.municipality || a.town || a.village || a.county || '';
+                    const place = city || data.display_name.split(',').slice(0,2).join(',').trim();
                     if (input) { input.value = place; input.focus(); }
                     if (btn)   { btn.innerHTML = origText; btn.disabled = false; }
                     // Auto-submit the form
@@ -2174,7 +2172,7 @@ function kbf_global_assets() {
         );
     };
     // Find Funds tab alias
-    window.kbffNearMe = function() { kbfNearMe('kbff-loc-input','kbff-search-form'); };
+    window.kbffNearMe = function() { kbfNearMe('kbff-search-input','kbff-search-form'); };
     </script>
     <?php
     if (function_exists('kbf_render_loading_overlay')) {

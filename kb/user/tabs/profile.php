@@ -8,6 +8,7 @@ function kbf_dashboard_profile_tab($business_id) {
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
     $profile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$business_id));
     $user = get_userdata($business_id);
+    $avatar = $profile && !empty($profile->avatar_url) ? $profile->avatar_url : '';
     $socials = $profile && $profile->social_links ? json_decode($profile->social_links,true) : [];
     $profile_value = function($key, $default = '') use ($profile) {
         return ($profile && isset($profile->$key)) ? $profile->$key : $default;
@@ -661,7 +662,7 @@ function kbf_dashboard_profile_tab($business_id) {
       <?php else: ?>
         <button type="button" class="kbf-btn kbf-btn-secondary" id="fundora-didit-start"><i class="ph ph-shield-check" style="margin-right:4px;"></i> Verify Identity</button>
       <?php endif; ?>
-      <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSaveProfile('<?php echo $nonce; ?>')">Save Changes</button>
+      <button type="button" class="kbf-btn kbf-btn-primary" id="kbf-profile-save-btn" onclick="kbfSaveProfile('<?php echo $nonce; ?>')">Save Changes</button>
     </div>
 
     <!-- Image Cropper -->
@@ -883,9 +884,14 @@ function kbf_dashboard_profile_tab($business_id) {
 
     // Save profile
     window.kbfSaveProfile = function(nonce){
+        console.log('=== SAVE PROFILE START ===');
         const form = document.getElementById('kbf-profile-form');
         const msgEl = document.getElementById('kbf-profile-msg');
-        const btn = document.querySelector('.kbf-profile-save-bar .kbf-btn-primary');
+        const btn = document.getElementById('kbf-profile-save-btn') || document.querySelector('.kbf-profile-save-bar .kbf-btn-primary');
+        console.log('Form:', form);
+        console.log('Button:', btn);
+        if(!btn){ console.error('Save button not found'); return; }
+        if(!form){ console.error('Form not found'); return; }
         let isValid = true, errors = [];
         function showErr(input, msg){
             input.classList.add('kbf-input-error');
@@ -896,35 +902,82 @@ function kbf_dashboard_profile_tab($business_id) {
                 err.textContent=msg; err.style.display='block';
             }
             errors.push(msg); isValid = false;
+            console.warn('Validation error:', msg);
         }
         // Validation: Display Name
         const dn = form.querySelector('[name="display_name"]');
-        if(!dn.value.trim()) showErr(dn, 'Display name is required.');
+        console.log('Display name:', dn ? dn.value : 'NOT FOUND');
+        if(!dn || !dn.value.trim()) showErr(dn, 'Display name is required.');
         // Validation: Bio
         const bio = form.querySelector('textarea[name="bio"]');
+        console.log('Bio length:', bio ? bio.value.length : 0);
         if(bio && bio.value.length > 250) showErr(bio, 'Bio must be 250 characters or less.');
         // Validation: Payout
         const pType = form.querySelector('[name="payout_type"]');
         const pName = form.querySelector('[name="payout_name"]');
         const pNum = form.querySelector('[name="payout_number"]');
+        console.log('Payout type:', pType ? pType.value : 'empty');
         if(pType && pType.value){
             if(!pName.value.trim()) showErr(pName, 'Account name is required.');
             if(!pNum.value.trim()) showErr(pNum, 'Account number is required.');
         }
+        console.log('Is valid:', isValid);
         if(!isValid){
             msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+errors[0]+'</div>';
             msgEl.scrollIntoView({behavior:'smooth', block:'center'});
+            console.log('=== SAVE PROFILE FAILED (VALIDATION) ===');
             return;
         }
+        console.log('Disabling button and sending request...');
         btn.disabled = true; btn.textContent = 'Saving...';
         const fd = new FormData(form);
         fd.append('action', 'kbf_save_organizer_profile');
         fd.append('_ajax_nonce', nonce);
+        const formDataObj = Object.fromEntries(fd);
+        console.log('Form data to send:', formDataObj);
+        console.log('AJAX URL:', ajaxurl);
         fetch(ajaxurl, {method:'POST', body:fd})
-          .then(r => r.json())
+          .then(r => r.text())
+          .then(text => {
+              // Strip BOM characters that sometimes appear in PHP responses
+              const cleanText = text.replace(/^\uFEFF+/, '').trim();
+              console.log('Cleaned response text (first 100 chars):', cleanText.substring(0, 100));
+              try {
+                  return JSON.parse(cleanText);
+              } catch(e) {
+                  console.error('JSON parse error:', e);
+                  console.error('Raw text:', cleanText);
+                  throw e;
+              }
+          })
           .then(j => {
+              console.log('=== RESPONSE DATA ===');
+              console.log('Success:', j.success);
+              console.log('Message:', j.data?.message || j.message);
+              console.log('Full response:', j);
               if(j.success){
                   msgEl.innerHTML = '<div class="kbf-alert kbf-alert-success">Profile saved successfully!</div>';
+                  console.log('Success message displayed');
+                  // Update topbar avatar and name immediately
+                  if(j.data && j.data.avatar_url){
+                      console.log('Updating avatar:', j.data.avatar_url);
+                      var navbarAvatar = document.getElementById('kbf-navbar-avatar');
+                      if(navbarAvatar){
+                          navbarAvatar.src = j.data.avatar_url;
+                          var fallback = navbarAvatar.parentElement.querySelector('.kbf-dashboard-avatar-fallback');
+                          if(fallback) fallback.style.display = 'none';
+                          navbarAvatar.style.display = 'block';
+                          console.log('Avatar updated successfully');
+                      } else {
+                          console.warn('Navbar avatar element not found');
+                      }
+                  }
+                  if(j.data && j.data.display_name){
+                      console.log('Updating display name:', j.data.display_name);
+                      var navbarName = document.querySelector('.kbf-dashboard-name');
+                      if(navbarName) navbarName.textContent = j.data.display_name;
+                      console.log('Display name updated successfully');
+                  }
                   // If onboarding is now complete, remove the modal and its backdrop from DOM.
                   if(j.data && j.data.onboarding_done){
                       var backdrop = document.getElementById('kbf-onboard-backdrop');
@@ -935,13 +988,17 @@ function kbf_dashboard_profile_tab($business_id) {
                   }
                   setTimeout(() => location.reload(), 1200);
               } else {
+                  console.error('Save failed - server returned error');
                   msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+((j.data && j.data.message) || 'Save failed.')+'</div>';
                   btn.disabled = false; btn.textContent = 'Save Changes';
+                  console.log('=== SAVE PROFILE COMPLETED (ERROR) ===');
               }
           })
           .catch(err => {
+              console.error('Fetch error:', err);
               msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed.</div>';
               btn.disabled = false; btn.textContent = 'Save Changes';
+              console.log('=== SAVE PROFILE COMPLETED (EXCEPTION) ===');
           });
     };
     </script>

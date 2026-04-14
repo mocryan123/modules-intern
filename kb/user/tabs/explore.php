@@ -153,8 +153,9 @@ function kbf_dashboard_find_funds_tab() {
         to{opacity:1;transform:translateY(0) scale(1);}
       }
       .kbf-payment-banner-accent{
-        height:4px;
+        height:0;
         width:100%;
+        display:none;
       }
       .kbf-payment-banner-success .kbf-payment-banner-accent{
         background:linear-gradient(90deg,#22c55e 0%,#16a34a 60%,#15803d 100%);
@@ -167,9 +168,16 @@ function kbf_dashboard_find_funds_tab() {
       }
       .kbf-payment-banner-inner{
         display:flex;
-        align-items:flex-start;
+        align-items:center;
         gap:16px;
-        padding:24px 26px 20px;
+        padding:20px 24px;
+      }
+      .kbf-payment-banner-content-wrap{
+        flex:1;
+        min-width:0;
+        display:flex;
+        align-items:center;
+        gap:16px;
       }
       .kbf-payment-banner-icon{
         width:48px;
@@ -211,8 +219,8 @@ function kbf_dashboard_find_funds_tab() {
       .kbf-payment-banner-message{
         font-size:14px;
         color:var(--kbf-slate);
-        margin:0 0 12px;
-        line-height:1.65;
+        margin:0 0 10px;
+        line-height:1.6;
       }
       .kbf-payment-banner-message strong{
         color:var(--kbf-navy);
@@ -237,35 +245,34 @@ function kbf_dashboard_find_funds_tab() {
       }
       .kbf-payment-banner-actions{
         display:flex;
-        flex-direction:column;
+        flex-direction:row;
+        align-items:center;
         gap:8px;
         flex-shrink:0;
-        min-width:150px;
       }
       .kbf-payment-banner-actions .kbf-btn{
-        width:100%;
-        height:38px;
-        font-size:12.5px;
+        height:36px;
+        padding:0 16px;
+        font-size:13px;
         font-weight:600;
         justify-content:center;
-        border-radius:10px;
+        border-radius:8px;
+        white-space:nowrap;
       }
       .kbf-payment-banner-dismiss{
-        position:absolute;
-        top:14px;
-        right:14px;
-        width:32px;
-        height:32px;
-        border-radius:8px;
+        width:28px;
+        height:28px;
+        border-radius:6px;
         border:none;
         background:transparent;
         color:#94a3b8;
-        font-size:18px;
+        font-size:16px;
         cursor:pointer;
         display:flex;
         align-items:center;
         justify-content:center;
         transition:background .15s, color .15s;
+        flex-shrink:0;
       }
       .kbf-payment-banner-dismiss:hover{
         background:#f1f5f9;
@@ -294,22 +301,25 @@ function kbf_dashboard_find_funds_tab() {
       @media (max-width: 900px){
         .kbf-payment-banner-inner{
           flex-direction:column;
-          align-items:center;
-          text-align:center;
+          align-items:stretch;
           gap:14px;
-          padding:22px 20px 18px;
+          padding:18px 20px;
+        }
+        .kbf-payment-banner-content-wrap{
+          flex-direction:column;
+          align-items:flex-start;
+          gap:12px;
+        }
+        .kbf-payment-banner-content{
+          width:100%;
         }
         .kbf-payment-banner-actions{
           width:100%;
-          min-width:0;
           flex-direction:row;
+          justify-content:space-between;
         }
         .kbf-payment-banner-actions .kbf-btn{
           flex:1;
-        }
-        .kbf-payment-banner-dismiss{
-          top:10px;
-          right:10px;
         }
       }
       @media (max-width: 600px){
@@ -317,18 +327,25 @@ function kbf_dashboard_find_funds_tab() {
           border-radius:16px;
         }
         .kbf-payment-banner-inner{
-          padding:20px 16px 16px;
+          padding:16px;
         }
         .kbf-payment-banner-icon{
-          width:42px;
-          height:42px;
-          font-size:22px;
+          width:40px;
+          height:40px;
+          font-size:20px;
         }
         .kbf-payment-banner-title{
-          font-size:16px;
+          font-size:15px;
         }
         .kbf-payment-banner-message{
           font-size:13px;
+          margin:0 0 6px;
+        }
+        .kbf-payment-banner-actions{
+          flex-direction:column;
+        }
+        .kbf-payment-banner-actions .kbf-btn{
+          width:100%;
         }
       }
       @media (prefers-reduced-motion: reduce){
@@ -865,19 +882,18 @@ function kbf_dashboard_find_funds_tab() {
     <?php if ($payment_banner_data): ?>
     <div id="kbf-payment-banner" class="kbf-payment-banner kbf-payment-banner-<?php echo esc_attr($payment_banner_data['type']); ?>">
       <div class="kbf-payment-banner-accent"></div>
-      <button type="button" class="kbf-payment-banner-dismiss" onclick="kbfDismissPaymentBanner()" aria-label="Dismiss">
-        <i class="ph ph-x" aria-hidden="true"></i>
-      </button>
       <div class="kbf-payment-banner-inner">
-        <div class="kbf-payment-banner-icon">
-          <i class="<?php echo esc_attr($payment_banner_data['icon']); ?>" aria-hidden="true"></i>
-        </div>
-        <div class="kbf-payment-banner-content">
-          <h4 class="kbf-payment-banner-title"><?php echo esc_html($payment_banner_data['title']); ?></h4>
-          <p class="kbf-payment-banner-message"><?php echo $payment_banner_data['message']; ?></p>
-          <div class="kbf-payment-banner-countdown">
-            <i class="ph ph-clock" aria-hidden="true"></i>
-            <span>Redirecting in <strong id="kbf-payment-countdown"><?php echo (int)$payment_banner_data['countdown']; ?></strong>s</span>
+        <div class="kbf-payment-banner-content-wrap">
+          <div class="kbf-payment-banner-icon">
+            <i class="<?php echo esc_attr($payment_banner_data['icon']); ?>" aria-hidden="true"></i>
+          </div>
+          <div class="kbf-payment-banner-content">
+            <h4 class="kbf-payment-banner-title"><?php echo esc_html($payment_banner_data['title']); ?></h4>
+            <p class="kbf-payment-banner-message"><?php echo $payment_banner_data['message']; ?></p>
+            <div class="kbf-payment-banner-countdown">
+              <i class="ph ph-clock" aria-hidden="true"></i>
+              <span>Redirecting in <strong id="kbf-payment-countdown"><?php echo (int)$payment_banner_data['countdown']; ?></strong>s</span>
+            </div>
           </div>
         </div>
         <div class="kbf-payment-banner-actions">
@@ -886,6 +902,9 @@ function kbf_dashboard_find_funds_tab() {
           </a>
           <button type="button" class="kbf-btn kbf-btn-secondary kbf-payment-btn-dismiss" onclick="kbfDismissPaymentBanner()">
             Stay here
+          </button>
+          <button type="button" class="kbf-payment-banner-dismiss" onclick="kbfDismissPaymentBanner()" aria-label="Dismiss">
+            <i class="ph ph-x" aria-hidden="true"></i>
           </button>
         </div>
       </div>
@@ -1030,7 +1049,7 @@ function kbf_dashboard_find_funds_tab() {
     <!-- Header -->
     <div style="background:#fff;border:none;border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:none;">
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-        <form method="GET" style="display:flex;gap:8px;flex-wrap:nowrap;flex:1;align-items:center;min-width:0;overflow:visible;" id="kbff-search-form">
+        <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;align-items:center;min-width:0;" id="kbff-search-form">
           <input type="hidden" name="kbf_tab" value="find_funds">
           <?php if($cat): ?><input type="hidden" name="ff_cat" value="<?php echo esc_attr($cat); ?>"><?php endif; ?>
           <?php if($sort && $sort!=='newest'): ?><input type="hidden" name="ff_sort" value="<?php echo esc_attr($sort); ?>"><?php endif; ?>
@@ -1042,34 +1061,29 @@ function kbf_dashboard_find_funds_tab() {
             <span class="kbff-filter-badge <?php echo $active_filters ? '' : 'is-hidden'; ?>" id="kbff-filter-badge"><?php echo (int)$active_filters; ?></span>
           </button>
 
-          <div id="kbff-cat-select-wrap">
-          <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:140px;">
+          <div id="kbff-cat-select-wrap" style="display:flex;align-items:center;gap:8px;margin:0;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <i class="ph ph-tag kbf-icon" style="font-size:14px" aria-hidden="true"></i>
             </span>
-            <select id="kbff-cat-select" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:140px;">
+            <select id="kbff-cat-select" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:160px;">
               <option value="">All Categories</option>
               <?php foreach($cats as $c): ?>
                 <option value="<?php echo esc_attr($c); ?>" <?php echo $cat===$c?'selected':''; ?>><?php echo $c; ?></option>
               <?php endforeach; ?>
             </select>
           </div>
-          </div>
-          <div id="kbff-sort-select-wrap">
-          <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:130px;">
+          <div id="kbff-sort-select-wrap" style="display:flex;align-items:center;gap:8px;margin:0;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <i class="ph ph-funnel kbf-icon" style="font-size:14px" aria-hidden="true"></i>
             </span>
-            <select id="kbff-sort-select" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:130px;">
+            <select id="kbff-sort-select" style="padding:7px 10px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:12.5px;background:#fff;color:var(--kbf-text);min-width:140px;">
               <option value="newest" <?php echo ($sort==='newest'||!$sort)?'selected':''; ?>>Newest</option>
               <option value="most_funded" <?php echo $sort==='most_funded'?'selected':''; ?>>Most Funded</option>
               <option value="ending_soon" <?php echo $sort==='ending_soon'?'selected':''; ?>>Ending Soon</option>
             </select>
           </div>
-          </div>
 
-          <div id="kbff-saved-select-wrap">
-          <div class="kbf-form-group" style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin:0;min-width:130px;">
+          <div id="kbff-saved-select-wrap" style="display:flex;align-items:center;gap:8px;margin:0;">
             <span style="width:28px;height:28px;border-radius:8px;background:#eef4ff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">
               <i class="ph-fill ph-bookmark-simple kbf-icon" style="font-size:14px" aria-hidden="true"></i>
             </span>
@@ -1078,10 +1092,9 @@ function kbf_dashboard_find_funds_tab() {
               <option value="1" <?php echo $saved_only ? 'selected' : ''; ?>>Saved</option>
             </select>
           </div>
-          </div>
 
           <input type="text" name="ff_q" id="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer..." style="flex:1 1 220px;min-width:200px;height:38px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--kbf-border);font-size:13px;background:#fff;color:var(--kbf-text);">
-          <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;min-width:38px;width:38px;padding:0;" aria-label="Near Me">
+          <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary" style="white-space:nowrap;width:38px;height:38px;padding:0;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;" aria-label="Near Me">
             <i class="ph ph-map-pin kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
           </button>
           <button type="submit" class="kbf-btn kbf-btn-primary">
