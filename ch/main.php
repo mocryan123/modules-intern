@@ -335,6 +335,23 @@ function ch_get_auth_url($tab = 'login', $redirect_to = '') {
     return add_query_arg($args, $base);
 }
 
+function ch_establish_user_session($user, $remember = false) {
+    $user = $user instanceof WP_User ? $user : get_user_by('id', (int) $user);
+    if (!$user) {
+        return false;
+    }
+
+    // Reset local auth state before issuing a new login cookie so account
+    // switching and stale browser sessions do not interfere with sign-in.
+    wp_set_current_user(0);
+    wp_clear_auth_cookie();
+
+    wp_set_current_user($user->ID);
+    wp_set_auth_cookie($user->ID, (bool) $remember, is_ssl());
+
+    return true;
+}
+
 add_action('wp_enqueue_scripts', function() {
     if (!bntm_ch_is_frontend_context()) return;
 
@@ -787,8 +804,7 @@ function bntm_shortcode_ch_auth() {
         if (!is_wp_error($result)) {
             $verified_user = get_user_by('id', $verify_user_id);
             if ($verified_user instanceof WP_User) {
-                wp_set_current_user($verified_user->ID);
-                wp_set_auth_cookie($verified_user->ID, true, is_ssl());
+                ch_establish_user_session($verified_user, true);
                 ch_ensure_profile($verified_user->ID);
 
                 $redirect_after_verify = esc_url_raw(wp_unslash($_GET['redirect_to'] ?? ''));
@@ -1351,8 +1367,7 @@ function bntm_ajax_ch_login() {
     // Use is_ssl() so the Secure flag always matches the site's actual
     // protocol. This is the key fix for live servers behind proxies or
     // load balancers where wp_signon()'s internal check can disagree.
-    wp_set_current_user( $user->ID );
-    wp_set_auth_cookie( $user->ID, $remember, is_ssl() );
+    ch_establish_user_session($user, $remember);
     do_action( 'wp_login', $user->user_login, $user );
  
     // ── Step 4: Ensure CivicHub profile row exists ──────────────────────────
