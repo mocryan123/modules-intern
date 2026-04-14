@@ -663,6 +663,7 @@ function bntm_shortcode_ch() {
                         .then(function(json) {
                             if (json.success) {
                                 postsContent.innerHTML = json.data.html;
+                                if (window.chRunEmbeddedScripts) window.chRunEmbeddedScripts(postsContent);
 
                                 var url = new URL(window.location.href);
                                 url.searchParams.set('filter', filter);
@@ -705,6 +706,7 @@ function bntm_shortcode_ch() {
                         .then(function(json) {
                             if (json.success) {
                                 postsContent.innerHTML = json.data.html;
+                                if (window.chRunEmbeddedScripts) window.chRunEmbeddedScripts(postsContent);
                                 var url = new URL(window.location.href);
                                 url.searchParams.set('s', search);
                                 url.searchParams.set('cat', cat);
@@ -763,6 +765,7 @@ function bntm_shortcode_ch() {
                         .then(function(json) {
                             if (json.success) {
                                 usersContent.innerHTML = json.data.html;
+                                if (window.chRunEmbeddedScripts) window.chRunEmbeddedScripts(usersContent);
 
                                 var url = new URL(window.location.href);
                                 url.searchParams.set('status', status);
@@ -802,6 +805,7 @@ function bntm_shortcode_ch() {
                         .then(function(json) {
                             if (json.success) {
                                 usersContent.innerHTML = json.data.html;
+                                if (window.chRunEmbeddedScripts) window.chRunEmbeddedScripts(usersContent);
                                 var url = new URL(window.location.href);
                                 url.searchParams.set('s', search);
                                 history.replaceState(null, '', url.toString());
@@ -858,6 +862,7 @@ function bntm_shortcode_ch() {
                         .then(function(json) {
                             if (json.success) {
                                 reportsContent.innerHTML = json.data.html;
+                                if (window.chRunEmbeddedScripts) window.chRunEmbeddedScripts(reportsContent);
 
                                 var url = new URL(window.location.href);
                                 url.searchParams.set('rstatus', rstatus);
@@ -896,6 +901,7 @@ function bntm_shortcode_ch() {
                 .then(function(json) {
                     if (json.success) {
                         content.innerHTML = json.data.html;
+                        if (window.chRunEmbeddedScripts) window.chRunEmbeddedScripts(content);
 
                         var url = new URL(window.location.href);
                         url.searchParams.set('tab', tab);
@@ -3230,6 +3236,7 @@ function bntm_shortcode_ch_my_feed() {
                 .then(function(json) {
                     if (json.success) {
                         content.innerHTML = json.data.html;
+                        if (window.chRunEmbeddedScripts) window.chRunEmbeddedScripts(content);
 
                         // Update URL
                         var url = new URL(window.location.href);

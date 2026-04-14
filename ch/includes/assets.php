@@ -2709,6 +2709,20 @@ function ch_global_scripts() {
             setTimeout(() => location.reload(), delay);
         };
 
+        // Scripts inside HTML assigned via innerHTML do not run automatically.
+        // Recreate them so AJAX-loaded tabs can register their handlers and boot logic.
+        window.chRunEmbeddedScripts = function(root) {
+            if (!root) return;
+            root.querySelectorAll('script').forEach(function(oldScript) {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes || []).forEach(function(attr) {
+                    newScript.setAttribute(attr.name, attr.value);
+                });
+                newScript.textContent = oldScript.textContent || '';
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        };
+
         window.chOpenModal = function(id) {
             const el = document.getElementById(id);
             if (el) { el.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
