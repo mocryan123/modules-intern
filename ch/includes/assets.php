@@ -677,7 +677,7 @@ function ch_global_styles() {
     .bntm-notice-warning { background: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b; }
 
     /* FEED LAYOUT */
-    .ch-feed-wrap { display: flex; gap: 24px; max-width: 1120px; margin: 0 auto; padding: 24px 20px; align-items: flex-start; }
+    .ch-feed-wrap { display: flex; gap: 24px; max-width: 100%; max-height: 100%; margin: 0 auto; padding: 24px 20px; align-items: flex-start; }
     .ch-feed-shell { position: relative; }
     .ch-feed-loading-overlay {
         position: fixed; inset: 0; z-index: 9999;
