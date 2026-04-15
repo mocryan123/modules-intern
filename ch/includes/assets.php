@@ -678,6 +678,38 @@ function ch_global_styles() {
 
     /* FEED LAYOUT */
     .ch-feed-wrap { display: flex; gap: 24px; max-width: 1120px; margin: 0 auto; padding: 24px 20px; align-items: flex-start; }
+    .ch-feed-shell { position: relative; }
+    .ch-feed-loading-overlay {
+        position: fixed; inset: 0; z-index: 9999;
+        display: none; align-items: center; justify-content: center;
+        background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        pointer-events: none;
+    }
+    body.ch-feed-loading-active .ch-feed-loading-overlay {
+        display: flex;
+        pointer-events: auto;
+    }
+    .ch-feed-loading-inner {
+        display: flex; align-items: center; gap: 14px; padding: 18px 22px;
+        background: rgba(255,255,255,0.94); border-radius: 16px; border: 1px solid var(--ch-border);
+        box-shadow: var(--ch-shadow-md); backdrop-filter: none;
+    }
+    .ch-feed-loading-spinner {
+        width: 32px; height: 32px; border-radius: 50%;
+        border: 3px solid rgba(255,117,81,0.22); border-top-color: var(--ch-accent); animation: ch-feed-spin 0.9s linear infinite;
+    }
+    .ch-feed-loading-copy { font-size: 14px; font-weight: 700; color: var(--ch-text); }
+    @keyframes ch-feed-spin {
+        to { transform: rotate(360deg); }
+    }
+    .ch-feed-shell-loading .ch-feed-wrap,
+    .ch-feed-shell-loading .ch-special-page-wrap,
+    .ch-feed-shell-loading .ch-mf-page-wrap,
+    .ch-feed-shell-loading .ch-post-view-wrap {
+        filter: blur(3px); opacity: 0.45;
+        pointer-events: none;
+        transition: opacity 0.2s ease, filter 0.2s ease;
+    }
     .ch-feed-sidebar { width: 220px; flex-shrink: 0; }
     .ch-feed-main { flex: 1; min-width: 0; }
     .ch-sidebar-widget { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 14px; margin-bottom: 14px; box-shadow: var(--ch-shadow-sm); }
@@ -3829,6 +3861,21 @@ function ch_settings_modal_html($logout_url = '') {
                     });
             }
 
+            function chShowFeedLoadingOverlay() {
+                document.body.classList.add('ch-feed-loading-active');
+                var shell = document.querySelector('.ch-feed-shell');
+                if (shell) shell.classList.add('ch-feed-shell-loading');
+            }
+
+            function chHideFeedLoadingOverlay() {
+                document.body.classList.remove('ch-feed-loading-active');
+                var shell = document.querySelector('.ch-feed-shell');
+                if (shell) shell.classList.remove('ch-feed-shell-loading');
+            }
+
+            window.chShowFeedLoadingOverlay = chShowFeedLoadingOverlay;
+            window.chHideFeedLoadingOverlay = chHideFeedLoadingOverlay;
+
             window.chLoadFeedShell = chLoadFeedShell;
             window.chHandleFeedNavClick = function(link, event) {
                 if (!chCanSoftLoadFeedLink(link)) return true;
@@ -3838,21 +3885,30 @@ function ch_settings_modal_html($logout_url = '') {
                 }
 
                 if (chCanAjaxLoadFeedLink(link)) {
+                    chShowFeedLoadingOverlay();
                     chAjaxLoadFeedLink(link, true).catch(function() {
                         window.location.href = link.href;
+                    }).finally(function() {
+                        chHideFeedLoadingOverlay();
                     });
                     return false;
                 }
 
                 if (link.dataset.chFeedNav === 'my_feed' && typeof window.chLoadMyFeedShell === 'function') {
+                    chShowFeedLoadingOverlay();
                     window.chLoadMyFeedShell(link.href, true).catch(function() {
                         window.location.href = link.href;
+                    }).finally(function() {
+                        chHideFeedLoadingOverlay();
                     });
                     return false;
                 }
 
+                chShowFeedLoadingOverlay();
                 chLoadFeedShell(link.href, true).catch(function() {
                     window.location.href = link.href;
+                }).finally(function() {
+                    chHideFeedLoadingOverlay();
                 });
                 return false;
             };

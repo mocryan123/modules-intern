@@ -3788,6 +3788,13 @@ function bntm_shortcode_ch_feed() {
         </div>
     </nav>
 
+    <div class="ch-feed-loading-overlay" aria-hidden="true">
+        <div class="ch-feed-loading-inner">
+            <div class="ch-feed-loading-spinner" aria-hidden="true"></div>
+            <div class="ch-feed-loading-copy">Loading feed…</div>
+        </div>
+    </div>
+
     <?php if ($tab === 'my_feed'): ?>
     <div class="ch-mf-page-wrap">
         <?php echo bntm_shortcode_ch_my_feed(); ?>
