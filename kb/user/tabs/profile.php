@@ -3,6 +3,20 @@
  * KBF user dashboard tab: Profile (Enhanced UX)
  */
 
+// Constants for magic numbers
+if ( ! defined( 'KBF_PROFILE_BIO_MAX_LENGTH' ) ) {
+    define( 'KBF_PROFILE_BIO_MAX_LENGTH', 250 );
+}
+if ( ! defined( 'KBF_PROFILE_SOCIAL_NAME_MAX_LENGTH' ) ) {
+    define( 'KBF_PROFILE_SOCIAL_NAME_MAX_LENGTH', 30 );
+}
+if ( ! defined( 'KBF_PROFILE_DISPLAY_NAME_MAX_LENGTH' ) ) {
+    define( 'KBF_PROFILE_DISPLAY_NAME_MAX_LENGTH', 50 );
+}
+if ( ! defined( 'KBF_PROFILE_CHECKLIST_ITEMS' ) ) {
+    define( 'KBF_PROFILE_CHECKLIST_ITEMS', 5 );
+}
+
 /**
  * @function  kbf_dashboard_profile_tab
  * @purpose   Renders the full profile edit page (form, cropper, save bar) for the organizer dashboard
@@ -12,37 +26,62 @@
  * @returns   string — buffered HTML output of the profile tab
  * @status    ACTIVE
  */
-function kbf_dashboard_profile_tab($business_id) {
+function kbf_dashboard_profile_tab( $business_id ) {
+    // Sanitize input
+    $business_id = absint( $business_id );
+    if ( $business_id <= 0 ) {
+        return '<div class="kbf-alert kbf-alert-error">Invalid profile ID.</div>';
+    }
+
     global $wpdb;
-    $pt = $wpdb->prefix.'kbf_organizer_profiles';
-    $profile = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$business_id));
-    $user = get_userdata($business_id);
-    $avatar = $profile && !empty($profile->avatar_url) ? $profile->avatar_url : '';
-    $socials = $profile && $profile->social_links ? json_decode($profile->social_links,true) : [];
-    $profile_value = function($key, $default = '') use ($profile) {
-        return ($profile && isset($profile->$key)) ? $profile->$key : $default;
+    $pt = $wpdb->prefix . 'kbf_organizer_profiles';
+    $profile = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$pt} WHERE business_id=%d", $business_id ) );
+
+    $user = get_userdata( $business_id );
+    if ( ! $user ) {
+        return '<div class="kbf-alert kbf-alert-error">User not found.</div>';
+    }
+
+    $avatar = $profile && ! empty( $profile->avatar_url ) ? $profile->avatar_url : '';
+
+    // Safely decode JSON social links
+    $socials = array();
+    if ( $profile && ! empty( $profile->social_links ) ) {
+        $decoded = json_decode( $profile->social_links, true );
+        if ( is_array( $decoded ) ) {
+            $socials = $decoded;
+        }
+    }
+
+    $profile_value = function ( $key, $default = '' ) use ( $profile ) {
+        return ( $profile && isset( $profile->$key ) ) ? $profile->$key : $default;
     };
-    $payout_type = $profile_value('payout_type', '');
-    $payout_name = $profile_value('payout_name', '');
-    $payout_number = $profile_value('payout_number', '');
-    $phone = get_user_meta($business_id, 'kbf_phone', true);
-    $address = get_user_meta($business_id, 'kbf_address', true);
-    $social_name = get_user_meta($business_id, 'kbf_social_name', true);
-    $nonce = wp_create_nonce('kbf_organizer_profile');
-    $didit_status = get_user_meta($business_id, 'fundora_didit_verification_status', true);
-    $stats_total_raised = (float) $profile_value('total_raised', 0);
-    $stats_total_sponsors = (int) $profile_value('total_sponsors', 0);
-    $stats_rating = (float) $profile_value('rating', 0);
-    $stats_rating_count = (int) $profile_value('rating_count', 0);
+
+    $payout_type   = $profile_value( 'payout_type', '' );
+    $payout_name   = $profile_value( 'payout_name', '' );
+    $payout_number = $profile_value( 'payout_number', '' );
+
+    $phone       = sanitize_text_field( get_user_meta( $business_id, 'kbf_phone', true ) );
+    $address     = sanitize_text_field( get_user_meta( $business_id, 'kbf_address', true ) );
+    $social_name = sanitize_text_field( get_user_meta( $business_id, 'kbf_social_name', true ) );
+
+    $nonce        = wp_create_nonce( 'kbf_organizer_profile' );
+    $didit_status = get_user_meta( $business_id, 'fundora_didit_verification_status', true );
+
+    $stats_total_raised   = (float) $profile_value( 'total_raised', 0 );
+    $stats_total_sponsors = (int) $profile_value( 'total_sponsors', 0 );
+    $stats_rating         = (float) $profile_value( 'rating', 0 );
+    $stats_rating_count   = (int) $profile_value( 'rating_count', 0 );
 
     // Profile completion
-    $has_name = !empty(trim($user->display_name));
-    $has_social = !empty(trim($social_name));
-    $has_bio = $profile && !empty(trim((string)$profile->bio));
-    $has_payout = !empty($payout_type) && !empty($payout_name) && !empty($payout_number);
-    $has_address = !empty(trim($address));
-    $onboard_done = ($has_name?1:0) + ($has_social?1:0) + ($has_bio?1:0) + ($has_payout?1:0) + ($has_address?1:0);
-    $onboard_pct = round(($onboard_done / 5) * 100);
+    $has_name    = ! empty( trim( $user->display_name ) );
+    $has_social  = ! empty( trim( $social_name ) );
+    $has_bio     = $profile && ! empty( trim( (string) $profile->bio ) );
+    $has_payout  = ! empty( $payout_type ) && ! empty( $payout_name ) && ! empty( $payout_number );
+    $has_address = ! empty( trim( $address ) );
+
+    $onboard_done = ( $has_name ? 1 : 0 ) + ( $has_social ? 1 : 0 ) + ( $has_bio ? 1 : 0 ) + ( $has_payout ? 1 : 0 ) + ( $has_address ? 1 : 0 );
+    $onboard_pct  = round( ( $onboard_done / KBF_PROFILE_CHECKLIST_ITEMS ) * 100 );
 
     ob_start();
     ?>
@@ -1068,7 +1107,10 @@ function kbf_dashboard_profile_tab($business_id) {
             fetch(ajaxurl, {method:'POST', body:fd})
               .then(r => r.text().then(t => {
                   try { return JSON.parse(t.replace(/^\uFEFF+/, '').trim()); }
-                  catch(e) { throw new Error('Invalid JSON: ' + t.substring(0, 100)); }
+                  catch(e) { 
+                      console.error('Didit verification JSON parse error:', e, 'Raw response:', t);
+                      throw new Error('Invalid JSON: ' + t.substring(0, 100)); 
+                  }
               }))
               .then(j => {
                   if(j.success && j.data && j.data.url){
@@ -1079,7 +1121,8 @@ function kbf_dashboard_profile_tab($business_id) {
                   }
               })
               .catch(err => {
-                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed.</div>';
+                  console.error('Didit verification request failed:', err);
+                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed: ' + (err.message || 'Unknown error') + '</div>';
               })
               .finally(() => { btn.disabled=false; btn.textContent='Verify Identity'; });
         });
@@ -1142,7 +1185,12 @@ function kbf_dashboard_profile_tab($business_id) {
           .then(r => r.text())
           .then(text => {
               const cleanText = text.replace(/^\uFEFF+/, '').trim();
-              return JSON.parse(cleanText);
+              try {
+                  return JSON.parse(cleanText);
+              } catch(e) {
+                  console.error('Profile save JSON parse error:', e, 'Raw response:', text);
+                  throw new Error('Invalid server response: ' + cleanText.substring(0, 100));
+              }
           })
           .then(j => {
               if(j.success){
@@ -1154,7 +1202,8 @@ function kbf_dashboard_profile_tab($business_id) {
               }
           })
           .catch(err => {
-              msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed.</div>';
+              console.error('Profile save request failed:', err);
+              msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed: ' + (err.message || 'Unknown error') + '</div>';
               btn.disabled = false; btn.textContent = 'Save Changes';
           });
     };

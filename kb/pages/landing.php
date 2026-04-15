@@ -320,7 +320,7 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
-    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 62px 0px 0; }
+    .kbf-container { overflow: visible; max-width: 80% !important; margin: 0 auto; padding: 62px 0px 0; }
     .kbf-landing a { color: inherit; text-decoration: none; }
     .kbf-brand-text{ color:#3d8ef0; font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif; }
         .kbf-divider {
