@@ -2709,6 +2709,161 @@ function ch_global_scripts() {
             setTimeout(() => location.reload(), delay);
         };
 
+        /**
+         * AJAX content-only reload: refreshes specific tab/section without full page reload.
+         * Usage: chAjaxReloadContent('categories') — reloads categories tab content
+         *        chAjaxReloadContent('posts', {filter: 'all', s: '', paged: 1})
+         *        chAjaxReloadContent('profile') — special case for profile section
+         */
+        window.chAjaxReloadContent = function(tabName, extraParams) {
+            if (window.chNavBarStart) window.chNavBarStart();
+
+            var fd = new FormData();
+            fd.append('action', 'ch_admin_tab');
+            fd.append('nonce', window.chAdminTabNonce || '');
+            fd.append('tab', tabName);
+            fd.append('mode', 'content');
+
+            // Merge extra params
+            if (extraParams && typeof extraParams === 'object') {
+                for (var key in extraParams) {
+                    if (extraParams.hasOwnProperty(key)) {
+                        fd.append(key, extraParams[key]);
+                    }
+                }
+            }
+
+            var targetId = 'ch-' + tabName + '-content';
+            var target = document.getElementById(targetId);
+            if (!target) {
+                // Fallback to full reload if target not found
+                if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                return;
+            }
+
+            target.style.opacity = '0.45';
+            target.style.pointerEvents = 'none';
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        target.innerHTML = json.data.html !== undefined ? json.data.html : '';
+                        chRunEmbeddedScripts(target);
+                    } else {
+                        // Fallback to full reload on error
+                        if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                    }
+                })
+                .catch(function() {
+                    // Fallback to full reload on network error
+                    if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                })
+                .finally(function() {
+                    target.style.opacity = '';
+                    target.style.pointerEvents = '';
+                });
+        };
+
+        /**
+         * AJAX content-only reload for feed posts list (special case for feed operations).
+         * Usage: chAjaxReloadFeed() — refreshes #ch-posts-list
+         */
+        window.chAjaxReloadFeed = function() {
+            if (!window.chFeedState) {
+                if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                return;
+            }
+
+            if (window.chNavBarStart) window.chNavBarStart();
+
+            var list = document.getElementById('ch-posts-list');
+            if (!list) {
+                if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                return;
+            }
+
+            list.style.opacity = '0.45';
+            list.style.pointerEvents = 'none';
+
+            var fd = new FormData();
+            fd.append('action', 'ch_feed_sort');
+            fd.append('nonce', window.chFeedState.nonce);
+            fd.append('sort', window.chFeedState.sort || 'new');
+            fd.append('cat', window.chFeedState.cat || '');
+            fd.append('s', window.chFeedState.s || '');
+            fd.append('location', window.chFeedState.location || '');
+            fd.append('paged', window.chFeedState.paged || 1);
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        list.innerHTML = json.data.html !== undefined ? json.data.html : '';
+                        var headerInner = document.getElementById('ch-feed-header-inner');
+                        if (headerInner && json.data.header !== undefined) {
+                            headerInner.innerHTML = json.data.header;
+                        }
+                        
+                        // Update pagination
+                        var paginationWrap = document.getElementById('ch-feed-pagination-wrap');
+                        if (paginationWrap) {
+                            paginationWrap.innerHTML = json.data.pagination !== undefined ? json.data.pagination : '';
+                        }
+                    } else {
+                        if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                    }
+                })
+                .catch(function() {
+                    if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                })
+                .finally(function() {
+                    list.style.opacity = '';
+                    list.style.pointerEvents = '';
+                });
+        };
+
+        /**
+         * AJAX reload for category sidebar only (used by category operations in admin).
+         * Usage: chAjaxReloadCategoriesSidebar()
+         */
+        window.chAjaxReloadCategoriesSidebar = function() {
+            if (window.chNavBarStart) window.chNavBarStart();
+
+            var fd = new FormData();
+            fd.append('action', 'ch_admin_tab');
+            fd.append('nonce', window.chAdminTabNonce || '');
+            fd.append('tab', 'categories');
+            fd.append('mode', 'content');
+
+            var target = document.getElementById('ch-categories-content');
+            if (!target) {
+                if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                return;
+            }
+
+            target.style.opacity = '0.45';
+            target.style.pointerEvents = 'none';
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        target.innerHTML = json.data.html;
+                        chRunEmbeddedScripts(target);
+                    } else {
+                        if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                    }
+                })
+                .catch(function() {
+                    if (typeof chReloadAfterSuccess === 'function') chReloadAfterSuccess(0);
+                })
+                .finally(function() {
+                    target.style.opacity = '';
+                    target.style.pointerEvents = '';
+                });
+        };
+
         // Scripts inside HTML assigned via innerHTML do not run automatically.
         // Recreate them so AJAX-loaded tabs can register their handlers and boot logic.
         window.chRunEmbeddedScripts = function(root) {
@@ -3196,6 +3351,121 @@ function ch_global_scripts() {
         };
     })();
     </script>
+    <script>
+    (function() {
+        var state = window.chFeedState;
+        var list = document.getElementById('ch-posts-list');
+        var tabs = document.getElementById('ch-sort-tabs');
+        if (!state || !list || !tabs) return;
+
+        function loadFeedResults(nextState, callback) {
+            list.style.opacity = '0.45';
+            list.style.pointerEvents = 'none';
+
+            var fd = new FormData();
+            fd.append('action', 'ch_feed_sort');
+            fd.append('nonce', state.nonce);
+            fd.append('sort', nextState.sort || 'new');
+            fd.append('cat', nextState.cat || '');
+            fd.append('s', nextState.s || '');
+            fd.append('location', nextState.location || '');
+            fd.append('paged', 1);
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (!json.success) {
+                        if (typeof callback === 'function') callback(false);
+                        return;
+                    }
+
+                    list.innerHTML = json.data.html !== undefined ? json.data.html : '';
+                    var headerInner = document.getElementById('ch-feed-header-inner');
+                    if (headerInner && json.data.header !== undefined) headerInner.innerHTML = json.data.header;
+
+                    var paginationWrap = document.getElementById('ch-feed-pagination-wrap');
+                    if (paginationWrap) {
+                        paginationWrap.innerHTML = json.data.pagination !== undefined ? json.data.pagination : '';
+                    }
+
+                    state.sort = nextState.sort || 'new';
+                    state.cat = nextState.cat || '';
+                    state.s = nextState.s || '';
+                    state.location = nextState.location || '';
+                    state.paged = 1;
+
+                    var url = new URL(window.location.href);
+                    if (state.sort !== 'new') url.searchParams.set('sort', state.sort);
+                    else url.searchParams.delete('sort');
+                    if (state.cat) url.searchParams.set('cat', state.cat);
+                    else url.searchParams.delete('cat');
+                    if (state.s) url.searchParams.set('s', state.s);
+                    else url.searchParams.delete('s');
+                    if (state.location) url.searchParams.set('location', state.location);
+                    else url.searchParams.delete('location');
+                    url.searchParams.delete('paged');
+                    history.replaceState(null, '', url.toString());
+
+                    if (typeof callback === 'function') callback(true);
+                })
+                .catch(function() {
+                    if (typeof callback === 'function') callback(false);
+                })
+                .finally(function() {
+                    list.style.opacity = '';
+                    list.style.pointerEvents = '';
+                });
+        }
+
+        tabs.addEventListener('click', function(e) {
+            var btn = e.target.closest('[data-sort]');
+            if (!btn || btn.classList.contains('active')) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            var currentActive = tabs.querySelector('.ch-sort-tab.active');
+            loadFeedResults({
+                sort: btn.dataset.sort,
+                cat: state.cat,
+                s: state.s,
+                location: state.location
+            }, function(success) {
+                if (!success) return;
+                if (currentActive) currentActive.classList.remove('active');
+                btn.classList.add('active');
+            });
+        }, true);
+
+        var searchForm = document.getElementById('ch-feed-search-form');
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                var input = searchForm.querySelector('input[name="s"]');
+                loadFeedResults({
+                    sort: state.sort,
+                    cat: state.cat,
+                    s: input ? input.value.trim() : '',
+                    location: state.location
+                });
+            }, true);
+        }
+
+        var locationForm = document.getElementById('ch-feed-location-form');
+        var locationSelect = locationForm ? locationForm.querySelector('select[name="location"]') : null;
+        if (locationSelect) {
+            locationSelect.addEventListener('change', function(e) {
+                e.stopImmediatePropagation();
+                loadFeedResults({
+                    sort: state.sort,
+                    cat: state.cat,
+                    s: state.s,
+                    location: locationSelect.value || ''
+                });
+            }, true);
+        }
+    })();
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -3408,6 +3678,100 @@ function ch_settings_modal_html($logout_url = '') {
             }
 
             window.chLoadMyFeedShell = chLoadMyFeedShell;
+        })();
+
+        // ============================================================
+        // FORUM FEED - shell switching via AJAX
+        // ============================================================
+        (function() {
+            var feedRequestUrl = '';
+
+            async function chLoadFeedShell(url, shouldPush) {
+                var currentWrap = document.querySelector('.ch-feed-shell');
+                if (!currentWrap) return false;
+
+                currentWrap.style.opacity = '0.45';
+                currentWrap.style.pointerEvents = 'none';
+                if (window.chNavBarStart) window.chNavBarStart();
+                if (window.chCloseAllMobileMenus) window.chCloseAllMobileMenus();
+
+                try {
+                    feedRequestUrl = url;
+                    var doc = await chFetchDocument(url);
+                    if (feedRequestUrl !== url) return true;
+
+                    var nextWrap = doc.querySelector('.ch-feed-shell');
+                    if (!nextWrap) throw new Error('Missing forum feed markup');
+
+                    currentWrap.replaceWith(nextWrap);
+                    chRunInlineScripts(nextWrap);
+
+                    if (doc.title) {
+                        document.title = doc.title;
+                    }
+
+                    if (shouldPush !== false) {
+                        history.pushState({ chSoftNav: 'feed' }, '', url);
+                    }
+                    return true;
+                } finally {
+                    feedRequestUrl = '';
+                    var freshWrap = document.querySelector('.ch-feed-shell');
+                    if (freshWrap) {
+                        freshWrap.style.opacity = '';
+                        freshWrap.style.pointerEvents = '';
+                    }
+                    if (window.chNavBarFinish) window.chNavBarFinish();
+                }
+            }
+
+            function chCanSoftLoadFeedLink(link) {
+                if (!link || !link.matches('.ch-top-nav .ch-nav-link[href]')) return false;
+                if (!chCanSoftNavigate(link)) return false;
+
+                try {
+                    var url = new URL(link.href, window.location.href);
+                    var feedUrl = new URL(window.chFeedUrl || window.location.href, window.location.href);
+                    return url.origin === feedUrl.origin && url.pathname === feedUrl.pathname;
+                } catch (err) {
+                    return false;
+                }
+            }
+
+            window.chLoadFeedShell = chLoadFeedShell;
+            window.chHandleFeedNavClick = function(link, event) {
+                if (!chCanSoftLoadFeedLink(link)) return true;
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                chLoadFeedShell(link.href, true).catch(function() {
+                    window.location.href = link.href;
+                });
+                return false;
+            };
+
+            document.addEventListener('click', function(e) {
+                if (e.defaultPrevented) return;
+                if (e.button !== 0) return;
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+                var feedLink = e.target.closest('.ch-top-nav .ch-nav-link[href]');
+                if (!chCanSoftLoadFeedLink(feedLink)) return;
+                if (!document.querySelector('.ch-feed-shell')) return;
+
+                e.preventDefault();
+                chLoadFeedShell(feedLink.href, true).catch(function() {
+                    window.location.href = feedLink.href;
+                });
+            });
+
+            window.addEventListener('popstate', function() {
+                if (!document.querySelector('.ch-feed-shell')) return;
+                chLoadFeedShell(window.location.href, false).catch(function() {
+                    window.location.reload();
+                });
+            });
         })();
 
     })();
@@ -3913,7 +4277,8 @@ function ch_feed_scripts() {
                 (window.chSetNotice || chSetNotice)('ch-post-msg', json.success ? 'success' : 'error', json.data?.message || '');
                 if (json.success) {
                     delete window.chComposerFiles['ch-post-media'];
-                    chReloadAfterSuccess();
+                    // AJAX reload feed to show new post
+                    chAjaxReloadFeed();
                     return;
                 }
                 window.chHideLoadingModal();
@@ -4049,7 +4414,10 @@ function ch_feed_scripts() {
                 }
                 document.getElementById('ch-edit-post-msg').innerHTML =
                     '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
-                if (json.success) chReloadAfterSuccess();
+                if (json.success) {
+                    // AJAX reload feed to show updated post
+                    chAjaxReloadFeed();
+                }
                 else { btn.disabled = false; btn.textContent = 'Update Post'; }
             })
             .catch(() => {
@@ -4134,7 +4502,20 @@ function ch_feed_scripts() {
             .then(json => {
                 if (msgEl) msgEl.innerHTML = '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
                 if (json.success) {
-                    chReloadAfterSuccess();
+                    // Update profile UI inline without reload
+                    if (json.data.profile) {
+                        const nameEl = document.getElementById('ch-profile-display-name');
+                        if (nameEl) nameEl.value = json.data.profile.display_name || '';
+                        const avatarInitials = document.getElementById('ch-avatar-preview-initials');
+                        if (avatarInitials && json.data.profile.display_name) {
+                            avatarInitials.textContent = json.data.profile.display_name.charAt(0).toUpperCase();
+                        }
+                    }
+                    // Update nav bar user info if exists
+                    const navUserName = document.querySelector('.ch-nav-user-name');
+                    if (navUserName && json.data.profile?.display_name) {
+                        navUserName.textContent = json.data.profile.display_name;
+                    }
                 } else {
                     if (btn) { btn.disabled = false; btn.textContent = 'Save Profile'; }
                 }
@@ -4156,14 +4537,51 @@ function ch_feed_scripts() {
         var list = document.getElementById('ch-posts-list');
         if (!list) return;
 
+        function chFeedRequest(params, onSuccess) {
+            list.style.opacity = '0.45';
+            list.style.pointerEvents = 'none';
+
+            var fd = new FormData();
+            fd.append('action',   'ch_feed_sort');
+            fd.append('nonce',    state.nonce);
+            fd.append('sort',     params.sort);
+            fd.append('cat',      params.cat);
+            fd.append('s',        params.s);
+            fd.append('location', params.location);
+            fd.append('paged',    params.paged || 1);
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (!json.success) {
+                        if (typeof onSuccess === 'function') onSuccess(false);
+                        return;
+                    }
+                    list.innerHTML = json.data.html !== undefined ? json.data.html : '';
+                    var headerInner = document.getElementById('ch-feed-header-inner');
+                    if (headerInner && json.data.header !== undefined) headerInner.innerHTML = json.data.header;
+                    
+                    var paginationWrap = document.getElementById('ch-feed-pagination-wrap');
+                    if (paginationWrap) {
+                        paginationWrap.innerHTML = json.data.pagination !== undefined ? json.data.pagination : '';
+                    }
+                    
+                    if (typeof onSuccess === 'function') onSuccess(true);
+                })
+                .catch(function() {
+                    if (typeof onSuccess === 'function') onSuccess(false);
+                })
+                .finally(function() {
+                    list.style.opacity = '';
+                    list.style.pointerEvents = '';
+                });
+        }
+
         function loadCat(slug) {
             // Update active state on all [data-cat-slug] links
             document.querySelectorAll('[data-cat-slug]').forEach(function(el) {
                 el.classList.toggle('active', el.dataset.catSlug === slug);
             });
-
-            list.style.opacity = '0.45';
-            list.style.pointerEvents = 'none';
 
             // Reset sort tabs to "new" when switching category
             var tabs = document.getElementById('ch-sort-tabs');
@@ -4173,43 +4591,31 @@ function ch_feed_scripts() {
                 });
             }
 
-            var fd = new FormData();
-            fd.append('action',   'ch_feed_sort');
-            fd.append('nonce',    state.nonce);
-            fd.append('sort',     'new');
-            fd.append('cat',      slug);
-            fd.append('s',        state.s);
-            fd.append('location', state.location);
-            fd.append('paged',    1);
+            chFeedRequest({
+                sort: 'new',
+                cat: slug,
+                s: state.s,
+                location: state.location,
+                paged: 1
+            }, function() {
+                state.cat   = slug;
+                state.sort  = 'new';
+                state.paged = 1;
 
-            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
-                .then(function(r) { return r.json(); })
-                .then(function(json) {
-                    if (json.success) {
-                        list.innerHTML = json.data.html;
-                        var headerInner = document.getElementById('ch-feed-header-inner');
-                        if (headerInner && json.data.header !== undefined) headerInner.innerHTML = json.data.header;
-                        state.cat   = slug;
-                        state.sort  = 'new';
-                        state.paged = 1;
-
-                        // Update URL
-                        var url = new URL(window.location.href);
-                        if (slug) {
-                            url.searchParams.set('cat', slug);
-                        } else {
-                            url.searchParams.delete('cat');
-                        }
-                        url.searchParams.set('sort', 'new');
-                        url.searchParams.delete('paged');
-                        history.replaceState(null, '', url.toString());
-                    }
-                })
-                .catch(function() {})
-                .finally(function() {
-                    list.style.opacity = '';
-                    list.style.pointerEvents = '';
-                });
+                var url = new URL(window.location.href);
+                if (slug) {
+                    url.searchParams.set('cat', slug);
+                } else {
+                    url.searchParams.delete('cat');
+                }
+                url.searchParams.delete('sort');
+                if (state.s) url.searchParams.set('s', state.s);
+                else url.searchParams.delete('s');
+                if (state.location) url.searchParams.set('location', state.location);
+                else url.searchParams.delete('location');
+                url.searchParams.delete('paged');
+                history.replaceState(null, '', url.toString());
+            });
         }
 
         document.addEventListener('click', function(e) {
@@ -4230,16 +4636,67 @@ function ch_feed_scripts() {
         var tabs = document.getElementById('ch-sort-tabs');
         if (!list || !tabs) return;
 
+        function loadFeedResults(nextState) {
+            list.style.opacity = '0.45';
+            list.style.pointerEvents = 'none';
+
+            var fd = new FormData();
+            fd.append('action',   'ch_feed_sort');
+            fd.append('nonce',    state.nonce);
+            fd.append('sort',     nextState.sort);
+            fd.append('cat',      nextState.cat);
+            fd.append('s',        nextState.s);
+            fd.append('location', nextState.location);
+            fd.append('paged',    1);
+
+            fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                .then(function(r) { return r.json(); })
+                .then(function(json) {
+                    if (!json.success) return;
+
+                    list.innerHTML = json.data.html !== undefined ? json.data.html : '';
+                    var headerInner = document.getElementById('ch-feed-header-inner');
+                    if (headerInner && json.data.header !== undefined) headerInner.innerHTML = json.data.header;
+                    
+                    // Update pagination
+                    var paginationWrap = document.getElementById('ch-feed-pagination-wrap');
+                    if (paginationWrap) {
+                        paginationWrap.innerHTML = json.data.pagination !== undefined ? json.data.pagination : '';
+                    }
+
+                    state.sort = nextState.sort;
+                    state.cat = nextState.cat;
+                    state.s = nextState.s;
+                    state.location = nextState.location;
+                    state.paged = 1;
+
+                    var url = new URL(window.location.href);
+                    if (nextState.sort && nextState.sort !== 'new') url.searchParams.set('sort', nextState.sort);
+                    else url.searchParams.delete('sort');
+                    if (nextState.cat) url.searchParams.set('cat', nextState.cat);
+                    else url.searchParams.delete('cat');
+                    if (nextState.s) url.searchParams.set('s', nextState.s);
+                    else url.searchParams.delete('s');
+                    if (nextState.location) url.searchParams.set('location', nextState.location);
+                    else url.searchParams.delete('location');
+                    url.searchParams.delete('paged');
+                    history.replaceState(null, '', url.toString());
+                })
+                .catch(function() {
+                    // Silent fail - controls remain usable for retry.
+                })
+                .finally(function() {
+                    list.style.opacity = '';
+                    list.style.pointerEvents = '';
+                });
+        }
+
         tabs.addEventListener('click', function(e) {
             var btn = e.target.closest('[data-sort]');
             if (!btn || btn.classList.contains('active')) return;
 
             var sort = btn.dataset.sort;
-
-            // Update active highlight immediately
-            tabs.querySelectorAll('.ch-sort-tab').forEach(function(t) {
-                t.classList.toggle('active', t === btn);
-            });
+            var currentActive = tabs.querySelector('.ch-sort-tab.active');
 
             // Skeleton loading state
             list.style.opacity = '0.45';
@@ -4257,22 +4714,33 @@ function ch_feed_scripts() {
             fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
                 .then(function(r) { return r.json(); })
                 .then(function(json) {
-                    if (json.success) {
-                        list.innerHTML = json.data.html;
-                        var headerInner = document.getElementById('ch-feed-header-inner');
-                        if (headerInner && json.data.header !== undefined) headerInner.innerHTML = json.data.header;
-                        state.sort = sort;
-                        state.paged = 1;
-
-                        // Update URL without reload
-                        var url = new URL(window.location.href);
-                        url.searchParams.set('sort', sort);
-                        url.searchParams.delete('paged');
-                        history.replaceState(null, '', url.toString());
+                    if (!json.success) {
+                        return;
                     }
+
+                    if (currentActive) currentActive.classList.remove('active');
+                    btn.classList.add('active');
+
+                    list.innerHTML = json.data.html !== undefined ? json.data.html : '';
+                    var headerInner = document.getElementById('ch-feed-header-inner');
+                    if (headerInner && json.data.header !== undefined) headerInner.innerHTML = json.data.header;
+                    
+                    var paginationWrap = document.getElementById('ch-feed-pagination-wrap');
+                    if (paginationWrap) {
+                        paginationWrap.innerHTML = json.data.pagination !== undefined ? json.data.pagination : '';
+                    }
+                    
+                    state.sort = sort;
+                    state.paged = 1;
+
+                    // Update URL without reload
+                    var url = new URL(window.location.href);
+                    url.searchParams.set('sort', sort);
+                    url.searchParams.delete('paged');
+                    history.replaceState(null, '', url.toString());
                 })
                 .catch(function() {
-                    // Silent fail — tabs still show active state, user can retry
+                    // Silent fail — controls still show active state, user can retry
                 })
                 .finally(function() {
                     list.style.opacity = '';

@@ -280,7 +280,6 @@ function ch_guest_landing_page() {
         var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
         var chFeedUrl = '<?php echo esc_js(remove_query_arg('view_post')); ?>';
     </script>
-
     <nav class="ch-top-nav">
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '#ch-feed-drawer');">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
@@ -316,21 +315,21 @@ function ch_guest_landing_page() {
             <button class="ch-top-drawer-close" type="button" onclick="chCloseAllMobileMenus()" aria-label="Close menu">&times;</button>
             <div class="ch-nav-links">
                 <?php if ($user_id): ?>
-                <a href="?tab=my_feed" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>">
+                <a href="<?php echo esc_url(add_query_arg('tab', 'my_feed', $feed_url)); ?>" class="ch-nav-link <?php echo ($tab === 'my_feed') ? 'active' : ''; ?>" data-ch-feed-nav="my_feed" onclick="return window.chHandleFeedNavClick ? window.chHandleFeedNavClick(this, event) : true;">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     <span class="ch-nav-label">My Feed</span>
                 </a>
                 <?php endif; ?>
-                <a href="<?php echo get_permalink(); ?>" class="ch-nav-link <?php echo !$bookmarks && $sort === 'new' && $tab === '' && !$cat_slug && !$search ? 'active' : ''; ?>">
+                <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link <?php echo !$bookmarks && $sort === 'new' && $tab === '' && !$cat_slug && !$search ? 'active' : ''; ?>" data-ch-feed-nav="home" onclick="return window.chHandleFeedNavClick ? window.chHandleFeedNavClick(this, event) : true;">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     <span class="ch-nav-label">Home</span>
                 </a>
-                <a href="?sort=trending" class="ch-nav-link <?php echo $sort === 'trending' && $tab === '' && !$bookmarks ? 'active' : ''; ?>">
+                <a href="<?php echo esc_url(add_query_arg('sort', 'trending', $feed_url)); ?>" class="ch-nav-link <?php echo $sort === 'trending' && $tab === '' && !$bookmarks ? 'active' : ''; ?>" data-ch-feed-nav="trending" onclick="return window.chHandleFeedNavClick ? window.chHandleFeedNavClick(this, event) : true;">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                     <span class="ch-nav-label">Trending</span>
                 </a>
                 <?php if ($user_id): ?>
-                <a href="?bookmarks=1" class="ch-nav-link <?php echo $bookmarks && $tab === '' ? 'active' : ''; ?>">
+                <a href="<?php echo esc_url(add_query_arg('bookmarks', '1', $feed_url)); ?>" class="ch-nav-link <?php echo $bookmarks && $tab === '' ? 'active' : ''; ?>" data-ch-feed-nav="bookmarks" onclick="return window.chHandleFeedNavClick ? window.chHandleFeedNavClick(this, event) : true;">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
                     <span class="ch-nav-label">Bookmarks</span>
                 </a>
@@ -1288,6 +1287,13 @@ function ch_admin_overview_tab($user_id, $is_admin) {
         let statsInterval;
 
         function updateLiveStats() {
+            // Check if we're still on the overview tab
+            const statsContainer = document.getElementById('stat-total-posts');
+            if (!statsContainer) {
+                // Overview tab not visible, skip update
+                return;
+            }
+
             fetch(ajaxurl + '?action=ch_live_stats', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -1297,32 +1303,36 @@ function ch_admin_overview_tab($user_id, $is_admin) {
             .then(data => {
                 if (data.success) {
                     const stats = data.data;
-                    document.getElementById('stat-total-posts').textContent = stats.total_posts.toLocaleString();
-                    document.getElementById('stat-total-comments').textContent = stats.total_comments.toLocaleString();
-                    document.getElementById('stat-total-users').textContent = stats.total_users.toLocaleString();
+                    const el1 = document.getElementById('stat-total-posts');
+                    const el2 = document.getElementById('stat-total-comments');
+                    const el3 = document.getElementById('stat-total-users');
+                    
+                    if (el1) el1.textContent = stats.total_posts.toLocaleString();
+                    if (el2) el2.textContent = stats.total_comments.toLocaleString();
+                    if (el3) el3.textContent = stats.total_users.toLocaleString();
 
                     const reportsCard = document.getElementById('pending-reports-card');
                     const reportsNum = document.getElementById('stat-pending-reports');
 
-                    if (stats.pending_reports > 0) {
+                    if (reportsCard && reportsNum && stats.pending_reports > 0) {
                         reportsNum.textContent = stats.pending_reports.toLocaleString();
                         reportsCard.style.display = '';
-                    } else {
+                    } else if (reportsCard) {
                         reportsCard.style.display = 'none';
                     }
 
                     const postsCard = document.getElementById('pending-posts-card');
                     const postsNum = document.getElementById('stat-pending-posts');
 
-                    if (stats.pending_posts > 0) {
+                    if (postsCard && postsNum && stats.pending_posts > 0) {
                         postsNum.textContent = stats.pending_posts.toLocaleString();
                         postsCard.style.display = '';
-                    } else {
+                    } else if (postsCard) {
                         postsCard.style.display = 'none';
                     }
                 }
             })
-            .catch(err => console.log('Stats update failed:', err));
+            .catch(err => console.log('Stats update skipped (tab changed):', err.message));
         }
 
         // Update stats every 30 seconds
@@ -1512,6 +1522,7 @@ function ch_categories_tab($user_id, $is_admin) {
         </div>
     </div>
 
+    <div class="ch-card" id="ch-categories-content">
     <div class="ch-categories-grid" id="ch-categories-grid">
         <?php if (empty($categories)): ?>
             <div class="ch-empty-state">
@@ -1532,7 +1543,7 @@ function ch_categories_tab($user_id, $is_admin) {
                         <button class="ch-icon-btn" title="Toggle visibility" onclick="chToggleCategoryStatus(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->status); ?>', this)">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
-                        <button class="ch-icon-btn ch-icon-btn-danger" title="Delete" onclick="chDeleteCategory(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', this)">>
+                        <button class="ch-icon-btn ch-icon-btn-danger" title="Delete" onclick="chDeleteCategory(<?php echo (int)$cat->id; ?>, '<?php echo esc_js($cat->name); ?>', this)">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                         </button>
                     </div>
@@ -1555,6 +1566,7 @@ function ch_categories_tab($user_id, $is_admin) {
             </div>
         </div>
         <?php endforeach; endif; ?>
+    </div>
     </div>
 
     <!-- Create Category Modal -->
@@ -1741,13 +1753,32 @@ function ch_categories_tab($user_id, $is_admin) {
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
             .then(json => {
-                document.getElementById('ch-cat-msg').innerHTML =
-                    '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
-                if (json.success) chReloadAfterSuccess();
+                const msgEl = document.getElementById('ch-cat-msg');
+                if (msgEl) {
+                    // Show detailed error message if available
+                    let errorMsg = json.data?.message || 'Failed to create category';
+                    if (!json.success && json.data?.db_error) {
+                        errorMsg += '<br><small style="opacity:0.7;">Database error: ' + json.data.db_error + '</small>';
+                    }
+                    msgEl.innerHTML = '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+errorMsg+'</div>';
+                }
+                if (json.success) {
+                    // Close modal before reload to prevent modal HTML from being replaced
+                    if (typeof chCloseModal === 'function') {
+                        chCloseModal('ch-modal-create-cat');
+                    }
+                    // Small delay to let modal close animation finish
+                    setTimeout(function() {
+                        chAjaxReloadCategoriesSidebar();
+                    }, 300);
+                }
                 else { btn.disabled = false; btn.textContent = 'Create Category'; }
             })
-            .catch(() => {
-                document.getElementById('ch-cat-msg').innerHTML = '<div class="bntm-notice bntm-notice-error">Network error. Please try again.</div>';
+            .catch((err) => {
+                const msgEl = document.getElementById('ch-cat-msg');
+                if (msgEl) {
+                    msgEl.innerHTML = '<div class="bntm-notice bntm-notice-error">Network error: ' + err.message + '</div>';
+                }
                 btn.disabled = false; btn.textContent = 'Create Category';
             });
         };
@@ -1776,7 +1807,9 @@ function ch_categories_tab($user_id, $is_admin) {
             .then(json => {
                 document.getElementById('ch-edit-cat-msg').innerHTML =
                     '<div class="bntm-notice bntm-notice-'+(json.success?'success':'error')+'">'+(json.data?.message||'')+'</div>';
-                if (json.success) chReloadAfterSuccess();
+                if (json.success) {
+                    chAjaxReloadCategoriesSidebar();
+                }
                 else { btn.disabled = false; btn.textContent = 'Save Changes'; }
             })
             .catch(() => {
@@ -1796,7 +1829,9 @@ function ch_categories_tab($user_id, $is_admin) {
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
             .then(json => {
-                if (json.success) chReloadAfterSuccess(0);
+                if (json.success) {
+                    chAjaxReloadCategoriesSidebar();
+                }
                 else {
                     if (triggerBtn) triggerBtn.disabled = false;
                     alert(json.data?.message || 'Failed to delete.');
@@ -1831,8 +1866,8 @@ function ch_categories_tab($user_id, $is_admin) {
                         badge.classList.toggle('ch-status-active', json.data.status === 'active');
                         badge.classList.toggle('ch-status-archived', json.data.status !== 'active');
                     }
-                    // Reload so list respects filters
-                    chReloadAfterSuccess(400);
+                    // AJAX reload so list respects filters
+                    chAjaxReloadCategoriesSidebar();
                 } else {
                     alert(json.data?.message || 'Failed to update status.');
                 }
@@ -2020,7 +2055,14 @@ function ch_posts_tab($user_id, $is_admin) {
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
             .then(json => {
-                if (json.success) chReloadAfterSuccess(0);
+                if (json.success) {
+                    chAjaxReloadContent('posts', {
+                        filter: '<?php echo esc_js($filter); ?>',
+                        s: '<?php echo esc_js($search); ?>',
+                        cat: '<?php echo esc_js($cat_id); ?>',
+                        paged: '<?php echo esc_js($page); ?>'
+                    });
+                }
                 else {
                     if (btn) { btn.disabled = false; btn.style.opacity = ''; }
                     alert(json.data?.message);
@@ -2046,7 +2088,14 @@ function ch_posts_tab($user_id, $is_admin) {
                 fetch(ajaxurl, {method:'POST', body:fd})
                 .then(r => r.json())
                 .then(json => {
-                    if (json.success) chReloadAfterSuccess(0);
+                    if (json.success) {
+                        chAjaxReloadContent('posts', {
+                            filter: '<?php echo esc_js($filter); ?>',
+                            s: '<?php echo esc_js($search); ?>',
+                            cat: '<?php echo esc_js($cat_id); ?>',
+                            paged: '<?php echo esc_js($page); ?>'
+                        });
+                    }
                     else {
                         if (btn) { btn.disabled = false; btn.style.opacity = ''; }
                         alert(json.data?.message);
@@ -2392,7 +2441,7 @@ function ch_reports_tab($user_id, $is_admin) {
                         row.style.opacity = '0';
                         row.style.transition = 'opacity 0.3s ease';
                     }
-                    chReloadAfterSuccess(300);
+                    chAjaxReloadContent('reports');
                 } else {
                     if (btn) { btn.disabled = false; btn.style.opacity = ''; }
                     alert(json.data?.message || 'Action failed. Please try again.');
@@ -3646,6 +3695,7 @@ function bntm_shortcode_ch_feed() {
         paged:    <?php echo (int)$page; ?>
     };
     </script>
+    <div class="ch-feed-shell">
     <nav class="ch-top-nav">
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false" onclick="chToggleMobileMenu(this, '#ch-feed-drawer');">
             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
@@ -3747,6 +3797,20 @@ function bntm_shortcode_ch_feed() {
     <!--  TRENDING PAGE                                       -->
     <!-- ════════════════════════════════════════════════════ -->
     <?php
+    $trending_privacy_filter = " AND (c.is_private = 0 OR c.is_private IS NULL)";
+    if ($user_id && !current_user_can('manage_options')) {
+        $followed_ids = $wpdb->get_col($wpdb->prepare(
+            "SELECT category_id FROM {$wpdb->prefix}ch_follows WHERE user_id = %d",
+            $user_id
+        ));
+        $followed_ids = array_map('intval', (array) $followed_ids);
+        if (!empty($followed_ids)) {
+            $trending_privacy_filter = " AND (c.is_private = 0 OR c.is_private IS NULL OR p.category_id IN (" . implode(',', $followed_ids) . "))";
+        }
+    } elseif ($user_id && current_user_can('manage_options')) {
+        $trending_privacy_filter = '';
+    }
+
     $trending_posts = $wpdb->get_results(
         "SELECT p.*, c.name as cat_name, c.color as cat_color,
                 COALESCE(u.display_name, 'Community Member') as author_name
@@ -3754,7 +3818,10 @@ function bntm_shortcode_ch_feed() {
          LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
          LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
          WHERE p.status = 'active'
-         ORDER BY (p.vote_count * 2 + p.comment_count * 3 + p.view_count) DESC, p.created_at DESC
+           AND (c.status = 'active' OR c.status = '' OR c.status IS NULL)
+           {$trending_privacy_filter}
+         ORDER BY (COALESCE(p.vote_count, 0) * 2 + COALESCE(p.comment_count, 0) * 3 + COALESCE(p.view_count, 0)) DESC,
+                  p.created_at DESC
          LIMIT 30"
     );
     $trending_cats = $wpdb->get_results(
@@ -4124,7 +4191,7 @@ function bntm_shortcode_ch_feed() {
                 </div><!-- /ch-feed-header-inner -->
 
                 <div class="ch-feed-toolbar-card">
-                    <form method="get" class="ch-search-form">
+                    <form method="get" class="ch-search-form" id="ch-feed-search-form" onsubmit="return false;">
                         <?php if ($cat_slug): ?><input type="hidden" name="cat" value="<?php echo esc_attr($cat_slug); ?>"><?php endif; ?>
                         <input type="text" name="s" value="<?php echo esc_attr($search); ?>" placeholder="Search discussions..." class="ch-input ch-search-input">
                         <button type="submit" class="ch-btn ch-btn-primary" style="flex-shrink:0;">
@@ -4133,10 +4200,10 @@ function bntm_shortcode_ch_feed() {
                         </button>
                     </form>
                     <div class="ch-filter-row">
-                        <form method="get" class="ch-location-form">
+                        <form method="get" class="ch-location-form" id="ch-feed-location-form" onsubmit="return false;">
                             <?php if ($cat_slug): ?><input type="hidden" name="cat" value="<?php echo esc_attr($cat_slug); ?>"><?php endif; ?>
                             <?php if ($search): ?><input type="hidden" name="s" value="<?php echo esc_attr($search); ?>"><?php endif; ?>
-                            <select name="location" onchange="this.form.submit()" class="ch-location-select">
+                            <select name="location" class="ch-location-select">
                                 <option value="">All Locations</option>
                                 <?php foreach ($available_locations as $loc): ?>
                                 <option value="<?php echo esc_attr($loc); ?>" <?php selected($location, $loc); ?>><?php echo esc_html($loc); ?></option>
@@ -4369,16 +4436,19 @@ function bntm_shortcode_ch_feed() {
                 <?php endforeach; endif; ?>
             </div>
 
+            <div id="ch-feed-pagination-wrap">
             <?php if ($total_pages > 1): ?>
-            <div class="ch-pagination">
+            <div class="ch-pagination" id="ch-feed-pagination">
                 <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                 <a href="?paged=<?php echo $i; ?>&sort=<?php echo $sort; ?><?php echo $cat_slug ? '&cat='.$cat_slug : ''; ?>"
-                   class="ch-page-btn <?php echo $i === $page ? 'active' : ''; ?>">
+                   class="ch-page-btn <?php echo $i === $page ? 'active' : ''; ?>"
+                   data-page="<?php echo $i; ?>">
                     <?php echo $i; ?>
                 </a>
                 <?php endfor; ?>
             </div>
             <?php endif; ?>
+            </div>
         </main>
     </div>
 
@@ -4669,8 +4739,9 @@ function bntm_shortcode_ch_feed() {
                     '<div class="bntm-notice bntm-notice-' + (json.success ? 'success' : 'error') + '">'
                     + (json.data?.message || '') + '</div>';
                 if (json.success) {
-                    // The server already auto-followed; just reload
-                    chCloseModal('ch-modal-feed-create-cat'); chReloadAfterSuccess(0);
+                    // The server already auto-followed; AJAX reload feed
+                    chCloseModal('ch-modal-feed-create-cat');
+                    chAjaxReloadFeed();
                 } else {
                     btn.disabled = false; btn.textContent = 'Create Category';
                 }
@@ -4741,7 +4812,8 @@ function bntm_shortcode_ch_feed() {
                     '<div class="bntm-notice bntm-notice-' + (json.success ? 'success' : 'error') + '">'
                     + (json.data?.message || '') + '</div>';
                 if (json.success) {
-                    chCloseModal('ch-modal-feed-edit-cat'); chReloadAfterSuccess(0);
+                    chCloseModal('ch-modal-feed-edit-cat');
+                    chAjaxReloadFeed();
                 } else {
                     btn.disabled = false; btn.textContent = 'Save Changes';
                 }
@@ -4763,7 +4835,9 @@ function bntm_shortcode_ch_feed() {
             fetch(ajaxurl, {method:'POST', body:fd})
             .then(r => r.json())
             .then(json => {
-                if (json.success) chReloadAfterSuccess(0);
+                if (json.success) {
+                    chAjaxReloadFeed();
+                }
                 else alert(json.data?.message || 'Could not delete category.');
             })
             .catch(() => alert('Network error.'));
@@ -5167,6 +5241,7 @@ function bntm_shortcode_ch_feed() {
         } catch(e) {}
     })();
     </script>
+    </div>
 
     
     <?php

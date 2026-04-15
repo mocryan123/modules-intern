@@ -35,7 +35,16 @@ function bntm_ajax_ch_create_category() {
     $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}ch_categories WHERE slug = %s", $slug));
     if ($exists) wp_send_json_error(['message' => 'A category with this name already exists']);
 
-    $result = $wpdb->insert("{$wpdb->prefix}ch_categories", [
+    $table = "{$wpdb->prefix}ch_categories";
+    $has_post_approval_col = get_transient('ch_has_post_approval_col');
+    if ($has_post_approval_col === false) {
+        $columns = $wpdb->get_col("DESC {$table}", 0);
+        $has_post_approval_col = in_array('require_post_approval', $columns, true) ? '1' : '0';
+        set_transient('ch_has_post_approval_col', $has_post_approval_col, DAY_IN_SECONDS);
+    }
+    $has_post_approval_col = $has_post_approval_col === '1';
+
+    $insert_data = [
         'rand_id'     => bntm_rand_id(),
         'business_id' => $user_id,
         'name'        => $name,
@@ -44,8 +53,15 @@ function bntm_ajax_ch_create_category() {
         'color'       => $color,
         'sort_order'  => $order,
         'is_private'  => $is_private,
-        'require_post_approval' => $require_post_approval,
-    ], ['%s','%d','%s','%s','%s','%s','%d','%d','%d']);
+    ];
+    $insert_format = ['%s','%d','%s','%s','%s','%s','%d','%d'];
+
+    if ($has_post_approval_col) {
+        $insert_data['require_post_approval'] = $require_post_approval;
+        $insert_format[] = '%d';
+    }
+
+    $result = $wpdb->insert($table, $insert_data, $insert_format);
 
     if ($result) {
         $new_cat_id = $wpdb->insert_id;
@@ -63,7 +79,17 @@ function bntm_ajax_ch_create_category() {
         ch_log_activity('create_category', 'category', $new_cat_id, "Created category: $name");
         wp_send_json_success(['message' => 'Category created successfully!', 'cat_id' => $new_cat_id]);
     } else {
-        wp_send_json_error(['message' => 'Failed to create category']);
+        // Return actual database error for debugging
+        $db_error = $wpdb->last_error;
+        wp_send_json_error([
+            'message' => 'Failed to create category',
+            'db_error' => $db_error,
+            'insert_data' => [
+                'name' => $name,
+                'slug' => $slug,
+                'table' => "{$wpdb->prefix}ch_categories"
+            ]
+        ]);
     }
 }
 
@@ -917,6 +943,30 @@ function bntm_ajax_ch_feed_sort() {
 
     $html = ob_get_clean();
 
+    // Build pagination HTML
+    $total_posts_count = (int) $wpdb->get_var(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts p
+         LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
+         LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
+         LEFT JOIN {$wpdb->prefix}ch_user_profiles up ON p.user_id = up.user_id
+         $base_where"
+    );
+    $total_pages_count = ceil($total_posts_count / $per_page);
+    
+    ob_start();
+    if ($total_pages_count > 1): ?>
+    <div class="ch-pagination" id="ch-feed-pagination">
+        <?php for ($i = 1; $i <= $total_pages_count; $i++): ?>
+        <a href="?paged=<?php echo $i; ?>&sort=<?php echo esc_attr($sort); ?><?php echo $cat_slug ? '&cat='.esc_attr($cat_slug) : ''; ?>"
+           class="ch-page-btn <?php echo $i === $page ? 'active' : ''; ?>"
+           data-page="<?php echo $i; ?>">
+            <?php echo $i; ?>
+        </a>
+        <?php endfor; ?>
+    </div>
+    <?php endif;
+    $pagination_html = ob_get_clean();
+
     // Build the category header HTML
     $user_id_h = get_current_user_id();
     $cat_obj_h = null;
@@ -988,7 +1038,11 @@ function bntm_ajax_ch_feed_sort() {
     <?php endif;
     $header_html = ob_get_clean();
 
-    wp_send_json_success(['html' => $html, 'header' => $header_html]);
+    wp_send_json_success([
+        'html' => $html,
+        'header' => $header_html,
+        'pagination' => $pagination_html
+    ]);
 }
 
 function bntm_ajax_ch_get_post_detail() {
@@ -1611,7 +1665,18 @@ function bntm_ajax_ch_update_profile() {
     // $result is 0 when data is unchanged (not false), so treat both 0 and >0 as success
     if ($result !== false) {
         ch_flush_overview_cache();
-        wp_send_json_success(['message' => 'Profile updated!', 'avatar_url' => $update_data['avatar_url'] ?? '']);
+        
+        // Return updated profile data for inline UI update
+        $profile = $wpdb->get_row($wpdb->prepare(
+            "SELECT display_name FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d",
+            $user_id
+        ), ARRAY_A);
+        
+        wp_send_json_success([
+            'message' => 'Profile updated!', 
+            'avatar_url' => $update_data['avatar_url'] ?? '',
+            'profile' => $profile
+        ]);
     } else {
         wp_send_json_error(['message' => 'Failed to save profile. Please try again.']);
     }
