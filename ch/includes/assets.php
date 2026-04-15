@@ -3732,10 +3732,101 @@ function ch_settings_modal_html($logout_url = '') {
                 try {
                     var url = new URL(link.href, window.location.href);
                     var feedUrl = new URL(window.chFeedUrl || window.location.href, window.location.href);
-                    return url.origin === feedUrl.origin && url.pathname === feedUrl.pathname;
+                    var normalizePath = function(path) {
+                        return path.replace(/\/+$/, '') || '/';
+                    };
+                    return url.origin === feedUrl.origin && normalizePath(url.pathname) === normalizePath(feedUrl.pathname);
                 } catch (err) {
                     return false;
                 }
+            }
+
+            function chCanAjaxLoadFeedLink(link) {
+                if (!link || !link.matches('.ch-top-nav .ch-nav-link[href]')) return false;
+                if (!window.chFeedState) return false;
+                var nav = link.dataset.chFeedNav || '';
+                return nav === 'home' || nav === 'trending' || nav === 'bookmarks';
+            }
+
+            function chAjaxLoadFeedLink(link, shouldPush) {
+                var nav = link.dataset.chFeedNav || '';
+                if (!nav) return Promise.reject();
+
+                var url = new URL(link.href, window.location.href);
+                var params = url.searchParams;
+
+                var nextState = {
+                    sort: params.get('sort') || 'new',
+                    cat: params.get('cat') || '',
+                    s: params.get('s') || '',
+                    location: params.get('location') || '',
+                    paged: 1,
+                    bookmarks: params.has('bookmarks') ? 1 : 0
+                };
+
+                var list = document.getElementById('ch-posts-list');
+                if (!list) return Promise.reject();
+
+                if (window.chNavBarStart) window.chNavBarStart();
+                if (window.chCloseAllMobileMenus) window.chCloseAllMobileMenus();
+                list.style.opacity = '0.45';
+                list.style.pointerEvents = 'none';
+
+                var fd = new FormData();
+                fd.append('action', 'ch_feed_sort');
+                fd.append('nonce', window.chFeedState.nonce);
+                fd.append('sort', nextState.sort);
+                fd.append('cat', nextState.cat);
+                fd.append('s', nextState.s);
+                fd.append('location', nextState.location);
+                fd.append('paged', nextState.paged);
+                if (nextState.bookmarks) fd.append('bookmarks', 1);
+
+                return fetch(window.chAjaxUrl || window.ajaxurl, {method: 'POST', body: fd})
+                    .then(function(r) { return r.json(); })
+                    .then(function(json) {
+                        if (!json.success) {
+                            throw new Error('Feed AJAX failed');
+                        }
+
+                        list.innerHTML = json.data.html !== undefined ? json.data.html : '';
+                        var headerInner = document.getElementById('ch-feed-header-inner');
+                        if (headerInner && json.data.header !== undefined) {
+                            headerInner.innerHTML = json.data.header;
+                        }
+
+                        var paginationWrap = document.getElementById('ch-feed-pagination-wrap');
+                        if (paginationWrap) {
+                            paginationWrap.innerHTML = json.data.pagination !== undefined ? json.data.pagination : '';
+                        }
+
+                        window.chFeedState.sort = nextState.sort;
+                        window.chFeedState.cat = nextState.cat;
+                        window.chFeedState.s = nextState.s;
+                        window.chFeedState.location = nextState.location;
+                        window.chFeedState.paged = nextState.paged;
+                        window.chFeedState.bookmarks = nextState.bookmarks;
+
+                        if (shouldPush !== false) {
+                            history.pushState({ chSoftNav: 'feed' }, '', link.href);
+                        }
+
+                        document.querySelectorAll('.ch-top-nav .ch-nav-link.active').forEach(function(el) {
+                            el.classList.remove('active');
+                        });
+                        link.classList.add('active');
+
+                        if (window.chNavBarFinish) window.chNavBarFinish();
+                        return true;
+                    })
+                    .catch(function(err) {
+                        if (window.chNavBarFinish) window.chNavBarFinish();
+                        throw err;
+                    })
+                    .finally(function() {
+                        list.style.opacity = '';
+                        list.style.pointerEvents = '';
+                    });
             }
 
             window.chLoadFeedShell = chLoadFeedShell;
@@ -3745,6 +3836,21 @@ function ch_settings_modal_html($logout_url = '') {
                     event.preventDefault();
                     event.stopPropagation();
                 }
+
+                if (chCanAjaxLoadFeedLink(link)) {
+                    chAjaxLoadFeedLink(link, true).catch(function() {
+                        window.location.href = link.href;
+                    });
+                    return false;
+                }
+
+                if (link.dataset.chFeedNav === 'my_feed' && typeof window.chLoadMyFeedShell === 'function') {
+                    window.chLoadMyFeedShell(link.href, true).catch(function() {
+                        window.location.href = link.href;
+                    });
+                    return false;
+                }
+
                 chLoadFeedShell(link.href, true).catch(function() {
                     window.location.href = link.href;
                 });
@@ -3757,8 +3863,18 @@ function ch_settings_modal_html($logout_url = '') {
                 if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
                 var feedLink = e.target.closest('.ch-top-nav .ch-nav-link[href]');
-                if (!chCanSoftLoadFeedLink(feedLink)) return;
+                if (!feedLink) return;
                 if (!document.querySelector('.ch-feed-shell')) return;
+
+                if (chCanAjaxLoadFeedLink(feedLink)) {
+                    e.preventDefault();
+                    chAjaxLoadFeedLink(feedLink, true).catch(function() {
+                        window.location.href = feedLink.href;
+                    });
+                    return;
+                }
+
+                if (!chCanSoftLoadFeedLink(feedLink)) return;
 
                 e.preventDefault();
                 chLoadFeedShell(feedLink.href, true).catch(function() {

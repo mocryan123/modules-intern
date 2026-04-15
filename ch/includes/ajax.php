@@ -780,6 +780,25 @@ function bntm_ajax_ch_feed_sort() {
         $search_filter = $wpdb->prepare(" AND (p.title LIKE %s OR p.content LIKE %s)", $like, $like);
     }
 
+    $bookmarks = isset($_POST['bookmarks']) ? 1 : 0;
+    $bookmark_filter = '';
+    if ($bookmarks) {
+        if ($user_id) {
+            $bookmark_ids = $wpdb->get_col($wpdb->prepare(
+                "SELECT post_id FROM {$wpdb->prefix}ch_bookmarks WHERE user_id = %d",
+                $user_id
+            ));
+            if (empty($bookmark_ids)) {
+                $bookmark_filter = " AND 1 = 0";
+            } else {
+                $placeholders = implode(',', array_fill(0, count($bookmark_ids), '%d'));
+                $bookmark_filter = $wpdb->prepare(" AND p.id IN ($placeholders)", ...$bookmark_ids);
+            }
+        } else {
+            $bookmark_filter = " AND 1 = 0";
+        }
+    }
+
     // Privacy filter
     $privacy_filter = '';
     $followed = [];
@@ -798,7 +817,7 @@ function bntm_ajax_ch_feed_sort() {
         );
     }
 
-    $base_where = "WHERE p.status = 'active' $cat_filter $location_filter $search_filter$privacy_filter";
+    $base_where = "WHERE p.status = 'active' $cat_filter $location_filter $search_filter$privacy_filter$bookmark_filter";
 
     $posts = $wpdb->get_results(
         "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
