@@ -83,7 +83,7 @@ function bntm_kbf_render_privacy() {
       .kbf-topbar-left { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
       .kbf-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
       .kbf-nav { display: flex !important; flex-direction: row; gap: 20px; font-size: 12.5px; color: #4f5a6b; }
-      .kbf-nav a { position: relative; display:inline-flex; align-items:center; color:#4f5a6b; text-decoration:none; }
+      .kbf-nav a { position: relative; display:inline-flex; align-items:center; color:#4f5a6b; text-decoration:none; font-size:12.5px; }
       .kbf-nav a::after {
         content: ''; position: absolute; left: 0; bottom: -8px;
         width: 0; height: 2px; border-radius: 999px;
@@ -209,22 +209,45 @@ function bntm_kbf_render_privacy() {
       }
       .kbf-mobile-menu-actions .kbf-btn{ flex:1; justify-content:center; }
       .kbf-legal {
-        max-width: 1040px;
+        max-width: 100%;
         margin: 28px auto 60px;
-        padding: 0;
+        padding: 70px 0 0;
         color: #0f172a;
         font-family: "Poppins", system-ui, -apple-system, sans-serif;
         overflow: visible;
       }
-      .kbf-legal h1 {
-        font-size: 24px;
-        font-weight: 600;
-        margin: 0 0 4px;
+      .kbf-legal-hero{
+        background: linear-gradient(135deg, #eef4ff 0%, #f7faff 50%, #f0f5ff 100%);
+        border: 1px solid #dce6f5;
+        border-radius: 20px;
+        padding: 48px 40px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 30px rgba(15, 40, 80, 0.06);
+        position: relative;
+        overflow: hidden;
       }
-      .kbf-legal .kbf-legal-sub {
-        color: #64748b;
-        font-size: 12.5px;
-        margin: 0 0 18px;
+      .kbf-legal-hero::before{
+        content:'';
+        position:absolute;
+        top:0;right:0;bottom:0;width:40%;
+        background: linear-gradient(180deg, rgba(91,168,245,0.08) 0%, transparent 100%);
+        pointer-events:none;
+      }
+      .kbf-legal-hero h1{
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.15;
+        font-weight: 600;
+        letter-spacing: -1px;
+        color: #0d1a2e;
+        margin: 0 0 8px;
+        position: relative;
+      }
+      .kbf-legal-hero .kbf-legal-sub{
+        color: #4f5a6b;
+        font-size: 14px;
+        margin: 0;
+        line-height: 1.6;
+        position: relative;
       }
       .kbf-legal-grid{
         display:grid;
@@ -239,6 +262,7 @@ function bntm_kbf_render_privacy() {
         padding:16px 18px;
         box-shadow:0 10px 24px rgba(15,23,42,.04);
         box-sizing:border-box;
+        width:100%;
       }
       .kbf-legal-nav{
         position:sticky;
@@ -303,6 +327,7 @@ function bntm_kbf_render_privacy() {
         gap: 18px;
         display: flex;
         flex-direction: column;
+        max-width: 100%;
       }
       .kbf-footer-top{
         display: grid;
@@ -383,9 +408,8 @@ function bntm_kbf_render_privacy() {
       }
       .kbf-container {
         overflow: visible;
-        max-width: 1120px;
+        max-width: 80% !important;
         margin: 0 auto;
-        padding: 62px 22px 0;
       }
       @media (max-width: 720px){
         .kbf-footer{
@@ -453,8 +477,10 @@ function bntm_kbf_render_privacy() {
           <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
         </div>
       </div>
-      <h1>Privacy Policy</h1>
-      <p class="kbf-legal-sub">FUNDORA - How Fundora collects, uses, and protects your data.</p>
+      <div class="kbf-legal-hero">
+        <h1>Privacy Policy</h1>
+        <p class="kbf-legal-sub">FUNDORA - How Fundora collects, uses, and protects your data.</p>
+      </div>
       <div class="kbf-legal-grid">
         <aside class="kbf-legal-card kbf-legal-nav">
           <h4>Sections</h4>

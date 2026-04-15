@@ -320,7 +320,7 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
-    .kbf-container { overflow: visible; max-width: 1120px; margin: 0 auto; padding: 62px 0px 0; }
+    .kbf-container { overflow: visible; max-width: 80% !important; margin: 0 auto; padding: 62px 0px 0; }
     .kbf-landing a { color: inherit; text-decoration: none; }
     .kbf-brand-text{ color:#3d8ef0; font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif; }
         .kbf-divider {
@@ -437,49 +437,55 @@ function bntm_kbf_render_landing() {
     .kbf-btn-ghost[aria-disabled="true"] { opacity: .7; cursor: not-allowed; }
 
     /* ============================================================
-       NEW HERO  -  light theme + floating phone cards
+       PREMIUM HERO  -  dark luxury + trust-focused
        ============================================================ */
     .kbf-hero {
         width: 100%;
         margin-bottom: 34px;
         position: relative;
-        background:#ffffff;
-        border-radius: 24px;
-        padding: 44px;
-        border: 1px solid #dfe9f7;
-        box-shadow: 0 18px 40px rgba(15, 40, 80, 0.10);
+        background: linear-gradient(160deg, #0a1628 0%, #0f2140 40%, #0d1a30 100%);
+        border-radius: 28px;
+        padding: 0;
         overflow: hidden;
+        border: 1px solid rgba(111, 182, 255, 0.08);
+        box-shadow:
+            0 40px 80px rgba(10, 22, 40, 0.35),
+            0 20px 40px rgba(10, 22, 40, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
+    /* Subtle grid pattern overlay */
     .kbf-hero::before {
         content: '';
         position: absolute;
         inset: 0;
-        background-image: url('<?php echo esc_url(BNTM_KBF_URL . 'assets/hero.jpg'); ?>');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        opacity: 0.42;
+        background-image:
+            linear-gradient(rgba(111, 182, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(111, 182, 255, 0.03) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, black 20%, transparent 100%);
+        -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 50%, black 20%, transparent 100%);
         pointer-events: none;
+        z-index: 1;
     }
-    .kbf-hero::after{
-        content:'';
-        position:absolute;
-        inset:0;
-        background:
-            linear-gradient(120deg, rgba(231,241,255,0.72) 0%, rgba(255,255,255,0.58) 45%, rgba(231,241,255,0.45) 100%),
-            radial-gradient(880px 680px at -8% 110%, rgba(111,182,255,0.22) 0%, rgba(111,182,255,0.08) 55%, transparent 100%),
-            radial-gradient(860px 640px at 108% -10%, rgba(111,182,255,0.20) 0%, rgba(111,182,255,0.06) 55%, transparent 100%);
-        pointer-events:none;
+    /* Radial glow */
+    .kbf-hero::after {
+        content: '';
+        position: absolute;
+        top: -40%; right: -10%;
+        width: 700px; height: 700px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 1;
     }
     .kbf-hero-inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
         width: 100%;
-        gap: 40px;
-        padding: 48px 0 32px;
+        gap: 60px;
+        padding: 72px 64px 64px;
         position: relative;
-        z-index: 1;
+        z-index: 2;
     }
     /* Premium motion (subtle, non-slop) */
     .kbf-hero .kbf-hero-left,
@@ -582,75 +588,108 @@ function bntm_kbf_render_landing() {
     /* Left */
     .kbf-hero-left {
         flex: 0 0 auto;
-        max-width: 480px;
+        max-width: 520px;
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 20px;
         position: relative;
         z-index: 2;
     }
     .kbf-eyebrow {
         display: inline-flex; align-items: center; gap: 8px;
-        padding: 6px 14px; border-radius: 999px;
-        font-size: 17px; font-weight: 600;
-        letter-spacing: .14em; text-transform: uppercase;
-        color: #1a3a66; background: #e7f1ff;
-        border: 1px solid #d7e7ff; width: fit-content;
+        padding: 7px 16px; border-radius: 999px;
+        font-size: 12px; font-weight: 600;
+        letter-spacing: .12em; text-transform: uppercase;
+        color: #93c5fd; background: rgba(59, 130, 246, 0.12);
+        border: 1px solid rgba(59, 130, 246, 0.18); width: fit-content;
     }
     .kbf-eyebrow-dot {
-        width: 7px; height: 7px; border-radius: 50%;
-        background: #6fb6ff; display: inline-block; flex-shrink: 0;
+        width: 6px; height: 6px; border-radius: 50%;
+        background: #60a5fa; display: inline-block; flex-shrink: 0;
+        box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
     }
     .kbf-hero-heading {
-        font-size: clamp(40px, 5.6vw, 64px);
-        font-weight: 600; line-height: 1.04;
-        color: #0d1a2e; letter-spacing: -1.5px; margin: 0;
+        font-size: clamp(36px, 5.2vw, 56px);
+        font-weight: 700; line-height: 1.08;
+        color: #ffffff; letter-spacing: -1.5px; margin: 0;
     }
     .kbf-hero-highlight {
         display: inline-block;
-        background: #6fb6ff; color: #0f2a52;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        color: #ffffff;
         border-radius: 8px; padding: 2px 14px; font-style: normal;
     }
     .kbf-hero-desc {
-        font-size: 17px; font-weight: 400;
-        color: #334155; line-height: 1.7; margin: 0;
+        font-size: 15px; font-weight: 400;
+        color: rgba(203, 213, 225, 0.85); line-height: 1.7; margin: 0;
+        max-width: 460px;
     }
     
     .kbf-hero-cta-btn {
         width: fit-content;
-        padding: 14px 28px;
+        padding: 15px 32px;
         gap: 10px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: #ffffff;
+        border: 1px solid rgba(96, 165, 250, 0.3);
+        border-radius: 12px;
+        box-shadow:
+            0 4px 16px rgba(37, 99, 235, 0.35),
+            0 1px 3px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .kbf-hero-cta-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .kbf-hero-cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow:
+            0 8px 28px rgba(37, 99, 235, 0.45),
+            0 2px 8px rgba(37, 99, 235, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        border-color: rgba(96, 165, 250, 0.5);
+    }
+    .kbf-hero-cta-btn:hover::before { opacity: 1; }
+    .kbf-hero-cta-btn:active {
+        transform: translateY(0);
+        box-shadow:
+            0 2px 8px rgba(37, 99, 235, 0.3),
+            0 1px 2px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
     .kbf-hero-cta-btn img,
     .kbf-hero-cta-btn .kbf-icon {
-        width: 17px;
-        height: 17px;
+        width: 16px;
+        height: 16px;
         margin-left: 8px;
         display: inline-block;
-        transform: scale(1);
-        transition: transform .2s ease;
+        transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .kbf-hero-cta-btn img { filter: invert(100%); }
-    .kbf-hero-cta-btn .kbf-icon { color: #ffffff; filter: none; position: relative; top: 3px; }
+    .kbf-hero-cta-btn .kbf-icon { color: #ffffff; filter: none; position: relative; top: 2px; }
     .kbf-hero-cta-btn:hover img,
     .kbf-hero-cta-btn:hover .kbf-icon {
-        transform: scale(1) rotate(45deg);
-    }
-    .kbf-hero-arrow {
-        width: 26px; height: 26px;
-        background: #ffffff; color: #ff6f6f;
-        border-radius: 50%;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-size: 28px; flex-shrink: 0;
+        transform: translate(2px, -2px);
     }
 
     /* Right: floating phone cards */
     .kbf-hero-right {
-        flex: 0 0 clamp(280px, 40vw, 420px);
-        height: 500px;
+        flex: 0 0 clamp(280px, 38vw, 400px);
+        height: 480px;
         position: relative; z-index: 2;
         display:flex;
         align-items:center;
@@ -659,8 +698,8 @@ function bntm_kbf_render_landing() {
      /* Cards wrap  -  fixed internal coordinate system */
     .kbf-cards-wrap {
         position: relative;
-        --cw: 420px;
-        --ch: 500px;
+        --cw: 400px;
+        --ch: 480px;
         --kbf-card-scale: 1;
         width: var(--cw);
         height: var(--ch);
@@ -669,34 +708,26 @@ function bntm_kbf_render_landing() {
         transition: transform 0.3s ease;
     }
     .kbf-pcard {
-        position: absolute; border-radius: 24px; overflow: hidden;
-        background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8);
-        border: 1px solid #e1e7f0;
+        position: absolute; border-radius: 20px; overflow: hidden;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.9);
         box-shadow:
-            0 30px 70px rgba(15, 23, 42, 0.12),
-            0 12px 28px rgba(15, 23, 42, 0.08),
-            0 2px 6px rgba(15, 23, 42, 0.06),
-            inset 0 1px 0 rgba(255,255,255,0.9);
+            0 30px 70px rgba(0, 0, 0, 0.35),
+            0 12px 28px rgba(0, 0, 0, 0.2),
+            0 2px 6px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255,255,255,0.95);
     }
     .kbf-pcard::before {
         content: '';
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 46%);
-        pointer-events: none;
-    }
-    .kbf-pcard::after {
-        content: '';
-        position: absolute;
-        inset: 10px 10px auto 10px;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.5), transparent);
-        opacity: 0.7;
+        background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 46%);
         pointer-events: none;
     }
     /* Main card  -  centered anchor */
     .kbf-pcard-main {
-        width: 200px; height: 340px;
+        width: 180px; height: 310px;
         left: 50%; top: 50%;
         --pc-x: -50%;
         --pc-y: -50%;
@@ -707,91 +738,70 @@ function bntm_kbf_render_landing() {
     }
     /* Bottom-right card  -  sits to the right of the main card */
     .kbf-pcard-br {
-        width: 124px; height: 210px;
+        width: 110px; height: 190px;
         left: 50%; top: 50%;
-        --pc-x: calc(-50% + 150px);
+        --pc-x: calc(-50% + 140px);
         --pc-y: -50%;
-        --pc-rot: 1.5deg;
+        --pc-rot: 2deg;
         transform: translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot));
         z-index: 3;
         animation: kbfFloatBR 4.5s ease-in-out infinite;
     }
     /* Left card  -  partially hidden behind main, slight counter-tilt */
     .kbf-pcard-tl {
-        width: 134px; height: 210px;
+        width: 120px; height: 190px;
         left: 50%; top: 50%;
-        --pc-x: calc(-50% - 150px);
+        --pc-x: calc(-50% - 140px);
         --pc-y: -50%;
-        --pc-rot: -1.5deg;
+        --pc-rot: -2deg;
         transform: translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot));
         z-index: 2;
         animation: kbfFloatTL 5.5s ease-in-out infinite;
     }
     @keyframes kbfFloatMain {
         0%,100%{transform:translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot))}
-        50%{transform:translate(var(--pc-x), calc(var(--pc-y) - 9px)) rotate(var(--pc-rot))}
+        50%{transform:translate(var(--pc-x), calc(var(--pc-y) - 10px)) rotate(var(--pc-rot))}
     }
-    @keyframes kbfFloatTR   { 0%,100%{transform:rotate(1.5deg) translateY(0)} 50%{transform:rotate(1.5deg) translateY(-7px)} }
     @keyframes kbfFloatBR   {
-        0%,100%{transform:translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot))}
-        50%{transform:translate(var(--pc-x), calc(var(--pc-y) - 5px)) rotate(var(--pc-rot))}
-    }
-    @keyframes kbfFloatTL   {
         0%,100%{transform:translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot))}
         50%{transform:translate(var(--pc-x), calc(var(--pc-y) - 6px)) rotate(var(--pc-rot))}
     }
+    @keyframes kbfFloatTL   {
+        0%,100%{transform:translate(var(--pc-x), var(--pc-y)) rotate(var(--pc-rot))}
+        50%{transform:translate(var(--pc-x), calc(var(--pc-y) - 7px)) rotate(var(--pc-rot))}
+    }
 
     .kbf-pcard-img {
-        width: 100%; height: calc(95% - 50px);
+        width: 100%; height: calc(95% - 44px);
         display: flex; align-items: center; justify-content: center;
         position: relative;
-        background: #e9eef6;
+        background: #f1f5f9;
     }
     .kbf-pcard-img::after {
         content: '';
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(180deg, rgba(255,255,255,0.45), rgba(255,255,255,0.1)),
-            radial-gradient(240px 160px at 18% 12%, rgba(255,255,255,0.6), transparent 62%);
+            linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 100%);
         pointer-events: none;
     }
-    .kbf-pimg-1 { background: #e9eef6; }
-    .kbf-pimg-2 { background: #e9eef6; }
-    .kbf-pimg-3 { background: #e9eef6; }
-    .kbf-pimg-4 { background: #e9eef6; }
+    .kbf-pimg-1, .kbf-pimg-2, .kbf-pimg-3, .kbf-pimg-4 { background: #e2e8f0; }
     .kbf-pcard-img img{
         width:100%;
         height:100%;
         object-fit:cover;
         display:block;
-        filter: grayscale(100%) contrast(0.95);
+        filter: grayscale(100%) contrast(0.92);
     }
     .kbf-pcard-bar {
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 4px;
+        padding: 8px 10px 10px;
         justify-content: center;
+        background: rgba(248, 250, 252, 0.95);
     }
-    
-    .kbf-pcard-name { font-size: 10px; font-weight: 600; color: #0d1a2e; line-height: 1.5; }
-    .kbf-pcard-sub  { font-size: 17px; color: #8aa0b8; }
-    .kbf-pcard-play {
-        margin-left: auto; width: 20px; height: 20px;
-        background: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 17px; color: #2a6aad; flex-shrink: 0;
-        border: 1px solid #dde3ee;
-        box-shadow: 0 4px 10px rgba(15, 40, 80, 0.12);
-    }
-    .kbf-pcard-play img {
-        width: 8px;
-        height: 8px;
-        display: block;
-        filter: grayscale(100%) brightness(0.55);
-    }
+    .kbf-pcard-name { font-size: 11px; font-weight: 600; color: #0f172a; line-height: 1.4; text-align: center; }
     .kbf-fchip {
         position: absolute; background: #fff;
         border: 1px solid #d7e7ff; border-radius: 20px;
@@ -1308,20 +1318,22 @@ function bntm_kbf_render_landing() {
    /* Large tablets / small desktops (<=1024px) */
     @media (max-width: 1000px) {
         .kbf-hero-left { max-width: 420px; }
-        .kbf-hero-right { flex: 0 0 clamp(280px, 34vw, 420px); height: clamp(320px, 45vw, 500px); }
+        .kbf-hero-right { flex: 0 0 clamp(260px, 34vw, 380px); height: clamp(300px, 45vw, 460px); }
         .kbf-cards-wrap { --kbf-card-scale: 0.9; }
+        .kbf-hero-inner { padding: 56px 48px 52px; gap: 40px; }
     }
 
     @media (max-width: 900px) {
         .kbf-nav { display: none; }
         .kbf-hamburger { display: inline-flex; }
         .kbf-actions { display: none; }
-        .kbf-hamburger { display: inline-flex; margin-left: auto; }        
+        .kbf-hamburger { display: inline-flex; margin-left: auto; }
         .kbf-mobile-menu a { text-align: center; }
         .kbf-chip { margin-left: auto; margin-right: auto; }
-        .kbf-hero-heading { font-size: 38px; letter-spacing: -1px; }
-        .kbf-hero-right { flex: 0 0 clamp(260px, 40vw, 360px); height: clamp(300px, 50vw, 440px); }
+        .kbf-hero-heading { font-size: 34px; letter-spacing: -1px; }
+        .kbf-hero-right { flex: 0 0 clamp(240px, 38vw, 340px); height: clamp(280px, 48vw, 420px); }
         .kbf-cards-wrap { --kbf-card-scale: 0.85; }
+        .kbf-hero-inner { padding: 48px 36px 44px; gap: 32px; }
         .kbf-feature-grid { grid-template-columns: 1fr; }
         .kbf-feature-grid .kbf-card { grid-column: span 1; }
         .kbf-feature-grid .kbf-card:nth-child(4),
@@ -1337,12 +1349,11 @@ function bntm_kbf_render_landing() {
     .kbf-trust-strip { border-radius: var(--kbf-radius-md); }
     }
     @media (max-width: 1200px) {
-        .kbf-hero { padding: 28px 24px; }
         .kbf-hero-inner {
             flex-direction: column;
             align-items: center;
-            padding: 24px 0 16px;
-            gap: 32px;
+            padding: 52px 40px 44px;
+            gap: 40px;
             text-align: center;
         }
         .kbf-cards-wrap { --kbf-card-scale: 0.95; }
@@ -1362,9 +1373,11 @@ function bntm_kbf_render_landing() {
 
     @media (max-width: 720px) {
         .kbf-landing { padding: 20px 14px 48px; text-align: center; }
+        .kbf-hero { border-radius: 20px; margin-top: 10px !important; margin-bottom: 60px !important; }
+        .kbf-hero-inner { padding: 40px 28px 36px !important; gap: 32px !important; }
         .kbf-topbar { flex-wrap: wrap; gap: 12px; justify-content: center; }
         .kbf-actions { width: 100%; justify-content: center; gap: 8px; }
-        .kbf-cards-wrap { --kbf-card-scale: 0.75; }
+        .kbf-cards-wrap { --kbf-card-scale: 0.72; }
         .kbf-feature-grid { grid-template-columns: 1fr; gap: 12px; }
         .kbf-feature-grid.kbf-feature-grid--two { grid-template-columns: 1fr; }
         .kbf-feature-grid .kbf-card { grid-column: span 1; }
@@ -1393,12 +1406,14 @@ function bntm_kbf_render_landing() {
         .kbf-landing { padding: 14px 10px 36px; }
         .kbf-topbar { padding: 12px 24px; }
         .kbf-brand-badge { width: 22px; height: 22px; font-size: 18px; }
-    .kbf-hero { padding: 20px 16px 28px; border-radius: var(--kbf-radius-md); }
-        .kbf-hero-heading { font-size: 28px; letter-spacing: -0.5px; }
-        .kbf-hero-desc { font-size: 28px; }
-        .kbf-hero-right { height: 260px; }
-        .kbf-cards-wrap { --kbf-card-scale: 0.65; }
-        .kbf-eyebrow { font-size: 18px; padding: 5px 10px; }
+        .kbf-hero { border-radius: 16px !important; }
+        .kbf-hero-inner { padding: 36px 20px 32px !important; gap: 28px !important; }
+        .kbf-hero-heading { font-size: 28px !important; letter-spacing: -0.5px; }
+        .kbf-hero-desc { font-size: 14px !important; }
+        .kbf-hero-right { height: 240px; }
+        .kbf-cards-wrap { --kbf-card-scale: 0.62; }
+        .kbf-eyebrow { font-size: 10px; padding: 5px 10px; }
+        .kbf-hero-cta-btn { padding: 13px 24px; font-size: 13px; }
         .kbf-btn { font-size: 18px; padding: 8px 14px; }
         .kbf-actions .kbf-btn { width: auto; }
         .kbf-feature-grid { grid-template-columns: 1fr; gap: 10px; }
@@ -1419,38 +1434,39 @@ function bntm_kbf_render_landing() {
     }
 
     @media (max-width: 360px) {
-        .kbf-hero-heading { font-size: 28px; }
-        .kbf-hero-right { height: 220px; }
-        .kbf-cards-wrap { --kbf-card-scale: 0.58; }
+        .kbf-hero-heading { font-size: 26px !important; }
+        .kbf-hero-right { height: 200px; }
+        .kbf-cards-wrap { --kbf-card-scale: 0.55; }
+        .kbf-hero-inner { padding: 28px 16px 28px !important; }
         .kbf-stat h3 { font-size: 34px; }
-        .kbf-btn.kbf-btn-primary { font-size: 17px; }
+        .kbf-hero-cta-btn { font-size: 13px; padding: 12px 20px; }
     }
 
     /* --- PREMIUM OVERRIDES (ADDED BY DESIGNER) --- */
     .kbf-hero {
-        background: radial-gradient(circle at top left, #ddeeff 0%, #ffffff 50%), url('data:image/svg+xml;utf8,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="1" fill="rgba(0,0,0,0.03)"/></svg>') !important;
+        background: linear-gradient(160deg, #0a1628 0%, #0f2140 40%, #0d1a30 100%) !important;
     }
     .kbf-hero-heading, .kbf-display, .kbf-hero h1 {
-        font-size: 44px !important;
-        font-weight: 600 !important;
-        letter-spacing: -1px !important;
-        line-height: 1.1 !important;
-        color: #0d1a2e !important;
+        font-size: clamp(36px, 5.2vw, 56px) !important;
+        font-weight: 700 !important;
+        letter-spacing: -1.5px !important;
+        line-height: 1.08 !important;
+        color: #ffffff !important;
     }
     .kbf-hero-sub, .kbf-eyebrow {
-        font-size: 12.5px !important;
+        font-size: 12px !important;
         text-transform: uppercase !important;
-        letter-spacing: 0.18em !important;
-        color: #8b97aa !important;
+        letter-spacing: 0.12em !important;
+        color: #93c5fd !important;
         font-weight: 600 !important;
     }
     .kbf-hero-desc {
-        font-size: 30px !important;
-        line-height: 1.75 !important;
-        color: #4f5a6b !important;
+        font-size: 15px !important;
+        line-height: 1.7 !important;
+        color: rgba(203, 213, 225, 0.85) !important;
     }
     .kbf-hero-cta-btn {
-        box-shadow: 0 2px 4px rgba(32,112,224,0.15), 0 8px 24px rgba(42,120,220,0.38), inset 0 1px 0 rgba(255,255,255,0.22) !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35), 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.15) !important;
         position: relative;
         overflow: hidden;
     }
@@ -1458,7 +1474,7 @@ function bntm_kbf_render_landing() {
         content: '';
         position: absolute;
         top: 0; left: -100%; width: 50%; height: 100%;
-        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
         transform: skewX(-20deg);
         transition: none;
     }
@@ -2299,12 +2315,13 @@ function bntm_kbf_render_landing() {
 
             <!-- Left: Text -->
             <div class="kbf-hero-left">
-              <p class="kbf-eyebrow" style="margin:0; display:flex; align-items:center; gap:8px;"><span class="kbf-eyebrow-dot"></span> Filipino Crowdfunding Platform
+              <p class="kbf-eyebrow" style="margin:0; display:flex; align-items:center; gap:8px;">
+                <span class="kbf-eyebrow-dot"></span> Filipino Crowdfunding Platform
               </p>
 
-              <h1 class="kbf-hero-heading" style="font-weight: 600;">
-                Fundora: <br>
-                Start a fund, <br>
+              <h1 class="kbf-hero-heading">
+                Fundora:<br>
+                Start a fund,<br>
                 Change a Life.
               </h1>
 
@@ -2312,38 +2329,37 @@ function bntm_kbf_render_landing() {
                 Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
               </p>
 
-              <a class="kbf-btn kbf-btn-primary kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
+              <a class="kbf-btn kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
                 Start Supporting on Fundora
-                <i class="ph ph-arrow-up-right kbf-icon" aria-hidden="true"></i>
-
+                <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
               </a>
             </div>
-            
+
             <!-- Right: Floating phone cards -->
             <div class="kbf-hero-right" aria-hidden="true">
               <div class="kbf-cards-wrap">
                 <div class="kbf-pcard kbf-pcard-tl">
                   <div class="kbf-pcard-img kbf-pimg-1">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/patient.jpg'); ?>" alt="Patient support" width="200" height="140">
+                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/patient.jpg'); ?>" alt="Patient support" width="120" height="150" loading="eager">
                   </div>
                   <div class="kbf-pcard-bar">
-                    <h4> Yourself </h4>
+                    <div class="kbf-pcard-name">Yourself</div>
                   </div>
                 </div>
                 <div class="kbf-pcard kbf-pcard-main">
                   <div class="kbf-pcard-img kbf-pimg-2">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/basketball.jpg'); ?>" alt="Basketball community" width="200" height="140">
+                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/basketball.jpg'); ?>" alt="Basketball community" width="180" height="220" loading="eager">
                   </div>
                   <div class="kbf-pcard-bar">
-                    <h4> Charity or Events </h4>
+                    <div class="kbf-pcard-name">Charity or Events</div>
                   </div>
                 </div>
                 <div class="kbf-pcard kbf-pcard-br">
                   <div class="kbf-pcard-img kbf-pimg-4">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/graduation.jpg'); ?>" alt="Graduation moment" width="124" height="100">
+                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/graduation.jpg'); ?>" alt="Graduation moment" width="110" height="150" loading="eager">
                   </div>
                   <div class="kbf-pcard-bar">
-                    <h4> Someone Else </h4>
+                    <div class="kbf-pcard-name">Someone Else</div>
                   </div>
                 </div>
               </div>
