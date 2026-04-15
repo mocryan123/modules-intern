@@ -946,6 +946,15 @@ function bntm_shortcode_ch_auth() {
                     <div class="ch-password-strength" id="ch-pass-strength"></div>
                 </div>
                 <div class="ch-field-group">
+                    <label class="ch-label">Confirm Password <span class="ch-required">*</span></label>
+                    <div class="ch-password-wrap">
+                        <input type="password" id="ch-reg-pass-confirm" class="ch-input" placeholder="Re-enter your password" autocomplete="new-password">
+                        <button type="button" class="ch-password-toggle" onclick="chTogglePassword('ch-reg-pass-confirm', this)" tabindex="-1">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="ch-field-group">
                     <label class="ch-label">Location <span class="ch-optional">(optional)</span></label>
                     <input type="text" id="ch-reg-location" class="ch-input" placeholder="e.g., Barangay San Jose, Cagayan de Oro">
                 </div>
@@ -1057,17 +1066,19 @@ function bntm_shortcode_ch_auth() {
         };
 
         window.chSubmitRegister = function(nonce, redirect) {
-            const username  = document.getElementById('ch-reg-username').value.trim();
-            const email     = document.getElementById('ch-reg-email').value.trim();
-            const pass      = document.getElementById('ch-reg-pass').value;
-            const firstname = document.getElementById('ch-reg-firstname').value.trim();
-            const lastname  = document.getElementById('ch-reg-lastname').value.trim();
-            const location  = document.getElementById('ch-reg-location').value.trim();
-            const terms     = document.getElementById('ch-reg-terms').checked;
-            const msgEl     = document.getElementById('ch-auth-msg');
-            const btn       = document.getElementById('ch-register-btn');
+            const username    = document.getElementById('ch-reg-username').value.trim();
+            const email       = document.getElementById('ch-reg-email').value.trim();
+            const pass        = document.getElementById('ch-reg-pass').value;
+            const passConfirm = document.getElementById('ch-reg-pass-confirm').value;
+            const firstname   = document.getElementById('ch-reg-firstname').value.trim();
+            const lastname    = document.getElementById('ch-reg-lastname').value.trim();
+            const location    = document.getElementById('ch-reg-location').value.trim();
+            const terms       = document.getElementById('ch-reg-terms').checked;
+            const msgEl       = document.getElementById('ch-auth-msg');
+            const btn         = document.getElementById('ch-register-btn');
 
-            if (!username || !email || !pass) { msgEl.innerHTML = '<div class="bntm-notice-error">Username, email, and password are required.</div>'; return; }
+            if (!username || !email || !pass || !passConfirm) { msgEl.innerHTML = '<div class="bntm-notice-error">Username, email, and password are required.</div>'; return; }
+            if (pass !== passConfirm) { msgEl.innerHTML = '<div class="bntm-notice-error">Passwords do not match.</div>'; return; }
             if (!terms)    { msgEl.innerHTML = '<div class="bntm-notice-error">Please agree to the Community Guidelines.</div>'; return; }
             if (pass.length < 8) { msgEl.innerHTML = '<div class="bntm-notice-error">Password must be at least 8 characters.</div>'; return; }
 
@@ -1075,15 +1086,16 @@ function bntm_shortcode_ch_auth() {
             msgEl.innerHTML = '';
 
             const fd = new FormData();
-            fd.append('action',     'ch_register');
-            fd.append('username',   username);
-            fd.append('email',      email);
-            fd.append('password',   pass);
-            fd.append('first_name', firstname);
-            fd.append('last_name',  lastname);
-            fd.append('location',   location);
-            fd.append('redirect_to',redirect);
-            fd.append('nonce',      nonce);
+            fd.append('action',        'ch_register');
+            fd.append('username',      username);
+            fd.append('email',         email);
+            fd.append('password',      pass);
+            fd.append('password_confirm', passConfirm);
+            fd.append('first_name',    firstname);
+            fd.append('last_name',     lastname);
+            fd.append('location',      location);
+            fd.append('redirect_to',   redirect);
+            fd.append('nonce',         nonce);
 
             fetch(ajaxurl, {method:'POST', body:fd, credentials: 'same-origin'})
             .then(r => r.json())
@@ -1382,17 +1394,21 @@ function bntm_ajax_ch_login() {
 function bntm_ajax_ch_register() {
     check_ajax_referer('ch_auth_nonce', 'nonce');
 
-    $username    = sanitize_user($_POST['username'] ?? '');
-    $email       = sanitize_email($_POST['email'] ?? '');
-    $password    = $_POST['password'] ?? '';
-    $first_name  = sanitize_text_field($_POST['first_name'] ?? '');
-    $last_name   = sanitize_text_field($_POST['last_name'] ?? '');
-    $location    = sanitize_text_field($_POST['location'] ?? '');
-    $redirect_to = esc_url_raw($_POST['redirect_to'] ?? '');
+    $username         = sanitize_user($_POST['username'] ?? '');
+    $email            = sanitize_email($_POST['email'] ?? '');
+    $password         = $_POST['password'] ?? '';
+    $password_confirm = $_POST['password_confirm'] ?? '';
+    $first_name       = sanitize_text_field($_POST['first_name'] ?? '');
+    $last_name        = sanitize_text_field($_POST['last_name'] ?? '');
+    $location         = sanitize_text_field($_POST['location'] ?? '');
+    $redirect_to      = esc_url_raw($_POST['redirect_to'] ?? '');
 
     // Validate
-    if (!$username || !$email || !$password) {
+    if (!$username || !$email || !$password || !$password_confirm) {
         wp_send_json_error(['message' => 'Username, email, and password are required.']);
+    }
+    if ($password !== $password_confirm) {
+        wp_send_json_error(['message' => 'Passwords do not match.']);
     }
     if (!is_email($email)) {
         wp_send_json_error(['message' => 'Please enter a valid email address.']);

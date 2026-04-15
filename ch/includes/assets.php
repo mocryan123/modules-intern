@@ -677,7 +677,7 @@ function ch_global_styles() {
     .bntm-notice-warning { background: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b; }
 
     /* FEED LAYOUT */
-    .ch-feed-wrap { display: flex; gap: 24px; max-width: 100%; max-height: 100%; margin: 0 auto; padding: 24px 20px; align-items: flex-start; }
+    .ch-feed-wrap { display: flex; gap: 24px; max-width: 100%; height: 100vh; margin: 0 auto; padding: 24px 20px; align-items: flex-start; }
     .ch-feed-shell { position: relative; }
     .ch-feed-loading-overlay {
         position: fixed; inset: 0; z-index: 9999;
@@ -742,7 +742,7 @@ function ch_global_styles() {
     .ch-feed-header { margin-bottom: 16px; }
     .ch-feed-header h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; letter-spacing: -0.2px; }
     .ch-feed-toolbar-card { background: var(--ch-surface); border: 1px solid var(--ch-border); border-radius: var(--ch-radius-lg); padding: 12px 14px; margin-bottom: 14px; box-shadow: var(--ch-shadow-sm); }
-    .ch-filter-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .ch-filter-row { display: flex; margin-top: 10px; justify-content: space-between; align-items: center; gap: 10px; }
     .ch-location-form { flex-shrink: 0; }
     .ch-location-select { width: 150px; padding: 5px 9px; border-radius: var(--ch-radius-sm); font-size: 12.5px; border: 1px solid var(--ch-border); background: var(--ch-surface); font-family: var(--ch-font); color: var(--ch-text-muted); }
     .ch-sort-tabs { display: flex; gap: 3px; }
@@ -1426,7 +1426,7 @@ function ch_global_styles() {
     @media (min-width: 781px) {
         .ch-top-nav .ch-top-nav-notifications { order: 3; margin-left: auto; margin-right: 0; }
         .ch-top-nav .ch-mobile-drawer-wrap > .ch-nav-links { order: 1; }
-        .ch-top-nav .ch-mobile-drawer-wrap > .ch-user-bar { order: 4; margin-left: 8px; }
+        .ch-top-nav .ch-mobile-drawer-wrap > .ch-user-bar { order: 4; position: absolute; right: 0; }
         .ch-top-nav .ch-mobile-drawer-wrap > .ch-user-bar .ch-profile-dropdown { display: flex; align-items: center; }
     }
     .ch-welcome-glow {
