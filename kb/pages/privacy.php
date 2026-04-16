@@ -288,18 +288,22 @@ function bntm_kbf_render_privacy() {
         background:#f1f5f9;
       }
       .kbf-legal h2{
-        font-size:16px;
+        font-size:22px;
+        font-weight: 600;
+        line-height: 1.35;
         margin:18px 0 8px;
         scroll-margin-top: 96px;
       }
       .kbf-legal h3{
-        font-size:14px;
+        font-size:16px;
+        font-weight: 550;
+        line-height: 1.35;
         margin:14px 0 6px;
       }
       .kbf-legal p,
       .kbf-legal li{
-        font-size:13.5px;
-        line-height:1.7;
+        font-size:15px;
+        line-height:1.75;
         color:#475569;
       }
       .kbf-legal ul{ padding-left:18px; margin:8px 0; }
@@ -314,6 +318,9 @@ function bntm_kbf_render_privacy() {
         .kbf-actions{ display:none !important; }
         .kbf-hamburger{ display:inline-flex !important; }
         .kbf-topbar{ flex-wrap:nowrap; gap:12px; justify-content:space-between; padding:12px 20px; }
+        .kbf-legal h2 { font-size: 18px; }
+        .kbf-legal h3 { font-size: 14px; }
+        .kbf-legal p, .kbf-legal li { font-size: 14px; line-height: 1.7; }
       }
       .kbf-footer {
         margin: 44px auto 40px;
