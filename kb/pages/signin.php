@@ -201,12 +201,58 @@ function bntm_kbf_render_signin() {
       .kbf-auth-brand img{width:140px;height:auto;max-height:36px;object-fit:contain;}
       .kbf-auth-title{font-size:26px;font-weight:500;color:var(--kbf-auth-ink);margin:0 0 8px;}
       .kbf-auth-sub{font-size:14px;color:var(--kbf-slate);margin:0 0 22px;line-height:1.7;max-width:440px;}
-      .kbf-auth-form .kbf-form-group{margin-bottom:14px;}
-      .kbf-auth-input{display:flex;align-items:center;gap:10px;background:#ffffff;border:0; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px);border-radius:14px;padding:0 0 12px;box-shadow:none;position:relative;}
-      .kbf-auth-input .kbf-icon{position:absolute;left:12px;top:38%;transform:translateY(-50%);}
-      .kbf-auth-input input{background:#ffffff;}
-      .kbf-auth-input img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
-      .kbf-auth-input input{border:1px solid rgba(37,99,235,0.2);background:transparent;outline:none;font-size:13.5px;width:100%;padding-left:36px;padding-right:34px;}
+      .kbf-auth-form .kbf-form-group{margin-bottom:20px;position:relative;}
+      .kbf-auth-input{
+        position:relative;
+        border:1.5px solid rgba(37,99,235,0.25);
+        border-radius:14px;
+        background:#ffffff;
+        transition:border-color .2s;
+      }
+      .kbf-auth-input:focus-within{
+        border-color:#2563eb;
+      }
+      .kbf-auth-input label.kbf-float-label{
+        position:absolute;
+        left:36px;
+        top:50%;
+        transform:translateY(-50%);
+        font-size:13.5px;
+        color:#64748b;
+        background:#ffffff;
+        padding:0 4px;
+        pointer-events:none;
+        transition:top .18s ease, font-size .18s ease, color .18s ease, transform .18s ease;
+        line-height:1;
+      }
+      .kbf-auth-input:focus-within label.kbf-float-label,
+      .kbf-auth-input.kbf-has-value label.kbf-float-label{
+        top:0;
+        transform:translateY(-50%);
+        font-size:11.5px;
+        color:#2563eb;
+      }
+      .kbf-auth-input .kbf-icon{
+        position:absolute;
+        left:12px;
+        top:50%;
+        transform:translateY(-50%);
+        pointer-events:none;
+        color:#2563eb;
+        font-size:15px;
+      }
+      .kbf-auth-input input{
+        display:block;
+        width:100%;
+        border:0;
+        outline:none;
+        background:transparent;
+        font-size:13.5px;
+        color:#0b1a33;
+        padding:14px 36px 14px 36px;
+        box-sizing:border-box;
+        font-family:inherit;
+      }
       .kbf-auth-input input:focus{outline:none;box-shadow:none;}
       .kbf-auth-input input:-webkit-autofill,
       .kbf-auth-input input:-webkit-autofill:hover,
@@ -216,7 +262,7 @@ function bntm_kbf_render_signin() {
         transition: background-color 9999s ease-in-out 0s;
         box-shadow:0 0 0 1000px #ffffff inset;
       }
-      .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:absolute;right:40px;top:38%;transform:translateY(-50%);}
+      .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:absolute;right:15px;top:50%;transform:translateY(-50%);}
       .kbf-auth-toggle img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-cta{margin-top:14px;}
       .kbf-field-error{margin-top:6px;font-size:11.5px;color:#e11d48;display:none;}
@@ -268,20 +314,20 @@ function bntm_kbf_render_signin() {
               <input type="hidden" name="kbf_auth_action" value="signin">
               <input type="hidden" name="kbf_auth_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_signin')); ?>">
               <div class="kbf-form-group">
-                <label>Account name, social name, or email</label>
                 <div class="kbf-auth-input">
                   <i class="ph ph-envelope-simple kbf-icon" aria-hidden="true"></i>
-                  <input type="text" name="user_login" placeholder="Account name, social name, or email" required>
+                  <label class="kbf-float-label" for="kbf-signin-email">Email or username</label>
+                  <input type="text" id="kbf-signin-email" name="user_login" required>
                 </div>
                 <div class="kbf-field-error" aria-live="polite">This field is required.</div>
               </div>
                 <div class="kbf-form-group">
-                  <label>Password</label>
                   <div class="kbf-auth-input">
                     <i class="ph ph-lock kbf-icon" aria-hidden="true"></i>
-                    <input type="password" id="kbf-signin-password" name="user_password" placeholder="Enter your password" required>
+                    <label class="kbf-float-label" for="kbf-signin-password">Password</label>
+                    <input type="password" id="kbf-signin-password" name="user_password" required>
                     <button type="button" class="kbf-auth-toggle" data-target="kbf-signin-password" aria-label="Show password">
-                      <i class="ph ph-eye-slash kbf-icon" aria-hidden="true"></i>
+                      <i class="ph ph-eye-slash" aria-hidden="true"></i>
                     </button>
                   </div>
                   <div class="kbf-field-error" aria-live="polite">This field is required.</div>
@@ -349,6 +395,13 @@ function bntm_kbf_render_signin() {
 
           setupValidation(document.querySelector('.kbf-auth-form'));
         })();
+
+        document.querySelectorAll('.kbf-auth-input input').forEach(function(input){
+        function sync(){ input.closest('.kbf-auth-input').classList.toggle('kbf-has-value', input.value.trim() !== ''); }
+        input.addEventListener('input', sync);
+        input.addEventListener('change', sync);
+        sync();
+      });
       </script>
     </div>
     <?php
