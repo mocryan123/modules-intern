@@ -7425,34 +7425,6 @@ function ch_global_styles()
             max-width: 100%;
         }
 
-        /* Modernize Avatar/Media File Uploaders */
-        input[type="file"] {
-            color: var(--ch-text) !important;
-            font-family: var(--ch-font) !important;
-            font-size: 13px !important;
-        }
-        
-        input[type="file"]::file-selector-button {
-            background: color-mix(in srgb, var(--ch-surface) 40%, var(--ch-bg) 60%);
-            color: var(--ch-text);
-            border: 1px solid var(--ch-border);
-            padding: 8px 16px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 600;
-            font-family: var(--ch-font);
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            margin-right: 12px;
-        }
-        
-        input[type="file"]::file-selector-button:hover {
-            background: var(--ch-surface);
-            border-color: var(--ch-accent);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 0 0 2px rgba(255,117,81,0.1);
-            transform: translateY(-1px);
-        }
-
         .ch-input:focus, 
         .ch-select-sm:focus, 
         .ch-composer-cat-select:focus,
@@ -7492,6 +7464,27 @@ function ch_global_styles()
         /* Firefox */
         input[type="number"] {
             -moz-appearance: textfield !important;
+        }
+
+        /* File inputs (Avatar upload text and button) */
+        input[type="file"] {
+            color: var(--ch-text) !important;
+        }
+        input[type="file"]::file-selector-button {
+            color: var(--ch-text);
+            background: color-mix(in srgb, var(--ch-surface) 60%, var(--ch-bg) 40%);
+            border: 1px solid var(--ch-border);
+            border-radius: var(--ch-radius-md);
+            padding: 8px 14px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-right: 12px;
+            font-family: var(--ch-font);
+            font-weight: 500;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background: var(--ch-surface);
+            border-color: var(--ch-accent);
         }
         
         /* Ensure parents of textareas let them flex correctly */
