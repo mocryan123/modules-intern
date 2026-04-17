@@ -868,6 +868,16 @@
           dd.classList.remove('kbf-open');
           btn.setAttribute('aria-expanded', 'false');
         }
+        function clearUnreadUI(){
+          var badge = document.getElementById('kbf-notif-badge');
+          if(badge && badge.parentNode) badge.parentNode.removeChild(badge);
+          btn.classList.remove('has-unread');
+          dd.querySelectorAll('.kbf-notif-item.is-unread').forEach(function(item){
+            item.classList.remove('is-unread');
+          });
+          var headCount = dd.querySelector('.kbf-notif-head-count');
+          if(headCount && headCount.parentNode) headCount.parentNode.removeChild(headCount);
+        }
         function markReadOnce(){
           if(marked) return;
           marked = true;
@@ -880,15 +890,19 @@
             .then(function(r){ return r.json(); })
             .then(function(j){
               if(!j || !j.success) return;
-              var badge = document.getElementById('kbf-notif-badge');
-              if(badge && badge.parentNode) badge.parentNode.removeChild(badge);
-              btn.classList.remove('has-unread');
-              dd.querySelectorAll('.kbf-notif-item.is-unread').forEach(function(item){
-                item.classList.remove('is-unread');
-              });
-              var headCount = dd.querySelector('.kbf-notif-head-count');
-              if(headCount && headCount.parentNode) headCount.parentNode.removeChild(headCount);
+              clearUnreadUI();
             })
+            .catch(function(){});
+        }
+        function markSingleRead(notifId){
+          var nonce = wrap.getAttribute('data-single-nonce') || '';
+          if(!nonce || !notifId || typeof ajaxurl === 'undefined') return;
+          var fd = new FormData();
+          fd.append('action', 'kbf_mark_notification_read');
+          fd.append('nonce', nonce);
+          fd.append('notification_id', notifId);
+          fetch(ajaxurl, { method:'POST', body: fd })
+            .then(function(r){ return r.json(); })
             .catch(function(){});
         }
         btn.addEventListener('click', function(e){
@@ -897,6 +911,12 @@
           var isOpen = dd.classList.toggle('kbf-open');
           btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
           if(isOpen) markReadOnce();
+        });
+        dd.addEventListener('click', function(e){
+          var item = e.target.closest('.kbf-notif-item[data-notification-id]');
+          if(!item) return;
+          var notifId = item.getAttribute('data-notification-id') || '';
+          if(notifId) markSingleRead(notifId);
         });
         document.addEventListener('click', function(e){
           if(wrap.contains(e.target)) return;

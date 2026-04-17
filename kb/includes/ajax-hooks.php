@@ -14,7 +14,9 @@ add_action('wp_ajax_kbf_request_withdrawal',         'bntm_ajax_kbf_request_with
 add_action('wp_ajax_kbf_extend_deadline',            'bntm_ajax_kbf_extend_deadline');
 add_action('wp_ajax_kbf_toggle_auto_return',         'bntm_ajax_kbf_toggle_auto_return');
 add_action('wp_ajax_kbf_save_organizer_profile',     'bntm_ajax_kbf_save_organizer_profile');
+add_action('wp_ajax_kbf_get_notifications',          'bntm_ajax_kbf_get_notifications');
 add_action('wp_ajax_kbf_mark_notifications_read',    'bntm_ajax_kbf_mark_notifications_read');
+add_action('wp_ajax_kbf_mark_notification_read',     'bntm_ajax_kbf_mark_notification_read');
 add_action('wp_ajax_kbf_dismiss_onboarding',         'bntm_ajax_kbf_dismiss_onboarding');
 add_action('wp_ajax_kbf_request_verification',      'bntm_ajax_kbf_request_verification');
 add_action('wp_ajax_fundora_ajax_start_verification', 'fundora_ajax_start_verification');

@@ -45,6 +45,17 @@ if (!function_exists('kbf_get_user_notifications')) {
     }
 }
 
+if (!function_exists('kbf_get_user_notifications_latest')) {
+    function kbf_get_user_notifications_latest($user_id, $limit = 10) {
+        $items = kbf_get_user_notifications($user_id);
+        $items = array_reverse($items);
+        if ($limit > 0) {
+            $items = array_slice($items, 0, (int)$limit);
+        }
+        return $items;
+    }
+}
+
 if (!function_exists('kbf_get_user_unread_notification_count')) {
     function kbf_get_user_unread_notification_count($user_id) {
         $items = kbf_get_user_notifications($user_id);
@@ -65,12 +76,34 @@ if (!function_exists('kbf_push_user_notification')) {
             return 0;
         }
         $items = kbf_get_user_notifications($user_id);
+        $type = sanitize_key($payload['type'] ?? 'general');
+        $target_id = isset($payload['target_id']) ? (string)$payload['target_id'] : '';
+        $dedupe_window = isset($payload['dedupe_window']) ? max(0, (int)$payload['dedupe_window']) : 90;
+        if ($dedupe_window > 0 && !empty($items)) {
+            $now_ts = current_time('timestamp');
+            for ($i = count($items) - 1; $i >= 0; $i--) {
+                $existing = $items[$i];
+                if (($existing['type'] ?? '') !== $type) {
+                    continue;
+                }
+                if ($target_id !== '' && (string)($existing['target_id'] ?? '') !== $target_id) {
+                    continue;
+                }
+                $created_at = !empty($existing['created_at']) ? strtotime((string)$existing['created_at']) : 0;
+                if ($created_at && ($now_ts - $created_at) <= $dedupe_window) {
+                    return kbf_get_user_unread_notification_count($user_id);
+                }
+                break;
+            }
+        }
         $items[] = [
             'id' => 'kbfn_' . wp_generate_uuid4(),
-            'type' => sanitize_key($payload['type'] ?? 'general'),
+            'type' => $type,
             'title' => sanitize_text_field($payload['title'] ?? 'Notification'),
             'message' => sanitize_text_field($payload['message'] ?? ''),
             'url' => esc_url_raw($payload['url'] ?? ''),
+            'target_id' => $target_id,
+            'meta' => !empty($payload['meta']) && is_array($payload['meta']) ? array_map('sanitize_text_field', $payload['meta']) : [],
             'created_at' => current_time('mysql'),
             'read' => 0,
         ];
@@ -104,6 +137,36 @@ if (!function_exists('kbf_mark_user_notifications_read')) {
             update_user_meta($user_id, 'kbf_notifications', $items);
         }
         return 0;
+    }
+}
+
+if (!function_exists('kbf_mark_single_notification_read')) {
+    function kbf_mark_single_notification_read($user_id, $notification_id) {
+        $user_id = (int)$user_id;
+        $notification_id = sanitize_text_field((string)$notification_id);
+        if ($user_id <= 0 || $notification_id === '') {
+            return kbf_get_user_unread_notification_count($user_id);
+        }
+        $items = kbf_get_user_notifications($user_id);
+        if (empty($items)) {
+            return 0;
+        }
+        $changed = false;
+        foreach ($items as $idx => $item) {
+            if (($item['id'] ?? '') !== $notification_id) {
+                continue;
+            }
+            if (empty($item['read'])) {
+                $items[$idx]['read'] = 1;
+                $items[$idx]['read_at'] = current_time('mysql');
+                $changed = true;
+            }
+            break;
+        }
+        if ($changed) {
+            update_user_meta($user_id, 'kbf_notifications', $items);
+        }
+        return kbf_get_user_unread_notification_count($user_id);
     }
 }
 
@@ -838,6 +901,46 @@ function bntm_ajax_kbf_mark_notifications_read() {
     $uid = get_current_user_id();
     kbf_mark_user_notifications_read($uid);
     wp_send_json_success(['unread' => 0]);
+}
+
+function bntm_ajax_kbf_mark_notification_read() {
+    check_ajax_referer('kbf_notifications', 'nonce');
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
+    $uid = get_current_user_id();
+    $notif_id = isset($_POST['notification_id']) ? sanitize_text_field($_POST['notification_id']) : '';
+    $unread = kbf_mark_single_notification_read($uid, $notif_id);
+    wp_send_json_success(['unread' => (int)$unread]);
+}
+
+function bntm_ajax_kbf_get_notifications() {
+    check_ajax_referer('kbf_notifications', 'nonce');
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
+    $uid = get_current_user_id();
+    $limit = isset($_POST['limit']) ? (int)$_POST['limit'] : 10;
+    if ($limit <= 0 || $limit > 30) {
+        $limit = 10;
+    }
+    $items = kbf_get_user_notifications_latest($uid, $limit);
+    $clean = [];
+    foreach ($items as $item) {
+        $clean[] = [
+            'id' => sanitize_text_field($item['id'] ?? ''),
+            'type' => sanitize_key($item['type'] ?? 'general'),
+            'title' => sanitize_text_field($item['title'] ?? 'Notification'),
+            'message' => sanitize_text_field($item['message'] ?? ''),
+            'url' => esc_url_raw($item['url'] ?? ''),
+            'created_at' => sanitize_text_field($item['created_at'] ?? ''),
+            'read' => !empty($item['read']) ? 1 : 0,
+        ];
+    }
+    wp_send_json_success([
+        'items' => $clean,
+        'unread' => kbf_get_user_unread_notification_count($uid),
+    ]);
 }
 
 

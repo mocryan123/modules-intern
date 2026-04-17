@@ -10,29 +10,21 @@
       $notif_nonce = $is_logged_in ? wp_create_nonce('kbf_notifications') : '';
       $notif_preview_items = [];
       if ($is_logged_in) {
-        $notif_items = get_user_meta((int)$user->ID, 'kbf_notifications', true);
-        if (!is_array($notif_items)) {
-          $notif_items = [];
-        }
+        $notif_items = function_exists('kbf_get_user_notifications') ? kbf_get_user_notifications((int)$user->ID) : [];
         if (!empty($notif_items)) {
-          $notif_preview_items = array_slice(array_reverse($notif_items), 0, 6);
+          $notif_preview_items = function_exists('kbf_get_user_notifications_latest')
+            ? kbf_get_user_notifications_latest((int)$user->ID, 6)
+            : array_slice(array_reverse($notif_items), 0, 6);
+          $notif_unread_count = function_exists('kbf_get_user_unread_notification_count')
+            ? (int)kbf_get_user_unread_notification_count((int)$user->ID)
+            : 0;
           if ($tab === 'sponsorships') {
-            $changed = false;
-            foreach ($notif_items as $idx => $notif_item) {
-              if (empty($notif_item['read'])) {
-                $notif_items[$idx]['read'] = 1;
-                $notif_items[$idx]['read_at'] = current_time('mysql');
-                $changed = true;
-              }
+            if (function_exists('kbf_mark_user_notifications_read')) {
+              kbf_mark_user_notifications_read((int)$user->ID);
             }
-            if ($changed) {
-              update_user_meta((int)$user->ID, 'kbf_notifications', $notif_items);
-            }
-          } else {
-            foreach ($notif_items as $notif_item) {
-              if (empty($notif_item['read'])) {
-                $notif_unread_count++;
-              }
+            $notif_unread_count = 0;
+            foreach ($notif_preview_items as $idx => $notif_item) {
+              $notif_preview_items[$idx]['read'] = 1;
             }
           }
         }
@@ -98,7 +90,7 @@
               <a href="<?php echo esc_url($logout_url); ?>" role="menuitem">Sign out</a>
             </div>
           </div>
-            <div class="kbf-notif-menu" id="kbf-notif-menu" data-mark-nonce="<?php echo esc_attr($notif_nonce); ?>">
+            <div class="kbf-notif-menu" id="kbf-notif-menu" data-mark-nonce="<?php echo esc_attr($notif_nonce); ?>" data-single-nonce="<?php echo esc_attr($notif_nonce); ?>" data-get-nonce="<?php echo esc_attr($notif_nonce); ?>">
               <button class="kbf-notif-btn <?php echo $notif_unread_count > 0 ? 'has-unread' : ''; ?>" type="button" id="kbf-notif-btn" aria-haspopup="true" aria-expanded="false" aria-label="Notifications" title="Notifications">
                 <i class="ph ph-bell kbf-icon" aria-hidden="true"></i>
                 <?php if ($notif_unread_count > 0): ?>
@@ -122,7 +114,7 @@
                         $n_read = !empty($notif_item['read']);
                         $n_time = !empty($notif_item['created_at']) ? date_i18n('M d, Y h:i A', strtotime((string)$notif_item['created_at'])) : '';
                       ?>
-                      <a href="<?php echo $n_url; ?>" class="kbf-notif-item <?php echo $n_read ? '' : 'is-unread'; ?>" role="menuitem">
+                      <a href="<?php echo $n_url; ?>" class="kbf-notif-item <?php echo $n_read ? '' : 'is-unread'; ?>" role="menuitem" data-notification-id="<?php echo esc_attr(sanitize_text_field($notif_item['id'] ?? '')); ?>">
                         <span class="kbf-notif-item-title"><?php echo esc_html($n_title); ?></span>
                         <?php if ($n_message): ?><span class="kbf-notif-item-msg"><?php echo esc_html($n_message); ?></span><?php endif; ?>
                         <?php if ($n_time): ?><span class="kbf-notif-item-time"><?php echo esc_html($n_time); ?></span><?php endif; ?>
