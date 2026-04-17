@@ -1,4 +1,4 @@
-﻿<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
+<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
     <!-- ===== MODAL: Create Fund ===== -->
     <div id="kbf-modal-create" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">

@@ -360,16 +360,127 @@ function bntm_ajax_kbf_admin_trigger_onboarding() {
 }
 
 
+function bntm_kbf_allowed_settings_map() {
+    return [
+        'kbf_demo_mode' => 'bool',
+        'kbf_disable_platform_fee' => 'bool',
+        'kbf_maya_sandbox_public' => 'text',
+        'kbf_maya_sandbox_secret' => 'text',
+        'kbf_maya_live_public' => 'text',
+        'kbf_maya_live_secret' => 'text',
+        'kbf_maya_webhook_secret' => 'text',
+        'kbf_didit_sandbox_api_key' => 'text',
+        'kbf_didit_sandbox_app_id' => 'text',
+        'kbf_didit_sandbox_workflow_id' => 'text',
+        'kbf_didit_live_api_key' => 'text',
+        'kbf_didit_live_app_id' => 'text',
+        'kbf_didit_live_workflow_id' => 'text',
+        'kbf_didit_webhook_secret' => 'text',
+    ];
+}
+
+function bntm_kbf_normalize_setting_value($key, $raw_val) {
+    $allowed = bntm_kbf_allowed_settings_map();
+    if (!isset($allowed[$key])) {
+        return [false, ''];
+    }
+    if ($allowed[$key] === 'bool') {
+        return [true, ((string)$raw_val === '1' ? '1' : '0')];
+    }
+    return [true, sanitize_text_field($raw_val)];
+}
+
+function bntm_kbf_settings_equal($key, $expected, $actual_raw) {
+    list($ok, $actual) = bntm_kbf_normalize_setting_value($key, $actual_raw);
+    if (!$ok) {
+        return false;
+    }
+    return (string)$expected === (string)$actual;
+}
+
 function bntm_ajax_kbf_save_setting() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     $key = sanitize_key(isset($_POST['setting_key']) ? $_POST['setting_key'] : '');
-    $val = sanitize_text_field(isset($_POST['setting_val']) ? $_POST['setting_val'] : '');
     if(empty($key)) wp_send_json_error(['message'=>'Invalid setting key.']);
+    $raw_val = isset($_POST['setting_val']) ? wp_unslash($_POST['setting_val']) : '';
+    list($ok, $val) = bntm_kbf_normalize_setting_value($key, $raw_val);
+    if (!$ok) {
+        wp_send_json_error(['message' => 'Setting key is not allowed.']);
+    }
     kbf_set_setting($key, $val);
-    $labels = ['kbf_demo_mode' => ['0'=>'Live Mode activated. Sponsorships now require payment confirmation.','1'=>'Demo Mode activated. Sponsorships will be auto-confirmed.']];
+    $labels = [
+        'kbf_demo_mode' => [
+            '0' => 'Live Mode activated. Sponsorships now require payment confirmation.',
+            '1' => 'Demo Mode activated. Sponsorships will be auto-confirmed.',
+        ],
+        'kbf_disable_platform_fee' => [
+            '0' => 'Platform fee enabled (5%).',
+            '1' => 'Platform fee disabled (0%).',
+        ],
+    ];
     $msg = (isset($labels[$key]) && isset($labels[$key][$val])) ? $labels[$key][$val] : 'Setting saved!';
     wp_send_json_success(['message'=>$msg]);
+}
+
+function bntm_ajax_kbf_save_settings_batch() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+
+    $raw_json = isset($_POST['settings_json']) ? wp_unslash($_POST['settings_json']) : '';
+    if ($raw_json === '') {
+        wp_send_json_error(['message' => 'No settings payload provided.']);
+    }
+
+    $decoded = json_decode($raw_json, true);
+    if (!is_array($decoded) || empty($decoded)) {
+        wp_send_json_error(['message' => 'Invalid settings payload.']);
+    }
+
+    $normalized = [];
+    foreach ($decoded as $raw_key => $raw_val) {
+        $key = sanitize_key((string)$raw_key);
+        if ($key === '') {
+            wp_send_json_error(['message' => 'Invalid setting key in payload.']);
+        }
+        list($ok, $val) = bntm_kbf_normalize_setting_value($key, $raw_val);
+        if (!$ok) {
+            wp_send_json_error(['message' => 'Setting key is not allowed: ' . $key]);
+        }
+        $normalized[$key] = $val;
+    }
+
+    $previous = [];
+    foreach ($normalized as $key => $_) {
+        $previous[$key] = kbf_get_setting($key, '');
+    }
+
+    try {
+        foreach ($normalized as $key => $val) {
+            kbf_set_setting($key, $val);
+            $saved = kbf_get_setting($key, '');
+            if (!bntm_kbf_settings_equal($key, $val, $saved)) {
+                throw new Exception('Failed to persist setting: ' . $key);
+            }
+        }
+    } catch (Throwable $e) {
+        $rollback_failed = [];
+        foreach ($previous as $key => $old_val) {
+            kbf_set_setting($key, $old_val);
+            $restored = kbf_get_setting($key, '');
+            if (!bntm_kbf_settings_equal($key, $old_val, $restored)) {
+                $rollback_failed[] = $key;
+            }
+        }
+        if (!empty($rollback_failed)) {
+            wp_send_json_error([
+                'message' => 'Save failed and rollback was incomplete for: ' . implode(', ', $rollback_failed) . '. Please retry.',
+            ]);
+        }
+        wp_send_json_error(['message' => 'Save aborted. Previous settings were restored.']);
+    }
+
+    wp_send_json_success(['message' => 'Settings saved successfully.']);
 }
 
 function bntm_ajax_kbf_admin_refresh_tab() {

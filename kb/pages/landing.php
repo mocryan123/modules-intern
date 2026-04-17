@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
  * KBF landing page template (HTML/CSS/JS).
  */

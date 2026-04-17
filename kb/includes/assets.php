@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!defined('ABSPATH')) exit;
 
 // GLOBAL CSS + JS (shared across all shortcodes)
