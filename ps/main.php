@@ -283,6 +283,8 @@ function bntm_shortcode_ps_dashboard() {
     .ps-badge-picked_up { background:#e5e7eb; color:#374151; }
     .ps-badge-cancelled { background:#fee2e2; color:#991b1b; }
     .ps-options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .bntm-table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 16px; }
+    .bntm-table { min-width: 800px; }
     @media(max-width:600px){ .ps-options-grid { grid-template-columns: 1fr; } }
     </style>
 
@@ -817,26 +819,28 @@ function ps_settings_tab($business_id) {
         <h3>Additional Services</h3>
         <p style="color:#6b7280;margin-bottom:20px;">Custom add-ons customers can select on the order form (e.g. lamination, colored paper). Price is per order unless "Per Copy" is enabled.</p>
 
-        <div id="ps-extra-services-list">
-            <div style="display:grid;grid-template-columns:1fr 1.4fr 110px 90px 60px;gap:8px;margin-bottom:6px;align-items:center;">
-                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Name</span>
-                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Description</span>
-                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Price (₱)</span>
-                <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Per Copy</span>
-                <span></span>
+        <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 12px; padding-bottom: 8px;">
+            <div id="ps-extra-services-list" style="min-width: 650px;">
+                <div style="display:grid;grid-template-columns:1.2fr 1.4fr 110px 90px 65px;gap:8px;margin-bottom:6px;align-items:center;">
+                    <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Name</span>
+                    <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Description</span>
+                    <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Price (₱)</span>
+                    <span style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;">Per Copy</span>
+                    <span></span>
+                </div>
+                <?php foreach ($extra_services as $svc): ?>
+                <div class="ps-svc-row" style="display:grid;grid-template-columns:1.2fr 1.4fr 110px 90px 65px;gap:8px;margin-bottom:8px;align-items:center;">
+                    <input type="text" class="bntm-input" value="<?php echo esc_attr($svc['name'] ?? ''); ?>" placeholder="e.g. Lamination">
+                    <input type="text" class="bntm-input" value="<?php echo esc_attr($svc['desc'] ?? ''); ?>" placeholder="Short description">
+                    <input type="number" class="bntm-input" value="<?php echo esc_attr($svc['price'] ?? '0.00'); ?>" step="0.01" min="0">
+                    <select class="bntm-select">
+                        <option value="0" <?php selected(empty($svc['per_copy'])); ?>>No</option>
+                        <option value="1" <?php selected(!empty($svc['per_copy'])); ?>>Yes</option>
+                    </select>
+                    <button type="button" class="bntm-btn-small bntm-btn-danger ps-remove-svc">Remove</button>
+                </div>
+                <?php endforeach; ?>
             </div>
-            <?php foreach ($extra_services as $svc): ?>
-            <div class="ps-svc-row" style="display:grid;grid-template-columns:1fr 1.4fr 110px 90px 60px;gap:8px;margin-bottom:8px;align-items:center;">
-                <input type="text" class="bntm-input" value="<?php echo esc_attr($svc['name'] ?? ''); ?>" placeholder="e.g. Lamination">
-                <input type="text" class="bntm-input" value="<?php echo esc_attr($svc['desc'] ?? ''); ?>" placeholder="Short description">
-                <input type="number" class="bntm-input" value="<?php echo esc_attr($svc['price'] ?? '0.00'); ?>" step="0.01" min="0">
-                <select class="bntm-select">
-                    <option value="0" <?php selected(empty($svc['per_copy'])); ?>>No</option>
-                    <option value="1" <?php selected(!empty($svc['per_copy'])); ?>>Yes</option>
-                </select>
-                <button type="button" class="bntm-btn-small bntm-btn-danger ps-remove-svc">Remove</button>
-            </div>
-            <?php endforeach; ?>
         </div>
 
         <button type="button" id="ps-add-svc-row" class="bntm-btn-secondary" style="margin-top:4px;">+ Add Service</button>
@@ -900,7 +904,7 @@ function ps_settings_tab($business_id) {
         function newSvcRow(name, desc, price, perCopy) {
             const row = document.createElement('div');
             row.className = 'ps-svc-row';
-            row.style.cssText = 'display:grid;grid-template-columns:1fr 1.4fr 110px 90px 60px;gap:8px;margin-bottom:8px;align-items:center;';
+            row.style.cssText = 'display:grid;grid-template-columns:1.2fr 1.4fr 110px 90px 65px;gap:8px;margin-bottom:8px;align-items:center;';
             row.innerHTML = `
                 <input type="text" class="bntm-input" value="${name||''}" placeholder="e.g. Lamination">
                 <input type="text" class="bntm-input" value="${desc||''}" placeholder="Short description">
@@ -1658,16 +1662,17 @@ function bntm_shortcode_ps_order() {
         .pso-preview-stage { flex-direction:row; flex-wrap:wrap; justify-content:center; padding:20px; }
     }
     @media(max-width:900px){
-        .pso-root { flex-direction:column; position:fixed; inset:0; overflow-y:auto; }
-        .pso-sidebar { width:100%; }
-        .pso-sidebar-inner { padding:24px 24px 20px; gap:20px; }
-        .pso-step-nav { flex-direction:row; gap:0; overflow-x:auto; }
+        .pso-root { flex-direction:column; position:fixed; inset:0; overflow-y:auto; height:100dvh; display:block; }
+        .pso-sidebar { width:100%; height:auto; flex-shrink:0; }
+        .pso-sidebar-inner { padding:24px 24px 20px; gap:20px; height:auto; min-height:0; }
+        .pso-step-nav { flex-direction:row; gap:0; overflow-x:auto; padding-bottom:10px; }
+        .pso-step-nav::-webkit-scrollbar { display:none; }
         .pso-step-connector { width:20px; height:2px; margin:0; align-self:center; }
         .pso-step-item { flex-direction:column; gap:6px; align-items:center; min-width:70px; }
         .pso-step-info { text-align:center; padding-top:0; }
         .pso-step-label { display:none; }
         .pso-info-card { display:none; }
-        .pso-main { padding:28px 24px; }
+        .pso-main { height:auto; overflow-y:visible; flex:none; padding:28px 24px; min-height:100%; display:flex; flex-direction:column; }
         .pso-review-grid { grid-template-columns:1fr; }
         .pso-fields-grid { grid-template-columns:1fr; }
         .pso-two-col { grid-template-columns:1fr; }
@@ -2200,23 +2205,34 @@ function bntm_shortcode_ps_tracking() {
     </script>
     <script>var ajaxurl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';</script>
 
-    <div style="max-width:560px;margin:0 auto;font-family:'Segoe UI',system-ui,sans-serif;">
+    <div class="ps-track-wrapper">
         <h2 style="font-size:24px;font-weight:700;margin-bottom:8px;color:#1a3c8f;">Track Your Order</h2>
         <p style="color:#6b7280;margin-bottom:24px;">Enter your Order ID to check the status of your print job.</p>
-        <div style="display:flex;gap:10px;margin-bottom:24px;">
-            <input type="text" id="ps-track-input" class="bntm-input" placeholder="e.g. PS-XXXXXXX" style="flex:1;">
+        <div class="ps-track-form">
+            <input type="text" id="ps-track-input" class="bntm-input" placeholder="e.g. PS-XXXXXXX">
             <button id="ps-track-btn" class="bntm-btn-primary" style="background:linear-gradient(135deg,#16a34a,#22c55e);border-color:#16a34a;" data-nonce="<?php echo $nonce; ?>">Track</button>
         </div>
         <div id="ps-track-result"></div>
     </div>
 
     <style>
+    .ps-track-wrapper { max-width:560px; margin:0 auto; padding:20px; font-family:'Segoe UI',system-ui,sans-serif; box-sizing:border-box; }
+    .ps-track-form { display:flex; gap:10px; margin-bottom:24px; }
+    .ps-track-form .bntm-input { flex:1; min-width:0; }
     .ps-badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; text-transform:capitalize; letter-spacing:.3px; }
     .ps-badge-pending   { background:#fef3c7; color:#92400e; }
     .ps-badge-printing  { background:#e8eeff; color:#1a3c8f; }
     .ps-badge-ready     { background:#dcfce7; color:#15803d; }
     .ps-badge-picked_up { background:#e5e7eb; color:#374151; }
     .ps-badge-cancelled { background:#fee2e2; color:#991b1b; }
+    .ps-track-details-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    @media(max-width:500px) {
+        .ps-track-wrapper { padding:15px; }
+        .ps-track-form { flex-direction:column; }
+        .ps-track-form #ps-track-btn { width: 100%; }
+        .ps-track-details-grid { grid-template-columns:1fr; }
+        .ps-track-order-header { flex-direction:column; align-items:flex-start !important; gap:12px; }
+    }
     </style>
 
     <script>
@@ -2262,12 +2278,12 @@ function bntm_shortcode_ps_tracking() {
                     stepsHtml += '</div>';
 
                     resultEl.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px;">
-                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
-                            <div><div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;">Order ID</div><div style="font-size:20px;font-weight:800;color:#1a3c8f;">${o.rand_id}</div></div>
-                            <span class="ps-badge ps-badge-${o.status}">${o.status.replace('_',' ')}</span>
+                        <div class="ps-track-order-header" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+                            <div><div style="font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;">Order ID</div><div style="font-size:20px;font-weight:800;color:#1a3c8f;word-break:break-all;">${o.rand_id}</div></div>
+                            <span class="ps-badge ps-badge-${o.status}" style="flex-shrink:0;">${o.status.replace('_',' ')}</span>
                         </div>
-                        <div style="margin-bottom:24px;font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                            <div><span style="color:#9ca3af;">File: </span><span style="color:#374151;">${o.file_name}</span></div>
+                        <div class="ps-track-details-grid" style="margin-bottom:24px;font-size:13px;">
+                            <div><span style="color:#9ca3af;">File: </span><span style="color:#374151;word-break:break-all;">${o.file_name}</span></div>
                             <div><span style="color:#9ca3af;">Customer: </span><span style="color:#374151;">${o.customer_name}</span></div>
                             <div><span style="color:#9ca3af;">Copies: </span><span style="color:#374151;">${o.copies}</span></div>
                             <div><span style="color:#9ca3af;">Paper: </span><span style="color:#374151;">${o.paper_size} ${o.color_mode==='color'?'Color':'B&W'}</span></div>
