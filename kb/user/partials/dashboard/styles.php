@@ -103,12 +103,6 @@
         border:1px dashed #d7e3f7;
         color:#475569;
     }
-    @media (max-width: 1200px){
-        .kbf-tab-content{
-            padding-left:20px;
-            padding-right:20px;
-        }
-    }
     .kbf-card-actions{
         display:flex;
         align-items:center;
@@ -222,13 +216,11 @@
         max-width:80%;
         margin:0 auto;
         padding:0;
-        padding-top:84px;
         box-sizing:border-box;
     }
     @media (max-width: 1200px){
         .kbf-dashboard-shell{
             padding:0;
-            padding-top:84px;
         }
     }
     .kbf-tab-content{
@@ -544,10 +536,7 @@
             padding-left:10px;
             padding-right:10px;
         }
-        .kbf-hero-wrap{
-            padding-left:20px;
-            padding-right:20px;
-        }
+        .kbf-hero-wrap{}
     }
     .kbf-user-ui{
         background-image:none !important;
@@ -717,10 +706,13 @@
         color:#fff;
     }
     @media (max-width: 900px){
+        .kbf-dashboard-shell{ max-width:90%; }
         .kbf-hero-grid{ grid-template-columns:1fr; }
-        .kbf-topbar{ flex-wrap:wrap; }
+        .kbf-topbar{ flex-wrap:nowrap; }
         .kbf-nav{ display:none; }
         .kbf-hamburger{ display:inline-flex; }
+        .kbf-actions > a.kbf-btn{ display:none; }
+        .kbf-dashboard-name{ display:none; }
     }
     .kbf-user-ui .kbf-modal-overlay{
         position:fixed;
@@ -852,18 +844,46 @@
     }
     .kbf-user-ui .kbf-auth-modal{
         max-width:920px;
+        width:min(920px, calc(100vw - 32px));
+        max-height:calc(100vh - 32px);
         padding:0;
         background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
         border:none;
         border-radius:26px;
         box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);
         backdrop-filter:blur(4px);
+        overflow:hidden;
+        transform:translateY(0) scale(1);
+        animation:kbfAuthModalIn .22s ease-out;
+    }
+    @keyframes kbfAuthModalIn{
+        from{opacity:0;transform:translateY(8px) scale(.985);}
+        to{opacity:1;transform:translateY(0) scale(1);}
     }
     .kbf-user-ui .kbf-auth-modal .kbf-modal-close{
         position:absolute;
         top:18px;
         right:18px;
         z-index:3;
+        width:36px;
+        height:36px;
+        border-radius:999px;
+        border:1px solid #dbe4f0;
+        background:#ffffffd9;
+        color:#475569;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:0 4px 12px rgba(15,23,42,.08);
+    }
+    .kbf-user-ui .kbf-auth-modal .kbf-modal-close:hover{
+        background:#ffffff;
+        color:#0f172a;
+        border-color:#cbd5e1;
+    }
+    .kbf-user-ui .kbf-auth-modal .kbf-modal-close:focus-visible{
+        outline:2px solid #3b82f6;
+        outline-offset:2px;
     }
     .kbf-user-ui .kbf-auth-grid{
         display:flex;
@@ -927,7 +947,7 @@
         box-shadow:0 8px 22px rgba(15,23,42,0.22);
         backdrop-filter:blur(8px);
         margin:0;
-        max-width:220px;
+        max-width:150px;
         justify-content:center;
     }
     .kbf-user-ui .kbf-auth-quote{
@@ -967,16 +987,20 @@
         box-sizing:border-box;
     }
     .kbf-user-ui .kbf-auth-main h3{
-        font-size:21px;
+        font-size:24px;
         font-weight:700;
         margin:0;
         color:#0f172a;
+        letter-spacing:-.01em;
     }
     .kbf-user-ui .kbf-auth-main p{
         margin:0;
         color:#4f5a6b;
         font-size:13.5px;
         line-height:1.6;
+    }
+    .kbf-user-ui #kbf-auth-reason{
+        max-width:44ch;
     }
     .kbf-user-ui .kbf-auth-actions{
         display:flex;
@@ -988,10 +1012,15 @@
     .kbf-user-ui .kbf-auth-actions .kbf-btn{
         width:100%;
         justify-content:center;
-        min-height:44px;
+        min-height:46px;
         border-radius:12px;
         align-self:stretch;
         box-sizing:border-box;
+        font-weight:600;
+    }
+    .kbf-user-ui .kbf-auth-actions .kbf-btn:focus-visible{
+        outline:2px solid #3b82f6;
+        outline-offset:2px;
     }
     .kbf-user-ui .kbf-auth-side{
         padding:32px;
@@ -1005,10 +1034,66 @@
     }
     @media (max-width: 900px){
         .kbf-user-ui .kbf-auth-grid{
-            grid-template-columns:1fr;
+            flex-direction:column;
+            min-height:0;
         }
         .kbf-user-ui .kbf-auth-side{
-            min-height:180px;
+            min-height:170px;
+            padding:22px;
+            flex:0 0 auto;
+        }
+        .kbf-user-ui .kbf-auth-main{
+            border-left:0;
+            border-top:1px solid #e2e8f0;
+            padding:26px 22px;
+            flex:1 1 auto;
+        }
+        .kbf-user-ui .kbf-auth-quote{
+            font-size:18px;
+            line-height:1.35;
+        }
+        .kbf-user-ui .kbf-auth-sub{
+            font-size:12px;
+            line-height:1.5;
+        }
+    }
+    @media (max-width: 560px){
+        .kbf-user-ui #kbf-auth-modal{
+            padding:10px;
+        }
+        .kbf-user-ui .kbf-auth-modal{
+            width:calc(100vw - 20px);
+            max-height:calc(100vh - 20px);
+            border-radius:18px;
+        }
+        .kbf-user-ui .kbf-auth-modal .kbf-modal-close{
+            top:10px;
+            right:10px;
+        }
+        .kbf-user-ui .kbf-auth-side{
+            min-height:130px;
+            padding:16px;
+        }
+        .kbf-user-ui .kbf-auth-main{
+            padding:18px 16px;
+        }
+        .kbf-user-ui .kbf-auth-main h3{
+            font-size:18px;
+        }
+    }
+    @media (max-width: 720px){
+        .kbf-user-ui .kbf-auth-side-inner{
+            align-items:center;
+            text-align:center;
+            margin:0 auto;
+        }
+        .kbf-user-ui .kbf-auth-chip{
+            margin-left:auto;
+            margin-right:auto;
+        }
+        .kbf-user-ui .kbf-auth-sub{
+            margin-left:auto;
+            margin-right:auto;
         }
     }
     .kbf-user-ui .kbf-modal input,

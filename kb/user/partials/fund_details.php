@@ -683,9 +683,9 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-breadcrumb a:hover{text-decoration:none;}
     .kbf-more-wrap{position:relative;z-index:50;}
     .kbf-more-menu{
-        position:fixed;
-        right:auto;
-        top:auto;
+        position:absolute;
+        right:0;
+        top:calc(100% + 8px);
         background:rgba(255,255,255,0.98);
         border:1px solid #e2e8f0;
         border-radius:14px;
@@ -694,7 +694,7 @@ function bntm_shortcode_kbf_fund_details() {
           0 4px 10px rgba(15,23,42,.08);
         padding:8px;
         min-width:170px;
-        z-index:99999;
+        z-index:50;
         opacity:0;
         visibility:hidden;
         pointer-events:none;
@@ -851,6 +851,22 @@ function bntm_shortcode_kbf_fund_details() {
       overflow:visible !important;
       position:relative !important;
       z-index:1 !important;
+    }
+    .kbf-detail-right .kbf-fund-cta-card{
+      position:relative !important;
+      z-index:300 !important;
+      pointer-events:auto !important;
+      isolation:isolate;
+    }
+    .kbf-detail-right .kbf-fund-cta-card .kbf-card-actions{
+      position:relative;
+      z-index:301;
+      pointer-events:auto !important;
+    }
+    .kbf-detail-right .kbf-fund-cta-card .kbf-btn{
+      position:relative;
+      z-index:302;
+      pointer-events:auto !important;
     }
     .kbf-detail-right .kbf-card-actions{overflow:visible !important; position:relative; z-index:10;}
     .kbf-detail-right .kbf-more-wrap{
@@ -1179,7 +1195,7 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
           <h1 class="kbf-detail-title" style="margin:4px 0 0;"><?php echo esc_html($fund->title); ?></h1>
           <div class="kbf-fund-header-top">
-            <a href="<?php echo esc_url($profile_url); ?>" class="kbf-fund-organizer-link" style="text-decoration:none;">
+            <a href="<?php echo esc_url($profile_url); ?>" class="kbf-fund-organizer-link" style="text-decoration:none;" <?php if(!$current_user_id): ?>onclick="event.preventDefault();if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to view account details.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}"<?php endif; ?>>
               <div class="kbf-fund-organizer-avatar">
                 <?php if($organizer && !empty($organizer->avatar_url)): ?>
                   <img src="<?php echo esc_url($organizer->avatar_url); ?>" alt="<?php echo esc_attr($fund->organizer_name); ?>">
@@ -1195,7 +1211,7 @@ function bntm_shortcode_kbf_fund_details() {
             </a>
             <div class="kbf-fund-header-info">
               <div class="kbf-fund-organizer-name-row">
-                <a href="<?php echo esc_url($profile_url); ?>" style="color:var(--kbf-blue);text-decoration:none;font-weight:600;font-size:14px;">
+                <a href="<?php echo esc_url($profile_url); ?>" style="color:var(--kbf-blue);text-decoration:none;font-weight:600;font-size:14px;" <?php if(!$current_user_id): ?>onclick="event.preventDefault();if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to view account details.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}"<?php endif; ?>>
                   <?php echo esc_html($fund->organizer_name); ?>
                 </a>
               </div>
@@ -1253,7 +1269,7 @@ function bntm_shortcode_kbf_fund_details() {
             <?php endif; ?>
           </div>
 
-          <div class="kbf-card" style="padding:18px;">
+          <div class="kbf-card kbf-fund-cta-card" style="padding:18px;">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
               <div style="font-size:20px;font-weight:700;color:var(--kbf-blue);">&#8369;<?php echo number_format((float)$fund->raised_amount, 2); ?></div>
               <div style="font-size:12px;color:var(--kbf-slate);">of &#8369;<?php echo number_format((float)$fund->goal_amount, 2); ?></div>
@@ -1279,7 +1295,7 @@ function bntm_shortcode_kbf_fund_details() {
                 <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Campaign'; ?>
               </button>
               <div class="kbf-card-actions" style="display:flex;gap:10px;margin-top:10px;">
-                <button class="kbf-btn kbf-btn-secondary kbf-save-btn" type="button" data-fund-id="<?php echo (int)$fund->id; ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" data-save-label="Save Fund" onclick="kbfSaveFund('<?php echo (int)$fund->id; ?>', this)">
+                <button class="kbf-btn kbf-btn-secondary kbf-save-btn" type="button" data-fund-id="<?php echo (int)$fund->id; ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" data-save-label="Save Fund" onclick="kbfSaveFund('<?php echo (int)$fund->id; ?>', this)" style="pointer-events:auto !important; cursor:pointer !important; position:relative; z-index:302; touch-action:manipulation;">
                   <i class="<?php echo $is_saved ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple'; ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
                   <span class="kbf-save-label"><?php echo $is_saved ? 'Saved' : 'Save Fund'; ?></span>
                 </button>
@@ -1290,22 +1306,29 @@ function bntm_shortcode_kbf_fund_details() {
                   </button>
                   <div class="kbf-more-menu" id="kbf-more-menu">
                     <button type="button" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">Share</button>
-                    <button type="button" onclick="kbfCreatePoster('<?php echo esc_js($org_token ?: $fund->business_id); ?>','<?php echo esc_js($fund->title); ?>')">Create Poster</button>
-                      <button type="button" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.style.display='flex';m.classList.add('is-open');}">Report Abuse</button>
-                    <?php if($already_rated): ?>
-                      <button type="button" disabled style="opacity:0.7;cursor:not-allowed;" data-tooltip="You have already rated this organizer">
-                        <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:13px;color:#3b82f6;" aria-hidden="true"></i>
-                        Score Submitted
-                      </button>
-                    <?php elseif($is_self): ?>
-                      <!-- Hidden for self -->
-                    <?php elseif(!$current_user_id): ?>
-                      <button type="button" disabled style="opacity:0.6;cursor:not-allowed;" data-tooltip="Sign in to rate this organizer">
-                        <i class="ph ph-thumbs-up kbf-icon" style="font-size:13px;" aria-hidden="true"></i>
-                        Credibility Score
-                      </button>
+                    <?php if($is_self): ?>
+                      <button type="button" onclick="kbfCreatePoster('<?php echo esc_js($org_token ?: $fund->business_id); ?>','<?php echo esc_js($fund->title); ?>')">Create Poster</button>
                     <?php else: ?>
-                      <button type="button" onclick="kbfShowModal('kbf-modal-rating')">Credibility Score</button>
+                      <?php if(!$current_user_id): ?>
+                        <button type="button" onclick="if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to report abuse.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}" data-tooltip="Sign in to report abuse">
+                          Report Abuse
+                        </button>
+                      <?php else: ?>
+                        <button type="button" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.style.display='flex';m.classList.add('is-open');}">Report Abuse</button>
+                      <?php endif; ?>
+                      <?php if($already_rated): ?>
+                        <button type="button" disabled style="opacity:0.7;cursor:not-allowed;" data-tooltip="You have already rated this organizer">
+                          <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:13px;color:#3b82f6;" aria-hidden="true"></i>
+                          Score Submitted
+                        </button>
+                      <?php elseif(!$current_user_id): ?>
+                        <button type="button" onclick="if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to rate this organizer.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}" data-tooltip="Sign in to rate this organizer">
+                          <i class="ph ph-thumbs-up kbf-icon" style="font-size:13px;" aria-hidden="true"></i>
+                          Credibility Score
+                        </button>
+                      <?php else: ?>
+                        <button type="button" onclick="kbfShowModal('kbf-modal-rating')">Credibility Score</button>
+                      <?php endif; ?>
                     <?php endif; ?>
                   </div>
                 </div>
@@ -2065,7 +2088,8 @@ function bntm_shortcode_kbf_fund_details() {
      */
     window.kbfSetRating=function(v){
         _kbfRating=v;
-        document.getElementById('kbf-rating-val').value=v;
+        var ratingInput = document.getElementById('kbf-rating-val');
+        if(ratingInput) ratingInput.value=v;
         document.querySelectorAll('.kbf-star-btn').forEach((s,i)=>{
             const filled = i < v;
             const fillCls = (s.getAttribute('data-filled') || 'ph-fill ph-thumbs-up').split(' ');
@@ -2117,6 +2141,13 @@ function bntm_shortcode_kbf_fund_details() {
      * @returns   void
      * @status    ACTIVE
      */
+    function kbfCloseMoreMenu(){
+        var menu = document.getElementById('kbf-more-menu');
+        if(!menu) return;
+        var wrap = menu.closest('.kbf-more-wrap');
+        menu.classList.remove('open');
+        if(wrap) wrap.classList.remove('open');
+    }
     window.kbfToggleMoreMenu=function(e){
         e = e || window.event;
         if(e) { e.stopPropagation(); e.preventDefault(); }
@@ -2124,18 +2155,6 @@ function bntm_shortcode_kbf_fund_details() {
         if(!menu) return;
         var wrap = menu.closest('.kbf-more-wrap');
         var isOpen = menu.classList.contains('open');
-        if(!isOpen){
-            var rect = wrap.getBoundingClientRect();
-            menu.style.left = (rect.left + rect.width - 180) + 'px';
-            menu.style.top = (rect.bottom + 8) + 'px';
-            menu.style.right = 'auto';
-            menu.style.width = '180px';
-        } else {
-            menu.style.left = '';
-            menu.style.top = '';
-            menu.style.right = '';
-            menu.style.width = '';
-        }
         menu.classList.toggle('open');
         if(wrap) wrap.classList.toggle('open', !isOpen);
     };
@@ -2144,15 +2163,12 @@ function bntm_shortcode_kbf_fund_details() {
         if(!menu || !menu.classList.contains('open')) return;
         var wrap = menu.closest('.kbf-more-wrap');
         if(wrap && wrap.contains(e.target)) return;
-        menu.classList.remove('open');
-        menu.style.left = '';
-        menu.style.top = '';
-        menu.style.right = '';
-        menu.style.width = '';
-        if(wrap) wrap.classList.remove('open');
+        kbfCloseMoreMenu();
     });
     var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
     var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
+    var kbfIsLoggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;
+    var kbfSignInUrl = '<?php echo esc_js(kbf_get_page_url('signin')); ?>';
     /**
      * @function  kbfSaveFund
      * @purpose   Toggles saved-state for a fund and updates save button UI state.
@@ -2164,6 +2180,16 @@ function bntm_shortcode_kbf_fund_details() {
      * @status    ACTIVE
      */
     window.kbfSaveFund=function(id, btn){
+        if (kbfIsLoggedIn === false) {
+            if (window.kbfOpenAuthModal) {
+                window.kbfOpenAuthModal('Sign in to save fundraisers.');
+            } else if (kbfSignInUrl) {
+                window.location.href = kbfSignInUrl;
+            } else {
+                alert('Please sign in to save funds.');
+            }
+            return;
+        }
         if(!id) return;
         var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
         var fd = new FormData();
@@ -2191,6 +2217,43 @@ function bntm_shortcode_kbf_fund_details() {
             }
         }, function(err){ alert(err || 'Request failed.'); });
     };
+    (function(){
+        var kbfCtaHitFix = function(e){
+            var saveBtn = document.querySelector('.kbf-fund-cta-card .kbf-save-btn');
+            var moreBtn = document.querySelector('.kbf-fund-cta-card .kbf-more-wrap > .kbf-btn');
+            var t = e.target;
+            if((saveBtn && saveBtn.contains(t)) || (moreBtn && moreBtn.contains(t))) return;
+            var x = e.clientX, y = e.clientY;
+            var hit = function(el){
+                if(!el) return false;
+                var r = el.getBoundingClientRect();
+                return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+            };
+            if(hit(saveBtn)){
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+                if(typeof kbfSaveFund === 'function'){
+                    kbfSaveFund(saveBtn.getAttribute('data-fund-id'), saveBtn);
+                } else {
+                    saveBtn.click();
+                }
+                return;
+            }
+            if(hit(moreBtn)){
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+                if(typeof kbfToggleMoreMenu === 'function'){
+                    kbfToggleMoreMenu(e);
+                } else {
+                    moreBtn.click();
+                }
+            }
+        };
+        document.addEventListener('pointerdown', kbfCtaHitFix, true);
+        document.addEventListener('click', kbfCtaHitFix, true);
+    })();
     /**
      * @function  initLeaderboardPager
      * @purpose   Builds and runs client-side pagination UI for leaderboard entries.
@@ -2296,3 +2359,7 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
+
+
+

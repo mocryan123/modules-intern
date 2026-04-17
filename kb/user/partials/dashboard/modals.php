@@ -1,4 +1,4 @@
-<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
+﻿<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
     <!-- ===== MODAL: Create Fund ===== -->
     <div id="kbf-modal-create" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
@@ -199,7 +199,7 @@
               </svg>
             </div>
             <h3>Campaign Created!</h3>
-            <p>Your campaign is under review. Usually takes 3–5 days or more during peak hours.</p>
+            <p>Your campaign is under review. Usually takes 3â€“5 days or more during peak hours.</p>
             <div class="kbf-success-actions">
               <a href="#" class="kbf-btn kbf-btn-primary" id="kbf-success-view">Back to Home</a>
             </div>
@@ -223,7 +223,7 @@
           <div class="kbf-auth-side">
             <div class="kbf-auth-side-inner">
               <div class="kbf-auth-chip">Fundora Access</div>
-              <div class="kbf-auth-quote">“Bayanihan works best when people can see real progress.”</div>
+              <div class="kbf-auth-quote">"Bayanihan works best when people can see real progress."</div>
               <div class="kbf-auth-sub">Sign in to save campaigns, manage funds, and support with confidence.</div>
             </div>
           </div>
@@ -365,7 +365,7 @@
               <div class="kbf-form-group">
                 <label>Deadline</label>
                 <input type="date" name="deadline" id="edit-fund-deadline">
-                <small>Optional — update the end date.</small>
+                <small>Optional â€” update the end date.</small>
               </div>
               <!-- Auto-return UI removed -->
             </div>
@@ -516,7 +516,7 @@
         </div>
         <div class="kbf-modal-body">
           <p id="kbf-trash-message" style="margin:0;color:var(--kbf-slate);font-size:13px;">
-            This will move the fundraiser to cancelled status and it won’t be visible to sponsors.
+            This will move the fundraiser to cancelled status and it wonâ€™t be visible to sponsors.
             Are you sure you want to continue?
           </p>
         </div>
@@ -536,7 +536,7 @@
         </div>
         <div class="kbf-modal-body">
           <p style="margin:0 0 8px;color:var(--kbf-slate);font-size:13px;">
-            The fundraiser deadline has passed and the goal wasn’t met. Your request will be reviewed by admin.
+            The fundraiser deadline has passed and the goal wasnâ€™t met. Your request will be reviewed by admin.
           </p>
           <p style="margin:0;color:var(--kbf-slate);font-size:12.5px;">
             Escrow releases after deadline are subject to a 5% platform deduction. See our

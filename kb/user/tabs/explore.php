@@ -410,15 +410,64 @@ function kbf_dashboard_find_funds_tab() {
         grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
         gap:18px;
         overflow:visible;
+        width:100%;
       }
+      .kbf-explore-grid > *{min-width:0;}
       @media (max-width: 900px){
         .kbf-explore-grid{
           grid-template-columns:repeat(2, minmax(0, 1fr));
+        }
+        .kbf-explore-card{
+          border-radius:16px;
+        }
+        .kbf-explore-media{
+          padding:10px 10px 0;
+        }
+        .kbf-explore-media img,
+        .kbf-explore-fallback{
+          height:150px;
+        }
+        .kbf-explore-body{
+          padding:12px 12px 14px;
+        }
+        .kbf-explore-chip{
+          top:18px;
+          left:18px;
+        }
+        .kbf-explore-tag{
+          left:18px;
         }
       }
       @media (max-width: 600px){
         .kbf-explore-grid{
           grid-template-columns:1fr;
+        }
+        .kbf-explore-media img,
+        .kbf-explore-fallback{
+          height:auto;
+          aspect-ratio:16 / 10;
+        }
+        .kbf-explore-title{
+          font-size:14px;
+        }
+        .kbf-explore-actions .kbf-btn-sm{
+          width:36px;
+          height:36px;
+          min-width:36px;
+        }
+      }
+      @media (max-width: 480px){
+        .kbf-explore-title-row{
+          align-items:flex-start;
+          flex-direction:column;
+          gap:6px;
+        }
+        .kbf-explore-days-inline{
+          font-size:11px;
+        }
+        .kbf-explore-meta{
+          flex-wrap:wrap;
+          row-gap:6px;
         }
       }
       .kbf-explore-card{
@@ -432,6 +481,10 @@ function kbf_dashboard_find_funds_tab() {
         transition:box-shadow .2s ease, transform .15s ease;
         position:relative;
         z-index:1;
+        width:100%;
+        max-width:100%;
+        min-width:0;
+        box-sizing:border-box;
       }
       .kbf-explore-card.is-menu-open{z-index:60;}
       .kbf-explore-card:hover{
@@ -600,9 +653,15 @@ function kbf_dashboard_find_funds_tab() {
       .kbf-explore-actions{
         display:grid;
         gap:8px;
+        align-items:center;
       }
-      .kbf-explore-actions.is-own{ grid-template-columns:1fr auto auto; }
-      .kbf-explore-actions.is-public{ grid-template-columns:1fr auto auto; }
+      .kbf-explore-actions.is-own{ grid-template-columns:minmax(0,1fr) auto auto; }
+      .kbf-explore-actions.is-public{ grid-template-columns:minmax(0,1fr) auto auto; }
+      .kbf-explore-actions > .kbf-btn-primary{
+        min-width:0;
+        width:100%;
+        box-sizing:border-box;
+      }
       .kbf-explore-card .kbf-btn-primary{
         box-shadow:
           0 1px 2px rgba(32, 112, 224, 0.18),
@@ -1047,7 +1106,7 @@ function kbf_dashboard_find_funds_tab() {
     </div>
 
     <!-- Header -->
-    <div style="background:#fff;border:none;border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:none;">
+    <div style="background:#fff;border:none;border-radius:16px;margin-bottom:18px;box-shadow:none;">
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
         <form method="GET" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;align-items:center;min-width:0;" id="kbff-search-form">
           <input type="hidden" name="kbf_tab" value="find_funds">
@@ -1279,7 +1338,7 @@ function kbf_dashboard_find_funds_tab() {
                   <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Share
                 </button>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();console.log('KBF Report Abuse click (explore)', <?php echo (int)$f->id; ?>);var m=document.getElementById('kbff-modal-report');if(m){document.getElementById('kbff-report-fund-id').value=<?php echo (int)$f->id; ?>;m.style.display='flex';m.classList.add('is-open');}else{console.warn('KBF report modal not found');}">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();<?php if(!$current_user_id): ?>if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to report abuse.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}<?php else: ?>console.log('KBF Report Abuse click (explore)', <?php echo (int)$f->id; ?>);var m=document.getElementById('kbff-modal-report');if(m){document.getElementById('kbff-report-fund-id').value=<?php echo (int)$f->id; ?>;m.style.display='flex';m.classList.add('is-open');}else{console.warn('KBF report modal not found');}<?php endif; ?>">
                   <i class="ph ph-flag kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Report Abuse
                 </button>
@@ -1301,7 +1360,7 @@ function kbf_dashboard_find_funds_tab() {
                   <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Share
                 </button>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();console.log('KBF Report Abuse click (explore)', <?php echo (int)$f->id; ?>);var m=document.getElementById('kbff-modal-report');if(m){document.getElementById('kbff-report-fund-id').value=<?php echo (int)$f->id; ?>;m.style.display='flex';m.classList.add('is-open');}else{console.warn('KBF report modal not found');}">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();<?php if(!$current_user_id): ?>if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to report abuse.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}<?php else: ?>console.log('KBF Report Abuse click (explore)', <?php echo (int)$f->id; ?>);var m=document.getElementById('kbff-modal-report');if(m){document.getElementById('kbff-report-fund-id').value=<?php echo (int)$f->id; ?>;m.style.display='flex';m.classList.add('is-open');}else{console.warn('KBF report modal not found');}<?php endif; ?>">
                   <i class="ph ph-flag kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Report Abuse
                 </button>
@@ -1576,6 +1635,11 @@ function kbf_dashboard_find_funds_tab() {
     });
 
       window.kbffOpenReport=function(id){
+        if (window.kbfIsLoggedIn === false) {
+          if (window.kbfOpenAuthModal) window.kbfOpenAuthModal('Sign in to report abuse.');
+          else window.location.href = '<?php echo esc_js(kbf_get_page_url('signin')); ?>';
+          return;
+        }
         var m=document.getElementById('kbff-modal-report');
         if(!m) return;
         document.getElementById('kbff-report-fund-id').value=id;

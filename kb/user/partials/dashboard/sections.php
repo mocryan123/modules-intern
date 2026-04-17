@@ -22,8 +22,8 @@
             <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url(add_query_arg('kbf_tab','profile', kbf_get_page_url('dashboard'))); ?>">Profile</a>
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($logout_url); ?>">Sign out</a>
           <?php else: ?>
-            <a class="kbf-btn kbf-btn-secondary kbf-auth-required" data-auth-tab="Profile" href="<?php echo esc_url(add_query_arg('kbf_tab','profile', kbf_get_page_url('dashboard'))); ?>">Profile</a>
-            <a class="kbf-btn kbf-btn-primary" href="?kbf_tab=find_funds">Find Funds</a>
+            <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url($signin_url); ?>">Sign in</a>
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($signup_url); ?>">Create account</a>
           <?php endif; ?>
         </div>
     </div>
