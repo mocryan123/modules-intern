@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Organizer profile shortcode */
 if (!function_exists('kbf_account_profile_get_biz_id')) {
     function kbf_account_profile_get_biz_id($wpdb) {
@@ -208,6 +208,7 @@ function bntm_shortcode_kbf_organizer_profile() {
           top:24px;
           align-self:start;
           height:max-content;
+          z-index:0 !important;
         }
         .bntm-container,
         .bntm-content{
@@ -239,9 +240,10 @@ function bntm_shortcode_kbf_organizer_profile() {
             gap: 16px;
           }
         }
-        @media(max-width:640px){
+        @media(max-width:720px){
           .kbf-page-header {
             padding: 16px 20px;
+            text-align: center;
           }
           .kbf-page-header > div {
             flex-direction: column;
@@ -276,22 +278,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             padding: 16px 16px;
           }
         }
-        @media(max-width:520px){
-          .kbf-org-avatar{
-            width:64px;
-            height:64px;
-          }
-          .kbf-org-avatar > img,
-          .kbf-org-avatar > .kbf-org-avatar-fallback{
-            width:64px;
-            height:64px;
-          }
-          .kbf-org-avatar > .kbf-org-avatar-fallback i{font-size:24px;}
-          .kbf-page-header h2 {
-            font-size: 16px;
-          }
-          .kbf-breadcrumb{font-size:12px;flex-wrap:wrap;}
-        }
+
         @media(max-width:1024px){
           .kbf-profile-grid{
             grid-template-columns:1fr !important;
@@ -321,10 +308,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             width:auto;
             min-width:0 !important;
           }
-          .kbf-ap-filter-btn{
-            display:none !important;
-          }
-        }
+}
         @media(max-width:768px){
           .kbf-section-header{
             margin-bottom:16px;
@@ -372,7 +356,6 @@ function bntm_shortcode_kbf_organizer_profile() {
           }
           .kbf-ap-filter-btn{
             width:auto !important;
-            display:inline-flex !important;
             flex-shrink:0;
           }
         }
@@ -417,7 +400,10 @@ function bntm_shortcode_kbf_organizer_profile() {
             width:56px;
             height:56px;
           }
-          .kbf-org-avatar > .kbf-org-avatar-fallback img{width:24px;height:24px;}
+          .kbf-org-avatar > .kbf-org-avatar-fallback i{font-size:24px;}
+          .kbf-page-header h2 {
+            font-size: 16px;
+          }
           .kbf-breadcrumb{font-size:12px;flex-wrap:wrap;}
         }
         .kbf-ap-filter-btn{
@@ -431,23 +417,15 @@ function bntm_shortcode_kbf_organizer_profile() {
           background:rgba(10,16,32,0.45);
           backdrop-filter:blur(2px);
           -webkit-backdrop-filter:blur(2px);
-          z-index:9998;
+          z-index:2147483000 !important;
           display:none;
           pointer-events:none;
         }
         .kbf-ap-sheet-overlay.open{
           display:block;
           pointer-events:auto;
-        }
-        @media(min-width:1025px){
-          .kbf-ap-sheet-overlay{
-            right:360px;
-          }
-        }
-        @media(max-width:1024px){
-          .kbf-ap-sheet-overlay{
-            inset:0;
-          }
+          inset:0 !important;
+          z-index:2147483000 !important;
         }
         .kbf-ap-sheet{
           position:fixed;
@@ -455,7 +433,7 @@ function bntm_shortcode_kbf_organizer_profile() {
           right:0;
           bottom:0;
           background:#fff;
-          z-index:9999;
+          z-index:2147483001 !important;
           transform:translateY(100%);
           transition:transform .3s cubic-bezier(.4,0,.2,1);
           max-height:min(80vh, calc(100vh - 60px));
@@ -468,7 +446,7 @@ function bntm_shortcode_kbf_organizer_profile() {
             max-height:min(85vh, calc(100vh - 40px));
           }
         }
-        .kbf-ap-sheet.open{transform:translateY(0);}
+        .kbf-ap-sheet.open{transform:translateY(0);z-index:2147483001 !important;}
         .kbf-ap-sheet-handle{
           width:44px;
           height:5px;
@@ -783,7 +761,7 @@ function bntm_shortcode_kbf_organizer_profile() {
       </div>
 
       <!-- Sidebar -->
-      <div>
+      <div style="position:relative;z-index:0;">
         <?php if($profile): ?>
         <div class="kbf-card" style="margin-bottom:16px;">
           <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Stats</h4>
@@ -1033,6 +1011,10 @@ function bntm_shortcode_kbf_organizer_profile() {
     var clearBtn = document.getElementById('kbf-ap-sheet-clear');
     if(!sheet || !overlay || !statusEl || !escrowEl) return;
 
+    // Ensure overlay/sheet are rendered at document root to avoid parent stacking-context conflicts.
+    if (overlay.parentNode !== document.body) document.body.appendChild(overlay);
+    if (sheet.parentNode !== document.body) document.body.appendChild(sheet);
+
     function setGroupValue(group, value){
       var buttons = document.querySelectorAll('[data-kbf-ap-group="'+group+'"]');
       buttons.forEach(function(b){
@@ -1098,6 +1080,12 @@ function bntm_shortcode_kbf_organizer_profile() {
     }
     return bntm_universal_container('Organizer Profile -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
+
+
+
+
+
 
 
 

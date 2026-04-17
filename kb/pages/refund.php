@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * Fundora public page: Refund Policy
  */
@@ -15,7 +15,7 @@ function bntm_kbf_render_refund() {
         <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
     <style>
@@ -30,7 +30,7 @@ function bntm_kbf_render_refund() {
         --kbf-type-meta: 12.5px;
       }
       .kbf-landing, .kbf-legal, body{
-        font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
       }
       h1{font-size:var(--kbf-type-h1);line-height:1.05;font-weight:600;letter-spacing:-1.5px;color:#0d1a2e;}
       h2{font-size:var(--kbf-type-h2);line-height:1.2;font-weight:500;letter-spacing:-0.5px;color:#0f172a;}
@@ -663,6 +663,7 @@ function bntm_kbf_render_refund() {
     <?php
     return ob_get_clean();
 }
+
 
 
 

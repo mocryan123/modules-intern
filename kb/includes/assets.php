@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (!defined('ABSPATH')) exit;
 
 // GLOBAL CSS + JS (shared across all shortcodes)
@@ -11,7 +11,6 @@ function kbf_global_assets() {
     ?>
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Shippori+Antique+B1&display=swap');
     @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css');
     @import url('https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css');
     .ph{font-family:'Phosphor' !important;font-style:normal;font-weight:400;line-height:1;}
@@ -913,7 +912,7 @@ function kbf_global_assets() {
         color:#0f172a;
         font-size:15px;
     }
-    .kbf-brand-text{color:#3d8ef0;font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif;}
+    .kbf-brand-text{color:#3d8ef0;font-family:'Poppins', system-ui, -apple-system, sans-serif;}
     .kbf-dashboard-brand .kbf-logo-dot{
         width:26px;height:26px;border-radius:10px;
         background:linear-gradient(135deg,#79c0ff 0%,#4a98ff 100%);
@@ -1551,7 +1550,7 @@ function kbf_global_assets() {
     .kbf-star { color: #f43f5e; }
     .kbf-star-empty { color: #fecdd3; }
 
-    /* Page header — redesigned (clean, minimal card) */
+    /* Page header â€” redesigned (clean, minimal card) */
     .kbf-page-header {
         position: relative;
         background: #fff;
@@ -1806,7 +1805,7 @@ function kbf_global_assets() {
                         if(p === 'gap'){
                             var span = document.createElement('span');
                             span.className = 'kbf-page-gap';
-                            span.textContent = '…';
+                            span.textContent = 'â€¦';
                             pagesWrap.appendChild(span);
                             return;
                         }
@@ -2129,7 +2128,7 @@ function kbf_global_assets() {
     window.kbffShareFund     = function(token, title, desc) { kbfOpenShare(token, title || 'Support this fund on KonekBayan', desc); };
     window.kbfShareFundDetail= function(token, title, desc) { kbfOpenShare(token, title || 'Support this fund on KonekBayan', desc); };
 
-    // â”€â”€ NEAR ME: browser geolocation â†’ Nominatim reverse geocode â†’ fill location input â”€â”€
+    // Ã¢â€â‚¬Ã¢â€â‚¬ NEAR ME: browser geolocation Ã¢â€ â€™ Nominatim reverse geocode Ã¢â€ â€™ fill location input Ã¢â€â‚¬Ã¢â€â‚¬
     window.kbfNearMe = function(inputId, formId) {
         const input = document.getElementById(inputId);
         const btn   = event && event.currentTarget ? event.currentTarget : document.getElementById('kbf-browse-nearme-btn');
@@ -2179,6 +2178,7 @@ function kbf_global_assets() {
         echo kbf_render_loading_overlay();
     }
 }
+
 
 
 

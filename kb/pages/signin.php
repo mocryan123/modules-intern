@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF Sign In page.
  */
@@ -94,7 +94,7 @@ function bntm_kbf_render_signin() {
         --kbf-type-meta: 12.5px;
       }
       .kbf-auth-wrap, .kbf-auth-wrap *{
-        font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
       }
       h1{font-size:var(--kbf-type-h1);line-height:1.05;font-weight:600;letter-spacing:-1.5px;color:#0d1a2e;}
       h2{font-size:var(--kbf-type-h2);line-height:1.2;font-weight:500;letter-spacing:-0.5px;color:#0f172a;}
@@ -407,5 +407,6 @@ function bntm_kbf_render_signin() {
     <?php
     return ob_get_clean();
 }
+
 
 

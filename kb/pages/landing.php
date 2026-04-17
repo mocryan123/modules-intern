@@ -277,7 +277,7 @@ function bntm_kbf_render_landing() {
     <link rel="preconnect" href="https://upload.wikimedia.org">
     <link rel="preconnect" href="https://images.unsplash.com">
     <link rel="preload" as="image" href="<?php echo esc_url(BNTM_KBF_URL . 'assets/hero.jpg'); ?>">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Shippori+Antique+B1&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css">
     <style>
@@ -307,7 +307,7 @@ function bntm_kbf_render_landing() {
     }
 
     .kbf-landing {
-        font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
         color: var(--kbf-ink);
         background:
             radial-gradient(1200px 320px at 8% -12%, #eaf2ff 0%, transparent 62%),
@@ -322,7 +322,7 @@ function bntm_kbf_render_landing() {
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
     .kbf-container { overflow: visible; max-width: 80% !important; margin: 0 auto; padding: 62px 0px 0; }
     .kbf-landing a { color: inherit; text-decoration: none; }
-    .kbf-brand-text { color: #3d8ef0; font-family: 'Shippori Antique B1', 'Poppins', system-ui, sans-serif; }
+    .kbf-brand-text { color: #3d8ef0; font-family: 'Poppins', system-ui, -apple-system, sans-serif; }
         .kbf-divider {
         height: 1px;
         width: 100%;
@@ -1819,7 +1819,7 @@ function bntm_kbf_render_landing() {
         border-top: 1px solid rgba(255,255,255,0.07) !important;
     }
         color: #3d8ef0 !important;
-        font-family: 'Shippori Antique B1', sans-serif !important;
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif !important;
     }
         color: rgba(255,255,255,0.45) !important;
         font-size: 12px !important;

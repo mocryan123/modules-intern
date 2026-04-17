@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * Fundora public page: Under Maintenance
  */
@@ -19,7 +19,7 @@ function bntm_kbf_render_maintenance() {
         --kbf-green-3:#bbf7d0;
       }
       .kbf-maintenance, .kbf-maintenance body{
-        font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
       }
       .kbf-maintenance{
         min-height:100vh;
@@ -112,3 +112,4 @@ function bntm_kbf_render_maintenance() {
     <?php
     return ob_get_clean();
 }
+

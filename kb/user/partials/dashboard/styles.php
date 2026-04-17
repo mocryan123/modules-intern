@@ -1,4 +1,4 @@
-        <!-- ================== CSS ================== -->
+﻿        <!-- ================== CSS ================== -->
     <style>
     .kbf-user-ui{
     font-family: "Poppins",system-ui,-apple-system,sans-serif;
@@ -265,7 +265,7 @@
     }
     .kbf-topbar-left{display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
     .kbf-brand{display:flex;align-items:center;gap:10px;font-weight:800;color:#0f172a;font-size:15px;}
-    .kbf-brand-text{color:#3d8ef0;font-family:'Shippori Antique B1','Poppins',system-ui,-apple-system,sans-serif;}
+    .kbf-brand-text{color:#3d8ef0;font-family:'Poppins', system-ui, -apple-system, sans-serif;}
     .kbf-nav{
         display:flex;
         gap:20px;
@@ -2226,6 +2226,7 @@ html.kbf-modal-lock, body.kbf-modal-lock { overflow: auto !important; }
     @keyframes kbfSuccessRing{to{stroke-dashoffset:0;}}
     @keyframes kbfSuccessCheck{to{stroke-dashoffset:0;}}
     </style>
+
 
 
 
