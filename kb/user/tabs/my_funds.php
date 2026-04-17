@@ -65,13 +65,12 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
             <div><span class="kbf-strong">Under Review</span> -- Awaiting admin approval. Not visible to sponsors yet. Usually 24â€“48 hours.</div>
           </div>
           <?php elseif($f->status === 'suspended'): ?>
-          <div style="background:#fce7f3;border-left:3px solid #db2777;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#831843;display:flex;align-items:flex-start;gap:10px;">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+              <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+                <i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>
+              </span>
             <div><span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
           </div>
-          <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')" style="margin:-6px 0 12px;">
-            Appeal Suspension
-          </button>
           <?php elseif($f->status === 'cancelled' && $f->admin_notes): ?>
           <div style="background:#fee2e2;border-left:3px solid #ef4444;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#7f1d1d;display:flex;align-items:flex-start;gap:10px;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -126,6 +125,11 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfCancelFund(<?php echo $f->id; ?>)">
                 <i class="ph-bold ph-x kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 Cancel
+              </button>
+            <?php endif; ?>
+            <?php if($f->status === 'suspended'): ?>
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
+                Appeal Suspension
               </button>
             <?php endif; ?>
             <?php if(in_array($f->status,['cancelled','suspended'])): ?>

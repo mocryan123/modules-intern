@@ -655,13 +655,12 @@
           </div>
           <?php endif; ?>
           <?php if($f->status === 'suspended'): ?>
-          <div style="background:#fce7f3;border-left:3px solid #db2777;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#831843;display:flex;align-items:flex-start;gap:10px;">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+              <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+                <i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>
+              </span>
             <div><span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
           </div>
-          <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')" style="margin:-6px 0 12px;">
-            Appeal Suspension
-          </button>
           <?php elseif($f->status === 'cancelled'): ?>
           <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
@@ -725,6 +724,11 @@
               <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
                 View Details
               </a>
+              <?php if($f->status === 'suspended'): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
+                  Appeal Suspension
+                </button>
+              <?php endif; ?>
               <?php if($f->status==='active' && $f->escrow_status==='holding' && $deadline_passed && $f->raised_amount < $f->goal_amount): ?>
                 <?php if($escrow_pending): ?>
                   <span class="kbf-badge kbf-badge-pending">Escrow Request Pending</span>

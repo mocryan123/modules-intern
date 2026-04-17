@@ -303,7 +303,7 @@
         border-color:#cbd5e1;
         color:#1f2a44;
     }
-    .kbf-notif-btn .kbf-icon{font-size:17px;}
+    .kbf-notif-btn .kbf-icon{font-size:17px;cursor:pointer;}
     .kbf-notif-btn.has-unread{border-color:#93c5fd;background:#eff6ff;color:#1d4ed8;}
     .kbf-notif-badge{
         position:absolute;
