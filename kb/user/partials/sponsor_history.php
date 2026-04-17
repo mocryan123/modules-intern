@@ -1,5 +1,17 @@
 <?php
 /* Sponsor history shortcode */
+/**
+ * @function  bntm_shortcode_kbf_sponsor_history
+ * @purpose   Renders the donation history view for the provided or current user email.
+ * @used-by   [shortcode map in includes/shortcodes.php (kbf_sponsor_history), dashboard tab router in user/partials/dashboard/sections.php, AJAX tab refresh in includes/ajax-user.php]
+ * @calls     [kbf_global_assets, wp_get_current_user, sanitize_email, is_user_logged_in, bntm_universal_container, current_user_can, strtolower, $wpdb->get_results, $wpdb->prepare, kbf_get_page_url, ob_start, ob_get_clean, esc_attr, esc_html, esc_url, add_query_arg, function_exists, kbf_get_or_create_fund_token, number_format, ucfirst, str_replace, date, strtotime]
+ * @params    [none]
+ * @returns   [string HTML markup for sponsor donation history or access-state container]
+ * @status    ACTIVE
+ *            ACTIVE = confirmed it is called somewhere
+ *            NEEDS REVIEW = could not confirm caller,
+ *                           may be unused/dead code
+ */
 function bntm_shortcode_kbf_sponsor_history() {
     kbf_global_assets();
     global $wpdb;

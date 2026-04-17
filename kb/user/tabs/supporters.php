@@ -3,22 +3,59 @@
  * KBF user dashboard tab: Sponsorships.
  */
 
+/**
+ * @function  kbf_dashboard_sponsorships_tab
+ * @purpose   Renders the organizer-facing sponsorships table with pending-payment notice and pagination.
+ * @used-by   [dashboard tab router in user/partials/dashboard/sections.php, AJAX tab refresh in includes/ajax-user.php]
+ * @calls     [$wpdb->get_var, $wpdb->get_results, $wpdb->prepare, kbf_get_setting, wp_unslash, absint, strtotime, date_i18n, ob_start, ob_get_clean, esc_html, esc_attr, sanitize_html_class, add_query_arg, esc_url, number_format, in_array, strtolower, ucwords, str_replace]
+ * @params    [$business_id (int) organizer/business user ID used to filter sponsorship records]
+ * @returns   [string HTML markup for the sponsorships tab content]
+ * @status    ACTIVE
+ *            ACTIVE = confirmed it is called somewhere
+ *            NEEDS REVIEW = could not confirm caller,
+ *                           may be unused/dead code
+ */
 function kbf_dashboard_sponsorships_tab($business_id) {
     global $wpdb;
     $ft = $wpdb->prefix . 'kbf_funds';
     $st = $wpdb->prefix . 'kbf_sponsorships';
-    $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d ORDER BY s.created_at DESC",
+
+    $total_count = (int)$wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d",
         $business_id
     ));
-    $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
-    $pending_count = 0;
-    foreach ((array)$rows as $s) {
-        if ($s->payment_status === 'pending') { $pending_count++; }
+    $per_page = 50;
+    $total_pages = max(1, (int)ceil($total_count / $per_page));
+    $current_page = isset($_GET['kbf_sp_page']) ? max(1, absint(wp_unslash($_GET['kbf_sp_page']))) : 1;
+    if ($current_page > $total_pages) {
+        $current_page = $total_pages;
     }
+    $offset = ($current_page - 1) * $per_page;
+
+    $rows = $wpdb->get_results($wpdb->prepare(
+        "SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d ORDER BY s.created_at DESC LIMIT %d OFFSET %d",
+        $business_id,
+        $per_page,
+        $offset
+    ));
+
+    $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
+    $pending_count = (int)$wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='pending'",
+        $business_id
+    ));
+
     $format_date = function($value) {
-        return $value ? date('M d, Y', strtotime($value)) : '—';
+        if (!$value) {
+            return '--';
+        }
+        $timestamp = strtotime((string)$value);
+        if ($timestamp === false) {
+            return '--';
+        }
+        return date_i18n('M d, Y', $timestamp);
     };
+
     ob_start();
     ?>
     
@@ -67,7 +104,15 @@ function kbf_dashboard_sponsorships_tab($business_id) {
                 </td>
                 <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?><?php if($s->email): ?><div class="kbf-meta"><?php echo esc_html($s->email); ?></div><?php endif; ?></td>
                 <td><span class="kbf-strong">&#8369;<?php echo number_format($s->amount,2); ?></span></td>
-                <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
+                <td>
+                  <?php
+                    $status_raw = strtolower((string)$s->payment_status);
+                    $allowed_statuses = ['pending', 'completed', 'failed', 'cancelled', 'canceled', 'on_hold', 'refunded', 'expired'];
+                    $status_class = in_array($status_raw, $allowed_statuses, true) ? $status_raw : 'unknown';
+                    $status_label = $status_raw !== '' ? ucwords(str_replace('_', ' ', $status_raw)) : 'Unknown';
+                  ?>
+                  <span class="kbf-badge kbf-badge-<?php echo esc_attr(sanitize_html_class($status_class)); ?>"><?php echo esc_html($status_label); ?></span>
+                </td>
                 <td class="kbf-meta" style="font-style:italic;max-width:200px;">
                   <span class="kbf-clamp-2"><?php echo esc_html($s->message?:' -- '); ?></span>
                 </td>
@@ -77,14 +122,21 @@ function kbf_dashboard_sponsorships_tab($business_id) {
             </tbody>
           </table>
         </div>
+
+        <?php if($total_pages > 1): ?>
+          <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div class="kbf-meta">Page <?php echo (int)$current_page; ?> of <?php echo (int)$total_pages; ?> - <?php echo (int)$total_count; ?> total sponsorships</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <?php if($current_page > 1): ?>
+                <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('kbf_sp_page', $current_page - 1)); ?>">Previous</a>
+              <?php endif; ?>
+              <?php if($current_page < $total_pages): ?>
+                <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('kbf_sp_page', $current_page + 1)); ?>">Next</a>
+              <?php endif; ?>
+            </div>
+          </div>
+        <?php endif; ?>
       <?php endif; ?>
     </div>
     <?php return ob_get_clean();
 }
-
-
-
-
-
-
-

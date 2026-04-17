@@ -216,7 +216,11 @@
         max-width:80%;
         margin:0 auto;
         padding:0;
+        padding-top:84px;
         box-sizing:border-box;
+    }
+    .kbf-topbar + .kbf-dashboard-shell{
+        margin-top:84px !important;
     }
     @media (max-width: 1200px){
         .kbf-dashboard-shell{
@@ -630,6 +634,7 @@
           radial-gradient(85% 90% at 100% 0%, #a1d2ff28 0%, #a1d2ff00 60%),
           linear-gradient(135deg,#f1f6ff 0%,#fbfdff 55%,#eef5ff 100%);
         border:1px solid #d7e6ff;
+        border-top:0;
         border-radius:22px;
         padding:22px 24px;
         box-shadow:none;
@@ -812,7 +817,8 @@
         color:#fff;
     }
     @media (max-width: 900px){
-        .kbf-dashboard-shell{ max-width:90%; }
+        .kbf-dashboard-shell{ max-width:90%; padding-top:78px; }
+        .kbf-topbar + .kbf-dashboard-shell{ margin-top:78px !important; }
         .kbf-hero-grid{ grid-template-columns:1fr; }
         .kbf-topbar{ flex-wrap:nowrap; }
         .kbf-nav{ display:none; }
