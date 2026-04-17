@@ -2830,6 +2830,10 @@ function bntm_kbf_render_landing() {
     <!-- ================== JS ================== -->
     <script>
     (function () {
+        // Disable automatic scroll restoration and force scroll to top on page load/refresh
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
         window.scrollTo(0, 0);
         // Page load: mark immediately so hero animations fire
         requestAnimationFrame(function () {

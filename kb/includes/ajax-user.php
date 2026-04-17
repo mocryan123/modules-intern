@@ -639,6 +639,7 @@ function bntm_ajax_kbf_save_organizer_profile() {
     $data=[
         'bio'=>sanitize_textarea_field($_POST['bio']??''),
         'social_links'=>$socials,
+        'profile_type'=>sanitize_text_field($_POST['profile_type']??''),
         'payout_type'=>sanitize_text_field($_POST['payout_type']??''),
         'payout_name'=>sanitize_text_field($_POST['payout_name']??''),
         'payout_number'=>sanitize_text_field($_POST['payout_number']??''),
@@ -675,21 +676,32 @@ function bntm_ajax_kbf_save_organizer_profile() {
     $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz));
     if($exists) {
         unset($data['business_id']);
-        $formats = array_fill(0, count($data), '%s');
-        $wpdb->update($pt, $data, ['business_id'=>$biz], $formats, ['%d']);
+        // Update existing profile
+        $wpdb->update(
+            $pt,
+            $data,
+            ['business_id' => $biz],
+            array_fill(0, count($data), '%s'),
+            ['%d']
+        );
     } else {
-        $insert_formats = array_fill(0, count($data), '%s');
-        $wpdb->insert($pt, $data, $insert_formats);
+        // Insert new profile
+        $wpdb->insert(
+            $pt,
+            $data,
+            array_fill(0, count($data), '%s')
+        );
     }
     if (function_exists('kbf_get_or_create_organizer_token')) {
         kbf_get_or_create_organizer_token($biz);
     }
 
-    // Clear onboarding flag if all 5 required fields are now filled.
+    // Clear onboarding flag if all required fields are now filled.
     // Check from POST data (what we just wrote) to avoid DB cache timing issues.
     $post_display_name = isset($_POST['display_name']) ? trim(sanitize_text_field($_POST['display_name'])) : '';
     $post_social_name  = isset($_POST['kbf_social_name']) ? trim(ltrim(sanitize_text_field($_POST['kbf_social_name']), '@')) : '';
     $post_bio          = isset($_POST['bio']) ? trim(sanitize_textarea_field($_POST['bio'])) : '';
+    $post_profile_type = isset($_POST['profile_type']) ? trim(sanitize_text_field($_POST['profile_type'])) : '';
     $post_payout_type  = isset($_POST['payout_type']) ? trim(sanitize_text_field($_POST['payout_type'])) : '';
     $post_payout_name  = isset($_POST['payout_name']) ? trim(sanitize_text_field($_POST['payout_name'])) : '';
     $post_payout_num   = isset($_POST['payout_number']) ? trim(sanitize_text_field($_POST['payout_number'])) : '';
@@ -698,10 +710,11 @@ function bntm_ajax_kbf_save_organizer_profile() {
     $has_display_name = !empty($post_display_name);
     $has_social_name  = !empty($post_social_name) && preg_match('/^[a-zA-Z0-9_]{2,30}$/', $post_social_name);
     $has_bio          = !empty($post_bio);
+    $has_profile_type = !empty($post_profile_type);
     $has_payout       = !empty($post_payout_type) && !empty($post_payout_name) && !empty($post_payout_num);
     $has_address      = !empty($post_address);
 
-    $onboarding_done = ($has_display_name && $has_social_name && $has_bio && $has_payout && $has_address);
+    $onboarding_done = ($has_display_name && $has_social_name && $has_bio && $has_profile_type && $has_payout && $has_address);
     if ($onboarding_done) {
         delete_user_meta($biz, 'kbf_show_onboarding');
         // Force cache flush so the next page load sees the deletion immediately.

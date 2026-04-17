@@ -14,7 +14,7 @@ if ( ! defined( 'KBF_PROFILE_DISPLAY_NAME_MAX_LENGTH' ) ) {
     define( 'KBF_PROFILE_DISPLAY_NAME_MAX_LENGTH', 50 );
 }
 if ( ! defined( 'KBF_PROFILE_CHECKLIST_ITEMS' ) ) {
-    define( 'KBF_PROFILE_CHECKLIST_ITEMS', 5 );
+    define( 'KBF_PROFILE_CHECKLIST_ITEMS', 6 );
 }
 
 /**
@@ -60,6 +60,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
     $payout_type   = $profile_value( 'payout_type', '' );
     $payout_name   = $profile_value( 'payout_name', '' );
     $payout_number = $profile_value( 'payout_number', '' );
+    $profile_type  = $profile_value( 'profile_type', '' );
 
     $phone       = sanitize_text_field( get_user_meta( $business_id, 'kbf_phone', true ) );
     $address     = sanitize_text_field( get_user_meta( $business_id, 'kbf_address', true ) );
@@ -77,10 +78,11 @@ function kbf_dashboard_profile_tab( $business_id ) {
     $has_name    = ! empty( trim( $user->display_name ) );
     $has_social  = ! empty( trim( $social_name ) );
     $has_bio     = $profile && ! empty( trim( (string) $profile->bio ) );
+    $has_type    = ! empty( $profile_type );
     $has_payout  = ! empty( $payout_type ) && ! empty( $payout_name ) && ! empty( $payout_number );
     $has_address = ! empty( trim( $address ) );
 
-    $onboard_done = ( $has_name ? 1 : 0 ) + ( $has_social ? 1 : 0 ) + ( $has_bio ? 1 : 0 ) + ( $has_payout ? 1 : 0 ) + ( $has_address ? 1 : 0 );
+    $onboard_done = ( $has_name ? 1 : 0 ) + ( $has_social ? 1 : 0 ) + ( $has_bio ? 1 : 0 ) + ( $has_type ? 1 : 0 ) + ( $has_payout ? 1 : 0 ) + ( $has_address ? 1 : 0 );
     $onboard_pct  = round( ( $onboard_done / KBF_PROFILE_CHECKLIST_ITEMS ) * 100 );
 
     ob_start();
@@ -340,7 +342,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
       }
       .kbf-bio-wrap textarea {
         min-height: 100px;
-        resize: vertical;
+        resize: none;
       }
       .kbf-char-count {
         text-align: right;
@@ -559,6 +561,19 @@ function kbf_dashboard_profile_tab( $business_id ) {
               <div class="kbf-field-error"></div>
             </div>
             <div class="kbf-form-group">
+              <label>Profile Type</label>
+              <select name="profile_type" id="kbf-profile-type">
+                <option value="">Select account type</option>
+                <option value="individual" <?php echo $profile_type==='individual'?'selected':''; ?>>Individual / Personal Account</option>
+                <option value="nonprofit" <?php echo $profile_type==='nonprofit'?'selected':''; ?>>Non-Profit Organization</option>
+                <option value="business" <?php echo $profile_type==='business'?'selected':''; ?>>Profit Organization / Business</option>
+              </select>
+              <div class="kbf-form-hint">This helps sponsors understand your organization type.</div>
+              <div class="kbf-field-error"></div>
+            </div>
+          </div>
+          <div class="kbf-form-row kbf-form-row-2">
+            <div class="kbf-form-group">
               <label>Social Name</label>
               <div class="kbf-input-with-prefix">
                 <span class="kbf-input-prefix">@</span>
@@ -709,7 +724,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
       <?php elseif($didit_status === 'Declined'): ?>
         <button type="button" class="kbf-btn kbf-btn-secondary" id="fundora-didit-start">Retry Verification</button>
       <?php else: ?>
-        <button type="button" class="kbf-btn kbf-btn-secondary" id="fundora-didit-start"><i class="ph ph-shield-check" style="margin-right:4px;"></i> Verify Identity</button>
+        <button type="button" class="kbf-btn kbf-btn-secondary" id="fundora-didit-start"><i class="ph ph-shield-check" style="margin-right:4px;"></i> Verify Account</button>
       <?php endif; ?>
       <button type="button" class="kbf-btn kbf-btn-primary" id="kbf-profile-save-btn" onclick="kbfSaveProfile('<?php echo esc_js($nonce); ?>')">Save Changes</button>
     </div>
@@ -1161,6 +1176,9 @@ function kbf_dashboard_profile_tab( $business_id ) {
         // Validation: Display Name
         const dn = form.querySelector('[name="display_name"]');
         if(!dn || !dn.value.trim()) showErr(dn, 'Display name is required.');
+        // Validation: Profile Type
+        const pt = form.querySelector('[name="profile_type"]');
+        if(!pt || !pt.value) showErr(pt, 'Please select a profile type.');
         // Validation: Bio
         const bio = form.querySelector('textarea[name="bio"]');
         if(bio && bio.value.length > 250) showErr(bio, 'Bio must be 250 characters or less.');

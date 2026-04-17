@@ -1216,7 +1216,6 @@ function bntm_shortcode_kbf_fund_details() {
                     <i class="ph-fill ph-thumbs-up kbf-icon"></i>
                     <?php echo number_format($cred_score, 1); ?>
                   </span>
-                  <span class="kbf-fund-rating-label">Credibility Score</span>
                 <?php else: ?>
                   <span class="kbf-fund-rating-pill kbf-fund-rating-empty">
                     <i class="ph-fill ph-thumbs-up kbf-icon"></i>

@@ -226,13 +226,6 @@ function bntm_kbf_render_privacy() {
         position: relative;
         overflow: hidden;
       }
-      .kbf-legal-hero::before{
-        content:'';
-        position:absolute;
-        top:0;right:0;bottom:0;width:40%;
-        background: linear-gradient(180deg, rgba(91,168,245,0.08) 0%, transparent 100%);
-        pointer-events:none;
-      }
       .kbf-legal-hero h1{
         font-size: clamp(28px, 4vw, 40px);
         line-height: 1.15;

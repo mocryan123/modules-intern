@@ -219,7 +219,7 @@
         color:#4f5a6b;
     }
     .kbf-dashboard-shell{
-        max-width:1120px;
+        max-width:80%;
         margin:0 auto;
         padding:0;
         padding-top:84px;

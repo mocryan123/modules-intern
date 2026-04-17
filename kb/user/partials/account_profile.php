@@ -120,6 +120,8 @@ function bntm_shortcode_kbf_organizer_profile() {
         $bio_text = (string)get_user_meta($biz_id, 'description', true);
     }
     $account_address = trim((string)get_user_meta($biz_id, 'kbf_address', true));
+    $social_name = sanitize_text_field(get_user_meta($biz_id, 'kbf_social_name', true));
+    $profile_type = $profile ? sanitize_text_field($profile->profile_type ?? '') : '';
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
@@ -169,29 +171,34 @@ function bntm_shortcode_kbf_organizer_profile() {
         .kbf-social-icons{
           display:flex;
           align-items:center;
-          gap:10px;
+          gap:8px;
           margin-top:8px;
+          flex-wrap:wrap;
         }
         .kbf-social-icon{
-          width:34px;
-          height:34px;
-          border-radius:8px;
-          border:1px solid var(--kbf-border);
-          background:#fff;
+          width:36px;
+          height:36px;
+          border-radius:10px;
+          border:1.5px solid #e2e8f0;
+          background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);
           display:inline-flex;
           align-items:center;
           justify-content:center;
-          transition:all .15s ease;
+          transition:all .2s cubic-bezier(.4,0,.2,1);
+          text-decoration:none !important;
+          box-shadow:0 1px 2px rgba(15,23,42,.04);
         }
         .kbf-social-icon:hover{
           border-color:#3b82f6;
-          background:#eff6ff;
+          background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);
+          box-shadow:0 4px 12px rgba(59,130,246,.15);
+          transform:translateY(-2px);
         }
         .kbf-social-icon i{
           font-size:18px;
           display:block;
           color:#64748b;
-          transition:color .15s ease;
+          transition:color .2s ease;
         }
         .kbf-social-icon:hover i{
           color:#3b82f6;
@@ -211,93 +218,193 @@ function bntm_shortcode_kbf_organizer_profile() {
           overflow:visible;
         }
 
-        /* Page header — organizer profile redesign */
-        .kbf-page-header {
-          background: #fff;
-          border: 1px solid var(--kbf-border);
-          border-radius: 16px;
-          padding: 24px 26px;
-          box-shadow: 0 1px 2px rgba(15,23,42,.04);
-        }
-        .kbf-page-header h2 {
-          font-size: 20px;
-          font-weight: 600;
-          margin: 0 0 4px;
-          line-height: 1.3;
+        .kbf-section-header{
+          margin-bottom:14px;
+          align-items:center;
+          display:flex;
+          justify-content:space-between;
+          width:100%;
+          flex-wrap:wrap;
+          gap:12px;
         }
 
         @media(max-width:900px){
           .kbf-profile-sidebar{position:static;top:auto;}
         }
+        @media(max-width:768px){
+          .kbf-page-header {
+            padding: 20px 24px;
+          }
+          .kbf-page-header > div {
+            gap: 16px;
+          }
+        }
+        @media(max-width:640px){
+          .kbf-page-header {
+            padding: 16px 20px;
+          }
+          .kbf-page-header > div {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+          }
+          .kbf-page-header h2 {
+            font-size: 18px;
+          }
+          .kbf-org-avatar {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+          }
+          .kbf-org-avatar > img,
+          .kbf-org-avatar > .kbf-org-avatar-fallback {
+            width: 80px;
+            height: 80px;
+          }
+          .kbf-page-header > div > div {
+            width: 100%;
+          }
+          .kbf-social-icons {
+            justify-content: center;
+            width: 100%;
+          }
+        }
         @media(max-width:620px){
           .kbf-page-header {
             text-align: center;
-          }
-          .kbf-page-header > div{
-            flex-direction:column !important;
-            align-items:center !important;
-            text-align:center;
-            width:100%;
-          }
-          .kbf-page-header .kbf-org-avatar{
-            display:block;
-            margin:0 auto;
-            align-self:center;
-          }
-          .kbf-page-header .kbf-org-avatar > img,
-          .kbf-page-header .kbf-org-avatar > .kbf-org-avatar-fallback{
-            margin:0 auto;
-          }
-          .kbf-page-header > div > div{
-            flex-direction:column;
-            align-items:center;
-            text-align:center;
-            width:100%;
-          }
-          .kbf-page-header h2{margin-bottom:6px;}
-          .kbf-page-header .kbf-social-icons{
-            margin-top:10px !important;
-            justify-content:center;
+            padding: 16px 16px;
           }
         }
-        @media(max-width:820px){
-          .kbf-page-header {
-            text-align: left;
+        @media(max-width:520px){
+          .kbf-org-avatar{
+            width:64px;
+            height:64px;
           }
-          .kbf-page-header > div{
-            flex-direction:column;
-            align-items:flex-start;
+          .kbf-org-avatar > img,
+          .kbf-org-avatar > .kbf-org-avatar-fallback{
+            width:64px;
+            height:64px;
           }
-          .kbf-page-header > div > div{
-            width:100%;
+          .kbf-org-avatar > .kbf-org-avatar-fallback i{font-size:24px;}
+          .kbf-page-header h2 {
+            font-size: 16px;
           }
-          .kbf-page-header h2{
-            font-size:20px;
-          }
-          .kbf-social-icons{
-            margin-top:10px !important;
-            flex-wrap:wrap;
-          }
+          .kbf-breadcrumb{font-size:12px;flex-wrap:wrap;}
         }
-        @media(max-width:900px){
+        @media(max-width:1024px){
           .kbf-profile-grid{
             grid-template-columns:1fr !important;
           }
           .kbf-profile-sidebar{
             order:2;
           }
+        }
+        @media(max-width:900px){
+          .kbf-section-header{
+            justify-content:space-between;
+            align-items:center;
+          }
           .kbf-inline-filters{
-            width:100%;
-            justify-content:flex-start !important;
+            margin-left:auto;
+            width:auto;
+            justify-content:flex-end !important;
             gap:8px !important;
+            flex-direction:row;
+            order:2;
           }
           .kbf-inline-filters > div{
-            width:100%;
+            width:auto;
           }
           #kbf-filter-status,
           #kbf-filter-escrow{
-            width:100%;
+            width:auto;
             min-width:0 !important;
+          }
+          .kbf-ap-filter-btn{
+            display:none !important;
+          }
+        }
+        @media(max-width:768px){
+          .kbf-section-header{
+            margin-bottom:16px;
+            justify-content:space-between;
+          }
+          .kbf-inline-filters{
+            margin-left:auto;
+            gap:10px !important;
+          }
+          .kbf-inline-filters > div {
+            width:auto;
+          }
+          #kbf-filter-status,
+          #kbf-filter-escrow{
+            font-size:14px;
+            padding:8px 6px;
+          }
+          .kbf-form-group span[style*="width:28px"]{
+            width:24px !important;
+            height:24px !important;
+            font-size:12px;
+          }
+        }
+        @media(max-width:640px){
+          .kbf-section-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+          }
+          .kbf-section-title{
+            font-size:15px;
+            flex-shrink:0;
+          }
+          .kbf-inline-filters{
+            margin-left:auto;
+            width:auto;
+            flex-direction:row;
+            gap:8px !important;
+            justify-content:flex-end;
+            order:2;
+          }
+          .kbf-inline-filters > div{
+            width:auto;
+          }
+          .kbf-ap-filter-btn{
+            width:auto !important;
+            display:inline-flex !important;
+            flex-shrink:0;
+          }
+        }
+        @media(max-width:480px){
+          .kbf-section-header{
+            justify-content:space-between;
+            gap:8px;
+          }
+          .kbf-section-title{
+            font-size:14px;
+            flex-shrink:0;
+          }
+          .kbf-inline-filters{
+            margin-left:auto;
+            width:auto;
+            gap:6px !important;
+            justify-content:flex-end;
+          }
+          .kbf-ap-filter-btn{
+            width:auto !important;
+            flex-shrink:0;
+          }
+          .kbf-form-group span[style*="width:28px"]{
+            width:20px !important;
+            height:20px !important;
+            border-radius:6px !important;
+            font-size:11px !important;
+          }
+          #kbf-filter-status,
+          #kbf-filter-escrow{
+            font-size:13px;
+            padding:6px 4px;
           }
         }
         @media(max-width:520px){
@@ -313,16 +420,35 @@ function bntm_shortcode_kbf_organizer_profile() {
           .kbf-org-avatar > .kbf-org-avatar-fallback img{width:24px;height:24px;}
           .kbf-breadcrumb{font-size:12px;flex-wrap:wrap;}
         }
-        .kbf-ap-filter-btn{display:none;}
+        .kbf-ap-filter-btn{
+          display:none;
+          margin-left:auto;
+          flex-shrink:0;
+        }
         .kbf-ap-sheet-overlay{
           position:fixed;
           inset:0;
           background:rgba(10,16,32,0.45);
           backdrop-filter:blur(2px);
+          -webkit-backdrop-filter:blur(2px);
           z-index:9998;
           display:none;
+          pointer-events:none;
         }
-        .kbf-ap-sheet-overlay.open{display:block;}
+        .kbf-ap-sheet-overlay.open{
+          display:block;
+          pointer-events:auto;
+        }
+        @media(min-width:1025px){
+          .kbf-ap-sheet-overlay{
+            right:360px;
+          }
+        }
+        @media(max-width:1024px){
+          .kbf-ap-sheet-overlay{
+            inset:0;
+          }
+        }
         .kbf-ap-sheet{
           position:fixed;
           left:0;
@@ -332,9 +458,15 @@ function bntm_shortcode_kbf_organizer_profile() {
           z-index:9999;
           transform:translateY(100%);
           transition:transform .3s cubic-bezier(.4,0,.2,1);
-          max-height:80vh;
+          max-height:min(80vh, calc(100vh - 60px));
           overflow-y:auto;
+          overflow-x:hidden;
           padding:0 0 24px;
+        }
+        @media(max-width:640px){
+          .kbf-ap-sheet{
+            max-height:min(85vh, calc(100vh - 40px));
+          }
         }
         .kbf-ap-sheet.open{transform:translateY(0);}
         .kbf-ap-sheet-handle{
@@ -364,12 +496,22 @@ function bntm_shortcode_kbf_organizer_profile() {
           font-weight:600;
           text-align:left;
           justify-content:flex-start;
-          transition:none !important;
+          transition:all .15s ease !important;
+          cursor:pointer;
+        }
+        .kbf-ap-sheet-body [data-kbf-ap-group]:hover{
+          border-color:#93c5fd !important;
+          background:#f0f9ff !important;
+        }
+        .kbf-ap-sheet-body [data-kbf-ap-group]:focus-visible{
+          outline:2px solid #3b82f6;
+          outline-offset:2px;
         }
         .kbf-ap-sheet-body [data-kbf-ap-group].is-active{
-          border-color:#60a5fa !important;
+          border-color:#3b82f6 !important;
           background:#eff6ff !important;
           color:#0f172a !important;
+          box-shadow:inset 0 0 0 2px #eff6ff !important;
         }
         .kbf-ap-sheet-actions{
           display:flex;
@@ -385,10 +527,15 @@ function bntm_shortcode_kbf_organizer_profile() {
           display:none;
           content:none;
         }
-        @media (max-width: 720px){
+        @media (max-width: 1200px){
           #kbf-ap-filter-status-wrap,
           #kbf-ap-filter-escrow-wrap{ display:none !important; }
-          .kbf-ap-filter-btn{ display:inline-flex; }
+          .kbf-ap-filter-btn{ display:inline-flex !important; }
+        }
+        @media(max-width:768px){
+          .kbf-ap-sheet-body{
+            padding:0 16px 10px;
+          }
         }
       </style>
       <!-- Breadcrumb -->
@@ -399,7 +546,8 @@ function bntm_shortcode_kbf_organizer_profile() {
         </a>
       </div>
     <div class="kbf-page-header">
-      <div style="display:flex;align-items:center;gap:16px;">
+      <div style="display:flex;align-items:flex-start;gap:20px;">
+        <!-- Avatar Section -->
         <div class="kbf-org-avatar">
           <?php if($profile&&$profile->avatar_url): ?>
             <img src="<?php echo esc_url($profile->avatar_url); ?>" alt="">
@@ -412,40 +560,67 @@ function bntm_shortcode_kbf_organizer_profile() {
             <span class="kbf-org-verified" aria-hidden="true"><i class="ph-fill ph-seal-check kbf-icon" aria-hidden="true"></i></span>
           <?php endif; ?>
         </div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-          <div style="min-width:0;">
-            <h2 style="margin:0 0 6px;"><?php echo esc_html($user->display_name); ?></h2>
-            <?php if(trim($bio_text) !== ''): ?>
-              <div style="color:#4f5a6b;font-size:13px;line-height:1.6;max-width:520px;">
-                <?php echo nl2br(esc_html(str_replace('\\', '', wp_unslash($bio_text)))); ?>
-              </div>
+
+        <!-- Main Content -->
+        <div style="flex:1;min-width:0;">
+          <!-- Header Row: Name, Social, Badge -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+            <h2 style="margin:0;font-size:20px;font-weight:600;color:#0f172a;"><?php echo esc_html($user->display_name); ?></h2>
+            <?php if($social_name): ?>
+              <span style="font-size:13px;color:#64748b;font-weight:500;">@<?php echo esc_html($social_name); ?></span>
             <?php endif; ?>
+            <span style="font-size:11px;font-weight:600;color:#0f172a;background:#eef4ff;border:1px solid #d4e4ff;padding:4px 10px;border-radius:999px;">
+              <?php 
+                if ($profile_type === 'nonprofit') {
+                  echo 'Non-Profit Organization';
+                } elseif ($profile_type === 'business') {
+                  echo 'Profit Organization';
+                } elseif ($profile_type === 'individual') {
+                  echo 'Individual';
+                } else {
+                  echo 'Account Type Not Set';
+                }
+              ?>
+            </span>
+          </div>
+
+          <!-- Bio Section -->
+          <?php if(trim($bio_text) !== ''): ?>
+            <div style="color:#4f5a6b;font-size:13px;line-height:1.6;margin-bottom:10px;">
+              <?php echo nl2br(esc_html(str_replace('\\', '', wp_unslash($bio_text)))); ?>
+            </div>
+          <?php endif; ?>
+
+          <!-- Address & Rating Row -->
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px;">
             <?php if($account_address !== ''): ?>
-              <div style="display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--kbf-slate);font-size:12.5px;">
-                <i class="ph ph-map-pin kbf-icon" style="font-size:13px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
+              <div style="display:flex;align-items:center;gap:6px;color:var(--kbf-slate);font-size:12.5px;">
+                <i class="ph ph-map-pin kbf-icon" style="font-size:13px;color:#64748b;" aria-hidden="true"></i>
                 <span><?php echo esc_html($account_address); ?></span>
               </div>
             <?php endif; ?>
-<?php if($profile&&$profile->rating_count>0): ?>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:6px;">
-            <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:14px; filter:invert(32%) sepia(58%) saturate(1621%) hue-rotate(202deg) brightness(94%) contrast(92%)" aria-hidden="true"></i>
-            <span style="color:var(--kbf-slate);font-size:13px;"><?php echo number_format($profile->rating,1); ?>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
+            <?php if($profile&&$profile->rating_count>0): ?>
+              <div style="display:flex;align-items:center;gap:6px;color:var(--kbf-slate);font-size:12.5px;">
+                <i class="ph-fill ph-thumbs-up kbf-icon" style="font-size:13px;color:#3b82f6;" aria-hidden="true"></i>
+                <span><strong><?php echo number_format($profile->rating,1); ?></strong>/5 (<?php echo (int)$profile->rating_count; ?>)</span>
+              </div>
+            <?php endif; ?>
           </div>
-          <?php endif; ?>
-          </div>
+
+          <!-- Social Icons Row -->
           <?php if(!empty(array_filter($socials))): ?>
-          <div class="kbf-social-icons" style="margin-top:0;">
-            <?php foreach([
-              'facebook' => 'ph ph-facebook-logo',
-              'instagram' => 'ph ph-instagram-logo',
-              'twitter' => 'ph ph-x-logo',
-              'website' => 'ph ph-globe'
-            ] as $k=>$icon): if(!empty($socials[$k])): ?>
-              <a class="kbf-social-icon" href="<?php echo esc_url($socials[$k]); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr(ucfirst($k)); ?>">
-                <i class="<?php echo esc_attr($icon); ?> kbf-icon" aria-hidden="true"></i>
-              </a>
-            <?php endif; endforeach; ?>
-          </div>
+            <div class="kbf-social-icons">
+              <?php foreach([
+                'facebook' => 'ph ph-facebook-logo',
+                'instagram' => 'ph ph-instagram-logo',
+                'twitter' => 'ph ph-x-logo',
+                'website' => 'ph ph-globe'
+              ] as $k=>$icon): if(!empty($socials[$k])): ?>
+                <a class="kbf-social-icon" href="<?php echo esc_url($socials[$k]); ?>" target="_blank" rel="noopener" title="<?php echo esc_attr(ucfirst($k)); ?>">
+                  <i class="<?php echo esc_attr($icon); ?> kbf-icon" aria-hidden="true"></i>
+                </a>
+              <?php endif; endforeach; ?>
+            </div>
           <?php endif; ?>
         </div>
       </div>
@@ -455,9 +630,9 @@ function bntm_shortcode_kbf_organizer_profile() {
       <div class="kbf-profile-sidebar">
         <?php if(false): ?><div></div><?php endif; ?>
 
-        <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;display:flex;justify-content:space-between;width:100%;">
+        <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:12px;">
           <h3 class="kbf-section-title">Campaigns</h3>
-          <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;">
+          <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;margin-left:auto;flex-wrap:wrap;justify-content:flex-end;">
             <button type="button" class="kbf-btn kbf-btn-secondary kbf-ap-filter-btn" onclick="kbfAccountProfileOpenSheet()">
               <i class="ph ph-sliders kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               Filters
@@ -873,12 +1048,18 @@ function bntm_shortcode_kbf_organizer_profile() {
       syncFromSelects();
       sheet.classList.add('open');
       overlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
+      if(!document.body.dataset.kbfOverflowLocked){
+        document.body.style.overflow = 'hidden';
+        document.body.dataset.kbfOverflowLocked = '1';
+      }
     };
     window.kbfAccountProfileCloseSheet = function(){
       sheet.classList.remove('open');
       overlay.classList.remove('open');
-      document.body.style.overflow = '';
+      if(document.body.dataset.kbfOverflowLocked === '1'){
+        document.body.style.overflow = '';
+        delete document.body.dataset.kbfOverflowLocked;
+      }
     };
     function getActiveValue(group){
       var active = sheet.querySelector('[data-kbf-ap-group="'+group+'"].is-active');
@@ -906,7 +1087,7 @@ function bntm_shortcode_kbf_organizer_profile() {
     if (applyBtn) applyBtn.addEventListener('click', window.kbfAccountProfileApplySheet);
     if (clearBtn) clearBtn.addEventListener('click', window.kbfAccountProfileClearSheet);
     window.addEventListener('resize', function(){
-      if (window.innerWidth >= 720) window.kbfAccountProfileCloseSheet();
+      if (window.innerWidth >= 900) window.kbfAccountProfileCloseSheet();
     });
   })();
     </script>

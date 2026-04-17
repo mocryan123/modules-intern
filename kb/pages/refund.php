@@ -67,7 +67,7 @@ function bntm_kbf_render_refund() {
         left: 0;
         right: 0;
         z-index: 1000;
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.86);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid transparent;
@@ -226,13 +226,6 @@ function bntm_kbf_render_refund() {
         position: relative;
         overflow: hidden;
       }
-      .kbf-legal-hero::before{
-        content:'';
-        position:absolute;
-        top:0;right:0;bottom:0;width:40%;
-        background: linear-gradient(180deg, rgba(91,168,245,0.08) 0%, transparent 100%);
-        pointer-events:none;
-      }
       .kbf-legal-hero h1{
         font-size: clamp(28px, 4vw, 40px);
         line-height: 1.15;
@@ -288,12 +281,16 @@ function bntm_kbf_render_refund() {
         background:#f1f5f9;
       }
       .kbf-legal h2{
-        font-size:16px;
+        font-size:22px;
+        font-weight: 600;
+        line-height: 1.35;
         margin:18px 0 8px;
         scroll-margin-top: 96px;
       }
       .kbf-legal h3{
-        font-size:14px;
+        font-size:16px;
+        font-weight: 550;
+        line-height: 1.35;
         margin:14px 0 6px;
       }
       .kbf-legal p,
@@ -314,6 +311,9 @@ function bntm_kbf_render_refund() {
         .kbf-actions{ display:none !important; }
         .kbf-hamburger{ display:inline-flex !important; }
         .kbf-topbar{ flex-wrap:nowrap; gap:12px; justify-content:space-between; padding:12px 20px; }
+        .kbf-legal h2 { font-size: 18px; }
+        .kbf-legal h3 { font-size: 14px; }
+        .kbf-legal p, .kbf-legal li { font-size: 14px; line-height: 1.7; }
       }
       .kbf-footer {
         margin: 44px auto 40px;
