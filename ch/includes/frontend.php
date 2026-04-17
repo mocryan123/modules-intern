@@ -3692,7 +3692,8 @@ function bntm_shortcode_ch_feed() {
         cat:      '<?php echo esc_js($cat_slug); ?>',
         s:        '<?php echo esc_js($search); ?>',
         location: '<?php echo esc_js($location); ?>',
-        paged:    <?php echo (int)$page; ?>
+        paged:    <?php echo (int)$page; ?>,
+        bookmarks: <?php echo (int)$bookmarks; ?>
     };
     </script>
     <div class="ch-feed-shell">
@@ -3849,7 +3850,7 @@ function bntm_shortcode_ch_feed() {
 
         <div class="ch-special-layout">
             <!-- Main trending posts -->
-            <main class="ch-special-main">
+            <main id="ch-posts-list" class="ch-special-main">
                 <?php if (empty($trending_posts)): ?>
                 <div class="ch-empty-state">
                     <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -3956,7 +3957,7 @@ function bntm_shortcode_ch_feed() {
         </div>
 
         <div class="ch-special-layout">
-            <main class="ch-special-main">
+            <main id="ch-posts-list" class="ch-special-main">
                 <?php if (empty($bookmarked_posts)): ?>
                 <div class="ch-empty-state">
                     <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 0-2 2h10a2 2 0 0 1 2 2z"/></svg>
