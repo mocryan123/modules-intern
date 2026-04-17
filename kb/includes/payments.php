@@ -135,11 +135,11 @@ function kbf_mark_sponsorship_completed($sponsorship_id, $payment_reference = ''
             $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
             $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$fund->id], $dashboard_url);
             kbf_push_user_notification((int)$fund->business_id, [
-                'type' => 'new_sponsorship_received',
+                'type' => 'donation_received',
                 'title' => 'New sponsorship received',
                 'message' => 'You received a new sponsorship worth PHP ' . number_format((float)$sponsorship->amount, 2) . '.',
                 'url' => $fund_url,
-                'target_id' => (string)((int)$fund->id),
+                'target_id' => (string)((int)$sponsorship->id),
             ]);
             $updated_goal = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount,status FROM {$ft} WHERE id=%d", $fund->id));
             if ($updated_goal && $updated_goal->goal_amount > 0 && $updated_goal->raised_amount >= $updated_goal->goal_amount && $updated_goal->status === 'completed') {
@@ -525,11 +525,11 @@ function kbf_maya_webhook_handler(WP_REST_Request $request) {
             $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
             $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$fund->id], $dashboard_url);
             kbf_push_user_notification((int)$fund->business_id, [
-                'type' => 'new_sponsorship_received',
+                'type' => 'donation_received',
                 'title' => 'New sponsorship received',
                 'message' => 'You received a new sponsorship worth PHP ' . number_format((float)$sponsorship->amount, 2) . '.',
                 'url' => $fund_url,
-                'target_id' => (string)((int)$fund->id),
+                'target_id' => (string)((int)$sponsorship->id),
             ]);
             $updated_goal = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount,status FROM {$ft} WHERE id=%d", $fund->id));
             if ($updated_goal && $updated_goal->goal_amount > 0 && $updated_goal->raised_amount >= $updated_goal->goal_amount && $updated_goal->status === 'completed') {

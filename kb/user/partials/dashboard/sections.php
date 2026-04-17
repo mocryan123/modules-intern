@@ -112,12 +112,21 @@
                         $n_message = sanitize_text_field($notif_item['message'] ?? '');
                         $n_url = !empty($notif_item['url']) ? esc_url($notif_item['url']) : esc_url(add_query_arg('kbf_tab','sponsorships', kbf_get_page_url('dashboard')));
                         $n_read = !empty($notif_item['read']);
-                        $n_time = !empty($notif_item['created_at']) ? date_i18n('M d, Y h:i A', strtotime((string)$notif_item['created_at'])) : '';
+                        $n_time_raw = !empty($notif_item['created_at']) ? sanitize_text_field((string)$notif_item['created_at']) : '';
+                        $n_time = '';
+                        if ($n_time_raw !== '') {
+                          try {
+                            $dt = new DateTimeImmutable($n_time_raw, new DateTimeZone('UTC'));
+                            $n_time = $dt->format('M d, Y h:i A');
+                          } catch (Exception $e) {
+                            $n_time = $n_time_raw;
+                          }
+                        }
                       ?>
                       <a href="<?php echo $n_url; ?>" class="kbf-notif-item <?php echo $n_read ? '' : 'is-unread'; ?>" role="menuitem" data-notification-id="<?php echo esc_attr(sanitize_text_field($notif_item['id'] ?? '')); ?>">
                         <span class="kbf-notif-item-title"><?php echo esc_html($n_title); ?></span>
                         <?php if ($n_message): ?><span class="kbf-notif-item-msg"><?php echo esc_html($n_message); ?></span><?php endif; ?>
-                        <?php if ($n_time): ?><span class="kbf-notif-item-time"><?php echo esc_html($n_time); ?></span><?php endif; ?>
+                        <?php if ($n_time): ?><span class="kbf-notif-item-time" data-notif-time-utc="<?php echo esc_attr($n_time_raw); ?>"><?php echo esc_html($n_time); ?></span><?php endif; ?>
                       </a>
                     <?php endforeach; ?>
                   <?php else: ?>

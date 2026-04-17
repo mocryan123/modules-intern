@@ -230,11 +230,11 @@ function bntm_ajax_kbf_admin_confirm_payment() {
             $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
             $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$sp->fund_id], $dashboard_url);
             kbf_push_user_notification((int)$fund->business_id, [
-                'type' => 'new_sponsorship_received',
+                'type' => 'donation_received',
                 'title' => 'New sponsorship received',
                 'message' => 'You received a new sponsorship worth PHP ' . number_format((float)$sp->amount, 2) . '.',
                 'url' => $fund_url,
-                'target_id' => (string)((int)$sp->fund_id),
+                'target_id' => (string)((int)$sp->id),
             ]);
             $updated = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount,status FROM {$ft} WHERE id=%d", $sp->fund_id));
             if ($updated && $updated->goal_amount > 0 && $updated->raised_amount >= $updated->goal_amount && $updated->status === 'completed') {

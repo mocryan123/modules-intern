@@ -1142,11 +1142,11 @@ function bntm_ajax_kbf_sponsor_fund() {
         $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
         $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => $id], $dashboard_url);
         kbf_push_user_notification((int)$fund->business_id, [
-            'type' => 'new_sponsorship_received',
+            'type' => 'donation_received',
             'title' => 'New sponsorship received',
             'message' => 'You received a new sponsorship worth PHP ' . number_format($amount, 2) . '.',
             'url' => $fund_url,
-            'target_id' => (string)$id,
+            'target_id' => (string)$new_id,
         ]);
         if (is_user_logged_in()) {
             kbf_push_user_notification((int)get_current_user_id(), [
@@ -1381,10 +1381,24 @@ function bntm_ajax_kbf_submit_rating() {
     $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$rt} WHERE organizer_id=%d AND sponsor_email=%s",$org_id,$email));
     if($exists) wp_send_json_error(['message'=>'You have already submitted a score for this organizer.']);
     $wpdb->insert($rt,['rand_id'=>bntm_rand_id(),'organizer_id'=>$org_id,'sponsor_email'=>$email,'rating'=>$rating,'review'=>sanitize_textarea_field($_POST['review']??''),'fund_id'=>$fund_id],['%s','%d','%s','%d','%s','%d']);
+    $rating_id = (int)$wpdb->insert_id;
     // Recalculate average
     $avg=$wpdb->get_var($wpdb->prepare("SELECT AVG(rating) FROM {$rt} WHERE organizer_id=%d",$org_id));
     $cnt=$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$rt} WHERE organizer_id=%d",$org_id));
     $wpdb->update($pt,['rating'=>round($avg,2),'rating_count'=>(int)$cnt],['business_id'=>$org_id],['%f','%d'],['%d']);
+    if (function_exists('kbf_push_user_notification')) {
+        $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        $notify_url = $fund_id
+            ? add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$fund_id], $dashboard_url)
+            : add_query_arg(['kbf_tab' => 'organizer_profile', 'organizer_id' => (int)$org_id], $dashboard_url);
+        kbf_push_user_notification((int)$org_id, [
+            'type' => 'new_rating_received',
+            'title' => 'New credibility score received',
+            'message' => 'A sponsor submitted a new rating on your profile.',
+            'url' => $notify_url,
+            'target_id' => (string)$rating_id,
+        ]);
+    }
     wp_send_json_success(['message'=>'Thank you for your score!']);
 }
 

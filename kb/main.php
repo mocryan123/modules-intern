@@ -96,6 +96,18 @@ function kbf_mark_first_login($user_id) {
     if (!$user_id) return;
     update_user_meta($user_id, 'kbf_first_login', 1);
     update_user_meta($user_id, 'kbf_show_onboarding', 1);
+    if (function_exists('kbf_push_user_notification')) {
+        $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        $profile_tab_url = add_query_arg('kbf_tab', 'profile', $dashboard_url);
+        kbf_push_user_notification((int)$user_id, [
+            'type' => 'welcome_first_login',
+            'title' => 'Welcome to Fundora',
+            'message' => 'Your account is ready. Complete your profile to start creating campaigns.',
+            'url' => $profile_tab_url,
+            'target_id' => (string)((int)$user_id),
+            'dedupe_window' => 1209600,
+        ]);
+    }
 }
 add_action('user_register', 'kbf_mark_first_login', 10, 1);
 

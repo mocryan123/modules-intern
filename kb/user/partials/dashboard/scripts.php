@@ -863,6 +863,25 @@
         var dd = document.getElementById('kbf-notif-dropdown');
         var wrap = document.getElementById('kbf-notif-menu');
         if(!btn || !dd || !wrap) return;
+        function hydrateNotifTimes(){
+          dd.querySelectorAll('.kbf-notif-item-time[data-notif-time-utc]').forEach(function(el){
+            var raw = (el.getAttribute('data-notif-time-utc') || '').trim();
+            if(!raw) return;
+            // Stored format is "YYYY-MM-DD HH:mm:ss" from server; treat as UTC then render local.
+            var iso = raw.replace(' ', 'T') + 'Z';
+            var d = new Date(iso);
+            if(isNaN(d.getTime())) return;
+            el.textContent = d.toLocaleString(undefined, {
+              month: 'short',
+              day: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+            });
+          });
+        }
+        hydrateNotifTimes();
         var marked = false;
         function closeNotif(){
           dd.classList.remove('kbf-open');
