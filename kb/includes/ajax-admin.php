@@ -9,7 +9,18 @@ function bntm_ajax_kbf_admin_approve_fund() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id,title FROM {$t} WHERE id=%d", $id));
     $wpdb->update($t,['status'=>'active'],['id'=>$id],['%s'],['%d']);
+    if ($fund && function_exists('kbf_push_user_notification')) {
+        $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        kbf_push_user_notification((int)$fund->business_id, [
+            'type' => 'fund_approved',
+            'title' => 'Fund approved',
+            'message' => 'Your fundraiser is now live and visible to supporters.',
+            'url' => add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$fund->id], $dashboard_url),
+            'target_id' => (string)((int)$fund->id),
+        ]);
+    }
     // =====================================================
     // NOTIFICATION PLACEHOLDER
     // TODO: Notify funder their fund is now live
@@ -23,7 +34,18 @@ function bntm_ajax_kbf_admin_reject_fund() {
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
     $notes=sanitize_text_field(isset($_POST['reason']) ? $_POST['reason'] : '');
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id,title FROM {$t} WHERE id=%d", $id));
     $wpdb->update($t,['status'=>'cancelled','admin_notes'=>$notes],['id'=>$id],['%s','%s'],['%d']);
+    if ($fund && function_exists('kbf_push_user_notification')) {
+        $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        kbf_push_user_notification((int)$fund->business_id, [
+            'type' => 'fund_rejected',
+            'title' => 'Fund rejected',
+            'message' => $notes !== '' ? ('Reason: ' . $notes) : 'Your fundraiser was not approved.',
+            'url' => add_query_arg(['kbf_tab' => 'profile'], $dashboard_url),
+            'target_id' => (string)((int)$fund->id),
+        ]);
+    }
     wp_send_json_success(['message'=>'Fund rejected.']);
 }
 
@@ -31,7 +53,18 @@ function bntm_ajax_kbf_admin_suspend_fund() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';$id=intval($_POST['fund_id']);
+    $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id FROM {$t} WHERE id=%d", $id));
     $wpdb->update($t,['status'=>'suspended'],['id'=>$id],['%s'],['%d']);
+    if ($fund && function_exists('kbf_push_user_notification')) {
+        $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        kbf_push_user_notification((int)$fund->business_id, [
+            'type' => 'fund_suspended',
+            'title' => 'Fund suspended',
+            'message' => 'Your fundraiser was suspended after review.',
+            'url' => add_query_arg(['kbf_tab' => 'find_funds', 'fund_id' => (int)$fund->id], $dashboard_url),
+            'target_id' => (string)((int)$fund->id),
+        ]);
+    }
     wp_send_json_success(['message'=>'Fund suspended.']);
 }
 
@@ -83,9 +116,31 @@ function bntm_ajax_kbf_admin_process_withdrawal() {
             'amount' => $net,
         ], ['id'=>$id], ['%s','%s','%s','%f'], ['%d']);
         $wpdb->update($ft,['escrow_status'=>'released'],['id'=>$wd->fund_id],['%s'],['%d']);
+        $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id FROM {$ft} WHERE id=%d", $wd->fund_id));
+        if ($fund && function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)$fund->business_id, [
+                'type' => 'withdrawal_released',
+                'title' => 'Withdrawal approved',
+                'message' => 'Your withdrawal request was approved and released.',
+                'url' => add_query_arg(['kbf_tab' => 'withdrawals'], $dashboard_url),
+                'target_id' => (string)((int)$wd->fund_id),
+            ]);
+        }
         wp_send_json_success(['message'=>'Withdrawal approved and released!']);
     } else {
         $wpdb->update($wt,['status'=>'rejected','processed_at'=>current_time('mysql'),'admin_notes'=>$notes],['id'=>$id],['%s','%s','%s'],['%d']);
+        $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id FROM {$ft} WHERE id=%d", $wd->fund_id));
+        if ($fund && function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)$fund->business_id, [
+                'type' => 'withdrawal_rejected',
+                'title' => 'Withdrawal rejected',
+                'message' => $notes !== '' ? ('Reason: ' . $notes) : 'Your withdrawal request was rejected.',
+                'url' => add_query_arg(['kbf_tab' => 'withdrawals'], $dashboard_url),
+                'target_id' => (string)((int)$wd->fund_id),
+            ]);
+        }
         wp_send_json_success(['message'=>'Withdrawal rejected.']);
     }
 }
@@ -93,8 +148,22 @@ function bntm_ajax_kbf_admin_process_withdrawal() {
 function bntm_ajax_kbf_admin_dismiss_report() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
-    global $wpdb;$t=$wpdb->prefix.'kbf_reports';$id=intval($_POST['report_id']);
+    global $wpdb;$t=$wpdb->prefix.'kbf_reports';$id=intval($_POST['report_id']);$ft=$wpdb->prefix.'kbf_funds';
+    $report = $wpdb->get_row($wpdb->prepare("SELECT fund_id FROM {$t} WHERE id=%d", $id));
     $wpdb->update($t,['status'=>'dismissed'],['id'=>$id],['%s'],['%d']);
+    if ($report && function_exists('kbf_push_user_notification')) {
+        $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id FROM {$ft} WHERE id=%d", (int)$report->fund_id));
+        if ($fund) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)$fund->business_id, [
+                'type' => 'report_dismissed',
+                'title' => 'Report dismissed',
+                'message' => 'A report on your fundraiser was reviewed and dismissed.',
+                'url' => add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$fund->id], $dashboard_url),
+                'target_id' => (string)((int)$fund->id),
+            ]);
+        }
+    }
     wp_send_json_success(['message'=>'Report dismissed.']);
 }
 
@@ -113,9 +182,29 @@ function bntm_ajax_kbf_admin_review_appeal() {
     if ($action === 'approve') {
         $wpdb->update($at, ['status'=>'approved','admin_notes'=>$notes], ['id'=>$id], ['%s','%s'], ['%d']);
         $wpdb->update($ft, ['status'=>'active'], ['id'=>$appeal->fund_id], ['%s'], ['%d']);
+        if (function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)$appeal->business_id, [
+                'type' => 'appeal_approved_reinstated',
+                'title' => 'Appeal approved',
+                'message' => 'Your appeal was approved and the fund is active again.',
+                'url' => add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$appeal->fund_id], $dashboard_url),
+                'target_id' => (string)((int)$appeal->fund_id),
+            ]);
+        }
         wp_send_json_success(['message'=>'Appeal approved. Fund reinstated.']);
     } else {
         $wpdb->update($at, ['status'=>'rejected','admin_notes'=>$notes], ['id'=>$id], ['%s','%s'], ['%d']);
+        if (function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)$appeal->business_id, [
+                'type' => 'appeal_rejected',
+                'title' => 'Appeal rejected',
+                'message' => $notes !== '' ? ('Reason: ' . $notes) : 'Your appeal was rejected.',
+                'url' => add_query_arg(['kbf_tab' => 'find_funds'], $dashboard_url),
+                'target_id' => (string)((int)$appeal->fund_id),
+            ]);
+        }
         wp_send_json_success(['message'=>'Appeal rejected.']);
     }
 }
@@ -137,6 +226,37 @@ function bntm_ajax_kbf_admin_confirm_payment() {
         $total=$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(s.amount),0) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",$fund->business_id));
         $cnt=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",$fund->business_id));
         $wpdb->update($pt,['total_raised'=>$total,'total_sponsors'=>$cnt],['business_id'=>$fund->business_id],['%f','%d'],['%d']);
+        if (function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$sp->fund_id], $dashboard_url);
+            kbf_push_user_notification((int)$fund->business_id, [
+                'type' => 'new_sponsorship_received',
+                'title' => 'New sponsorship received',
+                'message' => 'You received a new sponsorship worth PHP ' . number_format((float)$sp->amount, 2) . '.',
+                'url' => $fund_url,
+                'target_id' => (string)((int)$sp->fund_id),
+            ]);
+            $updated = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount,status FROM {$ft} WHERE id=%d", $sp->fund_id));
+            if ($updated && $updated->goal_amount > 0 && $updated->raised_amount >= $updated->goal_amount && $updated->status === 'completed') {
+                kbf_push_user_notification((int)$fund->business_id, [
+                    'type' => 'goal_reached_fund_completed',
+                    'title' => 'Goal reached',
+                    'message' => 'Your campaign reached its goal and is now completed.',
+                    'url' => $fund_url,
+                    'target_id' => (string)((int)$sp->fund_id),
+                ]);
+            }
+            $sponsor_user = get_user_by('email', (string)$sp->email);
+            if ($sponsor_user && !empty($sponsor_user->ID)) {
+                kbf_push_user_notification((int)$sponsor_user->ID, [
+                    'type' => 'payment_confirmed',
+                    'title' => 'Payment confirmed',
+                    'message' => 'Your sponsorship payment was confirmed successfully.',
+                    'url' => $fund_url,
+                    'target_id' => (string)((int)$sp->id),
+                ]);
+            }
+        }
     }
     // =====================================================
     // NOTIFICATION PLACEHOLDER
@@ -165,6 +285,16 @@ function bntm_ajax_kbf_admin_verify_organizer() {
     // =====================================================
     // TODO: Send verification status email to user (approved/rejected + reason)
     // =====================================================
+    if (function_exists('kbf_push_user_notification')) {
+        $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        kbf_push_user_notification((int)$biz, [
+            'type' => $v ? 'kyc_approved' : 'kyc_declined',
+            'title' => $v ? 'Identity verified' : 'Identity verification declined',
+            'message' => $v ? 'Your identity verification is approved.' : (($notes !== '') ? ('Reason: ' . $notes) : 'Your identity verification was declined.'),
+            'url' => add_query_arg(['kbf_tab' => 'profile'], $dashboard_url),
+            'target_id' => (string)((int)$biz),
+        ]);
+    }
     wp_send_json_success(['message'=>$v?'Organizer verified!':'Verification revoked.']);
 }
 
@@ -193,9 +323,29 @@ function bntm_ajax_kbf_admin_process_escrow_request() {
         $final_notes = trim($notes . ($notes ? "\n" : "") . $fee_note);
         $wpdb->update($et, ['status'=>'approved','admin_notes'=>$final_notes,'reviewed_at'=>current_time('mysql')], ['id'=>$id], ['%s','%s','%s'], ['%d']);
         $wpdb->update($ft, ['escrow_status'=>'released'], ['id'=>$req->fund_id], ['%s'], ['%d']);
+        if (function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)$req->business_id, [
+                'type' => 'escrow_request_approved',
+                'title' => 'Escrow request approved',
+                'message' => 'Your escrow request was approved and funds were released.',
+                'url' => add_query_arg(['kbf_tab' => 'withdrawals'], $dashboard_url),
+                'target_id' => (string)((int)$req->fund_id),
+            ]);
+        }
         wp_send_json_success(['message'=>'Escrow request approved. Funds released.']);
     } else {
         $wpdb->update($et, ['status'=>'rejected','admin_notes'=>$notes,'reviewed_at'=>current_time('mysql')], ['id'=>$id], ['%s','%s','%s'], ['%d']);
+        if (function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)$req->business_id, [
+                'type' => 'escrow_request_rejected',
+                'title' => 'Escrow request rejected',
+                'message' => $notes !== '' ? ('Reason: ' . $notes) : 'Your escrow release request was rejected.',
+                'url' => add_query_arg(['kbf_tab' => 'withdrawals'], $dashboard_url),
+                'target_id' => (string)((int)$req->fund_id),
+            ]);
+        }
         wp_send_json_success(['message'=>'Escrow request rejected.']);
     }
 }

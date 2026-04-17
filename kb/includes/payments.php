@@ -131,6 +131,37 @@ function kbf_mark_sponsorship_completed($sponsorship_id, $payment_reference = ''
         ));
         $wpdb->update($pt, ['total_raised' => $total, 'total_sponsors' => $cnt],
             ['business_id' => $fund->business_id], ['%f','%d'], ['%d']);
+        if (function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$fund->id], $dashboard_url);
+            kbf_push_user_notification((int)$fund->business_id, [
+                'type' => 'new_sponsorship_received',
+                'title' => 'New sponsorship received',
+                'message' => 'You received a new sponsorship worth PHP ' . number_format((float)$sponsorship->amount, 2) . '.',
+                'url' => $fund_url,
+                'target_id' => (string)((int)$fund->id),
+            ]);
+            $updated_goal = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount,status FROM {$ft} WHERE id=%d", $fund->id));
+            if ($updated_goal && $updated_goal->goal_amount > 0 && $updated_goal->raised_amount >= $updated_goal->goal_amount && $updated_goal->status === 'completed') {
+                kbf_push_user_notification((int)$fund->business_id, [
+                    'type' => 'goal_reached_fund_completed',
+                    'title' => 'Goal reached',
+                    'message' => 'Your campaign reached its goal and is now completed.',
+                    'url' => $fund_url,
+                    'target_id' => (string)((int)$fund->id),
+                ]);
+            }
+            $sponsor_user = get_user_by('email', (string)$sponsorship->email);
+            if ($sponsor_user && !empty($sponsor_user->ID)) {
+                kbf_push_user_notification((int)$sponsor_user->ID, [
+                    'type' => 'payment_confirmed',
+                    'title' => 'Payment confirmed',
+                    'message' => 'Your sponsorship payment was confirmed successfully.',
+                    'url' => $fund_url,
+                    'target_id' => (string)((int)$sponsorship->id),
+                ]);
+            }
+        }
     }
 
     do_action('kbf_payment_confirmed', $sponsorship->id);
@@ -289,6 +320,16 @@ function bntm_ajax_kbf_create_checkout() {
     $result = kbf_maya_request('/checkout/v1/checkouts', $payload);
 
     if (isset($result['error'])) {
+        if (is_user_logged_in() && function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)get_current_user_id(), [
+                'type' => 'payment_failed',
+                'title' => 'Payment failed to start',
+                'message' => 'We could not start your Maya checkout session. Please try again.',
+                'url' => add_query_arg(['kbf_tab' => 'find_funds'], $dashboard_url),
+                'target_id' => (string)$fund_id,
+            ]);
+        }
         $wpdb->delete($st, ['id' => $sponsorship_id], ['%d']);
         error_log('[KBF][Maya] Checkout create failed: ' . $result['error']);
         wp_send_json_error(['message' => 'Payment gateway error. Please try again later.']);
@@ -298,6 +339,16 @@ function bntm_ajax_kbf_create_checkout() {
     $checkout_id  = $result['checkoutId'] ?? '';
 
     if (empty($checkout_url)) {
+        if (is_user_logged_in() && function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            kbf_push_user_notification((int)get_current_user_id(), [
+                'type' => 'payment_failed',
+                'title' => 'Payment failed to start',
+                'message' => 'Unable to start payment session. Please try again.',
+                'url' => add_query_arg(['kbf_tab' => 'find_funds'], $dashboard_url),
+                'target_id' => (string)$fund_id,
+            ]);
+        }
         $wpdb->delete($st, ['id' => $sponsorship_id], ['%d']);
         wp_send_json_error(['message' => 'Unable to start payment session. Please try again.']);
     }
@@ -470,6 +521,37 @@ function kbf_maya_webhook_handler(WP_REST_Request $request) {
         ));
         $wpdb->update($pt, ['total_raised' => $total, 'total_sponsors' => $cnt],
             ['business_id' => $fund->business_id], ['%f','%d'], ['%d']);
+        if (function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$fund->id], $dashboard_url);
+            kbf_push_user_notification((int)$fund->business_id, [
+                'type' => 'new_sponsorship_received',
+                'title' => 'New sponsorship received',
+                'message' => 'You received a new sponsorship worth PHP ' . number_format((float)$sponsorship->amount, 2) . '.',
+                'url' => $fund_url,
+                'target_id' => (string)((int)$fund->id),
+            ]);
+            $updated_goal = $wpdb->get_row($wpdb->prepare("SELECT raised_amount,goal_amount,status FROM {$ft} WHERE id=%d", $fund->id));
+            if ($updated_goal && $updated_goal->goal_amount > 0 && $updated_goal->raised_amount >= $updated_goal->goal_amount && $updated_goal->status === 'completed') {
+                kbf_push_user_notification((int)$fund->business_id, [
+                    'type' => 'goal_reached_fund_completed',
+                    'title' => 'Goal reached',
+                    'message' => 'Your campaign reached its goal and is now completed.',
+                    'url' => $fund_url,
+                    'target_id' => (string)((int)$fund->id),
+                ]);
+            }
+            $sponsor_user = get_user_by('email', (string)$sponsorship->email);
+            if ($sponsor_user && !empty($sponsor_user->ID)) {
+                kbf_push_user_notification((int)$sponsor_user->ID, [
+                    'type' => 'payment_confirmed',
+                    'title' => 'Payment confirmed',
+                    'message' => 'Your sponsorship payment was confirmed successfully.',
+                    'url' => $fund_url,
+                    'target_id' => (string)((int)$sponsorship->id),
+                ]);
+            }
+        }
     }
 
     do_action('kbf_payment_confirmed', $sponsorship->id);
