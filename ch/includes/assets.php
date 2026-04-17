@@ -188,9 +188,9 @@ function ch_global_styles()
                 gap: 16px;
             }
 
-            /* The drawer (nav links) must not grow to fill all space */
+            /* Let the drawer grow to fill available space, pushing user bar to far right */
             .ch-top-nav .ch-mobile-drawer-wrap {
-                flex: 0 0 auto;
+                flex: 1 1 auto;
             }
 
             /* Push the desktop user bars to the far right */
@@ -6161,8 +6161,7 @@ function ch_global_styles()
 
         @media (min-width: 781px) {
             .ch-top-nav .ch-top-nav-notifications {
-                order: 3;
-                margin-left: auto;
+                margin-left: 0;
                 margin-right: 0;
             }
 
@@ -6171,8 +6170,9 @@ function ch_global_styles()
             }
 
             .ch-top-nav .ch-mobile-drawer-wrap>.ch-user-bar {
-                order: 4;
-                margin-left: 8px;
+                position: absolute;
+                right: 0px;
+                padding: 10px;
             }
 
             .ch-top-nav .ch-mobile-drawer-wrap>.ch-user-bar .ch-profile-dropdown {

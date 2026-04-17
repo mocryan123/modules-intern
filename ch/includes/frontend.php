@@ -396,6 +396,28 @@ function ch_guest_landing_page()
             <?php $current_display = wp_get_current_user()->display_name ?: 'U'; ?>
             <!-- ── Desktop logged-in user bar — pinned to the right of the nav ── -->
             <div class="ch-user-bar ch-nav-user-desktop">
+                <div class="ch-notifications-dropdown ch-top-nav-notifications">
+                    <button class="ch-icon-action-btn ch-notifications-btn" id="ch-notif-btn" onclick="chToggleNotifications(event)"
+                        aria-label="Notifications">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <span class="ch-notification-badge" id="ch-notification-count" style="display:none;"></span>
+                    </button>
+                    <div class="ch-dropdown-panel" id="ch-notifications-menu" style="display:none;">
+                        <div class="ch-dropdown-header">
+                            <span>Notifications</span>
+                            <button class="ch-dropdown-action" onclick="chMarkAllNotificationsRead()">Mark all read</button>
+                        </div>
+                        <div id="ch-notifications-list" class="ch-notifications-list">
+                            <div class="ch-no-notifications">Loading...</div>
+                        </div>
+                        <div class="ch-dropdown-footer">
+                            <a href="?tab=profile">View all notifications</a>
+                        </div>
+                    </div>
+                </div>
                 <div class="ch-profile-dropdown">
                     <button class="ch-avatar-btn" id="ch-profile-btn" onclick="chToggleProfileMenu(event)"
                         aria-label="Profile" data-ch-current-user-avatar="1"
@@ -435,28 +457,6 @@ function ch_guest_landing_page()
                             </svg>
                             Sign Out
                         </a>
-                    </div>
-                </div>
-                <div class="ch-notifications-dropdown ch-top-nav-notifications">
-                    <button class="ch-icon-action-btn ch-notifications-btn" id="ch-notif-btn" onclick="chToggleNotifications(event)"
-                        aria-label="Notifications">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                        </svg>
-                        <span class="ch-notification-badge" id="ch-notification-count" style="display:none;"></span>
-                    </button>
-                    <div class="ch-dropdown-panel" id="ch-notifications-menu" style="display:none;">
-                        <div class="ch-dropdown-header">
-                            <span>Notifications</span>
-                            <button class="ch-dropdown-action" onclick="chMarkAllNotificationsRead()">Mark all read</button>
-                        </div>
-                        <div id="ch-notifications-list" class="ch-notifications-list">
-                            <div class="ch-no-notifications">Loading...</div>
-                        </div>
-                        <div class="ch-dropdown-footer">
-                            <a href="?tab=profile">View all notifications</a>
-                        </div>
                     </div>
                 </div>
             </div>
