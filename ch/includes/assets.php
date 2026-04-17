@@ -188,13 +188,21 @@ function ch_global_styles()
                 gap: 16px;
             }
 
-            .ch-top-nav .ch-top-nav-notifications {
-                margin-left: auto;
-                margin-right: 0;
+            /* The drawer (nav links) must not grow to fill all space */
+            .ch-top-nav .ch-mobile-drawer-wrap {
+                flex: 0 0 auto;
             }
 
-            .ch-top-nav>.ch-user-bar {
+            /* Push the desktop user bars to the far right */
+            .ch-nav-user-desktop,
+            .ch-nav-guest-desktop {
                 margin-left: auto;
+            }
+
+            /* Remove the old generic rule that no longer applies */
+            .ch-top-nav .ch-top-nav-notifications {
+                margin-left: 0;
+                margin-right: 0;
             }
 
             .ch-user-bar {
@@ -208,6 +216,20 @@ function ch_global_styles()
                 height: 22px;
                 background: var(--ch-border);
                 margin-right: 2px;
+            }
+        }
+
+        /* Hide desktop-only bars on mobile; show them on desktop */
+        .ch-nav-user-desktop,
+        .ch-nav-guest-desktop {
+            display: none;
+        }
+
+        @media (min-width: 781px) {
+            .ch-nav-user-desktop,
+            .ch-nav-guest-desktop {
+                display: flex;
+                align-items: center;
             }
         }
 

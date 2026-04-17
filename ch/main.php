@@ -684,6 +684,42 @@ function bntm_ch_get_tables() {
     ];
 }
 
+function ch_get_notification_retention_days() {
+    return max(1, min(365, (int) get_option('ch_notification_retention_days', 30)));
+}
+
+function ch_cleanup_old_notifications() {
+    if (!function_exists('wp_next_scheduled')) {
+        return false;
+    }
+
+    global $wpdb;
+    $days = ch_get_notification_retention_days();
+    if ($days <= 0) {
+        return false;
+    }
+
+    $deleted = $wpdb->query($wpdb->prepare(
+        "DELETE FROM {$wpdb->prefix}ch_notifications WHERE is_read = 1 AND created_at < DATE_SUB(NOW(), INTERVAL %d DAY)",
+        $days
+    ));
+
+    return $deleted !== false;
+}
+
+function ch_schedule_notification_cleanup() {
+    if (!function_exists('wp_next_scheduled') || !function_exists('wp_schedule_event')) {
+        return;
+    }
+
+    if (!wp_next_scheduled('ch_daily_notification_cleanup')) {
+        wp_schedule_event(time(), 'daily', 'ch_daily_notification_cleanup');
+    }
+}
+
+add_action('init', 'ch_schedule_notification_cleanup');
+add_action('ch_daily_notification_cleanup', 'ch_cleanup_old_notifications');
+
 function bntm_ch_get_shortcodes() {
     return [
         'ch_dashboard' => 'bntm_shortcode_ch',
