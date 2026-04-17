@@ -554,12 +554,23 @@ function kbf_dashboard_profile_tab( $business_id ) {
         <!-- Identity -->
         <div class="kbf-profile-section">
           <div class="kbf-profile-section-title"><i class="ph ph-user-circle"></i> Identity</div>
-          <div class="kbf-form-row kbf-form-row-2">
+          <div class="kbf-form-row">
             <div class="kbf-form-group">
               <label>Display Name</label>
               <input type="text" name="display_name" value="<?php echo esc_attr($user->display_name); ?>" placeholder="Your display name" maxlength="50">
               <div class="kbf-field-error"></div>
             </div>
+               <div class="kbf-form-row">
+            <div class="kbf-form-group">
+              <label>Social Name</label>
+              <div class="kbf-input-with-prefix">
+                <span class="kbf-input-prefix">@</span>
+                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr($social_name); ?>" placeholder="yourname" maxlength="30">
+              </div>
+              <div class="kbf-form-hint">Letters, numbers, underscores only. Used for signing in.</div>
+              <div class="kbf-field-error" id="kbf-social-name-error"></div>
+            </div>
+          </div>
             <div class="kbf-form-group">
               <label>Profile Type</label>
               <select name="profile_type" id="kbf-profile-type">
@@ -571,18 +582,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
               <div class="kbf-form-hint">This helps sponsors understand your organization type.</div>
               <div class="kbf-field-error"></div>
             </div>
-          </div>
-          <div class="kbf-form-row kbf-form-row-2">
-            <div class="kbf-form-group">
-              <label>Social Name</label>
-              <div class="kbf-input-with-prefix">
-                <span class="kbf-input-prefix">@</span>
-                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr($social_name); ?>" placeholder="yourname" maxlength="30">
-              </div>
-              <div class="kbf-form-hint">Letters, numbers, underscores only. Used for signing in.</div>
-              <div class="kbf-field-error" id="kbf-social-name-error"></div>
-            </div>
-          </div>
+          </div> 
           <div class="kbf-form-group kbf-bio-wrap">
             <label>Bio / About</label>
             <textarea name="bio" rows="4" maxlength="250" placeholder="Tell sponsors about yourself..."><?php echo esc_textarea(isset($profile->bio) ? str_replace('\\', '', wp_unslash($profile->bio)) : ''); ?></textarea>
@@ -870,6 +870,15 @@ function kbf_dashboard_profile_tab( $business_id ) {
         let startX, startY;
         let stageSize = 240;
 
+        /**
+         * @function  openCropper
+         * @purpose   Opens the avatar cropper modal with the selected image source and initializes crop state.
+         * @used-by   FileReader onload callback for #kbf-avatar input
+         * @calls     fitImage, renderImage, document.body.style updates
+         * @params    string src - Data URL or image source to load into cropper
+         * @returns   void
+         * @status    ACTIVE
+         */
         function openCropper(src){
             imageSrc = src;
             img.src = src;
@@ -883,6 +892,15 @@ function kbf_dashboard_profile_tab( $business_id ) {
             document.body.style.overflow = 'hidden';
         }
 
+        /**
+         * @function  closeCropper
+         * @purpose   Closes the avatar cropper modal and resets temporary cropper image state.
+         * @used-by   #kbf-cropper-close click, #kbf-cropper-cancel click, backdrop click, apply callback
+         * @calls     img.removeAttribute, document.body.style updates
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function closeCropper(){
             backdrop.style.display = 'none';
             document.body.style.overflow = '';
@@ -890,11 +908,29 @@ function kbf_dashboard_profile_tab( $business_id ) {
             img.removeAttribute('src');
         }
 
+        /**
+         * @function  renderImage
+         * @purpose   Applies current pan and zoom transform values to the cropper preview image.
+         * @used-by   openCropper, fitImage, zoom slider input, drag/touch move handlers
+         * @calls     none
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function renderImage(){
             if(!img.src) return;
             img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
         }
 
+        /**
+         * @function  fitImage
+         * @purpose   Calculates minimum fit scale and centers the image within the cropper stage.
+         * @used-by   openCropper via image load event
+         * @calls     renderImage
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function fitImage(){
             const natW = img.naturalWidth || 1;
             const natH = img.naturalHeight || 1;
@@ -909,6 +945,15 @@ function kbf_dashboard_profile_tab( $business_id ) {
             renderImage();
         }
 
+        /**
+         * @function  getCroppedCanvas
+         * @purpose   Generates a circular cropped canvas snapshot from the current cropper viewport.
+         * @used-by   #kbf-cropper-apply click handler
+         * @calls     document.createElement, CanvasRenderingContext2D APIs, ctx.drawImage
+         * @params    none
+         * @returns   HTMLCanvasElement - Canvas containing the cropped avatar image
+         * @status    ACTIVE
+         */
         function getCroppedCanvas(){
             const canvas = document.createElement('canvas');
             const size = 300;
@@ -1077,6 +1122,15 @@ function kbf_dashboard_profile_tab( $business_id ) {
         window.updateAddress = updateAddress;
 
         if(savedAddr){
+            /**
+             * @function  tryRestore
+             * @purpose   Attempts to restore saved address dropdown selections using location helper mapping.
+             * @used-by   Interval retry loop when a saved hidden address value exists
+             * @calls     window.kbfApplyLocationSelection
+             * @params    none
+             * @returns   boolean - True when restore logic executes with available helper, otherwise false
+             * @status    NEEDS REVIEW
+             */
             function tryRestore(){
                 if(typeof window.kbfApplyLocationSelection !== 'function') return false;
                 window.kbfApplyLocationSelection(prov, muni, brgy, savedAddr);
@@ -1163,6 +1217,16 @@ function kbf_dashboard_profile_tab( $business_id ) {
         if(typeof updateAddress === 'function') updateAddress();
 
         let isValid = true, errors = [];
+        /**
+         * @function  showErr
+         * @purpose   Marks a form input as invalid and renders its validation message inside the form group.
+         * @used-by   kbfSaveProfile validation checks
+         * @calls     input.closest, group.querySelector, document.createElement, errors.push
+         * @params    HTMLElement input - Target form input element
+         * @params    string msg - Validation error message to display
+         * @returns   void
+         * @status    ACTIVE
+         */
         function showErr(input, msg){
             input.classList.add('kbf-input-error');
             const group = input.closest('.kbf-form-group');

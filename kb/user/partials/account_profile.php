@@ -1,6 +1,15 @@
 ﻿<?php
 /* Organizer profile shortcode */
 if (!function_exists('kbf_account_profile_get_biz_id')) {
+    /**
+     * @function  kbf_account_profile_get_biz_id
+     * @purpose   Resolves the organizer business ID from request query parameters.
+     * @used-by   bntm_shortcode_kbf_organizer_profile
+     * @calls     sanitize_text_field, intval, $wpdb->prepare, $wpdb->get_var
+     * @params    object $wpdb - WordPress database object used for organizer/user lookup queries
+     * @returns   int - Organizer business ID, or 0 when not found
+     * @status    ACTIVE
+     */
     function kbf_account_profile_get_biz_id($wpdb) {
         $biz_id = 0;
         // Try organizer token first
@@ -24,6 +33,15 @@ if (!function_exists('kbf_account_profile_get_biz_id')) {
 }
 
 if (!function_exists('kbf_get_organizer_profile_url')) {
+    /**
+     * @function  kbf_get_organizer_profile_url
+     * @purpose   Builds the organizer profile URL using social name first, then token, then organizer ID fallback.
+     * @used-by   modules/kb/user/partials/browse.php, modules/kb/user/partials/fund_details.php
+     * @calls     get_user_meta, function_exists, kbf_get_page_url, home_url, add_query_arg, $wpdb->get_var, $wpdb->prepare
+     * @params    int $biz_id - Organizer WordPress user ID
+     * @returns   string - Organizer profile URL with organizer identifier query argument
+     * @status    ACTIVE
+     */
     function kbf_get_organizer_profile_url($biz_id) {
         $social_name = get_user_meta($biz_id, 'kbf_social_name', true);
         $base_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('organizer_profile') : home_url('/');
@@ -42,6 +60,16 @@ if (!function_exists('kbf_get_organizer_profile_url')) {
 }
 
 if (!function_exists('kbf_account_profile_get_back_link')) {
+    /**
+     * @function  kbf_account_profile_get_back_link
+     * @purpose   Computes back-link URL and label based on incoming fund-related query parameters.
+     * @used-by   bntm_shortcode_kbf_organizer_profile
+     * @calls     add_query_arg, sanitize_text_field, intval
+     * @params    string $fund_details_url - Base URL for fund details page
+     * @params    string $browse_url - Base URL for browse page
+     * @returns   array - Two-item array containing back URL and back label text
+     * @status    ACTIVE
+     */
     function kbf_account_profile_get_back_link($fund_details_url, $browse_url) {
         $back_url = $browse_url;
         $back_label = 'Back to Browse';
@@ -60,6 +88,15 @@ if (!function_exists('kbf_account_profile_get_back_link')) {
 }
 
 if (!function_exists('kbf_account_profile_get_fund_tokens')) {
+    /**
+     * @function  kbf_account_profile_get_fund_tokens
+     * @purpose   Returns mapped fund tokens for provided fund IDs when token helper is available.
+     * @used-by   bntm_shortcode_kbf_organizer_profile
+     * @calls     function_exists, kbf_get_fund_tokens
+     * @params    array $fund_ids - Numeric fund IDs to resolve tokens for
+     * @returns   array - Fund token map keyed by fund ID, or empty array
+     * @status    ACTIVE
+     */
     function kbf_account_profile_get_fund_tokens($fund_ids) {
         if (!empty($fund_ids) && function_exists('kbf_get_fund_tokens')) {
             return kbf_get_fund_tokens($fund_ids);
@@ -68,6 +105,15 @@ if (!function_exists('kbf_account_profile_get_fund_tokens')) {
     }
 }
 
+/**
+ * @function  bntm_shortcode_kbf_organizer_profile
+ * @purpose   Renders organizer profile page content, campaigns, reviews, rating modal, and filter interactions.
+ * @used-by   modules/kb/includes/shortcodes.php (shortcode map), modules/kb/user/partials/dashboard/sections.php
+ * @calls     kbf_global_assets, kbf_account_profile_get_biz_id, kbf_account_profile_get_fund_tokens, kbf_account_profile_get_back_link, kbf_get_page_url, wp_create_nonce, wp_get_current_user, get_user_meta, get_userdata, bntm_universal_container, WordPress DB query methods
+ * @params    none
+ * @returns   string - Rendered organizer profile HTML container output
+ * @status    ACTIVE
+ */
 function bntm_shortcode_kbf_organizer_profile() {
     kbf_global_assets();
     global $wpdb;
@@ -240,51 +286,6 @@ function bntm_shortcode_kbf_organizer_profile() {
             gap: 16px;
           }
         }
-        @media(max-width:720px){
-          .kbf-page-header {
-            padding: 16px 20px;
-            text-align: center;
-          }
-          .kbf-page-header > div {
-            flex-direction: column;
-            align-items: center !important;
-            text-align: center;
-            gap: 16px;
-          }
-          .kbf-page-header .kbf-ap-main{
-            width:100%;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-          }
-          .kbf-page-header .kbf-ap-name-row,
-          .kbf-page-header .kbf-ap-meta-row{
-            justify-content:center;
-          }
-          .kbf-page-header h2 {
-            font-size: 18px;
-          }
-          .kbf-org-avatar {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto;
-            margin-left:auto !important;
-            margin-right:auto !important;
-            align-self:center;
-          }
-          .kbf-org-avatar > img,
-          .kbf-org-avatar > .kbf-org-avatar-fallback {
-            width: 80px;
-            height: 80px;
-          }
-          .kbf-page-header > div > div {
-            width: 100%;
-          }
-          .kbf-social-icons {
-            justify-content: center;
-            width: 100%;
-          }
-        }
         .kbf-page-header.kbf-ap-compact {
           padding: 16px 20px;
           text-align: center;
@@ -309,8 +310,6 @@ function bntm_shortcode_kbf_organizer_profile() {
           width:80px;
           height:80px;
           margin:0 auto !important;
-          margin-left:auto !important;
-          margin-right:auto !important;
           align-self:center;
         }
         .kbf-page-header.kbf-ap-compact .kbf-org-avatar > img,
@@ -328,13 +327,6 @@ function bntm_shortcode_kbf_organizer_profile() {
           justify-content:center;
           width:100%;
         }
-        @media(max-width:620px){
-          .kbf-page-header {
-            text-align: center;
-            padding: 16px 16px;
-          }
-        }
-
         @media(max-width:1024px){
           .kbf-profile-grid{
             grid-template-columns:1fr !important;
@@ -344,10 +336,6 @@ function bntm_shortcode_kbf_organizer_profile() {
           }
         }
         @media(max-width:900px){
-          .kbf-section-header{
-            justify-content:space-between;
-            align-items:center;
-          }
           .kbf-inline-filters{
             margin-left:auto;
             width:auto;
@@ -390,9 +378,6 @@ function bntm_shortcode_kbf_organizer_profile() {
         }
         @media(max-width:640px){
           .kbf-section-header{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
             gap:10px;
           }
           .kbf-section-title{
@@ -417,7 +402,6 @@ function bntm_shortcode_kbf_organizer_profile() {
         }
         @media(max-width:480px){
           .kbf-section-header{
-            justify-content:space-between;
             gap:8px;
           }
           .kbf-section-title{
@@ -929,6 +913,15 @@ function bntm_shortcode_kbf_organizer_profile() {
     <?php endif; ?>
     <script>
     (function(){
+      /**
+       * @function  kbfSetRating
+       * @purpose   Updates selected thumbs-up rating UI state and hidden rating input value.
+       * @used-by   Inline onclick handler on rating icon buttons in the modal
+       * @calls     document.querySelectorAll, parseInt, document.getElementById
+       * @params    number v - Selected rating value from 1 to 5
+       * @returns   void
+       * @status    ACTIVE
+       */
       window.kbfSetRating = function(v){
         var stars = document.querySelectorAll('#kbf-star-picker .kbf-star-btn');
         stars.forEach(function(star){
@@ -943,6 +936,15 @@ function bntm_shortcode_kbf_organizer_profile() {
         var inp = document.getElementById('kbf-rating-val');
         if(inp) inp.value = v;
       };
+      /**
+       * @function  kbfSubmitRating
+       * @purpose   Submits organizer rating form data via AJAX and updates modal feedback state.
+       * @used-by   Inline onclick handler on modal submit button
+       * @calls     FormData, window.kbfFetchJson, document.getElementById, document.querySelector, document.querySelectorAll, setTimeout, window.location.reload
+       * @params    string nonce - Security nonce for kbf_submit_rating AJAX action
+       * @returns   void
+       * @status    ACTIVE
+       */
       window.kbfSubmitRating = function(nonce){
         var form = document.getElementById('kbf-rating-form');
         var btn = document.querySelector('#kbf-modal-rating .kbf-modal-footer .kbf-btn-primary');
@@ -980,6 +982,15 @@ function bntm_shortcode_kbf_organizer_profile() {
           btn.textContent = old;
         });
       };
+      /**
+       * @function  initCardPager
+       * @purpose   Initializes client-side card pagination controls for campaign and review card lists.
+       * @used-by   DOMContentLoaded handler in this script
+       * @calls     document.querySelector, Array.prototype.slice.call, pager/query selector APIs, getFilteredCards, render
+       * @params    string scope - Pager scope key matching data-kbf-card-pager attributes
+       * @returns   void
+       * @status    ACTIVE
+       */
       function initCardPager(scope){
         var wrap = document.querySelector('.kbf-card-list[data-kbf-card-pager="'+scope+'"]');
         var pager = document.querySelector('.kbf-table-pager[data-kbf-card-pager-ui="'+scope+'"]');
@@ -1007,6 +1018,15 @@ function bntm_shortcode_kbf_organizer_profile() {
         var pageLabel = pager.querySelector('.kbf-table-pager-page');
         var page = 1;
         var perPage = 5;
+        /**
+         * @function  getFilteredCards
+         * @purpose   Filters campaign cards by selected status and escrow filter values for the campaign scope.
+         * @used-by   render
+         * @calls     document.getElementById, Array.prototype.filter
+         * @params    none
+         * @returns   array - Filtered card element list
+         * @status    ACTIVE
+         */
         function getFilteredCards(){
           if(scope !== 'organizer-campaigns') return cards;
           var statusSel = document.getElementById('kbf-filter-status');
@@ -1021,6 +1041,15 @@ function bntm_shortcode_kbf_organizer_profile() {
             return okStatus && okEscrow;
           });
         }
+        /**
+         * @function  render
+         * @purpose   Renders visible card subset for current page and updates pager controls.
+         * @used-by   initCardPager, rows/select change handlers, prev/next click handlers, filter change handlers
+         * @calls     getFilteredCards, Math.max, Math.ceil, Array.prototype.forEach
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function render(){
           var filtered = getFilteredCards();
           var total = filtered.length;
@@ -1060,6 +1089,15 @@ function bntm_shortcode_kbf_organizer_profile() {
       (function(){
         var header = document.querySelector('.kbf-page-header');
         if(!header) return;
+        /**
+         * @function  syncHeaderCompact
+         * @purpose   Toggles compact profile-header layout class based on current header width threshold.
+         * @used-by   Immediate call in this IIFE and window resize event listener
+         * @calls     header.classList.toggle
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function syncHeaderCompact(){
           header.classList.toggle('kbf-ap-compact', header.offsetWidth < 720);
         }
@@ -1082,6 +1120,16 @@ function bntm_shortcode_kbf_organizer_profile() {
     if (overlay.parentNode !== document.body) document.body.appendChild(overlay);
     if (sheet.parentNode !== document.body) document.body.appendChild(sheet);
 
+    /**
+     * @function  setGroupValue
+     * @purpose   Sets active state for bottom-sheet filter option buttons within a group.
+     * @used-by   syncFromSelects, kbfAccountProfileClearSheet, button click handlers
+     * @calls     document.querySelectorAll, Element.classList.toggle
+     * @params    string group - Filter group key (status or escrow)
+     * @params    string value - Target active option value
+     * @returns   void
+     * @status    ACTIVE
+     */
     function setGroupValue(group, value){
       var buttons = document.querySelectorAll('[data-kbf-ap-group="'+group+'"]');
       buttons.forEach(function(b){
@@ -1089,10 +1137,28 @@ function bntm_shortcode_kbf_organizer_profile() {
         b.classList.toggle('is-active', isActive);
       });
     }
+    /**
+     * @function  syncFromSelects
+     * @purpose   Syncs bottom-sheet button selection state from desktop filter select values.
+     * @used-by   kbfAccountProfileOpenSheet
+     * @calls     setGroupValue
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function syncFromSelects(){
       setGroupValue('status', statusEl.value || 'all');
       setGroupValue('escrow', escrowEl.value || 'all');
     }
+    /**
+     * @function  kbfAccountProfileOpenSheet
+     * @purpose   Opens filter bottom sheet and overlay while locking page scroll.
+     * @used-by   Inline onclick on Filters button
+     * @calls     syncFromSelects, classList.add
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfAccountProfileOpenSheet = function(){
       syncFromSelects();
       sheet.classList.add('open');
@@ -1102,6 +1168,15 @@ function bntm_shortcode_kbf_organizer_profile() {
         document.body.dataset.kbfOverflowLocked = '1';
       }
     };
+    /**
+     * @function  kbfAccountProfileCloseSheet
+     * @purpose   Closes filter bottom sheet and overlay and restores page scroll state.
+     * @used-by   Inline onclick on overlay and close button, kbfAccountProfileApplySheet, window resize handler
+     * @calls     classList.remove
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfAccountProfileCloseSheet = function(){
       sheet.classList.remove('open');
       overlay.classList.remove('open');
@@ -1110,10 +1185,28 @@ function bntm_shortcode_kbf_organizer_profile() {
         delete document.body.dataset.kbfOverflowLocked;
       }
     };
+    /**
+     * @function  getActiveValue
+     * @purpose   Reads active value from selected button within a filter group in the sheet.
+     * @used-by   kbfAccountProfileApplySheet
+     * @calls     sheet.querySelector, Element.getAttribute
+     * @params    string group - Filter group key (status or escrow)
+     * @returns   string - Active group value or empty string when not selected
+     * @status    ACTIVE
+     */
     function getActiveValue(group){
       var active = sheet.querySelector('[data-kbf-ap-group="'+group+'"].is-active');
       return active ? active.getAttribute('data-kbf-ap-value') : '';
     }
+    /**
+     * @function  kbfAccountProfileApplySheet
+     * @purpose   Applies selected bottom-sheet filters back to desktop selects and triggers filtering.
+     * @used-by   Apply button click handler, kbfAccountProfileClearSheet
+     * @calls     getActiveValue, dispatchEvent, kbfAccountProfileCloseSheet
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfAccountProfileApplySheet = function(){
       var statusVal = getActiveValue('status') || 'all';
       var escrowVal = getActiveValue('escrow') || 'all';
@@ -1123,6 +1216,15 @@ function bntm_shortcode_kbf_organizer_profile() {
       escrowEl.dispatchEvent(new Event('change'));
       window.kbfAccountProfileCloseSheet();
     };
+    /**
+     * @function  kbfAccountProfileClearSheet
+     * @purpose   Resets bottom-sheet filter selections to all values and applies them.
+     * @used-by   Clear button click handler
+     * @calls     setGroupValue, kbfAccountProfileApplySheet
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfAccountProfileClearSheet = function(){
       setGroupValue('status', 'all');
       setGroupValue('escrow', 'all');
@@ -1147,13 +1249,3 @@ function bntm_shortcode_kbf_organizer_profile() {
     }
     return bntm_universal_container('Organizer Profile -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
-
-
-
-
-
-
-
-
-
-

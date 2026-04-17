@@ -1,6 +1,17 @@
 ﻿<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
+    /**
+     * @function  kbf_fund_details_load_fund
+     * @purpose   Loads a fund record by token, ID, or share token based on incoming request parameters.
+     * @used-by   bntm_shortcode_kbf_fund_details
+     * @calls     sanitize_text_field, intval, $wpdb->prepare, $wpdb->get_row
+     * @params    object $wpdb - WordPress database object
+     * @params    string $ft - Funds table name
+     * @params    int $current_user_id - Current logged-in user ID for owner visibility checks
+     * @returns   object|null - Fund row object when found, otherwise null
+     * @status    ACTIVE
+     */
     function kbf_fund_details_load_fund($wpdb, $ft, $current_user_id) {
         if(!empty($_GET['fund'])) {
             $f_token = sanitize_text_field($_GET['fund']);
@@ -28,11 +39,30 @@ if (!function_exists('kbf_fund_details_load_fund')) {
 }
 
 if (!function_exists('kbf_fund_details_share_url')) {
+    /**
+     * @function  kbf_fund_details_share_url
+     * @purpose   Builds the shareable fund URL using the fund share token.
+     * @used-by   bntm_shortcode_kbf_fund_details
+     * @calls     add_query_arg
+     * @params    string $fund_details_url - Base fund details page URL
+     * @params    object $fund - Fund object containing share_token
+     * @returns   string - Share URL with kbf_share query parameter
+     * @status    ACTIVE
+     */
     function kbf_fund_details_share_url($fund_details_url, $fund) {
         return add_query_arg('kbf_share', $fund->share_token, $fund_details_url);
     }
 }
 
+/**
+ * @function  bntm_shortcode_kbf_fund_details
+ * @purpose   Renders the full fund details page UI, sponsor/report/rating modals, and interactive scripts.
+ * @used-by   modules/kb/includes/shortcodes.php shortcode map, modules/kb/user/partials/dashboard/sections.php
+ * @calls     kbf_global_assets, kbf_fund_details_load_fund, kbf_fund_details_share_url, kbf_get_page_url, get_current_user_id, wp_create_nonce, WordPress DB query methods
+ * @params    none
+ * @returns   string - Rendered fund details HTML content
+ * @status    ACTIVE
+ */
 function bntm_shortcode_kbf_fund_details() {
     kbf_global_assets();
     global $wpdb;
@@ -170,11 +200,6 @@ function bntm_shortcode_kbf_fund_details() {
       padding:0 !important;
       margin-top:0 !important;
     }
-    .kbf-photo-main{
-      width:100%;
-      aspect-ratio:4 / 3;
-      height:auto;
-    }
     .kbf-photo-main img{
       width:100%;
       height:100%;
@@ -231,40 +256,6 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-fund-rating-pill i{font-size:12px;color:#3b82f6;}
     .kbf-fund-rating-empty{background:#f1f5f9;color:var(--kbf-slate);}
     .kbf-fund-rating-label{font-size:11.5px;color:var(--kbf-slate);font-weight:500;}
-    .kbf-category-pill,
-    .kbf-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:5px;
-      padding:3px 8px;
-      font-size:10px;
-      font-weight:700;
-      letter-spacing:.25px;
-      line-height:1.1;
-      border-radius:999px;
-      box-sizing:border-box;
-    }
-    .kbf-category-pill{
-      background:#eef2f7;
-      color:#475569;
-      border:1px solid #e2e8f0;
-      font-weight:600;
-      letter-spacing:0;
-    }
-    .kbf-fundtype-pill{
-      display:inline-flex;
-      align-items:center;
-      padding:3px 8px;
-      font-size:10px;
-      font-weight:700;
-      letter-spacing:.25px;
-      line-height:1.1;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#334155;
-      border:1px solid #e2e8f0;
-      box-sizing:border-box;
-    }
     .kbf-category-pill img{
       width:10px;
       height:10px;
@@ -329,15 +320,6 @@ function bntm_shortcode_kbf_fund_details() {
   .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
 .kbf-detail-left{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;}
 .kbf-detail-right{display:flex;flex-direction:column;align-self:stretch;}
-  .kbf-detail-panels.kbf-detail-stack{
-      display:flex;
-      flex-direction:column;
-      gap:20px;
-  }
-  .kbf-detail-panels.kbf-detail-stack .kbf-detail-left,
-  .kbf-detail-panels.kbf-detail-stack .kbf-detail-right{
-      width:100%;
-  }
   .kbf-detail-tabs{
       display:flex;
       flex-direction:column;
@@ -451,9 +433,6 @@ function bntm_shortcode_kbf_fund_details() {
         align-items:flex-start;
         gap:10px;
       }
-      .kbf-section-organizer .kbf-organizer-row > img{
-        align-self:flex-start;
-      }
       .kbf-account-profile-text{display:none;}
     }
     @media (max-width: 900px){
@@ -547,7 +526,7 @@ function bntm_shortcode_kbf_fund_details() {
       flex-shrink:0;
     }
     .kbf-photo-gallery{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
-    .kbf-photo-main{border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;cursor:pointer;aspect-ratio:4/3;}
+    .kbf-photo-main{width:100%;height:auto;border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;cursor:pointer;aspect-ratio:4 / 3;}
     .kbf-photo-slides{position:relative;width:100%;height:100%;overflow:hidden;}
     .kbf-photo-slide{position:absolute;inset:0;opacity:0;transition:opacity .45s ease, transform .45s ease;transform:scale(1.03);z-index:1;}
     .kbf-photo-slide.is-active{opacity:1;transform:scale(1);z-index:2;}
@@ -937,6 +916,12 @@ function bntm_shortcode_kbf_fund_details() {
 
     /* ===== FIX 7: PILL STYLING ===== */
     .kbf-category-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      line-height:1.1;
+      border-radius:999px;
+      box-sizing:border-box;
       background:#eef4ff;
       color:#1e40af;
       border:1px solid #c7d8f7;
@@ -945,6 +930,11 @@ function bntm_shortcode_kbf_fund_details() {
       padding:4px 10px;
     }
     .kbf-fundtype-pill{
+      display:inline-flex;
+      align-items:center;
+      line-height:1.1;
+      border-radius:999px;
+      box-sizing:border-box;
       background:#f1f5f9;
       color:#475569;
       border:1px solid #e2e8f0;
@@ -1465,6 +1455,15 @@ function bntm_shortcode_kbf_fund_details() {
     
     <!-- ================== JS ================== -->
     <script>
+   /**
+    * @function  kbfSyncDetailPanels
+    * @purpose   Normalizes the sticky detail container height after tab or viewport updates.
+    * @used-by   DOMContentLoaded flow and window resize listener
+    * @calls     document.querySelector
+    * @params    none
+    * @returns   void
+    * @status    ACTIVE
+    */
    function kbfSyncDetailPanels(){
     var sticky = document.querySelector('.kbf-detail-sticky');
     if(sticky) sticky.style.height = 'auto';
@@ -1513,6 +1512,16 @@ function bntm_shortcode_kbf_fund_details() {
         var touchStartX = 0;
         var touchEndX = 0;
 
+        /**
+         * @function  goTo
+         * @purpose   Switches the active photo slide and dot indicator to a target index.
+         * @used-by   goNext, goPrev, dot click handlers
+         * @calls     resetAuto, setTimeout
+         * @params    number index - Target slide index
+         * @params    boolean animate - Whether to use transition lock timeout
+         * @returns   void
+         * @status    ACTIVE
+         */
         function goTo(index, animate){
             if(isTransitioning || index === currentIndex || !slides.length) return;
             isTransitioning = true;
@@ -1527,9 +1536,36 @@ function bntm_shortcode_kbf_fund_details() {
             setTimeout(function(){ isTransitioning = false; }, animate !== false ? 500 : 0);
         }
 
+        /**
+         * @function  goNext
+         * @purpose   Moves the photo slider to the next slide.
+         * @used-by   autoplay timer, next button click, keyboard/touch handlers
+         * @calls     goTo
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function goNext(){ goTo(currentIndex + 1); }
+        /**
+         * @function  goPrev
+         * @purpose   Moves the photo slider to the previous slide.
+         * @used-by   prev button click, keyboard/touch handlers
+         * @calls     goTo
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function goPrev(){ goTo(currentIndex - 1); }
 
+        /**
+         * @function  scheduleAuto
+         * @purpose   Starts the photo slider autoplay cycle and progress bar animation.
+         * @used-by   resetAuto, resumeAuto, initial slider init
+         * @calls     clearAutoTimer, requestAnimationFrame, setTimeout, goNext
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function scheduleAuto(){
             if(total < 2 || autoPaused || !progressFill) return;
             clearAutoTimer();
@@ -1547,12 +1583,39 @@ function bntm_shortcode_kbf_fund_details() {
                 goNext();
             }, delay);
         }
+        /**
+         * @function  clearAutoTimer
+         * @purpose   Clears the active photo slider autoplay timer.
+         * @used-by   scheduleAuto, resetAuto, pauseAuto
+         * @calls     clearTimeout
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function clearAutoTimer(){
             if(!autoTimer) return;
             clearTimeout(autoTimer);
             autoTimer = null;
         }
+        /**
+         * @function  resetAuto
+         * @purpose   Restarts autoplay timing after manual slide changes.
+         * @used-by   goTo
+         * @calls     clearAutoTimer, scheduleAuto
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function resetAuto(){ clearAutoTimer(); scheduleAuto(); }
+        /**
+         * @function  pauseAuto
+         * @purpose   Pauses slider autoplay and freezes current progress indicator state.
+         * @used-by   mouseenter on slider, opening lightbox
+         * @calls     clearAutoTimer, window.getComputedStyle
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function pauseAuto(){
             autoPaused = true;
             clearAutoTimer();
@@ -1564,6 +1627,15 @@ function bntm_shortcode_kbf_fund_details() {
             }
             mainWrap.classList.add('is-paused');
         }
+        /**
+         * @function  resumeAuto
+         * @purpose   Resumes slider autoplay when lightbox is closed and interaction ends.
+         * @used-by   mouseleave on slider, closeLightbox
+         * @calls     scheduleAuto
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function resumeAuto(){
             if(lightbox.classList.contains('open')) return;
             autoPaused = false;
@@ -1603,6 +1675,15 @@ function bntm_shortcode_kbf_fund_details() {
         var lbClose = document.getElementById('kbf-photo-lightbox-close');
         var lbPrev = document.getElementById('kbf-photo-lightbox-prev');
         var lbNext = document.getElementById('kbf-photo-lightbox-next');
+        /**
+         * @function  closeLightbox
+         * @purpose   Closes the photo lightbox overlay and restores autoplay state.
+         * @used-by   close button click, backdrop click, Escape key handler
+         * @calls     resumeAuto
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function closeLightbox(){
             lightbox.classList.remove('open');
             lightbox.setAttribute('aria-hidden','true');
@@ -1623,6 +1704,15 @@ function bntm_shortcode_kbf_fund_details() {
         kbfSyncDetailPanels();
         window.addEventListener('resize', kbfSyncDetailPanels);
     });
+    /**
+     * @function  kbfGetActiveSponsorModal
+     * @purpose   Returns the currently visible sponsor modal element.
+     * @used-by   kbfGetActiveSponsorForm, kbfGetActiveSponsorMsg, kbfSpdSponsor
+     * @calls     document.querySelectorAll, window.getComputedStyle
+     * @params    none
+     * @returns   HTMLElement|null - Active modal element or fallback modal/null
+     * @status    ACTIVE
+     */
     function kbfGetActiveSponsorModal(){
         var modals = document.querySelectorAll('#kbf-modal-sponsor');
         for (var i = 0; i < modals.length; i++) {
@@ -1631,6 +1721,15 @@ function bntm_shortcode_kbf_fund_details() {
         }
         return modals[0] || null;
     }
+    /**
+     * @function  kbfGetActiveSponsorForm
+     * @purpose   Resolves the sponsor form associated with the active modal context.
+     * @used-by   kbfSpdSponsor
+     * @calls     kbfGetActiveSponsorModal, document.getElementById
+     * @params    none
+     * @returns   HTMLElement|null - Sponsor form element
+     * @status    ACTIVE
+     */
     function kbfGetActiveSponsorForm(){
         if (document.activeElement) {
             var activeModal = document.activeElement.closest('.kbf-modal');
@@ -1646,11 +1745,29 @@ function bntm_shortcode_kbf_fund_details() {
         }
         return document.getElementById('kbf-sponsor-form');
     }
+    /**
+     * @function  kbfGetActiveSponsorMsg
+     * @purpose   Resolves the sponsor message container in the active sponsor modal.
+     * @used-by   kbfSpdSponsor
+     * @calls     kbfGetActiveSponsorModal
+     * @params    none
+     * @returns   HTMLElement|null - Message container element
+     * @status    ACTIVE
+     */
     function kbfGetActiveSponsorMsg(){
         var modal = kbfGetActiveSponsorModal();
         if (!modal) return null;
         return modal.querySelector('#kbf-spd-msg') || modal.querySelector('#kbf-sponsor-msg');
     }
+    /**
+     * @function  kbfValidateRequired
+     * @purpose   Validates required visible sponsor form fields and injects inline error messages.
+     * @used-by   kbfSpdSponsor
+     * @calls     form.querySelectorAll, document.createElement
+     * @params    HTMLFormElement form - Sponsor form to validate
+     * @returns   boolean - True when form passes required field validation
+     * @status    ACTIVE
+     */
     function kbfValidateRequired(form){
         var first = null;
         form.querySelectorAll('.kbf-field-error').forEach(function(el){ el.remove(); });
@@ -1675,12 +1792,30 @@ function bntm_shortcode_kbf_fund_details() {
         var msg = document.getElementById('kbf-sponsor-message');
         var msgCount = document.getElementById('kbf-sponsor-message-count');
         if(!msg || !msgCount) return;
-        function updateMsgCount(){
+    /**
+     * @function  updateMsgCount
+     * @purpose   Updates sponsor message character counter display.
+     * @used-by   input event handler on sponsor message field and initial invocation
+     * @calls     none
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
+    function updateMsgCount(){
             msgCount.textContent = (msg.value ? msg.value.length : 0) + '/300';
         }
         updateMsgCount();
         msg.addEventListener('input', updateMsgCount);
     })();
+    /**
+     * @function  kbfSpdSponsor
+     * @purpose   Submits sponsor checkout payload and opens returned Maya checkout URL.
+     * @used-by   Sponsor modal primary button onclick
+     * @calls     kbfGetActiveSponsorForm, kbfGetActiveSponsorModal, kbfGetActiveSponsorMsg, kbfValidateRequired, kbfSetBtnLoading, kbfSetSkeleton, kbfFetchJson
+     * @params    string nonce - WordPress nonce for checkout action
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfSpdSponsor=function(nonce){
         const form=kbfGetActiveSponsorForm();
         const modal=kbfGetActiveSponsorModal();
@@ -1727,6 +1862,15 @@ function bntm_shortcode_kbf_fund_details() {
             kbfSetSkeleton(msg,false);
         });
     };
+    /**
+     * @function  kbfSpdReport
+     * @purpose   Submits abuse report form via AJAX and updates report modal feedback state.
+     * @used-by   Report modal submit button onclick
+     * @calls     kbfSetBtnLoading, kbfSetSkeleton, kbfSetLoadingPage, fetch, kbfHideModal
+     * @params    string nonce - WordPress nonce for report action
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfSpdReport=function(nonce){
         const form=document.getElementById('kbf-report-form');
         const btn=document.querySelector('#kbf-modal-report .kbf-modal-footer .kbf-btn-danger');
@@ -1766,6 +1910,16 @@ function bntm_shortcode_kbf_fund_details() {
             kbfSetLoadingPage(false);
         });
     };
+    /**
+     * @function  kbfCreatePoster
+     * @purpose   Opens the poster modal and initializes poster preview/QR state.
+     * @used-by   More-menu button onclick
+     * @calls     kbfShowModal, kbfPosterSync, kbfPosterRenderQr
+     * @params    string token - Fund token reference for poster flow
+     * @params    string title - Fund title reference for poster flow
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfCreatePoster = function(token, title){
         var modal = document.getElementById('kbf-modal-poster');
         if (!modal) return;
@@ -1773,6 +1927,15 @@ function bntm_shortcode_kbf_fund_details() {
         kbfPosterSync();
         kbfPosterRenderQr();
     };
+    /**
+     * @function  kbfExportPoster
+     * @purpose   Exports poster preview as PDF using html2canvas and jsPDF libraries.
+     * @used-by   Poster modal export button onclick
+     * @calls     kbfPosterRenderQr, html2canvas, window.jspdf.jsPDF, window.open, setTimeout
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfExportPoster = function(){
         var target = document.getElementById('kbf-poster-print');
         if (!target) return;
@@ -1803,6 +1966,15 @@ function bntm_shortcode_kbf_fund_details() {
             });
         }, 150);
     };
+    /**
+     * @function  kbfPosterSync
+     * @purpose   Syncs poster preview title/description text and character counts from editor inputs.
+     * @used-by   kbfCreatePoster, poster input event listener
+     * @calls     document.getElementById
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfPosterSync(){
         var titleInput = document.getElementById('kbf-poster-title-input');
         var descInput = document.getElementById('kbf-poster-desc-input');
@@ -1823,6 +1995,15 @@ function bntm_shortcode_kbf_fund_details() {
             kbfPosterSync();
         }
     });
+    /**
+     * @function  kbfPosterRenderQr
+     * @purpose   Renders poster QR code and converts canvas output to image for export reliability.
+     * @used-by   kbfCreatePoster, kbfExportPoster, QR script-load callback
+     * @calls     document.getElementById, QRCode constructor, canvas.toDataURL
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfPosterRenderQr(){
         var holder = document.getElementById('kbf-poster-qr');
         if (!holder || !window.QRCode) return;
@@ -1848,6 +2029,16 @@ function bntm_shortcode_kbf_fund_details() {
         }
     }
     (function(){
+        /**
+         * @function  loadScript
+         * @purpose   Dynamically loads an external script once and runs optional callback after load.
+         * @used-by   Poster assets loader IIFE
+         * @calls     document.querySelector, document.createElement, document.head.appendChild
+         * @params    string src - Script URL to load
+         * @params    function cb - Optional callback after script load
+         * @returns   void
+         * @status    ACTIVE
+         */
         function loadScript(src, cb){
             if (document.querySelector('script[src="'+src+'"]')) { cb && cb(); return; }
             var s = document.createElement('script');
@@ -1863,6 +2054,15 @@ function bntm_shortcode_kbf_fund_details() {
         });
     })();
     var _kbfRating=5;
+    /**
+     * @function  kbfSetRating
+     * @purpose   Sets selected organizer rating value and updates thumbs-up icon states.
+     * @used-by   Rating icon onclick handlers and initial default rating setup
+     * @calls     document.getElementById, document.querySelectorAll
+     * @params    number v - Selected rating value from 1 to 5
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfSetRating=function(v){
         _kbfRating=v;
         document.getElementById('kbf-rating-val').value=v;
@@ -1877,6 +2077,15 @@ function bntm_shortcode_kbf_fund_details() {
         });
     };
     kbfSetRating(5);
+    /**
+     * @function  kbfSubmitRating
+     * @purpose   Submits organizer rating form via AJAX and handles success/duplicate-rating feedback.
+     * @used-by   Rating modal submit button onclick
+     * @calls     fetch, FormData, kbfHideModal, document.querySelectorAll
+     * @params    string nonce - WordPress nonce for rating action
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfSubmitRating=function(nonce){
         const form=document.getElementById('kbf-rating-form');
         const btn=document.querySelector('#kbf-modal-rating .kbf-modal-footer .kbf-btn-primary');
@@ -1899,6 +2108,15 @@ function bntm_shortcode_kbf_fund_details() {
             if(j.success)setTimeout(()=>{kbfHideModal('kbf-modal-rating');},1800);else{btn.disabled=false;btn.textContent='Submit Score';}
         });
     };
+    /**
+     * @function  kbfToggleMoreMenu
+     * @purpose   Toggles the contextual more-menu visibility and positions it near its trigger.
+     * @used-by   More button onclick
+     * @calls     document.getElementById, Element.getBoundingClientRect, classList.toggle
+     * @params    Event e - Click event object
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfToggleMoreMenu=function(e){
         e = e || window.event;
         if(e) { e.stopPropagation(); e.preventDefault(); }
@@ -1935,6 +2153,16 @@ function bntm_shortcode_kbf_fund_details() {
     });
     var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
     var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
+    /**
+     * @function  kbfSaveFund
+     * @purpose   Toggles saved-state for a fund and updates save button UI state.
+     * @used-by   Save button onclick
+     * @calls     FormData, kbfFetchJson, classList.toggle, alert
+     * @params    number|string id - Fund ID to toggle save state for
+     * @params    HTMLElement btn - Optional trigger button element
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfSaveFund=function(id, btn){
         if(!id) return;
         var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
@@ -1963,6 +2191,15 @@ function bntm_shortcode_kbf_fund_details() {
             }
         }, function(err){ alert(err || 'Request failed.'); });
     };
+    /**
+     * @function  initLeaderboardPager
+     * @purpose   Builds and runs client-side pagination UI for leaderboard entries.
+     * @used-by   DOMContentLoaded handler
+     * @calls     document.querySelector, querySelectorAll, render
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function initLeaderboardPager(){
         var list = document.querySelector('[data-kbf-leaderboard-list]');
         var pager = document.querySelector('[data-kbf-leaderboard-pager]');
@@ -1988,6 +2225,15 @@ function bntm_shortcode_kbf_fund_details() {
         var pageLabel = pager.querySelector('.kbf-table-pager-page');
         var page = 1;
         var perPage = 5;
+        /**
+         * @function  render
+         * @purpose   Renders current leaderboard page slice and updates pager controls.
+         * @used-by   initLeaderboardPager, page-size change, prev/next button handlers
+         * @calls     Math.max, Math.ceil, Array.prototype.forEach
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function render(){
             var total = items.length;
             var pages = Math.max(1, Math.ceil(total / perPage));
