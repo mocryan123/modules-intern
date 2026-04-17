@@ -247,9 +247,19 @@ function bntm_shortcode_kbf_organizer_profile() {
           }
           .kbf-page-header > div {
             flex-direction: column;
-            align-items: center;
+            align-items: center !important;
             text-align: center;
             gap: 16px;
+          }
+          .kbf-page-header .kbf-ap-main{
+            width:100%;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+          }
+          .kbf-page-header .kbf-ap-name-row,
+          .kbf-page-header .kbf-ap-meta-row{
+            justify-content:center;
           }
           .kbf-page-header h2 {
             font-size: 18px;
@@ -258,6 +268,9 @@ function bntm_shortcode_kbf_organizer_profile() {
             width: 80px;
             height: 80px;
             margin: 0 auto;
+            margin-left:auto !important;
+            margin-right:auto !important;
+            align-self:center;
           }
           .kbf-org-avatar > img,
           .kbf-org-avatar > .kbf-org-avatar-fallback {
@@ -271,6 +284,49 @@ function bntm_shortcode_kbf_organizer_profile() {
             justify-content: center;
             width: 100%;
           }
+        }
+        .kbf-page-header.kbf-ap-compact {
+          padding: 16px 20px;
+          text-align: center;
+        }
+        .kbf-page-header.kbf-ap-compact > div {
+          flex-direction: column;
+          align-items: center !important;
+          text-align: center;
+          gap: 16px;
+        }
+        .kbf-page-header.kbf-ap-compact .kbf-ap-main{
+          width:100%;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+        }
+        .kbf-page-header.kbf-ap-compact .kbf-ap-name-row,
+        .kbf-page-header.kbf-ap-compact .kbf-ap-meta-row{
+          justify-content:center;
+        }
+        .kbf-page-header.kbf-ap-compact .kbf-org-avatar{
+          width:80px;
+          height:80px;
+          margin:0 auto !important;
+          margin-left:auto !important;
+          margin-right:auto !important;
+          align-self:center;
+        }
+        .kbf-page-header.kbf-ap-compact .kbf-org-avatar > img,
+        .kbf-page-header.kbf-ap-compact .kbf-org-avatar > .kbf-org-avatar-fallback{
+          width:80px;
+          height:80px;
+        }
+        .kbf-page-header.kbf-ap-compact h2{
+          font-size:18px;
+        }
+        .kbf-page-header.kbf-ap-compact > div > div{
+          width:100%;
+        }
+        .kbf-page-header.kbf-ap-compact .kbf-social-icons{
+          justify-content:center;
+          width:100%;
         }
         @media(max-width:620px){
           .kbf-page-header {
@@ -540,13 +596,15 @@ function bntm_shortcode_kbf_organizer_profile() {
         </div>
 
         <!-- Main Content -->
-        <div style="flex:1;min-width:0;">
+        <div class="kbf-ap-main" style="flex:1;min-width:0;">
           <!-- Header Row: Name, Social, Badge -->
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+          <div class="kbf-ap-name-row" style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
             <h2 style="margin:0;font-size:20px;font-weight:600;color:#0f172a;"><?php echo esc_html($user->display_name); ?></h2>
             <?php if($social_name): ?>
               <span style="font-size:13px;color:#64748b;font-weight:500;">@<?php echo esc_html($social_name); ?></span>
             <?php endif; ?>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
             <span style="font-size:11px;font-weight:600;color:#0f172a;background:#eef4ff;border:1px solid #d4e4ff;padding:4px 10px;border-radius:999px;">
               <?php 
                 if ($profile_type === 'nonprofit') {
@@ -570,7 +628,7 @@ function bntm_shortcode_kbf_organizer_profile() {
           <?php endif; ?>
 
           <!-- Address & Rating Row -->
-          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px;">
+          <div class="kbf-ap-meta-row" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px;">
             <?php if($account_address !== ''): ?>
               <div style="display:flex;align-items:center;gap:6px;color:var(--kbf-slate);font-size:12.5px;">
                 <i class="ph ph-map-pin kbf-icon" style="font-size:13px;color:#64748b;" aria-hidden="true"></i>
@@ -999,6 +1057,15 @@ function bntm_shortcode_kbf_organizer_profile() {
     document.addEventListener('DOMContentLoaded', function(){
       initCardPager('organizer-campaigns');
       initCardPager('organizer-reviews');
+      (function(){
+        var header = document.querySelector('.kbf-page-header');
+        if(!header) return;
+        function syncHeaderCompact(){
+          header.classList.toggle('kbf-ap-compact', header.offsetWidth < 720);
+        }
+        syncHeaderCompact();
+        window.addEventListener('resize', syncHeaderCompact);
+      })();
     });
   })();
 
