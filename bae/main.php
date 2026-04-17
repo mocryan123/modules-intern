@@ -1510,11 +1510,9 @@ header('Pragma: no-cache');
 header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 
     
-    if (!is_user_logged_in()) {
-        return '<div class="bntm-notice">Please log in to access the Mothie.</div>';
-    }
-
-    $user_id    = get_current_user_id();
+    // Auth is handled by ticket cookie — no WP login required to access the app.
+    // AJAX endpoints that require a real WP user retain their own is_user_logged_in() checks.
+    $user_id    = is_user_logged_in() ? get_current_user_id() : 0;
     $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overview';
 
     // Use ticket as identity — read from cookie
