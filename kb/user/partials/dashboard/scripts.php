@@ -858,6 +858,56 @@
       })();
     </script>
     <script>
+      (function(){
+        var btn = document.getElementById('kbf-notif-btn');
+        var dd = document.getElementById('kbf-notif-dropdown');
+        var wrap = document.getElementById('kbf-notif-menu');
+        if(!btn || !dd || !wrap) return;
+        var marked = false;
+        function closeNotif(){
+          dd.classList.remove('kbf-open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+        function markReadOnce(){
+          if(marked) return;
+          marked = true;
+          var nonce = wrap.getAttribute('data-mark-nonce') || '';
+          if(!nonce || typeof ajaxurl === 'undefined') return;
+          var fd = new FormData();
+          fd.append('action', 'kbf_mark_notifications_read');
+          fd.append('nonce', nonce);
+          fetch(ajaxurl, { method:'POST', body: fd })
+            .then(function(r){ return r.json(); })
+            .then(function(j){
+              if(!j || !j.success) return;
+              var badge = document.getElementById('kbf-notif-badge');
+              if(badge && badge.parentNode) badge.parentNode.removeChild(badge);
+              btn.classList.remove('has-unread');
+              dd.querySelectorAll('.kbf-notif-item.is-unread').forEach(function(item){
+                item.classList.remove('is-unread');
+              });
+              var headCount = dd.querySelector('.kbf-notif-head-count');
+              if(headCount && headCount.parentNode) headCount.parentNode.removeChild(headCount);
+            })
+            .catch(function(){});
+        }
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          e.stopPropagation();
+          var isOpen = dd.classList.toggle('kbf-open');
+          btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          if(isOpen) markReadOnce();
+        });
+        document.addEventListener('click', function(e){
+          if(wrap.contains(e.target)) return;
+          closeNotif();
+        });
+        document.addEventListener('keydown', function(e){
+          if(e.key === 'Escape') closeNotif();
+        });
+      })();
+    </script>
+    <script>
       // preload removed
       (function(){
         var topbar = document.querySelector('.kbf-topbar');

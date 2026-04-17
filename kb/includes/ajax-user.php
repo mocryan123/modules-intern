@@ -38,6 +38,75 @@ if (!function_exists('kbf_get_client_ip')) {
     }
 }
 
+if (!function_exists('kbf_get_user_notifications')) {
+    function kbf_get_user_notifications($user_id) {
+        $items = get_user_meta((int)$user_id, 'kbf_notifications', true);
+        return is_array($items) ? $items : [];
+    }
+}
+
+if (!function_exists('kbf_get_user_unread_notification_count')) {
+    function kbf_get_user_unread_notification_count($user_id) {
+        $items = kbf_get_user_notifications($user_id);
+        $count = 0;
+        foreach ($items as $item) {
+            if (empty($item['read'])) {
+                $count++;
+            }
+        }
+        return (int)$count;
+    }
+}
+
+if (!function_exists('kbf_push_user_notification')) {
+    function kbf_push_user_notification($user_id, $payload = []) {
+        $user_id = (int)$user_id;
+        if ($user_id <= 0) {
+            return 0;
+        }
+        $items = kbf_get_user_notifications($user_id);
+        $items[] = [
+            'id' => 'kbfn_' . wp_generate_uuid4(),
+            'type' => sanitize_key($payload['type'] ?? 'general'),
+            'title' => sanitize_text_field($payload['title'] ?? 'Notification'),
+            'message' => sanitize_text_field($payload['message'] ?? ''),
+            'url' => esc_url_raw($payload['url'] ?? ''),
+            'created_at' => current_time('mysql'),
+            'read' => 0,
+        ];
+        if (count($items) > 40) {
+            $items = array_slice($items, -40);
+        }
+        update_user_meta($user_id, 'kbf_notifications', $items);
+        return kbf_get_user_unread_notification_count($user_id);
+    }
+}
+
+if (!function_exists('kbf_mark_user_notifications_read')) {
+    function kbf_mark_user_notifications_read($user_id) {
+        $user_id = (int)$user_id;
+        if ($user_id <= 0) {
+            return 0;
+        }
+        $items = kbf_get_user_notifications($user_id);
+        if (empty($items)) {
+            return 0;
+        }
+        $changed = false;
+        foreach ($items as $idx => $item) {
+            if (empty($item['read'])) {
+                $items[$idx]['read'] = 1;
+                $items[$idx]['read_at'] = current_time('mysql');
+                $changed = true;
+            }
+        }
+        if ($changed) {
+            update_user_meta($user_id, 'kbf_notifications', $items);
+        }
+        return 0;
+    }
+}
+
 if (!function_exists('kbf_rate_limit_ok')) {
     function kbf_rate_limit_ok($bucket, $limit = 60, $window = 60) {
         $ip = kbf_get_client_ip();
@@ -730,12 +799,22 @@ function bntm_ajax_kbf_save_organizer_profile() {
     $updated_user = get_userdata($biz);
     $updated_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url FROM {$pt} WHERE business_id=%d", $biz));
 
+    $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+    $profile_tab_url = add_query_arg('kbf_tab', 'profile', $dashboard_url);
+    $notification_unread = kbf_push_user_notification($biz, [
+        'type' => 'profile',
+        'title' => 'Profile updated',
+        'message' => 'Your organizer profile was saved successfully.',
+        'url' => $profile_tab_url
+    ]);
+
     wp_send_json_success([
         'message' => 'Profile saved successfully!',
         'data' => [
             'onboarding_done' => $onboarding_done,
             'avatar_url' => $updated_profile ? $updated_profile->avatar_url : '',
             'display_name' => $updated_user ? $updated_user->display_name : '',
+            'notification_unread' => $notification_unread,
         ]
     ]);
 }
@@ -749,6 +828,16 @@ function bntm_ajax_kbf_dismiss_onboarding() {
     $biz = get_current_user_id();
     delete_user_meta($biz, 'kbf_show_onboarding');
     wp_send_json_success(['message'=>'Onboarding dismissed.']);
+}
+
+function bntm_ajax_kbf_mark_notifications_read() {
+    check_ajax_referer('kbf_notifications', 'nonce');
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
+    $uid = get_current_user_id();
+    kbf_mark_user_notifications_read($uid);
+    wp_send_json_success(['unread' => 0]);
 }
 
 

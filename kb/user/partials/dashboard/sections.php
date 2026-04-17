@@ -6,6 +6,37 @@
         ? $nav_profile->avatar_url
         : '';
       $logout_url = $is_logged_in ? wp_logout_url($landing_url) : '';
+      $notif_unread_count = 0;
+      $notif_nonce = $is_logged_in ? wp_create_nonce('kbf_notifications') : '';
+      $notif_preview_items = [];
+      if ($is_logged_in) {
+        $notif_items = get_user_meta((int)$user->ID, 'kbf_notifications', true);
+        if (!is_array($notif_items)) {
+          $notif_items = [];
+        }
+        if (!empty($notif_items)) {
+          $notif_preview_items = array_slice(array_reverse($notif_items), 0, 6);
+          if ($tab === 'sponsorships') {
+            $changed = false;
+            foreach ($notif_items as $idx => $notif_item) {
+              if (empty($notif_item['read'])) {
+                $notif_items[$idx]['read'] = 1;
+                $notif_items[$idx]['read_at'] = current_time('mysql');
+                $changed = true;
+              }
+            }
+            if ($changed) {
+              update_user_meta((int)$user->ID, 'kbf_notifications', $notif_items);
+            }
+          } else {
+            foreach ($notif_items as $notif_item) {
+              if (empty($notif_item['read'])) {
+                $notif_unread_count++;
+              }
+            }
+          }
+        }
+      }
     ?>
     <?php if (function_exists('kbf_render_loading_overlay')): ?>
       <?php echo kbf_render_loading_overlay(); ?>
@@ -67,6 +98,43 @@
               <a href="<?php echo esc_url($logout_url); ?>" role="menuitem">Sign out</a>
             </div>
           </div>
+            <div class="kbf-notif-menu" id="kbf-notif-menu" data-mark-nonce="<?php echo esc_attr($notif_nonce); ?>">
+              <button class="kbf-notif-btn <?php echo $notif_unread_count > 0 ? 'has-unread' : ''; ?>" type="button" id="kbf-notif-btn" aria-haspopup="true" aria-expanded="false" aria-label="Notifications" title="Notifications">
+                <i class="ph ph-bell kbf-icon" aria-hidden="true"></i>
+                <?php if ($notif_unread_count > 0): ?>
+                  <span class="kbf-notif-badge" id="kbf-notif-badge"><?php echo (int)min(99, $notif_unread_count); ?></span>
+                <?php endif; ?>
+              </button>
+              <div class="kbf-notif-dropdown" id="kbf-notif-dropdown" role="menu" aria-label="Notifications menu">
+                <div class="kbf-notif-head">
+                  <strong>Notifications</strong>
+                  <?php if ($notif_unread_count > 0): ?>
+                    <span class="kbf-notif-head-count"><?php echo (int)$notif_unread_count; ?> new</span>
+                  <?php endif; ?>
+                </div>
+                <div class="kbf-notif-list">
+                  <?php if (!empty($notif_preview_items)): ?>
+                    <?php foreach ($notif_preview_items as $notif_item): ?>
+                      <?php
+                        $n_title = sanitize_text_field($notif_item['title'] ?? 'Notification');
+                        $n_message = sanitize_text_field($notif_item['message'] ?? '');
+                        $n_url = !empty($notif_item['url']) ? esc_url($notif_item['url']) : esc_url(add_query_arg('kbf_tab','sponsorships', kbf_get_page_url('dashboard')));
+                        $n_read = !empty($notif_item['read']);
+                        $n_time = !empty($notif_item['created_at']) ? date_i18n('M d, Y h:i A', strtotime((string)$notif_item['created_at'])) : '';
+                      ?>
+                      <a href="<?php echo $n_url; ?>" class="kbf-notif-item <?php echo $n_read ? '' : 'is-unread'; ?>" role="menuitem">
+                        <span class="kbf-notif-item-title"><?php echo esc_html($n_title); ?></span>
+                        <?php if ($n_message): ?><span class="kbf-notif-item-msg"><?php echo esc_html($n_message); ?></span><?php endif; ?>
+                        <?php if ($n_time): ?><span class="kbf-notif-item-time"><?php echo esc_html($n_time); ?></span><?php endif; ?>
+                      </a>
+                    <?php endforeach; ?>
+                  <?php else: ?>
+                    <div class="kbf-notif-empty">No notifications yet.</div>
+                  <?php endif; ?>
+                </div>
+                <a class="kbf-notif-view-all" href="?kbf_tab=sponsorships" role="menuitem">View all</a>
+              </div>
+            </div>
         <?php else: ?>
           <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url($signin_url); ?>">Sign in</a>
           <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($signup_url); ?>">Create account</a>

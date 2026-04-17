@@ -429,7 +429,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
         background: rgba(255,255,255,.95);
         backdrop-filter: blur(8px);
         border-top: 1px solid var(--kbf-border);
-        padding: 16px 24px;
+        padding: 16px 4px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -507,7 +507,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
 
       /* Responsive */
       @media (max-width: 640px) {
-        .kbf-profile-wrap { padding: 16px 12px 120px; }
+        .kbf-profile-wrap { padding: 16px 0 120px; }
         .kbf-profile-section,
         .kbf-profile-header { padding: 20px 16px; }
         .kbf-form-row-2, .kbf-form-row-3 { grid-template-columns: 1fr; }
