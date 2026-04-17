@@ -1,6 +1,6 @@
 <?php
 /**
- * Module Name: Print Shop
+ * Module Name: PrintEase
  * Module Slug: ps
  * Description: Online document printing service — upload files, select print options, submit orders, track status, and manage fulfillment.
  * Version: 1.0.0
@@ -301,7 +301,7 @@ function bntm_shortcode_ps_dashboard() {
     </script>
     <?php
     $content = ob_get_clean();
-    return bntm_universal_container('Print Shop', $content);
+    return bntm_universal_container('PrintEase', $content);
 }
 
 // ─────────────────────────────────────────────────────────────
