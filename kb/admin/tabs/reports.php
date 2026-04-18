@@ -3,6 +3,18 @@
  * KBF admin tab: Reports.
  */
 
+/**
+ * @function  kbf_admin_reports_tab
+ * @purpose   Renders the admin reports tab with moderation cards, actions, and client-side card pagination.
+ * @used-by   [admin/ui.php tab router, includes/ajax-admin.php tab refresh handler, user/partials/admin_embed.php tab renderer]
+ * @calls     [kbf_get_page_url, kbf_admin_date_where, $wpdb->prepare, $wpdb->get_results, date, strtotime, esc_html, ob_start, ob_get_clean, sanitize_html_class, esc_attr, ucfirst, function_exists, kbf_get_or_create_fund_token, esc_url, add_query_arg]
+ * @params    [none]
+ * @returns   [string buffered HTML markup for the admin reports tab]
+ * @status    ACTIVE
+ *            ACTIVE = confirmed it is called somewhere
+ *            NEEDS REVIEW = could not confirm caller,
+ *                           may be unused/dead code
+ */
 function kbf_admin_reports_tab() {
     global $wpdb;
     $rt = $wpdb->prefix.'kbf_reports';
@@ -13,9 +25,33 @@ function kbf_admin_reports_tab() {
     $where .= kbf_admin_date_where('r.created_at', $params);
     $sql = "SELECT r.*,f.title as fund_title FROM {$rt} r JOIN {$ft} f ON r.fund_id=f.id {$where} ORDER BY FIELD(r.status,'open','dismissed'),r.created_at DESC";
     $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    /**
+     * @function  format_date
+     * @purpose   Formats report timestamps into a readable admin date-time label.
+     * @used-by   [kbf_admin_reports_tab report metadata display]
+     * @calls     [date, strtotime]
+     * @params    [mixed $value - date/time value to format]
+     * @returns   [string formatted date-time or fallback placeholder]
+     * @status    ACTIVE
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $format_date = function($value) {
-        return $value ? date('M d, Y H:i', strtotime($value)) : '—';
+        return $value ? date('M d, Y H:i', strtotime($value)) : '-';
     };
+    /**
+     * @function  reporter_label
+     * @purpose   Resolves the report submitter label, falling back to an anonymous reporter text.
+     * @used-by   [kbf_admin_reports_tab reporter metadata display]
+     * @calls     [esc_html]
+     * @params    [mixed $email - reporter email value from report record]
+     * @returns   [string escaped reporter label]
+     * @status    ACTIVE
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $reporter_label = function($email) {
         return $email ? esc_html($email) : 'Anonymous reporter';
     };
@@ -28,6 +64,7 @@ function kbf_admin_reports_tab() {
       <?php else: ?>
       <div class="kbf-admin-card-list" data-kbf-card-pager="reports">
         <?php foreach($rows as $r): ?>
+        <?php $status_class = sanitize_html_class((string)$r->status); ?>
         <div class="kbf-card kbf-admin-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
             <div>
@@ -39,20 +76,20 @@ function kbf_admin_reports_tab() {
                   <img src="<?php echo esc_url($r->report_image); ?>" alt="Report attachment" style="width:120px;height:auto;border-radius:8px;border:1px solid var(--kbf-border);">
                 </a>
               <?php endif; ?>
-              <div class="kbf-meta" style="margin-top:6px;"><?php echo $reporter_label($r->reporter_email); ?> &bull; <?php echo $format_date($r->created_at); ?></div>
+              <div class="kbf-meta" style="margin-top:6px;"><?php echo esc_html($reporter_label($r->reporter_email)); ?> &bull; <?php echo esc_html($format_date($r->created_at)); ?></div>
               <?php if($r->admin_notes): ?><div class="kbf-alert kbf-alert-info kbf-alert-compact" style="margin-top:8px;"><span class="kbf-strong">Admin Note:</span> <?php echo esc_html($r->admin_notes); ?></div><?php endif; ?>
             </div>
-            <span class="kbf-badge kbf-badge-<?php echo $r->status; ?>"><?php echo ucfirst($r->status); ?></span>
+            <span class="kbf-badge kbf-badge-<?php echo esc_attr($status_class); ?>"><?php echo esc_html(ucfirst((string)$r->status)); ?></span>
           </div>
           <?php if($r->status==='open'): ?>
           <div class="kbf-btn-group" style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;align-items:center;">
-            <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($r->fund_id) : ''; ?>
-            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;gap:6px;" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $r->fund_id, $fund_details_url)); ?>">
+            <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token((int)$r->fund_id) : ''; ?>
+            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;gap:6px;" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: (int)$r->fund_id, $fund_details_url)); ?>">
               <i class="ph ph-arrow-square-right kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
               View Fund
             </a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;" onclick="kbfDismissReport(<?php echo $r->id; ?>)">Dismiss</button>
-            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;" onclick="kbfSuspend(<?php echo $r->fund_id; ?>)">Suspend Fund</button>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;" onclick="kbfDismissReport(<?php echo (int)$r->id; ?>)">Dismiss</button>
+            <button class="kbf-btn kbf-btn-danger kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;" onclick="kbfSuspend(<?php echo (int)$r->fund_id; ?>)">Suspend Fund</button>
           </div>
           <?php endif; ?>
         </div>
@@ -92,6 +129,15 @@ function kbf_admin_reports_tab() {
         var page = 1;
         var perPage = 5;
 
+        /**
+         * @function  render
+         * @purpose   Updates visible report cards and pager button state for the current pagination settings.
+         * @used-by   [IIFE initialization, rows-per-page change handler, prev button handler, next button handler]
+         * @calls     [Math.max, Math.ceil, Array.forEach]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function render(){
           var total = cards.length;
           var pages = Math.max(1, Math.ceil(total / perPage));
@@ -106,6 +152,15 @@ function kbf_admin_reports_tab() {
           nextBtn.disabled = page >= pages;
           pager.style.display = total > 0 ? 'flex' : 'none';
         }
+        /**
+         * @function  setLoading
+         * @purpose   Applies a short loading state to a pager button before rerendering cards.
+         * @used-by   [prev button click handler, next button click handler]
+         * @calls     [setTimeout, render]
+         * @params    [HTMLElement btn - pager button element that receives loading state]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function setLoading(btn){
           btn.classList.add('is-loading');
           btn.disabled = true;
