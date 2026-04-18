@@ -2478,6 +2478,71 @@ html.kbf-modal-lock, body.kbf-modal-lock {
             max-height:calc(100vh - 180px);
         }
     }
+    /* ===== MOBILE MODAL UX POLISH ===== */
+    @media (max-width: 900px){
+        .kbf-user-ui .kbf-modal{
+            max-height:calc(100dvh - 16px);
+        }
+        .kbf-user-ui .kbf-modal-header{
+            padding:14px 16px;
+        }
+        .kbf-user-ui .kbf-modal-body{
+            padding:16px 16px 14px;
+            max-height:calc(100dvh - 170px);
+        }
+        .kbf-user-ui .kbf-modal-footer{
+            position:sticky;
+            bottom:0;
+            z-index:3;
+            padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+            border-top:1px solid var(--kbf-border);
+            background:linear-gradient(180deg, #ffffffed 0%, #ffffff 34%);
+        }
+        .kbf-user-ui .kbf-modal-close,
+        .kbf-user-ui .kbf-photo-editor-icon-btn{
+            width:44px;
+            height:44px;
+            min-width:44px;
+            min-height:44px;
+        }
+        .kbf-user-ui .kbf-form-group{
+            margin-bottom:14px;
+        }
+        .kbf-user-ui .kbf-form-group label{
+            display:block;
+            margin-bottom:6px;
+        }
+        .kbf-user-ui .kbf-form-group small{
+            display:block;
+            margin-top:6px;
+            line-height:1.35;
+        }
+        .kbf-user-ui .kbf-field-error{
+            margin-top:8px;
+            padding:8px 10px;
+            border:1px solid #fecdd3;
+            border-radius:10px;
+            background:#fff1f2;
+            font-size:12px;
+            font-weight:600;
+            line-height:1.35;
+        }
+    }
+    @media (max-width: 640px){
+        .kbf-user-ui .kbf-modal{
+            width:calc(100vw - 12px);
+            border-radius:14px;
+        }
+        .kbf-user-ui .kbf-modal-body{
+            padding:14px 14px 12px;
+        }
+        .kbf-user-ui .kbf-modal-footer{
+            padding:10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+        }
+        .kbf-user-ui .kbf-modal-footer .kbf-btn{
+            min-height:44px;
+        }
+    }
     </style>
 
 

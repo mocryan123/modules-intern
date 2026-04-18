@@ -1,4 +1,4 @@
-<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
+﻿<?php $fee_disabled = (bool)kbf_get_setting('kbf_disable_platform_fee', false); ?>
     <!-- ===== MODAL: Create Fund ===== -->
     <div id="kbf-modal-create" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal">
@@ -160,7 +160,7 @@
                 <select name="province" id="kbf-province" required>
                   <option value="">Select Province</option>
                   <?php foreach (kbf_get_provinces() as $p): ?>
-                    <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
+                    <option value="<?php echo esc_attr($p); ?>"><?php echo esc_html($p); ?></option>
                   <?php endforeach; ?>
                 </select>
                 <div class="kbf-field-error"></div>
@@ -199,7 +199,7 @@
               </svg>
             </div>
             <h3>Campaign Created!</h3>
-            <p>Your campaign is under review. Usually takes 3â€“5 days or more during peak hours.</p>
+            <p>Your campaign is under review. Usually takes 3-5 days or more during peak hours.</p>
             <div class="kbf-success-actions">
               <a href="#" class="kbf-btn kbf-btn-primary" id="kbf-success-view">Back to Home</a>
             </div>
@@ -340,7 +340,7 @@
                 <select id="kbf-edit-province" name="province" required>
                   <option value="">Select Province</option>
                   <?php foreach (kbf_get_provinces() as $p): ?>
-                    <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
+                    <option value="<?php echo esc_attr($p); ?>"><?php echo esc_html($p); ?></option>
                   <?php endforeach; ?>
                 </select>
                 <small>Select your province first.</small>
@@ -365,7 +365,7 @@
               <div class="kbf-form-group">
                 <label>Deadline</label>
                 <input type="date" name="deadline" id="edit-fund-deadline">
-                <small>Optional â€” update the end date.</small>
+                <small>Optional - update the end date.</small>
               </div>
               <!-- Auto-return UI removed -->
             </div>
@@ -502,7 +502,7 @@
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="kbfCloseModal('kbf-modal-appeal')">Cancel</button>
-          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitAppeal('<?php echo $nonce_appeal; ?>')">Submit Appeal</button>
+          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitAppeal('<?php echo esc_js($nonce_appeal); ?>')">Submit Appeal</button>
         </div>
       </div>
     </div>
@@ -516,7 +516,7 @@
         </div>
         <div class="kbf-modal-body">
           <p id="kbf-trash-message" style="margin:0;color:var(--kbf-slate);font-size:13px;">
-            This will move the fundraiser to cancelled status and it wonâ€™t be visible to sponsors.
+            This will move the fundraiser to cancelled status and it won't be visible to sponsors.
             Are you sure you want to continue?
           </p>
         </div>
@@ -536,7 +536,7 @@
         </div>
         <div class="kbf-modal-body">
           <p style="margin:0 0 8px;color:var(--kbf-slate);font-size:13px;">
-            The fundraiser deadline has passed and the goal wasnâ€™t met. Your request will be reviewed by admin.
+            The fundraiser deadline has passed and the goal wasn't met. Your request will be reviewed by admin.
           </p>
           <p style="margin:0;color:var(--kbf-slate);font-size:12.5px;">
             Escrow releases after deadline are subject to a 5% platform deduction. See our
@@ -549,6 +549,7 @@
         </div>
       </div>
     </div>
+
 
 
 
