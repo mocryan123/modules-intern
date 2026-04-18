@@ -1,8 +1,17 @@
-<?php
+﻿<?php
 /*
  * KBF user dashboard tab: Overview.
  */
 
+/**
+ * @function  kbf_dashboard_overview_tab
+ * @purpose   Renders the dashboard overview tab markup, data summaries, and client-side interactions for a business user.
+ * @used-by   [kbf dashboard tab renderer in user dashboard sections, AJAX tab refresh handler]
+ * @calls     [kbf_get_page_url, get_user_meta, get_userdata, wp_create_nonce, add_query_arg, wp_json_encode, wp_trim_words, kbf_get_or_create_fund_token, WordPress DB APIs]
+ * @params    [int $business_id - Current business/user ID for dashboard data scope]
+ * @returns   [string - Buffered HTML content for the overview tab]
+ * @status    ACTIVE
+ */
   function kbf_dashboard_overview_tab($business_id) {
       global $wpdb;
       $ft = $wpdb->prefix.'kbf_funds';
@@ -10,20 +19,17 @@
       $wt = $wpdb->prefix.'kbf_withdrawals';
       $fund_details_url = kbf_get_page_url('fund_details');
       $pt = $wpdb->prefix.'kbf_organizer_profiles';
-      $profile = $business_id ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,social_links,payout_type,payout_name,payout_number,is_verified FROM {$pt} WHERE business_id=%d", $business_id)) : null;
+      $profile = $business_id ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d", $business_id)) : null;
       $show_onboarding = $business_id ? (bool) get_user_meta($business_id, 'kbf_show_onboarding', true) : false;
       $address = $business_id ? get_user_meta($business_id, 'kbf_address', true) : '';
       $user = $business_id ? get_userdata($business_id) : null;
       $social_name = $business_id ? (string) get_user_meta($business_id, 'kbf_social_name', true) : '';
-      $socials = $profile && $profile->social_links ? json_decode($profile->social_links, true) : [];
       $has_avatar = $profile && !empty($profile->avatar_url);
       $has_display_name = $user && !empty(trim((string) $user->display_name));
       $has_social_name = !empty(trim($social_name));
       $has_bio = $profile && !empty(trim((string) $profile->bio));
       $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
       $has_address = !empty(trim((string) $address));
-      $has_social = !empty($socials['facebook']) || !empty($socials['instagram']) || !empty($socials['twitter']) || !empty($socials['website']);
-      $nonce_onboard = wp_create_nonce('kbf_onboarding');
       $onboard_required = 5;
       $onboard_done = ($has_display_name ? 1 : 0) + ($has_social_name ? 1 : 0) + ($has_bio ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
       $onboard_pct = round(($onboard_done / $onboard_required) * 100);
@@ -40,37 +46,91 @@
           if ($method === 'bank_payment') return 'Bank Payment';
           return ucfirst(str_replace('_', ' ', isset($method) ? $method : '--'));
       };
-
-    // Ensure completed funds have released escrow (auto-release on completion).
-    if ($business_id) {
-        $wpdb->query($wpdb->prepare(
-            "UPDATE {$ft} SET escrow_status='released' WHERE business_id=%d AND status='completed' AND escrow_status='holding'",
-            $business_id
-        ));
-    }
+    // Keep render path read-only: do not mutate escrow state while building the dashboard.
 
     $total_funds    = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d",$business_id));
     $active_funds   = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d AND status='active'",$business_id));
     $pending_funds  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$ft} WHERE business_id=%d AND status='pending'",$business_id));
     $total_raised   = (float)$wpdb->get_var($wpdb->prepare("SELECT COALESCE(SUM(raised_amount),0) FROM {$ft} WHERE business_id=%d",$business_id));
-    $total_sponsors = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' AND s.is_anonymous=0",$business_id));
-    $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
+    $total_sponsors = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",$business_id));
+    $funds = $wpdb->get_results($wpdb->prepare("SELECT id,title,description,location,deadline,auto_return,photos,benefits,status,escrow_status,raised_amount,goal_amount,category,admin_notes,share_token,created_at FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
+    $fund_ids = array_values(array_filter(array_map('intval', wp_list_pluck((array)$funds, 'id'))));
+    $sponsor_counts_by_fund = [];
+    $last_withdrawal_by_fund = [];
+    $sponsor_preview_by_fund = [];
+    if (!empty($fund_ids)) {
+        $in_placeholders = implode(',', array_fill(0, count($fund_ids), '%d'));
+
+        $count_sql = "SELECT fund_id, COUNT(*) AS c FROM {$st} WHERE payment_status='completed' AND fund_id IN ({$in_placeholders}) GROUP BY fund_id";
+        $count_rows = $wpdb->get_results($wpdb->prepare($count_sql, $fund_ids));
+        foreach ((array)$count_rows as $crow) {
+            $sponsor_counts_by_fund[(int)$crow->fund_id] = (int)$crow->c;
+        }
+
+        $last_wd_sql = "SELECT w1.fund_id, w1.status, w1.admin_notes
+                        FROM {$wt} w1
+                        INNER JOIN (
+                            SELECT fund_id, MAX(requested_at) AS max_requested_at
+                            FROM {$wt}
+                            WHERE fund_id IN ({$in_placeholders})
+                            GROUP BY fund_id
+                        ) w2 ON w1.fund_id = w2.fund_id AND w1.requested_at = w2.max_requested_at
+                        INNER JOIN (
+                            SELECT fund_id, requested_at, MAX(id) AS max_id
+                            FROM {$wt}
+                            WHERE fund_id IN ({$in_placeholders})
+                            GROUP BY fund_id, requested_at
+                        ) w3 ON w1.fund_id = w3.fund_id AND w1.requested_at = w3.requested_at AND w1.id = w3.max_id";
+        $last_wd_args = array_merge($fund_ids, $fund_ids);
+        $last_wd_rows = $wpdb->get_results($wpdb->prepare($last_wd_sql, $last_wd_args));
+        foreach ((array)$last_wd_rows as $wrow) {
+            $last_withdrawal_by_fund[(int)$wrow->fund_id] = $wrow;
+        }
+
+        // Prefetch top 5 completed sponsors per fund in batch to avoid N+1 queries in the render loop.
+        $top_ids_sql = "SELECT fund_id, SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY amount DESC, created_at DESC), ',', 5) AS top_ids
+                        FROM {$st}
+                        WHERE payment_status='completed' AND fund_id IN ({$in_placeholders})
+                        GROUP BY fund_id";
+        $top_id_rows = $wpdb->get_results($wpdb->prepare($top_ids_sql, $fund_ids));
+        $preview_ids = [];
+        $top_ids_by_fund = [];
+        foreach ((array)$top_id_rows as $top_row) {
+            $fid = (int)$top_row->fund_id;
+            $ids = array_filter(array_map('intval', explode(',', (string)$top_row->top_ids)));
+            if (!empty($ids)) {
+                $top_ids_by_fund[$fid] = $ids;
+                $preview_ids = array_merge($preview_ids, $ids);
+            }
+        }
+        if (!empty($preview_ids)) {
+            $preview_ids = array_values(array_unique($preview_ids));
+            $id_placeholders = implode(',', array_fill(0, count($preview_ids), '%d'));
+            $preview_sql = "SELECT id,fund_id,sponsor_name,is_anonymous,amount,payment_method,created_at FROM {$st} WHERE id IN ({$id_placeholders})";
+            $preview_rows = $wpdb->get_results($wpdb->prepare($preview_sql, $preview_ids));
+            $preview_by_id = [];
+            foreach ((array)$preview_rows as $prow) {
+                $preview_by_id[(int)$prow->id] = $prow;
+            }
+            foreach ($top_ids_by_fund as $fid => $ids) {
+                $sponsor_preview_by_fund[$fid] = [];
+                foreach ($ids as $sid) {
+                    if (isset($preview_by_id[$sid])) {
+                        $sponsor_preview_by_fund[$fid][] = $preview_by_id[$sid];
+                    }
+                }
+            }
+        }
+    }
     $escrow_requests = [];
     $er = $wpdb->prefix.'kbf_escrow_requests';
-    $escrow_rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$er} WHERE business_id=%d ORDER BY requested_at DESC",$business_id));
+    $escrow_rows = $wpdb->get_results($wpdb->prepare("SELECT fund_id,status,requested_at FROM {$er} WHERE business_id=%d ORDER BY requested_at DESC",$business_id));
     foreach ((array)$escrow_rows as $erow) {
         if (!isset($escrow_requests[$erow->fund_id])) {
             $escrow_requests[$erow->fund_id] = $erow;
         }
     }
     $find_funds_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
-    $nonce_save = wp_create_nonce('kbf_save_fund');
-    $saved_ids = [];
-    if($business_id){
-        $sf = $wpdb->prefix.'kbf_saved_funds';
-        $saved_ids = $wpdb->get_col($wpdb->prepare("SELECT fund_id FROM {$sf} WHERE user_id=%d", $business_id));
-        $saved_ids = array_map('intval', $saved_ids);
-    }
 
     ob_start();
     ?>
@@ -302,21 +362,6 @@
         </div>
         <script>
           document.documentElement.classList.add('kbf-onboard-open');
-          if (typeof ajaxurl === 'undefined') {
-            var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
-          }
-          function kbfDismissOnboarding(){
-            document.documentElement.classList.remove('kbf-onboard-open');
-            const backdrop = document.getElementById('kbf-onboard-backdrop');
-            const card = document.getElementById('kbf-onboard-card');
-            const fd = new FormData();
-            fd.append('action', 'kbf_dismiss_onboarding');
-            fd.append('nonce', '<?php echo esc_attr($nonce_onboard); ?>');
-            fetch(ajaxurl, {method:'POST', body:fd})
-              .then(r => r.json())
-              .then(() => { if (backdrop) backdrop.remove(); if (card) card.remove(); })
-              .catch(() => { if (backdrop) backdrop.remove(); if (card) card.remove(); });
-          }
           // Prevent dismissing by clicking outside the modal.
           (function(){
             var backdrop = document.getElementById('kbf-onboard-backdrop');
@@ -330,20 +375,6 @@
         .kbf-card-list[data-kbf-card-pager="home"] + .kbf-table-pager{
           margin-bottom:0;
           padding-bottom:0;
-        }
-        .kbf-save-btn{
-          transition:none;
-        }
-        .kbf-save-btn i{
-          transition:none;
-        }
-        .kbf-save-btn.is-saved{
-          background:#e7f1ff;
-          border-color:#bfd7ff;
-          color:#1d4ed8;
-        }
-        .kbf-save-btn.is-saved i{
-          color:#3b82f6;
         }
         .kbf-card-more-menu button:hover,
         .kbf-card-more-menu .kbf-btn:hover,
@@ -486,7 +517,7 @@
           </span>
         <div>
           <span class="kbf-strong"><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</span>
-          Not visible to sponsors yet. Usually 3–5 days. You’ll be notified after approval.
+          Not visible to sponsors yet. Usually 3-5 days. You'll be notified after approval.
           <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
         </div>
       </div>
@@ -616,16 +647,21 @@
       <div class="kbf-card-list" data-kbf-card-pager="home">
       <?php foreach($funds as $f):
         $pct = $f->goal_amount > 0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
-        $sc  = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed'",$f->id));
-        $days_left = $f->deadline ? max(0, ceil((strtotime($f->deadline)-time())/86400)) : null;
-        $is_inactive = ($days_left !== null && $days_left <= 0);
+        $sc  = isset($sponsor_counts_by_fund[(int)$f->id]) ? (int)$sponsor_counts_by_fund[(int)$f->id] : 0;
+        $deadline_ts = null;
+        if (!empty($f->deadline)) {
+          $parsed_deadline = strtotime((string)$f->deadline);
+          if ($parsed_deadline !== false) {
+            $deadline_ts = (int) $parsed_deadline;
+          }
+        }
+        $days_left = ($deadline_ts !== null) ? max(0, (int) ceil(($deadline_ts - time())/86400)) : null;
+        $is_inactive = (strtolower((string)$f->status) === 'active' && $days_left !== null && $days_left <= 0);
         $photo_list = $f->photos ? json_decode($f->photos, true) : [];
         $photo_json = wp_json_encode(array_values(array_filter(is_array($photo_list) ? $photo_list : [])));
         $benefit_list = $f->benefits ? json_decode($f->benefits, true) : [];
         $benefit_json = wp_json_encode(array_values(array_filter(is_array($benefit_list) ? $benefit_list : [])));
-        $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status, admin_notes FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1",$f->id));
-        $is_saved = in_array((int)$f->id, $saved_ids, true);
-        $save_icon = $is_saved ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple';
+        $last_wd = isset($last_withdrawal_by_fund[(int)$f->id]) ? $last_withdrawal_by_fund[(int)$f->id] : null;
         ?>
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
           <?php if($last_wd && $last_wd->status === 'pending'): ?>
@@ -635,7 +671,7 @@
               </span>
             <div>
               <span class="kbf-strong">Withdrawal Pending:</span>
-              <span>Your request is being reviewed by admin (2–5 business days).</span>
+              <span>Your request is being reviewed by admin (2-5 business days).</span>
             </div>
           </div>
           <?php endif; ?>
@@ -680,7 +716,13 @@
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
                   <span class="kbf-clamp-2 kbf-strong" style="font-size:15px;max-width:520px;"><?php echo esc_html($f->title); ?></span>
-                <span class="kbf-badge kbf-badge-<?php echo $is_inactive ? 'suspended' : $f->status; ?>"><?php echo $is_inactive ? 'Inactive' : ucfirst($f->status); ?></span>
+                <?php
+                  $status_raw = strtolower((string)$f->status);
+                  $allowed_statuses = ['active','pending','completed','suspended','cancelled','rejected','draft'];
+                  $status_class = $is_inactive ? 'suspended' : (in_array($status_raw, $allowed_statuses, true) ? $status_raw : 'unknown');
+                  $status_label = $is_inactive ? 'Inactive' : ucfirst($status_raw !== '' ? $status_raw : 'unknown');
+                ?>
+                <span class="kbf-badge kbf-badge-<?php echo esc_attr(sanitize_html_class($status_class)); ?>"><?php echo esc_html($status_label); ?></span>
               </div>
               <div class="kbf-meta">
                 <div class="kbf-meta-row">
@@ -715,17 +757,17 @@
           ?>
             <div class="kbf-card-actions">
               <?php
-                $deadline_passed = $f->deadline && strtotime($f->deadline) <= time();
-                $escrow_req = isset($escrow_requests[$f->id]) ? $escrow_requests[$f->id] : null;
+                $deadline_passed = ($deadline_ts !== null) && ($deadline_ts <= time());
+                $escrow_req = isset($escrow_requests[(int)$f->id]) ? $escrow_requests[(int)$f->id] : null;
                 $escrow_pending = $escrow_req && $escrow_req->status === 'pending';
                 $escrow_rejected = $escrow_req && $escrow_req->status === 'rejected';
               ?>
-              <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($f->id) : ''; ?>
-              <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: $f->id, $fund_details_url)); ?>">
+              <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token((int) $f->id) : ''; ?>
+              <a class="kbf-btn kbf-btn-primary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: (int) $f->id, $fund_details_url)); ?>">
                 View Details
               </a>
               <?php if($f->status === 'suspended'): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo (int) $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
                   Appeal Suspension
                 </button>
               <?php endif; ?>
@@ -733,7 +775,7 @@
                 <?php if($escrow_pending): ?>
                   <span class="kbf-badge kbf-badge-pending">Escrow Request Pending</span>
                 <?php else: ?>
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEscrowRequest(<?php echo $f->id; ?>)">
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEscrowRequest(<?php echo (int) $f->id; ?>)">
                     Request Escrow
                   </button>
                 <?php endif; ?>
@@ -741,50 +783,50 @@
                   <span class="kbf-badge kbf-badge-cancelled">Escrow Request Rejected</span>
                 <?php endif; ?>
               <?php endif; ?>
-                <?php if(in_array($f->status,['active','completed']) && $f->escrow_status==='released'): ?>
+                <?php if(in_array($f->status,['active','completed'], true) && $f->escrow_status==='released'): ?>
                   <?php if($wd_block): ?>
                   <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
                     <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
                   <?php else: ?>
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" onclick="kbfOpenWd(<?php echo (int) $f->id; ?>,<?php echo wp_json_encode((float) $f->raised_amount); ?>,'<?php echo esc_js($f->title); ?>')">
                     <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
                   <?php endif; ?>
                 <?php endif; ?>
               <div class="kbf-card-more-wrap">
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js((string) ((int) $f->id)); ?>')" title="More" data-tooltip="More">
                   <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 </button>
-                <div class="kbf-card-more-menu" id="kbf-home-more-<?php echo esc_attr($f->id); ?>">
-                <?php if(in_array($f->status,['active','pending'])): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>','<?php echo esc_js($benefit_json); ?>')">
+                <div class="kbf-card-more-menu" id="kbf-home-more-<?php echo esc_attr((int) $f->id); ?>">
+                <?php if(in_array($f->status,['active','pending'], true)): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenEdit(<?php echo (int) $f->id; ?>,'<?php echo esc_js($f->title); ?>','<?php echo esc_js($f->description); ?>','<?php echo esc_js($f->location); ?>','<?php echo esc_js($f->deadline); ?>',<?php echo (int)$f->auto_return; ?>,'<?php echo esc_js($photo_json); ?>','<?php echo esc_js($benefit_json); ?>')">
                   <i class="ph ph-pencil-simple kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Edit
                 </button>
                 <?php endif; ?>
                 <?php if(in_array($f->status, ['active','completed'], true)): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-more-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-more-milestone" type="button" onclick="kbfOpenMilestoneModal(<?php echo (int) $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
                   <i class="ph ph-plus kbf-icon" style="font-size:12px; color:currentColor;" aria-hidden="true"></i>
                   Add Story
                 </button>
                 <?php endif; ?>
                 <?php if($f->status==='active' && $f->raised_amount>=$f->goal_amount): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfMarkComplete(<?php echo $f->id; ?>)">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfMarkComplete(<?php echo (int) $f->id; ?>)">
                   <i class="ph-bold ph-check kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Mark Complete
                 </button>
                 <?php endif; ?>
-                <?php if(in_array($f->status,['active','completed']) && $f->escrow_status==='released'): ?>
+                <?php if(in_array($f->status,['active','completed'], true) && $f->escrow_status==='released'): ?>
                   <?php if($wd_block): ?>
                   <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
                     <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
                   <?php else: ?>
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" onclick="kbfOpenWd(<?php echo $f->id; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js($f->title); ?>')">
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" onclick="kbfOpenWd(<?php echo (int) $f->id; ?>,<?php echo wp_json_encode((float) $f->raised_amount); ?>,'<?php echo esc_js($f->title); ?>')">
                     <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
@@ -795,13 +837,13 @@
                   Share
                 </button>
                 <?php if($f->status==='pending'): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','cancel')">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo (int) $f->id; ?>,'<?php echo esc_js($f->title); ?>','cancel')">
                   <i class="ph ph-prohibit kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Cancel
                 </button>
                 <?php endif; ?>
-                <?php if(in_array($f->status,['cancelled','suspended'])): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">
+                <?php if(in_array($f->status,['cancelled','suspended'], true)): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo (int) $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">
                   <i class="ph ph-trash-simple kbf-icon" style="font-size:12px; filter:invert(34%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                   Trash
                 </button>
@@ -810,7 +852,7 @@
             </div>
           </div>
           <?php
-          $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' ORDER BY amount DESC LIMIT 5",$f->id));
+          $sponsors = isset($sponsor_preview_by_fund[(int)$f->id]) ? $sponsor_preview_by_fund[(int)$f->id] : [];
           if(!empty($sponsors)): ?>
           <details class="kbf-sponsor-details">
             <summary>View Sponsors (<?php echo $sc; ?>)</summary>
@@ -824,7 +866,8 @@
                     <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
                     <td><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo $format_currency($sp->amount); ?></span></td>
                     <td><?php echo esc_html($format_payment_method($sp->payment_method)); ?></td>
-                    <td class="kbf-meta"><?php echo date('M d, Y',strtotime($sp->created_at)); ?></td>
+                    <?php $sp_created_ts = !empty($sp->created_at) ? strtotime((string) $sp->created_at) : false; ?>
+                    <td class="kbf-meta"><?php echo esc_html($sp_created_ts !== false ? date('M d, Y', $sp_created_ts) : '--'); ?></td>
                   </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -856,11 +899,11 @@
             </div>
             <div class="kbf-cta-check">
               <i><i class="ph ph-check" aria-hidden="true"></i></i>
-              Upload 2–3 photos to build trust
+              Upload 2-3 photos to build trust
             </div>
             <div class="kbf-cta-check">
               <i><i class="ph ph-check" aria-hidden="true"></i></i>
-              Share once it’s live to get first sponsors
+              Share once it's live to get first sponsors
             </div>
             <div class="kbf-cta-check">
               <i><i class="ph ph-check" aria-hidden="true"></i></i>
@@ -878,7 +921,7 @@
               Browse Funds
             </a>
           </div>
-          <div class="kbf-cta-note">Start a fund in under 3 minutes. We’ll guide you step-by-step.</div>
+          <div class="kbf-cta-note">Start a fund in under 3 minutes. We'll guide you step-by-step.</div>
         </div>
       </div>
       
@@ -888,6 +931,15 @@
         var statusEl = document.getElementById('kbf-filter-status');
         var escrowEl = document.getElementById('kbf-filter-escrow');
         if(!statusEl || !escrowEl) return;
+        /**
+         * @function  applyFilters
+         * @purpose   Applies selected status and escrow filters to fund cards and triggers rerendering.
+         * @used-by   [status change listener, escrow change listener, initial filter run]
+         * @calls     [window.kbfHomeRenderCards]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function applyFilters(){
           var statusVal = statusEl.value;
           var escrowVal = escrowEl.value;
@@ -914,6 +966,15 @@
         var clearBtn = document.getElementById('kbf-home-sheet-clear');
         if(!sheet || !overlay || !statusEl || !escrowEl) return;
 
+        /**
+         * @function  setGroupValue
+         * @purpose   Updates active state for mobile sheet filter button groups.
+         * @used-by   [syncFromSelects, window.kbfHomeClearSheet, mobile group button click handler]
+         * @calls     [document.querySelectorAll, classList.toggle]
+         * @params    [string group - Filter group key, string value - Active value for the group]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function setGroupValue(group, value){
           var buttons = document.querySelectorAll('[data-kbf-home-group="'+group+'"]');
           buttons.forEach(function(b){
@@ -921,25 +982,70 @@
             b.classList.toggle('is-active', isActive);
           });
         }
+        /**
+         * @function  syncFromSelects
+         * @purpose   Synchronizes mobile sheet selection states from desktop select controls.
+         * @used-by   [window.kbfHomeOpenSheet]
+         * @calls     [setGroupValue]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function syncFromSelects(){
           setGroupValue('status', statusEl.value || 'all');
           setGroupValue('escrow', escrowEl.value || 'all');
         }
+        /**
+         * @function  kbfHomeOpenSheet
+         * @purpose   Opens the mobile filter sheet and locks body scroll.
+         * @used-by   [Filters button onclick]
+         * @calls     [syncFromSelects, classList.add]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         window.kbfHomeOpenSheet = function(){
           syncFromSelects();
           sheet.classList.add('open');
           overlay.classList.add('open');
           document.body.style.overflow = 'hidden';
         };
+        /**
+         * @function  kbfHomeCloseSheet
+         * @purpose   Closes the mobile filter sheet and restores page scrolling.
+         * @used-by   [sheet close button onclick, overlay onclick, apply/clear flows, resize handler]
+         * @calls     [classList.remove]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         window.kbfHomeCloseSheet = function(){
           sheet.classList.remove('open');
           overlay.classList.remove('open');
           document.body.style.overflow = '';
         };
+        /**
+         * @function  getActiveValue
+         * @purpose   Reads the currently active value from a filter group inside the mobile sheet.
+         * @used-by   [window.kbfHomeApplySheet]
+         * @calls     [sheet.querySelector, getAttribute]
+         * @params    [string group - Filter group key]
+         * @returns   [string - Active value or empty string]
+         * @status    ACTIVE
+         */
         function getActiveValue(group){
           var active = sheet.querySelector('[data-kbf-home-group="'+group+'"].is-active');
           return active ? active.getAttribute('data-kbf-home-value') : '';
         }
+        /**
+         * @function  kbfHomeApplySheet
+         * @purpose   Applies mobile sheet selections to desktop filters and refreshes card visibility.
+         * @used-by   [Apply Filters button listener, window.kbfHomeClearSheet]
+         * @calls     [getActiveValue, window.kbfHomeApplyFilters, window.kbfHomeRenderCards, window.kbfHomeCloseSheet]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         window.kbfHomeApplySheet = function(){
           var statusVal = getActiveValue('status') || 'all';
           var escrowVal = getActiveValue('escrow') || 'all';
@@ -949,6 +1055,15 @@
           if (window.kbfHomeRenderCards) window.kbfHomeRenderCards();
           window.kbfHomeCloseSheet();
         };
+        /**
+         * @function  kbfHomeClearSheet
+         * @purpose   Resets sheet filters to default values and reapplies them.
+         * @used-by   [Clear all button listener]
+         * @calls     [setGroupValue, window.kbfHomeApplySheet]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         window.kbfHomeClearSheet = function(){
           setGroupValue('status', 'all');
           setGroupValue('escrow', 'all');
@@ -1003,22 +1118,37 @@
           clearBtn.addEventListener('click', function(){
             if (statusEl) statusEl.value = 'all';
             if (escrowEl) escrowEl.value = 'all';
-            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
-            setTimeout(function(){
-              if (typeof window.kbfHomeApplyFilters === 'function') {
-                window.kbfHomeApplyFilters();
-              } else if (window.kbfHomeRenderCards) {
-                window.kbfHomeRenderCards();
-              }
-              location.reload();
-            }, 200);
+            if (typeof window.kbfHomeApplyFilters === 'function') {
+              window.kbfHomeApplyFilters();
+            } else if (window.kbfHomeRenderCards) {
+              window.kbfHomeRenderCards();
+            }
+            if (window.kbfHomeCloseSheet) window.kbfHomeCloseSheet();
           });
         }
 
+        /**
+         * @function  getFilteredCards
+         * @purpose   Returns cards currently passing active filter constraints.
+         * @used-by   [render]
+         * @calls     [Array.filter]
+         * @params    [none]
+         * @returns   [Array - Filtered card elements]
+         * @status    ACTIVE
+         */
         function getFilteredCards(){
           return cards.filter(function(card){ return card.dataset.kbfFilterHidden !== '1'; });
         }
 
+        /**
+         * @function  scrollToCards
+         * @purpose   Scrolls viewport back to the card section after pager navigation.
+         * @used-by   [setLoading]
+         * @calls     [Element.closest, scrollIntoView, window.scrollTo]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function scrollToCards(){
           try {
             var target = wrap.closest('.kbf-section') || wrap;
@@ -1032,6 +1162,15 @@
           }
         }
 
+        /**
+         * @function  render
+         * @purpose   Renders paginated card visibility state and pager controls.
+         * @used-by   [setLoading, rows-per-page change, window.kbfHomeRenderCards, initial load]
+         * @calls     [getFilteredCards]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function render(){
           var visible = getFilteredCards();
           var total = visible.length;
@@ -1052,6 +1191,15 @@
           if (emptyEl) emptyEl.style.display = total > 0 ? 'none' : 'flex';
           if (wrap) wrap.style.display = total > 0 ? '' : 'none';
         }
+        /**
+         * @function  setLoading
+         * @purpose   Shows a temporary loading state on pager buttons before rerender and scroll.
+         * @used-by   [Prev button click handler, Next button click handler]
+         * @calls     [render, scrollToCards, setTimeout]
+         * @params    [HTMLElement btn - Pager button element]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function setLoading(btn){
           btn.classList.add('is-loading');
           btn.disabled = true;
@@ -1069,6 +1217,15 @@
           page++; setLoading(nextBtn);
         });
 
+        /**
+         * @function  kbfHomeRenderCards
+         * @purpose   Resets pager to page one and rerenders current filtered cards.
+         * @used-by   [window.kbfHomeApplyFilters, window.kbfHomeApplySheet, clear filters fallback path]
+         * @calls     [render]
+         * @params    [none]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         window.kbfHomeRenderCards = function(){
           page = 1;
           render();
@@ -1077,6 +1234,15 @@
         render();
       })();
 
+      /**
+       * @function  kbfToggleHomeMore
+       * @purpose   Toggles the per-card overflow action menu and closes other open menus.
+       * @used-by   [More button onclick]
+       * @calls     [document.getElementById, querySelectorAll, classList.toggle]
+       * @params    [Event e - Click event, string id - Fund identifier for menu lookup]
+       * @returns   [void]
+       * @status    ACTIVE
+       */
       window.kbfToggleHomeMore=function(e,id){
         if(e) e.stopPropagation();
         var menu = document.getElementById('kbf-home-more-' + id);
@@ -1105,6 +1271,15 @@
         var items = document.querySelectorAll('.kbf-sponsor-details');
         if (!items || !items.length) return;
 
+        /**
+         * @function  openDetails
+         * @purpose   Expands a sponsor details accordion section with transition state updates.
+         * @used-by   [sponsor details summary click handler]
+         * @calls     [classList.add]
+         * @params    [HTMLDetailsElement details - Details container, HTMLElement content - Collapsible content element]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function openDetails(details, content){
           details.open = true;
           details.classList.add('is-open');
@@ -1113,6 +1288,15 @@
           content.style.maxHeight = content.scrollHeight + 'px';
         }
 
+        /**
+         * @function  closeDetails
+         * @purpose   Collapses a sponsor details accordion section and finalizes close on transition end.
+         * @used-by   [sponsor details summary click handler]
+         * @calls     [classList.remove, addEventListener]
+         * @params    [HTMLDetailsElement details - Details container, HTMLElement content - Collapsible content element]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         function closeDetails(details, content){
           details.classList.remove('is-open');
           content.style.maxHeight = content.scrollHeight + 'px';
@@ -1150,39 +1334,18 @@
         });
       })();
       
-      var ajaxurl = '<?php echo admin_url("admin-ajax.php"); ?>';
-      var kbfSaveNonce = '<?php echo esc_js($nonce_save); ?>';
-      if (typeof window.kbfSaveFund === 'undefined') {
-        window.kbfSaveFund = function(id, btn){
-          if(!id) return;
-          var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
-          var fd = new FormData();
-          fd.append('action','kbf_toggle_save_fund');
-          fd.append('nonce', kbfSaveNonce);
-          fd.append('fund_id', id);
-          if(typeof kbfFetchJson === 'undefined'){ alert('Save failed.'); return; }
-          kbfFetchJson(ajaxurl, fd, function(j){
-            if(j && j.success){
-              var saved = !!(j.data && j.data.saved);
-              if(el){
-                el.classList.toggle('is-saved', saved);
-                el.setAttribute('data-saved', saved ? '1' : '0');
-                el.title = saved ? 'Saved' : 'Save';
-                el.setAttribute('data-tooltip', saved ? 'Saved' : 'Save');
-                var icon = el.querySelector('i');
-                if(icon){
-                  icon.classList.remove('ph','ph-bookmark-simple','ph-fill');
-                  if(saved){ icon.classList.add('ph-fill','ph-bookmark-simple'); icon.style.color = '#3b82f6'; }
-                  else { icon.classList.add('ph','ph-bookmark-simple'); icon.style.color = 'var(--kbf-text-sm)'; }
-                }
-              }
-            } else {
-              alert((j && j.data && j.data.message) ? j.data.message : 'Unable to save.');
-            }
-          }, function(err){ alert(err || 'Request failed.'); });
-        };
-      }
     </script>
     </div>
     <?php return ob_get_clean();
 }
+
+
+
+
+
+
+
+
+
+
+

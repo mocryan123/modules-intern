@@ -62,8 +62,60 @@ function kbf_dashboard_sponsorships_tab($business_id) {
     <!-- ================== HTML ================== -->
     <div class="kbf-section">
       <style>
+        .kbf-supporters-table{
+          min-width:760px;
+          table-layout:fixed;
+        }
+        .kbf-supporters-table th,
+        .kbf-supporters-table td{
+          vertical-align:top;
+        }
         .kbf-supporters-table th,
         .kbf-supporters-table td{color:#0f172a;}
+        .kbf-supporters-table th:nth-child(3),
+        .kbf-supporters-table td:nth-child(3),
+        .kbf-supporters-table th:nth-child(4),
+        .kbf-supporters-table td:nth-child(4),
+        .kbf-supporters-table th:nth-child(6),
+        .kbf-supporters-table td:nth-child(6){
+          white-space:nowrap;
+        }
+        .kbf-supporters-table td:nth-child(2),
+        .kbf-supporters-table td:nth-child(5){
+          white-space:normal;
+          overflow-wrap:anywhere;
+          word-break:break-word;
+        }
+        .kbf-supporters-table td .kbf-clamp-2{
+          white-space:normal;
+        }
+        /* Override shared table rule that sets first td to display:block and breaks column alignment. */
+        .kbf-supporters-table tbody td:first-child{
+          display:table-cell !important;
+          max-width:none;
+          overflow:visible;
+          text-overflow:clip;
+          white-space:normal;
+        }
+        .kbf-supporters-table tbody td:first-child .kbf-strong{
+          display:block !important;
+          overflow:visible;
+          text-overflow:clip;
+          white-space:normal;
+        }
+        .kbf-supporter-name{
+          display:block;
+          font-weight:600;
+          color:#0f172a;
+          line-height:1.35;
+          margin-bottom:2px;
+        }
+        .kbf-supporter-email{
+          display:block;
+          color:var(--kbf-slate);
+          font-size:12px;
+          line-height:1.4;
+        }
         .kbf-supporters-table .kbf-meta{color:#0f172a;}
         .kbf-supporters-table a{color:#0f172a;}
       </style>
@@ -80,9 +132,9 @@ function kbf_dashboard_sponsorships_tab($business_id) {
       </div>
       <?php endif; ?>
       <?php if(empty($rows)): ?>
-        <div class="kbf-table-empty" data-kbf-table-desc="Shows all sponsorships received for your fundraisers, including amount and payment status.">
+        <div class="kbf-table-empty" data-kbf-table-desc="Shows all sponsorships received for your campaigns, including amount and payment status.">
           <div class="kbf-table-empty-head" style="grid-template-columns:2fr 1.2fr .8fr .8fr 1.4fr .8fr;">
-            <span>Fundraiser</span>
+            <span>Campaign</span>
             <span>Supporter</span>
             <span>Amount</span>
             <span>Payment</span>
@@ -92,17 +144,31 @@ function kbf_dashboard_sponsorships_tab($business_id) {
           <div class="kbf-table-empty-body">No sponsorships yet.</div>
         </div>
       <?php else: ?>
-        <div class="kbf-table-wrap" data-kbf-table-desc="Shows all sponsorships received for your fundraisers, including amount and payment status.">
+        <div class="kbf-table-wrap" data-kbf-table-desc="Shows all sponsorships received for your campaigns, including amount and payment status.">
           <table class="kbf-table kbf-supporters-table">
-            <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>Note</th><th>Date</th></tr></thead>
+            <colgroup>
+              <col style="width:24%;">
+              <col style="width:28%;">
+              <col style="width:12%;">
+              <col style="width:14%;">
+              <col style="width:12%;">
+              <col style="width:10%;">
+            </colgroup>
+            <thead><tr><th scope="col">Campaign</th><th scope="col">Supporter</th><th scope="col">Amount</th><th scope="col">Payment</th><th scope="col">Note</th><th scope="col">Date</th></tr></thead>
             <tbody>
             <?php foreach($rows as $s): ?>
               <tr>
                 <td>
-                  <span style="display:block;margin-bottom:4px;" class="kbf-strong"><?php echo esc_html($s->fund_title); ?></span>
-                  <div style="height:14px;"></div>
+                  <span class="kbf-strong"><?php echo esc_html($s->fund_title); ?></span>
                 </td>
-                <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?><?php if($s->email): ?><div class="kbf-meta"><?php echo esc_html($s->email); ?></div><?php endif; ?></td>
+                <td>
+                  <?php if($s->is_anonymous): ?>
+                    <em class="kbf-supporter-name" style="color:var(--kbf-slate);font-style:italic;">Anonymous</em>
+                  <?php else: ?>
+                    <span class="kbf-supporter-name"><?php echo esc_html($s->sponsor_name); ?></span>
+                  <?php endif; ?>
+                  <?php if($s->email): ?><span class="kbf-supporter-email"><?php echo esc_html($s->email); ?></span><?php endif; ?>
+                </td>
                 <td><span class="kbf-strong">&#8369;<?php echo number_format($s->amount,2); ?></span></td>
                 <td>
                   <?php
