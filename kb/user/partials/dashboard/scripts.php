@@ -1017,13 +1017,21 @@
         var el = document.getElementById(id);
         if (!el) return;
         el.classList.remove('is-open');
-        setTimeout(function(){ el.style.display = 'none'; }, 220);
-        // keep page scroll enabled
+        setTimeout(function(){
+            el.style.display = 'none';
+            var hasOpenModal = !!document.querySelector('.kbf-modal-overlay.is-open');
+            if (!hasOpenModal) {
+                document.documentElement.classList.remove('kbf-modal-lock');
+                document.body.classList.remove('kbf-modal-lock');
+            }
+        }, 220);
     }
     function kbfOpenModal(id)  {
         
         var el = document.getElementById(id);
         if (!el) return;
+        document.documentElement.classList.add('kbf-modal-lock');
+        document.body.classList.add('kbf-modal-lock');
         el.style.display = 'flex';
         requestAnimationFrame(function(){ el.classList.add('is-open'); });
         if (id === 'kbf-modal-create') {

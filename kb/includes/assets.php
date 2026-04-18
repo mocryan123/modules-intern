@@ -2129,9 +2129,21 @@ function kbf_global_assets() {
     window.kbfShareFundDetail= function(token, title, desc) { kbfOpenShare(token, title || 'Support this fund on KonekBayan', desc); };
 
     // Ã¢â€â‚¬Ã¢â€â‚¬ NEAR ME: browser geolocation Ã¢â€ â€™ Nominatim reverse geocode Ã¢â€ â€™ fill location input Ã¢â€â‚¬Ã¢â€â‚¬
-    window.kbfNearMe = function(inputId, formId) {
+    window.kbfNearMe = function(inputId, formId, btnRef) {
         const input = document.getElementById(inputId);
-        const btn   = event && event.currentTarget ? event.currentTarget : document.getElementById('kbf-browse-nearme-btn');
+        let btn = null;
+        if (btnRef && typeof btnRef === 'object' && btnRef.nodeType === 1) {
+            btn = btnRef;
+        } else if (typeof btnRef === 'string' && btnRef) {
+            btn = document.getElementById(btnRef);
+        }
+        if (!btn) {
+            const evt = (typeof window !== 'undefined' && window.event) ? window.event : null;
+            btn = evt && evt.currentTarget ? evt.currentTarget : null;
+        }
+        if (!btn) {
+            btn = document.getElementById('kbf-browse-nearme-btn') || document.getElementById('kbff-near-me-btn');
+        }
         if (!navigator.geolocation) {
             alert('Your browser does not support geolocation. Please type your location manually.');
             return;

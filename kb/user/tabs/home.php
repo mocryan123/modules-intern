@@ -665,7 +665,7 @@
         ?>
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
           <?php if($last_wd && $last_wd->status === 'pending'): ?>
-          <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+          <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph-fill ph-warning" aria-hidden="true"></i>
               </span>
@@ -676,7 +676,7 @@
           </div>
           <?php endif; ?>
           <?php if($last_wd && $last_wd->status === 'rejected'): ?>
-          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
               </span>
@@ -691,14 +691,14 @@
           </div>
           <?php endif; ?>
           <?php if($f->status === 'suspended'): ?>
-          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>
               </span>
             <div><span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
           </div>
           <?php elseif($f->status === 'cancelled'): ?>
-          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
               </span>
@@ -1192,18 +1192,50 @@
           if (wrap) wrap.style.display = total > 0 ? '' : 'none';
         }
         /**
+         * @function  getPagerLoadingDelay
+         * @purpose   Computes pager loading delay with longer feedback on slower network conditions.
+         * @used-by   [setLoading]
+         * @calls     [none]
+         * @params    [none]
+         * @returns   [number - Loading delay in milliseconds]
+         * @status    ACTIVE
+         */
+        function getPagerLoadingDelay(){
+          var delay = 250;
+          try {
+            var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            var effectiveType = connection && connection.effectiveType ? String(connection.effectiveType).toLowerCase() : '';
+            if (effectiveType === 'slow-2g' || effectiveType === '2g') {
+              delay = 900;
+            } else if (effectiveType === '3g') {
+              delay = 650;
+            }
+          } catch (e) {}
+          return delay;
+        }
+        /**
          * @function  setLoading
-         * @purpose   Shows a temporary loading state on pager buttons before rerender and scroll.
+         * @purpose   Shows a temporary loading state on pager controls before rerender and scroll.
          * @used-by   [Prev button click handler, Next button click handler]
-         * @calls     [render, scrollToCards, setTimeout]
+         * @calls     [getPagerLoadingDelay, render, scrollToCards, setTimeout]
          * @params    [HTMLElement btn - Pager button element]
          * @returns   [void]
          * @status    ACTIVE
          */
         function setLoading(btn){
+          if (!btn || btn.classList.contains('is-loading')) return;
+          var delay = getPagerLoadingDelay();
           btn.classList.add('is-loading');
           btn.disabled = true;
-          setTimeout(function(){ btn.classList.remove('is-loading'); render(); scrollToCards(); }, 250);
+          if (select) select.disabled = true;
+          if (btn === prevBtn && nextBtn) nextBtn.disabled = true;
+          if (btn === nextBtn && prevBtn) prevBtn.disabled = true;
+          setTimeout(function(){
+            btn.classList.remove('is-loading');
+            render();
+            scrollToCards();
+            if (select) select.disabled = false;
+          }, delay);
         }
         select.addEventListener('change', function(){
           perPage = parseInt(this.value, 10) || 5;
@@ -1214,7 +1246,9 @@
           if(page > 1){ page--; setLoading(prevBtn); }
         });
         nextBtn.addEventListener('click', function(){
-          page++; setLoading(nextBtn);
+          if(nextBtn.disabled) return;
+          page++;
+          setLoading(nextBtn);
         });
 
         /**
@@ -1338,6 +1372,8 @@
     </div>
     <?php return ob_get_clean();
 }
+
+
 
 
 

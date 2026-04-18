@@ -817,8 +817,9 @@
         color:#fff;
     }
     @media (max-width: 900px){
-        .kbf-dashboard-shell{ max-width:90%; padding-top:78px; }
-        .kbf-topbar + .kbf-dashboard-shell{ margin-top:78px !important; }
+        .kbf-dashboard-shell{ max-width:90%; padding-top:74px; }
+        .kbf-topbar + .kbf-dashboard-shell{ margin-top:0 !important; }
+        .kbf-hero-wrap{ margin-top:12px; }
         .kbf-hero-grid{ grid-template-columns:1fr; }
         .kbf-topbar{ flex-wrap:nowrap; }
         .kbf-nav{ display:none; }
@@ -1796,7 +1797,14 @@
         75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
         100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
     }
-html.kbf-modal-lock, body.kbf-modal-lock { overflow: auto !important; }
+html.kbf-modal-lock, body.kbf-modal-lock {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+}
+    .kbf-user-ui #kbf-modal-create .kbf-modal-body,
+    .kbf-user-ui #kbf-modal-edit .kbf-modal-body{
+        overflow-y:hidden !important;
+    }
     .kbf-user-ui .kbf-modal-body p{font-weight:400;}
     /* ===== CREATE MODAL REDESIGN ===== */
     #kbf-modal-create .kbf-modal{max-width:900px;}
@@ -1804,6 +1812,7 @@ html.kbf-modal-lock, body.kbf-modal-lock { overflow: auto !important; }
     #kbf-modal-create .kbf-modal-body{
         max-height:none;
         flex:1 1 auto;
+        overflow-y:hidden;
     }
     #kbf-modal-create .kbf-modal-body{
         scrollbar-width:thin;
@@ -1833,8 +1842,21 @@ html.kbf-modal-lock, body.kbf-modal-lock { overflow: auto !important; }
     #kbf-modal-edit .kbf-modal-body{
         max-height:none;
         flex:1 1 auto;
+        overflow-y:hidden;
         scrollbar-width:thin;
         scrollbar-color:#2070e0 #f8fafc;
+    }
+    @media (max-width: 900px){
+        .kbf-user-ui #kbf-modal-create .kbf-modal-body,
+        .kbf-user-ui #kbf-modal-edit .kbf-modal-body{
+            overflow-y:auto !important;
+            max-height:calc(100vh - 180px);
+        }
+        .kbf-user-ui #kbf-modal-create .kbf-step-content,
+        .kbf-user-ui #kbf-modal-edit .kbf-step-content{
+            overflow:visible !important;
+            height:auto !important;
+        }
     }
     #kbf-modal-edit .kbf-modal-body::-webkit-scrollbar{
         width:10px;
