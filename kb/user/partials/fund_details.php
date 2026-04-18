@@ -74,6 +74,7 @@ function bntm_shortcode_kbf_fund_details() {
     if(!$fund) return bntm_universal_container('Fund Details', '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Fund not found or no longer active.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
 
     $st = $wpdb->prefix.'kbf_sponsorships';
+    $at = $wpdb->prefix.'kbf_appeals';
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
     $pct = $fund->goal_amount > 0 ? min(100, round(($fund->raised_amount / $fund->goal_amount) * 100)) 
     : 0;    $sponsors = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND message IS NOT NULL AND message != '' ORDER BY created_at DESC LIMIT 20",$fund->id));
@@ -96,6 +97,7 @@ function bntm_shortcode_kbf_fund_details() {
         $fund->id
     ));
     $organizer = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$fund->business_id));
+    $latest_appeal = $wpdb->get_row($wpdb->prepare("SELECT status,admin_notes,message FROM {$at} WHERE fund_id=%d ORDER BY created_at DESC, id DESC LIMIT 1", $fund->id));
     $days     = $fund->deadline ? max(0,ceil((strtotime($fund->deadline)-time())/86400)) : null;
     $photos   = $fund->photos ? json_decode($fund->photos,true) : [];
     $benefits = $fund->benefits ? json_decode($fund->benefits,true) : [];
@@ -1144,7 +1146,20 @@ function bntm_shortcode_kbf_fund_details() {
     <?php if($fund->status==='pending' && $is_owner): ?>
     <div class="kbf-alert kbf-alert-warning" style="margin-bottom:20px;"><span class="kbf-strong">Under Review:</span> This fund is not yet visible to sponsors. Once approved it goes live.</div>
     <?php elseif($fund->status==='suspended'): ?>
-    <div class="kbf-alert kbf-alert-error" style="margin-bottom:20px;"><span class="kbf-strong">Suspended:</span> <?php echo esc_html($fund->admin_notes?:'Contact support.'); ?></div>
+    <div class="kbf-alert kbf-alert-error" style="margin-bottom:20px;">
+      <?php if($latest_appeal && $latest_appeal->status === 'open'): ?>
+        <span class="kbf-strong">Appeal Submitted:</span> Your appeal is under admin review. We'll notify you once a decision is made.
+      <?php elseif($latest_appeal && $latest_appeal->status === 'rejected'): ?>
+        <span class="kbf-strong">Appeal Rejected:</span>
+        <?php
+          $appeal_note = !empty($latest_appeal->admin_notes) ? $latest_appeal->admin_notes : '';
+          $fallback_note = !empty($fund->admin_notes) ? $fund->admin_notes : '';
+          echo esc_html($appeal_note !== '' ? $appeal_note : ($fallback_note !== '' ? $fallback_note : 'Your fund remains suspended. Contact support.'));
+        ?>
+      <?php else: ?>
+        <span class="kbf-strong">Suspended:</span> <?php echo esc_html($fund->admin_notes?:'Contact support.'); ?>
+      <?php endif; ?>
+    </div>
     <?php endif; ?>
 
     <div class="kbf-detail-layout">

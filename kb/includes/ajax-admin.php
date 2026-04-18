@@ -181,7 +181,7 @@ function bntm_ajax_kbf_admin_review_appeal() {
 
     if ($action === 'approve') {
         $wpdb->update($at, ['status'=>'approved','admin_notes'=>$notes], ['id'=>$id], ['%s','%s'], ['%d']);
-        $wpdb->update($ft, ['status'=>'active'], ['id'=>$appeal->fund_id], ['%s'], ['%d']);
+        $wpdb->update($ft, ['status'=>'active','admin_notes'=>''], ['id'=>$appeal->fund_id], ['%s','%s'], ['%d']);
         if (function_exists('kbf_push_user_notification')) {
             $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
             kbf_push_user_notification((int)$appeal->business_id, [
@@ -195,6 +195,11 @@ function bntm_ajax_kbf_admin_review_appeal() {
         wp_send_json_success(['message'=>'Appeal approved. Fund reinstated.']);
     } else {
         $wpdb->update($at, ['status'=>'rejected','admin_notes'=>$notes], ['id'=>$id], ['%s','%s'], ['%d']);
+        if ($notes !== '') {
+            $wpdb->update($ft, ['status'=>'suspended','admin_notes'=>$notes], ['id'=>$appeal->fund_id], ['%s','%s'], ['%d']);
+        } else {
+            $wpdb->update($ft, ['status'=>'suspended'], ['id'=>$appeal->fund_id], ['%s'], ['%d']);
+        }
         if (function_exists('kbf_push_user_notification')) {
             $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
             kbf_push_user_notification((int)$appeal->business_id, [

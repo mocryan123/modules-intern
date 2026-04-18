@@ -8,6 +8,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
     $ft = $wpdb->prefix.'kbf_funds';
     $st = $wpdb->prefix.'kbf_sponsorships';
     $wt = $wpdb->prefix.'kbf_withdrawals';
+    $at = $wpdb->prefix.'kbf_appeals';
     $funds = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d ORDER BY created_at DESC",$business_id));
     $format_currency = function($amount, $decimals = 2) {
         return number_format((float)$amount, $decimals);
@@ -56,6 +57,8 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
         $benefit_list = $f->benefits ? json_decode($f->benefits, true) : [];
         $benefit_json = wp_json_encode(array_values(array_filter(is_array($benefit_list) ? $benefit_list : [])));
         $last_wd = $wpdb->get_row($wpdb->prepare("SELECT status FROM {$wt} WHERE fund_id=%d ORDER BY requested_at DESC, id DESC LIMIT 1", $f->id));
+        $last_appeal = $wpdb->get_row($wpdb->prepare("SELECT status,admin_notes,message FROM {$at} WHERE fund_id=%d ORDER BY created_at DESC, id DESC LIMIT 1", $f->id));
+        $appeal_pending = $last_appeal && $last_appeal->status === 'open';
         $wd_block = $last_wd && $last_wd->status === 'pending';
         ?>
         <div class="kbf-card">
@@ -69,7 +72,28 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>
               </span>
-            <div><span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
+            <div>
+              <?php if($last_appeal && $last_appeal->status === 'open'): ?>
+                <span class="kbf-strong">Appeal Submitted:</span>
+                Your appeal is under admin review. We'll notify you once a decision is made.
+              <?php elseif($last_appeal && $last_appeal->status === 'rejected'): ?>
+                <span class="kbf-strong">Appeal Rejected:</span>
+                <?php if(!empty($last_appeal->admin_notes)): ?>
+                  <?php echo esc_html($last_appeal->admin_notes); ?>
+                <?php elseif($f->admin_notes): ?>
+                  <?php echo esc_html($f->admin_notes); ?>
+                <?php else: ?>
+                  Your fund remains suspended. Contact support for details.
+                <?php endif; ?>
+              <?php else: ?>
+                <span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.
+                <?php if($f->admin_notes): ?>
+                  Admin note: <?php echo esc_html($f->admin_notes); ?>
+                <?php else: ?>
+                  Contact support for details.
+                <?php endif; ?>
+              <?php endif; ?>
+            </div>
           </div>
           <?php elseif($f->status === 'cancelled' && $f->admin_notes): ?>
           <div style="background:#fee2e2;border-left:3px solid #ef4444;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#7f1d1d;display:flex;align-items:flex-start;gap:10px;">
@@ -128,9 +152,15 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
               </button>
             <?php endif; ?>
             <?php if($f->status === 'suspended'): ?>
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
-                Appeal Suspension
-              </button>
+              <?php if($appeal_pending): ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" disabled aria-disabled="true" title="Appeal already submitted and under review">
+                  Appeal Pending Review
+                </button>
+              <?php else: ?>
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" onclick="kbfOpenAppeal(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
+                  Appeal Suspension
+                </button>
+              <?php endif; ?>
             <?php endif; ?>
             <?php if(in_array($f->status,['cancelled','suspended'])): ?>
               <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenTrashFund(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>','trash')">

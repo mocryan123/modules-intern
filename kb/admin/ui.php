@@ -289,12 +289,14 @@ function bntm_shortcode_kbf_admin() {
         select.value = '';
         notes.value = '';
         modal.style.display = 'flex';
+        modal.classList.add('is-open');
         document.documentElement.classList.add('kbf-modal-lock');
         document.body.classList.add('kbf-modal-lock');
     };
     window.kbfCloseAdminRejectModal = function(){
         var modal = document.getElementById('kbf-admin-reject-modal');
         if (modal) modal.style.display = 'none';
+        if (modal) modal.classList.remove('is-open');
         document.documentElement.classList.remove('kbf-modal-lock');
         document.body.classList.remove('kbf-modal-lock');
     };
@@ -502,7 +504,13 @@ function bntm_shortcode_kbf_admin() {
         fd.append('tab', kbfAdminTab);
         if (kbfAdminDateFrom) fd.append('date_from', kbfAdminDateFrom);
         if (kbfAdminDateTo) fd.append('date_to', kbfAdminDateTo);
-        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
+        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.text()).then(t=>{
+            var cleaned = String(t || '').replace(/^\uFEFF+/, '').trim();
+            var start = cleaned.indexOf('{');
+            var end = cleaned.lastIndexOf('}');
+            var payload = (start !== -1 && end !== -1 && end > start) ? cleaned.slice(start, end + 1) : cleaned;
+            return JSON.parse(payload);
+        }).then(j=>{
             if (!j || !j.success || !j.data || !j.data.html) return;
             var container = document.querySelector('.kbf-tab-content');
             if (!container) return;

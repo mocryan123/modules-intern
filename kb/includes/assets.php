@@ -547,7 +547,7 @@ function kbf_global_assets() {
         box-sizing:border-box;
     }
     .kbf-admin-shell{
-        max-width:1180px;
+        max-width:100%;
         margin:0 auto;
         padding:0;
         box-sizing:border-box;

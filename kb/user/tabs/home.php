@@ -14,9 +14,10 @@
  */
   function kbf_dashboard_overview_tab($business_id) {
       global $wpdb;
-      $ft = $wpdb->prefix.'kbf_funds';
-      $st = $wpdb->prefix.'kbf_sponsorships';
-      $wt = $wpdb->prefix.'kbf_withdrawals';
+    $ft = $wpdb->prefix.'kbf_funds';
+    $st = $wpdb->prefix.'kbf_sponsorships';
+    $wt = $wpdb->prefix.'kbf_withdrawals';
+    $at = $wpdb->prefix.'kbf_appeals';
       $fund_details_url = kbf_get_page_url('fund_details');
       $pt = $wpdb->prefix.'kbf_organizer_profiles';
       $profile = $business_id ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d", $business_id)) : null;
@@ -57,6 +58,7 @@
     $fund_ids = array_values(array_filter(array_map('intval', wp_list_pluck((array)$funds, 'id'))));
     $sponsor_counts_by_fund = [];
     $last_withdrawal_by_fund = [];
+    $last_appeal_by_fund = [];
     $sponsor_preview_by_fund = [];
     if (!empty($fund_ids)) {
         $in_placeholders = implode(',', array_fill(0, count($fund_ids), '%d'));
@@ -85,6 +87,26 @@
         $last_wd_rows = $wpdb->get_results($wpdb->prepare($last_wd_sql, $last_wd_args));
         foreach ((array)$last_wd_rows as $wrow) {
             $last_withdrawal_by_fund[(int)$wrow->fund_id] = $wrow;
+        }
+
+        $last_appeal_sql = "SELECT a1.fund_id, a1.status, a1.admin_notes, a1.message, a1.created_at
+                            FROM {$at} a1
+                            INNER JOIN (
+                                SELECT fund_id, MAX(created_at) AS max_created_at
+                                FROM {$at}
+                                WHERE fund_id IN ({$in_placeholders})
+                                GROUP BY fund_id
+                            ) a2 ON a1.fund_id = a2.fund_id AND a1.created_at = a2.max_created_at
+                            INNER JOIN (
+                                SELECT fund_id, created_at, MAX(id) AS max_id
+                                FROM {$at}
+                                WHERE fund_id IN ({$in_placeholders})
+                                GROUP BY fund_id, created_at
+                            ) a3 ON a1.fund_id = a3.fund_id AND a1.created_at = a3.created_at AND a1.id = a3.max_id";
+        $last_appeal_args = array_merge($fund_ids, $fund_ids);
+        $last_appeal_rows = $wpdb->get_results($wpdb->prepare($last_appeal_sql, $last_appeal_args));
+        foreach ((array)$last_appeal_rows as $arow) {
+            $last_appeal_by_fund[(int)$arow->fund_id] = $arow;
         }
 
         // Prefetch top 5 completed sponsors per fund in batch to avoid N+1 queries in the render loop.
@@ -689,6 +711,8 @@
         $benefit_list = $f->benefits ? json_decode($f->benefits, true) : [];
         $benefit_json = wp_json_encode(array_values(array_filter(is_array($benefit_list) ? $benefit_list : [])));
         $last_wd = isset($last_withdrawal_by_fund[(int)$f->id]) ? $last_withdrawal_by_fund[(int)$f->id] : null;
+        $last_appeal = isset($last_appeal_by_fund[(int)$f->id]) ? $last_appeal_by_fund[(int)$f->id] : null;
+        $appeal_pending = $last_appeal && $last_appeal->status === 'open';
         ?>
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
           <?php if($last_wd && $last_wd->status === 'pending'): ?>
@@ -722,7 +746,28 @@
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>
               </span>
-            <div><span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.<?php if($f->admin_notes): ?> Admin note: <?php echo esc_html($f->admin_notes); ?><?php else: ?> Contact support for details.<?php endif; ?></div>
+            <div>
+              <?php if($last_appeal && $last_appeal->status === 'open'): ?>
+                <span class="kbf-strong">Appeal Submitted:</span>
+                Your appeal is under admin review. We'll notify you once a decision is made.
+              <?php elseif($last_appeal && $last_appeal->status === 'rejected'): ?>
+                <span class="kbf-strong">Appeal Rejected:</span>
+                <?php if(!empty($last_appeal->admin_notes)): ?>
+                  <?php echo esc_html($last_appeal->admin_notes); ?>
+                <?php elseif($f->admin_notes): ?>
+                  <?php echo esc_html($f->admin_notes); ?>
+                <?php else: ?>
+                  Your fund remains suspended. Contact support for details.
+                <?php endif; ?>
+              <?php else: ?>
+                <span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.
+                <?php if($f->admin_notes): ?>
+                  Admin note: <?php echo esc_html($f->admin_notes); ?>
+                <?php else: ?>
+                  Contact support for details.
+                <?php endif; ?>
+              <?php endif; ?>
+            </div>
           </div>
           <?php elseif($f->status === 'cancelled'): ?>
           <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -794,9 +839,15 @@
                 View Details
               </a>
               <?php if($f->status === 'suspended'): ?>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenAppeal(<?php echo (int) $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
-                  Appeal Suspension
-                </button>
+                <?php if($appeal_pending): ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" disabled aria-disabled="true" title="Appeal already submitted and under review">
+                    Appeal Pending Review
+                  </button>
+                <?php else: ?>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" onclick="kbfOpenAppeal(<?php echo (int) $f->id; ?>,'<?php echo esc_js($f->title); ?>')">
+                    Appeal Suspension
+                  </button>
+                <?php endif; ?>
               <?php endif; ?>
               <?php if($f->status==='active' && $f->escrow_status==='holding' && $deadline_passed && $f->raised_amount < $f->goal_amount): ?>
                 <?php if($escrow_pending): ?>

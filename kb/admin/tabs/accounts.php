@@ -3,6 +3,18 @@
  * KBF admin tab: Organizers.
  */
 
+/**
+ * @function  kbf_admin_organizers_tab
+ * @purpose   Renders the admin organizer accounts management tab with metrics, verification controls, and organizer rows.
+ * @used-by   [admin/ui.php tab router, includes/ajax-admin.php tab refresh handler, user/partials/admin_embed.php tab renderer]
+ * @calls     [kbf_admin_date_where, $wpdb->prepare, $wpdb->get_results, $wpdb->get_var, gmdate, strtotime, number_format, get_user_meta, ob_start, ob_get_clean, esc_html, esc_attr, esc_url, sanitize_html_class, ucfirst, date]
+ * @params    [none]
+ * @returns   [string buffered HTML markup for the organizer accounts tab]
+ * @status    ACTIVE
+ *            ACTIVE = confirmed it is called somewhere
+ *            NEEDS REVIEW = could not confirm caller,
+ *                           may be unused/dead code
+ */
 function kbf_admin_organizers_tab() {
     global $wpdb;
     $pt = $wpdb->prefix.'kbf_organizer_profiles';
@@ -17,6 +29,18 @@ function kbf_admin_organizers_tab() {
         gmdate('Y-m-d H:i:s', strtotime('-7 days'))
     ));
     $pending_verify = (int)$wpdb->get_var("SELECT COUNT(*) FROM {$pt} WHERE verify_status='pending'"); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
+    /**
+     * @function  format_number
+     * @purpose   Formats numeric organizer values for display with optional decimal precision.
+     * @used-by   [kbf_admin_organizers_tab table/stat output for raised totals, supporter counts, and ratings]
+     * @calls     [number_format]
+     * @params    [mixed $value - numeric value to format, int $decimals - decimal precision to apply]
+     * @returns   [string formatted number string]
+     * @status    ACTIVE
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $format_number = function($value, $decimals = 0) {
         return number_format((float)$value, $decimals);
     };
@@ -32,6 +56,19 @@ function kbf_admin_organizers_tab() {
         }
         .kbf-table-accounts{
           min-width:980px;
+          width:100%;
+          table-layout:fixed;
+          border-collapse:separate;
+        }
+        .kbf-table-accounts th,
+        .kbf-table-accounts td{
+          display:table-cell !important;
+          vertical-align:middle;
+          box-sizing:border-box;
+        }
+        .kbf-table-accounts tr > th:first-child,
+        .kbf-table-accounts tr > td:first-child{
+          display:table-cell !important;
         }
         .kbf-table-accounts .kbf-verify-cell{
           text-align:center;
@@ -74,6 +111,31 @@ function kbf_admin_organizers_tab() {
           color:var(--kbf-slate);
           font-size:12px;
           display:inline-block;
+        }
+        .kbf-table-wrap + .kbf-table-pager .kbf-table-pager-btn{
+          min-width:72px;
+          justify-content:center;
+        }
+        .kbf-table-wrap + .kbf-table-pager .kbf-table-pager-btn.is-loading{
+          color:transparent;
+          position:relative;
+        }
+        .kbf-table-wrap + .kbf-table-pager .kbf-table-pager-btn.is-loading::after{
+          content:'';
+          position:absolute;
+          left:50%;
+          top:50%;
+          width:14px;
+          height:14px;
+          margin:-7px 0 0 -7px;
+          border-radius:50%;
+          border:2px solid #c8d6ee;
+          border-top-color:#5b8fdc;
+          animation:kbf-admin-pager-spin .7s linear infinite;
+        }
+        @keyframes kbf-admin-pager-spin{
+          from{transform:rotate(0deg);}
+          to{transform:rotate(360deg);}
         }
         .kbf-admin-reject-modal .kbf-form-group{
           margin-bottom:14px;
@@ -147,6 +209,18 @@ function kbf_admin_organizers_tab() {
       <?php else: ?>
       <div class="kbf-table-wrap" data-kbf-table-desc="Shows organizer accounts and verification status.">
         <table class="kbf-table kbf-table-accounts">
+          <colgroup>
+            <col style="width:15%">
+            <col style="width:17%">
+            <col style="width:7%">
+            <col style="width:7%">
+            <col style="width:10%">
+            <col style="width:9%">
+            <col style="width:9%">
+            <col style="width:11%">
+            <col style="width:8%">
+            <col style="width:7%">
+          </colgroup>
           <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Credibility Score</th><th>Didit Status</th><th>Didit Verified</th><th>ID Verification</th><th>Verify</th><th>Onboarding</th></tr></thead>
           <tbody>
           <?php foreach($rows as $p): ?>
@@ -172,26 +246,26 @@ function kbf_admin_organizers_tab() {
               </td>
               <td><span class="kbf-strong">&#8369;<?php echo $format_number($p->total_raised, 0); ?></span></td>
               <td><?php echo $format_number($p->total_sponsors); ?></td>
-            <td><?php echo $format_number($p->rating, 1); ?>/5 (<?php echo $p->rating_count; ?>)</td>
-            <td class="kbf-meta"><?php echo esc_html($didit_status ? ucfirst($didit_status) : '—'); ?></td>
-            <td class="kbf-meta"><?php echo esc_html($didit_verified_at ? date('M d, Y', strtotime($didit_verified_at)) : '—'); ?></td>
+            <td><?php echo esc_html($format_number((float)$p->rating, 1)); ?>/5 (<?php echo esc_html((string)(int)$p->rating_count); ?>)</td>
+            <td class="kbf-meta"><?php echo esc_html($didit_status ? ucfirst($didit_status) : '--'); ?></td>
+            <td class="kbf-meta"><?php echo esc_html($didit_verified_at ? date('M d, Y', strtotime($didit_verified_at)) : '--'); ?></td>
             <td class="kbf-verify-cell">
               <?php if(!empty($p->verify_id_front) || !empty($p->verify_id_back)): ?>
                 <div class="kbf-btn-group kbf-verify-stack">
-                  <?php if(!empty($p->verify_id_front)): ?><a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($p->verify_id_front); ?>" target="_blank">Front ID</a><?php endif; ?>
-                  <?php if(!empty($p->verify_id_back)): ?><a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($p->verify_id_back); ?>" target="_blank">Back ID</a><?php endif; ?>
+                  <?php if(!empty($p->verify_id_front)): ?><a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($p->verify_id_front); ?>" target="_blank" rel="noopener noreferrer">Front ID</a><?php endif; ?>
+                  <?php if(!empty($p->verify_id_back)): ?><a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($p->verify_id_back); ?>" target="_blank" rel="noopener noreferrer">Back ID</a><?php endif; ?>
                 </div>
-              <?php else: ?><span class="kbf-verify-empty">—</span><?php endif; ?>
+              <?php else: ?><span class="kbf-verify-empty">--</span><?php endif; ?>
               </td>
               <td class="kbf-verify-cell">
                 <div class="kbf-btn-group kbf-verify-stack<?php echo $is_locked ? ' is-locked' : ''; ?>" data-kbf-verify-status="<?php echo esc_attr($verify_status); ?>">
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-verify-approve<?php echo $is_approved ? ' is-selected' : ''; ?>" onclick="kbfVerifyOrg(this, <?php echo $p->business_id; ?>,1)"<?php echo $is_locked ? ' disabled' : ''; ?>>Approve</button>
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-verify-reject<?php echo $is_rejected ? ' is-selected' : ''; ?>" onclick="kbfVerifyOrg(this, <?php echo $p->business_id; ?>,0)"<?php echo $is_locked ? ' disabled' : ''; ?>>Reject</button>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-verify-approve<?php echo $is_approved ? ' is-selected' : ''; ?>" onclick="kbfVerifyOrg(this, <?php echo (int)$p->business_id; ?>,1)"<?php echo $is_locked ? ' disabled' : ''; ?>>Approve</button>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-verify-reject<?php echo $is_rejected ? ' is-selected' : ''; ?>" onclick="kbfVerifyOrg(this, <?php echo (int)$p->business_id; ?>,0)"<?php echo $is_locked ? ' disabled' : ''; ?>>Reject</button>
                 </div>
               </td>
               <td class="kbf-verify-cell">
                 <div class="kbf-btn-group kbf-verify-stack">
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfTriggerOnboarding(<?php echo $p->business_id; ?>)">Send</button>
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfTriggerOnboarding(<?php echo (int)$p->business_id; ?>)">Send</button>
                   <span class="kbf-verify-empty"><?php echo $onboarding_active ? 'Active' : 'Off'; ?></span>
                 </div>
               </td>
@@ -210,7 +284,7 @@ function kbf_admin_organizers_tab() {
         </div>
         <div class="kbf-modal-body">
           <div class="kbf-form-group">
-            <label for="kbf-reject-template">Pre‑Generated Message</label>
+            <label for="kbf-reject-template">Pre-Generated Message</label>
             <select id="kbf-reject-template">
               <option value="">Select a reason...</option>
               <option value="ID images are unclear or unreadable. Please upload clearer photos.">ID images are unclear or unreadable</option>
@@ -235,6 +309,7 @@ function kbf_admin_organizers_tab() {
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 
