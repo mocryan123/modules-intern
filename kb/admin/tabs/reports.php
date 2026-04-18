@@ -84,7 +84,7 @@ function kbf_admin_reports_tab() {
           <?php if($r->status==='open'): ?>
           <div class="kbf-btn-group" style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;align-items:center;">
             <?php $fund_token = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token((int)$r->fund_id) : ''; ?>
-            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" style="padding:6px 12px;min-width:96px;justify-content:center;gap:6px;" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: (int)$r->fund_id, $fund_details_url)); ?>">
+            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url(add_query_arg('fund', $fund_token ?: (int)$r->fund_id, $fund_details_url)); ?>">
               <i class="ph ph-arrow-square-right kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
               View Fund
             </a>

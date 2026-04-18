@@ -5,18 +5,66 @@
 
 if (!defined('ABSPATH')) exit;
 
+/**
+ * @function  bntm_shortcode_kbf_admin
+ * @purpose   Handles bntm_shortcode_kbf_admin behavior for the admin UI renderer.
+ * @used-by   [shortcode render flow, same file function call]
+ * @calls     [WordPress APIs, same file helpers]
+ * @params    [none]
+ * @returns   [mixed rendered output or helper value]
+ * @status    ACTIVE | NEEDS REVIEW
+ *            ACTIVE = confirmed it is called somewhere
+ *            NEEDS REVIEW = could not confirm caller,
+ *                           may be unused/dead code
+ */
 function bntm_shortcode_kbf_admin() {
     if(!current_user_can('manage_options')) return '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Access denied.</div></div>';
     kbf_global_assets();
     global $wpdb;
+    /**
+     * @function  get_param
+     * @purpose   Handles get_param behavior for the admin UI renderer.
+     * @used-by   [shortcode render flow, same file function call]
+     * @calls     [WordPress APIs, same file helpers]
+     * @params    [mixed $key - parameter, mixed $default - parameter]
+     * @returns   [mixed rendered output or helper value]
+     * @status    ACTIVE | NEEDS REVIEW
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $get_param = function($key, $default = '') {
         return isset($_GET[$key]) ? sanitize_text_field($_GET[$key]) : $default;
     };
     $tab = $get_param('adm_tab', 'pending');
     $nonce = wp_create_nonce('kbf_admin_action');
+    /**
+     * @function  count_query
+     * @purpose   Handles count_query behavior for the admin UI renderer.
+     * @used-by   [shortcode render flow, same file function call]
+     * @calls     [WordPress APIs, same file helpers]
+     * @params    [mixed $table - parameter, mixed $where - parameter]
+     * @returns   [mixed rendered output or helper value]
+     * @status    ACTIVE | NEEDS REVIEW
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $count_query = function($table, $where) use ($wpdb) {
         return (int)$wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}{$table} WHERE {$where}"); // phpcs:ignore
     };
+    /**
+     * @function  format_nav_count
+     * @purpose   Handles format_nav_count behavior for the admin UI renderer.
+     * @used-by   [shortcode render flow, same file function call]
+     * @calls     [WordPress APIs, same file helpers]
+     * @params    [mixed $raw - parameter]
+     * @returns   [mixed rendered output or helper value]
+     * @status    ACTIVE | NEEDS REVIEW
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $format_nav_count = function($raw) {
         return $raw >= 100 ? '99+' : (string)$raw;
     };
@@ -62,24 +110,50 @@ function bntm_shortcode_kbf_admin() {
       'Administration'=>['organizers'=>'Accounts','security'=>'Security Logs','settings'=>'Settings'],
     ];
     $counts=['pending'=>$pending_count_admin,'reports'=>$open_reports_count,'withdrawals'=>$pending_wd_count,'appeals'=>$open_appeals_count];
+    /**
+     * @function  render_nav_link
+     * @purpose   Handles render_nav_link behavior for the admin UI renderer.
+     * @used-by   [shortcode render flow, same file function call]
+     * @calls     [WordPress APIs, same file helpers]
+     * @params    [mixed $key - parameter, mixed $label - parameter]
+     * @returns   [mixed rendered output or helper value]
+     * @status    ACTIVE | NEEDS REVIEW
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $render_nav_link = function($key, $label) use ($tab, $counts, $format_nav_count) {
         $raw_count = !empty($counts[$key]) ? (int)$counts[$key] : 0;
         $display_count = $format_nav_count($raw_count);
+        $href = esc_url(add_query_arg('adm_tab', $key));
         ?>
-        <a href="?adm_tab=<?php echo $key; ?>" class="<?php echo $tab===$key?'active':''; ?>" data-kbf-adm-tab="<?php echo esc_attr($key); ?>">
-          <?php echo $label; ?>
+        <a href="<?php echo $href; ?>" class="<?php echo $tab===$key?'active':''; ?>" data-kbf-adm-tab="<?php echo esc_attr($key); ?>">
+          <?php echo esc_html($label); ?>
           <?php if($raw_count > 0): ?>
             <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
           <?php endif; ?>
         </a>
         <?php
     };
+    /**
+     * @function  render_mobile_link
+     * @purpose   Handles render_mobile_link behavior for the admin UI renderer.
+     * @used-by   [shortcode render flow, same file function call]
+     * @calls     [WordPress APIs, same file helpers]
+     * @params    [mixed $key - parameter, mixed $label - parameter]
+     * @returns   [mixed rendered output or helper value]
+     * @status    ACTIVE | NEEDS REVIEW
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $render_mobile_link = function($key, $label) use ($tab, $counts, $format_nav_count) {
         $raw_count = !empty($counts[$key]) ? (int)$counts[$key] : 0;
         $display_count = $format_nav_count($raw_count);
+        $href = esc_url(add_query_arg('adm_tab', $key));
         ?>
-        <a href="?adm_tab=<?php echo $key; ?>" class="<?php echo $tab===$key?'active':''; ?>" data-kbf-adm-tab="<?php echo esc_attr($key); ?>" onclick="kbfCloseMobileMenu()">
-          <?php echo $label; ?>
+        <a href="<?php echo $href; ?>" class="<?php echo $tab===$key?'active':''; ?>" data-kbf-adm-tab="<?php echo esc_attr($key); ?>" onclick="kbfCloseMobileMenu()">
+          <?php echo esc_html($label); ?>
           <?php if($raw_count > 0): ?>
             <span class="kbf-nav-count"><?php echo esc_html($display_count); ?></span>
           <?php endif; ?>
@@ -156,7 +230,7 @@ function bntm_shortcode_kbf_admin() {
         </div>
         <div class="kbf-modal-body">
           <div class="kbf-form-group">
-            <label for="kbf-admin-reject-template">Pre‑Generated Message</label>
+            <label for="kbf-admin-reject-template">Pre-Generated Message</label>
             <select id="kbf-admin-reject-template">
               <option value="">Select a reason...</option>
             </select>
@@ -176,8 +250,8 @@ function bntm_shortcode_kbf_admin() {
 
        <!-- ================== JS ================== -->
     <script>
-    var ajaxurl = window.ajaxurl || '<?php echo admin_url('admin-ajax.php'); ?>';
-    var _kbfAdminNonce='<?php echo $nonce; ?>';
+    var ajaxurl = window.ajaxurl || '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';
+    var _kbfAdminNonce='<?php echo esc_js($nonce); ?>';
     var kbfAdminTab = '<?php echo esc_js($tab); ?>';
     var kbfAdminAutoRefresh = <?php echo $tab === 'settings' ? 'false' : 'true'; ?>;
     var kbfAdminRefreshInterval = 25000;
@@ -189,11 +263,29 @@ function bntm_shortcode_kbf_admin() {
         kbfAdminDateFrom = _kbfParams.get('date_from') || '';
         kbfAdminDateTo = _kbfParams.get('date_to') || '';
     } catch (e) {}
+    /**
+     * @function  kbfAdminStartRefresh
+     * @purpose   Handles kbfAdminStartRefresh behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     function kbfAdminStartRefresh(){
         if (!kbfAdminAutoRefresh) return;
         if (kbfAdminRefreshTimer) clearInterval(kbfAdminRefreshTimer);
         kbfAdminRefreshTimer = setInterval(kbfAdminRefreshTab, kbfAdminRefreshInterval);
     }
+    /**
+     * @function  kbfAdminStopRefresh
+     * @purpose   Handles kbfAdminStopRefresh behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     function kbfAdminStopRefresh(){
         if (!kbfAdminRefreshTimer) return;
         clearInterval(kbfAdminRefreshTimer);
@@ -229,11 +321,29 @@ function bntm_shortcode_kbf_admin() {
             'Other'
         ]
     };
+    /**
+     * @function  kbfSetLoadingPage
+     * @purpose   Handles kbfSetLoadingPage behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed on - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfSetLoadingPage = function(on){
         var el = document.getElementById('kbf-loading-overlay');
         if(!el) return;
         el.style.display = on ? 'flex' : 'none';
     };
+    /**
+     * @function  kbfAdmin
+     * @purpose   Handles kbfAdmin behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed action - parameter, mixed params - parameter, mixed opts - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfAdmin=function(action,params,opts){
         opts = opts || {};
         const fd=new FormData();fd.append('action',action);fd.append('_ajax_nonce',_kbfAdminNonce);
@@ -263,6 +373,15 @@ function bntm_shortcode_kbf_admin() {
             console.log('kbfAdmin action:', action, 'params:', params);
         });
     };
+    /**
+     * @function  kbfOpenAdminRejectModal
+     * @purpose   Handles kbfOpenAdminRejectModal behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed context - parameter, mixed params - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfOpenAdminRejectModal = function(context, params){
         var modal = document.getElementById('kbf-admin-reject-modal');
         var title = document.getElementById('kbf-admin-reject-title');
@@ -293,6 +412,15 @@ function bntm_shortcode_kbf_admin() {
         document.documentElement.classList.add('kbf-modal-lock');
         document.body.classList.add('kbf-modal-lock');
     };
+    /**
+     * @function  kbfCloseAdminRejectModal
+     * @purpose   Handles kbfCloseAdminRejectModal behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfCloseAdminRejectModal = function(){
         var modal = document.getElementById('kbf-admin-reject-modal');
         if (modal) modal.style.display = 'none';
@@ -300,6 +428,15 @@ function bntm_shortcode_kbf_admin() {
         document.documentElement.classList.remove('kbf-modal-lock');
         document.body.classList.remove('kbf-modal-lock');
     };
+    /**
+     * @function  kbfSubmitAdminReject
+     * @purpose   Handles kbfSubmitAdminReject behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfSubmitAdminReject = function(){
         var notes = document.getElementById('kbf-admin-reject-notes');
         var text = notes ? String(notes.value || '').trim() : '';
@@ -331,6 +468,15 @@ function bntm_shortcode_kbf_admin() {
         if (!val || val === 'Other') return;
         notes.value = val;
     });
+    /**
+     * @function  kbfAdminApplyCounts
+     * @purpose   Handles kbfAdminApplyCounts behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed counts - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     function kbfAdminApplyCounts(counts){
         if (!counts) return;
         Object.keys(counts).forEach(function(key){
@@ -352,6 +498,15 @@ function bntm_shortcode_kbf_admin() {
             });
         });
     }
+    /**
+     * @function  kbfAdminRunInlineScripts
+     * @purpose   Handles kbfAdminRunInlineScripts behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed container - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     function kbfAdminRunInlineScripts(container){
         if (!container) return;
         var scripts = container.querySelectorAll('script');
@@ -361,6 +516,15 @@ function bntm_shortcode_kbf_admin() {
             try { (new Function(code))(); } catch(e) { console.error('kbfAdmin inline script error:', e); }
         });
     }
+    /**
+     * @function  kbfAdminInitTableTools
+     * @purpose   Handles kbfAdminInitTableTools behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed scope - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     function kbfAdminInitTableTools(scope){
         var root = scope || document;
         var targets = Array.prototype.slice.call(root.querySelectorAll('.kbf-table-wrap, .kbf-table-empty'));
@@ -427,6 +591,15 @@ function bntm_shortcode_kbf_admin() {
                 statusSelect.setAttribute('disabled', 'disabled');
             }
 
+            /**
+             * @function  applyFilter
+             * @purpose   Handles applyFilter behavior for the admin UI script.
+             * @used-by   [same file event flow, onclick handler, or function call]
+             * @calls     [same file helpers and browser APIs]
+             * @params    [none]
+             * @returns   [void]
+             * @status    ACTIVE | NEEDS REVIEW
+             */
             function applyFilter(){
                 if (!table) return;
                 var q = String(searchInput.value || '').toLowerCase().trim();
@@ -449,7 +622,25 @@ function bntm_shortcode_kbf_admin() {
             if (rangeSelect) rangeSelect.addEventListener('change', function(){
                 var val = String(rangeSelect.value || '');
                 var now = new Date();
+                /**
+                 * @function  pad
+                 * @purpose   Handles pad behavior for the admin UI script.
+                 * @used-by   [same file event flow, onclick handler, or function call]
+                 * @calls     [same file helpers and browser APIs]
+                 * @params    [mixed n - parameter]
+                 * @returns   [void]
+                 * @status    ACTIVE | NEEDS REVIEW
+                 */
                 function pad(n){ return String(n).padStart(2, '0'); }
+                /**
+                 * @function  fmt
+                 * @purpose   Handles fmt behavior for the admin UI script.
+                 * @used-by   [same file event flow, onclick handler, or function call]
+                 * @calls     [same file helpers and browser APIs]
+                 * @params    [mixed d - parameter]
+                 * @returns   [void]
+                 * @status    ACTIVE | NEEDS REVIEW
+                 */
                 function fmt(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
                 var from = '';
                 var to = '';
@@ -490,6 +681,15 @@ function bntm_shortcode_kbf_admin() {
             });
         });
     }
+    /**
+     * @function  kbfAdminRefreshTab
+     * @purpose   Handles kbfAdminRefreshTab behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     function kbfAdminRefreshTab(){
         if (!kbfAdminAutoRefresh || document.hidden) return;
         if (window.kbfAdminRefreshing) return;
@@ -530,6 +730,15 @@ function bntm_shortcode_kbf_admin() {
             });
         });
     }
+    /**
+     * @function  kbfSetTableLoading
+     * @purpose   Handles kbfSetTableLoading behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed target - parameter, mixed on - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfSetTableLoading = function(target, on){
         var el = null;
         if (typeof target === 'string') {
@@ -543,14 +752,77 @@ function bntm_shortcode_kbf_admin() {
         if (on) wrap.classList.add('is-loading');
         else wrap.classList.remove('is-loading');
     };
+    /**
+     * @function  kbfApprove
+     * @purpose   Handles kbfApprove behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed id - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfApprove=function(id){if(!confirm('Approve this fund?'))return;kbfAdmin('kbf_admin_approve_fund',{fund_id:id});};
+    /**
+     * @function  kbfReject
+     * @purpose   Handles kbfReject behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed id - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfReject=function(id){
         window.kbfOpenAdminRejectModal('fund',{fund_id:id});
     };
+    /**
+     * @function  kbfSuspend
+     * @purpose   Handles kbfSuspend behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed id - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfSuspend=function(id){if(!confirm('Suspend this fund?'))return;kbfAdmin('kbf_admin_suspend_fund',{fund_id:id});};
+    /**
+     * @function  kbfVerifyBadge
+     * @purpose   Handles kbfVerifyBadge behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed id - parameter, mixed cur - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfVerifyBadge=function(id,cur){kbfAdmin('kbf_admin_verify_badge',{fund_id:id,verified:cur?'0':'1'});};
+    /**
+     * @function  kbfEscrow
+     * @purpose   Handles kbfEscrow behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed id - parameter, mixed act - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfEscrow=function(id,act){kbfAdmin('kbf_admin_'+act+'_escrow',{fund_id:id});};
+        /**
+         * @function  kbfDismissReport
+         * @purpose   Handles kbfDismissReport behavior for the admin UI script.
+         * @used-by   [same file event flow, onclick handler, or function call]
+         * @calls     [same file helpers and browser APIs]
+         * @params    [mixed id - parameter]
+         * @returns   [void]
+         * @status    ACTIVE | NEEDS REVIEW
+         */
         window.kbfDismissReport=function(id){kbfAdmin('kbf_admin_dismiss_report',{report_id:id});};
+        /**
+         * @function  kbfReviewAppeal
+         * @purpose   Handles kbfReviewAppeal behavior for the admin UI script.
+         * @used-by   [same file event flow, onclick handler, or function call]
+         * @calls     [same file helpers and browser APIs]
+         * @params    [mixed id - parameter, mixed action - parameter]
+         * @returns   [void]
+         * @status    ACTIVE | NEEDS REVIEW
+         */
         window.kbfReviewAppeal=function(id,action){
             if(action==='reject'){
                 window.kbfOpenAdminRejectModal('appeal',{appeal_id:id});
@@ -558,6 +830,15 @@ function bntm_shortcode_kbf_admin() {
             }
             const n=prompt('Admin notes (optional):');if(n===null)return;kbfAdmin('kbf_admin_review_appeal',{appeal_id:id,action_type:action,notes:n});
         };
+/**
+ * @function  kbfProcessWd
+ * @purpose   Handles kbfProcessWd behavior for the admin UI script.
+ * @used-by   [same file event flow, onclick handler, or function call]
+ * @calls     [same file helpers and browser APIs]
+ * @params    [mixed id - parameter, mixed type - parameter]
+ * @returns   [void]
+ * @status    ACTIVE | NEEDS REVIEW
+ */
 window.kbfProcessWd=function(id,type){
     if(type==='reject'){
         window.kbfOpenAdminRejectModal('withdrawal',{withdrawal_id:id});
@@ -566,6 +847,15 @@ window.kbfProcessWd=function(id,type){
         kbfAdmin('kbf_admin_process_withdrawal',{withdrawal_id:id,action_type:'approve'});
     }
 };
+/**
+ * @function  kbfProcessEscrowRequest
+ * @purpose   Handles kbfProcessEscrowRequest behavior for the admin UI script.
+ * @used-by   [same file event flow, onclick handler, or function call]
+ * @calls     [same file helpers and browser APIs]
+ * @params    [mixed id - parameter, mixed type - parameter]
+ * @returns   [void]
+ * @status    ACTIVE | NEEDS REVIEW
+ */
 window.kbfProcessEscrowRequest=function(id,type){
     if(type==='reject'){
         window.kbfOpenAdminRejectModal('escrow',{request_id:id});
@@ -574,7 +864,25 @@ window.kbfProcessEscrowRequest=function(id,type){
         kbfAdmin('kbf_admin_process_escrow_request',{request_id:id,action_type:'approve'});
     }
 };
+    /**
+     * @function  kbfConfirmPayment
+     * @purpose   Handles kbfConfirmPayment behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed id - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfConfirmPayment=function(id){if(!confirm('Mark this sponsorship as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
+    /**
+     * @function  kbfToggleMobileMenu
+     * @purpose   Handles kbfToggleMobileMenu behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     function kbfToggleMobileMenu(){
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
@@ -582,6 +890,15 @@ window.kbfProcessEscrowRequest=function(id,type){
         menu.classList.toggle('kbf-menu-open');
         overlay.classList.toggle('kbf-overlay-open');
     }
+    /**
+     * @function  kbfCloseMobileMenu
+     * @purpose   Handles kbfCloseMobileMenu behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     function kbfCloseMobileMenu(){
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
@@ -599,6 +916,15 @@ window.kbfProcessEscrowRequest=function(id,type){
             kbfCloseMobileMenu();
         }
     });
+/**
+ * @function  kbfVerifyOrg
+ * @purpose   Handles kbfVerifyOrg behavior for the admin UI script.
+ * @used-by   [same file event flow, onclick handler, or function call]
+ * @calls     [same file helpers and browser APIs]
+ * @params    [mixed btn - parameter, mixed id - parameter, mixed verified - parameter]
+ * @returns   [void]
+ * @status    ACTIVE | NEEDS REVIEW
+ */
 window.kbfVerifyOrg=function(btn,id,verified){
     var v = parseInt(verified,10) ? 1 : 0;
     if(v === 0){
@@ -622,6 +948,15 @@ window.kbfVerifyOrg=function(btn,id,verified){
     });
 };
 
+/**
+ * @function  kbfOpenRejectModal
+ * @purpose   Handles kbfOpenRejectModal behavior for the admin UI script.
+ * @used-by   [same file event flow, onclick handler, or function call]
+ * @calls     [same file helpers and browser APIs]
+ * @params    [none]
+ * @returns   [void]
+ * @status    ACTIVE | NEEDS REVIEW
+ */
 window.kbfOpenRejectModal = function(){
     var modal = document.getElementById('kbf-reject-modal');
     if (!modal) return;
@@ -633,12 +968,30 @@ window.kbfOpenRejectModal = function(){
     document.documentElement.classList.add('kbf-modal-lock');
     document.body.classList.add('kbf-modal-lock');
 };
+/**
+ * @function  kbfCloseRejectModal
+ * @purpose   Handles kbfCloseRejectModal behavior for the admin UI script.
+ * @used-by   [same file event flow, onclick handler, or function call]
+ * @calls     [same file helpers and browser APIs]
+ * @params    [none]
+ * @returns   [void]
+ * @status    ACTIVE | NEEDS REVIEW
+ */
 window.kbfCloseRejectModal = function(){
     var modal = document.getElementById('kbf-reject-modal');
     if (modal) modal.style.display = 'none';
     document.documentElement.classList.remove('kbf-modal-lock');
     document.body.classList.remove('kbf-modal-lock');
 };
+/**
+ * @function  kbfSubmitReject
+ * @purpose   Handles kbfSubmitReject behavior for the admin UI script.
+ * @used-by   [same file event flow, onclick handler, or function call]
+ * @calls     [same file helpers and browser APIs]
+ * @params    [none]
+ * @returns   [void]
+ * @status    ACTIVE | NEEDS REVIEW
+ */
 window.kbfSubmitReject = function(){
     var notes = document.getElementById('kbf-reject-notes');
     var text = notes ? String(notes.value || '').trim() : '';
@@ -675,6 +1028,15 @@ window.kbfSubmitReject = function(){
         notes.value = val;
     });
     kbfAdminInitTableTools(document);
+    /**
+     * @function  kbfTriggerOnboarding
+     * @purpose   Handles kbfTriggerOnboarding behavior for the admin UI script.
+     * @used-by   [same file event flow, onclick handler, or function call]
+     * @calls     [same file helpers and browser APIs]
+     * @params    [mixed id - parameter]
+     * @returns   [void]
+     * @status    ACTIVE | NEEDS REVIEW
+     */
     window.kbfTriggerOnboarding=function(id){
         if(!confirm('Restart onboarding for this account?')) return;
         kbfAdmin('kbf_admin_trigger_onboarding',{business_id:id});
