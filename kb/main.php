@@ -454,14 +454,14 @@ function kbf_withdrawal_status_label($status) {
     if ($status === 'released' || $status === 'approved') return 'Approved';
     if ($status === 'rejected') return 'Rejected';
     if ($status === 'pending') return 'Pending';
-    return ucfirst((string)$status);
+    return ucfirst(sanitize_text_field((string)$status));
 }
 
 function kbf_withdrawal_badge_class($status) {
     if ($status === 'released' || $status === 'approved') return 'active';
     if ($status === 'rejected') return 'cancelled';
     if ($status === 'pending') return 'pending';
-    return (string)$status;
+    return sanitize_html_class((string)$status);
 }
 
 function kbf_role_nav($role) {

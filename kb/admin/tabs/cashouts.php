@@ -112,7 +112,7 @@ function kbf_admin_withdrawals_tab() {
               <td><span class="kbf-strong">PHP <?php echo $format_amount($w->amount, 2); ?></span></td>
               <td class="kbf-meta"><?php echo esc_html($format_account_type($w->account_type)); ?></td>
               <td class="kbf-meta"><?php echo esc_html($w->account_name); ?><br><?php echo esc_html($w->account_number); ?></td>
-              <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
+              <td><span class="kbf-badge kbf-badge-<?php echo esc_attr(kbf_withdrawal_badge_class($w->status)); ?>"><?php echo esc_html(kbf_withdrawal_status_label($w->status)); ?></span></td>
               <td class="kbf-meta"><?php echo $format_date($w->requested_at); ?></td>
               <td class="kbf-meta"><?php echo $format_date($w->processed_at); ?></td>
               <td>

@@ -499,21 +499,87 @@ function bntm_shortcode_kbf_admin() {
         });
     }
     /**
-     * @function  kbfAdminRunInlineScripts
-     * @purpose   Handles kbfAdminRunInlineScripts behavior for the admin UI script.
-     * @used-by   [same file event flow, onclick handler, or function call]
+     * @function  kbfAdminInitCardPagers
+     * @purpose   Initializes client-side card pagination controls for card-list tabs without executing inline scripts.
+     * @used-by   [initial page load, kbfAdminRefreshTab]
      * @calls     [same file helpers and browser APIs]
-     * @params    [mixed container - parameter]
+     * @params    [mixed scope - optional DOM scope root]
      * @returns   [void]
-     * @status    ACTIVE | NEEDS REVIEW
+     * @status    ACTIVE
      */
-    function kbfAdminRunInlineScripts(container){
-        if (!container) return;
-        var scripts = container.querySelectorAll('script');
-        scripts.forEach(function(script){
-            var code = script.textContent || '';
-            if (!code.trim()) return;
-            try { (new Function(code))(); } catch(e) { console.error('kbfAdmin inline script error:', e); }
+    function kbfAdminInitCardPagers(scope){
+        var root = scope || document;
+        var wraps = Array.prototype.slice.call(root.querySelectorAll('.kbf-admin-card-list[data-kbf-card-pager]'));
+        if (!wraps.length) return;
+        wraps.forEach(function(wrap){
+            if (!wrap || wrap.dataset.kbfPager === 'on') return;
+            var cards = Array.prototype.slice.call(wrap.querySelectorAll('.kbf-admin-card'));
+            if (!cards.length) return;
+            wrap.dataset.kbfPager = 'on';
+
+            var pager = document.createElement('div');
+            pager.className = 'kbf-table-pager';
+            pager.innerHTML = '' +
+                '<div class="kbf-table-pager-left">Show&nbsp;' +
+                '<select class="kbf-table-rows">' +
+                    '<option value="3">3</option>' +
+                    '<option value="5" selected>5</option>' +
+                    '<option value="10">10</option>' +
+                '</select>&nbsp;cards</div>' +
+                '<div class="kbf-table-pager-right">' +
+                    '<button class="kbf-table-pager-btn kbf-table-prev" type="button">Prev</button>' +
+                    '<span class="kbf-table-pager-page">1 / 1</span>' +
+                    '<button class="kbf-table-pager-btn kbf-table-next" type="button">Next</button>' +
+                '</div>';
+            wrap.insertAdjacentElement('afterend', pager);
+
+            var select = pager.querySelector('.kbf-table-rows');
+            var prevBtn = pager.querySelector('.kbf-table-prev');
+            var nextBtn = pager.querySelector('.kbf-table-next');
+            var pageLabel = pager.querySelector('.kbf-table-pager-page');
+            var page = 1;
+            var perPage = 5;
+
+            function render(){
+                var total = cards.length;
+                var pages = Math.max(1, Math.ceil(total / perPage));
+                if (page > pages) page = pages;
+                var start = (page - 1) * perPage;
+                var end = start + perPage;
+                cards.forEach(function(card, i){
+                    card.style.display = (i >= start && i < end) ? '' : 'none';
+                });
+                pageLabel.textContent = page + ' / ' + pages;
+                prevBtn.disabled = page <= 1;
+                nextBtn.disabled = page >= pages;
+                pager.style.display = total > 0 ? 'flex' : 'none';
+            }
+
+            function setLoading(btn){
+                btn.classList.add('is-loading');
+                btn.disabled = true;
+                setTimeout(function(){
+                    btn.classList.remove('is-loading');
+                    render();
+                }, 250);
+            }
+
+            select.addEventListener('change', function(){
+                perPage = parseInt(this.value, 10) || 5;
+                page = 1;
+                render();
+            });
+            prevBtn.addEventListener('click', function(){
+                if (page > 1) {
+                    page--;
+                    setLoading(prevBtn);
+                }
+            });
+            nextBtn.addEventListener('click', function(){
+                page++;
+                setLoading(nextBtn);
+            });
+            render();
         });
     }
     /**
@@ -714,9 +780,11 @@ function bntm_shortcode_kbf_admin() {
             if (!j || !j.success || !j.data || !j.data.html) return;
             var container = document.querySelector('.kbf-tab-content');
             if (!container) return;
-            container.innerHTML = j.data.html;
-            kbfAdminRunInlineScripts(container);
+            var rawHtml = String(j.data.html || '');
+            var safeHtml = rawHtml.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+            container.innerHTML = safeHtml;
             kbfAdminInitTableTools(container);
+            kbfAdminInitCardPagers(container);
             if (window.kbfInitTablePager) window.kbfInitTablePager();
             if (j.data.counts) kbfAdminApplyCounts(j.data.counts);
             if (window.kbfInitTableDescriptions) window.kbfInitTableDescriptions();
@@ -814,6 +882,31 @@ function bntm_shortcode_kbf_admin() {
          * @status    ACTIVE | NEEDS REVIEW
          */
         window.kbfDismissReport=function(id){kbfAdmin('kbf_admin_dismiss_report',{report_id:id});};
+        window.kbfAppealQuickAction=function(btn,id,action){
+            if(!id || !action) return false;
+            if (typeof window.kbfReviewAppeal === 'function') {
+                window.kbfReviewAppeal(id, action);
+                return false;
+            }
+            if (action === 'reject') {
+                if (typeof window.kbfOpenAdminRejectModal === 'function') {
+                    window.kbfOpenAdminRejectModal('appeal', { appeal_id: id });
+                } else if (typeof window.kbfAdmin === 'function') {
+                    var rejectNotes = prompt('Reason for rejection (required):');
+                    if (rejectNotes === null) return false;
+                    rejectNotes = String(rejectNotes || '').trim();
+                    if (!rejectNotes) { alert('Please provide a reason for rejection.'); return false; }
+                    window.kbfAdmin('kbf_admin_review_appeal', { appeal_id: id, action_type: 'reject', notes: rejectNotes });
+                }
+                return false;
+            }
+            if (typeof window.kbfAdmin === 'function') {
+                var approveNotes = prompt('Admin notes (optional):');
+                if (approveNotes === null) return false;
+                window.kbfAdmin('kbf_admin_review_appeal', { appeal_id: id, action_type: action, notes: approveNotes });
+            }
+            return false;
+        };
         /**
          * @function  kbfReviewAppeal
          * @purpose   Handles kbfReviewAppeal behavior for the admin UI script.
@@ -1028,6 +1121,7 @@ window.kbfSubmitReject = function(){
         notes.value = val;
     });
     kbfAdminInitTableTools(document);
+    kbfAdminInitCardPagers(document);
     /**
      * @function  kbfTriggerOnboarding
      * @purpose   Handles kbfTriggerOnboarding behavior for the admin UI script.
