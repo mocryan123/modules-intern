@@ -18,7 +18,7 @@ function kbf_dashboard_withdrawals_tab($business_id) {
     $ft = $wpdb->prefix . 'kbf_funds';
     $wt = $wpdb->prefix . 'kbf_withdrawals';
     $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT w.*,f.title as fund_title FROM {$wt} w INNER JOIN {$ft} f ON w.fund_id=f.id WHERE f.business_id=%d ORDER BY w.requested_at DESC",
+        "SELECT w.*,f.title as fund_title,f.goal_amount as fund_goal_amount,f.raised_amount as fund_raised_amount,f.deadline as fund_deadline FROM {$wt} w INNER JOIN {$ft} f ON w.fund_id=f.id WHERE f.business_id=%d ORDER BY w.requested_at DESC",
         $business_id
     ));
     $format_date = function($value) {
@@ -55,9 +55,10 @@ function kbf_dashboard_withdrawals_tab($business_id) {
       <h3 class="kbf-section-title">Cashout History</h3>
       <?php if(empty($rows)): ?>
         <div class="kbf-table-empty" data-kbf-table-desc="Tracks your cashout requests, payout account details, and release status.">
-          <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr .9fr 1fr 1.6fr .9fr .9fr .9fr;">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr .9fr .9fr 1fr 1.6fr .9fr .9fr .9fr;">
             <span>Fundraiser</span>
             <span>Amount</span>
+            <span>Platform Fee</span>
             <span>Account Type</span>
             <span>Payout Account</span>
             <span>Status</span>
@@ -70,14 +71,24 @@ function kbf_dashboard_withdrawals_tab($business_id) {
         <div class="kbf-table-wrap kbf-cashout-wrap" data-kbf-table-desc="Tracks your cashout requests, payout account details, and release status.">
           <table class="kbf-table kbf-cashout-table">
             <colgroup>
-              <col><col><col><col><col><col><col>
+              <col><col><col><col><col><col><col><col>
             </colgroup>
-            <thead><tr><th>Fundraiser</th><th>Amount</th><th>Account Type</th><th>Payout Account</th><th>Status</th><th>Requested</th><th>Released</th></tr></thead>
+            <thead><tr><th>Fundraiser</th><th>Amount</th><th>Platform Fee</th><th>Account Type</th><th>Payout Account</th><th>Status</th><th>Requested</th><th>Released</th></tr></thead>
             <tbody>
             <?php foreach($rows as $w): ?>
+              <?php
+                $fund_meta = (object) [
+                  'goal_amount' => (float) $w->fund_goal_amount,
+                  'raised_amount' => (float) $w->fund_raised_amount,
+                  'deadline' => (string) $w->fund_deadline,
+                ];
+                $fee_rate = function_exists('kbf_get_platform_fee_rate') ? kbf_get_platform_fee_rate($fund_meta) : 0.05;
+                $fee_amount = max(0, round(((float) $w->amount) * (float) $fee_rate, 2));
+              ?>
               <tr>
                 <td><span class="kbf-cashout-title kbf-strong"><?php echo esc_html($w->fund_title); ?></span></td>
                 <td><span class="kbf-strong">&#8369;<?php echo esc_html(number_format((float) $w->amount,2)); ?></span></td>
+                <td class="kbf-meta"><span class="kbf-strong"><?php echo esc_html((string) round($fee_rate * 100)); ?>%</span> &bull; &#8369;<?php echo esc_html(number_format($fee_amount, 2)); ?></td>
                 <td class="kbf-meta"><?php echo esc_html($format_account_type($w->account_type)); ?></td>
                 <td class="kbf-meta"><?php echo esc_html($w->account_name); ?> &bull; <?php echo esc_html($mask_account_number($w->account_number)); ?></td>
                 <td><span class="kbf-badge kbf-badge-<?php echo esc_attr(kbf_withdrawal_badge_class($w->status)); ?>"><?php echo esc_html(kbf_withdrawal_status_label($w->status)); ?></span></td>
