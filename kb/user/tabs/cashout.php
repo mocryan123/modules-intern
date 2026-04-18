@@ -51,6 +51,25 @@ function kbf_dashboard_withdrawals_tab($business_id) {
     ob_start();
     ?>
     <!-- ================== HTML ================== -->
+    <style>
+      .kbf-cashout-wrap .kbf-cashout-table tbody td:first-child{
+        display:table-cell !important;
+      }
+      .kbf-cashout-wrap .kbf-cashout-title{
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:normal;
+        overflow-wrap:anywhere;
+        word-break:break-word;
+      }
+      .kbf-cashout-wrap .kbf-cashout-table td:nth-child(5){
+        overflow-wrap:anywhere;
+        word-break:break-word;
+      }
+    </style>
     <div class="kbf-section">
       <h3 class="kbf-section-title">Cashout History</h3>
       <?php if(empty($rows)): ?>

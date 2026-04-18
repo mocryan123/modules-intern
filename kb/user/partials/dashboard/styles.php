@@ -602,19 +602,21 @@
         white-space:normal;
     }
     .kbf-cashout-table th:nth-child(1),
-    .kbf-cashout-table td:nth-child(1){width:24%;}
+    .kbf-cashout-table td:nth-child(1){width:22%;}
     .kbf-cashout-table th:nth-child(2),
-    .kbf-cashout-table td:nth-child(2){width:12%;}
+    .kbf-cashout-table td:nth-child(2){width:11%;}
     .kbf-cashout-table th:nth-child(3),
-    .kbf-cashout-table td:nth-child(3){width:14%;}
+    .kbf-cashout-table td:nth-child(3){width:13%;}
     .kbf-cashout-table th:nth-child(4),
-    .kbf-cashout-table td:nth-child(4){width:18%;}
+    .kbf-cashout-table td:nth-child(4){width:16%;}
     .kbf-cashout-table th:nth-child(5),
-    .kbf-cashout-table td:nth-child(5){width:10%;}
+    .kbf-cashout-table td:nth-child(5){width:12%;}
     .kbf-cashout-table th:nth-child(6),
-    .kbf-cashout-table td:nth-child(6){width:11%;}
+    .kbf-cashout-table td:nth-child(6){width:9%;}
     .kbf-cashout-table th:nth-child(7),
-    .kbf-cashout-table td:nth-child(7){width:11%;}
+    .kbf-cashout-table td:nth-child(7){width:9%;}
+    .kbf-cashout-table th:nth-child(8),
+    .kbf-cashout-table td:nth-child(8){width:8%;}
     .kbf-cashout-table .kbf-note-cell{white-space:normal;}
     .kbf-cashout-table .kbf-note-row td,
     .kbf-cashout-table .kbf-note-cell{
@@ -1816,6 +1818,31 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     /* ===== CREATE MODAL REDESIGN ===== */
     #kbf-modal-create .kbf-modal{max-width:900px;}
     #kbf-modal-create .kbf-modal{height:min(90vh, 720px);}
+    /* Keep parent scrollbar styling consistent with create modal body. */
+    #kbf-modal-create .kbf-modal{
+        scrollbar-width:thin;
+        scrollbar-color:#2070e0 #f8fafc;
+    }
+    #kbf-modal-create .kbf-modal::-webkit-scrollbar{
+        width:10px;
+    }
+    #kbf-modal-create .kbf-modal::-webkit-scrollbar-button{
+        width:0;
+        height:0;
+        display:none;
+    }
+    #kbf-modal-create .kbf-modal::-webkit-scrollbar-track{
+        background:#f8fafc;
+        border-radius:999px;
+    }
+    #kbf-modal-create .kbf-modal::-webkit-scrollbar-thumb{
+        background:#2070e0;
+        border-radius:999px;
+        border:2px solid #f8fafc;
+    }
+    #kbf-modal-create .kbf-modal::-webkit-scrollbar-thumb:hover{
+        background:#2070e0;
+    }
     #kbf-modal-create .kbf-modal-body{
         max-height:none;
         flex:1 1 auto;
@@ -2503,6 +2530,67 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     .kbf-user-ui #kbf-modal-create .kbf-modal-body,
     .kbf-user-ui #kbf-modal-edit .kbf-modal-body{
         overflow-y:hidden;
+    }
+    /* Create modal uses .kbf-create-panel (not .kbf-step-content), so body must remain scrollable. */
+    .kbf-user-ui #kbf-modal-create .kbf-modal-body{
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch;
+    }
+    /* Enforce scrollbar skin on all user-side modals (final cascade). */
+    .kbf-user-ui .kbf-modal,
+    .kbf-user-ui .kbf-modal-body,
+    .kbf-user-ui .kbf-table-wrap{
+        scrollbar-width:thin !important;
+        scrollbar-color:#2070e0 #f8fafc !important;
+    }
+    .kbf-user-ui .kbf-modal::-webkit-scrollbar,
+    .kbf-user-ui .kbf-modal-body::-webkit-scrollbar,
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar{
+        width:10px !important;
+        height:10px !important;
+    }
+    .kbf-user-ui .kbf-modal::-webkit-scrollbar-button,
+    .kbf-user-ui .kbf-modal-body::-webkit-scrollbar-button,
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-button{
+        width:0;
+        height:0;
+        display:none;
+    }
+    .kbf-user-ui .kbf-modal::-webkit-scrollbar-track,
+    .kbf-user-ui .kbf-modal-body::-webkit-scrollbar-track,
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-track{
+        background:#f8fafc !important;
+        border-radius:999px !important;
+    }
+    .kbf-user-ui .kbf-modal::-webkit-scrollbar-thumb,
+    .kbf-user-ui .kbf-modal-body::-webkit-scrollbar-thumb,
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-thumb{
+        background:#2070e0 !important;
+        border-radius:999px !important;
+        border:2px solid #f8fafc !important;
+    }
+    .kbf-user-ui .kbf-modal::-webkit-scrollbar-thumb:hover,
+    .kbf-user-ui .kbf-modal-body::-webkit-scrollbar-thumb:hover,
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-thumb:hover{
+        background:#2070e0 !important;
+    }
+    /* Strong parent override: create modal container scrollbar must beat generic styles. */
+    .kbf-user-ui #kbf-modal-create.kbf-modal-overlay .kbf-modal::-webkit-scrollbar{
+        width:10px !important;
+        height:10px !important;
+    }
+    .kbf-user-ui #kbf-modal-create.kbf-modal-overlay .kbf-modal::-webkit-scrollbar-track{
+        background:#f8fafc !important;
+        border-radius:999px !important;
+    }
+    .kbf-user-ui #kbf-modal-create.kbf-modal-overlay .kbf-modal::-webkit-scrollbar-thumb{
+        background:#2070e0 !important;
+        border-radius:999px !important;
+        border:2px solid #f8fafc !important;
+    }
+    .kbf-user-ui #kbf-modal-create.kbf-modal-overlay .kbf-modal{
+        scrollbar-width:thin !important;
+        scrollbar-color:#2070e0 #f8fafc !important;
     }
     @media (max-width: 900px){
         .kbf-user-ui #kbf-modal-create .kbf-modal-body,

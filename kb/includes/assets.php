@@ -1264,6 +1264,31 @@ function kbf_global_assets() {
     /* Tables */
     .kbf-table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid #e9eef6; background: #fff; position: relative; }
     .kbf-admin-wrap .kbf-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .kbf-admin-wrap .kbf-table-wrap{
+        scrollbar-width:thin;
+        scrollbar-color:#2070e0 #f8fafc;
+    }
+    .kbf-admin-wrap .kbf-table-wrap::-webkit-scrollbar{
+        width:10px;
+        height:10px;
+    }
+    .kbf-admin-wrap .kbf-table-wrap::-webkit-scrollbar-button{
+        width:0;
+        height:0;
+        display:none;
+    }
+    .kbf-admin-wrap .kbf-table-wrap::-webkit-scrollbar-track{
+        background:#f8fafc;
+        border-radius:999px;
+    }
+    .kbf-admin-wrap .kbf-table-wrap::-webkit-scrollbar-thumb{
+        background:#2070e0;
+        border-radius:999px;
+        border:2px solid #f8fafc;
+    }
+    .kbf-admin-wrap .kbf-table-wrap::-webkit-scrollbar-thumb:hover{
+        background:#2070e0;
+    }
     .kbf-admin-wrap .kbf-table { min-width: 860px; }
     .kbf-table-wrap.is-loading::before{
         content:'';

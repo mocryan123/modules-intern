@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
     /**
@@ -328,9 +328,9 @@ function bntm_shortcode_kbf_fund_details() {
       border-color:var(--kbf-border) !important;
     }
     .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;flex-wrap:wrap;}
-  .kbf-detail-panels{display:grid;grid-template-columns:1fr 340px;gap:28px;width:100%;}
-.kbf-detail-left{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;}
-.kbf-detail-right{display:flex;flex-direction:column;align-self:stretch;}
+  .kbf-detail-panels{display:grid;grid-template-columns:minmax(0,900px) minmax(0,1fr);gap:28px;width:100%;}
+.kbf-detail-left{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;width:100%;max-width:none;}
+.kbf-detail-right{display:flex;flex-direction:column;align-self:stretch;width:100%;max-width:none;}
   .kbf-detail-tabs{
       display:flex;
       flex-direction:column;
@@ -536,8 +536,8 @@ function bntm_shortcode_kbf_fund_details() {
       text-transform:uppercase;
       flex-shrink:0;
     }
-    .kbf-photo-gallery{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
-    .kbf-photo-main{width:100%;height:auto;border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;cursor:pointer;aspect-ratio:4 / 3;}
+    .kbf-photo-gallery{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;width:100%;}
+    .kbf-photo-main{width:100%;height:auto;border-radius:16px;overflow:hidden;border:1px solid var(--kbf-border);background:#f1f5f9;position:relative;cursor:pointer;aspect-ratio:16 / 10;}
     .kbf-photo-slides{position:relative;width:100%;height:100%;overflow:hidden;}
     .kbf-photo-slide{position:absolute;inset:0;opacity:0;transition:opacity .45s ease, transform .45s ease;transform:scale(1.03);z-index:1;}
     .kbf-photo-slide.is-active{opacity:1;transform:scale(1);z-index:2;}
@@ -758,6 +758,7 @@ function bntm_shortcode_kbf_fund_details() {
     @media(max-width:900px){
         .kbf-detail-panels{display:flex;flex-direction:column;gap:20px;}
         .kbf-detail-left,.kbf-detail-right{width:100%;}
+        .kbf-detail-left,.kbf-photo-gallery{max-width:100%;}
         .kbf-detail-right{order:0;}
         .kbf-section-photo{order:1;}
         .kbf-section-title{order:2;}
@@ -1195,7 +1196,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
         <?php else: ?>
         <div class="kbf-photo-gallery kbf-section-photo">
-          <div class="kbf-photo-main" id="kbf-photo-main" style="height:360px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--kbf-navy) 0%,var(--kbf-navy-light) 100%);">
+          <div class="kbf-photo-main" id="kbf-photo-main" style="height:300px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--kbf-navy) 0%,var(--kbf-navy-light) 100%);">
             <i class="ph-fill ph-heart kbf-icon" style="font-size:64px; opacity:.25;filter:invert(100%)" aria-hidden="true"></i>
           </div>
         </div>

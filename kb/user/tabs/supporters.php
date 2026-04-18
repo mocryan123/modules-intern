@@ -87,7 +87,14 @@ function kbf_dashboard_sponsorships_tab($business_id) {
           word-break:break-word;
         }
         .kbf-supporters-table td .kbf-clamp-2{
+          display:-webkit-box;
+          -webkit-line-clamp:2;
+          -webkit-box-orient:vertical;
+          overflow:hidden;
+          text-overflow:ellipsis;
           white-space:normal;
+          overflow-wrap:anywhere;
+          word-break:break-word;
         }
         /* Override shared table rule that sets first td to display:block and breaks column alignment. */
         .kbf-supporters-table tbody td:first-child{
@@ -167,8 +174,7 @@ function kbf_dashboard_sponsorships_tab($business_id) {
                   <?php else: ?>
                     <span class="kbf-supporter-name"><?php echo esc_html($s->sponsor_name); ?></span>
                   <?php endif; ?>
-                  <?php if($s->email): ?><span class="kbf-supporter-email"><?php echo esc_html($s->email); ?></span><?php endif; ?>
-                </td>
+                  </td>
                 <td><span class="kbf-strong">&#8369;<?php echo number_format($s->amount,2); ?></span></td>
                 <td>
                   <?php
