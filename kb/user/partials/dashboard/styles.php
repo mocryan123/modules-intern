@@ -2539,39 +2539,45 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     /* Enforce scrollbar skin on all user-side modals (final cascade). */
     .kbf-user-ui .kbf-modal,
     .kbf-user-ui .kbf-modal-body,
-    .kbf-user-ui .kbf-table-wrap{
+    .kbf-user-ui .kbf-table-wrap,
+    .kbf-user-ui .kbf-notif-list{
         scrollbar-width:thin !important;
         scrollbar-color:#2070e0 #f8fafc !important;
     }
     .kbf-user-ui .kbf-modal::-webkit-scrollbar,
     .kbf-user-ui .kbf-modal-body::-webkit-scrollbar,
-    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar{
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar,
+    .kbf-user-ui .kbf-notif-list::-webkit-scrollbar{
         width:10px !important;
         height:10px !important;
     }
     .kbf-user-ui .kbf-modal::-webkit-scrollbar-button,
     .kbf-user-ui .kbf-modal-body::-webkit-scrollbar-button,
-    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-button{
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-button,
+    .kbf-user-ui .kbf-notif-list::-webkit-scrollbar-button{
         width:0;
         height:0;
         display:none;
     }
     .kbf-user-ui .kbf-modal::-webkit-scrollbar-track,
     .kbf-user-ui .kbf-modal-body::-webkit-scrollbar-track,
-    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-track{
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-track,
+    .kbf-user-ui .kbf-notif-list::-webkit-scrollbar-track{
         background:#f8fafc !important;
         border-radius:999px !important;
     }
     .kbf-user-ui .kbf-modal::-webkit-scrollbar-thumb,
     .kbf-user-ui .kbf-modal-body::-webkit-scrollbar-thumb,
-    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-thumb{
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-thumb,
+    .kbf-user-ui .kbf-notif-list::-webkit-scrollbar-thumb{
         background:#2070e0 !important;
         border-radius:999px !important;
         border:2px solid #f8fafc !important;
     }
     .kbf-user-ui .kbf-modal::-webkit-scrollbar-thumb:hover,
     .kbf-user-ui .kbf-modal-body::-webkit-scrollbar-thumb:hover,
-    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-thumb:hover{
+    .kbf-user-ui .kbf-table-wrap::-webkit-scrollbar-thumb:hover,
+    .kbf-user-ui .kbf-notif-list::-webkit-scrollbar-thumb:hover{
         background:#2070e0 !important;
     }
     /* Strong parent override: create modal container scrollbar must beat generic styles. */

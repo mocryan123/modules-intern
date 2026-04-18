@@ -1204,7 +1204,7 @@
           var isOpen = dd.classList.toggle('kbf-open');
           btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         });
-        document.querySelectorAll('.kbf-nav a, .kbf-mobile-menu a, #kbf-notif-btn, #kbf-user-dropdown a').forEach(function(el){
+        document.querySelectorAll('.kbf-nav a, .kbf-mobile-menu a, .kbf-notif-btn, #kbf-user-dropdown a').forEach(function(el){
           el.addEventListener('click', function(){
             closeMenu();
           });
@@ -1215,10 +1215,28 @@
     </script>
     <script>
       (function(){
-        var btn = document.getElementById('kbf-notif-btn');
-        var dd = document.getElementById('kbf-notif-dropdown');
-        var wrap = document.getElementById('kbf-notif-menu');
-        if(!btn || !dd || !wrap) return;
+        var menus = Array.prototype.slice.call(document.querySelectorAll('.kbf-notif-menu'));
+        if(!menus.length) return;
+
+        /**
+         * @function  menuParts
+         * @purpose   Handles menuParts behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    wrap: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
+        function menuParts(wrap){
+          if(!wrap) return null;
+          var btn = wrap.querySelector('.kbf-notif-btn');
+          var dd = wrap.querySelector('.kbf-notif-dropdown');
+          if(!btn || !dd) return null;
+          return { wrap: wrap, btn: btn, dd: dd };
+        }
+        var partsList = menus.map(menuParts).filter(function(parts){ return !!parts; });
+        if(!partsList.length) return;
+        var nonceWrap = partsList[0].wrap;
         /**
          * @function  hydrateNotifTimes
          * @purpose   Handles hydrateNotifTimes behavior in the dashboard script flow
@@ -1229,20 +1247,22 @@
          * @status    ACTIVE
          */
         function hydrateNotifTimes(){
-          dd.querySelectorAll('.kbf-notif-item-time[data-notif-time-utc]').forEach(function(el){
-            var raw = (el.getAttribute('data-notif-time-utc') || '').trim();
-            if(!raw) return;
-            // Stored format is "YYYY-MM-DD HH:mm:ss" from server; treat as UTC then render local.
-            var iso = raw.replace(' ', 'T') + 'Z';
-            var d = new Date(iso);
-            if(isNaN(d.getTime())) return;
-            el.textContent = d.toLocaleString(undefined, {
-              month: 'short',
-              day: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true
+          partsList.forEach(function(parts){
+            parts.dd.querySelectorAll('.kbf-notif-item-time[data-notif-time-utc]').forEach(function(el){
+              var raw = (el.getAttribute('data-notif-time-utc') || '').trim();
+              if(!raw) return;
+              // Stored format is "YYYY-MM-DD HH:mm:ss" from server; treat as UTC then render local.
+              var iso = raw.replace(' ', 'T') + 'Z';
+              var d = new Date(iso);
+              if(isNaN(d.getTime())) return;
+              el.textContent = d.toLocaleString(undefined, {
+                month: 'short',
+                day: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              });
             });
           });
         }
@@ -1258,8 +1278,10 @@
          * @status    ACTIVE
          */
         function closeNotif(){
-          dd.classList.remove('kbf-open');
-          btn.setAttribute('aria-expanded', 'false');
+          partsList.forEach(function(parts){
+            parts.dd.classList.remove('kbf-open');
+            parts.btn.setAttribute('aria-expanded', 'false');
+          });
         }
         /**
          * @function  clearUnreadUI
@@ -1271,14 +1293,16 @@
          * @status    ACTIVE
          */
         function clearUnreadUI(){
-          var badge = document.getElementById('kbf-notif-badge');
-          if(badge && badge.parentNode) badge.parentNode.removeChild(badge);
-          btn.classList.remove('has-unread');
-          dd.querySelectorAll('.kbf-notif-item.is-unread').forEach(function(item){
-            item.classList.remove('is-unread');
+          partsList.forEach(function(parts){
+            var badge = parts.wrap.querySelector('.kbf-notif-badge');
+            if(badge && badge.parentNode) badge.parentNode.removeChild(badge);
+            parts.btn.classList.remove('has-unread');
+            parts.dd.querySelectorAll('.kbf-notif-item.is-unread').forEach(function(item){
+              item.classList.remove('is-unread');
+            });
+            var headCount = parts.dd.querySelector('.kbf-notif-head-count');
+            if(headCount && headCount.parentNode) headCount.parentNode.removeChild(headCount);
           });
-          var headCount = dd.querySelector('.kbf-notif-head-count');
-          if(headCount && headCount.parentNode) headCount.parentNode.removeChild(headCount);
         }
         /**
          * @function  clearAllUI
@@ -1291,16 +1315,18 @@
          */
         function clearAllUI(){
           clearUnreadUI();
-          dd.querySelectorAll('.kbf-notif-item').forEach(function(item){
-            if(item && item.parentNode) item.parentNode.removeChild(item);
+          partsList.forEach(function(parts){
+            parts.dd.querySelectorAll('.kbf-notif-item').forEach(function(item){
+              if(item && item.parentNode) item.parentNode.removeChild(item);
+            });
+            var list = parts.dd.querySelector('.kbf-notif-list');
+            if(list && !list.querySelector('.kbf-notif-empty')){
+              var empty = document.createElement('div');
+              empty.className = 'kbf-notif-empty';
+              empty.textContent = 'No notifications yet.';
+              list.appendChild(empty);
+            }
           });
-          var list = dd.querySelector('.kbf-notif-list');
-          if(list && !list.querySelector('.kbf-notif-empty')){
-            var empty = document.createElement('div');
-            empty.className = 'kbf-notif-empty';
-            empty.textContent = 'No notifications yet.';
-            list.appendChild(empty);
-          }
         }
         /**
          * @function  markReadOnce
@@ -1314,7 +1340,7 @@
         function markReadOnce(){
           if(marked) return;
           marked = true;
-          var nonce = wrap.getAttribute('data-mark-nonce') || '';
+          var nonce = nonceWrap.getAttribute('data-mark-nonce') || '';
           if(!nonce || typeof ajaxurl === 'undefined') return;
           var fd = new FormData();
           fd.append('action', 'kbf_mark_notifications_read');
@@ -1337,7 +1363,7 @@
          * @status    ACTIVE
          */
         function markSingleRead(notifId){
-          var nonce = wrap.getAttribute('data-single-nonce') || '';
+          var nonce = nonceWrap.getAttribute('data-single-nonce') || '';
           if(!nonce || !notifId || typeof ajaxurl === 'undefined') return;
           var fd = new FormData();
           fd.append('action', 'kbf_mark_notification_read');
@@ -1347,41 +1373,51 @@
             .then(function(r){ return r.json(); })
             .catch(function(){});
         }
-        btn.addEventListener('click', function(e){
-          e.preventDefault();
-          e.stopPropagation();
-          var isOpen = dd.classList.toggle('kbf-open');
-          btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-          if(isOpen) markReadOnce();
+        partsList.forEach(function(parts){
+          parts.btn.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var shouldOpen = !parts.dd.classList.contains('kbf-open');
+            closeNotif();
+            if(shouldOpen){
+              parts.dd.classList.add('kbf-open');
+              parts.btn.setAttribute('aria-expanded', 'true');
+              markReadOnce();
+            }
+          });
         });
         document.querySelectorAll('.kbf-nav a, .kbf-mobile-menu a, #kbf-user-menu-btn, .kbf-dashboard-user').forEach(function(el){
           el.addEventListener('click', function(){
             closeNotif();
           });
         });
-        dd.addEventListener('click', function(e){
-          var clearAll = e.target.closest('.kbf-notif-view-all[data-notif-action="clear-all"]');
-          if (clearAll) {
-            e.preventDefault();
-            clearAllUI();
-            var nonce = wrap.getAttribute('data-mark-nonce') || '';
-            if(nonce && typeof ajaxurl !== 'undefined'){
-              var fd = new FormData();
-              fd.append('action', 'kbf_clear_notifications');
-              fd.append('nonce', nonce);
-              fetch(ajaxurl, { method:'POST', body: fd })
-                .then(function(r){ return r.json(); })
-                .catch(function(){});
+        partsList.forEach(function(parts){
+          parts.dd.addEventListener('click', function(e){
+            var clearAll = e.target.closest('.kbf-notif-view-all[data-notif-action="clear-all"]');
+            if (clearAll) {
+              e.preventDefault();
+              clearAllUI();
+              var nonce = nonceWrap.getAttribute('data-mark-nonce') || '';
+              if(nonce && typeof ajaxurl !== 'undefined'){
+                var fd = new FormData();
+                fd.append('action', 'kbf_clear_notifications');
+                fd.append('nonce', nonce);
+                fetch(ajaxurl, { method:'POST', body: fd })
+                  .then(function(r){ return r.json(); })
+                  .catch(function(){});
+              }
+              return;
             }
-            return;
-          }
-          var item = e.target.closest('.kbf-notif-item[data-notification-id]');
-          if(!item) return;
-          var notifId = item.getAttribute('data-notification-id') || '';
-          if(notifId) markSingleRead(notifId);
+            var item = e.target.closest('.kbf-notif-item[data-notification-id]');
+            if(!item) return;
+            var notifId = item.getAttribute('data-notification-id') || '';
+            if(notifId) markSingleRead(notifId);
+          });
         });
         document.addEventListener('click', function(e){
-          if(wrap.contains(e.target)) return;
+          for(var i = 0; i < partsList.length; i++){
+            if(partsList[i].wrap.contains(e.target)) return;
+          }
           closeNotif();
         });
         document.addEventListener('keydown', function(e){

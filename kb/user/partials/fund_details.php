@@ -54,6 +54,97 @@ if (!function_exists('kbf_fund_details_share_url')) {
     }
 }
 
+if (!function_exists('kbf_fund_details_output_social_meta')) {
+    /**
+     * @function  kbf_fund_details_output_social_meta
+     * @purpose   Outputs Open Graph/Twitter metadata early in <head> for share links so social previews include fund photo.
+     * @used-by   wp_head action hook
+     * @calls     get_current_user_id, sanitize_text_field, intval, $wpdb->prepare, $wpdb->get_row, json_decode, wp_strip_all_tags, wp_trim_words, esc_attr, esc_url
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
+    function kbf_fund_details_output_social_meta() {
+        if (is_admin()) {
+            return;
+        }
+        if (empty($_GET['kbf_share']) && empty($_GET['fund']) && empty($_GET['fund_id'])) {
+            return;
+        }
+        if (!function_exists('kbf_get_page_url')) {
+            return;
+        }
+
+        global $wpdb;
+        $ft = $wpdb->prefix . 'kbf_funds';
+        $current_user_id = get_current_user_id();
+        $fund = null;
+
+        if (!empty($_GET['kbf_share'])) {
+            $token = sanitize_text_field(wp_unslash($_GET['kbf_share']));
+            $fund = $wpdb->get_row($wpdb->prepare(
+                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.share_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d) LIMIT 1",
+                $token,
+                (int)$current_user_id
+            ));
+        } elseif (!empty($_GET['fund'])) {
+            $token = sanitize_text_field(wp_unslash($_GET['fund']));
+            $fund = $wpdb->get_row($wpdb->prepare(
+                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.fund_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d) LIMIT 1",
+                $token,
+                (int)$current_user_id
+            ));
+        } elseif (!empty($_GET['fund_id'])) {
+            $fid = intval($_GET['fund_id']);
+            $fund = $wpdb->get_row($wpdb->prepare(
+                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.id=%d AND (f.status IN ('active','completed') OR f.business_id=%d) LIMIT 1",
+                $fid,
+                (int)$current_user_id
+            ));
+        }
+
+        if (empty($fund) || empty($fund->share_token)) {
+            return;
+        }
+
+        $photos = [];
+        if (!empty($fund->photos)) {
+            $decoded = json_decode((string)$fund->photos, true);
+            if (is_array($decoded)) {
+                $photos = $decoded;
+            }
+        }
+        $og_img = '';
+        if (!empty($photos)) {
+            $og_img = (string)$photos[0];
+        }
+        if (!$og_img && defined('BNTM_KBF_URL')) {
+            $og_img = BNTM_KBF_URL . 'assets/branding/logo.png';
+        }
+
+        $fund_details_url = kbf_get_page_url('fund_details');
+        $share_url = add_query_arg('kbf_share', $fund->share_token, $fund_details_url);
+        $og_title = wp_strip_all_tags((string)$fund->title);
+        $og_desc = wp_trim_words(wp_strip_all_tags((string)$fund->description), 28, '...');
+
+        echo "\n<meta property=\"og:type\" content=\"article\" />";
+        echo "\n<meta property=\"og:title\" content=\"" . esc_attr($og_title) . "\" />";
+        echo "\n<meta property=\"og:description\" content=\"" . esc_attr($og_desc) . "\" />";
+        echo "\n<meta property=\"og:url\" content=\"" . esc_url($share_url) . "\" />";
+        if (!empty($og_img)) {
+            echo "\n<meta property=\"og:image\" content=\"" . esc_url($og_img) . "\" />";
+            echo "\n<meta property=\"og:image:secure_url\" content=\"" . esc_url($og_img) . "\" />";
+        }
+        echo "\n<meta name=\"twitter:card\" content=\"summary_large_image\" />";
+        echo "\n<meta name=\"twitter:title\" content=\"" . esc_attr($og_title) . "\" />";
+        echo "\n<meta name=\"twitter:description\" content=\"" . esc_attr($og_desc) . "\" />";
+        if (!empty($og_img)) {
+            echo "\n<meta name=\"twitter:image\" content=\"" . esc_url($og_img) . "\" />\n";
+        }
+    }
+    add_action('wp_head', 'kbf_fund_details_output_social_meta', 1);
+}
+
 /**
  * @function  bntm_shortcode_kbf_fund_details
  * @purpose   Renders the full fund details page UI, sponsor/report/rating modals, and interactive scripts.
@@ -206,7 +297,7 @@ function bntm_shortcode_kbf_fund_details() {
 
     <!-- ================== CSS ================== -->
     <style>
-    .kbf-detail-wrap{max-width:1000px;margin:0 auto;padding-top:30px;}
+    .kbf-detail-wrap{max-width:1200px;margin:0 auto;padding:30px 16px 0;}
     .kbf-wrap{
       padding:0 !important;
       margin-top:0 !important;
@@ -242,11 +333,21 @@ function bntm_shortcode_kbf_fund_details() {
     }
     .kbf-fund-organizer-avatar-placeholder i{font-size:20px;color:#fff;}
     .kbf-fund-verified-badge{
-      position:absolute;bottom:-1px;right:-1px;width:16px;height:16px;border-radius:50%;
-      background:#22c55e;border:2px solid #fff;display:flex;align-items:center;justify-content:center;
-      box-shadow:0 2px 6px rgba(34,197,94,.3);line-height:1;
+      position:absolute;
+        right:-2px;
+        bottom:-2px;
+        width:16px;
+        height:16px;
+        border-radius:50%;
+        background:#fff;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:0 0 0 1px #fff;
+        color:#1d4ed8;
+        z-index:2;
     }
-    .kbf-fund-verified-badge i{font-size:10px;color:#fff;}
+    .kbf-fund-verified-badge i{font-size:11px;line-height:1;color:inherit;}
     .kbf-fund-header-info{flex:1;min-width:0;}
     .kbf-fund-organizer-name-row{
       display:flex;align-items:baseline;gap:6px;margin-bottom:4px;flex-wrap:wrap;
@@ -327,10 +428,13 @@ function bntm_shortcode_kbf_fund_details() {
       box-shadow:none !important;
       border-color:var(--kbf-border) !important;
     }
-    .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;flex-wrap:wrap;}
-  .kbf-detail-panels{display:grid;grid-template-columns:minmax(0,900px) minmax(0,1fr);gap:28px;width:100%;}
+    .kbf-detail-layout{display:flex;gap:28px;align-items:stretch;flex-wrap:wrap;min-width:0;}
+  .kbf-detail-panels{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,1fr);gap:28px;width:100%;min-width:0;}
 .kbf-detail-left{display:flex;flex-direction:column;justify-content:flex-start;min-height:0;width:100%;max-width:none;}
 .kbf-detail-right{display:flex;flex-direction:column;align-self:stretch;width:100%;max-width:none;}
+    @media (max-width: 1100px){
+        .kbf-detail-panels{grid-template-columns:minmax(0,1.2fr) minmax(300px,1fr);gap:22px;}
+    }
   .kbf-detail-tabs{
       display:flex;
       flex-direction:column;
@@ -455,6 +559,32 @@ function bntm_shortcode_kbf_fund_details() {
     }
     .kbf-save-btn i{
       transition:none;
+    }
+    .kbf-save-btn.is-loading{
+      position:relative;
+      pointer-events:none;
+      opacity:.8;
+    }
+    .kbf-save-btn.is-loading .kbf-icon,
+    .kbf-save-btn.is-loading .kbf-save-label{
+      opacity:0;
+    }
+    .kbf-save-btn.is-loading::after{
+      content:'';
+      position:absolute;
+      top:50%;
+      left:50%;
+      width:14px;
+      height:14px;
+      transform:translate(-50%,-50%);
+      border-radius:50%;
+      border:2px solid rgba(59,130,246,0.25);
+      border-top-color:#3b82f6;
+      animation:kbfSaveBtnSpin .7s linear infinite;
+    }
+    @keyframes kbfSaveBtnSpin{
+      from{transform:translate(-50%,-50%) rotate(0deg);}
+      to{transform:translate(-50%,-50%) rotate(360deg);}
     }
         .kbf-save-btn.is-saved{
       background:#e7f1ff;
@@ -761,6 +891,7 @@ function bntm_shortcode_kbf_fund_details() {
         .kbf-detail-left,.kbf-photo-gallery{max-width:100%;}
         .kbf-detail-right{order:0;}
         .kbf-section-photo{order:1;}
+        .kbf-fund-header{order:2;}
         .kbf-section-title{order:2;}
         .kbf-section-organizer{order:3;}
         .kbf-section-fund-type{order:4;}
@@ -2242,11 +2373,23 @@ function bntm_shortcode_kbf_fund_details() {
         }
         if(!id) return;
         var el = btn || document.querySelector('.kbf-save-btn[data-fund-id="' + id + '"]');
+        if(el && el.classList.contains('is-loading')) return;
+        var finishLoading = function(){
+            if(!el) return;
+            el.classList.remove('is-loading');
+            el.removeAttribute('aria-busy');
+            el.disabled = false;
+        };
+        if(el){
+            el.classList.add('is-loading');
+            el.setAttribute('aria-busy', 'true');
+            el.disabled = true;
+        }
         var fd = new FormData();
         fd.append('action','kbf_toggle_save_fund');
         fd.append('nonce', kbfSaveNonce);
         fd.append('fund_id', id);
-        if(typeof kbfFetchJson === 'undefined'){ alert('Save failed.'); return; }
+        if(typeof kbfFetchJson === 'undefined'){ finishLoading(); alert('Save failed.'); return; }
         kbfFetchJson(ajaxurl, fd, function(j){
             if(j && j.success){
                 var saved = !!(j.data && j.data.saved);
@@ -2265,7 +2408,11 @@ function bntm_shortcode_kbf_fund_details() {
             } else {
                 alert((j && j.data && j.data.message) ? j.data.message : 'Unable to save.');
             }
-        }, function(err){ alert(err || 'Request failed.'); });
+            finishLoading();
+        }, function(err){
+            finishLoading();
+            alert(err || 'Request failed.');
+        });
     };
     (function(){
         var kbfCtaHitFix = function(e){

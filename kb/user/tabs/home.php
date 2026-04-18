@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF user dashboard tab: Overview.
  */
@@ -394,6 +394,34 @@
         </script>
       <?php endif; ?>
       <style>
+        .kbf-home-alert{
+          width:100%;
+          box-sizing:border-box;
+          align-items:flex-start !important;
+          gap:10px !important;
+        }
+        .kbf-home-alert > span{
+          flex:0 0 auto;
+          margin-top:2px;
+          display:inline-flex;
+          align-items:flex-start;
+        }
+        .kbf-home-alert > div{
+          flex:1 1 auto;
+          min-width:0;
+          overflow-wrap:anywhere;
+          word-break:break-word;
+          line-height:1.45;
+        }
+        .kbf-home-alert > div .kbf-strong{
+          display:block;
+          margin-bottom:2px;
+          line-height:1.25;
+        }
+        @media (max-width: 680px){
+          .kbf-home-alert{ gap:8px !important; }
+          .kbf-home-alert > span{ margin-top:1px; }
+        }
         .kbf-card-list[data-kbf-card-pager="home"] + .kbf-table-pager{
           margin-bottom:0;
           padding-bottom:0;
@@ -560,7 +588,7 @@
           </button>
         </div>
       <?php if($pending_funds > 0): ?>
-      <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+      <div class="kbf-alert kbf-alert-warning kbf-alert-noicon kbf-home-alert" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;">
           <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
             <i class="ph-fill ph-warning" aria-hidden="true"></i>
           </span>
@@ -716,7 +744,7 @@
         ?>
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
           <?php if($last_wd && $last_wd->status === 'pending'): ?>
-          <div class="kbf-alert kbf-alert-warning kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="kbf-alert kbf-alert-warning kbf-alert-noicon kbf-home-alert" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph-fill ph-warning" aria-hidden="true"></i>
               </span>
@@ -727,7 +755,7 @@
           </div>
           <?php endif; ?>
           <?php if($last_wd && $last_wd->status === 'rejected'): ?>
-          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon kbf-home-alert" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
               </span>
@@ -742,16 +770,13 @@
           </div>
           <?php endif; ?>
           <?php if($f->status === 'suspended'): ?>
-          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-              <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
-                <i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>
-              </span>
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon kbf-home-alert" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <div>
               <?php if($last_appeal && $last_appeal->status === 'open'): ?>
-                <span class="kbf-strong">Appeal Submitted:</span>
+                <span class="kbf-strong" style="display:inline-flex;align-items:center;gap:6px;"><i class="ph ph-clock kbf-icon" aria-hidden="true"></i>Appeal Submitted:</span>
                 Your appeal is under admin review. We'll notify you once a decision is made.
               <?php elseif($last_appeal && $last_appeal->status === 'rejected'): ?>
-                <span class="kbf-strong">Appeal Rejected:</span>
+                <span class="kbf-strong" style="display:inline-flex;align-items:center;gap:6px;"><i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>Appeal Rejected:</span>
                 <?php if(!empty($last_appeal->admin_notes)): ?>
                   <?php echo esc_html($last_appeal->admin_notes); ?>
                 <?php elseif($f->admin_notes): ?>
@@ -760,7 +785,7 @@
                   Your fund remains suspended. Contact support for details.
                 <?php endif; ?>
               <?php else: ?>
-                <span class="kbf-strong">Fund Suspended</span> -- Not visible to sponsors.
+                <span class="kbf-strong" style="display:inline-flex;align-items:center;gap:6px;"><i class="ph ph-prohibit kbf-icon" aria-hidden="true"></i>Fund Suspended</span> -- Not visible to sponsors.
                 <?php if($f->admin_notes): ?>
                   Admin note: <?php echo esc_html($f->admin_notes); ?>
                 <?php else: ?>
@@ -770,7 +795,7 @@
             </div>
           </div>
           <?php elseif($f->status === 'cancelled'): ?>
-          <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="kbf-alert kbf-alert-error kbf-alert-noicon kbf-home-alert" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
                 <i class="ph-fill ph-x-circle" aria-hidden="true"></i>
               </span>
@@ -1453,6 +1478,7 @@
     </div>
     <?php return ob_get_clean();
 }
+
 
 
 
