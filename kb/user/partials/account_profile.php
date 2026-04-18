@@ -955,6 +955,11 @@ function bntm_shortcode_kbf_organizer_profile() {
         var form = document.getElementById('kbf-rating-form');
         var btn = document.querySelector('#kbf-modal-rating .kbf-modal-footer .kbf-btn-primary');
         if(!form || !btn) return;
+        var kbfEscHtmlMsg = function(v){
+          return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+          });
+        };
         var fd = new FormData(form);
         fd.append('action','kbf_submit_rating');
         fd.append('nonce',nonce);
@@ -965,7 +970,7 @@ function bntm_shortcode_kbf_organizer_profile() {
           var msg = document.getElementById('kbf-rate-msg');
           // ===== RULE 3C: HANDLE DUPLICATE ERROR =====
           if (!j.success && j.data && j.data.message && j.data.message.indexOf('already submitted') !== -1) {
-            if(msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-warning kbf-alert-compact">' + j.data.message + '</div>';
+            if(msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-warning kbf-alert-compact">' + kbfEscHtmlMsg(j.data.message) + '</div>';
             setTimeout(function(){ document.getElementById('kbf-modal-rating').style.display='none'; }, 2000);
             document.querySelectorAll('[onclick*="kbf-modal-rating"]').forEach(function(el){
               if(el.tagName === 'BUTTON' && !el.closest('.kbf-modal')) {
@@ -977,13 +982,13 @@ function bntm_shortcode_kbf_organizer_profile() {
             btn.textContent = old;
             return;
           }
-          if(msg) msg.innerHTML = '<div class="kbf-alert ' + (j.success?'kbf-alert-success':'kbf-alert-error') + ' kbf-alert-compact">' + (j.data && j.data.message ? j.data.message : (j.success?'Submitted':'Failed')) + '</div>';
+          if(msg) msg.innerHTML = '<div class="kbf-alert ' + (j.success?'kbf-alert-success':'kbf-alert-error') + ' kbf-alert-compact">' + kbfEscHtmlMsg(j.data && j.data.message ? j.data.message : (j.success?'Submitted':'Failed')) + '</div>';
           if(j.success) setTimeout(function(){ window.location.reload(); }, 800);
           btn.disabled = false;
           btn.textContent = old;
         }, function(err){
           var msg = document.getElementById('kbf-rate-msg');
-          if(msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">' + err + '</div>';
+          if(msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">' + kbfEscHtmlMsg(err) + '</div>';
           btn.disabled = false;
           btn.textContent = old;
         });

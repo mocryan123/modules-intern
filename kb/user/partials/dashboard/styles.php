@@ -216,11 +216,10 @@
         max-width:80%;
         margin:0 auto;
         padding:0;
-        padding-top:84px;
         box-sizing:border-box;
     }
     .kbf-topbar + .kbf-dashboard-shell{
-        margin-top:84px !important;
+        margin-top:0 !important;
     }
     @media (max-width: 1200px){
         .kbf-dashboard-shell{

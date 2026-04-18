@@ -1186,18 +1186,23 @@ function kbf_dashboard_profile_tab( $business_id ) {
                       window.open(j.data.url, '_blank');
                       msgEl.innerHTML = '<div class="kbf-alert kbf-alert-success">Verification started. Check the new window.</div>';
                   } else {
-                      msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+((j.data && j.data.message) || 'Unknown error.')+'</div>';
+                      msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+kbfEscHtmlMsg((j.data && j.data.message) || 'Unknown error.')+'</div>';
                   }
               })
               .catch(err => {
                   console.error('Didit verification request failed:', err);
-                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed: ' + (err.message || 'Unknown error') + '</div>';
+                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed: ' + kbfEscHtmlMsg(err.message || 'Unknown error') + '</div>';
               })
               .finally(() => { btn.disabled=false; btn.textContent='Verify Identity'; });
         });
     })();
 
     // ===== SAVE PROFILE =====
+    function kbfEscHtmlMsg(v){
+        return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+        });
+    }
     /**
      * @function  kbfSaveProfile
      * @purpose   Validates the profile form, submits it via AJAX, and reloads the page on success
@@ -1279,13 +1284,13 @@ function kbf_dashboard_profile_tab( $business_id ) {
                   msgEl.innerHTML = '<div class="kbf-alert kbf-alert-success">Profile saved successfully! Reloading...</div>';
                   setTimeout(() => location.reload(), 800);
               } else {
-                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+((j.data && j.data.message) || 'Save failed.')+'</div>';
+                  msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+kbfEscHtmlMsg((j.data && j.data.message) || 'Save failed.')+'</div>';
                   btn.disabled = false; btn.textContent = 'Save Changes';
               }
           })
           .catch(err => {
               console.error('Profile save request failed:', err);
-              msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed: ' + (err.message || 'Unknown error') + '</div>';
+              msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed: ' + kbfEscHtmlMsg(err.message || 'Unknown error') + '</div>';
               btn.disabled = false; btn.textContent = 'Save Changes';
           });
     };

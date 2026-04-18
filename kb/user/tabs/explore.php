@@ -520,8 +520,11 @@ function kbf_dashboard_find_funds_tab() {
       .kbff-toolbar-tip{
         font-size:12.5px;
         color:var(--kbf-slate);
-        margin-top:10px;
+        display:block;
         width:100%;
+        max-width:100%;
+        box-sizing:border-box;
+        align-self:stretch;
       }
       @media (max-width: 900px){
         .kbff-toolbar-card{padding:10px;}
@@ -561,6 +564,9 @@ function kbf_dashboard_find_funds_tab() {
       #kbf-explore-tip{
         display:block;
         width:100%;
+        max-width:100%;
+        box-sizing:border-box;
+        align-self:stretch;
       }
       .kbf-explore-grid{
         display:grid;
@@ -2201,15 +2207,7 @@ function kbf_dashboard_find_funds_tab() {
         fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
         fd.append('is_anonymous',document.getElementById('kbff-anon').checked?'1':'0');
-        console.log('KBF sponsor submit (explore): sending', {
-            fund_id: fd.get('fund_id'),
-            amount: fd.get('amount'),
-            email: fd.get('email'),
-            payment_method: fd.get('payment_method'),
-            is_anonymous: fd.get('is_anonymous')
-        });
           kbfFetchJson(ajaxurl, fd, (j)=>{
-              console.log('KBF checkout response (explore):', j);
               if(j.success){
                 if(j.data && j.data.checkout_url){
                     btn.textContent='Redirecting to payment...';

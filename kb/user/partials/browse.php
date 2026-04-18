@@ -758,15 +758,7 @@ function bntm_shortcode_kbf_browse() {
         fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
         fd.append('is_anonymous',document.getElementById('anon-check').checked?'1':'0');
-        console.log('KBF sponsor submit (browse): sending', {
-            fund_id: fd.get('fund_id'),
-            amount: fd.get('amount'),
-            email: fd.get('email'),
-            payment_method: fd.get('payment_method'),
-            is_anonymous: fd.get('is_anonymous')
-        });
           kbfFetchJson(ajaxurl, fd, (j)=>{
-              console.log('KBF checkout response (browse):', j);
               if(j.success){
                 if(j.data && j.data.checkout_url){
                     btn.innerHTML='Redirecting to payment...';

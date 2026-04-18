@@ -153,7 +153,6 @@ function kbf_dashboard_admin_embed() {
             }).catch(err=>{
                 alert('Request failed. Please try again.');
                 console.error('kbfAdmin error:', err);
-                console.log('kbfAdmin action:', action, 'params:', params);
             });
         };
         /**

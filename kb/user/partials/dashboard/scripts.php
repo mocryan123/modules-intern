@@ -1863,7 +1863,6 @@
         var province = '';
         var municipality = '';
         var barangay = '';
-        console.log('[KBF ApplyLoc] Input parts:', parts);
 
         // Flag to prevent kbfInitLocationPicker change handlers from interfering.
         window._kbf_applying_location = true;
@@ -1924,9 +1923,7 @@
         }
 
         kbfEnsurePsgc(function(){
-            console.log('[KBF ApplyLoc] PSGC data loaded, province:', province);
             var muniData = kbfBuildMunicipalities(String(province).toUpperCase());
-            console.log('[KBF ApplyLoc] Municipalities found:', muniData.length);
             kbfSetMuniOptions(muniEl, muniData);
             muniEl.disabled = muniData.length === 0;
             if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
@@ -3992,7 +3989,6 @@
         fd.append('nonce', '<?php echo $nonce_wd; ?>');
         fetch(ajaxurl, {method:'POST', body:fd})
         .then(r=>r.json()).then(json=>{
-            console.log('kbfSubmitWd: response', json);
             const m = document.getElementById('kbf-wd-msg');
             m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+window.kbfEscapeHtml(json.data.message)+'</div>';
             if(json.success) {
@@ -4354,7 +4350,6 @@
         kbfSetSkeleton(msg, true);
         fetch(ajaxurl, { method:'POST', body:fd })
         .then(r=>r.text()).then(t=>{
-            console.log('kbf_add_milestone raw response:', t);
             var json = null;
             try {
                 var cleaned = String(t || '').replace(/^\uFEFF/, '').trim();
@@ -4365,7 +4360,6 @@
             } catch(e) {
                 json = { success:false, data:{ message:'Invalid server response. Please try again.', raw: t } };
             }
-            console.log('kbf_add_milestone parsed:', json);
             if (msg) {
                 var extra = (json.data && json.data.raw) ? ('<div style="margin-top:6px;font-size:11px;opacity:.7;word-break:break-word;">'+window.kbfEscapeHtml(String(json.data.raw).slice(0,280))+'</div>') : '';
                 msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+window.kbfEscapeHtml(json.data && json.data.message ? json.data.message : 'Save failed.')+extra+'</div>';
@@ -4477,28 +4471,20 @@
     window.kbfConfirmTrashFund = function(){
         if (!kbfTrashFundId) return;
         if (kbfTrashInFlight) return;
-        console.log('kbfConfirmTrashFund: confirmed', kbfTrashFundId);
         if (typeof window.ajaxurl === 'undefined' || !window.ajaxurl) {
             console.error('kbfConfirmTrashFund: ajaxurl is not defined');
             alert('Request failed: ajaxurl is not defined.');
             return;
         }
         kbfTrashInFlight = true;
-        console.log('kbfConfirmTrashFund: ajaxurl', ajaxurl);
         const fd = new FormData();
         fd.append('action', kbfTrashMode === 'trash' ? 'kbf_trash_fund' : 'kbf_cancel_fund');
         fd.append('fund_id', kbfTrashFundId);
         fd.append('nonce', kbfTrashMode === 'trash' ? '<?php echo $nonces['trash']; ?>' : '<?php echo $nonce_cancel; ?>');
-        console.log('kbfConfirmTrashFund: payload', {
-            action: kbfTrashMode === 'trash' ? 'kbf_trash_fund' : 'kbf_cancel_fund',
-            fund_id: kbfTrashFundId,
-            nonce: kbfTrashMode === 'trash' ? '<?php echo $nonces['trash']; ?>' : '<?php echo $nonce_cancel; ?>'
-        });
         kbfCloseModal('kbf-modal-trash-fund');
         kbfSetLoadingPage(true);
         fetch(ajaxurl,{method:'POST',body:fd})
           .then(function(r){
-              console.log('kbfConfirmTrashFund: response status', r.status, r.ok);
               return r.text().then(function(t){ return { ok: r.ok, status: r.status, text: t }; });
           })
           .then(function(res){

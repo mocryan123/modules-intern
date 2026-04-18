@@ -211,6 +211,42 @@ if (!function_exists('kbf_rate_limit_ok')) {
     }
 }
 
+if (!function_exists('kbf_is_onboarding_complete')) {
+    function kbf_is_onboarding_complete($user_id) {
+        $user_id = (int)$user_id;
+        if ($user_id <= 0) {
+            return false;
+        }
+        global $wpdb;
+        $pt = $wpdb->prefix.'kbf_organizer_profiles';
+        $profile = $wpdb->get_row($wpdb->prepare("SELECT bio,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d", $user_id));
+        $user = get_userdata($user_id);
+        $social_name = (string)get_user_meta($user_id, 'kbf_social_name', true);
+        $address = (string)get_user_meta($user_id, 'kbf_address', true);
+
+        $has_display_name = $user && !empty(trim((string)$user->display_name));
+        $has_social_name = !empty(trim($social_name));
+        $has_bio = $profile && !empty(trim((string)$profile->bio));
+        $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
+        $has_address = !empty(trim((string)$address));
+
+        return ($has_display_name && $has_social_name && $has_bio && $has_payout && $has_address);
+    }
+}
+
+if (!function_exists('kbf_require_onboarding_complete')) {
+    function kbf_require_onboarding_complete($user_id) {
+        if (kbf_is_onboarding_complete($user_id)) {
+            return true;
+        }
+        wp_send_json_error([
+            'message' => 'Please complete onboarding in your Profile before using this action.',
+            'code' => 'onboarding_required'
+        ]);
+        return false;
+    }
+}
+
 if (!function_exists('kbf_handle_image_upload')) {
     function kbf_handle_image_upload($file, $args = []) {
         $defaults = [
@@ -313,6 +349,7 @@ function bntm_ajax_kbf_create_fund() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$table=$wpdb->prefix.'kbf_funds';
     $biz=get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? $_POST['location_full'] : (isset($_POST['location']) ? $_POST['location'] : '');
     if (empty($location_full)) {
         $parts = [];
@@ -422,6 +459,7 @@ function bntm_ajax_kbf_update_fund() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if(!in_array($fund->status, ['pending', 'active'])) wp_send_json_error(['message'=>'Only pending or active funds can be updated.']);
@@ -513,6 +551,7 @@ function bntm_ajax_kbf_cancel_fund() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if(in_array($fund->status,['cancelled','completed'])) wp_send_json_error(['message'=>'This fund cannot be cancelled.']);
@@ -532,6 +571,7 @@ function bntm_ajax_kbf_trash_fund() {
     $t = $wpdb->prefix.'kbf_funds';
     $id = intval($_POST['fund_id']);
     $biz = get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if(!in_array($fund->status, ['cancelled', 'suspended'])) wp_send_json_error(['message'=>'Only cancelled or suspended funds can be trashed.']);
@@ -599,6 +639,7 @@ function bntm_ajax_kbf_request_escrow() {
     $et = $wpdb->prefix.'kbf_escrow_requests';
     $id = intval($_POST['fund_id']);
     $biz = get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if($fund->status !== 'active') wp_send_json_error(['message'=>'Only active funds can request escrow.']);
@@ -644,6 +685,7 @@ function bntm_ajax_kbf_mark_fund_complete() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund||$fund->status!=='active') wp_send_json_error(['message'=>'Fund not found or not active.']);
     if($fund->raised_amount < $fund->goal_amount) wp_send_json_error(['message'=>'Cannot complete fund until goal amount is reached.']);
@@ -659,6 +701,7 @@ function bntm_ajax_kbf_request_withdrawal() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Please log in to request a withdrawal.']); }
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$wt=$wpdb->prefix.'kbf_withdrawals';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();$amount=floatval($_POST['amount']);
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if(!in_array($fund->status, ['active', 'completed'])) wp_send_json_error(['message'=>'Withdrawals are only available for active or completed fundraisers.']);
@@ -727,6 +770,7 @@ function bntm_ajax_kbf_add_milestone() {
         wp_send_json_error(['message'=>'Milestones column missing. Please refresh and try again.']);
     }
     $biz = get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $fund_id = isset($_POST['fund_id']) ? intval($_POST['fund_id']) : 0;
     if (!$fund_id) wp_send_json_error(['message'=>'Invalid fund.']);
     $fund = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND business_id=%d", $fund_id, $biz));
@@ -797,6 +841,7 @@ function bntm_ajax_kbf_extend_deadline() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $deadline=sanitize_text_field($_POST['deadline']);
     if(strtotime($deadline)<=time()) wp_send_json_error(['message'=>'Deadline must be a future date.']);
     $res=$wpdb->update($t,['deadline'=>$deadline],['id'=>$id,'business_id'=>$biz],['%s'],['%d','%d']);
@@ -812,6 +857,7 @@ function bntm_ajax_kbf_toggle_auto_return() {
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$t=$wpdb->prefix.'kbf_funds';
     $id=intval($_POST['fund_id']);$biz=get_current_user_id();$val=intval($_POST['auto_return']);
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     $fund=$wpdb->get_row($wpdb->prepare("SELECT id FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     $wpdb->update($t,['auto_return'=>$val],['id'=>$id],['%d'],['%d']);
@@ -1266,6 +1312,8 @@ function bntm_ajax_kbf_submit_appeal() {
         wp_send_json_error(['message'=>'Too many requests. Please wait a moment.']);
     }
     if (!is_user_logged_in()) wp_send_json_error(['message'=>'Please log in to submit an appeal.']);
+    $biz = get_current_user_id();
+    if (!kbf_require_onboarding_complete($biz)) { return; }
     global $wpdb;
     $ft = $wpdb->prefix.'kbf_funds';
     $at = $wpdb->prefix.'kbf_appeals';
@@ -1273,14 +1321,14 @@ function bntm_ajax_kbf_submit_appeal() {
     $message = sanitize_textarea_field($_POST['message'] ?? '');
     if (!$fund_id || !$message) wp_send_json_error(['message'=>'Please provide a valid appeal message.']);
     $fund = $wpdb->get_row($wpdb->prepare("SELECT id,business_id,status FROM {$ft} WHERE id=%d", $fund_id));
-    if (!$fund || $fund->business_id != get_current_user_id()) wp_send_json_error(['message'=>'Unauthorized appeal request.']);
+    if (!$fund || $fund->business_id != $biz) wp_send_json_error(['message'=>'Unauthorized appeal request.']);
     if ($fund->status !== 'suspended') wp_send_json_error(['message'=>'Only suspended funds can be appealed.']);
     $exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$at} WHERE fund_id=%d AND status='open'", $fund_id));
     if ($exists) wp_send_json_error(['message'=>'You already have an open appeal for this fund.']);
     $wpdb->insert($at, [
         'rand_id'     => bntm_rand_id(),
         'fund_id'     => $fund_id,
-        'business_id' => get_current_user_id(),
+        'business_id' => $biz,
         'message'     => $message,
         'status'      => 'open',
     ], ['%s','%d','%d','%s','%s']);

@@ -1841,6 +1841,20 @@ function bntm_shortcode_kbf_fund_details() {
         msg.addEventListener('input', updateMsgCount);
     })();
     /**
+     * @function  kbfEscHtmlMsg
+     * @purpose   Escapes untrusted text before rendering inside HTML alert containers.
+     * @used-by   [kbfSpdSponsor, kbfSubmitRating]
+     * @calls     [String.replace]
+     * @params    [mixed v - text value to escape]
+     * @returns   [string escaped HTML-safe text]
+     * @status    ACTIVE
+     */
+    function kbfEscHtmlMsg(v){
+        return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+        });
+    }
+    /**
      * @function  kbfSpdSponsor
      * @purpose   Submits sponsor checkout payload and opens returned Maya checkout URL.
      * @used-by   Sponsor modal primary button onclick
@@ -1863,15 +1877,7 @@ function bntm_shortcode_kbf_fund_details() {
         fd.append('action', 'kbf_create_checkout');
         fd.append('nonce',nonce);
         fd.append('is_anonymous',document.getElementById('spd-anon').checked?'1':'0');
-        console.log('KBF sponsor submit (fund details): sending', {
-            fund_id: fd.get('fund_id'),
-            amount: fd.get('amount'),
-            email: fd.get('email'),
-            payment_method: fd.get('payment_method'),
-            is_anonymous: fd.get('is_anonymous')
-        });
         kbfFetchJson(ajaxurl, fd, (j)=>{
-            console.log('KBF checkout response (fund details):', j);
             if(j.success){
             if(j.data && j.data.checkout_url){
                 btn.innerHTML='Redirecting to payment...';
@@ -1884,13 +1890,13 @@ function bntm_shortcode_kbf_fund_details() {
                 kbfSetSkeleton(msg,false);
             }
             } else {
-                msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+j.data.message+'</div>';
+                msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+kbfEscHtmlMsg(j && j.data ? j.data.message : '')+'</div>';
                 kbfSetBtnLoading(btn,false);
                 kbfSetSkeleton(msg,false);
             }
         }, (err)=>{
             console.error('KBF checkout error:', err);
-            msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+err+'</div>';
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+kbfEscHtmlMsg(err)+'</div>';
             kbfSetBtnLoading(btn,false);
             kbfSetSkeleton(msg,false);
         });
@@ -1926,7 +1932,7 @@ function bntm_shortcode_kbf_fund_details() {
                 });
             });
         }).then(j=>{
-            msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+(j.data && j.data.message ? j.data.message : 'Request failed.')+'</div>';
+            msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+kbfEscHtmlMsg(j && j.data ? j.data.message : 'Request failed.')+'</div>';
         if(j.success){
             var m=document.getElementById('kbf-modal-report');
             if(m){m.classList.remove('is-open');m.style.display='none';}
@@ -2128,7 +2134,7 @@ function bntm_shortcode_kbf_fund_details() {
         fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
             // ===== RULE 3C: HANDLE DUPLICATE ERROR =====
             if (!j.success && j.data && j.data.message && j.data.message.indexOf('already submitted') !== -1) {
-                document.getElementById('kbf-rate-msg').innerHTML = '<div class="kbf-alert kbf-alert-warning">' + j.data.message + '</div>';
+                document.getElementById('kbf-rate-msg').innerHTML = '<div class="kbf-alert kbf-alert-warning">' + kbfEscHtmlMsg(j.data.message) + '</div>';
                 setTimeout(function(){ kbfHideModal('kbf-modal-rating'); }, 2000);
                 document.querySelectorAll('[onclick*="kbf-modal-rating"],[onclick*="kbf-modal-rating\'"]').forEach(function(el){
                     if(el.tagName === 'BUTTON' && !el.closest('.kbf-modal')) {
@@ -2138,7 +2144,7 @@ function bntm_shortcode_kbf_fund_details() {
                 });
                 return;
             }
-            document.getElementById('kbf-rate-msg').innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+j.data.message+'</div>';
+            document.getElementById('kbf-rate-msg').innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+kbfEscHtmlMsg(j && j.data ? j.data.message : '')+'</div>';
             if(j.success)setTimeout(()=>{kbfHideModal('kbf-modal-rating');},1800);else{btn.disabled=false;btn.textContent='Submit Score';}
         });
     };
