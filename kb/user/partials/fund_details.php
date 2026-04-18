@@ -988,7 +988,7 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. â‚±50" min="50" step="1" max="<?php echo esc_attr($fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''); ?>" required>
+              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" max="<?php echo esc_attr($fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''); ?>" required>
               <div class="kbf-meta" style="margin-top:4px;">Minimum sponsorship: &#8369;50.00</div>
               <?php if($fund->goal_amount>0): ?>
                 <div class="kbf-meta" style="margin-top:4px;">Max allowed: &#8369;<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>

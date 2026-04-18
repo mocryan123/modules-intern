@@ -170,7 +170,7 @@
       elseif ($tab === 'sponsor_history') echo bntm_shortcode_kbf_sponsor_history();
       ?>
       </div>
-      </div><!-- .kbf-dashboard-shell -->
+      </div>
 
 
 

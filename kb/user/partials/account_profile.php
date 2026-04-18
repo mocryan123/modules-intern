@@ -446,6 +446,12 @@ function bntm_shortcode_kbf_organizer_profile() {
           }
           .kbf-breadcrumb{font-size:12px;flex-wrap:wrap;}
         }
+        .kbf-card-list[data-kbf-card-pager="organizer-campaigns"] + .kbf-table-pager .kbf-table-pager-btn.is-loading::after,
+        .kbf-card-list[data-kbf-card-pager="organizer-reviews"] + .kbf-table-pager .kbf-table-pager-btn.is-loading::after{
+          top:50%;
+          left:50%;
+          transform:translate(-50%,-50%);
+        }
         .kbf-ap-filter-btn{
           display:none;
           margin-left:auto;
@@ -1068,13 +1074,46 @@ function bntm_shortcode_kbf_organizer_profile() {
           nextBtn.disabled = page >= pages;
           pager.style.display = total > 0 ? 'flex' : 'none';
         }
+        function getPagerLoadingDelay(){
+          var delay = 250;
+          try {
+            var connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            var effectiveType = connection && connection.effectiveType ? String(connection.effectiveType).toLowerCase() : '';
+            if (effectiveType === 'slow-2g' || effectiveType === '2g') {
+              delay = 900;
+            } else if (effectiveType === '3g') {
+              delay = 650;
+            }
+          } catch (e) {}
+          return delay;
+        }
+        function setLoading(btn){
+          if (!btn || btn.classList.contains('is-loading')) return;
+          var delay = getPagerLoadingDelay();
+          btn.classList.add('is-loading');
+          btn.disabled = true;
+          if (select) select.disabled = true;
+          if (btn === prevBtn && nextBtn) nextBtn.disabled = true;
+          if (btn === nextBtn && prevBtn) prevBtn.disabled = true;
+          setTimeout(function(){
+            btn.classList.remove('is-loading');
+            render();
+            if (select) select.disabled = false;
+          }, delay);
+        }
         select.addEventListener('change', function(){
           perPage = parseInt(this.value, 10) || 5;
           page = 1;
           render();
         });
-        prevBtn.addEventListener('click', function(){ if(page > 1){ page--; render(); } });
-        nextBtn.addEventListener('click', function(){ if(page < Math.ceil(cards.length / perPage)){ page++; render(); } });
+        prevBtn.addEventListener('click', function(){
+          if(page > 1){ page--; setLoading(prevBtn); }
+        });
+        nextBtn.addEventListener('click', function(){
+          if(nextBtn.disabled) return;
+          page++;
+          setLoading(nextBtn);
+        });
         if(scope === 'organizer-campaigns') {
           var statusSel = document.getElementById('kbf-filter-status');
           var escrowSel = document.getElementById('kbf-filter-escrow');
