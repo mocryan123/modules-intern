@@ -105,13 +105,13 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
             <div style="flex:1;">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
                 <span style="font-size:15px;" class="kbf-strong"><?php echo esc_html($f->title); ?></span>
-                <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>"><?php echo ucfirst($f->status); ?></span>
+                <span class="kbf-badge kbf-badge-<?php echo esc_attr(sanitize_html_class((string)$f->status)); ?>"><?php echo esc_html(ucfirst((string)$f->status)); ?></span>
               </div>
               <div class="kbf-meta">
                 <?php echo esc_html($f->category); ?> &bull; <?php echo esc_html($f->location); ?>
                 <?php if($days_left!==null): ?> &bull; <span style="color:<?php echo $days_left<7?'#dc2626':'#64748b';?>;font-weight:700;"><?php echo $days_left; ?> days left</span><?php endif; ?>
                 &bull; <?php echo $sc; ?> sponsors
-                &bull; Escrow: <span class="kbf-badge kbf-badge-<?php echo $f->escrow_status; ?>" style="font-size:10px;"><?php echo ucfirst($f->escrow_status); ?></span>
+                &bull; Escrow: <span class="kbf-badge kbf-badge-<?php echo esc_attr(sanitize_html_class((string)$f->escrow_status)); ?>" style="font-size:10px;"><?php echo esc_html(ucfirst((string)$f->escrow_status)); ?></span>
               </div>
             </div>
           </div>

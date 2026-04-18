@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (!defined('ABSPATH')) exit;
 
 // GLOBAL CSS + JS (shared across all shortcodes)
@@ -1160,7 +1160,7 @@ function kbf_global_assets() {
     .kbf-form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--kbf-text-sm); margin-bottom: 6px; }
     .kbf-form-group input,
     .kbf-form-group select,
-    .kbf-form-group textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--kbf-border); border-radius: 7px; font-size: 13.5px; color: var(--kbf-text); background: #fff; transition: border-color .15s, box-shadow .15s; font-family: inherit; }
+    .kbf-form-group textarea { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; padding: 9px 12px; border: 1.5px solid var(--kbf-border); border-radius: 7px; font-size: 13.5px; color: var(--kbf-text); background: #fff; transition: border-color .15s, box-shadow .15s; font-family: inherit; }
     .kbf-form-group select{
         appearance:none;
         -webkit-appearance:none;
@@ -1555,7 +1555,7 @@ function kbf_global_assets() {
     .kbf-star { color: #f43f5e; }
     .kbf-star-empty { color: #fecdd3; }
 
-    /* Page header â€” redesigned (clean, minimal card) */
+    /* Page header Ã¢â‚¬â€ redesigned (clean, minimal card) */
     .kbf-page-header {
         position: relative;
         background: #fff;
@@ -1810,7 +1810,7 @@ function kbf_global_assets() {
                         if(p === 'gap'){
                             var span = document.createElement('span');
                             span.className = 'kbf-page-gap';
-                            span.textContent = 'â€¦';
+                            span.textContent = 'Ã¢â‚¬Â¦';
                             pagesWrap.appendChild(span);
                             return;
                         }
@@ -2145,7 +2145,7 @@ function kbf_global_assets() {
     window.kbffShareFund     = function(token, title, desc) { kbfOpenShare(token, title || 'Support this fund on KonekBayan', desc); };
     window.kbfShareFundDetail= function(token, title, desc) { kbfOpenShare(token, title || 'Support this fund on KonekBayan', desc); };
 
-    // Ã¢â€â‚¬Ã¢â€â‚¬ NEAR ME: browser geolocation Ã¢â€ â€™ Nominatim reverse geocode Ã¢â€ â€™ fill location input Ã¢â€â‚¬Ã¢â€â‚¬
+    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ NEAR ME: browser geolocation ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Nominatim reverse geocode ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ fill location input ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
     window.kbfNearMe = function(inputId, formId, btnRef) {
         const input = document.getElementById(inputId);
         let btn = null;
@@ -2207,6 +2207,7 @@ function kbf_global_assets() {
         echo kbf_render_loading_overlay();
     }
 }
+
 
 
 

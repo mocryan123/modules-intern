@@ -16,6 +16,8 @@ function kbf_dashboard_find_funds_tab() {
     global $wpdb;
     $ft = $wpdb->prefix.'kbf_funds';
     $current_user_id = get_current_user_id();
+    $current_user = wp_get_current_user();
+    $current_user_email = ($current_user && !empty($current_user->user_email)) ? sanitize_email($current_user->user_email) : '';
     /**
      * @function  get_param
      * @purpose   Reads and sanitizes a GET parameter with a fallback default value.
@@ -80,8 +82,12 @@ function kbf_dashboard_find_funds_tab() {
         }
 
         $pay_sponsorship = null;
-        if ($payment_sid > 0) {
-            $pay_sponsorship = $wpdb->get_row($wpdb->prepare("SELECT id,amount FROM {$pay_st} WHERE id=%d", $payment_sid));
+        if ($payment_sid > 0 && $current_user_email !== '') {
+            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,amount FROM {$pay_st} WHERE id=%d AND email=%s",
+                $payment_sid,
+                $current_user_email
+            ));
         }
 
         $pay_fund_title   = $pay_fund ? $pay_fund->title : 'this fundraiser';

@@ -762,7 +762,7 @@ function bntm_shortcode_kbf_organizer_profile() {
               <div style="flex:1;">
                 <div style="display:flex;flex-direction:row;gap:6px;margin-bottom:4px;">
                   <span class="kbf-card-title kbf-strong"><?php echo esc_html($f->title); ?></span>
-                  <span class="kbf-badge kbf-badge-<?php echo $f->status; ?>" style="width:max-content;"><?php echo ucfirst($f->status); ?></span>
+                  <span class="kbf-badge kbf-badge-<?php echo esc_attr(sanitize_html_class((string)$f->status)); ?>" style="width:max-content;"><?php echo esc_html(ucfirst((string)$f->status)); ?></span>
                 </div>
                 <div class="kbf-meta">
                   <div class="kbf-meta-row">

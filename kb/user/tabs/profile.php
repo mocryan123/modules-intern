@@ -595,6 +595,10 @@ function kbf_dashboard_profile_tab( $business_id ) {
         <div class="kbf-profile-section">
           <div class="kbf-profile-section-title"><i class="ph ph-phone"></i> Contact Info</div>
           <div class="kbf-form-group">
+            <label>Registration Email</label>
+            <input type="email" value="<?php echo esc_attr($user->user_email); ?>" readonly aria-readonly="true" style="background:#f8fafc;color:var(--kbf-slate);">
+          </div>
+          <div class="kbf-form-group">
             <label>Phone</label>
             <input type="text" name="phone" value="<?php echo esc_attr($phone); ?>" placeholder="+63 9XX XXX XXXX">
           </div>

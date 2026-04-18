@@ -1,4 +1,4 @@
-﻿        <!-- ================== CSS ================== -->
+        <!-- ================== CSS ================== -->
     <style>
     .kbf-user-ui{
     font-family: "Poppins",system-ui,-apple-system,sans-serif;
@@ -215,7 +215,7 @@
     .kbf-dashboard-shell{
         max-width:80%;
         margin:0 auto;
-        padding:0;
+        padding-top:30px;
         box-sizing:border-box;
     }
     .kbf-topbar + .kbf-dashboard-shell{
@@ -223,7 +223,7 @@
     }
     @media (max-width: 1200px){
         .kbf-dashboard-shell{
-            padding:0;
+            padding:74px 0 0;
         }
     }
     .kbf-tab-content{
@@ -2517,11 +2517,7 @@ html.kbf-modal-lock, body.kbf-modal-lock {
             line-height:1.35;
         }
         .kbf-user-ui .kbf-field-error{
-            margin-top:8px;
-            padding:8px 10px;
-            border:1px solid #fecdd3;
-            border-radius:10px;
-            background:#fff1f2;
+            margin-top:3px;
             font-size:12px;
             font-weight:600;
             line-height:1.35;

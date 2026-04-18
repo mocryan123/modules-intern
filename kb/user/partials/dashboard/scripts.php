@@ -260,7 +260,7 @@
             btn.classList.toggle('is-active', isActive);
             btn.classList.toggle('is-complete', isComplete);
             btn.disabled = s > campaignData.maxStepReached;
-            if (indexEl) indexEl.textContent = isComplete ? 'âœ“' : String(s);
+            if (indexEl) indexEl.textContent = isComplete ? '\u2713' : String(s);
           });
 
           stepLines.forEach(function(line, idx){
@@ -718,7 +718,7 @@
                 var remove = document.createElement('button');
                 remove.type = 'button';
                 remove.className = 'kbf-photo-remove';
-                remove.textContent = 'Ã—';
+                remove.textContent = '\u00D7';
                 remove.addEventListener('click', function(e){
                   e.preventDefault();
                   e.stopPropagation();
@@ -3605,7 +3605,7 @@
             if (funderSelect && titleInput) {
                 var placeholders = {
                     yourself: 'e.g., Help with my medical bills',
-                    someone_else: 'e.g., Support Mariaâ€™s recovery',
+                    someone_else: "e.g., Support Maria's recovery",
                     charity_event: 'e.g., Barangay relief drive 2026'
                 };
                 var updatePlaceholder = function(){
@@ -3711,7 +3711,7 @@
                 var cut = val * rate;
                 var net = Math.max(0, val - cut);
                 var peso = String.fromCharCode(8369);
-                out.innerHTML = 'Platform cut: ' + peso + fmt(cut) + ' &nbsp;â€¢&nbsp; Net goal: ' + peso + fmt(net);
+                out.innerHTML = 'Platform cut: ' + peso + fmt(cut) + ' &nbsp;&bull;&nbsp; Net goal: ' + peso + fmt(net);
             }
             input.addEventListener('input', function(){
                 var before = input.value;
@@ -4455,7 +4455,7 @@
             if (msgEl) msgEl.textContent = 'This will permanently delete the fundraiser and its records. This cannot be undone. Are you sure you want to continue?';
         } else {
             if (titleEl) titleEl.textContent = 'Cancel Campaign';
-            if (msgEl) msgEl.textContent = 'This will move the fundraiser to cancelled status and it wonâ€™t be visible to sponsors. Are you sure you want to continue?';
+            if (msgEl) msgEl.textContent = "This will move the fundraiser to cancelled status and it won't be visible to sponsors. Are you sure you want to continue?";
         }
         kbfOpenModal('kbf-modal-trash-fund');
     };
