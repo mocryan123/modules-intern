@@ -2176,18 +2176,21 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     #kbf-modal-edit .kbf-photo-previews,
     #kbf-modal-edit .kbf-photo-grid{
         display:grid;
-        grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+        grid-template-columns:repeat(5,minmax(0,1fr));
         gap:10px;
         margin-top:10px;
     }
     @media (max-width: 820px){
-        #kbf-modal-edit .kbf-photo-previews{grid-template-columns:repeat(3,minmax(0,1fr));}
+        #kbf-modal-edit .kbf-photo-previews,
+        #kbf-modal-edit .kbf-photo-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
     }
     @media (max-width: 640px){
-        #kbf-modal-edit .kbf-photo-previews{grid-template-columns:repeat(2,minmax(0,1fr));}
+        #kbf-modal-edit .kbf-photo-previews,
+        #kbf-modal-edit .kbf-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
     }
     @media (max-width: 420px){
-        #kbf-modal-edit .kbf-photo-previews{grid-template-columns:repeat(1,minmax(0,1fr));}
+        #kbf-modal-edit .kbf-photo-previews,
+        #kbf-modal-edit .kbf-photo-grid{grid-template-columns:repeat(1,minmax(0,1fr));}
     }
     #kbf-modal-edit .kbf-photo-grid .kbf-photo-slot,
     #kbf-modal-edit .kbf-photo-thumb,
@@ -2423,6 +2426,37 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     @media (max-width: 420px){
         #kbf-modal-create .kbf-photo-grid{
             grid-template-columns:repeat(1,minmax(0,1fr));
+        }
+    }
+    @media (max-width: 900px){
+        #kbf-modal-create .kbf-create-stepper{
+            width:100%;
+            flex-wrap:nowrap;
+            justify-content:flex-start;
+        }
+        #kbf-modal-create .kbf-create-stepper .kbf-create-step,
+        #kbf-modal-create .kbf-create-stepper .kbf-create-step-line{
+            display:none;
+        }
+        #kbf-modal-create .kbf-create-stepper .kbf-create-step.is-active{
+            display:flex;
+            flex:1 1 100%;
+            width:100%;
+            justify-content:flex-start;
+        }
+        #kbf-modal-edit .kbf-stepper{
+            width:100%;
+            flex-wrap:nowrap;
+            justify-content:flex-start;
+        }
+        #kbf-modal-edit .kbf-stepper .kbf-step{
+            display:none;
+        }
+        #kbf-modal-edit .kbf-stepper .kbf-step.is-active{
+            display:flex;
+            flex:1 1 100%;
+            width:100%;
+            justify-content:flex-start;
         }
     }
     #kbf-modal-create .kbf-success-icon{
