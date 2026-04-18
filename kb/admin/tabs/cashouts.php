@@ -20,10 +20,10 @@ function kbf_admin_withdrawals_tab() {
     $sql = "SELECT e.*,f.title as fund_title,u.display_name as funder_display FROM {$et} e LEFT JOIN {$ft} f ON e.fund_id=f.id LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY e.requested_at DESC";
     $escrows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input
     $format_date = function($value) {
-        return $value ? date('M d, Y', strtotime($value)) : '—';
+        return $value ? date('M d, Y', strtotime($value)) : '-';
     };
     $format_account_type = function($value) {
-        return $value ? ucwords(str_replace('_', ' ', $value)) : '—';
+        return $value ? ucwords(str_replace('_', ' ', $value)) : '-';
     };
     $format_amount = function($value, $decimals = 2) {
         return number_format((float)$value, $decimals);
@@ -53,7 +53,7 @@ function kbf_admin_withdrawals_tab() {
             <tr>
               <td><span class="kbf-strong"><?php echo esc_html(wp_trim_words($e->fund_title,5)); ?></span></td>
               <td class="kbf-meta"><?php echo esc_html($e->funder_display ?: '-'); ?></td>
-              <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($e->status); ?>"><?php echo ucfirst($e->status); ?></span></td>
+              <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($e->status); ?>"><?php echo esc_html(ucfirst((string)$e->status)); ?></span></td>
               <td class="kbf-meta"><?php echo $format_date($e->requested_at); ?></td>
               <td>
                 <?php if($e->status==='pending'): ?>
@@ -62,7 +62,7 @@ function kbf_admin_withdrawals_tab() {
                   <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfProcessEscrowRequest(<?php echo (int)$e->id; ?>,'reject')">Reject</button>
                 </div>
                 <?php else: ?>
-                  <span class="kbf-meta">—</span>
+                  <span class="kbf-meta">-</span>
                 <?php endif; ?>
               </td>
             </tr>
@@ -118,11 +118,11 @@ function kbf_admin_withdrawals_tab() {
               <td>
                 <?php if($w->status==='pending'): ?>
                 <div class="kbf-btn-group" style="justify-content:center;">
-                  <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfProcessWd(<?php echo $w->id; ?>,'approve')">Release</button>
-                  <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfProcessWd(<?php echo $w->id; ?>,'reject')">Reject</button>
+                  <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfProcessWd(<?php echo (int)$w->id; ?>,'approve')">Release</button>
+                  <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfProcessWd(<?php echo (int)$w->id; ?>,'reject')">Reject</button>
                 </div>
                 <?php else: ?>
-                  <span class="kbf-meta">—</span>
+                  <span class="kbf-meta">-</span>
                 <?php endif; ?>
               </td>
             </tr>

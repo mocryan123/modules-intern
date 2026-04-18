@@ -393,7 +393,7 @@ function kbf_admin_settings_tab() {
             ev.preventDefault();
             ev.stopPropagation();
         }
-        const nonce = '<?php echo $nonce; ?>';
+        const nonce = '<?php echo esc_js($nonce); ?>';
         const msg   = document.getElementById('kbf-settings-msg');
         const saveBtn = (ev && ev.currentTarget) ? ev.currentTarget : null;
         const pairs = [
@@ -438,7 +438,11 @@ function kbf_admin_settings_tab() {
         const toSave = pairs.filter(([key, val]) => shouldSave(key, val));
         if (toSave.length === 0) {
             if (msg) {
-                msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">Nothing to save.</div>';
+                const nothingEl = document.createElement('div');
+                nothingEl.className = 'kbf-alert kbf-alert-error kbf-alert-compact';
+                nothingEl.textContent = 'Nothing to save.';
+                msg.innerHTML = '';
+                msg.appendChild(nothingEl);
                 setTimeout(() => msg.innerHTML = '', 4000);
             }
             return false;
@@ -449,7 +453,7 @@ function kbf_admin_settings_tab() {
             saveBtn.textContent = 'Saving...';
         }
 
-        const ajaxUrl = (window.ajaxurl || '<?php echo $admin_ajax_url; ?>');
+        const ajaxUrl = (window.ajaxurl || '<?php echo esc_js($admin_ajax_url); ?>');
         const payload = {};
         toSave.forEach(([key, val]) => {
             if (typeof val === 'string' && val.trim() === '__CLEAR__') {
@@ -475,13 +479,21 @@ function kbf_admin_settings_tab() {
                     throw new Error((j && j.data && j.data.message) ? j.data.message : 'Failed to save settings.');
                 }
                 if (msg) {
-                    msg.innerHTML = '<div class="kbf-alert kbf-alert-success kbf-alert-compact">' + (j.data && j.data.message ? j.data.message : 'Settings saved successfully.') + '</div>';
+                    const successEl = document.createElement('div');
+                    successEl.className = 'kbf-alert kbf-alert-success kbf-alert-compact';
+                    successEl.textContent = (j.data && j.data.message ? j.data.message : 'Settings saved successfully.');
+                    msg.innerHTML = '';
+                    msg.appendChild(successEl);
                     setTimeout(() => msg.innerHTML = '', 4000);
                 }
             })
             .catch(() => {
                 if (msg) {
-                    msg.innerHTML = '<div class="kbf-alert kbf-alert-error kbf-alert-compact">Failed to save settings. Please try again.</div>';
+                    const errEl = document.createElement('div');
+                    errEl.className = 'kbf-alert kbf-alert-error kbf-alert-compact';
+                    errEl.textContent = 'Failed to save settings. Please try again.';
+                    msg.innerHTML = '';
+                    msg.appendChild(errEl);
                     setTimeout(() => msg.innerHTML = '', 5000);
                 }
             })
