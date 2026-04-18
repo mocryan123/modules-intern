@@ -1,5 +1,5 @@
 <?php
-/* Sponsor history shortcode */
+/* ===== SPONSOR HISTORY SHORTCODE ===== */
 /**
  * @function  bntm_shortcode_kbf_sponsor_history
  * @purpose   Renders the donation history view for the provided or current user email.
@@ -88,10 +88,11 @@ function bntm_shortcode_kbf_sponsor_history() {
                   <?php endif; ?>
                 </td>
                 <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name ?: 'Sponsor'); ?></td>
-                <td><span style="color:var(--kbf-blue);" class="kbf-strong">PHP <?php echo number_format($s->amount,2); ?></span></td>
-                <td><span class="kbf-badge kbf-badge-<?php echo $s->payment_status; ?>"><?php echo ucfirst($s->payment_status); ?></span></td>
+                <td><span style="color:var(--kbf-blue);" class="kbf-strong">PHP <?php echo esc_html(number_format((float) $s->amount,2)); ?></span></td>
+                <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($s->payment_status); ?>"><?php echo esc_html(ucfirst($s->payment_status)); ?></span></td>
                 <td><?php echo esc_html($s->payment_method==='online_payment'?'Online Payment':($s->payment_method==='bank_payment'?'Bank Payment':ucfirst(str_replace('_',' ',isset($s->payment_method) ? $s->payment_method : '')))); ?></td>
-                <td class="kbf-meta"><?php echo date('M d, Y',strtotime($s->created_at)); ?></td>
+                <?php $s_created_ts = !empty($s->created_at) ? strtotime((string) $s->created_at) : false; ?>
+                <td class="kbf-meta"><?php echo esc_html($s_created_ts !== false ? wp_date('M d, Y', $s_created_ts) : '--'); ?></td>
               </tr>
             <?php endforeach; ?>
             </tbody>

@@ -1557,6 +1557,15 @@ function kbf_dashboard_find_funds_tab() {
       if(typeof ajaxurl==='undefined') 
         var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';
     (function(){
+        /**
+         * @function  kbffSetPageScrollLocked
+         * @purpose   Toggles root scroll-lock classes used while mobile overlays are open.
+         * @used-by   [kbffOpenSheet, kbffCloseSheet, kbffSetModalLock]
+         * @calls     [document.documentElement.classList.add/remove, document.body.classList.add/remove]
+         * @params    [boolean locked - Whether page scrolling should be disabled]
+         * @returns   [void]
+         * @status    ACTIVE
+         */
         window.kbffSetPageScrollLocked = function(locked){
             if (locked) {
                 document.documentElement.classList.add('kbff-scroll-lock');
@@ -1998,9 +2007,27 @@ function kbf_dashboard_find_funds_tab() {
         });
     });
 
+      /**
+       * @function  kbffSetModalLock
+       * @purpose   Bridges modal open/close states to the shared page scroll lock controller.
+       * @used-by   [kbffCloseSponsorModal, kbffCloseReportModal, kbffOpenReport, kbffOpenSponsor]
+       * @calls     [window.kbffSetPageScrollLocked]
+       * @params    [boolean locked - Whether modal lock should be enabled]
+       * @returns   [void]
+       * @status    ACTIVE
+       */
       function kbffSetModalLock(locked){
         if (typeof window.kbffSetPageScrollLocked === 'function') window.kbffSetPageScrollLocked(!!locked);
       }
+      /**
+       * @function  kbffCloseSponsorModal
+       * @purpose   Closes the sponsor modal and restores page scrolling state.
+       * @used-by   [Sponsor modal close button onclick, kbffSubmitSponsor success flow]
+       * @calls     [document.getElementById, classList.remove, kbffSetModalLock]
+       * @params    [none]
+       * @returns   [void]
+       * @status    ACTIVE
+       */
       window.kbffCloseSponsorModal = function(){
         var m = document.getElementById('kbff-modal-sponsor');
         if (m) {
@@ -2009,6 +2036,15 @@ function kbf_dashboard_find_funds_tab() {
         }
         kbffSetModalLock(false);
       };
+      /**
+       * @function  kbffCloseReportModal
+       * @purpose   Closes the report modal and restores page scrolling state.
+       * @used-by   [Report modal close button onclick, kbffSubmitReport success flow]
+       * @calls     [document.getElementById, classList.remove, kbffSetModalLock]
+       * @params    [none]
+       * @returns   [void]
+       * @status    ACTIVE
+       */
       window.kbffCloseReportModal = function(){
         var m = document.getElementById('kbff-modal-report');
         if (m) {

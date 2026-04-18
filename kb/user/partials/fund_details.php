@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
     /**
@@ -172,6 +172,15 @@ function bntm_shortcode_kbf_fund_details() {
             if (!$og_img && defined('BNTM_KBF_URL')) {
                 $og_img = BNTM_KBF_URL . 'assets/branding/logo.png';
             }
+            /**
+             * @function  kbf_fund_details_wp_head_meta_callback (anonymous closure)
+             * @purpose   Outputs Open Graph and Twitter meta tags for the current fund share page.
+             * @used-by   [wp_head action hook]
+             * @calls     [esc_attr, esc_url]
+             * @params    [none]
+             * @returns   [void]
+             * @status    ACTIVE
+             */
             add_action('wp_head', function() use ($og_title, $og_desc, $og_img, $share_url) {
                 echo "\n<meta property=\"og:type\" content=\"article\" />";
                 echo "\n<meta property=\"og:title\" content=\"" . esc_attr($og_title) . "\" />";
@@ -972,14 +981,14 @@ function bntm_shortcode_kbf_fund_details() {
             <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of &#8369;<?php echo number_format($fund->goal_amount,2); ?> goal</span>
           </div>
           <form id="kbf-sponsor-form" onsubmit="return false;">
-            <input type="hidden" name="fund_id" value="<?php echo $fund->id; ?>">
+            <input type="hidden" name="fund_id" value="<?php echo esc_attr((int) $fund->id); ?>">
             <div class="kbf-form-row">
               <div class="kbf-form-group"><label>Name / Company / Account</label><input type="text" name="sponsor_name" id="spd-name" placeholder="Your name, company, or account"></div>
               <div class="kbf-form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;"><label class="kbf-checkbox-row"><input type="checkbox" id="spd-anon" onchange="document.getElementById('spd-name').disabled=this.checked"> Sponsor Anonymously</label></div>
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" max="<?php echo $fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''; ?>" required>
+              <input type="number" name="amount" placeholder="Min. â‚±50" min="50" step="1" max="<?php echo esc_attr($fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''); ?>" required>
               <div class="kbf-meta" style="margin-top:4px;">Minimum sponsorship: &#8369;50.00</div>
               <?php if($fund->goal_amount>0): ?>
                 <div class="kbf-meta" style="margin-top:4px;">Max allowed: &#8369;<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
@@ -1000,7 +1009,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-sponsor')">Cancel</button>
-          <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSpdSponsor('<?php echo $nonce_sponsor; ?>')">
+          <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSpdSponsor('<?php echo esc_js($nonce_sponsor); ?>')">
             <i class="ph-fill ph-heart kbf-icon" style="font-size:14px;color:#ffffff;" aria-hidden="true"></i>
             Confirm Sponsorship
           </button>
@@ -1014,7 +1023,7 @@ function bntm_shortcode_kbf_fund_details() {
         <div class="kbf-modal-header"><h3>Report This Fund</h3><button class="kbf-modal-close" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}">&times;</button></div>
         <div class="kbf-modal-body">
           <form id="kbf-report-form">
-            <input type="hidden" name="fund_id" value="<?php echo $fund->id; ?>">
+            <input type="hidden" name="fund_id" value="<?php echo esc_attr((int) $fund->id); ?>">
             <div class="kbf-form-group"><label>Your Email (optional)</label><input type="email" name="reporter_email"></div>
             <div class="kbf-form-group"><label>Upload Photo (optional)</label><input type="file" name="report_image" accept="image/*"></div>
             <div class="kbf-form-group"><label>Reason *</label><select name="reason" required><option value="">Select</option><option value="Fraud">Fraudulent Campaign</option><option value="Misleading">Misleading Info</option><option value="Inappropriate">Inappropriate Content</option><option value="Scam">Suspected Scam</option><option value="Other">Other</option></select></div>
@@ -1024,7 +1033,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}">Cancel</button>
-          <button class="kbf-btn kbf-btn-danger" onclick="kbfSpdReport('<?php echo $nonce_report; ?>')">Submit Report</button>
+          <button class="kbf-btn kbf-btn-danger" onclick="kbfSpdReport('<?php echo esc_js($nonce_report); ?>')">Submit Report</button>
         </div>
       </div>
     </div>
@@ -1042,8 +1051,8 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
         <div class="kbf-modal-body">
           <form id="kbf-rating-form">
-            <input type="hidden" name="organizer_id" value="<?php echo $fund->business_id; ?>">
-            <input type="hidden" name="fund_id" value="<?php echo $fund->id; ?>">
+            <input type="hidden" name="organizer_id" value="<?php echo esc_attr((int) $fund->business_id); ?>">
+            <input type="hidden" name="fund_id" value="<?php echo esc_attr((int) $fund->id); ?>">
             <div class="kbf-form-group"><label>Credibility</label>
               <div id="kbf-star-picker" style="display:flex;gap:8px;margin-top:6px;">
                 <?php for($i=1;$i<=5;$i++): ?>
@@ -1064,7 +1073,7 @@ function bntm_shortcode_kbf_fund_details() {
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-rating')">Cancel</button>
-          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitRating('<?php echo $nonce_rating; ?>')">Submit Score</button>
+          <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitRating('<?php echo esc_js($nonce_rating); ?>')">Submit Score</button>
         </div>
       </div>
     </div>
@@ -1450,7 +1459,7 @@ function bntm_shortcode_kbf_fund_details() {
             <?php if($sp->is_anonymous || empty($sp->sponsor_name)): ?>
               <i class="ph ph-user kbf-icon" aria-hidden="true"></i>
             <?php else: ?>
-              <?php echo $initials; ?>
+              <?php echo esc_html($initials); ?>
             <?php endif; ?>
           </div>
           <div style="flex:1;min-width:0;padding-left:4px;">
@@ -1458,7 +1467,8 @@ function bntm_shortcode_kbf_fund_details() {
               <span style="font-weight:600;font-size:13.5px;color:var(--kbf-navy);">
                 <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?>
               </span>
-              <span style="font-size:12px;color:var(--kbf-slate);"><?php echo date('M d g:ia',strtotime($sp->created_at)); ?></span>
+              <?php $sp_created_ts = !empty($sp->created_at) ? strtotime((string) $sp->created_at) : false; ?>
+              <span style="font-size:12px;color:var(--kbf-slate);"><?php echo esc_html($sp_created_ts !== false ? wp_date('M d g:ia', $sp_created_ts) : '--'); ?></span>
             </div>
             <?php if($sp->message): ?><div class="kbf-sponsor-msg" style="margin-top:6px;">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
           </div>
@@ -2141,6 +2151,15 @@ function bntm_shortcode_kbf_fund_details() {
      * @returns   void
      * @status    ACTIVE
      */
+    /**
+     * @function  kbfCloseMoreMenu
+     * @purpose   Closes the contextual more-menu and clears its wrapper open state.
+     * @used-by   [document click handler, kbfToggleMoreMenu flow]
+     * @calls     [document.getElementById, Element.closest, classList.remove]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE
+     */
     function kbfCloseMoreMenu(){
         var menu = document.getElementById('kbf-more-menu');
         if(!menu) return;
@@ -2148,6 +2167,15 @@ function bntm_shortcode_kbf_fund_details() {
         menu.classList.remove('open');
         if(wrap) wrap.classList.remove('open');
     }
+    /**
+     * @function  kbfToggleMoreMenu
+     * @purpose   Toggles the contextual more-menu open/closed state for fund actions.
+     * @used-by   [More button onclick]
+     * @calls     [kbfCloseMoreMenu, document.getElementById, Element.closest, classList.contains, classList.toggle]
+     * @params    [Event e - Click event object]
+     * @returns   [void]
+     * @status    ACTIVE
+     */
     window.kbfToggleMoreMenu=function(e){
         e = e || window.event;
         if(e) { e.stopPropagation(); e.preventDefault(); }
@@ -2347,10 +2375,6 @@ function bntm_shortcode_kbf_fund_details() {
         }
         initLeaderboardPager();
     });
-    console.log('kbf fund id', <?php echo wp_json_encode($fund->id ?? null); ?>);
-    console.log('kbf fund token', <?php echo wp_json_encode($fund->fund_token ?? null); ?>);
-    console.log('kbf milestones raw', <?php echo wp_json_encode($fund->milestones ?? null); ?>);
-    console.log('kbf milestones parsed', <?php echo wp_json_encode($milestones); ?>);
     </script>
     <?php
     $c=ob_get_clean();
@@ -2359,6 +2383,7 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 
