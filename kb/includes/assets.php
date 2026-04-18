@@ -1304,7 +1304,11 @@ function kbf_global_assets() {
     }
     .kbf-table tbody td { padding: 14px 16px; border-bottom: 1px solid #eef2f7; vertical-align: middle; }
     .kbf-table tbody td:first-child { max-width: 240px; }
-    .kbf-table tbody td:first-child,
+    .kbf-table tbody td:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
     .kbf-table tbody td:first-child .kbf-strong {
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1429,14 +1433,15 @@ function kbf_global_assets() {
     .kbf-table-pager-btn.is-loading::after{
         content:'';
         position:absolute;
-        inset:0;
-        margin:auto;
+        top:50%;
+        left:50%;
         width:14px;
         height:14px;
+        transform:translate(-50%,-50%);
         border-radius:50%;
         border:2px solid rgba(59,130,246,0.25);
         border-top-color:#3b82f6;
-        animation:kbfspin .7s linear infinite;
+        animation:kbfSpin .7s linear infinite;
     }
     .kbf-table-pager-page{font-weight:600;color:var(--kbf-navy);}
     .kbf-table-desc{
@@ -1835,14 +1840,23 @@ function kbf_global_assets() {
                     pager.style.display = total > 0 ? 'flex' : 'none';
                 }
 
-                function setLoading(btn){
-                    if(!btn) return;
+                function getPagerDelay(){
+                    var base = 220;
+                    var nav = (typeof navigator !== 'undefined' && navigator && navigator.connection) ? navigator.connection : null;
+                    var type = nav && nav.effectiveType ? String(nav.effectiveType).toLowerCase() : '';
+                    if(type === 'slow-2g' || type === '2g') return 420;
+                    if(type === '3g') return 300;
+                    return base;
+                }
+                function setLoading(btn, cb){
+                    if(!btn || btn.classList.contains('is-loading')) return;
                     btn.classList.add('is-loading');
                     btn.disabled = true;
                     setTimeout(function(){
+                        if(typeof cb === 'function') cb();
                         btn.classList.remove('is-loading');
                         render();
-                    }, 250);
+                    }, getPagerDelay());
                 }
 
                 select.addEventListener('change', function(){
@@ -1851,14 +1865,17 @@ function kbf_global_assets() {
                     render();
                 });
                 prevBtn.addEventListener('click', function(){
-                    if(page > 1){
-                        page--;
-                        setLoading(prevBtn);
-                    }
+                    if(page <= 1 || this.disabled || this.classList.contains('is-loading')) return;
+                    setLoading(prevBtn, function(){
+                        page = Math.max(1, page - 1);
+                    });
                 });
                 nextBtn.addEventListener('click', function(){
-                    page++;
-                    setLoading(nextBtn);
+                    var pages = Math.max(1, Math.ceil(rows.length / perPage));
+                    if(page >= pages || this.disabled || this.classList.contains('is-loading')) return;
+                    setLoading(nextBtn, function(){
+                        page = Math.min(pages, page + 1);
+                    });
                 });
                 render();
             });

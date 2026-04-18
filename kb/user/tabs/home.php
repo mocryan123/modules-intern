@@ -106,7 +106,7 @@
         if (!empty($preview_ids)) {
             $preview_ids = array_values(array_unique($preview_ids));
             $id_placeholders = implode(',', array_fill(0, count($preview_ids), '%d'));
-            $preview_sql = "SELECT id,fund_id,sponsor_name,is_anonymous,amount,payment_method,created_at FROM {$st} WHERE id IN ({$id_placeholders})";
+            $preview_sql = "SELECT id,fund_id,sponsor_name,is_anonymous,message,amount,payment_method,created_at FROM {$st} WHERE id IN ({$id_placeholders})";
             $preview_rows = $wpdb->get_results($wpdb->prepare($preview_sql, $preview_ids));
             $preview_by_id = [];
             foreach ((array)$preview_rows as $prow) {
@@ -376,6 +376,11 @@
           margin-bottom:0;
           padding-bottom:0;
         }
+        .kbf-card-list[data-kbf-card-pager="home"] + .kbf-table-pager .kbf-table-pager-btn.is-loading::after{
+          top:50%;
+          left:50%;
+          transform:translate(-50%,-50%);
+        }
         .kbf-card-more-menu button:hover,
         .kbf-card-more-menu .kbf-btn:hover,
         .kbf-card-more-menu .kbf-btn-secondary:hover{
@@ -389,6 +394,28 @@
       </style>
       <style>
         .kbf-sponsor-details{border-top:1px solid var(--kbf-border);margin-top:14px;}
+        .kbf-home-sponsor-wrap .kbf-table{
+          width:100%;
+          min-width:640px;
+          table-layout:fixed;
+        }
+        .kbf-home-sponsor-table col:nth-child(1){width:24%;}
+        .kbf-home-sponsor-table col:nth-child(2){width:42%;}
+        .kbf-home-sponsor-table col:nth-child(3){width:14%;}
+        .kbf-home-sponsor-table col:nth-child(4){width:20%;}
+        .kbf-home-sponsor-table tbody td:first-child{max-width:none;}
+        .kbf-home-sponsor-table th,
+        .kbf-home-sponsor-table td{
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+        }
+        .kbf-home-sponsor-table th:nth-child(2),
+        .kbf-home-sponsor-table td:nth-child(2){text-align:left;}
+        .kbf-home-sponsor-table th:nth-child(3),
+        .kbf-home-sponsor-table td:nth-child(3){text-align:right;}
+        .kbf-home-sponsor-table th:nth-child(4),
+        .kbf-home-sponsor-table td:nth-child(4){text-align:right;}
         .kbf-sponsor-details summary{
           cursor:pointer;
           font-size:13px;
@@ -857,15 +884,18 @@
           <details class="kbf-sponsor-details">
             <summary>View Sponsors (<?php echo $sc; ?>)</summary>
             <div class="kbf-sponsor-details-content">
-              <div class="kbf-table-wrap" style="margin-top:10px;" data-kbf-table-desc="Lists recent sponsors for this fundraiser and their contributions.">
-              <table class="kbf-table">
-                <thead><tr><th>Sponsor</th><th>Amount</th><th>Method</th><th>Date</th></tr></thead>
+              <div class="kbf-table-wrap kbf-home-sponsor-wrap" style="margin-top:10px;" data-kbf-table-desc="Lists recent sponsors for this fundraiser and their contributions.">
+              <table class="kbf-table kbf-home-sponsor-table">
+                <colgroup>
+                  <col><col><col><col>
+                </colgroup>
+                <thead><tr><th>Sponsor</th><th>Message</th><th>Amount</th><th>Date</th></tr></thead>
                 <tbody>
                 <?php foreach($sponsors as $sp): ?>
                   <tr>
                     <td><?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?></td>
+                    <td><?php echo esc_html(!empty($sp->message) ? $sp->message : '--'); ?></td>
                     <td><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo $format_currency($sp->amount); ?></span></td>
-                    <td><?php echo esc_html($format_payment_method($sp->payment_method)); ?></td>
                     <?php $sp_created_ts = !empty($sp->created_at) ? strtotime((string) $sp->created_at) : false; ?>
                     <td class="kbf-meta"><?php echo esc_html($sp_created_ts !== false ? date('M d, Y', $sp_created_ts) : '--'); ?></td>
                   </tr>

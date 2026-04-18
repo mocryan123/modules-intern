@@ -1327,7 +1327,7 @@ function kbf_dashboard_find_funds_tab() {
 
           <div class="kbff-search-group">
             <input type="text" name="ff_q" id="kbff-search-input" class="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer...">
-            <button type="button" id="kbff-near-me-btn" onclick="kbffNearMe()" class="kbf-btn kbf-btn-secondary kbff-near-btn" aria-label="Near Me">
+            <button type="button" id="kbff-near-me-btn" onclick="kbfNearMe('kbff-search-input','kbff-search-form', this)" class="kbf-btn kbf-btn-secondary kbff-near-btn" aria-label="Near Me">
               <i class="ph ph-map-pin kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
             </button>
             <button type="submit" class="kbf-btn kbf-btn-primary kbff-search-submit">
@@ -1741,60 +1741,9 @@ function kbf_dashboard_find_funds_tab() {
         });
     })();
 
-    // Ensure Near Me fills the single search input
-    /**
-     * @function  kbffNearMe
-     * @purpose   Fills the search box with detected nearby location and triggers the search form.
-     * @used-by   [Near Me button onclick]
-     * @calls     [document.getElementById, classList.add, kbfNearMe, setTimeout]
-     * @params    [none]
-     * @returns   [void]
-     * @status    ACTIVE
-     */
-    window.kbffNearMe = function() {
-        var nearBtn = document.getElementById('kbff-near-me-btn');
-        if (nearBtn && nearBtn.classList.contains('is-loading')) return;
-        if (nearBtn) {
-            nearBtn.classList.add('is-loading');
-            nearBtn.disabled = true;
-        }
-        kbfNearMe('kbff-search-input','kbff-search-form', nearBtn);
-        setTimeout(function(){
-            if (nearBtn) {
-                nearBtn.classList.remove('is-loading');
-                nearBtn.disabled = false;
-            }
-        }, 12000);
-    };
-
     (function(){
         var wrap = document.querySelector('.kbf-card-list[data-kbf-card-pager="explore"]');
         if(!wrap || wrap.dataset.kbfPager === 'on') return;
-        /**
-         * @function  kbffNormalizeExploreScrollAncestors
-         * @purpose   Removes inherited scroll-container behavior from Explore ancestors to prevent nested wheel scrolling.
-         * @used-by   [explore pager bootstrap]
-         * @calls     [window.getComputedStyle]
-         * @params    [HTMLElement startNode - The node to start scanning ancestors from]
-         * @returns   [void]
-         * @status    ACTIVE
-         */
-        function kbffNormalizeExploreScrollAncestors(startNode){
-            var node = startNode;
-            while(node && node !== document.body && node !== document.documentElement){
-                var css = window.getComputedStyle(node);
-                var overflowY = css ? css.overflowY : '';
-                var hasNestedScroll = (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') && (node.scrollHeight > node.clientHeight + 1);
-                if(hasNestedScroll){
-                    node.style.overflow = 'visible';
-                    node.style.overflowY = 'visible';
-                    node.style.maxHeight = 'none';
-                    node.style.height = 'auto';
-                }
-                node = node.parentElement;
-            }
-        }
-        kbffNormalizeExploreScrollAncestors(wrap);
         var cards = Array.prototype.slice.call(wrap.querySelectorAll('.kbf-explore-card'));
         if(cards.length === 0) return;
         wrap.dataset.kbfPager = 'on';

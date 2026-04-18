@@ -1,21 +1,52 @@
-<?php
+﻿<?php
 /*
  * KBF user dashboard tab: Withdrawals.
  */
 
+/**
+ * @function  kbf_dashboard_withdrawals_tab
+ * @purpose   Renders the user cashout history tab for the given business account.
+ * @used-by   [kbf user dashboard section renderer in user/partials/dashboard/sections.php, AJAX tab loader in includes/ajax-user.php]
+ * @calls     [$wpdb->prepare, $wpdb->get_results, ob_start, ob_get_clean, strtotime, wp_date, esc_html, esc_attr, number_format, kbf_withdrawal_badge_class, kbf_withdrawal_status_label]
+ * @params    [int $business_id - Business/user ID used to scope withdrawal records]
+ * @returns   [string - Buffered HTML markup for the withdrawals tab]
+ * @status    ACTIVE
+ */
 function kbf_dashboard_withdrawals_tab($business_id) {
     global $wpdb;
+    $business_id = (int) $business_id;
     $ft = $wpdb->prefix . 'kbf_funds';
     $wt = $wpdb->prefix . 'kbf_withdrawals';
     $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT w.*,f.title as fund_title FROM {$wt} w LEFT JOIN {$ft} f ON w.fund_id=f.id WHERE f.business_id=%d ORDER BY w.requested_at DESC",
+        "SELECT w.*,f.title as fund_title FROM {$wt} w INNER JOIN {$ft} f ON w.fund_id=f.id WHERE f.business_id=%d ORDER BY w.requested_at DESC",
         $business_id
     ));
     $format_date = function($value) {
-        return $value ? date('M d, Y', strtotime($value)) : '—';
+        if (empty($value)) {
+            return '-';
+        }
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return '-';
+        }
+        return wp_date('M d, Y', $timestamp);
     };
     $format_account_type = function($type) {
-        return $type ? ucwords(str_replace('_', ' ', $type)) : '—';
+        return $type ? ucwords(str_replace('_', ' ', $type)) : '-';
+    };
+    $mask_account_number = function($number) {
+        $raw = trim((string) $number);
+        if ($raw === '') {
+            return '-';
+        }
+        $digits = preg_replace('/\D+/', '', $raw);
+        if ($digits === '') {
+            return $raw;
+        }
+        if (strlen($digits) <= 4) {
+            return $digits;
+        }
+        return str_repeat('*', strlen($digits) - 4) . substr($digits, -4);
     };
     ob_start();
     ?>
@@ -36,7 +67,7 @@ function kbf_dashboard_withdrawals_tab($business_id) {
           <div class="kbf-table-empty-body">No cashout requests yet.</div>
         </div>
       <?php else: ?>
-        <div class="kbf-table-wrap" data-kbf-table-desc="Tracks your cashout requests, payout account details, and release status.">
+        <div class="kbf-table-wrap kbf-cashout-wrap" data-kbf-table-desc="Tracks your cashout requests, payout account details, and release status.">
           <table class="kbf-table kbf-cashout-table">
             <colgroup>
               <col><col><col><col><col><col><col>
@@ -46,12 +77,12 @@ function kbf_dashboard_withdrawals_tab($business_id) {
             <?php foreach($rows as $w): ?>
               <tr>
                 <td><span class="kbf-cashout-title kbf-strong"><?php echo esc_html($w->fund_title); ?></span></td>
-                <td><span class="kbf-strong">&#8369;<?php echo number_format($w->amount,2); ?></span></td>
+                <td><span class="kbf-strong">&#8369;<?php echo esc_html(number_format((float) $w->amount,2)); ?></span></td>
                 <td class="kbf-meta"><?php echo esc_html($format_account_type($w->account_type)); ?></td>
-                <td class="kbf-meta"><?php echo esc_html($w->account_name); ?> &bull; <?php echo esc_html($w->account_number); ?></td>
-                <td><span class="kbf-badge kbf-badge-<?php echo kbf_withdrawal_badge_class($w->status); ?>"><?php echo kbf_withdrawal_status_label($w->status); ?></span></td>
-                <td class="kbf-meta"><?php echo $format_date($w->requested_at); ?></td>
-                <td class="kbf-meta"><?php echo $format_date($w->processed_at); ?></td>
+                <td class="kbf-meta"><?php echo esc_html($w->account_name); ?> &bull; <?php echo esc_html($mask_account_number($w->account_number)); ?></td>
+                <td><span class="kbf-badge kbf-badge-<?php echo esc_attr(kbf_withdrawal_badge_class($w->status)); ?>"><?php echo esc_html(kbf_withdrawal_status_label($w->status)); ?></span></td>
+                <td class="kbf-meta"><?php echo esc_html($format_date($w->requested_at)); ?></td>
+                <td class="kbf-meta"><?php echo esc_html($format_date($w->processed_at)); ?></td>
               </tr>
             <?php endforeach; ?>
             </tbody>
