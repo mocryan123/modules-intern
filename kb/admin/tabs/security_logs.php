@@ -5,6 +5,18 @@
 
 if (!defined('ABSPATH')) exit;
 
+/**
+ * @function  kbf_admin_security_logs_tab
+ * @purpose   Renders the admin security logs tab with recent security events and event metadata details.
+ * @used-by   [admin/ui.php tab router, user/partials/admin_embed.php tab renderer]
+ * @calls     [current_user_can, kbf_admin_date_where, $wpdb->prepare, $wpdb->get_results, get_userdata, json_decode, json_last_error, wp_json_encode, ob_start, ob_get_clean, esc_html]
+ * @params    [none]
+ * @returns   [string buffered HTML markup for the security logs tab, or access denied alert markup]
+ * @status    ACTIVE
+ *            ACTIVE = confirmed it is called somewhere
+ *            NEEDS REVIEW = could not confirm caller,
+ *                           may be unused/dead code
+ */
 function kbf_admin_security_logs_tab() {
     if (!current_user_can('manage_options')) {
         return '<div class="kbf-alert kbf-alert-error">Access denied.</div>';
@@ -17,16 +29,60 @@ function kbf_admin_security_logs_tab() {
     $where .= kbf_admin_date_where('created_at', $params);
     $sql = "SELECT * FROM {$table} {$where} ORDER BY created_at DESC LIMIT 200";
     $rows = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql);
+    /**
+     * @function  format_user_label
+     * @purpose   Resolves and caches a human-readable user label for each security log entry.
+     * @used-by   [kbf_admin_security_logs_tab row rendering for User column]
+     * @calls     [array_key_exists, get_userdata]
+     * @params    [mixed $user_id - user ID from security log row]
+     * @returns   [string display label for guest, resolved user, or fallback user ID]
+     * @status    ACTIVE
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $format_user_label = function($user_id) {
         if (!$user_id) return 'Guest';
-        $user = get_userdata((int)$user_id);
+        static $user_cache = [];
+        $user_id = (int)$user_id;
+        if (!array_key_exists($user_id, $user_cache)) {
+            $user_cache[$user_id] = get_userdata($user_id);
+        }
+        $user = $user_cache[$user_id];
         return $user ? $user->display_name . ' (#' . $user_id . ')' : 'User #' . $user_id;
     };
+    /**
+     * @function  format_meta
+     * @purpose   Normalizes security log metadata into displayable JSON text or raw fallback text.
+     * @used-by   [kbf_admin_security_logs_tab row rendering for Meta column]
+     * @calls     [json_decode, json_last_error, wp_json_encode]
+     * @params    [mixed $meta - metadata payload stored in the log row]
+     * @returns   [string normalized metadata text for display]
+     * @status    ACTIVE
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $format_meta = function($meta) {
         if (empty($meta)) return '';
         $decoded = json_decode($meta, true);
-        return wp_json_encode($decoded);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return wp_json_encode($decoded);
+        }
+        return (string)$meta;
     };
+    /**
+     * @function  fallback
+     * @purpose   Returns a fallback placeholder when the provided log field value is empty.
+     * @used-by   [kbf_admin_security_logs_tab row rendering for IP and Endpoint columns]
+     * @calls     [none]
+     * @params    [mixed $value - primary value to display, mixed $default - fallback display text]
+     * @returns   [mixed original value when present, otherwise fallback value]
+     * @status    ACTIVE
+     *            ACTIVE = confirmed it is called somewhere
+     *            NEEDS REVIEW = could not confirm caller,
+     *                           may be unused/dead code
+     */
     $fallback = function($value, $default = '-') {
         return $value ? $value : $default;
     };
