@@ -2,6 +2,15 @@
     <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <script>
       window.kbfIsLoggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;
+    /**
+     * @function  kbfOpenAuthModal
+     * @purpose   Handles kbfOpenAuthModal behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    reason: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfOpenAuthModal = function(reason){
         var modal = document.getElementById('kbf-auth-modal');
         if (!modal) return;
@@ -11,6 +20,15 @@
         requestAnimationFrame(function(){ modal.classList.add('is-open'); });
         // keep page scroll enabled
     };
+    /**
+     * @function  kbfCloseAuthModal
+     * @purpose   Handles kbfCloseAuthModal behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfCloseAuthModal = function(){
         var modal = document.getElementById('kbf-auth-modal');
         if (!modal) return;
@@ -18,6 +36,42 @@
         setTimeout(function(){ modal.style.display = 'none'; }, 220);
         // keep page scroll enabled
     };
+      if (typeof window.kbfEscapeHtml !== 'function') {
+        /**
+         * @function  kbfEscapeHtml
+         * @purpose   Handles kbfEscapeHtml behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    value: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
+        window.kbfEscapeHtml = function(value){
+          return String(value == null ? '' : value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        };
+      }
+      if (typeof window.kbfSafeUrl !== 'function') {
+        /**
+         * @function  kbfSafeUrl
+         * @purpose   Handles kbfSafeUrl behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    value: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
+        window.kbfSafeUrl = function(value){
+          var url = String(value == null ? '' : value).trim();
+          if (!url) return '';
+          if (/^(https?:|\/|blob:|data:image\/)/i.test(url)) return url;
+          return '';
+        };
+      }
       document.addEventListener('click', function(e){
         var modal = document.getElementById('kbf-auth-modal');
         if (modal && e.target === modal) window.kbfCloseAuthModal();
@@ -88,6 +142,15 @@
         var draftKey = 'kbf_create_draft_<?php echo (int)$business_id; ?>';
         var lastSavedHash = '';
 
+        /**
+         * @function  draftStorageOk
+         * @purpose   Handles draftStorageOk behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function draftStorageOk(){
           try {
             var t = '__kbf__';
@@ -97,6 +160,15 @@
           } catch(e) { return false; }
         }
 
+        /**
+         * @function  setError
+         * @purpose   Handles setError behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    el: any - parameter; message: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function setError(el, message){
           if (!el) return;
           var group = el.closest('.kbf-form-group');
@@ -108,6 +180,15 @@
           }
         }
 
+        /**
+         * @function  clearError
+         * @purpose   Handles clearError behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    el: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function clearError(el){
           if (!el) return;
           var group = el.closest('.kbf-form-group');
@@ -119,6 +200,15 @@
           }
         }
 
+        /**
+         * @function  updateCounter
+         * @purpose   Handles updateCounter behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    input: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function updateCounter(input){
           if (!input || !input.id) return;
           var max = parseInt(input.getAttribute('data-max') || input.getAttribute('maxlength') || '0', 10);
@@ -128,12 +218,30 @@
           counter.textContent = (input.value || '').length + ' / ' + max;
         }
 
+        /**
+         * @function  bindCounter
+         * @purpose   Handles bindCounter behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    input: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function bindCounter(input){
           if (!input) return;
           updateCounter(input);
           input.addEventListener('input', function(){ updateCounter(input); });
         }
 
+        /**
+         * @function  setStep
+         * @purpose   Handles setStep behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    step: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function setStep(step){
           var nextStep = Math.max(1, Math.min(4, parseInt(step || '1', 10) || 1));
           campaignData.step = nextStep;
@@ -152,7 +260,7 @@
             btn.classList.toggle('is-active', isActive);
             btn.classList.toggle('is-complete', isComplete);
             btn.disabled = s > campaignData.maxStepReached;
-            if (indexEl) indexEl.textContent = isComplete ? '✓' : String(s);
+            if (indexEl) indexEl.textContent = isComplete ? 'âœ“' : String(s);
           });
 
           stepLines.forEach(function(line, idx){
@@ -169,6 +277,15 @@
           updateSaveCloseState();
         }
 
+        /**
+         * @function  hasValue
+         * @purpose   Handles hasValue behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function hasValue(){
           return !!(
             campaignData.funder_type ||
@@ -188,6 +305,15 @@
           );
         }
 
+        /**
+         * @function  draftComparable
+         * @purpose   Handles draftComparable behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    draft: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function draftComparable(draft){
           if (!draft) return '';
           return JSON.stringify({
@@ -196,6 +322,15 @@
           });
         }
 
+        /**
+         * @function  buildDraft
+         * @purpose   Handles buildDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function buildDraft(){
           return {
             data: Object.assign({}, campaignData),
@@ -210,6 +345,15 @@
           };
         }
 
+        /**
+         * @function  dataUrlToFile
+         * @purpose   Handles dataUrlToFile behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    dataUrl: any - parameter; name: any - parameter; type: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function dataUrlToFile(dataUrl, name, type){
           if (!dataUrl || dataUrl.indexOf('data:') !== 0) return null;
           var parts = dataUrl.split(',');
@@ -222,6 +366,15 @@
           return new File([bytes], name || ('photo-' + Date.now() + '.jpg'), { type: mime });
         }
 
+        /**
+         * @function  ensurePhotoData
+         * @purpose   Handles ensurePhotoData behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function ensurePhotoData(){
           var promises = campaignData.photos.map(function(file){
             return new Promise(function(resolve){
@@ -239,6 +392,15 @@
           return Promise.all(promises);
         }
 
+        /**
+         * @function  getDraft
+         * @purpose   Handles getDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function getDraft(){
           if (!draftStorageOk()) return null;
           try {
@@ -247,6 +409,15 @@
           } catch(e) { return null; }
         }
 
+        /**
+         * @function  setDraft
+         * @purpose   Handles setDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    data: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function setDraft(data){
           if (!draftStorageOk()) return;
           if (!data) {
@@ -267,6 +438,15 @@
           updateSaveCloseState();
         }
 
+        /**
+         * @function  applyDraft
+         * @purpose   Handles applyDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    draft: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function applyDraft(draft){
           if (!draft || !draft.data) return false;
           Object.assign(campaignData, draft.data);
@@ -327,6 +507,15 @@
           return true;
         }
 
+        /**
+         * @function  updateSaveCloseState
+         * @purpose   Handles updateSaveCloseState behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function updateSaveCloseState(){
           if (!btnSave) return;
           if (!hasValue()) {
@@ -337,6 +526,15 @@
           btnSave.disabled = hash === lastSavedHash;
         }
 
+        /**
+         * @function  setTierData
+         * @purpose   Handles setTierData behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    index: any - parameter; field: any - parameter; value: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function setTierData(index, field, value){
           if (!campaignData.tiers[index]) return;
           campaignData.tiers[index][field] = value;
@@ -344,6 +542,15 @@
           updateSaveCloseState();
         }
 
+        /**
+         * @function  updateBenefitsInput
+         * @purpose   Handles updateBenefitsInput behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function updateBenefitsInput(){
           if (!benefitsInput) return;
           var clean = campaignData.tiers.filter(function(t){
@@ -354,6 +561,15 @@
           benefitsInput.value = clean.length ? JSON.stringify(clean) : '';
         }
 
+        /**
+         * @function  renderTiers
+         * @purpose   Handles renderTiers behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function renderTiers(){
           if (!tierList) return;
           tierList.innerHTML = '';
@@ -430,6 +646,15 @@
           updateBenefitsInput();
         }
 
+        /**
+         * @function  addTier
+         * @purpose   Handles addTier behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function addTier(){
           if (campaignData.tiers.length >= 5) return;
           campaignData.tiers.push({ name: '', amount: '', perks: '' });
@@ -437,6 +662,15 @@
           updateSaveCloseState();
         }
 
+        /**
+         * @function  syncPhotoInput
+         * @purpose   Handles syncPhotoInput behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function syncPhotoInput(){
           if (!photoInput) return;
           var dt = new DataTransfer();
@@ -446,6 +680,15 @@
           photoInput.files = dt.files;
         }
 
+        /**
+         * @function  renderPhotoGrid
+         * @purpose   Handles renderPhotoGrid behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function renderPhotoGrid(){
           if (!photoGrid) return;
           photoGrid.innerHTML = '';
@@ -475,7 +718,7 @@
                 var remove = document.createElement('button');
                 remove.type = 'button';
                 remove.className = 'kbf-photo-remove';
-                remove.textContent = '×';
+                remove.textContent = 'Ã—';
                 remove.addEventListener('click', function(e){
                   e.preventDefault();
                   e.stopPropagation();
@@ -502,6 +745,15 @@
           }
         }
 
+        /**
+         * @function  handlePhotoFiles
+         * @purpose   Handles handlePhotoFiles behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    files: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function handlePhotoFiles(files){
           var incoming = Array.from(files || []);
           if (!incoming.length) return;
@@ -519,10 +771,28 @@
           updateSaveCloseState();
         }
 
+        /**
+         * @function  validateStep
+         * @purpose   Handles validateStep behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    step: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function validateStep(step){
           var current = parseInt(step || campaignData.step || 1, 10);
           var valid = true;
 
+          /**
+           * @function  invalidate
+           * @purpose   Handles invalidate behavior in the dashboard script flow
+           * @used-by   [same file references detected]
+           * @calls     [none explicitly documented]
+           * @params    el: any - parameter; message: any - parameter
+           * @returns   void
+           * @status    ACTIVE
+           */
           function invalidate(el, message){
             valid = false;
             setError(el, message);
@@ -570,6 +840,15 @@
           return valid;
         }
 
+        /**
+         * @function  updateCampaignData
+         * @purpose   Handles updateCampaignData behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function updateCampaignData(){
           campaignData.title = titleInput ? titleInput.value : '';
           campaignData.description = descInput ? descInput.value : '';
@@ -584,6 +863,15 @@
           updateSaveCloseState();
         }
 
+        /**
+         * @function  submitCreate
+         * @purpose   Handles submitCreate behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function submitCreate(){
           if (!validateStep(4)) return;
           if (typeof window.ajaxurl === 'undefined' || !window.ajaxurl) {
@@ -636,7 +924,7 @@
                 if (successShare) successShare.href = dashUrl;
               } else if (msg) {
                 var message = json && json.data && json.data.message ? json.data.message : 'Submission failed. Please try again.';
-                msg.innerHTML = '<div class=\"kbf-alert kbf-alert-error\">' + message + '</div>';
+                msg.innerHTML = '<div class=\"kbf-alert kbf-alert-error\">' + window.kbfEscapeHtml(message) + '</div>';
               }
             })
             .catch(function(){
@@ -774,6 +1062,15 @@
           window.kbfCreateLocPicker = window.kbfInitLocationPicker(provInput, muniInput, brgyInput);
         }
 
+        /**
+         * @function  openCreateModal
+         * @purpose   Handles openCreateModal behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function openCreateModal(){
           modal.style.display = 'flex';
           requestAnimationFrame(function(){ modal.classList.add('is-open'); });
@@ -796,6 +1093,15 @@
         window.kbfCreateValidateStep = validateStep;
         window.kbfCreateSubmit = submitCreate;
         window.kbfUpdateSaveCloseState = updateSaveCloseState;
+        /**
+         * @function  kbfCreateRedesignApplyPhoto
+         * @purpose   Handles kbfCreateRedesignApplyPhoto behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    index: any - parameter; nextFile: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfCreateRedesignApplyPhoto = function(index, nextFile){
           if (!nextFile || typeof index !== 'number') return;
           campaignData.photos[index] = nextFile;
@@ -813,12 +1119,30 @@
           };
           reader.readAsDataURL(nextFile);
         };
+        /**
+         * @function  kbfApplyCreateDraft
+         * @purpose   Handles kbfApplyCreateDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    force: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfApplyCreateDraft = function(force){
           var draft = getDraft();
           if (!draft) return false;
           if (!force && hasValue()) return false;
           return applyDraft(draft);
         };
+        /**
+         * @function  kbfSaveAndCloseCreateDraft
+         * @purpose   Handles kbfSaveAndCloseCreateDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfSaveAndCloseCreateDraft = function(){
           if (!hasValue()) return;
           ensurePhotoData().then(function(){
@@ -826,7 +1150,25 @@
             if (typeof kbfCloseModal === 'function') kbfCloseModal('kbf-modal-create');
           });
         };
+        /**
+         * @function  kbfClearCreateDraft
+         * @purpose   Handles kbfClearCreateDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfClearCreateDraft = function(){ setDraft(null); };
+        /**
+         * @function  kbfRequestCloseCreate
+         * @purpose   Handles kbfRequestCloseCreate behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfRequestCloseCreate = function(){
           if (typeof kbfCloseModal === 'function') kbfCloseModal('kbf-modal-create');
         };
@@ -844,6 +1186,15 @@
         var btn = document.getElementById('kbf-user-menu-btn');
         var dd = document.getElementById('kbf-user-dropdown');
         if(!btn || !dd) return;
+        /**
+         * @function  closeMenu
+         * @purpose   Handles closeMenu behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function closeMenu(){
           dd.classList.remove('kbf-open');
           btn.setAttribute('aria-expanded','false');
@@ -868,6 +1219,15 @@
         var dd = document.getElementById('kbf-notif-dropdown');
         var wrap = document.getElementById('kbf-notif-menu');
         if(!btn || !dd || !wrap) return;
+        /**
+         * @function  hydrateNotifTimes
+         * @purpose   Handles hydrateNotifTimes behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function hydrateNotifTimes(){
           dd.querySelectorAll('.kbf-notif-item-time[data-notif-time-utc]').forEach(function(el){
             var raw = (el.getAttribute('data-notif-time-utc') || '').trim();
@@ -888,10 +1248,28 @@
         }
         hydrateNotifTimes();
         var marked = false;
+        /**
+         * @function  closeNotif
+         * @purpose   Handles closeNotif behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function closeNotif(){
           dd.classList.remove('kbf-open');
           btn.setAttribute('aria-expanded', 'false');
         }
+        /**
+         * @function  clearUnreadUI
+         * @purpose   Handles clearUnreadUI behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function clearUnreadUI(){
           var badge = document.getElementById('kbf-notif-badge');
           if(badge && badge.parentNode) badge.parentNode.removeChild(badge);
@@ -902,6 +1280,15 @@
           var headCount = dd.querySelector('.kbf-notif-head-count');
           if(headCount && headCount.parentNode) headCount.parentNode.removeChild(headCount);
         }
+        /**
+         * @function  clearAllUI
+         * @purpose   Handles clearAllUI behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function clearAllUI(){
           clearUnreadUI();
           dd.querySelectorAll('.kbf-notif-item').forEach(function(item){
@@ -915,6 +1302,15 @@
             list.appendChild(empty);
           }
         }
+        /**
+         * @function  markReadOnce
+         * @purpose   Handles markReadOnce behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function markReadOnce(){
           if(marked) return;
           marked = true;
@@ -931,6 +1327,15 @@
             })
             .catch(function(){});
         }
+        /**
+         * @function  markSingleRead
+         * @purpose   Handles markSingleRead behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    notifId: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function markSingleRead(notifId){
           var nonce = wrap.getAttribute('data-single-nonce') || '';
           if(!nonce || !notifId || typeof ajaxurl === 'undefined') return;
@@ -989,6 +1394,15 @@
       (function(){
         var topbar = document.querySelector('.kbf-topbar');
         if (!topbar) return;
+        /**
+         * @function  onScroll
+         * @purpose   Handles onScroll behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function onScroll(){
           if (window.scrollY > 10) topbar.classList.add('kbf-topbar-scrolled');
           else topbar.classList.remove('kbf-topbar-scrolled');
@@ -997,6 +1411,15 @@
         window.addEventListener('scroll', onScroll, { passive: true });
       })();
 
+      /**
+       * @function  kbfToggleMobileMenu
+       * @purpose   Handles kbfToggleMobileMenu behavior in the dashboard script flow
+       * @used-by   [no confirmed caller in this file]
+       * @calls     [none explicitly documented]
+       * @params    none
+       * @returns   void
+       * @status    NEEDS REVIEW
+       */
       function kbfToggleMobileMenu(){
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
@@ -1013,6 +1436,15 @@
           icon.classList.add.apply(icon.classList, isOpen ? openCls : closeCls);
         }
       }
+      /**
+       * @function  kbfCloseMobileMenu
+       * @purpose   Handles kbfCloseMobileMenu behavior in the dashboard script flow
+       * @used-by   [same file references detected]
+       * @calls     [none explicitly documented]
+       * @params    none
+       * @returns   void
+       * @status    ACTIVE
+       */
       function kbfCloseMobileMenu(){
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
@@ -1051,6 +1483,15 @@
         });
       })();
 
+    /**
+     * @function  kbfCloseModal
+     * @purpose   Handles kbfCloseModal behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    id: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfCloseModal(id) {
         var el = document.getElementById(id);
         if (!el) return;
@@ -1064,6 +1505,15 @@
             }
         }, 220);
     }
+    /**
+     * @function  kbfOpenModal
+     * @purpose   Handles kbfOpenModal behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    id: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfOpenModal(id)  {
         
         var el = document.getElementById(id);
@@ -1085,6 +1535,15 @@
     window.kbfOpenModal = kbfOpenModal;
     window.kbfCloseModal = kbfCloseModal;
 
+    /**
+     * @function  kbfSetCreateStep
+     * @purpose   Handles kbfSetCreateStep behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    step: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSetCreateStep(step) {
         if (typeof window.kbfCreateSetStep === 'function') {
             window.kbfCreateSetStep(step);
@@ -1133,6 +1592,15 @@
     }
     window.kbfSetCreateStep = kbfSetCreateStep;
 
+    /**
+     * @function  kbfSetEditStep
+     * @purpose   Handles kbfSetEditStep behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    step: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSetEditStep(step) {
         var form = document.getElementById('kbf-edit-fund-form');
         if (!form) return;
@@ -1173,9 +1641,27 @@
     var kbfPsgcData = null;
     var kbfPsgcLoading = false;
     var kbfPsgcQueue = [];
+    /**
+     * @function  kbfTitleCase
+     * @purpose   Handles kbfTitleCase behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    str: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfTitleCase(str){
         return String(str).toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});
     }
+    /**
+     * @function  kbfSetMuniOptions
+     * @purpose   Handles kbfSetMuniOptions behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    muniEl: any - parameter; list: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSetMuniOptions(muniEl, list){
         if (!muniEl) return;
         muniEl.innerHTML = '<option value="">Select Municipality</option>';
@@ -1187,6 +1673,15 @@
         }
         if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
     }
+    /**
+     * @function  kbfSetBrgyOptions
+     * @purpose   Handles kbfSetBrgyOptions behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    brgyEl: any - parameter; list: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSetBrgyOptions(brgyEl, list){
         if (!brgyEl) return;
         brgyEl.innerHTML = '<option value="">Select Barangay</option>';
@@ -1198,6 +1693,15 @@
         }
         if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
     }
+    /**
+     * @function  kbfBuildMunicipalities
+     * @purpose   Handles kbfBuildMunicipalities behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    provinceUpper: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfBuildMunicipalities(provinceUpper){
         var out = [];
         if (!kbfPsgcData) return out;
@@ -1224,6 +1728,15 @@
         }
         return out;
     }
+    /**
+     * @function  kbfEnsurePsgc
+     * @purpose   Handles kbfEnsurePsgc behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    cb: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfEnsurePsgc(cb){
         if (typeof cb !== 'function') cb = function(){};
         if (kbfPsgcData){ cb(); return; }
@@ -1243,9 +1756,27 @@
               }
           });
     }
+    /**
+     * @function  kbfInitLocationPicker
+     * @purpose   Handles kbfInitLocationPicker behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    provinceEl: any - parameter; muniEl: any - parameter; brgyEl: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfInitLocationPicker(provinceEl, muniEl, brgyEl){
         if (!provinceEl || !muniEl || !brgyEl) return;
         var muniData = [];
+        /**
+         * @function  handleProvinceChange
+         * @purpose   Handles handleProvinceChange behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function handleProvinceChange(){
             if (window._kbf_applying_location) return;
             var val = provinceEl.value || '';
@@ -1276,6 +1807,15 @@
                 if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
             });
         }
+        /**
+         * @function  handleMunicipalityChange
+         * @purpose   Handles handleMunicipalityChange behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function handleMunicipalityChange(){
             if (window._kbf_applying_location) return;
             var val = muniEl.value || '';
@@ -1308,6 +1848,15 @@
         handleProvinceChange();
         return { handleProvinceChange: handleProvinceChange, handleMunicipalityChange: handleMunicipalityChange };
     }
+    /**
+     * @function  kbfApplyLocationSelection
+     * @purpose   Handles kbfApplyLocationSelection behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    provinceEl: any - parameter; muniEl: any - parameter; brgyEl: any - parameter; loc: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfApplyLocationSelection(provinceEl, muniEl, brgyEl, loc){
         if (!provinceEl || !muniEl || !brgyEl) return;
         var parts = String(loc || '').split(',').map(function(p){ return p.trim(); }).filter(Boolean);
@@ -1319,6 +1868,15 @@
         // Flag to prevent kbfInitLocationPicker change handlers from interfering.
         window._kbf_applying_location = true;
 
+        /**
+         * @function  findOptionMatch
+         * @purpose   Handles findOptionMatch behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    el: any - parameter; value: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function findOptionMatch(el, value){
             if (!el || !value) return '';
             var target = String(value).toLowerCase();
@@ -1488,17 +2046,44 @@
             if (!kbfValidateEditStep(3)) return;
             kbfSubmitEdit();
         });
+        /**
+         * @function  kbfSyncCreateFiles
+         * @purpose   Handles kbfSyncCreateFiles behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfSyncCreateFiles(){
             if (!photoInput) return;
             var dt = new DataTransfer();
             kbfCreateFiles.forEach(function(f){ dt.items.add(f); });
             photoInput.files = dt.files;
         }
+        /**
+         * @function  kbfRenderCreateThumbs
+         * @purpose   Handles kbfRenderCreateThumbs behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfRenderCreateThumbs(){
             if (!photoWrap) return;
             photoWrap.innerHTML = '';
             kbfCreateFiles.forEach(function(file, idx){
                 if (!file.type || file.type.indexOf('image/') !== 0) return;
+                /**
+                 * @function  buildThumb
+                 * @purpose   Handles buildThumb behavior in the dashboard script flow
+                 * @used-by   [same file references detected]
+                 * @calls     [none explicitly documented]
+                 * @params    src: any - parameter
+                 * @returns   void
+                 * @status    ACTIVE
+                 */
                 function buildThumb(src){
                     if (!src) return;
                     var thumb = document.createElement('div');
@@ -1563,12 +2148,30 @@
         var kbfEditFiles = [];
         var kbfEditExistingUrls = [];
         var kbfEditRemovedUrls = [];
+        /**
+         * @function  kbfSyncEditFiles
+         * @purpose   Handles kbfSyncEditFiles behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfSyncEditFiles(){
             if (!editPhotoInput) return;
             var dt = new DataTransfer();
             kbfEditFiles.forEach(function(f){ dt.items.add(f); });
             editPhotoInput.files = dt.files;
         }
+        /**
+         * @function  kbfRenderEditThumbs
+         * @purpose   Handles kbfRenderEditThumbs behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfRenderEditThumbs(){
             if (!editPhotoWrap) return;
             editPhotoWrap.innerHTML = '';
@@ -1685,6 +2288,15 @@
             editPhotoInput.addEventListener('change', function(){
                 var incoming = Array.from(editPhotoInput.files || []);
                 if (!incoming.length) return;
+                /**
+                 * @function  kbfFileKey
+                 * @purpose   Handles kbfFileKey behavior in the dashboard script flow
+                 * @used-by   [same file references detected]
+                 * @calls     [none explicitly documented]
+                 * @params    f: any - parameter
+                 * @returns   void
+                 * @status    ACTIVE
+                 */
                 function kbfFileKey(f){
                     return [f.name, f.size, f.lastModified, f.type].join('|');
                 }
@@ -1734,6 +2346,15 @@
             crop: { x: 0, y: 0, w: 0, h: 0 }
         };
 
+        /**
+         * @function  kbfClosePhotoEditor
+         * @purpose   Handles kbfClosePhotoEditor behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfClosePhotoEditor(){
             if (editorBackdrop) {
                 editorBackdrop.classList.remove('is-open');
@@ -1752,6 +2373,15 @@
             editorState.offsetY = 0;
         }
 
+        /**
+         * @function  kbfUpdatePhotoEditorPreview
+         * @purpose   Handles kbfUpdatePhotoEditorPreview behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfUpdatePhotoEditorPreview(){
             if (!editorImg) return;
             var scale = editorState.baseScale * Math.max(editorZoomMin, editorState.zoom);
@@ -1760,6 +2390,15 @@
                 editorState.rotation + 'deg) scale(' + (editorState.flipX * scale) + ',' + (editorState.flipY * scale) + ')';
         }
 
+        /**
+         * @function  kbfClampPhotoEditorOffset
+         * @purpose   Handles kbfClampPhotoEditorOffset behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfClampPhotoEditorOffset(){
             if (!editorBackdrop || !editorImg || !editorCrop) return;
             var stage = editorBackdrop.querySelector('.kbf-photo-editor-stage');
@@ -1779,6 +2418,15 @@
             }
         }
 
+        /**
+         * @function  kbfLayoutPhotoCropBox
+         * @purpose   Handles kbfLayoutPhotoCropBox behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfLayoutPhotoCropBox(){
             if (!editorBackdrop || !editorCrop) return;
             var stage = editorBackdrop.querySelector('.kbf-photo-editor-stage');
@@ -1807,6 +2455,15 @@
             return editorState.crop;
         }
 
+        /**
+         * @function  kbfOpenPhotoEditor
+         * @purpose   Handles kbfOpenPhotoEditor behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    file: any - parameter; mode: any - parameter; index: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfOpenPhotoEditor = function(file, mode, index){
             if (!editorBackdrop || !editorImg || !file) return;
             editorState.mode = mode;
@@ -1853,6 +2510,15 @@
             reader.readAsDataURL(file);
         };
 
+        /**
+         * @function  kbfApplyPhotoEditor
+         * @purpose   Handles kbfApplyPhotoEditor behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfApplyPhotoEditor(){
             if (!editorState.file || !editorImg || !editorImg.src) return;
             var stage = editorBackdrop ? editorBackdrop.querySelector('.kbf-photo-editor-stage') : null;
@@ -1881,6 +2547,15 @@
                 out.height = Math.max(1, Math.round(crop.h));
                 var octx = out.getContext('2d');
                 octx.drawImage(render, crop.x, crop.y, crop.w, crop.h, 0, 0, out.width, out.height);
+                /**
+                 * @function  kbfNormalizeFileMeta
+                 * @purpose   Handles kbfNormalizeFileMeta behavior in the dashboard script flow
+                 * @used-by   [same file references detected]
+                 * @calls     [none explicitly documented]
+                 * @params    file: any - parameter
+                 * @returns   void
+                 * @status    ACTIVE
+                 */
                 function kbfNormalizeFileMeta(file){
                     var type = (file && file.type) ? file.type : 'image/jpeg';
                     if (type === 'image/jpg') type = 'image/jpeg';
@@ -1894,6 +2569,15 @@
                     }
                     return { name: name, type: type };
                 }
+                /**
+                 * @function  kbfDataUrlToBlob
+                 * @purpose   Handles kbfDataUrlToBlob behavior in the dashboard script flow
+                 * @used-by   [same file references detected]
+                 * @calls     [none explicitly documented]
+                 * @params    dataUrl: any - parameter
+                 * @returns   void
+                 * @status    ACTIVE
+                 */
                 function kbfDataUrlToBlob(dataUrl){
                     var parts = dataUrl.split(',');
                     if (parts.length < 2) return null;
@@ -2031,6 +2715,15 @@
                 kbfUpdatePhotoEditorPreview();
             });
         }
+        /**
+         * @function  kbfResetEditPhotos
+         * @purpose   Handles kbfResetEditPhotos behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfResetEditPhotos = function(){
             kbfEditFiles = [];
             kbfEditExistingUrls = [];
@@ -2039,6 +2732,15 @@
             }
             if (editPhotoWrap) kbfRenderEditThumbs();
         };
+    /**
+     * @function  kbfSetEditExistingPhotos
+     * @purpose   Handles kbfSetEditExistingPhotos behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    urls: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfSetEditExistingPhotos = function(urls){
         if (!Array.isArray(urls)) urls = [];
         var seen = {};
@@ -2070,11 +2772,29 @@
             });
             kbfRenderCreateThumbs();
         }
+        /**
+         * @function  kbfInitBenefitsEditor
+         * @purpose   Handles kbfInitBenefitsEditor behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    containerId: any - parameter; inputId: any - parameter; addBtnId: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfInitBenefitsEditor(containerId, inputId, addBtnId) {
             var container = document.getElementById(containerId);
             var input = document.getElementById(inputId);
             var addBtn = document.getElementById(addBtnId);
             if (!container || !input) return null;
+            /**
+             * @function  buildCard
+             * @purpose   Handles buildCard behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    data: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function buildCard(data){
                 var card = document.createElement('div');
                 card.className = 'kbf-benefit-card';
@@ -2114,9 +2834,27 @@
                 });
                 return card;
             }
+            /**
+             * @function  normalizeAmount
+             * @purpose   Handles normalizeAmount behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    val: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function normalizeAmount(val){
                 return String(val || '').replace(/[^0-9.]/g, '');
             }
+            /**
+             * @function  sync
+             * @purpose   Handles sync behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    none
+             * @returns   void
+             * @status    ACTIVE
+             */
             function sync(){
                 var items = container.querySelectorAll('.kbf-benefit-card');
                 var list = [];
@@ -2136,6 +2874,15 @@
                 });
                 input.value = list.length ? JSON.stringify(list) : '';
             }
+            /**
+             * @function  set
+             * @purpose   Handles set behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    list: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function set(list){
                 container.innerHTML = '';
                 if (Array.isArray(list)) {
@@ -2180,6 +2927,15 @@
         }
         if (!isCreateRedesign) {
         var kbfDraftKey = 'kbf_create_draft_<?php echo (int)$business_id; ?>';
+        /**
+         * @function  kbfDraftStorageOk
+         * @purpose   Handles kbfDraftStorageOk behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfDraftStorageOk(){
             try {
                 var t = '__kbf__';
@@ -2188,6 +2944,15 @@
                 return true;
             } catch(e) { return false; }
         }
+        /**
+         * @function  kbfGetCreateDraft
+         * @purpose   Handles kbfGetCreateDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfGetCreateDraft(){
             if (!kbfDraftStorageOk()) return null;
             try {
@@ -2195,6 +2960,15 @@
                 return raw ? JSON.parse(raw) : null;
             } catch(e) { return null; }
         }
+        /**
+         * @function  kbfSetCreateDraft
+         * @purpose   Handles kbfSetCreateDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    data: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfSetCreateDraft(data){
             if (!kbfDraftStorageOk()) return;
             if (!data) { localStorage.removeItem(kbfDraftKey); return; }
@@ -2209,6 +2983,15 @@
                 }
             }
         }
+        /**
+         * @function  kbfDraftComparable
+         * @purpose   Handles kbfDraftComparable behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    draft: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfDraftComparable(draft){
             if (!draft) return '';
             var photos = Array.isArray(draft.photos) ? draft.photos.map(function(p){
@@ -2224,6 +3007,15 @@
                 photos: photos
             });
         }
+        /**
+         * @function  kbfCreateHasValue
+         * @purpose   Handles kbfCreateHasValue behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfCreateHasValue(){
             if (!createForm) return false;
             var fields = createForm.querySelectorAll('input[name], select[name], textarea[name]');
@@ -2241,12 +3033,30 @@
             }
             return false;
         }
+        /**
+         * @function  kbfGetCurrentCreateStep
+         * @purpose   Handles kbfGetCurrentCreateStep behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfGetCurrentCreateStep(){
             if (!createForm) return 1;
             var active = createForm.querySelector('.kbf-step.is-active');
             var step = active && active.dataset ? parseInt(active.dataset.step || '1', 10) : 1;
             return isNaN(step) ? 1 : step;
         }
+        /**
+         * @function  kbfBuildCreateDraft
+         * @purpose   Handles kbfBuildCreateDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfBuildCreateDraft(){
             if (!createForm) return null;
             var data = { fields: {}, step: kbfGetCurrentCreateStep(), saved_at: Date.now() };
@@ -2268,6 +3078,15 @@
             }
             return data;
         }
+        /**
+         * @function  kbfDataUrlToBlob
+         * @purpose   Handles kbfDataUrlToBlob behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    dataUrl: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfDataUrlToBlob(dataUrl){
             if (!dataUrl || dataUrl.indexOf('data:') !== 0) return null;
             var parts = dataUrl.split(',');
@@ -2281,12 +3100,30 @@
             for (var i=0;i<len;i++) bytes[i] = binary.charCodeAt(i);
             return new Blob([bytes], { type: mime });
         }
+        /**
+         * @function  kbfDataUrlToFile
+         * @purpose   Handles kbfDataUrlToFile behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    dataUrl: any - parameter; name: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfDataUrlToFile(dataUrl, name){
             var blob = kbfDataUrlToBlob(dataUrl);
             if (!blob) return null;
             var fname = name || ('photo-' + Date.now() + '.jpg');
             return new File([blob], fname, { type: blob.type || 'image/jpeg' });
         }
+        /**
+         * @function  kbfApplyDraftToForm
+         * @purpose   Handles kbfApplyDraftToForm behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    draft: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfApplyDraftToForm(draft){
             if (!draft || !draft.fields || !createForm) return false;
             var fields = createForm.querySelectorAll('input[name], select[name], textarea[name]');
@@ -2340,18 +3177,54 @@
             if (typeof kbfSetCreateStep === 'function') kbfSetCreateStep(Math.min(3, Math.max(1, isNaN(step) ? 1 : step)));
             return true;
         }
+        /**
+         * @function  kbfApplyCreateDraft
+         * @purpose   Handles kbfApplyCreateDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    force: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfApplyCreateDraft = function(force){
             var draft = kbfGetCreateDraft();
             if (!draft) return false;
             if (!force && kbfCreateHasValue()) return false;
             return kbfApplyDraftToForm(draft);
         };
+        /**
+         * @function  kbfClearCreateDraft
+         * @purpose   Handles kbfClearCreateDraft behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         window.kbfClearCreateDraft = function(){
             kbfSetCreateDraft(null);
         };
+    /**
+     * @function  kbfRequestCloseCreate
+     * @purpose   Handles kbfRequestCloseCreate behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfRequestCloseCreate = function(){
         kbfCloseModal('kbf-modal-create');
     };
+    /**
+     * @function  kbfSaveAndCloseCreateDraft
+     * @purpose   Handles kbfSaveAndCloseCreateDraft behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfSaveAndCloseCreateDraft = function(){
         var data = kbfBuildCreateDraft();
         if (data) kbfSetCreateDraft(data);
@@ -2359,6 +3232,15 @@
     };
         var saveCloseBtn = document.getElementById('kbf-create-save-close');
         var lastSavedDraftHash = kbfDraftComparable(kbfGetCreateDraft());
+        /**
+         * @function  kbfUpdateSaveCloseState
+         * @purpose   Handles kbfUpdateSaveCloseState behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfUpdateSaveCloseState(){
             if (!saveCloseBtn) return;
             if (!kbfCreateHasValue()) {
@@ -2384,6 +3266,15 @@
         kbfUpdateSaveCloseState();
         }
     })();;
+    /**
+     * @function  kbfSetBtnLoading
+     * @purpose   Handles kbfSetBtnLoading behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    btn: any - parameter; on: any - parameter; label: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSetBtnLoading(btn, on, label) {
         if (!btn) return;
         if (on) {
@@ -2395,6 +3286,15 @@
             if (btn.dataset.kbfLabel) btn.innerHTML = btn.dataset.kbfLabel;
         }
     }
+    /**
+     * @function  kbfSetSkeleton
+     * @purpose   Handles kbfSetSkeleton behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    el: any - parameter; on: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSetSkeleton(el, on) {
         if (!el) return;
         if (on) {
@@ -2410,6 +3310,15 @@
         }
     }
 
+    /**
+     * @function  kbfSetFieldError
+     * @purpose   Handles kbfSetFieldError behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    field: any - parameter; message: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSetFieldError(field, message) {
         var group = field.closest('.kbf-form-group');
         if (!group) return;
@@ -2423,6 +3332,15 @@
         field.classList.add('kbf-input-error');
     }
 
+    /**
+     * @function  kbfClearFieldError
+     * @purpose   Handles kbfClearFieldError behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    field: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfClearFieldError(field) {
         var group = field.closest('.kbf-form-group');
         if (!group) return;
@@ -2431,6 +3349,15 @@
         field.classList.remove('kbf-input-error');
     }
 
+    /**
+     * @function  kbfValidateEditFund
+     * @purpose   Handles kbfValidateEditFund behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    form: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfValidateEditFund(form) {
         var fields = [
             document.getElementById('edit-fund-title'),
@@ -2451,6 +3378,15 @@
         return firstInvalid;
     }
 
+    /**
+     * @function  kbfValidateCreateForm
+     * @purpose   Handles kbfValidateCreateForm behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    form: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfValidateCreateForm(form) {
         var fields = form.querySelectorAll('input, select, textarea');
         var firstInvalid = null;
@@ -2489,6 +3425,15 @@
         return firstInvalid;
     }
 
+    /**
+     * @function  kbfValidateCreateStep
+     * @purpose   Handles kbfValidateCreateStep behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    step: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfValidateCreateStep(step) {
         if (typeof window.kbfCreateValidateStep === 'function') {
             return window.kbfCreateValidateStep(step);
@@ -2531,6 +3476,15 @@
     }
     window.kbfValidateCreateStep = kbfValidateCreateStep;
 
+    /**
+     * @function  kbfValidateEditStep
+     * @purpose   Handles kbfValidateEditStep behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    step: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfValidateEditStep(step) {
         var form = document.getElementById('kbf-edit-fund-form');
         if (!form) return true;
@@ -2570,15 +3524,42 @@
     }
     window.kbfValidateEditStep = kbfValidateEditStep;
 
+    /**
+     * @function  kbfSetLoadingPage
+     * @purpose   Handles kbfSetLoadingPage behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    on: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSetLoadingPage(on) {
         var el = document.getElementById('kbf-loading-overlay');
         if (!el) return;
         el.style.display = on ? 'flex' : 'none';
     }
 
+    /**
+     * @function  kbfInitDescCounter
+     * @purpose   Handles kbfInitDescCounter behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    textarea: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfInitDescCounter(textarea){
         if (!textarea) return;
         var counter = textarea.parentNode.querySelector('.kbf-desc-counter');
+        /**
+         * @function  update
+         * @purpose   Handles update behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
         function update(){
             if (!counter) return;
             var len = (textarea.value || '').length;
@@ -2587,9 +3568,27 @@
         textarea.addEventListener('input', update);
         update();
     }
+        /**
+         * @function  kbfInitTitleCounter
+         * @purpose   Handles kbfInitTitleCounter behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    input: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfInitTitleCounter(input){
             if (!input) return;
             var counter = input.parentNode.querySelector('.kbf-title-counter');
+            /**
+             * @function  update
+             * @purpose   Handles update behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    none
+             * @returns   void
+             * @status    ACTIVE
+             */
             function update(){
                 if (!counter) return;
                 var len = (input.value || '').length;
@@ -2609,7 +3608,7 @@
             if (funderSelect && titleInput) {
                 var placeholders = {
                     yourself: 'e.g., Help with my medical bills',
-                    someone_else: 'e.g., Support Maria’s recovery',
+                    someone_else: 'e.g., Support Mariaâ€™s recovery',
                     charity_event: 'e.g., Barangay relief drive 2026'
                 };
                 var updatePlaceholder = function(){
@@ -2627,6 +3626,15 @@
             var out = document.getElementById('kbf-fee-preview');
             if(!input || !out) return;
               var rate = <?php echo (bool)kbf_get_setting('kbf_disable_platform_fee', false) ? '0' : '0.03'; ?>;
+            /**
+             * @function  sanitizeMoney
+             * @purpose   Handles sanitizeMoney behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    value: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function sanitizeMoney(value){
                 var v = String(value || '').replace(/[^\d.]/g, '');
                 var parts = v.split('.');
@@ -2636,9 +3644,27 @@
                 if (intPart === '' && decPart) intPart = '0';
                 return { intPart: intPart, decPart: decPart };
             }
+            /**
+             * @function  formatWithCommas
+             * @purpose   Handles formatWithCommas behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    intPart: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function formatWithCommas(intPart){
                 return intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             }
+            /**
+             * @function  formatMoneyInput
+             * @purpose   Handles formatMoneyInput behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    value: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function formatMoneyInput(value){
                 var s = sanitizeMoney(value);
                 var intPart = s.intPart.replace(/^0+(?=\d)/, '');
@@ -2648,20 +3674,47 @@
                 var raw = intPart + (s.decPart ? '.' + s.decPart : '');
                 return { formatted: formatted, raw: raw };
             }
+            /**
+             * @function  parseMoney
+             * @purpose   Handles parseMoney behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    value: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function parseMoney(value){
                 var raw = String(value || '').replace(/,/g, '');
                 var num = parseFloat(raw);
                 return isNaN(num) ? 0 : num;
             }
+            /**
+             * @function  fmt
+             * @purpose   Handles fmt behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    n: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function fmt(n){
                 return n.toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
             }
+            /**
+             * @function  render
+             * @purpose   Handles render behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    none
+             * @returns   void
+             * @status    ACTIVE
+             */
             function render(){
                 var val = parseMoney(input.dataset.kbfRaw || input.value);
                 var cut = val * rate;
                 var net = Math.max(0, val - cut);
                 var peso = String.fromCharCode(8369);
-                out.innerHTML = 'Platform cut: ' + peso + fmt(cut) + ' &nbsp;•&nbsp; Net goal: ' + peso + fmt(net);
+                out.innerHTML = 'Platform cut: ' + peso + fmt(cut) + ' &nbsp;â€¢&nbsp; Net goal: ' + peso + fmt(net);
             }
             input.addEventListener('input', function(){
                 var before = input.value;
@@ -2674,6 +3727,15 @@
         })();
     })();
 
+    /**
+     * @function  kbfSubmitCreate
+     * @purpose   Handles kbfSubmitCreate behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSubmitCreate() {
         if (typeof window.kbfCreateSubmit === 'function') {
             window.kbfCreateSubmit();
@@ -2738,7 +3800,7 @@
             }
             if (msg) {
                 if (json && json.data && json.data.message) {
-                    msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(ok?'success':'error')+'">'+json.data.message+'</div>';
+                    msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(ok?'success':'error')+'">'+window.kbfEscapeHtml(json.data.message)+'</div>';
                 } else if (!ok) {
                     msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Submission failed. Please try again.</div>';
                 }
@@ -2766,6 +3828,15 @@
         });
     }
 
+    /**
+     * @function  kbfSubmitEdit
+     * @purpose   Handles kbfSubmitEdit behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSubmitEdit() {
         const form = document.getElementById('kbf-edit-fund-form');
         const btn  = document.querySelector('#kbf-modal-edit .kbf-modal-footer .kbf-btn-primary');
@@ -2778,6 +3849,15 @@
         var eProv = document.getElementById('kbf-edit-province');
         var eMuni = document.getElementById('kbf-edit-municipality');
         var eBrgy = document.getElementById('kbf-edit-barangay');
+        /**
+         * @function  kbfGetSelectValueOrLabel
+         * @purpose   Handles kbfGetSelectValueOrLabel behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    sel: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function kbfGetSelectValueOrLabel(sel){
             if (!sel) return '';
             var val = String(sel.value || '').trim();
@@ -2871,7 +3951,7 @@
                 if (json.success) {
                     m.innerHTML = '';
                 } else {
-                    m.innerHTML = '<div class="kbf-alert kbf-alert-error">'+(json.data && json.data.message ? json.data.message : 'Update failed.')+'</div>';
+                    m.innerHTML = '<div class="kbf-alert kbf-alert-error">'+window.kbfEscapeHtml(json.data && json.data.message ? json.data.message : 'Update failed.')+'</div>';
                 }
             }
             if(json.success) {
@@ -2892,6 +3972,15 @@
         });
     }
 
+    /**
+     * @function  kbfSubmitWd
+     * @purpose   Handles kbfSubmitWd behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSubmitWd() {
         const form = document.getElementById('kbf-wd-form');
         const btn  = document.querySelector('#kbf-modal-wd .kbf-modal-footer .kbf-btn-primary');
@@ -2905,7 +3994,7 @@
         .then(r=>r.json()).then(json=>{
             console.log('kbfSubmitWd: response', json);
             const m = document.getElementById('kbf-wd-msg');
-            m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
+            m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+window.kbfEscapeHtml(json.data.message)+'</div>';
             if(json.success) {
                 kbfCloseModal('kbf-modal-wd');
             } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
@@ -2921,6 +4010,15 @@
         });
     })();
 
+    /**
+     * @function  kbfSubmitAppeal
+     * @purpose   Handles kbfSubmitAppeal behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    nonce: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     function kbfSubmitAppeal(nonce) {
         const form = document.getElementById('kbf-appeal-form');
         const btn  = document.querySelector('#kbf-modal-appeal .kbf-modal-footer .kbf-btn-primary');
@@ -2932,12 +4030,21 @@
         fd.append('nonce', nonce);
         fetch(ajaxurl, {method:'POST', body:fd})
         .then(r=>r.json()).then(json=>{
-            msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+json.data.message+'</div>';
+            msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+window.kbfEscapeHtml(json.data.message)+'</div>';
             if (json.success) setTimeout(()=>{ kbfCloseModal('kbf-modal-appeal'); }, 1600);
             else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }
 
+    /**
+     * @function  kbfOpenEdit
+     * @purpose   Handles kbfOpenEdit behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    id: any - parameter; title: any - parameter; desc: any - parameter; loc: any - parameter; deadline: any - parameter; autoReturn: any - parameter; photosJson: any - parameter; benefitsJson: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfOpenEdit = function(id, title, desc, loc, deadline, autoReturn, photosJson, benefitsJson) {
         document.getElementById('edit-fund-id').value = id;
         document.getElementById('edit-fund-title').value = title;
@@ -2993,6 +4100,15 @@
         kbfOpenModal('kbf-modal-edit');
     };
 
+    /**
+     * @function  kbfOpenWd
+     * @purpose   Handles kbfOpenWd behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    fundId: any - parameter; available: any - parameter; title: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfOpenWd = function(fundId, available, title) {
         document.getElementById('wd-fund-id').value = fundId;
         document.getElementById('wd-fund-title').textContent = title || 'Fund #'+fundId;
@@ -3006,6 +4122,15 @@
         kbfOpenModal('kbf-modal-wd');
     };
 
+    /**
+     * @function  kbfOpenAppeal
+     * @purpose   Handles kbfOpenAppeal behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    fundId: any - parameter; title: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfOpenAppeal = function(fundId, title) {
         document.getElementById('kbf-appeal-fund-id').value = fundId;
         document.getElementById('kbf-appeal-msg').innerHTML = '';
@@ -3015,12 +4140,30 @@
     var kbfMilestoneFiles = [];
     var milestoneInput = document.getElementById('kbf-milestone-photos');
     var milestoneWrap = document.getElementById('kbf-milestone-photo-previews');
+    /**
+     * @function  kbfSyncMilestoneFiles
+     * @purpose   Handles kbfSyncMilestoneFiles behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfSyncMilestoneFiles(){
         if (!milestoneInput) return;
         var dt = new DataTransfer();
         kbfMilestoneFiles.forEach(function(f){ dt.items.add(f); });
         milestoneInput.files = dt.files;
     }
+    /**
+     * @function  kbfRenderMilestoneThumbs
+     * @purpose   Handles kbfRenderMilestoneThumbs behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfRenderMilestoneThumbs(){
         if (!milestoneWrap) return;
         milestoneWrap.innerHTML = '';
@@ -3078,6 +4221,15 @@
         });
     }
 
+    /**
+     * @function  kbfOpenMilestoneModal
+     * @purpose   Handles kbfOpenMilestoneModal behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    fundId: any - parameter; title: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfOpenMilestoneModal = function(fundId, title) {
         var titleEl = document.getElementById('kbf-milestone-fund-title');
         var idEl = document.getElementById('kbf-milestone-fund-id');
@@ -3099,6 +4251,15 @@
             if (descCounter) descCounter.textContent = (bodyInput && bodyInput.value ? bodyInput.value.length : 0) + ' / 300';
             form.querySelectorAll('.kbf-field-error').forEach(function(el){ el.textContent = ''; el.style.display = ''; });
 
+            /**
+             * @function  bindLiveCounter
+             * @purpose   Handles bindLiveCounter behavior in the dashboard script flow
+             * @used-by   [same file references detected]
+             * @calls     [none explicitly documented]
+             * @params    input: any - parameter; counterEl: any - parameter; max: any - parameter
+             * @returns   void
+             * @status    ACTIVE
+             */
             function bindLiveCounter(input, counterEl, max){
                 if (!input || !counterEl) return;
                 if (input.dataset.counterBound) return;
@@ -3120,6 +4281,15 @@
         }
         kbfOpenModal('kbf-modal-milestone');
     };
+    /**
+     * @function  kbfHandleMilestoneSave
+     * @purpose   Handles kbfHandleMilestoneSave behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     function kbfHandleMilestoneSave(){
         var saveBtn = document.getElementById('kbf-milestone-save');
         var form = document.getElementById('kbf-milestone-form');
@@ -3135,6 +4305,15 @@
         if (titleCounter) titleCounter.textContent = (title && title.value ? title.value.length : 0) + ' / 150';
         if (descCounter) descCounter.textContent = (body && body.value ? body.value.length : 0) + ' / 300';
 
+        /**
+         * @function  setErr
+         * @purpose   Handles setErr behavior in the dashboard script flow
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    input: any - parameter; message: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
         function setErr(input, message){
             if (!input) return;
             var group = input.closest('.kbf-form-group');
@@ -3188,8 +4367,8 @@
             }
             console.log('kbf_add_milestone parsed:', json);
             if (msg) {
-                var extra = (json.data && json.data.raw) ? ('<div style="margin-top:6px;font-size:11px;opacity:.7;word-break:break-word;">'+String(json.data.raw).slice(0,280)+'</div>') : '';
-                msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+(json.data && json.data.message ? json.data.message : 'Save failed.')+extra+'</div>';
+                var extra = (json.data && json.data.raw) ? ('<div style="margin-top:6px;font-size:11px;opacity:.7;word-break:break-word;">'+window.kbfEscapeHtml(String(json.data.raw).slice(0,280))+'</div>') : '';
+                msg.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+window.kbfEscapeHtml(json.data && json.data.message ? json.data.message : 'Save failed.')+extra+'</div>';
             }
             if (saveBtn) kbfSetBtnLoading(saveBtn, false);
             kbfSetSkeleton(msg, false);
@@ -3210,6 +4389,15 @@
         });
     }
 
+    /**
+     * @function  kbfCancelFund
+     * @purpose   Handles kbfCancelFund behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    fundId: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfCancelFund = function(fundId) {
         if (!confirm('Cancel this fund? This cannot be undone.')) return;
         const fd = new FormData();
@@ -3231,13 +4419,14 @@
             photosHtml = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">';
             ms.photos.forEach(function(p){
                 var url = (typeof p === 'object' && p.url) ? p.url : (typeof p === 'string' ? p : '');
-                if (url) photosHtml += '<img src="'+url.replace(/"/g,'&quot;')+'" alt="Story photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">';
+                url = window.kbfSafeUrl(url);
+                if (url) photosHtml += '<img src="'+window.kbfEscapeHtml(url)+'" alt="Story photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">';
             });
             photosHtml += '</div>';
         }
-        var titleHtml = ms.title ? '<div style="font-weight:600;color:var(--kbf-navy);margin-bottom:4px;">'+ms.title.replace(/</g,'&lt;')+'</div>' : '';
+        var titleHtml = ms.title ? '<div style="font-weight:600;color:var(--kbf-navy);margin-bottom:4px;">'+window.kbfEscapeHtml(ms.title)+'</div>' : '';
         var dateHtml = dateStr ? '<div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:6px;">'+dateStr+'</div>' : '';
-        var bodyHtml = ms.body ? '<div style="font-size:13px;color:var(--kbf-text-sm);line-height:1.6;">'+ms.body.replace(/\n/g,'<br>').replace(/</g,'&lt;')+'</div>' : '';
+        var bodyHtml = ms.body ? '<div style="font-size:13px;color:var(--kbf-text-sm);line-height:1.6;">'+window.kbfEscapeHtml(ms.body).replace(/\n/g,'<br>')+'</div>' : '';
         var cardHtml = '<div style="border:1px solid var(--kbf-border);border-radius:12px;padding:12px;background:#fff;animation:kbfFadeIn .3s ease;">'+titleHtml+dateHtml+bodyHtml+photosHtml+'</div>';
         var grid = container.querySelector('div[style*="display:grid"]');
         if (!grid) {
@@ -3253,6 +4442,15 @@
     var kbfTrashFundId = null;
     var kbfTrashMode = 'cancel';
     var kbfTrashInFlight = false;
+    /**
+     * @function  kbfOpenTrashFund
+     * @purpose   Handles kbfOpenTrashFund behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    fundId: any - parameter; title: any - parameter; mode: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfOpenTrashFund = function(fundId, title, mode){
         kbfTrashFundId = fundId || null;
         kbfTrashMode = (mode === 'trash') ? 'trash' : 'cancel';
@@ -3263,10 +4461,19 @@
             if (msgEl) msgEl.textContent = 'This will permanently delete the fundraiser and its records. This cannot be undone. Are you sure you want to continue?';
         } else {
             if (titleEl) titleEl.textContent = 'Cancel Campaign';
-            if (msgEl) msgEl.textContent = 'This will move the fundraiser to cancelled status and it won’t be visible to sponsors. Are you sure you want to continue?';
+            if (msgEl) msgEl.textContent = 'This will move the fundraiser to cancelled status and it wonâ€™t be visible to sponsors. Are you sure you want to continue?';
         }
         kbfOpenModal('kbf-modal-trash-fund');
     };
+    /**
+     * @function  kbfConfirmTrashFund
+     * @purpose   Handles kbfConfirmTrashFund behavior in the dashboard script flow
+     * @used-by   [same file references detected]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
     window.kbfConfirmTrashFund = function(){
         if (!kbfTrashFundId) return;
         if (kbfTrashInFlight) return;
@@ -3322,10 +4529,28 @@
 
     var kbfEscrowFundId = null;
     var kbfEscrowInFlight = false;
+    /**
+     * @function  kbfOpenEscrowRequest
+     * @purpose   Handles kbfOpenEscrowRequest behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    fundId: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfOpenEscrowRequest = function(fundId){
         kbfEscrowFundId = fundId || null;
         kbfOpenModal('kbf-modal-escrow-request');
     };
+    /**
+     * @function  kbfConfirmEscrowRequest
+     * @purpose   Handles kbfConfirmEscrowRequest behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfConfirmEscrowRequest = function(){
         if (!kbfEscrowFundId) return;
         if (kbfEscrowInFlight) return;
@@ -3362,6 +4587,15 @@
           });
     };
 
+    /**
+     * @function  kbfExtendDeadline
+     * @purpose   Handles kbfExtendDeadline behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    fundId: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfExtendDeadline = function(fundId) {
         const d = prompt('New deadline (YYYY-MM-DD):'); if(!d) return;
         const fd = new FormData();
@@ -3371,6 +4605,15 @@
     };
 
 
+    /**
+     * @function  kbfMarkComplete
+     * @purpose   Handles kbfMarkComplete behavior in the dashboard script flow
+     * @used-by   [no confirmed caller in this file]
+     * @calls     [none explicitly documented]
+     * @params    fundId: any - parameter
+     * @returns   void
+     * @status    NEEDS REVIEW
+     */
     window.kbfMarkComplete = function(fundId) {
         if(!confirm('Mark this fund as complete?')) return;
         const fd = new FormData();
