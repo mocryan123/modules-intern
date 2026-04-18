@@ -995,6 +995,16 @@ function bntm_ajax_kbf_mark_notification_read() {
     wp_send_json_success(['unread' => (int)$unread]);
 }
 
+function bntm_ajax_kbf_clear_notifications() {
+    check_ajax_referer('kbf_notifications', 'nonce');
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
+    $uid = get_current_user_id();
+    update_user_meta($uid, 'kbf_notifications', []);
+    wp_send_json_success(['unread' => 0, 'cleared' => 1]);
+}
+
 function bntm_ajax_kbf_get_notifications() {
     check_ajax_referer('kbf_notifications', 'nonce');
     if (!is_user_logged_in()) {

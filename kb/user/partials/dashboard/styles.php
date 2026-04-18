@@ -1,4 +1,4 @@
-        <!-- ================== CSS ================== -->
+﻿        <!-- ================== CSS ================== -->
     <style>
     .kbf-user-ui{
     font-family: "Poppins",system-ui,-apple-system,sans-serif;
@@ -301,6 +301,7 @@
         text-decoration:none;
         transition:background .15s ease, border-color .15s ease, color .15s ease;
         position:relative;
+        cursor:pointer;
     }
     .kbf-notif-btn:hover{
         background:#f8fafc;
@@ -2451,7 +2452,36 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     #kbf-modal-create.is-success .kbf-create-success{display:flex;}
     @keyframes kbfSuccessRing{to{stroke-dashoffset:0;}}
     @keyframes kbfSuccessCheck{to{stroke-dashoffset:0;}}
+        /* ===== AUDIT SAFE OVERRIDES ===== */
+    /* Keep table usable on smaller viewports without changing desktop layout math. */
+    @media (max-width: 900px){
+        .kbf-table{ min-width:760px; }
+    }
+    @media (max-width: 640px){
+        .kbf-table{ min-width:640px; }
+    }
+
+    /* Single, explicit modal scroll policy to avoid selector collision across sections. */
+    .kbf-user-ui #kbf-modal-create .kbf-modal-body,
+    .kbf-user-ui #kbf-modal-edit .kbf-modal-body{
+        overflow-x:hidden;
+    }
+    /* Canonical modal scroll behavior: keep final computed values stable. */
+    .kbf-user-ui #kbf-modal-create .kbf-modal-body,
+    .kbf-user-ui #kbf-modal-edit .kbf-modal-body{
+        overflow-y:hidden;
+    }
+    @media (max-width: 900px){
+        .kbf-user-ui #kbf-modal-create .kbf-modal-body,
+        .kbf-user-ui #kbf-modal-edit .kbf-modal-body{
+            overflow-y:auto !important;
+            max-height:calc(100vh - 180px);
+        }
+    }
     </style>
+
+
+
 
 
 

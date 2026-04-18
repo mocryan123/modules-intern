@@ -853,6 +853,11 @@
           var isOpen = dd.classList.toggle('kbf-open');
           btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         });
+        document.querySelectorAll('.kbf-nav a, .kbf-mobile-menu a, #kbf-notif-btn, #kbf-user-dropdown a').forEach(function(el){
+          el.addEventListener('click', function(){
+            closeMenu();
+          });
+        });
         document.addEventListener('click', function(){ closeMenu(); });
         document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMenu(); });
       })();
@@ -897,6 +902,19 @@
           var headCount = dd.querySelector('.kbf-notif-head-count');
           if(headCount && headCount.parentNode) headCount.parentNode.removeChild(headCount);
         }
+        function clearAllUI(){
+          clearUnreadUI();
+          dd.querySelectorAll('.kbf-notif-item').forEach(function(item){
+            if(item && item.parentNode) item.parentNode.removeChild(item);
+          });
+          var list = dd.querySelector('.kbf-notif-list');
+          if(list && !list.querySelector('.kbf-notif-empty')){
+            var empty = document.createElement('div');
+            empty.className = 'kbf-notif-empty';
+            empty.textContent = 'No notifications yet.';
+            list.appendChild(empty);
+          }
+        }
         function markReadOnce(){
           if(marked) return;
           marked = true;
@@ -931,7 +949,27 @@
           btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
           if(isOpen) markReadOnce();
         });
+        document.querySelectorAll('.kbf-nav a, .kbf-mobile-menu a, #kbf-user-menu-btn, .kbf-dashboard-user').forEach(function(el){
+          el.addEventListener('click', function(){
+            closeNotif();
+          });
+        });
         dd.addEventListener('click', function(e){
+          var clearAll = e.target.closest('.kbf-notif-view-all[data-notif-action="clear-all"]');
+          if (clearAll) {
+            e.preventDefault();
+            clearAllUI();
+            var nonce = wrap.getAttribute('data-mark-nonce') || '';
+            if(nonce && typeof ajaxurl !== 'undefined'){
+              var fd = new FormData();
+              fd.append('action', 'kbf_clear_notifications');
+              fd.append('nonce', nonce);
+              fetch(ajaxurl, { method:'POST', body: fd })
+                .then(function(r){ return r.json(); })
+                .catch(function(){});
+            }
+            return;
+          }
           var item = e.target.closest('.kbf-notif-item[data-notification-id]');
           if(!item) return;
           var notifId = item.getAttribute('data-notification-id') || '';
@@ -3345,13 +3383,3 @@
     <script>
       // Auto-refresh disabled per request.
     </script>
-
-
-
-
-
-
-
-
-
-

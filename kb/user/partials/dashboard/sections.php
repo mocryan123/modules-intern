@@ -2,6 +2,12 @@
       $landing_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : home_url('/');
       $signin_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : home_url('/wp-login.php');
       $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $signin_url;
+      $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+      $tab_overview_url = esc_url(add_query_arg('kbf_tab','overview', $dashboard_url));
+      $tab_sponsorships_url = esc_url(add_query_arg('kbf_tab','sponsorships', $dashboard_url));
+      $tab_withdrawals_url = esc_url(add_query_arg('kbf_tab','withdrawals', $dashboard_url));
+      $tab_find_funds_url = esc_url(add_query_arg('kbf_tab','find_funds', $dashboard_url));
+      $tab_profile_url = esc_url(add_query_arg('kbf_tab','profile', $dashboard_url));
       $avatar_url = ($is_logged_in && $nav_profile && $nav_profile->avatar_url)
         ? $nav_profile->avatar_url
         : '';
@@ -36,13 +42,13 @@
     <!-- Topbar (Landing-style) -->
     <div class="kbf-mobile-overlay" id="kbf-mobile-overlay"></div>
     <div class="kbf-mobile-menu" id="kbf-mobile-menu">
-      <a href="?kbf_tab=overview" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Home" onclick="kbfCloseMobileMenu()">Home</a>
-      <a href="?kbf_tab=sponsorships" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Supporters" onclick="kbfCloseMobileMenu()">Supporters</a>
-      <a href="?kbf_tab=withdrawals" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Cashout" onclick="kbfCloseMobileMenu()">Cashout</a>
-      <a href="?kbf_tab=find_funds" onclick="kbfCloseMobileMenu()">Explore</a>
+      <a href="<?php echo $tab_overview_url; ?>" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Home" onclick="kbfCloseMobileMenu()">Home</a>
+      <a href="<?php echo $tab_sponsorships_url; ?>" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Supporters" onclick="kbfCloseMobileMenu()">Supporters</a>
+      <a href="<?php echo $tab_withdrawals_url; ?>" class="<?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Cashout" onclick="kbfCloseMobileMenu()">Cashout</a>
+      <a href="<?php echo $tab_find_funds_url; ?>" onclick="kbfCloseMobileMenu()">Explore</a>
         <div class="kbf-mobile-menu-actions">
           <?php if($is_logged_in): ?>
-            <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url(add_query_arg('kbf_tab','profile', kbf_get_page_url('dashboard'))); ?>">Profile</a>
+            <a class="kbf-btn kbf-btn-secondary" href="<?php echo $tab_profile_url; ?>">Profile</a>
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($logout_url); ?>">Sign out</a>
           <?php else: ?>
             <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url($signin_url); ?>">Sign in</a>
@@ -58,10 +64,10 @@
           
         </div>
         <nav class="kbf-nav">
-          <a href="?kbf_tab=overview" class="<?php echo $tab==='overview'?'active':''; ?> <?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Home">Home</a>
-          <a href="?kbf_tab=sponsorships" class="<?php echo $tab==='sponsorships'?'active':''; ?> <?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Supporters">Supporters</a>
-          <a href="?kbf_tab=withdrawals" class="<?php echo $tab==='withdrawals'?'active':''; ?> <?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Cashout">Cashout</a>
-          <a href="?kbf_tab=find_funds" class="<?php echo $tab==='find_funds'?'active':''; ?>">Explore</a>
+          <a href="<?php echo $tab_overview_url; ?>" class="<?php echo $tab==='overview'?'active':''; ?> <?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Home">Home</a>
+          <a href="<?php echo $tab_sponsorships_url; ?>" class="<?php echo $tab==='sponsorships'?'active':''; ?> <?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Supporters">Supporters</a>
+          <a href="<?php echo $tab_withdrawals_url; ?>" class="<?php echo $tab==='withdrawals'?'active':''; ?> <?php echo !$is_logged_in ? 'kbf-auth-required' : ''; ?>" data-auth-tab="Cashout">Cashout</a>
+          <a href="<?php echo $tab_find_funds_url; ?>" class="<?php echo $tab==='find_funds'?'active':''; ?>">Explore</a>
         </nav>
       </div>
       <div class="kbf-actions">
@@ -86,7 +92,7 @@
               <span class="kbf-dashboard-name"><?php echo esc_html($user->display_name); ?></span>
             </button>
             <div class="kbf-user-dropdown" id="kbf-user-dropdown" role="menu" aria-label="User menu">
-              <a href="?kbf_tab=profile" role="menuitem">Profile</a>
+              <a href="<?php echo $tab_profile_url; ?>" role="menuitem">Profile</a>
               <a href="<?php echo esc_url($logout_url); ?>" role="menuitem">Sign out</a>
             </div>
           </div>
@@ -110,7 +116,16 @@
                       <?php
                         $n_title = sanitize_text_field($notif_item['title'] ?? 'Notification');
                         $n_message = sanitize_text_field($notif_item['message'] ?? '');
-                        $n_url = !empty($notif_item['url']) ? esc_url($notif_item['url']) : esc_url(add_query_arg('kbf_tab','sponsorships', kbf_get_page_url('dashboard')));
+                        $n_default_url = $tab_sponsorships_url;
+                        $n_url = $n_default_url;
+                        if (!empty($notif_item['url'])) {
+                          $n_candidate_url = esc_url($notif_item['url']);
+                          $n_candidate_host = wp_parse_url($n_candidate_url, PHP_URL_HOST);
+                          $n_site_host = wp_parse_url(home_url('/'), PHP_URL_HOST);
+                          if (!$n_candidate_host || ($n_site_host && strcasecmp((string)$n_candidate_host, (string)$n_site_host) === 0)) {
+                            $n_url = $n_candidate_url;
+                          }
+                        }
                         $n_read = !empty($notif_item['read']);
                         $n_time_raw = !empty($notif_item['created_at']) ? sanitize_text_field((string)$notif_item['created_at']) : '';
                         $n_time = '';
@@ -123,7 +138,7 @@
                           }
                         }
                       ?>
-                      <a href="<?php echo $n_url; ?>" class="kbf-notif-item <?php echo $n_read ? '' : 'is-unread'; ?>" role="menuitem" data-notification-id="<?php echo esc_attr(sanitize_text_field($notif_item['id'] ?? '')); ?>">
+                      <a href="<?php echo esc_url($n_url); ?>" class="kbf-notif-item <?php echo $n_read ? '' : 'is-unread'; ?>" role="menuitem" data-notification-id="<?php echo esc_attr(sanitize_text_field($notif_item['id'] ?? '')); ?>">
                         <span class="kbf-notif-item-title"><?php echo esc_html($n_title); ?></span>
                         <?php if ($n_message): ?><span class="kbf-notif-item-msg"><?php echo esc_html($n_message); ?></span><?php endif; ?>
                         <?php if ($n_time): ?><span class="kbf-notif-item-time" data-notif-time-utc="<?php echo esc_attr($n_time_raw); ?>"><?php echo esc_html($n_time); ?></span><?php endif; ?>
@@ -133,7 +148,7 @@
                     <div class="kbf-notif-empty">No notifications yet.</div>
                   <?php endif; ?>
                 </div>
-                <a class="kbf-notif-view-all" href="?kbf_tab=sponsorships" role="menuitem">View all</a>
+                <a class="kbf-notif-view-all" href="#" role="menuitem" data-notif-action="clear-all">Clear all</a>
               </div>
             </div>
         <?php else: ?>
