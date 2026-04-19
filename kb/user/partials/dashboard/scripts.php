@@ -2,6 +2,13 @@
     <script>if(typeof ajaxurl==='undefined') var ajaxurl='<?php echo admin_url("admin-ajax.php"); ?>';</script>
     <script>
       window.kbfIsLoggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;
+      // If page is restored from back-forward cache, force a fresh request.
+      // This prevents stale signed-in UI from appearing after logout.
+      window.addEventListener('pageshow', function(event){
+        if (event && event.persisted) {
+          window.location.reload();
+        }
+      });
     /**
      * @function  kbfOpenAuthModal
      * @purpose   Handles kbfOpenAuthModal behavior in the dashboard script flow

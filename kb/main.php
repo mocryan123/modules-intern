@@ -135,6 +135,25 @@ if (!function_exists('kbf_strip_hardcoded_legacy_frontend_css')) {
 }
 add_action('template_redirect', 'kbf_strip_hardcoded_legacy_frontend_css', 0);
 
+// Prevent browser/back-forward cache from showing stale signed-in KBF pages after logout.
+if (!function_exists('kbf_no_cache_private_pages')) {
+    function kbf_no_cache_private_pages() {
+        if (is_admin() || !function_exists('kbf_is_kbf_page') || !kbf_is_kbf_page()) {
+            return;
+        }
+        if (!is_user_logged_in()) {
+            return;
+        }
+        if (!headers_sent()) {
+            nocache_headers();
+            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, private');
+            header('Pragma: no-cache');
+            header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+        }
+    }
+}
+add_action('template_redirect', 'kbf_no_cache_private_pages', 1);
+
 // Disable legacy plugin preloader on KBF pages (use KBF branding preloader instead).
 add_filter('bntm_disable_loading_overlay', function($disabled){
     if (function_exists('kbf_is_kbf_page') && kbf_is_kbf_page()) {
