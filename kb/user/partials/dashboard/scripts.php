@@ -1265,6 +1265,21 @@
               });
             });
           });
+          document.querySelectorAll('.kbf-mobile-notif-item-time[data-notif-time-utc]').forEach(function(el){
+            var raw = (el.getAttribute('data-notif-time-utc') || '').trim();
+            if(!raw) return;
+            var iso = raw.replace(' ', 'T') + 'Z';
+            var d = new Date(iso);
+            if(isNaN(d.getTime())) return;
+            el.textContent = d.toLocaleString(undefined, {
+              month: 'short',
+              day: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true
+            });
+          });
         }
         hydrateNotifTimes();
         var marked = false;
@@ -1375,6 +1390,7 @@
         }
         partsList.forEach(function(parts){
           parts.btn.addEventListener('click', function(e){
+            if (window.innerWidth <= 900) return;
             e.preventDefault();
             e.stopPropagation();
             var shouldOpen = !parts.dd.classList.contains('kbf-open');
@@ -1414,6 +1430,40 @@
             if(notifId) markSingleRead(notifId);
           });
         });
+        var mobileNotifMenu = document.getElementById('kbf-mobile-notif-menu');
+        if (mobileNotifMenu) {
+          mobileNotifMenu.addEventListener('click', function(e){
+            var clearAll = e.target.closest('.kbf-mobile-notif-clear[data-notif-action="clear-all"]');
+            if (clearAll) {
+              e.preventDefault();
+              clearAllUI();
+              mobileNotifMenu.querySelectorAll('.kbf-mobile-notif-item').forEach(function(item){
+                if(item && item.parentNode) item.parentNode.removeChild(item);
+              });
+              var mobileList = mobileNotifMenu.querySelector('.kbf-mobile-notif-list');
+              if (mobileList && !mobileList.querySelector('.kbf-mobile-notif-empty')) {
+                var empty = document.createElement('div');
+                empty.className = 'kbf-mobile-notif-empty';
+                empty.textContent = 'No notifications yet.';
+                mobileList.appendChild(empty);
+              }
+              var nonce = nonceWrap.getAttribute('data-mark-nonce') || '';
+              if(nonce && typeof ajaxurl !== 'undefined'){
+                var fd = new FormData();
+                fd.append('action', 'kbf_clear_notifications');
+                fd.append('nonce', nonce);
+                fetch(ajaxurl, { method:'POST', body: fd })
+                  .then(function(r){ return r.json(); })
+                  .catch(function(){});
+              }
+              return;
+            }
+            var item = e.target.closest('.kbf-mobile-notif-item[data-notification-id]');
+            if (!item) return;
+            var notifId = item.getAttribute('data-notification-id') || '';
+            if(notifId) markSingleRead(notifId);
+          });
+        }
         document.addEventListener('click', function(e){
           for(var i = 0; i < partsList.length; i++){
             if(partsList[i].wrap.contains(e.target)) return;
@@ -1458,9 +1508,11 @@
        */
       function kbfToggleMobileMenu(){
         var menu = document.getElementById('kbf-mobile-menu');
+        var notifMenu = document.getElementById('kbf-mobile-notif-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
         var icon = document.getElementById('kbf-mobile-menu-icon');
         if (!menu || !overlay) return;
+        if (notifMenu) notifMenu.classList.remove('kbf-menu-open');
         menu.classList.toggle('kbf-menu-open');
         overlay.classList.toggle('kbf-overlay-open');
         if (icon) {
@@ -1484,9 +1536,10 @@
       function kbfCloseMobileMenu(){
         var menu = document.getElementById('kbf-mobile-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
+        var notifMenu = document.getElementById('kbf-mobile-notif-menu');
         var icon = document.getElementById('kbf-mobile-menu-icon');
         if (menu) menu.classList.remove('kbf-menu-open');
-        if (overlay) overlay.classList.remove('kbf-overlay-open');
+        if (overlay && (!notifMenu || !notifMenu.classList.contains('kbf-menu-open'))) overlay.classList.remove('kbf-overlay-open');
         if (icon) {
           var closeCls = (icon.getAttribute('data-close') || 'ph ph-list').split(' ');
           var openCls = (icon.getAttribute('data-open') || 'ph ph-x').split(' ');
@@ -1495,15 +1548,51 @@
           icon.classList.add.apply(icon.classList, closeCls);
         }
       }
+      function kbfToggleMobileNotifMenu(e){
+        if (window.innerWidth > 900) return;
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        var menu = document.getElementById('kbf-mobile-notif-menu');
+        var mobileMenu = document.getElementById('kbf-mobile-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        if (!menu || !overlay) return;
+        if (mobileMenu) mobileMenu.classList.remove('kbf-menu-open');
+        var icon = document.getElementById('kbf-mobile-menu-icon');
+        if (icon) {
+          var closeCls = (icon.getAttribute('data-close') || 'ph ph-list').split(' ');
+          var openCls = (icon.getAttribute('data-open') || 'ph ph-x').split(' ');
+          icon.classList.remove.apply(icon.classList, openCls);
+          icon.classList.remove.apply(icon.classList, closeCls);
+          icon.classList.add.apply(icon.classList, closeCls);
+        }
+        menu.classList.toggle('kbf-menu-open');
+        overlay.classList.toggle('kbf-overlay-open');
+      }
+      function kbfCloseMobileNotifMenu(){
+        var menu = document.getElementById('kbf-mobile-notif-menu');
+        var overlay = document.getElementById('kbf-mobile-overlay');
+        var mobileMenu = document.getElementById('kbf-mobile-menu');
+        if (menu) menu.classList.remove('kbf-menu-open');
+        if (overlay && (!mobileMenu || !mobileMenu.classList.contains('kbf-menu-open'))) overlay.classList.remove('kbf-overlay-open');
+      }
+      window.kbfToggleMobileNotifMenu = kbfToggleMobileNotifMenu;
+      window.kbfCloseMobileNotifMenu = kbfCloseMobileNotifMenu;
       window.addEventListener('resize', function(){
-        if (window.innerWidth > 900) kbfCloseMobileMenu();
+        if (window.innerWidth > 900) {
+          kbfCloseMobileMenu();
+          kbfCloseMobileNotifMenu();
+        }
       });
       document.addEventListener('click', function(e){
         var menu = document.getElementById('kbf-mobile-menu');
+        var notifMenu = document.getElementById('kbf-mobile-notif-menu');
         var overlay = document.getElementById('kbf-mobile-overlay');
         if (!menu || !overlay) return;
         if (overlay.classList.contains('kbf-overlay-open') && e.target === overlay) {
           kbfCloseMobileMenu();
+          if (notifMenu) kbfCloseMobileNotifMenu();
         }
       });
 

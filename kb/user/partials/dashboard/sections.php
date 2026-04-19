@@ -56,6 +56,53 @@
           <?php endif; ?>
         </div>
     </div>
+    <div class="kbf-mobile-notif-menu" id="kbf-mobile-notif-menu">
+      <div class="kbf-mobile-notif-head">
+        <strong>Notifications</strong>
+        <?php if ($notif_unread_count > 0): ?>
+          <span class="kbf-mobile-notif-head-count"><?php echo (int)$notif_unread_count; ?> new</span>
+        <?php endif; ?>
+      </div>
+      <div class="kbf-mobile-notif-list">
+        <?php if (!empty($notif_preview_items)): ?>
+          <?php foreach ($notif_preview_items as $notif_item): ?>
+            <?php
+              $n_title = sanitize_text_field($notif_item['title'] ?? 'Notification');
+              $n_message = sanitize_text_field($notif_item['message'] ?? '');
+              $n_default_url = $tab_sponsorships_url;
+              $n_url = $n_default_url;
+              if (!empty($notif_item['url'])) {
+                $n_candidate_url = esc_url($notif_item['url']);
+                $n_candidate_host = wp_parse_url($n_candidate_url, PHP_URL_HOST);
+                $n_site_host = wp_parse_url(home_url('/'), PHP_URL_HOST);
+                if (!$n_candidate_host || ($n_site_host && strcasecmp((string)$n_candidate_host, (string)$n_site_host) === 0)) {
+                  $n_url = $n_candidate_url;
+                }
+              }
+              $n_read = !empty($notif_item['read']);
+              $n_time_raw = !empty($notif_item['created_at']) ? sanitize_text_field((string)$notif_item['created_at']) : '';
+              $n_time = '';
+              if ($n_time_raw !== '') {
+                try {
+                  $dt = new DateTimeImmutable($n_time_raw, new DateTimeZone('UTC'));
+                  $n_time = $dt->format('M d, Y h:i A');
+                } catch (Exception $e) {
+                  $n_time = $n_time_raw;
+                }
+              }
+            ?>
+            <a href="<?php echo esc_url($n_url); ?>" class="kbf-mobile-notif-item <?php echo $n_read ? '' : 'is-unread'; ?>" data-notification-id="<?php echo esc_attr(sanitize_text_field($notif_item['id'] ?? '')); ?>" onclick="kbfCloseMobileNotifMenu()">
+              <span class="kbf-mobile-notif-item-title"><?php echo esc_html($n_title); ?></span>
+              <?php if ($n_message): ?><span class="kbf-mobile-notif-item-msg"><?php echo esc_html($n_message); ?></span><?php endif; ?>
+              <?php if ($n_time): ?><span class="kbf-mobile-notif-item-time" data-notif-time-utc="<?php echo esc_attr($n_time_raw); ?>"><?php echo esc_html($n_time); ?></span><?php endif; ?>
+            </a>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="kbf-mobile-notif-empty">No notifications yet.</div>
+        <?php endif; ?>
+      </div>
+      <a class="kbf-mobile-notif-clear" href="#" data-notif-action="clear-all" onclick="kbfCloseMobileNotifMenu()">Clear all</a>
+    </div>
 
     <div class="kbf-topbar">
       <div class="kbf-topbar-left">
@@ -97,7 +144,7 @@
             </div>
           </div>
             <div class="kbf-notif-menu" id="kbf-notif-menu" data-mark-nonce="<?php echo esc_attr($notif_nonce); ?>" data-single-nonce="<?php echo esc_attr($notif_nonce); ?>" data-get-nonce="<?php echo esc_attr($notif_nonce); ?>">
-              <button class="kbf-notif-btn <?php echo $notif_unread_count > 0 ? 'has-unread' : ''; ?>" type="button" id="kbf-notif-btn" aria-haspopup="true" aria-expanded="false" aria-label="Notifications" title="Notifications">
+              <button class="kbf-notif-btn <?php echo $notif_unread_count > 0 ? 'has-unread' : ''; ?>" type="button" id="kbf-notif-btn" aria-haspopup="true" aria-expanded="false" aria-label="Notifications" title="Notifications" onclick="kbfToggleMobileNotifMenu(event)">
                 <i class="ph ph-bell kbf-icon" aria-hidden="true"></i>
                 <?php if ($notif_unread_count > 0): ?>
                   <span class="kbf-notif-badge" id="kbf-notif-badge"><?php echo (int)min(99, $notif_unread_count); ?></span>
