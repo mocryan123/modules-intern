@@ -2204,9 +2204,14 @@ function bntm_shortcode_kbf_fund_details() {
             if(j.success){
             if(j.data && j.data.checkout_url){
                 btn.innerHTML='Redirecting to payment...';
-                var w = window.open(j.data.checkout_url, '_blank', 'noopener');
-                if (w) { try { w.opener = null; } catch(e) {} }
+                // Use same-tab navigation because popup windows are often blocked on mobile Safari.
+                const checkoutUrl = String(j.data.checkout_url || '');
                 if (window.kbfAwaitPaymentSuccess) window.kbfAwaitPaymentSuccess();
+                try {
+                    window.location.assign(checkoutUrl);
+                } catch (e) {
+                    window.location.href = checkoutUrl;
+                }
             } else {
                 msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
                 kbfSetBtnLoading(btn,false);
