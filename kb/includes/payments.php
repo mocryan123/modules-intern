@@ -320,6 +320,7 @@ function bntm_ajax_kbf_create_checkout() {
     $result = kbf_maya_request('/checkout/v1/checkouts', $payload);
 
     if (isset($result['error'])) {
+        $gateway_error = sanitize_text_field((string) $result['error']);
         if (is_user_logged_in() && function_exists('kbf_push_user_notification')) {
             $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
             kbf_push_user_notification((int)get_current_user_id(), [
@@ -331,8 +332,21 @@ function bntm_ajax_kbf_create_checkout() {
             ]);
         }
         $wpdb->delete($st, ['id' => $sponsorship_id], ['%d']);
-        error_log('[KBF][Maya] Checkout create failed: ' . $result['error']);
-        wp_send_json_error(['message' => 'Payment gateway error. Please try again later.']);
+        error_log('[KBF][Maya] Checkout create failed: ' . $gateway_error);
+
+        $message = 'Payment gateway error. Please try again later.';
+        if ($gateway_error !== '') {
+            if (stripos($gateway_error, 'not configured') !== false) {
+                $message = 'Maya API key is not configured. Please set Maya keys in Fundora settings.';
+            } elseif ((defined('WP_DEBUG') && WP_DEBUG) || current_user_can('manage_options')) {
+                $message = 'Payment gateway error: ' . $gateway_error;
+            }
+        }
+
+        wp_send_json_error([
+            'message' => $message,
+            'error_code' => 'maya_checkout_create_failed',
+        ]);
     }
 
     $checkout_url = $result['redirectUrl'] ?? '';
