@@ -688,6 +688,7 @@ function kbf_hide_bntm_sidebar_styles() {
         .bntm-sidebar-overlay, #bntmSidebarOverlay { display: none !important; }
     </style>';
 }
+
 add_action('wp_head', 'kbf_hide_bntm_sidebar_styles', 99999);
 add_action('admin_head', 'kbf_hide_bntm_sidebar_styles', 99999);
 
@@ -708,7 +709,12 @@ function kbf_hide_bntm_sidebar_js() {
         }
 
         function enforceLayout() {
-            var sb = document.getElementById("bntmSidebar") || document.querySelector(".bntm-sidebar");
+            var obsTimer = null;
+            var obs = new MutationObserver(function(){
+                if (obsTimer) clearTimeout(obsTimer);
+                obsTimer = setTimeout(enforceLayout, 50);
+            });
+            obs.observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true });
             if (sb && sb.parentNode) {
                 sb.parentNode.removeChild(sb);
             }
