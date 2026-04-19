@@ -164,8 +164,7 @@ function bntm_kbf_render_signin() {
                                 ],
                                 $reset_url
                             );
-                            $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-                            $subject = sprintf('[%s] Password Reset', $blogname);
+                            $subject = 'Password Reset';
                             $message = "Hi,\n\n";
                             $message .= "We received a request to reset your Fundora password.\n";
                             $message .= "Open this link to set a new password:\n\n";

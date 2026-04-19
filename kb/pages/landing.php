@@ -323,7 +323,7 @@ function bntm_kbf_render_landing() {
     .kbf-container {
         overflow: visible;
         width: 100%;
-        max-width: 1200px !important;
+        max-width: 1500px !important;
         margin: 0 auto;
         padding: 62px 24px 0;
     }
@@ -690,7 +690,7 @@ function bntm_kbf_render_landing() {
         padding: 3px 8px !important; border-radius: 999px !important;
         font-size: 6px !important; font-weight: 600 !important;
         letter-spacing: .12em !important; text-transform: uppercase !important;
-        color: #2563eb !important; 
+        color: #1f6fe0 !important; 
         background: rgba(59, 130, 246, 0.12) !important;
         border: 1px solid rgba(59, 130, 246, 0.3) !important; 
         width: fit-content !important;
@@ -1654,7 +1654,7 @@ function bntm_kbf_render_landing() {
         font-size: 6px;
         text-transform: uppercase;
         letter-spacing: 0.12em;
-        color: #2563eb;
+        color: #1f6fe0;
         font-weight: 600;
         background: rgba(59, 130, 246, 0.12);
         border: 1px solid rgba(59, 130, 246, 0.3);
@@ -1733,6 +1733,15 @@ function bntm_kbf_render_landing() {
     }
     .kbf-chip img, .kbf-chip i, .kbf-chip svg {
         filter: invert(46%) sepia(85%) saturate(1381%) hue-rotate(198deg) brightness(98%) contrast(93%);
+    }
+    .kbf-chip .ph.ph-check-fat.kbf-icon {
+        color: #2563eb !important;
+        filter: none !important;
+    }
+    .kbf-feature-grid.kbf-reveal.is-in .kbf-chip .kbf-icon,
+    .kbf-feature-grid.kbf-reveal.is-in .kbf-chip i {
+        color: #2563eb !important;
+        filter: none !important;
     }
     .kbf-feature-grid h4, .kbf-feature-grid .kbf-card h4 {
         font-size: 15px;
@@ -2480,19 +2489,19 @@ function bntm_kbf_render_landing() {
         margin-top: 20px;
         flex-wrap: wrap;
         margin-bottom: 24px;
-        color: #2563eb;
+        color: #1f6fe0;
     }
     .vh-trust-badge {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 14px;
-        color: #2563eb;
+        color: #1f6fe0;
         font-weight: 500;
         font-family: 'Poppins', system-ui, -apple-system, sans-serif;
     }
     .vh-trust-badge i {
-        color: #2563eb;
+        color: #1f6fe0;
         font-size: 18px;
     }
     .kbf-hero-heading {
@@ -3001,20 +3010,6 @@ function bntm_kbf_render_landing() {
               <h2 style="font-size: 1.5em; font-weight: 500;">What is Fundora?</h2>
               <p>Fundora is a community-powered crowdfunding platform built for Filipino families, organizations, and communities. It supports local payment methods, a community-first experience, and the cultural value of bayanihan.</p>
               <p style="margin-top:10px;">Instead of informal posts, organizers get a dedicated campaign page with progress tracking, proof uploads, and an update log. Donors get confidence that their money is reaching the right person, for the right reason.</p>
-              <div class="kbf-trust-badges" style="margin-top:20px; display:flex; gap:16px; flex-wrap:wrap;">
-                <div class="kbf-trust-badge" style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:#0f172a;">
-                  <i class="ph-fill ph-check-circle" style="font-size:18px; color:#3d8ef0;"></i>
-                  <span>Maya Payments</span>
-                </div>
-                <div class="kbf-trust-badge" style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:#0f172a;">
-                  <i class="ph-fill ph-check-circle" style="font-size:18px; color:#3d8ef0;"></i>
-                  <span>Verified Organizers</span>
-                </div>
-                <div class="kbf-trust-badge" style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:#0f172a;">
-                  <i class="ph-fill ph-check-circle" style="font-size:18px; color:#3d8ef0;"></i>
-                  <span>Transparent Tracking</span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -3556,3 +3551,4 @@ function bntm_kbf_render_landing() {
     <?php
     return ob_get_clean();
 }
+

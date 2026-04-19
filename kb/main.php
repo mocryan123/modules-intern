@@ -109,6 +109,17 @@ function kbf_mark_first_login($user_id) {
         ]);
     }
 }
+
+add_action('wp_mail_failed', function($error) {
+    if (!function_exists('kbf_log') || !is_wp_error($error)) {
+        return;
+    }
+    kbf_log('wp_mail_failed', [
+        'message' => $error->get_error_message(),
+        'code' => $error->get_error_code(),
+        'data' => $error->get_error_data(),
+    ]);
+});
 add_action('user_register', 'kbf_mark_first_login', 10, 1);
 
 // ============================================================

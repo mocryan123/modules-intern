@@ -12,7 +12,120 @@ function bntm_kbf_render_signup() {
     $terms_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('terms') : '#';
     $signup_error = '';
     $signup_success = '';
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action']) && $_POST['kbf_auth_action'] === 'signup') {
+    $show_resend_form = false;
+    $resend_prefill_email = '';
+    if (!empty($_GET['email'])) {
+        $resend_prefill_email = sanitize_email(wp_unslash($_GET['email']));
+    }
+    $send_verification_email = static function($user_id, $email) {
+        $user_id = (int) $user_id;
+        $email = sanitize_email((string) $email);
+        if ($user_id <= 0 || !is_email($email)) {
+            return false;
+        }
+        $token = wp_generate_password(32, false, false);
+        update_user_meta($user_id, 'kbf_email_verified', '0');
+        update_user_meta($user_id, 'kbf_email_verify_hash', kbf_auth_make_verify_hash($token));
+        update_user_meta($user_id, 'kbf_email_verify_expires', time() + KBF_EMAIL_VERIFY_TTL);
+        $verify_url = add_query_arg([
+            'kbf_verify' => $token,
+            'uid' => $user_id,
+        ], function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url());
+        $subject = 'Verify your Fundora account';
+        $message = '
+<div style="font-family:Poppins,Arial,sans-serif;max-width:520px;
+            margin:0 auto;background:#f3f6fb;">
+  <div style="background:#fff;border-radius:16px;margin:24px auto;
+              overflow:hidden;border:1px solid #edf0f4;">
+
+    <div style="background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
+                padding:28px 32px;text-align:center;">
+      <span style="font-size:22px;font-weight:800;color:#fff;
+                   letter-spacing:-0.5px;">Fundora</span>
+      <div style="font-size:12px;color:rgba(255,255,255,0.8);
+                  margin-top:4px;">Filipino Crowdfunding Platform</div>
+    </div>
+
+    <div style="padding:32px;">
+      <h2 style="font-size:20px;font-weight:700;color:#0f1115;
+                 margin:0 0 10px;">Verify your email</h2>
+      <p style="font-size:14px;color:#6f7785;line-height:1.65;
+                margin:0 0 24px;">
+        Thanks for signing up! Click the button below to verify
+        your email address and get started on Fundora.
+      </p>
+      <a href="' . esc_url($verify_url) . '"
+         style="display:inline-block;padding:13px 28px;
+                background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
+                color:#fff;border-radius:10px;text-decoration:none;
+                font-weight:600;font-size:14px;letter-spacing:0.01em;">
+        Verify my email
+      </a>
+      <p style="margin:20px 0 0;font-size:12px;color:#6f7785;
+                line-height:1.6;">
+        This link expires in <strong>24 hours</strong>.
+        If you did not create a Fundora account,
+        you can safely ignore this email.
+      </p>
+    </div>
+
+    <div style="padding:16px 32px;border-top:1px solid #edf0f4;
+                text-align:center;">
+      <p style="font-size:11px;color:#94a3b8;margin:0;">
+        &copy; ' . date('Y') . ' Fundora &middot;
+        Maramag, Bukidnon, Philippines
+      </p>
+    </div>
+
+  </div>
+</div>';
+        $headers = ['Content-Type: text/html; charset=UTF-8'];
+        $site_name = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+        $from_email = sanitize_email((string) get_option('admin_email'));
+        if ($from_email) {
+            $headers[] = 'Reply-To: ' . $site_name . ' <' . $from_email . '>';
+        }
+        $mail_sent = wp_mail($email, $subject, $message, $headers);
+        if (!$mail_sent && function_exists('kbf_log')) {
+            kbf_log('Verification mail send failed', [
+                'user_id' => $user_id,
+                'email' => $email,
+            ]);
+        }
+        return (bool) $mail_sent;
+    };
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action']) && $_POST['kbf_auth_action'] === 'resend_verification') {
+        $nonce_ok = isset($_POST['kbf_resend_nonce']) && wp_verify_nonce($_POST['kbf_resend_nonce'], 'kbf_auth_resend_verification');
+        if (!$nonce_ok) {
+            $signup_error = 'Security check failed. Please try again.';
+            $show_resend_form = true;
+        } else {
+            $resend_email = isset($_POST['resend_email']) ? sanitize_email(wp_unslash($_POST['resend_email'])) : '';
+            $resend_prefill_email = $resend_email;
+            if (!$resend_email || !is_email($resend_email)) {
+                $signup_error = 'Please enter a valid email address.';
+                $show_resend_form = true;
+            } else {
+                $user = get_user_by('email', $resend_email);
+                if ($user instanceof WP_User && !(defined('KBF_EMAIL_VERIFY_DISABLED') && KBF_EMAIL_VERIFY_DISABLED)) {
+                    $verified = (string) get_user_meta($user->ID, 'kbf_email_verified', true);
+                    if ($verified !== '1') {
+                        $sent = $send_verification_email((int) $user->ID, $resend_email);
+                        if (!$sent) {
+                            $signup_error = 'We could not send the verification email right now. Please try again in a few minutes.';
+                            $show_resend_form = true;
+                        } else {
+                            $signup_success = 'If an unverified account exists for that email, a new verification link has been sent.';
+                        }
+                    } else {
+                        $signup_success = 'This account is already verified. You can sign in now.';
+                    }
+                } else {
+                    $signup_success = 'If an unverified account exists for that email, a new verification link has been sent.';
+                }
+            }
+        }
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action']) && $_POST['kbf_auth_action'] === 'signup') {
         $nonce_ok = isset($_POST['kbf_auth_nonce']) && wp_verify_nonce($_POST['kbf_auth_nonce'], 'kbf_auth_signup');
         if (!$nonce_ok) {
             $signup_error = 'Security check failed. Please try again.';
@@ -41,7 +154,24 @@ function bntm_kbf_render_signup() {
             } elseif (!preg_match('/[0-9]/', $password)) {
                 $signup_error = 'Password must contain at least 1 number.';
             } elseif (email_exists($email)) {
-                $signup_error = 'An account with that email already exists.';
+                $existing_user = get_user_by('email', $email);
+                if ($existing_user instanceof WP_User && !(defined('KBF_EMAIL_VERIFY_DISABLED') && KBF_EMAIL_VERIFY_DISABLED)) {
+                    $verified = (string) get_user_meta($existing_user->ID, 'kbf_email_verified', true);
+                    if ($verified !== '1') {
+                        $sent = $send_verification_email((int) $existing_user->ID, $email);
+                        if ($sent) {
+                            $signup_success = 'This email is already registered but not verified. We sent a new verification link.';
+                        } else {
+                            $signup_error = 'This email is already registered but unverified. We could not send a new verification email right now.';
+                            $show_resend_form = true;
+                            $resend_prefill_email = $email;
+                        }
+                    } else {
+                        $signup_error = 'An account with that email already exists.';
+                    }
+                } else {
+                    $signup_error = 'An account with that email already exists.';
+                }
             } else {
                 $base_login = sanitize_user(current(explode('@', $email)), true);
                 if (!$base_login) {
@@ -73,65 +203,14 @@ function bntm_kbf_render_signup() {
                         delete_user_meta($user_id, 'kbf_email_verify_expires');
                         $signup_success = 'Account created. You can sign in right away.';
                     } else {
-                        $token = wp_generate_password(32, false, false);
-                        update_user_meta($user_id, 'kbf_email_verified', '0');
-                        update_user_meta($user_id, 'kbf_email_verify_hash', kbf_auth_make_verify_hash($token));
-                        update_user_meta($user_id, 'kbf_email_verify_expires', time() + KBF_EMAIL_VERIFY_TTL);
-                        $verify_url = add_query_arg([
-                            'kbf_verify' => $token,
-                            'uid' => $user_id,
-                        ], function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url());
-                        $subject = 'Verify your Fundora account';
-                        $message = '
-<div style="font-family:Poppins,Arial,sans-serif;max-width:520px;
-            margin:0 auto;background:#f3f6fb;">
-  <div style="background:#fff;border-radius:16px;margin:24px auto;
-              overflow:hidden;border:1px solid #edf0f4;">
-
-    <div style="background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
-                padding:28px 32px;text-align:center;">
-      <span style="font-size:22px;font-weight:800;color:#fff;
-                   letter-spacing:-0.5px;">Fundora</span>
-      <div style="font-size:12px;color:rgba(255,255,255,0.8);
-                  margin-top:4px;">Filipino Crowdfunding Platform</div>
-    </div>
-
-    <div style="padding:32px;">
-      <h2 style="font-size:20px;font-weight:700;color:#0f1115;
-                 margin:0 0 10px;">Verify your email</h2>
-      <p style="font-size:14px;color:#6f7785;line-height:1.65;
-                margin:0 0 24px;">
-        Thanks for signing up! Click the button below to verify 
-        your email address and get started on Fundora.
-      </p>
-      <a href="' . esc_url($verify_url) . '"
-         style="display:inline-block;padding:13px 28px;
-                background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
-                color:#fff;border-radius:10px;text-decoration:none;
-                font-weight:600;font-size:14px;letter-spacing:0.01em;">
-        Verify my email
-      </a>
-      <p style="margin:20px 0 0;font-size:12px;color:#6f7785;
-                line-height:1.6;">
-        This link expires in <strong>24 hours</strong>. 
-        If you did not create a Fundora account, 
-        you can safely ignore this email.
-      </p>
-    </div>
-
-    <div style="padding:16px 32px;border-top:1px solid #edf0f4;
-                text-align:center;">
-      <p style="font-size:11px;color:#94a3b8;margin:0;">
-        &copy; ' . date('Y') . ' Fundora &middot; 
-        Maramag, Bukidnon, Philippines
-      </p>
-    </div>
-
-  </div>
-</div>';
-                        $headers = ['Content-Type: text/html; charset=UTF-8'];
-                        wp_mail($email, $subject, $message, $headers);
-                        $signup_success = 'Account created. Please check your email to verify before signing in.';
+                        $sent = $send_verification_email((int) $user_id, $email);
+                        if ($sent) {
+                            $signup_success = 'Account created. Please check your email to verify before signing in.';
+                        } else {
+                            $signup_error = 'Account created, but we could not send the verification email right now. Please use "Resend Verification Email" below.';
+                            $show_resend_form = true;
+                            $resend_prefill_email = $email;
+                        }
                     }
                 }
             }
@@ -381,7 +460,7 @@ function bntm_kbf_render_signup() {
               <?php elseif ($signup_success): ?>
                 <div class="kbf-alert kbf-alert-success kbf-alert-compact" style="margin-bottom:12px;"><?php echo esc_html($signup_success); ?></div>
               <?php elseif (!empty($_GET['verify']) && $_GET['verify'] === 'failed'): ?>
-                <div class="kbf-alert kbf-alert-error kbf-alert-compact" style="margin-bottom:12px;">Verification link is invalid or expired. Please sign up again.</div>
+                <div class="kbf-alert kbf-alert-error kbf-alert-compact" style="margin-bottom:12px;">Verification link is invalid or expired. Request a new verification email below.</div>
               <?php endif; ?>
               <input type="hidden" name="kbf_auth_action" value="signup">
               <input type="hidden" name="kbf_auth_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_signup')); ?>">
@@ -424,6 +503,22 @@ function bntm_kbf_render_signup() {
               </div>
               <div class="kbf-auth-footer">Already have an account? <a href="<?php echo esc_url($signin_url); ?>">Sign In</a></div>
             </form>
+            <?php if ($show_resend_form || (!empty($_GET['verify']) && $_GET['verify'] === 'failed')): ?>
+              <form class="kbf-auth-form" method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>" style="margin-top:10px;">
+                <input type="hidden" name="kbf_auth_action" value="resend_verification">
+                <input type="hidden" name="kbf_resend_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_resend_verification')); ?>">
+                <div class="kbf-form-group">
+                  <div class="kbf-auth-input">
+                    <i class="ph ph-envelope-simple kbf-icon" aria-hidden="true"></i>
+                    <label class="kbf-float-label" for="kbf-resend-email">Email for verification resend</label>
+                    <input type="email" id="kbf-resend-email" name="resend_email" required autocomplete="email" value="<?php echo esc_attr($resend_prefill_email); ?>">
+                  </div>
+                </div>
+                <div class="kbf-auth-cta">
+                  <button class="kbf-btn kbf-btn-primary" type="submit">Resend Verification Email</button>
+                </div>
+              </form>
+            <?php endif; ?>
           </div>
         </div>
       </div>
