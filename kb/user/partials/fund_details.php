@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
     /**
@@ -1122,7 +1122,8 @@ function bntm_shortcode_kbf_fund_details() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ₱50" min="50" step="1" max="<?php echo esc_attr($fund->goal_amount>0?max(0,$fund->goal_amount-$fund->raised_amount):''); ?>" required>
+              <input type="text" name="amount_display" id="kbf-sponsor-amount-display" placeholder="Min. &#8369;50" inputmode="numeric" autocomplete="off" required>
+              <input type="hidden" name="amount" id="kbf-sponsor-amount" min="50" step="1">
               <div class="kbf-meta" style="margin-top:4px;">Minimum sponsorship: &#8369;50.00</div>
               <?php if($fund->goal_amount>0): ?>
                 <div class="kbf-meta" style="margin-top:4px;">Max allowed: &#8369;<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
@@ -1987,6 +1988,24 @@ function bntm_shortcode_kbf_fund_details() {
         updateMsgCount();
         msg.addEventListener('input', updateMsgCount);
     })();
+    (function(){
+        var amountDisplay = document.getElementById('kbf-sponsor-amount-display');
+        var amountHidden = document.getElementById('kbf-sponsor-amount');
+        if(!amountDisplay || !amountHidden) return;
+
+        function formatAmountInput(){
+            var digits = (amountDisplay.value || '').replace(/[^\d]/g, '');
+            amountHidden.value = digits;
+            if(!digits){
+                amountDisplay.value = '';
+                return;
+            }
+            amountDisplay.value = Number(digits).toLocaleString('en-US');
+        }
+
+        amountDisplay.addEventListener('input', formatAmountInput);
+        amountDisplay.addEventListener('blur', formatAmountInput);
+    })();
     /**
      * @function  kbfEscHtmlMsg
      * @purpose   Escapes untrusted text before rendering inside HTML alert containers.
@@ -2017,7 +2036,11 @@ function bntm_shortcode_kbf_fund_details() {
         const msg=kbfGetActiveSponsorMsg();
         if(!kbfValidateRequired(form)) return;
         const amountEl = form.querySelector('input[name="amount"]');
-        const amt = amountEl ? parseFloat(amountEl.value || '0') : 0;
+        const amt = amountEl ? parseFloat((amountEl.value || '0').replace(/,/g, '')) : 0;
+        if(amt < 50){
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">Minimum sponsorship is &#8369;50.00.</div>';
+            return;
+        }
         kbfSetBtnLoading(btn,true,'Processing...');
         kbfSetSkeleton(msg,true);
         const fd=new FormData(form);
@@ -2552,6 +2575,7 @@ function bntm_shortcode_kbf_fund_details() {
     }
     return bntm_universal_container('Fund Details -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
 }
+
 
 
 

@@ -557,7 +557,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
           <div class="kbf-form-row">
             <div class="kbf-form-group">
               <label>Display Name</label>
-              <input type="text" name="display_name" value="<?php echo esc_attr($user->display_name); ?>" placeholder="Your display name" maxlength="50">
+              <input type="text" name="display_name" value="<?php echo esc_attr($user->display_name); ?>" placeholder="Your display name" maxlength="50" required>
               <div class="kbf-field-error"></div>
             </div>
                <div class="kbf-form-row">
@@ -565,7 +565,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
               <label>Social Name</label>
               <div class="kbf-input-with-prefix">
                 <span class="kbf-input-prefix">@</span>
-                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr($social_name); ?>" placeholder="yourname" maxlength="30">
+                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr($social_name); ?>" placeholder="yourname" maxlength="30" required>
               </div>
               <div class="kbf-form-hint">Letters, numbers, underscores only. Used for signing in.</div>
               <div class="kbf-field-error" id="kbf-social-name-error"></div>
@@ -585,7 +585,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
           </div> 
           <div class="kbf-form-group kbf-bio-wrap">
             <label>Bio / About</label>
-            <textarea name="bio" rows="4" maxlength="250" placeholder="Tell sponsors about yourself..."><?php echo esc_textarea(isset($profile->bio) ? str_replace('\\', '', wp_unslash($profile->bio)) : ''); ?></textarea>
+            <textarea name="bio" rows="4" maxlength="250" placeholder="Tell sponsors about yourself..." required><?php echo esc_textarea(isset($profile->bio) ? str_replace('\\', '', wp_unslash($profile->bio)) : ''); ?></textarea>
             <div class="kbf-char-count" id="kbf-profile-bio-count">0 / 250</div>
             <div class="kbf-field-error"></div>
           </div>
@@ -609,7 +609,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
           <div class="kbf-profile-section-title"><i class="ph ph-bank"></i> Payout Details</div>
           <div class="kbf-form-group" style="max-width:280px;">
             <label>Payout Method</label>
-            <select name="payout_type" id="kbf-payout-type">
+            <select name="payout_type" id="kbf-payout-type" required>
               <option value="">Select a method</option>
               <option value="gcash" <?php echo $payout_type==='gcash'?'selected':''; ?>>GCash</option>
               <option value="maya_wallet" <?php echo $payout_type==='maya_wallet'?'selected':''; ?>>Maya Wallet</option>
@@ -622,12 +622,12 @@ function kbf_dashboard_profile_tab( $business_id ) {
             <div class="kbf-form-row kbf-form-row-2">
               <div class="kbf-form-group">
                 <label id="kbf-payout-label-1">Account Name</label>
-                <input type="text" name="payout_name" id="kbf-payout-name" value="<?php echo esc_attr($payout_name); ?>" placeholder="Enter name" <?php echo $payout_type===''?'disabled':''; ?>>
+                <input type="text" name="payout_name" id="kbf-payout-name" value="<?php echo esc_attr($payout_name); ?>" placeholder="Enter name" <?php echo $payout_type===''?'disabled':''; ?> required>
                 <div class="kbf-field-error"></div>
               </div>
               <div class="kbf-form-group">
                 <label id="kbf-payout-label-2">Account Number</label>
-                <input type="text" name="payout_number" id="kbf-payout-number" value="<?php echo esc_attr($payout_number); ?>" placeholder="Enter number" <?php echo $payout_type===''?'disabled':''; ?>>
+                <input type="text" name="payout_number" id="kbf-payout-number" value="<?php echo esc_attr($payout_number); ?>" placeholder="Enter number" <?php echo $payout_type===''?'disabled':''; ?> required>
                 <div class="kbf-field-error"></div>
               </div>
             </div>
@@ -642,7 +642,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
           <div class="kbf-form-row kbf-form-row-3">
             <div class="kbf-form-group">
               <label>Province</label>
-              <select id="kbf-profile-province">
+              <select id="kbf-profile-province" required>
                 <option value="">Select</option>
                 <?php foreach (kbf_get_provinces() as $p): ?>
                   <option value="<?php echo esc_attr($p); ?>"><?php echo esc_html($p); ?></option>
@@ -1226,6 +1226,12 @@ function kbf_dashboard_profile_tab( $business_id ) {
         if(typeof updateAddress === 'function') updateAddress();
 
         let isValid = true, errors = [];
+        let firstInvalidInput = null;
+
+        // Clear previous errors before validating again
+        form.querySelectorAll('.kbf-input-error').forEach(function(el){ el.classList.remove('kbf-input-error'); });
+        form.querySelectorAll('.kbf-field-error').forEach(function(el){ el.textContent = ''; el.style.display = 'none'; });
+
         /**
          * @function  showErr
          * @purpose   Marks a form input as invalid and renders its validation message inside the form group.
@@ -1237,57 +1243,74 @@ function kbf_dashboard_profile_tab( $business_id ) {
          * @status    ACTIVE
          */
         function showErr(input, msg){
+            if(!input){
+                errors.push(msg);
+                isValid = false;
+                return;
+            }
+            if(!firstInvalidInput){
+                firstInvalidInput = input;
+            }
             input.classList.add('kbf-input-error');
             const group = input.closest('.kbf-form-group');
             if(group){
                 let err = group.querySelector('.kbf-field-error');
                 if(!err){ err = document.createElement('div'); err.className='kbf-field-error'; group.appendChild(err); }
-                err.textContent=msg; err.style.display='block';
+                err.textContent = msg;
+                err.style.display = 'block';
             }
-            errors.push(msg); isValid = false;
+            errors.push(msg);
+            isValid = false;
         }
-        // Validation: Display Name
+        // Validation: Display Name (required)
         const dn = form.querySelector('[name="display_name"]');
         if(!dn || !dn.value.trim()) showErr(dn, 'Display name is required.');
-        // Validation: Profile Type
-        const pt = form.querySelector('[name="profile_type"]');
-        if(!pt || !pt.value) showErr(pt, 'Please select a profile type.');
-       // Validation: Social Name
+
+        // Validation: Social Name (required)
         const sn = form.querySelector('[name="kbf_social_name"]');
         if(!sn || !sn.value.trim()) showErr(sn, 'Social name is required.');
-        else if(!/^[a-zA-Z0-9_]+$/.test(sn.value.trim())) showErr(sn, 'Social name can only contain letters, numbers, and underscores.');
+        else if(!/^[a-zA-Z0-9_]{2,30}$/.test(sn.value.trim())) showErr(sn, 'Social name must be 2-30 characters with letters, numbers, and underscores only.');
 
-        // Validation: Bio
+        // Validation: Bio / About (required)
         const bio = form.querySelector('textarea[name="bio"]');
         if(!bio || !bio.value.trim()) showErr(bio, 'Bio is required.');
         else if(bio.value.length > 250) showErr(bio, 'Bio must be 250 characters or less.');
-        // Validation: Payout
-       // Validation: Payout
+
+        // Validation: Payout (required)
         const pType = form.querySelector('[name="payout_type"]');
         const pName = form.querySelector('[name="payout_name"]');
         const pNum = form.querySelector('[name="payout_number"]');
-        if(!pType || !pType.value){ showErr(pType, 'Please select a payout method.'); } else {
-            if(!pName.value.trim()) showErr(pName, 'Account name is required.');
-              if(pNum && !pNum.value.trim()){
-                  showErr(pNum, 'Account number is required.');
-              } else if(pNum && (pType.value === 'gcash' || pType.value === 'maya_wallet')){
-                  const digits = pNum.value.replace(/\D/g,'');
-                  if(digits.length !== 11 || !digits.startsWith('09')) showErr(pNum, 'Enter a valid 11-digit mobile number starting with 09.');
-              } else if(pNum && pType.value === 'card'){
-                  const digits = pNum.value.replace(/\D/g,'');
-                  if(digits.length !== 16) showErr(pNum, 'Enter a valid 16-digit card number.');
-              }
-          }
+        if(!pType || !pType.value){
+            showErr(pType, 'Please select a payout method.');
+        } else {
+            if(!pName || !pName.value.trim()) showErr(pName, 'Account name is required.');
+            if(!pNum || !pNum.value.trim()){
+                showErr(pNum, 'Account number is required.');
+            } else if(pType.value === 'gcash' || pType.value === 'maya_wallet'){
+                const digits = pNum.value.replace(/\D/g,'');
+                if(digits.length !== 11 || !digits.startsWith('09')) showErr(pNum, 'Enter a valid 11-digit mobile number starting with 09.');
+            } else if(pType.value === 'card'){
+                const digits = pNum.value.replace(/\D/g,'');
+                if(digits.length !== 16) showErr(pNum, 'Enter a valid 16-digit card number.');
+            }
         }
-        // Validation: Address
+
+        // Validation: Address (required)
         const addrHidden = document.getElementById('kbf-profile-address');
         const addrProv = document.getElementById('kbf-profile-province');
         if(!addrHidden || !addrHidden.value.trim()){
-            showErr(addrProv, 'Please select at least a province.');
+            showErr(addrProv, 'Address is required. Please select province, municipality, and barangay.');
         }
         if(!isValid){
             msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+errors[0]+'</div>';
-            msgEl.scrollIntoView({behavior:'smooth', block:'center'});
+            if(firstInvalidInput){
+                firstInvalidInput.scrollIntoView({behavior:'smooth', block:'center'});
+                if(typeof firstInvalidInput.focus === 'function'){
+                    firstInvalidInput.focus({preventScroll:true});
+                }
+            } else {
+                msgEl.scrollIntoView({behavior:'smooth', block:'center'});
+            }
             return;
         }
         btn.disabled = true; btn.textContent = 'Saving...';
