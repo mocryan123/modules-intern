@@ -643,24 +643,14 @@ function kbf_refund_all_sponsors($fund_id) {
 // Hide legacy sidebar on both frontend and admin
 function kbf_hide_bntm_sidebar_styles() {
     echo '<style type="text/css">
-                .bntm-main,
+        /* Force remove sidebar margin on all KBF pages */
+        .bntm-main,
         main.bntm-main,
         #bntmMain,
         .bntm-container {
-            margin-left: 0px !important;
-            padding-left: 0px !important;
-            transition: none !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-        .bntm-main, .bntm-container, main.bntm-main, #bntmMain {
             margin-left: 0 !important;
             margin-inline-start: 0 !important;
-            margin-right: 0 !important;
-            margin-inline-end: 0 !important;
             transition: none !important;
-            left: 0 !important;
-            right: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             min-width: 100% !important;
@@ -668,16 +658,32 @@ function kbf_hide_bntm_sidebar_styles() {
             flex-basis: 100% !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
-            float: none !important;
-            transform: none !important;
         }
-        .bntm-layout > .bntm-main,
-        .bntm-layout > #bntmMain {
+        
+        /* Specifically target the problematic margin-left property */
+        .bntm-main {
             margin-left: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            min-width: 100% !important;
+            --bntm-sidebar-width: 0 !important;
         }
+        
+        /* Hide any sidebar elements */
+        .bntm-sidebar,
+        #bntmSidebar,
+        [class*="bntm-sidebar"] {
+            display: none !important;
+            visibility: hidden !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            max-width: 0 !important;
+            overflow: hidden !important;
+        }
+        
+        /* Fix layout container */
+        .bntm-layout {
+            display: block !important;
+            flex-direction: column !important;
+        }
+        
         /* Hide legacy fixed performance monitor widget on KBF pages */
         div[style*="position:fixed"][style*="font-family:monospace"][style*="z-index:99999"] {
             display: none !important;
@@ -685,7 +691,11 @@ function kbf_hide_bntm_sidebar_styles() {
             opacity: 0 !important;
             pointer-events: none !important;
         }
-        .bntm-sidebar-overlay, #bntmSidebarOverlay { display: none !important; }
+        
+        .bntm-sidebar-overlay, 
+        #bntmSidebarOverlay { 
+            display: none !important; 
+        }
     </style>';
 }
 
@@ -693,66 +703,47 @@ add_action('wp_head', 'kbf_hide_bntm_sidebar_styles', 99999);
 add_action('admin_head', 'kbf_hide_bntm_sidebar_styles', 99999);
 
 function kbf_hide_bntm_sidebar_js() {
-    echo '<script type="text/javascript">(function(){
-        console.log("KBF Sidebar Hider JS: Executed");
-
-        function hideMonitors() {
-            var fixed = document.querySelectorAll("div[style*=\"position:fixed\"][style*=\"font-family:monospace\"][style*=\"z-index:99999\"]");
-            fixed.forEach(function(el){
-                var txt = (el.textContent || "");
-                if (txt.indexOf("CPU:") !== -1 || txt.indexOf("Memory:") !== -1 || txt.indexOf("Queries:") !== -1) {
-                    el.style.setProperty("display", "none", "important");
-                    el.style.setProperty("visibility", "hidden", "important");
-                    el.style.setProperty("opacity", "0", "important");
-                }
-            });
-        }
-
-        function enforceLayout() {
-            var obsTimer = null;
-            var obs = new MutationObserver(function(){
-                if (obsTimer) clearTimeout(obsTimer);
-                obsTimer = setTimeout(enforceLayout, 50);
-            });
-            obs.observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true });
-            if (sb && sb.parentNode) {
-                sb.parentNode.removeChild(sb);
+    echo '<script type="text/javascript">
+        (function(){
+            function removeSidebarMargin() {
+                // Remove CSS variable
+                document.documentElement.style.setProperty("--bntm-sidebar-width", "0");
+                
+                // Target all .bntm-main elements
+                var mains = document.querySelectorAll(".bntm-main, main.bntm-main, #bntmMain");
+                mains.forEach(function(main) {
+                    main.style.setProperty("margin-left", "0", "important");
+                    main.style.removeProperty("--bntm-sidebar-width");
+                });
+                
+                // Hide sidebar elements
+                var sidebars = document.querySelectorAll(".bntm-sidebar, #bntmSidebar, [class*=\"bntm-sidebar\"]");
+                sidebars.forEach(function(sidebar) {
+                    sidebar.style.setProperty("display", "none", "important");
+                    sidebar.style.setProperty("width", "0", "important");
+                });
             }
-            var layout = document.querySelector(".bntm-layout");
-            if (layout) {
-                layout.style.setProperty("display", "block", "important");
-                layout.style.setProperty("flex-direction", "column", "important");
-                layout.style.setProperty("flex-wrap", "nowrap", "important");
+            
+            // Run immediately and after DOM ready
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", removeSidebarMargin);
+            } else {
+                removeSidebarMargin();
             }
-            document.querySelectorAll(".bntm-main, main.bntm-main, #bntmMain, .bntm-container").forEach(function(main){
-                main.style.setProperty("margin-left", "0", "important");
-                main.style.setProperty("margin-right", "0", "important");
-                main.style.setProperty("transition", "none", "important");
-                main.style.setProperty("width", "100%", "important");
-                main.style.setProperty("max-width", "100%", "important");
-                main.style.setProperty("min-width", "100%", "important");
-                main.style.setProperty("flex", "1 1 100%", "important");
-                main.style.setProperty("flex-basis", "100%", "important");
-                main.style.setProperty("float", "none", "important");
-                main.style.setProperty("left", "0", "important");
-                main.style.setProperty("right", "0", "important");
-                main.style.setProperty("transform", "none", "important");
+            
+            // Monitor for dynamic changes
+            var observer = new MutationObserver(removeSidebarMargin);
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ["style", "class"],
+                subtree: true,
+                childList: true
             });
-            var overlay = document.getElementById("bntmSidebarOverlay") || document.querySelector(".bntm-sidebar-overlay");
-            if (overlay) overlay.style.setProperty("display", "none", "important");
-            hideMonitors();
-        }
-
-        enforceLayout();
-        setTimeout(enforceLayout, 150);
-        setTimeout(enforceLayout, 500);
-        setTimeout(enforceLayout, 1200);
-
-        var obs = new MutationObserver(function(){
-            enforceLayout();
-        });
-        obs.observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true });
-    })();</script>';
+            
+            setTimeout(removeSidebarMargin, 100);
+            setTimeout(removeSidebarMargin, 500);
+        })();
+    </script>';
 }
 add_action('wp_footer', 'kbf_hide_bntm_sidebar_js', 99999);
 add_action('admin_footer', 'kbf_hide_bntm_sidebar_js', 99999);
