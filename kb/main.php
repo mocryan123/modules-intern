@@ -646,6 +646,9 @@ function kbf_hide_bntm_sidebar_styles() {
         :root {
             --bntm-sidebar-width: 0px !important;
         }
+        html, body {
+            overflow-x: hidden !important;
+        }
         .bntm-layout { display: block !important; flex-direction: column !important; }
         .bntm-sidebar, #bntmSidebar, 
         aside.bntm-sidebar, div.bntm-sidebar { 
@@ -662,6 +665,9 @@ function kbf_hide_bntm_sidebar_styles() {
             margin-inline-start: 0 !important;
             margin-right: 0 !important;
             margin-inline-end: 0 !important;
+            transition: none !important;
+            left: 0 !important;
+            right: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             min-width: 100% !important;
@@ -672,6 +678,20 @@ function kbf_hide_bntm_sidebar_styles() {
             float: none !important;
             transform: none !important;
         }
+        .bntm-layout > .bntm-main,
+        .bntm-layout > #bntmMain {
+            margin-left: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+        }
+        /* Hide legacy fixed performance monitor widget on KBF pages */
+        div[style*="position:fixed"][style*="font-family:monospace"][style*="z-index:99999"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
         .bntm-sidebar-overlay, #bntmSidebarOverlay { display: none !important; }
     </style>';
 }
@@ -681,36 +701,58 @@ add_action('admin_head', 'kbf_hide_bntm_sidebar_styles', 99999);
 function kbf_hide_bntm_sidebar_js() {
     echo '<script type="text/javascript">(function(){
         console.log("KBF Sidebar Hider JS: Executed");
-        
-        // 1. Remove Sidebar from DOM immediately
-        var sb = document.getElementById("bntmSidebar") || document.querySelector(".bntm-sidebar");
-        if (sb && sb.parentNode) {
-            sb.parentNode.removeChild(sb);
-            console.log("KBF Sidebar Hider: Sidebar removed from DOM");
+
+        function hideMonitors() {
+            var fixed = document.querySelectorAll("div[style*=\"position:fixed\"][style*=\"font-family:monospace\"][style*=\"z-index:99999\"]");
+            fixed.forEach(function(el){
+                var txt = (el.textContent || "");
+                if (txt.indexOf("CPU:") !== -1 || txt.indexOf("Memory:") !== -1 || txt.indexOf("Queries:") !== -1) {
+                    el.style.setProperty("display", "none", "important");
+                    el.style.setProperty("visibility", "hidden", "important");
+                    el.style.setProperty("opacity", "0", "important");
+                }
+            });
         }
 
-        // 2. Fix Layout Container to single column
-        var layout = document.querySelector(".bntm-layout");
-        if (layout) {
-            layout.style.display = "block";
-            layout.style.flexDirection = "column";
-            layout.style.flexWrap = "nowrap";
+        function enforceLayout() {
+            var sb = document.getElementById("bntmSidebar") || document.querySelector(".bntm-sidebar");
+            if (sb && sb.parentNode) {
+                sb.parentNode.removeChild(sb);
+            }
+            var layout = document.querySelector(".bntm-layout");
+            if (layout) {
+                layout.style.setProperty("display", "block", "important");
+                layout.style.setProperty("flex-direction", "column", "important");
+                layout.style.setProperty("flex-wrap", "nowrap", "important");
+            }
+            document.querySelectorAll(".bntm-main, main.bntm-main, #bntmMain, .bntm-container").forEach(function(main){
+                main.style.setProperty("margin-left", "0", "important");
+                main.style.setProperty("margin-right", "0", "important");
+                main.style.setProperty("transition", "none", "important");
+                main.style.setProperty("width", "100%", "important");
+                main.style.setProperty("max-width", "100%", "important");
+                main.style.setProperty("min-width", "100%", "important");
+                main.style.setProperty("flex", "1 1 100%", "important");
+                main.style.setProperty("flex-basis", "100%", "important");
+                main.style.setProperty("float", "none", "important");
+                main.style.setProperty("left", "0", "important");
+                main.style.setProperty("right", "0", "important");
+                main.style.setProperty("transform", "none", "important");
+            });
+            var overlay = document.getElementById("bntmSidebarOverlay") || document.querySelector(".bntm-sidebar-overlay");
+            if (overlay) overlay.style.setProperty("display", "none", "important");
+            hideMonitors();
         }
 
-        // 3. Force Main Content to full width
-        var main = document.getElementById("bntmMain") || document.querySelector(".bntm-main");
-        if (main) {
-            main.style.marginLeft = "0";
-            main.style.marginRight = "0";
-            main.style.width = "100%";
-            main.style.maxWidth = "100%";
-            main.style.flex = "none";
-            main.style.float = "none";
-        }
+        enforceLayout();
+        setTimeout(enforceLayout, 150);
+        setTimeout(enforceLayout, 500);
+        setTimeout(enforceLayout, 1200);
 
-        // 4. Hide Overlay
-        var overlay = document.getElementById("bntmSidebarOverlay") || document.querySelector(".bntm-sidebar-overlay");
-        if (overlay) overlay.style.display = "none";
+        var obs = new MutationObserver(function(){
+            enforceLayout();
+        });
+        obs.observe(document.documentElement || document.body, { childList: true, subtree: true, attributes: true });
     })();</script>';
 }
 add_action('wp_footer', 'kbf_hide_bntm_sidebar_js', 99999);
