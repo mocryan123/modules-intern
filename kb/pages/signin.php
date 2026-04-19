@@ -21,65 +21,173 @@ function bntm_kbf_render_signin() {
     kbf_global_assets();
     $login_error = '';
     $login_notice = '';
+    $forgot_error = '';
+    $forgot_notice = '';
     if (!empty($_GET['verified']) && $_GET['verified'] === '1') {
         $login_notice = 'Email verified. You can now sign in.';
     }
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action']) && $_POST['kbf_auth_action'] === 'signin') {
-        $nonce_ok = isset($_POST['kbf_auth_nonce']) && wp_verify_nonce($_POST['kbf_auth_nonce'], 'kbf_auth_signin');
-        if (!$nonce_ok) {
-            $login_error = 'Security check failed. Please try again.';
-        } else {
-            $raw_login = isset($_POST['user_login']) ? sanitize_text_field(wp_unslash($_POST['user_login'])) : '';
-            $login = $raw_login;
-            if ($raw_login && is_email($raw_login)) {
-                $user_by_email = get_user_by('email', $raw_login);
-                if ($user_by_email && !is_wp_error($user_by_email)) {
-                    $login = $user_by_email->user_login;
+    if (!empty($_GET['reset']) && $_GET['reset'] === '1') {
+        $login_notice = 'Password updated. You can now sign in.';
+    }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action'])) {
+        $auth_action = sanitize_key((string) wp_unslash($_POST['kbf_auth_action']));
+        if ($auth_action === 'signin') {
+            $nonce_ok = isset($_POST['kbf_auth_nonce']) && wp_verify_nonce($_POST['kbf_auth_nonce'], 'kbf_auth_signin');
+            if (!$nonce_ok) {
+                $login_error = 'Security check failed. Please try again.';
+            } else {
+                $raw_login = isset($_POST['user_login']) ? sanitize_text_field(wp_unslash($_POST['user_login'])) : '';
+                $login = $raw_login;
+                if ($raw_login && is_email($raw_login)) {
+                    $user_by_email = get_user_by('email', $raw_login);
+                    if ($user_by_email && !is_wp_error($user_by_email)) {
+                        $login = $user_by_email->user_login;
+                    }
+                } elseif ($raw_login) {
+                    $social = ltrim($raw_login, '@');
+                    $social_user = get_users(['meta_key' => 'kbf_social_name', 'meta_value' => $social, 'number' => 1]);
+                    if (!empty($social_user)) {
+                        $login = $social_user[0]->user_login;
+                    }
                 }
-            } elseif ($raw_login) {
-                $social = ltrim($raw_login, '@');
-                $social_user = get_users(['meta_key' => 'kbf_social_name', 'meta_value' => $social, 'number' => 1]);
-                if (!empty($social_user)) {
-                    $login = $social_user[0]->user_login;
+                $retry_after = 0;
+                if ($login && function_exists('kbf_auth_is_rate_limited') && kbf_auth_is_rate_limited($login, kbf_auth_get_ip(), $retry_after)) {
+                    $mins = max(1, (int) ceil($retry_after / 60));
+                    $login_error = 'Too many login attempts. Try again in ' . $mins . ' minute(s).';
                 }
-            }
-            $retry_after = 0;
-            if ($login && function_exists('kbf_auth_is_rate_limited') && kbf_auth_is_rate_limited($login, kbf_auth_get_ip(), $retry_after)) {
-                $mins = max(1, (int) ceil($retry_after / 60));
-                $login_error = 'Too many login attempts. Try again in ' . $mins . ' minute(s).';
-            }
-            $creds = [
-                'user_login'    => $login,
-                'user_password' => isset($_POST['user_password']) ? (string) wp_unslash($_POST['user_password']) : '',
-                'remember'      => !empty($_POST['rememberme']),
-            ];
-            if (!$login_error) {
-                $user = wp_signon($creds, is_ssl());
-                if (is_wp_error($user)) {
-                    if (function_exists('kbf_auth_register_failed_login')) {
-                        kbf_auth_register_failed_login($login, kbf_auth_get_ip());
-                    }
-                    $login_error = 'Invalid login details. Please try again.';
-                    if ($user->get_error_code() === 'kbf_email_unverified') {
-                        $login_error = 'Please verify your email before signing in.';
-                    } elseif ($user->get_error_code() === 'kbf_rate_limited') {
-                        $login_error = $user->get_error_message();
-                    }
-                } else {
-                    $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
-                    if ($home) {
-                        $home = add_query_arg('kbf_tab', 'overview', $home);
-                    }
-                    if (!headers_sent()) {
-                        wp_safe_redirect($home);
+                $creds = [
+                    'user_login'    => $login,
+                    'user_password' => isset($_POST['user_password']) ? (string) wp_unslash($_POST['user_password']) : '',
+                    'remember'      => !empty($_POST['rememberme']),
+                ];
+                if (!$login_error) {
+                    $user = wp_signon($creds, is_ssl());
+                    if (is_wp_error($user)) {
+                        if (function_exists('kbf_auth_register_failed_login')) {
+                            kbf_auth_register_failed_login($login, kbf_auth_get_ip());
+                        }
+                        $login_error = 'Invalid login details. Please try again.';
+                        if ($user->get_error_code() === 'kbf_email_unverified') {
+                            $login_error = 'Please verify your email before signing in.';
+                        } elseif ($user->get_error_code() === 'kbf_rate_limited') {
+                            $login_error = $user->get_error_message();
+                        }
+                    } else {
+                        $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+                        if ($home) {
+                            $home = add_query_arg('kbf_tab', 'overview', $home);
+                        }
+                        if (!headers_sent()) {
+                            wp_safe_redirect($home);
+                            exit;
+                        }
+                        echo '<script>window.location.href=' . wp_json_encode($home) . ';</script><noscript><meta http-equiv="refresh" content="0;url=' . esc_url($home) . '"></noscript>';
                         exit;
                     }
-                    echo '<script>window.location.href=' . wp_json_encode($home) . ';</script><noscript><meta http-equiv="refresh" content="0;url=' . esc_url($home) . '"></noscript>';
-                    exit;
+                }
+            }
+        } elseif ($auth_action === 'forgot_password') {
+            $nonce_ok = isset($_POST['kbf_forgot_nonce']) && wp_verify_nonce($_POST['kbf_forgot_nonce'], 'kbf_auth_forgot_password');
+            if (!$nonce_ok) {
+                $forgot_error = 'Security check failed. Please try again.';
+            } else {
+                $forgot_processed = false;
+                $forgot_login = isset($_POST['forgot_user_login']) ? trim(sanitize_text_field(wp_unslash($_POST['forgot_user_login']))) : '';
+                if ($forgot_login === '') {
+                    $forgot_error = 'Enter your email or username.';
+                } else {
+                    $forgot_processed = true;
+                    $user = null;
+                    if (is_email($forgot_login)) {
+                        $user = get_user_by('email', $forgot_login);
+                    } else {
+                        $user = get_user_by('login', $forgot_login);
+                        if (!$user) {
+                            $social = ltrim($forgot_login, '@');
+                            $social_user = get_users(['meta_key' => 'kbf_social_name', 'meta_value' => $social, 'number' => 1]);
+                            if (!empty($social_user)) {
+                                $user = $social_user[0];
+                            }
+                        }
+                    }
+                    if ($user instanceof WP_User) {
+                        $reset_key = get_password_reset_key($user);
+                        if (is_wp_error($reset_key)) {
+                            $forgot_error = 'Unable to send reset link right now. Please try again later.';
+                            if (function_exists('kbf_log')) {
+                                kbf_log('Forgot password key generation failed', ['user_id' => (int) $user->ID, 'error' => $reset_key->get_error_message()]);
+                            }
+                        } else {
+                            $reset_url = '';
+                            if (function_exists('kbf_get_page_url')) {
+                                $reset_url = (string) kbf_get_page_url('reset_password');
+                            }
+                            // If URL resolver points to home, try direct lookup by slug/shortcode.
+                            if (!$reset_url || untrailingslashit($reset_url) === untrailingslashit(home_url('/'))) {
+                                $reset_page = get_page_by_path('fundora-reset-password');
+                                if ($reset_page && !empty($reset_page->ID)) {
+                                    $reset_url = get_permalink($reset_page->ID);
+                                } else {
+                                    $existing_reset_pages = get_posts([
+                                        'post_type'   => 'page',
+                                        'post_status' => ['publish', 'draft', 'private'],
+                                        'numberposts' => 1,
+                                        's'           => '[kbf_reset_password]',
+                                    ]);
+                                    foreach ($existing_reset_pages as $p) {
+                                        if (has_shortcode($p->post_content, 'kbf_reset_password')) {
+                                            $reset_url = get_permalink($p->ID);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (!$reset_url || untrailingslashit($reset_url) === untrailingslashit(home_url('/'))) {
+                                // Final fallback: use expected slug URL and continue sending.
+                                $reset_url = home_url('/fundora-reset-password/');
+                                if (function_exists('kbf_log')) {
+                                    kbf_log('Forgot password reset page URL fallback used', ['resolved_url' => (string) $reset_url]);
+                                }
+                            }
+                            // Avoid login endpoints: reset links must always target Fundora reset page.
+                            $reset_path = (string) wp_parse_url($reset_url, PHP_URL_PATH);
+                            if ($reset_path && preg_match('#/(login|wp-login\.php)/?$#i', $reset_path)) {
+                                $reset_url = home_url('/fundora-reset-password/');
+                                if (function_exists('kbf_log')) {
+                                    kbf_log('Forgot password reset URL pointed to login; replaced with reset page', ['resolved_url' => (string) $reset_url]);
+                                }
+                            }
+                            $reset_url = add_query_arg(
+                                [
+                                    'key'    => $reset_key,
+                                    'login'  => $user->user_login,
+                                ],
+                                $reset_url
+                            );
+                            $blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+                            $subject = sprintf('[%s] Password Reset', $blogname);
+                            $message = "Hi,\n\n";
+                            $message .= "We received a request to reset your Fundora password.\n";
+                            $message .= "Open this link to set a new password:\n\n";
+                            $message .= esc_url_raw($reset_url) . "\n\n";
+                            $message .= "If you did not request this, you can ignore this email.\n";
+                            $mail_sent = wp_mail($user->user_email, $subject, $message, ['Content-Type: text/plain; charset=UTF-8']);
+                            if (!$mail_sent) {
+                                $forgot_error = 'Unable to send reset link right now. Please try again later.';
+                                if (function_exists('kbf_log')) {
+                                    kbf_log('Forgot password mail send failed', ['user_id' => (int) $user->ID, 'email' => $user->user_email]);
+                                }
+                            }
+                        }
+                    }
+                    if ($forgot_processed && !$forgot_error) {
+                        $forgot_notice = 'If an account exists for that email/username, a password reset link has been sent.';
+                    }
                 }
             }
         }
     }
+    $forgot_open = (bool) ($forgot_error || $forgot_notice);
     ob_start();
     ?>
     <style>
@@ -265,13 +373,32 @@ function bntm_kbf_render_signin() {
       .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:absolute;right:15px;top:50%;transform:translateY(-50%);}
       .kbf-auth-toggle img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-cta{margin-top:14px;}
+      .kbf-auth-link{display:inline-block;margin-top:10px;font-size:12.5px;color:var(--kbf-auth-blue);text-decoration:none;font-weight:600;background:transparent;border:0;padding:0;cursor:pointer;}
+      .kbf-auth-link:hover{text-decoration:underline;}
+      .kbf-auth-divider{margin:14px 0 12px;display:flex;align-items:center;color:#94a3b8;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;}
+      .kbf-auth-divider::before,.kbf-auth-divider::after{content:"";flex:1;height:1px;background:rgba(148,163,184,.35);}
+      .kbf-auth-divider span{padding:0 10px;}
+      .kbf-forgot-wrap{
+        max-height:0;
+        opacity:0;
+        overflow:hidden;
+        transform:translateY(-6px);
+        margin-top:0;
+        transition:max-height .35s ease,opacity .25s ease,transform .25s ease,margin-top .25s ease;
+      }
+      .kbf-forgot-wrap.is-open{
+        max-height:420px;
+        opacity:1;
+        transform:translateY(0);
+        margin-top:6px;
+      }
       .kbf-field-error{margin-top:6px;font-size:11.5px;color:#e11d48;display:none;}
       .kbf-input-error{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.12);}
       .kbf-auth-legal{display:flex;gap:6px;align-items:center;justify-content:flex-start;font-size:13px;color:var(--kbf-slate);margin-top:2px;cursor:pointer;}
       .kbf-auth-legal input{width:14px;height:14px;accent-color:var(--kbf-blue);cursor:pointer;}
       .kbf-auth-cta .kbf-btn.kbf-btn-primary{width:100%;display:block;}
       .kbf-auth-footer{margin-top:14px;font-size:12.5px;color:var(--kbf-slate);}
-      .kbf-auth-footer a{color:var(--kbf-blue);font-weight:600;text-decoration:none;}
+      .kbf-auth-footer a{color:var(--kbf-auth-blue);font-weight:600;text-decoration:none;}
       @media (max-width: 900px){
         .kbf-auth-card{grid-template-columns:1fr;}
       }
@@ -339,7 +466,31 @@ function bntm_kbf_render_signin() {
                 <button class="kbf-btn kbf-btn-primary" type="submit">Sign In</button>
               </div>
               <div class="kbf-auth-footer">Don't have an account? <a href="<?php echo esc_url($signup_url); ?>">Sign Up</a></div>
+              <button class="kbf-auth-link" type="button" id="kbf-forgot-toggle" aria-controls="kbf-forgot-wrap" aria-expanded="<?php echo $forgot_open ? 'true' : 'false'; ?>">Forgot password?</button>
             </form>
+            <div id="kbf-forgot-wrap" class="kbf-forgot-wrap<?php echo $forgot_open ? ' is-open' : ''; ?>">
+              <div class="kbf-auth-divider"><span>Need help signing in?</span></div>
+              <form id="kbf-forgot-password" class="kbf-auth-form kbf-forgot-form" method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
+                <?php if ($forgot_error): ?>
+                  <div class="kbf-alert kbf-alert-error kbf-alert-compact" style="margin-bottom:12px;"><?php echo esc_html($forgot_error); ?></div>
+                <?php elseif ($forgot_notice): ?>
+                  <div class="kbf-alert kbf-alert-success kbf-alert-compact" style="margin-bottom:12px;"><?php echo esc_html($forgot_notice); ?></div>
+                <?php endif; ?>
+                <input type="hidden" name="kbf_auth_action" value="forgot_password">
+                <input type="hidden" name="kbf_forgot_nonce" value="<?php echo esc_attr(wp_create_nonce('kbf_auth_forgot_password')); ?>">
+                <div class="kbf-form-group">
+                  <div class="kbf-auth-input">
+                    <i class="ph ph-envelope-simple kbf-icon" aria-hidden="true"></i>
+                    <label class="kbf-float-label" for="kbf-forgot-email">Email or username</label>
+                    <input type="text" id="kbf-forgot-email" name="forgot_user_login" required>
+                  </div>
+                  <div class="kbf-field-error" aria-live="polite">This field is required.</div>
+                </div>
+                <div class="kbf-auth-cta">
+                  <button class="kbf-btn kbf-btn-primary" type="submit">Send Password Reset Link</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -393,7 +544,35 @@ function bntm_kbf_render_signin() {
             });
           }
 
-          setupValidation(document.querySelector('.kbf-auth-form'));
+          document.querySelectorAll('.kbf-auth-form').forEach(setupValidation);
+
+          var forgotToggle = document.getElementById('kbf-forgot-toggle');
+          var forgotWrap = document.getElementById('kbf-forgot-wrap');
+          if (forgotToggle && forgotWrap) {
+            var navEntries = (window.performance && typeof window.performance.getEntriesByType === 'function')
+              ? window.performance.getEntriesByType('navigation')
+              : [];
+            var isReload = !!(navEntries.length && navEntries[0] && navEntries[0].type === 'reload');
+            if (isReload) {
+              forgotWrap.classList.remove('is-open');
+              forgotToggle.setAttribute('aria-expanded', 'false');
+            }
+            forgotToggle.addEventListener('click', function(){
+              var isOpen = forgotWrap.classList.toggle('is-open');
+              forgotToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+              if (isOpen) {
+                var forgotInput = document.getElementById('kbf-forgot-email');
+                if (forgotInput) forgotInput.focus();
+              }
+            });
+          }
+
+          var forgotForm = document.getElementById('kbf-forgot-password');
+          if (forgotForm) {
+            forgotForm.addEventListener('submit', function(){
+              console.log('[Fundora] Password reset button clicked');
+            });
+          }
         })();
 
         document.querySelectorAll('.kbf-auth-input input').forEach(function(input){

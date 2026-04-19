@@ -304,6 +304,25 @@ function kbf_auth_make_verify_hash($token) {
     return hash_hmac('sha256', (string) $token, wp_salt('auth'));
 }
 
+function kbf_ensure_organizer_account_row($user_id) {
+    $user_id = (int) $user_id;
+    if ($user_id <= 0) {
+        return false;
+    }
+    if (function_exists('kbf_get_or_create_organizer_token')) {
+        // This helper creates the organizer profile row when missing.
+        kbf_get_or_create_organizer_token($user_id);
+        return true;
+    }
+    global $wpdb;
+    $pt = $wpdb->prefix . 'kbf_organizer_profiles';
+    $exists = (int) $wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d", $user_id));
+    if ($exists > 0) {
+        return true;
+    }
+    return (bool) $wpdb->insert($pt, ['business_id' => $user_id], ['%d']);
+}
+
 function kbf_handle_email_verification() {
     if (is_admin()) return;
     if (KBF_EMAIL_VERIFY_DISABLED) return;
@@ -320,6 +339,7 @@ function kbf_handle_email_verification() {
         update_user_meta($user_id, 'kbf_email_verified', '1');
         delete_user_meta($user_id, 'kbf_email_verify_hash');
         delete_user_meta($user_id, 'kbf_email_verify_expires');
+        kbf_ensure_organizer_account_row($user_id);
         $target = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url();
         wp_safe_redirect(add_query_arg('verified', '1', $target));
         exit;
@@ -540,6 +560,7 @@ function kbf_get_page_url($page_key) {
         'admin'     => 'fundora-admin',
         'signin'    => 'fundora-sign-in',
         'signup'    => 'fundora-sign-up',
+        'reset_password' => 'fundora-reset-password',
     ];
     if (isset($slug_by_key[$page_key])) {
         $p = get_page_by_path($slug_by_key[$page_key]);
@@ -566,6 +587,7 @@ function kbf_get_page_url($page_key) {
         'admin'             => 'kbf_admin',
         'signin'            => 'kbf_signin',
         'signup'            => 'kbf_signup',
+        'reset_password'    => 'kbf_reset_password',
         'terms'             => 'kbf_terms',
         'privacy'           => 'kbf_privacy',
         'refund'            => 'kbf_refund',

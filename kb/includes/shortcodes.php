@@ -15,6 +15,7 @@ function bntm_kbf_get_shortcodes() {
         'kbf_admin'              => 'bntm_shortcode_kbf_admin',
         'kbf_signin'             => 'bntm_shortcode_kbf_signin',
         'kbf_signup'             => 'bntm_shortcode_kbf_signup',
+        'kbf_reset_password'     => 'bntm_shortcode_kbf_reset_password',
     ];
 }
 
@@ -58,5 +59,12 @@ function bntm_shortcode_kbf_signup() {
         require_once BNTM_KBF_PATH . 'pages/signup.php';
     }
     return function_exists('bntm_kbf_render_signup') ? bntm_kbf_render_signup() : '';
+}
+
+function bntm_shortcode_kbf_reset_password() {
+    if (file_exists(BNTM_KBF_PATH . 'pages/reset-password.php')) {
+        require_once BNTM_KBF_PATH . 'pages/reset-password.php';
+    }
+    return function_exists('bntm_kbf_render_reset_password') ? bntm_kbf_render_reset_password() : '';
 }
 
