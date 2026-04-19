@@ -270,9 +270,9 @@ function bntm_shortcode_kbf_fund_details() {
                 'message' => $pay_amount !== ''
                     ? 'Your &#8369;' . $pay_amount . ' sponsorship for <strong>' . esc_html($fund->title) . '</strong> was received successfully.'
                     : 'Your sponsorship for <strong>' . esc_html($fund->title) . '</strong> was received successfully.',
-                'countdown' => 10,
+                'countdown' => 15,
                 'redirect' => $explore_url,
-                'btn_text' => 'Explore Funds',
+                'btn_text' => 'Go to Explore',
             ];
         } elseif ($payment_result === 'failed') {
             $payment_banner_data = [
@@ -280,7 +280,7 @@ function bntm_shortcode_kbf_fund_details() {
                 'icon' => 'ph-fill ph-x-circle',
                 'title' => 'Payment Failed',
                 'message' => 'We could not process your payment. You can try sponsoring again.',
-                'countdown' => 10,
+                'countdown' => 15,
                 'redirect' => $explore_url,
                 'btn_text' => 'Go to Explore',
             ];
@@ -290,7 +290,7 @@ function bntm_shortcode_kbf_fund_details() {
                 'icon' => 'ph-fill ph-warning',
                 'title' => 'Payment Cancelled',
                 'message' => 'Your payment was cancelled. You can sponsor again anytime.',
-                'countdown' => 10,
+                'countdown' => 15,
                 'redirect' => $explore_url,
                 'btn_text' => 'Go to Explore',
             ];
@@ -1210,7 +1210,7 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
           <div class="kbf-payment-banner-actions">
             <a href="<?php echo esc_url($payment_banner_data['redirect']); ?>" class="kbf-btn kbf-btn-primary" id="kbf-payment-btn-go"><?php echo esc_html($payment_banner_data['btn_text']); ?></a>
-            <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfDismissPaymentBanner()">Stay here</button>
+            <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfDismissPaymentBanner()">Stay on fundraiser</button>
           </div>
         </div>
         <div class="kbf-payment-banner-progress"><div class="kbf-payment-banner-progress-bar" id="kbf-payment-progress"></div></div>
