@@ -874,6 +874,10 @@ function bntm_ajax_kbf_save_organizer_profile() {
     }
     if(!is_user_logged_in()) { wp_send_json_error(['message'=>'Unauthorized']); }
     global $wpdb;$pt=$wpdb->prefix.'kbf_organizer_profiles';$biz=get_current_user_id();
+    // Ensure expected profile columns exist before writing (legacy installs may miss these).
+    if (function_exists('bntm_kbf_ensure_profile_columns')) {
+        bntm_kbf_ensure_profile_columns();
+    }
     $avatar='';
     if(!empty($_FILES['avatar']['name'])) {
         $up = kbf_handle_image_upload($_FILES['avatar']);
@@ -924,23 +928,50 @@ function bntm_ajax_kbf_save_organizer_profile() {
         delete_user_meta($biz, 'kbf_social_name');
     }
     $exists=$wpdb->get_var($wpdb->prepare("SELECT id FROM {$pt} WHERE business_id=%d",$biz));
+    $write_ok = true;
     if($exists) {
         unset($data['business_id']);
         // Update existing profile
-        $wpdb->update(
+        $updated = $wpdb->update(
             $pt,
             $data,
             ['business_id' => $biz],
             array_fill(0, count($data), '%s'),
             ['%d']
         );
+        if ($updated === false) {
+            $write_ok = false;
+        }
     } else {
         // Insert new profile
-        $wpdb->insert(
+        $inserted = $wpdb->insert(
             $pt,
             $data,
             array_fill(0, count($data), '%s')
         );
+        if ($inserted === false) {
+            $write_ok = false;
+        }
+    }
+
+    if (!$write_ok) {
+        $db_error = (string) $wpdb->last_error;
+        if (function_exists('kbf_log')) {
+            kbf_log('profile_save_db_failed', [
+                'user_id' => (int) $biz,
+                'table' => $pt,
+                'db_error' => $db_error,
+                'data_keys' => array_keys($data),
+            ]);
+        }
+        $msg = 'Profile save failed while writing profile details.';
+        if ((defined('WP_DEBUG') && WP_DEBUG) || current_user_can('manage_options')) {
+            $msg .= ($db_error !== '' ? ' DB: ' . $db_error : ' DB: unknown error.');
+        }
+        wp_send_json_error([
+            'message' => $msg,
+            'error_code' => 'profile_write_failed',
+        ]);
     }
     if (function_exists('kbf_get_or_create_organizer_token')) {
         kbf_get_or_create_organizer_token($biz);
@@ -977,7 +1008,7 @@ function bntm_ajax_kbf_save_organizer_profile() {
     wp_cache_delete($biz, 'users');
 
     $updated_user = get_userdata($biz);
-    $updated_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url FROM {$pt} WHERE business_id=%d", $biz));
+    $updated_profile = $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d", $biz));
 
     $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
     $profile_tab_url = add_query_arg('kbf_tab', 'profile', $dashboard_url);
@@ -1002,6 +1033,10 @@ function bntm_ajax_kbf_save_organizer_profile() {
             'onboarding_done' => $onboarding_done,
             'avatar_url' => $updated_profile ? $updated_profile->avatar_url : '',
             'display_name' => $updated_user ? $updated_user->display_name : '',
+            'bio' => $updated_profile ? (string)$updated_profile->bio : '',
+            'payout_type' => $updated_profile ? (string)$updated_profile->payout_type : '',
+            'payout_name' => $updated_profile ? (string)$updated_profile->payout_name : '',
+            'payout_number' => $updated_profile ? (string)$updated_profile->payout_number : '',
             'notification_unread' => $notification_unread,
         ]
     ]);
