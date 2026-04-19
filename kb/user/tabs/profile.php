@@ -14,7 +14,7 @@ if ( ! defined( 'KBF_PROFILE_DISPLAY_NAME_MAX_LENGTH' ) ) {
     define( 'KBF_PROFILE_DISPLAY_NAME_MAX_LENGTH', 50 );
 }
 if ( ! defined( 'KBF_PROFILE_CHECKLIST_ITEMS' ) ) {
-    define( 'KBF_PROFILE_CHECKLIST_ITEMS', 6 );
+    define( 'KBF_PROFILE_CHECKLIST_ITEMS', 5 );
 }
 
 /**
@@ -78,11 +78,10 @@ function kbf_dashboard_profile_tab( $business_id ) {
     $has_name    = ! empty( trim( $user->display_name ) );
     $has_social  = ! empty( trim( $social_name ) );
     $has_bio     = $profile && ! empty( trim( (string) $profile->bio ) );
-    $has_type    = ! empty( $profile_type );
     $has_payout  = ! empty( $payout_type ) && ! empty( $payout_name ) && ! empty( $payout_number );
     $has_address = ! empty( trim( $address ) );
 
-    $onboard_done = ( $has_name ? 1 : 0 ) + ( $has_social ? 1 : 0 ) + ( $has_bio ? 1 : 0 ) + ( $has_type ? 1 : 0 ) + ( $has_payout ? 1 : 0 ) + ( $has_address ? 1 : 0 );
+    $onboard_done = ( $has_name ? 1 : 0 ) + ( $has_social ? 1 : 0 ) + ( $has_bio ? 1 : 0 ) + ( $has_payout ? 1 : 0 ) + ( $has_address ? 1 : 0 );
     $onboard_pct  = round( ( $onboard_done / KBF_PROFILE_CHECKLIST_ITEMS ) * 100 );
 
     ob_start();

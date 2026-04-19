@@ -951,7 +951,6 @@ function bntm_ajax_kbf_save_organizer_profile() {
     $post_display_name = isset($_POST['display_name']) ? trim(sanitize_text_field($_POST['display_name'])) : '';
     $post_social_name  = isset($_POST['kbf_social_name']) ? trim(ltrim(sanitize_text_field($_POST['kbf_social_name']), '@')) : '';
     $post_bio          = isset($_POST['bio']) ? trim(sanitize_textarea_field($_POST['bio'])) : '';
-    $post_profile_type = isset($_POST['profile_type']) ? trim(sanitize_text_field($_POST['profile_type'])) : '';
     $post_payout_type  = isset($_POST['payout_type']) ? trim(sanitize_text_field($_POST['payout_type'])) : '';
     $post_payout_name  = isset($_POST['payout_name']) ? trim(sanitize_text_field($_POST['payout_name'])) : '';
     $post_payout_num   = isset($_POST['payout_number']) ? trim(sanitize_text_field($_POST['payout_number'])) : '';
@@ -960,12 +959,11 @@ function bntm_ajax_kbf_save_organizer_profile() {
     $has_display_name = !empty($post_display_name);
     $has_social_name  = !empty($post_social_name) && preg_match('/^[a-zA-Z0-9_]{2,30}$/', $post_social_name);
     $has_bio          = !empty($post_bio);
-    $has_profile_type = !empty($post_profile_type);
     $has_payout       = !empty($post_payout_type) && !empty($post_payout_name) && !empty($post_payout_num);
     $has_address      = !empty($post_address);
 
     $was_onboarding_flag = (bool)get_user_meta($biz, 'kbf_show_onboarding', true);
-    $onboarding_done = ($has_display_name && $has_social_name && $has_bio && $has_profile_type && $has_payout && $has_address);
+    $onboarding_done = ($has_display_name && $has_social_name && $has_bio && $has_payout && $has_address);
     if ($onboarding_done) {
         delete_user_meta($biz, 'kbf_show_onboarding');
         // Force cache flush so the next page load sees the deletion immediately.

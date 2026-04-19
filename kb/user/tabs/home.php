@@ -35,10 +35,9 @@
       $onboard_done = ($has_display_name ? 1 : 0) + ($has_social_name ? 1 : 0) + ($has_bio ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
       $onboard_pct = round(($onboard_done / $onboard_required) * 100);
       $onboard_complete = ($onboard_done >= $onboard_required);
-      // Always show onboarding modal if profile is incomplete, even if previously dismissed.
-      if (!$onboard_complete && !$show_onboarding) {
-          $show_onboarding = true;
-      }
+      // Source of truth: show onboarding only while required 5/5 profile fields are incomplete.
+      // This prevents stale meta flags from keeping the modal visible after completion.
+      $show_onboarding = !$onboard_complete;
       $format_currency = function($amount, $decimals = 2) {
           return number_format((float)$amount, $decimals);
       };
