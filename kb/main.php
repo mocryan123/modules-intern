@@ -643,6 +643,9 @@ function kbf_refund_all_sponsors($fund_id) {
 // Hide legacy sidebar on both frontend and admin
 function kbf_hide_bntm_sidebar_styles() {
     echo '<style type="text/css">
+        :root {
+            --bntm-sidebar-width: 0px !important;
+        }
         .bntm-layout { display: block !important; flex-direction: column !important; }
         .bntm-sidebar, #bntmSidebar, 
         aside.bntm-sidebar, div.bntm-sidebar { 
@@ -656,11 +659,18 @@ function kbf_hide_bntm_sidebar_styles() {
         }
         .bntm-main, .bntm-container, main.bntm-main, #bntmMain {
             margin-left: 0 !important;
+            margin-inline-start: 0 !important;
             margin-right: 0 !important;
+            margin-inline-end: 0 !important;
             width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+            flex-basis: 100% !important;
             padding-left: 0 !important;
             padding-right: 0 !important;
             float: none !important;
+            transform: none !important;
         }
         .bntm-sidebar-overlay, #bntmSidebarOverlay { display: none !important; }
     </style>';
@@ -704,6 +714,7 @@ function kbf_hide_bntm_sidebar_js() {
     })();</script>';
 }
 add_action('wp_footer', 'kbf_hide_bntm_sidebar_js', 99999);
+add_action('admin_footer', 'kbf_hide_bntm_sidebar_js', 99999);
 
 /**
  * Ensure wp_usermeta has an index for (meta_key, meta_value) to speed up @username lookups.
