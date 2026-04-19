@@ -475,11 +475,15 @@ add_filter('logout_redirect', function($redirect_to, $requested_redirect_to, $us
     return kbf_landing_page_url();
 }, 9999, 3);
 
-add_action('wp_logout', function() {
+add_action('wp_logout', function($user_id = 0) {
+    $user_id = (int) $user_id;
+    if ($user_id > 0) {
+        delete_user_meta($user_id, '_bntm_session_token');
+    }
     if (!headers_sent()) {
         setcookie('bntm_session_token', '', time() - HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
     }
-});
+}, 20, 1);
 
 add_filter('auth_cookie_expiration', function($seconds, $user_id, $remember) {
     if ($remember) {
