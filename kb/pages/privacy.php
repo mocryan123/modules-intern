@@ -29,6 +29,11 @@ function bntm_kbf_render_privacy() {
         --kbf-type-lead: 18px;
         --kbf-type-meta: 12.5px;
       }
+      *,
+      *::before,
+      *::after{
+        box-sizing: border-box;
+      }
       .kbf-landing, .kbf-legal, body{
         font-family: 'Poppins', system-ui, -apple-system, sans-serif;
       }
@@ -210,8 +215,8 @@ function bntm_kbf_render_privacy() {
       .kbf-mobile-menu-actions .kbf-btn{ flex:1; justify-content:center; }
       .kbf-legal {
         max-width: 100%;
-        margin: 28px auto 60px;
-        padding: 70px 0 0;
+        margin: 0 auto 60px;
+        padding: 0;
         color: #0f172a;
         font-family: "Poppins", system-ui, -apple-system, sans-serif;
         overflow: visible;
@@ -221,10 +226,14 @@ function bntm_kbf_render_privacy() {
         border: 1px solid #dce6f5;
         border-radius: 20px;
         padding: 48px 40px;
+        padding-left: clamp(16px, 3vw, 40px);
+        padding-right: clamp(16px, 3vw, 40px);
         margin-bottom: 24px;
         box-shadow: 0 8px 30px rgba(15, 40, 80, 0.06);
         position: relative;
         overflow: hidden;
+        width: 100%;
+        box-sizing: border-box;
       }
       .kbf-legal-hero h1{
         font-size: clamp(28px, 4vw, 40px);
@@ -247,6 +256,8 @@ function bntm_kbf_render_privacy() {
         grid-template-columns: 260px minmax(0, 1fr);
         gap: 18px;
         align-items: start;
+        width: 100%;
+        box-sizing: border-box;
       }
       .kbf-legal-card{
         background:#fff;
@@ -305,12 +316,16 @@ function bntm_kbf_render_privacy() {
         color:#94a3b8;
       }
       @media (max-width: 900px){
+        .kbf-legal-hero{
+          padding-left: 12px;
+          padding-right: 12px;
+        }
         .kbf-legal-grid{ grid-template-columns: 1fr; }
         .kbf-legal-nav{ position:static; }
         .kbf-nav{ display:none !important; }
         .kbf-actions{ display:none !important; }
         .kbf-hamburger{ display:inline-flex !important; }
-        .kbf-topbar{ flex-wrap:nowrap; gap:12px; justify-content:space-between; padding:12px 20px; }
+        .kbf-topbar{ flex-wrap:nowrap; gap:12px; justify-content:space-between; padding:12px 16px; }
         .kbf-legal h2 { font-size: 18px; }
         .kbf-legal h3 { font-size: 14px; }
         .kbf-legal p, .kbf-legal li { font-size: 14px; line-height: 1.7; }
@@ -318,6 +333,7 @@ function bntm_kbf_render_privacy() {
       .kbf-footer {
         margin: 44px auto 40px;
         max-width: 1040px;
+        width: 100%;
         background: linear-gradient(135deg, rgba(74, 152, 255, 0.9) 0%, rgba(47, 123, 220, 0.95) 100%) !important;
         color: rgba(255,255,255,0.5) !important;
         font-size: 12.5px !important;
@@ -327,7 +343,7 @@ function bntm_kbf_render_privacy() {
         gap: 18px;
         display: flex;
         flex-direction: column;
-        max-width: 100%;
+        box-sizing: border-box;
       }
       .kbf-footer-top{
         display: grid;
@@ -408,8 +424,31 @@ function bntm_kbf_render_privacy() {
       }
       .kbf-container {
         overflow: visible;
-        max-width: 80% !important;
+        width: 100%;
+        max-width: 1200px !important;
         margin: 0 auto;
+        padding: 62px 24px 0;
+        box-sizing: border-box;
+      }
+      @media (max-width: 1200px){
+        .kbf-container{
+          max-width: 1040px !important;
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+      }
+      @media (max-width: 900px){
+        .kbf-container{
+          max-width: 100% !important;
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+      }
+      @media (max-width: 480px){
+        .kbf-container{
+          padding-left: 12px;
+          padding-right: 12px;
+        }
       }
       @media (max-width: 720px){
         .kbf-footer{
@@ -606,7 +645,7 @@ function bntm_kbf_render_privacy() {
         </div>
       </div>
        <!-- FOOTER -->
-        <footer class="kbf-footer kbf-reveal delay-3" style="margin-top:80px;">
+        <footer class="kbf-footer kbf-reveal delay-3">
           <div class="kbf-footer-top">
             <div class="kbf-footer-left kbf-footer-brand">
               <div class="kbf-brand" style="margin-bottom:8px;">

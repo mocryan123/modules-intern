@@ -314,13 +314,19 @@ function bntm_kbf_render_landing() {
             radial-gradient(1000px 320px at 92% -2%, #e6f0ff 0%, transparent 58%),
             var(--kbf-surface);
         width: 100%;
-        padding: 26px 22px 64px;
+        padding: 26px 0 64px;
         border-radius: var(--kbf-radius-lg);
         overflow: visible;
     }
 
     .kbf-landing, .kbf-landing *, .kbf-landing *::before, .kbf-landing *::after { box-sizing: border-box; }
-    .kbf-container { overflow: visible; max-width: 80% !important; margin: 0 auto; padding: 62px 0px 0; }
+    .kbf-container {
+        overflow: visible;
+        width: 100%;
+        max-width: 1200px !important;
+        margin: 0 auto;
+        padding: 62px 24px 0;
+    }
     .kbf-landing a { color: inherit; text-decoration: none; }
     .kbf-brand-text { color: #3d8ef0; font-family: 'Poppins', system-ui, -apple-system, sans-serif; }
         .kbf-divider {
@@ -543,7 +549,6 @@ function bntm_kbf_render_landing() {
         width: 100%;
         height: 100%;
         gap: 60px;
-        padding: 80px 64px;
         position: relative;
         z-index: 2;
         border-radius: 24px;
@@ -958,6 +963,12 @@ function bntm_kbf_render_landing() {
     /* SECTIONS */
     .kbf-section { margin-top: 54px; scroll-margin-top: calc(var(--kbf-topbar-h, 64px) + 16px); }
     .kbf-section:first-of-type { margin-top: 32px; }
+    #kbf-home { margin-top: 14px; margin-bottom: 90px; }
+    #kbf-overview { margin-top: 60px; }
+    #kbf-how { margin-top: 80px; }
+    #kbf-home .kbf-hero-heading { text-align: center; margin-top: 24px; margin-bottom: 12px; max-width: 700px; width: 100%; margin-left: auto; margin-right: auto; }
+    #kbf-home .kbf-hero-desc { text-align: center; margin-bottom: 24px; max-width: 700px; width: 100%; margin-left: auto; margin-right: auto; }
+    #kbf-overview > h2 { font-size: 1.4em; font-weight: 500; }
     .kbf-section h2 { font-size: 28px; margin: 0 0 8px; letter-spacing: -0.2px; font-weight: 400; }
     .kbf-section p { color: #334155; margin: 0; font-size: 28px; line-height: 1.7; }
     .kbf-section p + p { margin-top: 10px; }
@@ -1448,7 +1459,7 @@ function bntm_kbf_render_landing() {
         position: fixed;
         inset: 0;
         background: rgba(0, 0, 0, 0.45);
-        z-index: 98;
+        z-index: 998;
         animation: kbfOverlayIn .2s ease forwards;
     }
     .kbf-mobile-overlay.kbf-overlay-open { display: block; }
@@ -1456,10 +1467,10 @@ function bntm_kbf_render_landing() {
 
     .kbf-mobile-menu {
         position: fixed;
-        top: 0;
+        top: 60px;
         left: 0;
         right: 0;
-        z-index: 99;
+        z-index: 999;
         border-radius: 0;
         margin-top: 0;
         transform: translateY(-110%);
@@ -1482,7 +1493,7 @@ function bntm_kbf_render_landing() {
         .kbf-hero-left { max-width: 420px; }
         .kbf-hero-right { flex: 0 0 clamp(260px, 34vw, 380px); height: clamp(300px, 45vw, 460px); }
         .kbf-cards-wrap { --kbf-card-scale: 0.9; }
-        .kbf-hero-inner { padding: 56px 48px 52px; gap: 40px; }
+        .kbf-hero-inner { gap: 40px; }
     }
     
     /* Mobile navigation */
@@ -1506,7 +1517,7 @@ function bntm_kbf_render_landing() {
         .kbf-hero-heading { font-size: 34px; letter-spacing: -1px; }
         .kbf-hero-right { flex: 0 0 clamp(240px, 38vw, 340px); height: clamp(280px, 48vw, 420px); }
         .kbf-cards-wrap { --kbf-card-scale: 0.85; }
-        .kbf-hero-inner { padding: 48px 36px 44px; gap: 32px; }
+        .kbf-hero-inner { gap: 32px; }
         .kbf-hero-trust { gap: 12px; }
         .kbf-trust-badge { font-size: 11px; }
         .kbf-feature-grid { grid-template-columns: 1fr; }
@@ -1527,7 +1538,6 @@ function bntm_kbf_render_landing() {
         .kbf-hero-inner {
             flex-direction: column;
             align-items: center;
-            padding: 52px 40px 44px;
             gap: 40px;
             text-align: center;
         }
@@ -1547,9 +1557,9 @@ function bntm_kbf_render_landing() {
     }
 
     @media (max-width: 720px) {
-        .kbf-landing { padding: 20px 14px 48px; text-align: center; }
+        .kbf-landing { padding: 20px 0 48px; text-align: center; }
         .kbf-hero { border-radius: 20px; margin-top: 10px !important; margin-bottom: 60px !important; }
-        .kbf-hero-inner { padding: 40px 28px 36px !important; gap: 32px !important; }
+        .kbf-hero-inner { gap: 32px !important; }
         .kbf-topbar { flex-wrap: wrap; gap: 12px; justify-content: center; }
         .kbf-actions { width: 100%; justify-content: center; gap: 8px; }
         .kbf-cards-wrap { --kbf-card-scale: 0.72; }
@@ -1578,11 +1588,11 @@ function bntm_kbf_render_landing() {
     }
 
     @media (max-width: 480px) {
-        .kbf-landing { padding: 14px 10px 36px; }
-        .kbf-topbar { padding: 12px 24px; }
+        .kbf-landing { padding: 14px 0 36px; }
+        .kbf-topbar { padding: 12px 12px; }
         .kbf-brand-badge { width: 22px; height: 22px; font-size: 18px; }
         .kbf-hero { border-radius: 16px !important; }
-        .kbf-hero-inner { padding: 36px 20px 32px !important; gap: 28px !important; }
+        .kbf-hero-inner { gap: 28px !important; }
         .kbf-hero-heading { font-size: 28px !important; letter-spacing: -0.5px; }
         .kbf-hero-desc { font-size: 14px !important; }
         .kbf-hero-right { height: 240px; }
@@ -1612,10 +1622,16 @@ function bntm_kbf_render_landing() {
         .kbf-hero-heading { font-size: 26px !important; }
         .kbf-hero-right { height: 200px; }
         .kbf-cards-wrap { --kbf-card-scale: 0.55; }
-        .kbf-hero-inner { padding: 28px 16px 28px !important; }
         .kbf-stat h3 { font-size: 34px; }
         .kbf-hero-cta-btn { font-size: 13px; padding: 12px 20px; }
     }
+
+    /* Final authority: hero inner spacing by breakpoint */
+    .kbf-hero-inner { padding: 80px 64px !important; }
+    @media (max-width: 1200px) { .kbf-hero-inner { padding: 52px 40px 44px !important; } }
+    @media (max-width: 1000px) { .kbf-hero-inner { padding: 48px 36px 44px !important; } }
+    @media (max-width: 900px)  { .kbf-hero-inner { padding: 28px 24px !important; } }
+    @media (max-width: 480px)  { .kbf-hero-inner { padding: 22px 16px !important; } }
 
     /* --- PREMIUM OVERRIDES (ADDED BY DESIGNER) --- */
     .kbf-hero {
@@ -2410,11 +2426,11 @@ function bntm_kbf_render_landing() {
         z-index:998;
     }
     .kbf-mobile-overlay.kbf-overlay-open{ display:block; }
-    @media (max-width: 860px){
+    @media (max-width: 900px){
         .kbf-nav{ display:none !important; }
         .kbf-actions{ display:none !important; }
         .kbf-hamburger{ display:inline-flex !important; }
-        .kbf-topbar{ flex-wrap:nowrap; gap:12px; justify-content:space-between; padding:12px 20px; }
+        .kbf-topbar{ flex-wrap:nowrap; gap:12px; justify-content:space-between; padding:12px 16px; }
     }
     .kbf-landing .kbf-hero-desc{ font-size: 16px !important; }
     
@@ -2606,17 +2622,35 @@ function bntm_kbf_render_landing() {
         pointer-events: none;
     }
     
-    @media (max-width: 900px) {
-        .kbf-container { max-width: 100% !important; }
+    @media (max-width: 1200px) {
+        .kbf-container {
+            max-width: 1040px !important;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 900px) {
+        .kbf-container {
+            max-width: 100% !important;
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .kbf-container {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+    }
+
+    @media (max-width: 900px) {
         .kbf-hero {
             height: auto !important;
             min-height: 0;
         }
         .kbf-hero-inner {
-            padding: 28px 24px !important;
             gap: 22px !important;
         }
         .vh-new-wrapper{
@@ -2642,10 +2676,10 @@ function bntm_kbf_render_landing() {
             margin-bottom:10px;
         }
         .vh-zone2 { 
-           margin-left: -24px; 
-           margin-right: -24px;
-           margin-bottom: -28px;
-           width: calc(100% + 48px);
+           margin-left: 0;
+           margin-right: 0;
+           margin-bottom: 0;
+           width: 100%;
            height: 220px;
         }
         .vh-photo-card {
@@ -2664,7 +2698,6 @@ function bntm_kbf_render_landing() {
         .vh-trust-badges { gap: 16px; margin-top: 24px; justify-content: center; }
         .vh-trust-badge { font-size: 13px; }
         .kbf-hero-inner {
-            padding: 22px 16px !important;
             gap: 18px !important;
         }
         .kbf-hero-heading{
@@ -2682,9 +2715,9 @@ function bntm_kbf_render_landing() {
             margin-bottom:8px;
         }
         .vh-zone2 { 
-           margin-left: -16px; 
-           margin-right: -16px;
-           width: calc(100% + 32px);
+           margin-left: 0;
+           margin-right: 0;
+           width: 100%;
             height: 180px;
         }
         .vh-photo-card {
@@ -2738,6 +2771,21 @@ function bntm_kbf_render_landing() {
             text-align: center !important;
         }
     }
+    /* Final breakpoint authority for topbar controls */
+    @media (max-width: 900px){
+        .kbf-landing .kbf-topbar .kbf-hamburger{ display:inline-flex !important; }
+        .kbf-landing .kbf-topbar .kbf-nav,
+        .kbf-landing .kbf-topbar .kbf-actions{ display:none !important; }
+        .kbf-landing .kbf-topbar{ padding: 12px 16px !important; }
+    }
+    @media (max-width: 480px){
+        .kbf-landing .kbf-topbar{ padding: 12px 12px !important; }
+    }
+    @media (min-width: 901px){
+        .kbf-landing .kbf-topbar .kbf-hamburger{ display:none !important; }
+        .kbf-landing .kbf-topbar .kbf-nav,
+        .kbf-landing .kbf-topbar .kbf-actions{ display:flex !important; }
+    }
     </style>
 
     <!-- ================== HTML ================== -->
@@ -2756,41 +2804,41 @@ function bntm_kbf_render_landing() {
               <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora" style="width:auto;height:24px;object-fit:contain;border-radius:6px;">
             </div>
             <nav class="kbf-nav">
-              <a href="<?php echo esc_url($landing_url); ?>#kbf-home">Home</a>
-              <a href="<?php echo esc_url($landing_url); ?>#kbf-how">Features</a>
-              <a href="<?php echo esc_url($landing_url); ?>#kbf-donation">About</a>
-              <a href="<?php echo esc_url($landing_url); ?>#kbf-faq">FAQ</a>
+              <a href="<?php echo esc_url($landing_url); ?>#kbf-home" data-kbf-scroll="kbf-home">Home</a>
+              <a href="<?php echo esc_url($landing_url); ?>#kbf-how" data-kbf-scroll="kbf-how">Features</a>
+              <a href="<?php echo esc_url($landing_url); ?>#kbf-donation" data-kbf-scroll="kbf-donation">About</a>
+              <a href="<?php echo esc_url($landing_url); ?>#kbf-faq" data-kbf-scroll="kbf-faq">FAQ</a>
             </nav>
           </div>
           <div class="kbf-actions">
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
           </div>
-          <button class="kbf-hamburger" id="kbf-hamburger-btn" aria-label="Open menu">
+          <button type="button" class="kbf-hamburger" id="kbf-hamburger-btn" aria-label="Open menu">
             <i id="kbf-hamburger-icon" class="ph ph-list kbf-icon" role="img" aria-label="Menu"></i>
           </button>
         </div>
         <div class="kbf-mobile-menu" id="kbf-mobile-menu">
-          <a href="<?php echo esc_url($landing_url); ?>#kbf-home">Home</a>
-          <a href="<?php echo esc_url($landing_url); ?>#kbf-how">Features</a>
-          <a href="<?php echo esc_url($landing_url); ?>#kbf-donation">About</a>
-          <a href="<?php echo esc_url($landing_url); ?>#kbf-faq">FAQ</a>
+          <a href="<?php echo esc_url($landing_url); ?>#kbf-home" data-kbf-mobile-nav="kbf-home">Home</a>
+          <a href="<?php echo esc_url($landing_url); ?>#kbf-how" data-kbf-mobile-nav="kbf-how">Features</a>
+          <a href="<?php echo esc_url($landing_url); ?>#kbf-donation" data-kbf-mobile-nav="kbf-donation">About</a>
+          <a href="<?php echo esc_url($landing_url); ?>#kbf-faq" data-kbf-mobile-nav="kbf-faq">FAQ</a>
           <div class="kbf-mobile-menu-actions">
             <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($login_url); ?>">Sign In to Start</a>
           </div>
         </div>
 
         <!-- HERO -->
-        <div id="kbf-home" class="kbf-hero" style="margin-top: 14px; margin-bottom: 90px;">
+        <div id="kbf-home" class="kbf-hero">
           <div class="kbf-hero-inner">
             <div class="vh-new-wrapper">
                <div class="vh-zone1">
                   <p class="kbf-eyebrow" style="margin:0; display:flex; align-items:center;">
                     Filipino Crowdfunding Platform
                   </p>
-                  <h1 class="kbf-hero-heading" style="text-align: center; margin-top: 24px; margin-bottom: 12px; max-width: 700px; width: 100%;">
+                  <h1 class="kbf-hero-heading">
                     Fundora: Start a fund, Change a Life.
                   </h1>
-                  <p class="kbf-hero-desc" style="text-align: center; margin-bottom: 24px; max-width: 700px; width: 100%;">
+                  <p class="kbf-hero-desc">
                     Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
                   </p>
                   <div class="vh-hero-buttons">
@@ -2861,8 +2909,8 @@ function bntm_kbf_render_landing() {
         </div>
 
         <!-- IN THIS ARTICLE -->
-        <div class="kbf-section delay-1" style="margin-top: 60px;">
-          <h2 style="font-size: 1.4em; font-weight: 500;">Overview</h2>
+        <div id="kbf-overview" class="kbf-section delay-1">
+          <h2>Overview</h2>
           <ul class="kbf-article-list">
             <li><span></span>What Is Fundora?</li>
             <li><span></span>Why Social Media Fundraising Fails</li>
@@ -2876,7 +2924,7 @@ function bntm_kbf_render_landing() {
         </div>
 
         <!-- FEATURES -->
-        <div id="kbf-how" class="kbf-section kbf-reveal delay-1" style="margin-top: 80px;">
+        <div id="kbf-how" class="kbf-section kbf-reveal delay-1">
           <h2 style="font-size: 1.5em; font-weight: 500;">Key features that build trust</h2>
           <p class="kbf-lead">The biggest barrier to online fundraising in the Philippines is not generosity. It is trust. Fundora is built so every campaign is verifiable and every organizer is accountable.</p>
           <div class="kbf-feature-grid">
@@ -3112,7 +3160,7 @@ function bntm_kbf_render_landing() {
         </div>
 
         <!-- FOOTER -->
-        <footer class="kbf-footer kbf-reveal delay-3" style="margin-top:80px;">
+        <footer class="kbf-footer kbf-reveal delay-3">
           <div class="kbf-footer-top">
             <div class="kbf-footer-left kbf-footer-brand">
               <div class="kbf-brand" style="margin-bottom:8px;">
@@ -3256,6 +3304,20 @@ function bntm_kbf_render_landing() {
             });
         }
 
+        function kbfCloseMobileMenuAfterNavClick() {
+            setTimeout(function() {
+                var menu = document.getElementById('kbf-mobile-menu');
+                var overlay = document.getElementById('kbf-mobile-overlay');
+                var icon = document.getElementById('kbf-hamburger-icon');
+                if (menu) menu.classList.remove('kbf-menu-open');
+                if (overlay) overlay.classList.remove('kbf-overlay-open');
+                if (icon) {
+                    icon.classList.remove('ph-bold', 'ph-x');
+                    icon.classList.add('ph', 'ph-list');
+                }
+            }, 120);
+        }
+
         // -- Smooth scroll nav links (replaces onclick handlers) --
         document.querySelectorAll('[data-kbf-scroll]').forEach(function(link) {
             link.addEventListener('click', function(e) {
@@ -3267,24 +3329,21 @@ function bntm_kbf_render_landing() {
                     var target = document.getElementById(id);
                     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
+                kbfCloseMobileMenuAfterNavClick();
             });
         });
 
         // -- Mobile nav links (replaces onclick handlers) --
-        document.querySelectorAll('[data-kbf-mobile-nav]').forEach(function(link) {
+        document.querySelectorAll('#kbf-mobile-menu a[href*="#"], #kbf-mobile-menu [data-kbf-mobile-nav]').forEach(function(link) {
             link.addEventListener('click', function(e) {
-                e.preventDefault();
                 var id = this.getAttribute('data-kbf-mobile-nav');
-                // Close mobile menu
-                var menu = document.getElementById('kbf-mobile-menu');
-                var overlay = document.getElementById('kbf-mobile-overlay');
-                var icon = document.getElementById('kbf-hamburger-icon');
-                if (menu) menu.classList.remove('kbf-menu-open');
-                if (overlay) overlay.classList.remove('kbf-overlay-open');
-                if (icon) {
-                    icon.classList.remove('ph-bold','ph-x');
-                    icon.classList.add('ph','ph-list');
+                if (!id) {
+                    var href = this.getAttribute('href') || '';
+                    var hashIndex = href.indexOf('#');
+                    if (hashIndex !== -1) id = href.slice(hashIndex + 1);
                 }
+                if (!id) return;
+                e.preventDefault();
                 // Scroll to target
                 if (id === 'kbf-home') {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3292,6 +3351,7 @@ function bntm_kbf_render_landing() {
                     var target = document.getElementById(id);
                     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
+                kbfCloseMobileMenuAfterNavClick();
             });
         });
 
@@ -3376,22 +3436,16 @@ function bntm_kbf_render_landing() {
           else openMenu();
         });
         if (overlay) overlay.addEventListener('click', closeMenu);
+        menu.addEventListener('click', function(e){
+          var link = e.target && e.target.closest ? e.target.closest('a') : null;
+          if (!link) return;
+          var href = link.getAttribute('href') || '';
+          if (href.indexOf('#') !== -1 || link.hasAttribute('data-kbf-mobile-nav')) return;
+          closeMenu();
+        });
         window.addEventListener('resize', function(){
           if (window.innerWidth > 900 && open) closeMenu();
         });
-    })();
-
-    // Topbar scroll effect
-    (function() {
-        var topbar = document.querySelector('.kbf-topbar');
-        if (!topbar) return;
-        window.addEventListener('scroll', function() {
-          if (window.scrollY > 10) {
-            topbar.classList.add('kbf-topbar-scrolled');
-          } else {
-            topbar.classList.remove('kbf-topbar-scrolled');
-          }
-        }, { passive: true });
     })();
 
     </script>
@@ -3487,14 +3541,6 @@ function bntm_kbf_render_landing() {
             closeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                setCookieState('accepted');
-                hideBanner();
-            });
-        }
-
-        // Close button (same as accept)
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function() {
                 setCookieState('accepted');
                 hideBanner();
             });

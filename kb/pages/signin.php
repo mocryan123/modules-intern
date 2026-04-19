@@ -356,8 +356,9 @@ function bntm_kbf_render_signin() {
         outline:none;
         background:transparent;
         font-size:13.5px;
+        line-height:1.35;
         color:#0b1a33;
-        padding:14px 36px 14px 36px;
+        padding:14px 46px 14px 36px;
         box-sizing:border-box;
         font-family:inherit;
       }
@@ -370,8 +371,9 @@ function bntm_kbf_render_signin() {
         transition: background-color 9999s ease-in-out 0s;
         box-shadow:0 0 0 1000px #ffffff inset;
       }
-      .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:absolute;right:15px;top:50%;transform:translateY(-50%);}
-      .kbf-auth-toggle img{width:16px;height:16px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
+      .kbf-auth-toggle{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:absolute;right:12px;top:50%;transform:translateY(-50%);width:28px;height:28px;color:#2563eb;}
+      .kbf-auth-toggle i{font-size:20px;line-height:1;}
+      .kbf-auth-toggle img{width:20px;height:20px;filter:invert(47%) sepia(87%) saturate(1955%) hue-rotate(200deg) brightness(97%) contrast(96%);}
       .kbf-auth-cta{margin-top:14px;}
       .kbf-auth-link{display:inline-block;margin-top:10px;font-size:12.5px;color:var(--kbf-auth-blue);text-decoration:none;font-weight:600;background:transparent;border:0;padding:0;cursor:pointer;}
       .kbf-auth-link:hover{text-decoration:underline;}
@@ -409,7 +411,9 @@ function bntm_kbf_render_signin() {
         .kbf-auth-brand img{width:120px;}
         .kbf-auth-title{font-size:24px;}
         .kbf-auth-sub{font-size:13.5px;line-height:1.6;margin-bottom:18px;}
-        .kbf-auth-input{padding:0 0 12px;border-radius:12px;}
+        .kbf-auth-input{padding:0;border-radius:12px;}
+        .kbf-auth-input input{padding-top:15px;padding-bottom:15px;}
+        .kbf-auth-toggle i{font-size:21px;}
         .kbf-auth-point{font-size:12.5px;}
       }
       @media (max-width: 520px){

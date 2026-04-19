@@ -109,7 +109,7 @@ function bntm_kbf_render_reset_password() {
       .kbf-auth-input:focus-within{border-color:#2563eb;}
       .kbf-auth-input label.kbf-float-label{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:13.5px;color:#64748b;background:#fff;padding:0 4px;pointer-events:none;transition:top .18s ease,font-size .18s ease,color .18s ease,transform .18s ease;line-height:1;}
       .kbf-auth-input:focus-within label.kbf-float-label,.kbf-auth-input.kbf-has-value label.kbf-float-label{top:0;transform:translateY(-50%);font-size:11.5px;color:#2563eb;}
-      .kbf-auth-input input{display:block;width:100%;border:0;outline:none;background:transparent;font-size:13.5px;color:#0b1a33;padding:14px 14px;box-sizing:border-box;font-family:inherit;}
+      .kbf-auth-input input{display:block;width:100%;border:0;outline:none;background:transparent;font-size:13.5px;line-height:1.35;color:#0b1a33;padding:15px 14px;box-sizing:border-box;font-family:inherit;}
       .kbf-field-error{margin-top:6px;font-size:11.5px;color:#e11d48;display:none;}
       .kbf-input-error{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.12);}
       .kbf-pass-req{margin-top:8px;background:rgba(15,23,42,0.04);border-radius:10px;padding:10px 12px;font-size:14px;color:#475569;}
@@ -128,6 +128,7 @@ function bntm_kbf_render_reset_password() {
         .kbf-reset-card{border-radius:20px;}
         .kbf-reset-left{padding:26px 20px 28px;}
         .kbf-reset-brand img{width:120px;}
+        .kbf-auth-input input{padding-top:15px;padding-bottom:15px;}
       }
     </style>
 
