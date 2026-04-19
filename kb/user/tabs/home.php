@@ -211,6 +211,7 @@
           border:1px solid rgba(37,99,235,.2);
         }
         .kbf-onboard-avatar.is-empty{
+          border-radius:50%;
           background:linear-gradient(135deg,#3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
           border:none;
           box-shadow:0 10px 18px rgba(37,99,235,.25);

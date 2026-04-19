@@ -117,6 +117,17 @@ function kbf_global_assets() {
     .bntm-header{
         display:none !important;
     }
+    /* Hide debug performance widget (CPU / Memory / Queries) */
+    div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="font-family:monospace"],
+    div[style*="position:fixed"][style*="font-family:monospace"][style*="z-index:99999"]{
+        display:none !important;
+        visibility:hidden !important;
+        opacity:0 !important;
+        pointer-events:none !important;
+        width:0 !important;
+        height:0 !important;
+        overflow:hidden !important;
+    }
     /* Override: Hide BNTM sidebar on KBF pages */
     .bntm-sidebar,
     aside#bntmSidebar,

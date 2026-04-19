@@ -786,6 +786,19 @@ function kbf_hide_bntm_sidebar_js() {
                     sidebar.style.setProperty("display", "none", "important");
                     sidebar.style.setProperty("width", "0", "important");
                 });
+
+                // Remove debug monitor widget (CPU / Memory / Queries)
+                var monitors = document.querySelectorAll("div[style*=\"position:fixed\"][style*=\"font-family:monospace\"], div[style*=\"position:fixed\"][style*=\"bottom:10px\"][style*=\"right:10px\"]");
+                monitors.forEach(function(el) {
+                    var txt = (el.textContent || "").toLowerCase();
+                    if (txt.indexOf("cpu:") !== -1 && txt.indexOf("memory:") !== -1 && txt.indexOf("queries:") !== -1) {
+                        if (el.parentNode) {
+                            el.parentNode.removeChild(el);
+                        } else {
+                            el.style.setProperty("display", "none", "important");
+                        }
+                    }
+                });
             }
             
             // Run immediately and after DOM ready
