@@ -1,0 +1,898 @@
+<?php
+/* Public browse shortcode */
+if (!function_exists('kbf_browse_get_fund_token')) {
+    /**
+     * @function  kbf_browse_get_fund_token
+     * @purpose   Returns a public token for a fund when token helpers are available.
+     * @used-by   [kbf_browse_fund_detail_url]
+     * @calls     [function_exists, kbf_get_or_create_fund_token]
+     * @params    [$fund_id (int) fund identifier]
+     * @returns   [string token string or empty string]
+     * @status    ACTIVE
+     */
+    function kbf_browse_get_fund_token($fund_id) {
+        return function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($fund_id) : '';
+    }
+}
+
+if (!function_exists('kbf_browse_fund_detail_url')) {
+    /**
+     * @function  kbf_browse_fund_detail_url
+     * @purpose   Builds the public fund details URL using token fallback logic.
+     * @used-by   [bntm_shortcode_kbf_browse]
+     * @calls     [kbf_browse_get_fund_token, add_query_arg, esc_url]
+     * @params    [$fund_id (int) fund identifier, $fund_details_url (string) base details URL]
+     * @returns   [string escaped fund details URL]
+     * @status    ACTIVE
+     */
+    function kbf_browse_fund_detail_url($fund_id, $fund_details_url) {
+        $token = kbf_browse_get_fund_token($fund_id);
+        return esc_url(add_query_arg('fund', $token ?: $fund_id, $fund_details_url));
+    }
+}
+
+if (!function_exists('kbf_browse_organizer_url')) {
+    /**
+     * @function  kbf_browse_organizer_url
+     * @purpose   Builds an organizer profile URL using helper APIs or fallback query parameters.
+     * @used-by   [bntm_shortcode_kbf_browse]
+     * @calls     [function_exists, kbf_get_organizer_profile_url, kbf_get_or_create_organizer_token, add_query_arg, kbf_get_page_url, esc_url]
+     * @params    [$business_id (int) organizer business user ID]
+     * @returns   [string escaped organizer profile URL]
+     * @status    ACTIVE
+     */
+    function kbf_browse_organizer_url($business_id) {
+        if (function_exists('kbf_get_organizer_profile_url')) {
+            return esc_url(kbf_get_organizer_profile_url($business_id));
+        }
+        // Fallback
+        $org_token = function_exists('kbf_get_or_create_organizer_token') ? kbf_get_or_create_organizer_token($business_id) : '';
+        $params = $org_token ? ['organizer'=>$org_token] : ['organizer_id'=>$business_id];
+        return esc_url(add_query_arg($params, kbf_get_page_url('organizer_profile')));
+    }
+}
+
+/**
+ * @function  bntm_shortcode_kbf_browse
+ * @purpose   Renders the public browse experience with filters, fund cards, and modals.
+ * @used-by   [add_shortcode('kbf_browse','bntm_shortcode_kbf_browse') in modules/kb/includes/shortcodes.php]
+ * @calls     [kbf_global_assets, sanitize_text_field, wpdb->prepare/get_results, kbf_get_categories, wp_create_nonce, kbf_get_page_url, kbf_get_setting, kbf_browse_fund_detail_url, kbf_browse_organizer_url, bntm_universal_container]
+ * @params    [none]
+ * @returns   [string rendered browse HTML]
+ * @status    ACTIVE
+ */
+function bntm_shortcode_kbf_browse() {
+    kbf_global_assets();
+    global $wpdb;
+    $ft = $wpdb->prefix.'kbf_funds';
+    $q   = isset($_GET['q'])   ? sanitize_text_field($_GET['q'])   : '';
+    $cat = isset($_GET['cat']) ? sanitize_text_field($_GET['cat']) : '';
+    $loc = isset($_GET['loc']) ? sanitize_text_field($_GET['loc']) : '';
+    $sort= isset($_GET['sort'])? sanitize_text_field($_GET['sort']): 'newest';
+
+    $where='WHERE f.status=\'active\''; $params=[];
+    if($q)  { $where.=" AND (f.title LIKE %s OR f.description LIKE %s)"; $params[]="%".$wpdb->esc_like($q)."%"; $params[]="%".$wpdb->esc_like($q)."%"; }
+    if($cat){ $where.=" AND f.category=%s"; $params[]=$cat; }
+    if($loc){ $where.=" AND f.location LIKE %s"; $params[]="%".$wpdb->esc_like($loc)."%"; }
+    $order = $sort==='most_funded' ? 'f.raised_amount DESC' : ($sort==='ending_soon' ? 'f.deadline ASC' : 'f.created_at DESC');
+    $sql="SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY {$order}";
+    $funds = !empty($params)?$wpdb->get_results($wpdb->prepare($sql,...$params)):$wpdb->get_results($sql); // phpcs:ignore
+    $cats  = kbf_get_categories();
+    $nonce_sponsor = wp_create_nonce('kbf_sponsor');
+    $nonce_report  = wp_create_nonce('kbf_report');
+    $fund_details_url = kbf_get_page_url('fund_details');
+    $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
+    $total_active = count($funds);
+    ob_start();
+    ?>
+
+    <!-- ================== CSS ================== -->
+    <style>
+    .kbf-user-ui{
+    font-family: "Poppins",system-ui,-apple-system,sans-serif;
+    color:#0f1115;
+    background:transparent;
+    border-radius:0;
+    padding:0;
+}
+    .kbf-user-ui .kbf-btn{font-weight:400;}
+    .kbf-user-ui .kbf-card,
+    .kbf-user-ui .kbf-fund-card,
+    .kbf-user-ui .kbf-filter-bar{
+        border-radius:18px;
+        border:1px solid #edf0f4;
+        box-shadow:0 18px 40px rgba(16,24,40,0.08);
+        transition:transform .2s ease, box-shadow .2s ease;
+    }
+    .kbf-user-ui .kbf-card:hover,
+    .kbf-user-ui .kbf-fund-card:hover{
+        transform:translateY(-3px);
+        box-shadow:0 16px 34px rgba(15,23,42,0.08);
+    }
+    .kbf-user-ui .kbf-btn-primary{
+        background: linear-gradient(135deg, #5ba8f5 0%, #3d8ef0 50%, #2070e0 100%);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow:
+            0 1px 2px rgba(32, 112, 224, 0.20),
+            0 4px 14px rgba(42, 120, 220, 0.28),
+            0 0 0 0px rgba(111, 182, 255, 0),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        position: relative;
+        isolation: isolate;
+    }
+    .kbf-user-ui .kbf-btn-primary::before{
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        background: linear-gradient(135deg, #7ec4ff 0%, #5aaaf8 40%, #2878e8 100%);
+        opacity: 0;
+        z-index: -1;
+        transition: opacity .3s ease;
+    }
+    .kbf-user-ui .kbf-btn-primary:visited,
+    .kbf-user-ui .kbf-btn-primary:active{ color:#ffffff; }
+    .kbf-user-ui .kbf-btn-primary:hover{
+        transform: translateY(-2px);
+        box-shadow:
+            0 1px 3px rgba(32, 112, 224, 0.15),
+            0 8px 24px rgba(42, 120, 220, 0.45),
+            0 16px 40px rgba(61, 142, 240, 0.20),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        filter: brightness(1.06);
+    }
+    .kbf-user-ui .kbf-btn-primary:hover::before{ opacity: 1; }
+    .kbf-user-ui .kbf-btn-primary:active{
+        transform: translateY(0px);
+        box-shadow:
+            0 1px 2px rgba(32, 112, 224, 0.20),
+            0 4px 14px rgba(42, 120, 220, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        transition: transform .1s ease, box-shadow .1s ease, filter .1s ease;
+    }
+    .kbf-user-ui .kbf-btn-secondary{
+        background:#ffffff;
+        border:1px solid #dfe7f3;
+        color:#344055;
+    }
+    .kbf-user-ui .kbf-meta,
+    .kbf-user-ui .kbf-text-sm,
+    .kbf-user-ui .kbf-browse-tab,
+    .kbf-user-ui .kbf-browse-search input{
+        color:#4f5a6b;
+    }
+    .kbf-browse-shell{display:grid;grid-template-columns:84px 1fr;gap:22px;}
+    .kbf-browse-sidebar{background:var(--kbf-slate-lt);border:1px solid var(--kbf-border);border-radius:18px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px;min-height:620px;position:sticky;top:24px;}
+    .kbf-browse-sidebar .kbf-side-logo{width:48px;height:48px;border-radius:14px;background:var(--kbf-accent-lt);color:var(--kbf-navy);display:flex;align-items:center;justify-content:center;font-weight:800;}
+    .kbf-side-btn{width:44px;height:44px;border-radius:14px;border:1px solid var(--kbf-border);display:flex;align-items:center;justify-content:center;color:var(--kbf-slate);background:#fff;}
+    .kbf-side-btn.active{background:var(--kbf-accent);color:#fff;border-color:var(--kbf-accent);}
+    .kbf-browse-main{min-width:0;}
+    .kbf-browse-topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;}
+    .kbf-browse-search{flex:1;max-width:520px;display:flex;align-items:center;gap:8px;background:var(--kbf-slate-lt);border:1px solid var(--kbf-border);border-radius:14px;padding:10px 14px;}
+    .kbf-browse-search input{border:none;background:transparent;outline:none;width:100%;font-size:13.5px;color:var(--kbf-text);}
+    .kbf-browse-actions{display:flex;gap:10px;align-items:center;}
+    .kbf-browse-header{margin:6px 0 8px;}
+    .kbf-browse-header h2{margin:0;font-size:24px;font-weight:800;color:var(--kbf-navy);}
+    .kbf-browse-tabs{display:flex;gap:14px;align-items:center;margin:12px 0 16px;flex-wrap:wrap;}
+    .kbf-browse-tab{font-size:13px;font-weight:600;color:var(--kbf-slate);text-decoration:none;position:relative;padding-bottom:6px;}
+    .kbf-browse-tab.active{color:var(--kbf-navy);}
+    .kbf-browse-tab.active::after{content:'';position:absolute;left:0;bottom:0;width:18px;height:4px;border-radius:999px;background:var(--kbf-accent);}
+    .kbf-fund-card{background:#fff;border:1px solid var(--kbf-border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .2s,transform .15s;}
+    .kbf-fund-photo{width:100%;height:190px;object-fit:cover;background:linear-gradient(135deg,var(--kbf-navy),var(--kbf-navy-light));display:flex;align-items:center;justify-content:center;position:relative;}
+    .kbf-fund-photo-placeholder{width:100%;height:190px;background:linear-gradient(135deg,#0f2044 0%,#243b78 100%);display:flex;align-items:center;justify-content:center;position:relative;}
+    .kbf-fund-photo img{width:100%;height:190px;object-fit:cover;display:block;}
+    .kbf-fund-cat-badge{position:absolute;top:12px;left:12px;background:rgba(15,32,68,.85);backdrop-filter:blur(4px);color:var(--kbf-accent);padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:700;text-transform:none;letter-spacing:0;}
+    .kbf-fund-days-badge{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:800;}
+    .kbf-filter-bar{background:#fff;border:1px solid var(--kbf-border);border-radius:var(--kbf-radius);padding:16px 18px;margin-bottom:18px;}
+    .kbf-sort-pills{display:flex;gap:6px;flex-wrap:wrap;}
+    .kbf-sort-pill{padding:6px 14px;border-radius:99px;font-size:12px;font-weight:600;text-decoration:none;border:1.5px solid var(--kbf-border);color:var(--kbf-slate);transition:all .15s;}
+    .kbf-sort-pill:hover,.kbf-sort-pill.active{background:var(--kbf-navy);color:#fff;border-color:var(--kbf-navy);}
+    .kbf-browse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:22px;}
+    .kbf-card-actions{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;}
+    @media(max-width:900px){.kbf-browse-shell{grid-template-columns:1fr;}.kbf-browse-sidebar{position:static;min-height:auto;flex-direction:row;justify-content:space-between;padding:12px;}}
+    @media(max-width:640px){.kbf-browse-grid{grid-template-columns:1fr;}.kbf-browse-search{max-width:100%;}}
+    @media(max-width:430px){
+        .kbf-card-actions{grid-template-columns:repeat(3, auto);justify-content:space-between;row-gap:8px;}
+        .kbf-card-actions .kbf-btn-primary{grid-column:1 / -1;justify-content:center;}
+    }
+    </style>
+    
+    
+    
+
+    
+    
+    <style>
+    .kbf-user-ui .kbf-modal-overlay{
+        position:fixed;
+        inset:0;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(11,20,38,0.45);
+        backdrop-filter:blur(6px);
+        padding:24px;
+        z-index:9999;
+    }
+    .kbf-user-ui .kbf-modal{
+        width:100%;
+        max-width:720px;
+        background:#fff;
+        border-radius:22px;
+        border:1px solid #dfe7f3;
+        box-shadow:0 30px 80px rgba(15,40,80,0.22);
+        overflow:hidden;
+        max-height:90vh;
+        display:flex;
+        flex-direction:column;
+    }
+    .kbf-user-ui .kbf-modal.kbf-modal-sm{
+        max-width:520px;
+    }
+    .kbf-user-ui .kbf-modal-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        padding:18px 20px;
+        background:#f8fbff;
+        border-bottom:1px solid #edf0f4;
+    }
+    .kbf-user-ui .kbf-modal-header h3{
+        margin:0;
+        font-size:16px;
+        font-weight:600;
+        color:#0d1a2e;
+    }
+    .kbf-user-ui .kbf-modal-close{
+        width:32px;
+        height:32px;
+        border-radius:50%;
+        border:1px solid #dfe7f3;
+        background:#fff;
+        color:#6b7a90;
+        font-size:18px;
+        line-height:1;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        transition:transform .15s ease, box-shadow .2s ease;
+    }
+    .kbf-user-ui .kbf-modal-close:hover{
+        transform:translateY(-1px);
+        box-shadow:0 8px 18px rgba(15,40,80,0.12);
+    }
+    .kbf-user-ui .kbf-modal-body{
+        padding:20px;
+        background:#fff;
+        overflow-y:auto;
+        max-height:70vh;
+    }
+    .kbf-user-ui .kbf-modal-footer{
+        display:flex;
+        justify-content:flex-end;
+        gap:10px;
+        padding:16px 20px 20px;
+        background:#fbfcff;
+        border-top:1px solid #edf0f4;
+    }
+    .kbf-user-ui .kbf-modal input,
+    .kbf-user-ui .kbf-modal select,
+    .kbf-user-ui .kbf-modal textarea{
+        border-radius:12px;
+        border:1.5px solid #e2e8f0;
+        background:#fff;
+    }
+    .kbf-user-ui .kbf-field-error{
+        margin-top:6px;
+        font-size:11.5px;
+        color:#e11d48;
+    }
+    .kbf-user-ui .kbf-desc-counter{
+        display:block;
+        margin-top:6px;
+        font-size:11.5px;
+        color:#4f5a6b;
+    }
+    .kbf-user-ui .kbf-char-count{
+        display:block;
+        margin-top:6px;
+        font-size:11.5px;
+        color:#4f5a6b;
+    }
+    .kbf-user-ui .kbf-title-counter{
+        display:block;
+        margin-top:6px;
+        font-size:11.5px;
+        color:#4f5a6b;
+    }
+    html.kbf-modal-lock, body.kbf-modal-lock { overflow: hidden; }
+    </style>
+
+    
+    <!-- ================== HTML ================== -->
+    <div class="kbf-wrap kbf-user-ui">
+
+    <?php echo kbf_role_nav('sponsor'); ?>
+
+    <!-- MODAL: Sponsor -->
+    <div id="kbf-modal-sponsor" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal">
+        <div class="kbf-modal-header"><h3>Sponsor This Fund</h3><button class="kbf-modal-close" onclick="kbfSponsorClose()">&times;</button></div>
+        <div class="kbf-modal-body">
+          <div id="kbf-fund-preview" style="background:var(--kbf-slate-lt);border-radius:8px;padding:14px;margin-bottom:18px;"></div>
+          <form id="kbf-sponsor-form" onsubmit="return false;">
+            <input type="hidden" name="fund_id" id="sponsor-fund-id">
+            <div class="kbf-form-row">
+              <div class="kbf-form-group"><label>Name / Company / Account</label><input type="text" name="sponsor_name" id="sponsor-name-field" placeholder="Your name, company, or account"></div>
+              <div class="kbf-form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;">
+                <label class="kbf-checkbox-row"><input type="checkbox" id="anon-check" onchange="document.getElementById('sponsor-name-field').disabled=this.checked"> Sponsor Anonymously</label>
+              </div>
+            </div>
+            <div class="kbf-form-group">
+              <label>Amount (PHP) *</label>
+              <input type="number" name="amount" placeholder="Min. ?50" min="50" step="1" required>
+              <div id="kbf-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
+            </div>
+            <div class="kbf-form-group"><label>Message (optional)</label><textarea name="message" rows="2" placeholder="Leave an encouraging message..."></textarea></div>
+            <div class="kbf-form-row">
+              <div class="kbf-form-group"><label>Email (for receipt) *</label><input type="email" name="email" placeholder="your@email.com" required></div>
+              <div class="kbf-form-group"><label>Phone *</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX" required></div>
+            </div>
+            <input type="hidden" name="payment_method" value="online_payment">
+            <?php if($demo_mode): ?>
+            <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;margin-top:4px;">
+              <i class="ph-bold ph-exclamation-mark kbf-icon" style="font-size:16px; flex-shrink:0;margin-top:1px;filter:invert(31%) sepia(86%) saturate(1160%) hue-rotate(16deg) brightness(95%) contrast(95%)" aria-hidden="true"></i>
+              <div><span class="kbf-strong">Demo Mode:</span> Redirects to Maya sandbox checkout. No real payment is processed.</div>
+            </div>
+            <?php else: ?>
+            <div id="kbf-payment-placeholder" class="kbf-payment-placeholder" style="display:none;"><span class="kbf-strong">Payment API Integration Point</span><span id="kbf-payment-label"></span><br><small>Hook: <code>do_action('kbf_process_payment', $method, $amount, $fund_id)</code></small></div>
+            <?php endif; ?>
+            <div id="kbf-sponsor-msg"></div>
+          </form>
+        </div>
+        <div class="kbf-modal-footer">
+          <button class="kbf-btn kbf-btn-secondary" onclick="kbfSponsorClose()">Cancel</button>
+          <button type="button" class="kbf-btn kbf-btn-primary" onclick="kbfSubmitSponsor('<?php echo $nonce_sponsor; ?>')">Confirm Sponsorship</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Report -->
+    <div id="kbf-modal-report" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal kbf-modal-sm">
+        <div class="kbf-modal-header"><h3>Report This Fund</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-report').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-body">
+          <form id="kbf-report-form">
+            <input type="hidden" name="fund_id" id="report-fund-id">
+            <div class="kbf-form-group"><label>Your Email (optional)</label><input type="email" name="reporter_email" placeholder="your@email.com"></div>
+            <div class="kbf-form-group"><label>Upload Photo (optional)</label><input type="file" name="report_image" accept="image/*"></div>
+            <div class="kbf-form-group"><label>Reason *</label><select name="reason" required><option value="">Select Reason</option><option value="Fraud">Fraudulent Campaign</option><option value="Misleading">Misleading Information</option><option value="Inappropriate">Inappropriate Content</option><option value="Scam">Suspected Scam</option><option value="Other">Other</option></select></div>
+            <div class="kbf-form-group"><label>Details *</label><textarea name="details" rows="4" placeholder="Describe the issue..." required></textarea></div>
+            <div id="kbf-report-msg"></div>
+          </form>
+        </div>
+        <div class="kbf-modal-footer">
+          <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbf-modal-report').style.display='none'">Cancel</button>
+          <button class="kbf-btn kbf-btn-danger" onclick="kbfSubmitReport('<?php echo $nonce_report; ?>')">Submit Report</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Organizer -->
+    <div id="kbf-modal-organizer" class="kbf-modal-overlay" style="display:none;">
+      <div class="kbf-modal"><div class="kbf-modal-header"><h3>Organizer Profile</h3><button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-organizer').style.display='none'">&times;</button></div>
+        <div class="kbf-modal-body" id="kbf-organizer-body"><div style="text-align:center;padding:30px;color:var(--kbf-slate);">Loading...</div></div>
+      </div>
+    </div>
+
+    <div class="kbf-browse-shell">
+      <aside class="kbf-browse-sidebar">
+        <div class="kbf-side-logo">KB</div>
+        <div class="kbf-side-btn active" title="Browse">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h8a1 1 0 011 1v6a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1zm10 0h8a1 1 0 011 1v14a1 1 0 01-1 1h-8a1 1 0 01-1-1V5a1 1 0 011-1zM3 14h8a1 1 0 011 1v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4a1 1 0 011-1z"/></svg>
+        </div>
+        <div class="kbf-side-btn" title="Favorites">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.33-8.02C.5 9.5 2.5 6 6 6c2 0 3.33 1.02 4 2 0.67-0.98 2-2 4-2 3.5 0 5.5 3.5 3.33 6.98C19 16.65 12 21 12 21z"/></svg>
+        </div>
+        <div class="kbf-side-btn" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94a7.5 7.5 0 000-1.88l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.6-.22l-2.39.96a7.48 7.48 0 00-1.63-.94l-.36-2.54a.5.5 0 00-.5-.42h-3.84a.5.5 0 00-.5.42l-.36 2.54a7.48 7.48 0 00-1.63.94l-2.39-.96a.5.5 0 00-.6.22L2.7 8.84a.5.5 0 00.12.64l2.03 1.58a7.5 7.5 0 000 1.88L2.82 14.52a.5.5 0 00-.12.64l1.92 3.32c.14.24.43.34.6.22l2.39-.96c.5.39 1.05.72 1.63.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.58-.22 1.13-.55 1.63-.94l2.39.96c.17.12.46.02.6-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z"/></svg>
+        </div>
+      </aside>
+      <div class="kbf-browse-main">
+        <div class="kbf-browse-topbar">
+          <form method="GET" class="kbf-browse-search" id="kbf-browse-search-form">
+            <input type="text" name="q" value="<?php echo esc_attr($q); ?>" placeholder="Search funds, organizers, or causes...">
+            <button type="submit" style="border:none;background:none;cursor:pointer;color:var(--kbf-slate);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </button>
+          </form>
+          <div class="kbf-browse-actions">
+            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url(add_query_arg('kbf_tab','overview',kbf_get_page_url('dashboard'))); ?>">Start a campaign</a>
+          </div>
+        </div>
+
+        <div class="kbf-browse-header">
+          <h2>All Projects</h2>
+          <div style="font-size:13px;color:var(--kbf-slate);margin-top:4px;">
+            Discover <?php echo $total_active; ?> active cause<?php echo $total_active!==1?'s':''; ?> near you.
+          </div>
+        </div>
+
+        <div class="kbf-browse-tabs">
+          <a class="kbf-browse-tab <?php echo !$sort || $sort==='newest'?'active':''; ?>" href="<?php echo esc_url(add_query_arg('sort','newest')); ?>">All Projects</a>
+          <a class="kbf-browse-tab <?php echo $sort==='most_funded'?'active':''; ?>" href="<?php echo esc_url(add_query_arg('sort','most_funded')); ?>">Popular</a>
+          <a class="kbf-browse-tab <?php echo $sort==='ending_soon'?'active':''; ?>" href="<?php echo esc_url(add_query_arg('sort','ending_soon')); ?>">Ending Soon</a>
+        </div>
+
+        <div class="kbf-filter-bar">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              <span style="font-size:12px;font-weight:700;color:var(--kbf-slate);text-transform:uppercase;letter-spacing:.5px;">Category:</span>
+              <a href="<?php echo esc_url(add_query_arg('cat','')); ?>" class="kbf-sort-pill <?php echo !$cat?'active':''; ?>">All</a>
+              <?php foreach($cats as $c): ?><a href="<?php echo esc_url(add_query_arg('cat',$c)); ?>" class="kbf-sort-pill <?php echo $cat===$c?'active':''; ?>"><?php echo esc_html($c); ?></a><?php endforeach; ?>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span style="font-size:12px;font-weight:700;color:var(--kbf-slate);text-transform:uppercase;letter-spacing:.5px;">Sort:</span>
+              <div class="kbf-sort-pills">
+                <a href="<?php echo esc_url(add_query_arg('sort','newest')); ?>" class="kbf-sort-pill <?php echo $sort==='newest'||!$sort?'active':''; ?>">Newest</a>
+                <a href="<?php echo esc_url(add_query_arg('sort','most_funded')); ?>" class="kbf-sort-pill <?php echo $sort==='most_funded'?'active':''; ?>">Most Funded</a>
+                <a href="<?php echo esc_url(add_query_arg('sort','ending_soon')); ?>" class="kbf-sort-pill <?php echo $sort==='ending_soon'?'active':''; ?>">Ending Soon</a>
+              </div>
+            </div>
+          </div>
+          <?php if($loc): ?>
+          <div style="margin-top:10px;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span class="kbf-strong"><?php echo esc_html($loc); ?></span> <a href="<?php echo esc_url(remove_query_arg('loc')); ?>" style="color:var(--kbf-red);margin-left:4px;text-decoration:none;">× Remove</a>
+          </div>
+          <?php endif; ?>
+        </div>
+
+    <!-- Fund grid -->
+    <?php if(empty($funds)): ?>
+    <div class="kbf-empty" style="padding:80px 20px;">
+      <svg width="52" height="52" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin:0 auto 16px;display:block;opacity:.3;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <p style="font-size:16px;font-weight:600;color:var(--kbf-navy);margin-bottom:6px;">No funds found</p>
+      <p style="color:var(--kbf-slate);">Try adjusting your search or filters.</p>
+      <?php if($q||$cat||$loc): ?><a href="?" class="kbf-btn kbf-btn-primary" style="margin-top:16px;">Clear All Filters</a><?php endif; ?>
+    </div>
+    <?php else: ?>
+    <div class="kbf-browse-grid">
+      <?php foreach($funds as $f):
+        $pct   = $f->goal_amount>0 ? min(100,($f->raised_amount/$f->goal_amount)*100) : 0;
+        $days  = $f->deadline ? max(0,ceil((strtotime($f->deadline)-time())/86400)) : null;
+        $photos = $f->photos ? json_decode($f->photos,true) : [];
+        $cover  = !empty($photos[0]) ? $photos[0] : null;
+        $detail_url = kbf_browse_fund_detail_url($f->id, $fund_details_url);
+        $days_color = $days!==null&&$days<7 ? '#fca5a5' : 'rgba(255,255,255,.85)';
+        $days_bg    = $days!==null&&$days<7 ? 'rgba(220,38,38,.85)' : 'rgba(15,32,68,.7)';
+      ?>
+      <div class="kbf-fund-card">
+        <!-- Photo hero -->
+        <a href="<?php echo $detail_url; ?>" style="text-decoration:none;display:block;">
+          <?php if($cover): ?>
+          <div class="kbf-fund-photo" style="position:relative;">
+            <img src="<?php echo esc_url($cover); ?>" alt="<?php echo esc_attr($f->title); ?>" style="width:100%;height:190px;object-fit:cover;display:block;">
+            <div class="kbf-fund-cat-badge"><?php echo esc_html(strtolower((string)$f->category)); ?></div>
+            <?php if($days!==null): ?><div class="kbf-fund-days-badge" style="background:<?php echo $days_bg; ?>;color:<?php echo $days_color; ?>;backdrop-filter:blur(4px);"><?php echo $days; ?>d left</div><?php endif; ?>
+          </div>
+          <?php else: ?>
+          <div class="kbf-fund-photo-placeholder" style="position:relative;">
+            <svg width="48" height="48" fill="none" stroke="rgba(255,255,255,.2)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <div class="kbf-fund-cat-badge"><?php echo esc_html(strtolower((string)$f->category)); ?></div>
+            <?php if($days!==null): ?><div class="kbf-fund-days-badge" style="background:<?php echo $days_bg; ?>;color:<?php echo $days_color; ?>;"><?php echo $days; ?>d left</div><?php endif; ?>
+          </div>
+          <?php endif; ?>
+        </a>
+
+        <!-- Card body -->
+        <div style="padding:18px;flex:1;display:flex;flex-direction:column;">
+          <a href="<?php echo $detail_url; ?>" style="text-decoration:none;">
+            <h4 style="font-size:15.5px;font-weight:700;color:var(--kbf-navy);margin:0 0 6px;line-height:1.4;"><?php echo esc_html($f->title); ?></h4>
+          </a>
+          <p style="font-size:13px;color:var(--kbf-slate);margin:0 0 12px;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.55;"><?php echo esc_html(wp_trim_words($f->description,18)); ?></p>
+
+          <!-- Location + Organizer -->
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--kbf-slate);margin-bottom:12px;gap:6px;flex-wrap:wrap;">
+            <span style="display:flex;align-items:center;gap:4px;">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <?php echo esc_html($f->location); ?>
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;">
+              <button type="button" onclick="kbfViewOrganizer(<?php echo $f->business_id; ?>)" style="background:none;border:none;color:var(--kbf-blue);cursor:pointer;font-size:12px;padding:0;font-weight:600;">by</button>
+              <?php $org_url = kbf_browse_organizer_url($f->business_id); ?>
+              <a href="<?php echo esc_url($org_url); ?>" style="color:var(--kbf-blue);text-decoration:none;font-weight:700;"><?php echo esc_html($f->organizer_name?:'Organizer'); ?></a>
+            </span>
+          </div>
+
+          <!-- Progress -->
+          <div class="kbf-progress-wrap" style="margin-bottom:8px;"><div class="kbf-progress-bar" style="width:<?php echo $pct; ?>%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:16px;">
+            <span><span style="color:var(--kbf-navy);font-size:14px;" class="kbf-strong">&#8369;<?php echo number_format($f->raised_amount,0); ?></span> <span style="color:var(--kbf-slate);">raised</span></span>
+            <span style="color:var(--kbf-slate);"><?php echo round($pct); ?>% of &#8369;<?php echo number_format($f->goal_amount,0); ?></span>
+          </div>
+
+          <!-- Actions -->
+          <div class="kbf-card-actions">
+            <button class="kbf-btn kbf-btn-primary" style="font-size:13px;" onclick="kbfOpenSponsor(<?php echo $f->id; ?>,'<?php echo esc_js($f->title); ?>',<?php echo $f->goal_amount; ?>,<?php echo $f->raised_amount; ?>,'<?php echo esc_js(isset($cover) ? $cover : ''); ?>')">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+              Sponsor
+            </button>
+            <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-secondary kbf-btn-sm" title="View details">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </a>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')" title="Share">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            </button>
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfOpenReport(<?php echo $f->id; ?>)" title="Report Abuse">
+              <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+      </div>
+    </div>
+    </div><!-- .kbf-wrap -->
+    
+    <!-- ================== JS ================== -->
+    <script>
+    /**
+     * @function  kbfEscHtml
+     * @purpose   Escapes unsafe characters for safe HTML text interpolation.
+     * @used-by   [kbfOpenSponsor, kbfSubmitSponsor, kbfSubmitReport, kbfViewOrganizer]
+     * @calls     [String.prototype.replace]
+     * @params    [v (mixed) raw value to escape]
+     * @returns   [string HTML-escaped string]
+     * @status    ACTIVE
+     */
+    function kbfEscHtml(v){
+        return String(v == null ? '' : v)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+    /**
+     * @function  kbfSafeNum
+     * @purpose   Converts a value to a finite number with fallback default.
+     * @used-by   [kbfSafePct, kbfOpenSponsor, kbfViewOrganizer]
+     * @calls     [parseFloat, Number.isFinite]
+     * @params    [v (mixed) numeric candidate, fallback (number) default value]
+     * @returns   [number parsed finite number or fallback]
+     * @status    ACTIVE
+     */
+    function kbfSafeNum(v, fallback){
+        var n = parseFloat(v);
+        return Number.isFinite(n) ? n : (fallback || 0);
+    }
+    /**
+     * @function  kbfSafePct
+     * @purpose   Clamps percentage-like values between 0 and 100.
+     * @used-by   [kbfViewOrganizer]
+     * @calls     [kbfSafeNum, Math.max, Math.min]
+     * @params    [v (mixed) percentage candidate value]
+     * @returns   [number clamped percentage value]
+     * @status    ACTIVE
+     */
+    function kbfSafePct(v){
+        var n = kbfSafeNum(v, 0);
+        return Math.max(0, Math.min(100, n));
+    }
+    /**
+     * @function  kbfSafeUrl
+     * @purpose   Restricts URLs to relative or HTTP(S) values for safe DOM usage.
+     * @used-by   [kbfOpenSponsor, kbfViewOrganizer]
+     * @calls     [String.trim, RegExp.test]
+     * @params    [v (mixed) URL candidate]
+     * @returns   [string safe URL or empty string]
+     * @status    ACTIVE
+     */
+    function kbfSafeUrl(v){
+        var s = String(v == null ? '' : v).trim();
+        if (!s) return '';
+        if (s.indexOf('/') === 0) return s;
+        if (/^https?:\/\//i.test(s)) return s;
+        return '';
+    }
+    /**
+     * @function  kbfOpenReport
+     * @purpose   Opens the report modal and sets the selected fund ID.
+     * @used-by   [Report Abuse button onclick]
+     * @calls     [document.getElementById]
+     * @params    [id (number|string) fund identifier]
+     * @returns   [void]
+     * @status    ACTIVE
+     */
+    window.kbfOpenReport=function(id){document.getElementById('report-fund-id').value=id;document.getElementById('kbf-modal-report').style.display='flex';};
+    /**
+     * @function  kbfSponsorClose
+     * @purpose   Closes the sponsor modal.
+     * @used-by   [Sponsor modal close/cancel controls]
+     * @calls     [document.getElementById]
+     * @params    [none]
+     * @returns   [void]
+     * @status    ACTIVE
+     */
+    window.kbfSponsorClose=function(){document.getElementById('kbf-modal-sponsor').style.display='none';};
+    /**
+     * @function  kbfOpenSponsor
+     * @purpose   Opens the sponsor modal and renders preview details for the selected fund.
+     * @used-by   [Sponsor button onclick]
+     * @calls     [document.getElementById, document.querySelector, Math.min, Math.round, kbfEscHtml, kbfSafeUrl, kbfSafeNum]
+     * @params    [id (number|string) fund ID, title (string) fund title, goal (number) goal amount, raised (number) raised amount, img (string) cover URL]
+     * @returns   [void]
+     * @status    ACTIVE
+     */
+    window.kbfOpenSponsor=function(id,title,goal,raised,img){
+        document.getElementById('sponsor-fund-id').value=id;
+        const pct=goal>0?Math.min(100,Math.round((raised/goal)*100)):0;
+        const safeTitle = kbfEscHtml(title || '');
+        const safeImg = kbfSafeUrl(img || '');
+        const safeRaised = kbfSafeNum(raised, 0);
+        const limitEl = document.getElementById('kbf-sponsor-limit');
+        const amountEl = document.querySelector('#kbf-sponsor-form input[name="amount"]');
+        if (goal > 0) {
+            if (limitEl) limitEl.textContent = 'Goal: ?' + parseFloat(goal).toLocaleString();
+            if (amountEl) amountEl.removeAttribute('max');
+        } else {
+            if (limitEl) limitEl.textContent = '';
+            if (amountEl) amountEl.removeAttribute('max');
+        }
+        document.getElementById('kbf-fund-preview').innerHTML=
+            (safeImg?'<img src="'+safeImg+'" style="width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:10px;display:block;">':'')
+            +'<span style="font-size:15px;color:var(--kbf-navy);" class="kbf-strong">'+safeTitle+'</span>'
+            +'<div style="margin-top:8px;" class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+pct+'%"></div></div>'
+            +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:var(--kbf-slate);"><span>?'+safeRaised.toLocaleString()+' raised</span><span>'+pct+'% funded</span></div>';
+        document.getElementById('kbf-modal-sponsor').style.display='flex';
+    };
+    /**
+     * @function  kbfGetActiveSponsorModal
+     * @purpose   Returns the currently visible sponsor modal instance.
+     * @used-by   [kbfGetActiveSponsorForm, kbfGetActiveSponsorMsg, kbfSubmitSponsor]
+     * @calls     [document.querySelectorAll, window.getComputedStyle]
+     * @params    [none]
+     * @returns   [HTMLElement|null active modal element]
+     * @status    ACTIVE
+     */
+    function kbfGetActiveSponsorModal(){
+        var modals = document.querySelectorAll('#kbf-modal-sponsor');
+        for (var i = 0; i < modals.length; i++) {
+            var d = window.getComputedStyle(modals[i]).display;
+            if (d && d !== 'none') return modals[i];
+        }
+        return modals[0] || null;
+    }
+    /**
+     * @function  kbfGetActiveSponsorForm
+     * @purpose   Resolves the sponsor form associated with the active modal context.
+     * @used-by   [kbfSubmitSponsor]
+     * @calls     [kbfGetActiveSponsorModal, document.getElementById]
+     * @params    [none]
+     * @returns   [HTMLFormElement|null resolved sponsor form element]
+     * @status    ACTIVE
+     */
+    function kbfGetActiveSponsorForm(){
+        if (document.activeElement) {
+            var activeModal = document.activeElement.closest('.kbf-modal');
+            if (activeModal) {
+                var activeForm = activeModal.querySelector('form');
+                if (activeForm) return activeForm;
+            }
+        }
+        var modal = kbfGetActiveSponsorModal();
+        if (modal) {
+            var f = modal.querySelector('form');
+            if (f) return f;
+        }
+        return document.getElementById('kbf-sponsor-form');
+    }
+    /**
+     * @function  kbfGetActiveSponsorMsg
+     * @purpose   Returns the sponsor message container for the active sponsor modal.
+     * @used-by   [kbfSubmitSponsor]
+     * @calls     [kbfGetActiveSponsorModal]
+     * @params    [none]
+     * @returns   [HTMLElement|null message container element]
+     * @status    ACTIVE
+     */
+    function kbfGetActiveSponsorMsg(){
+        var modal = kbfGetActiveSponsorModal();
+        if (!modal) return null;
+        return modal.querySelector('#kbf-spd-msg') || modal.querySelector('#kbf-sponsor-msg');
+    }
+    /**
+     * @function  kbfValidateRequired
+     * @purpose   Validates required form inputs and displays inline field errors.
+     * @used-by   [kbfSubmitSponsor]
+     * @calls     [querySelectorAll, document.createElement, HTMLElement.focus]
+     * @params    [form (HTMLFormElement) form to validate]
+     * @returns   [boolean true when validation passes, otherwise false]
+     * @status    ACTIVE
+     */
+    function kbfValidateRequired(form){
+        var first = null;
+        form.querySelectorAll('.kbf-field-error').forEach(function(el){ el.remove(); });
+        form.querySelectorAll('[required]').forEach(function(el){
+            if (el.disabled) return;
+            if (el.type === 'hidden') return;
+            if(!el.value || !el.value.trim()){
+                var group = el.closest('.kbf-form-group');
+                if(group){
+                    var err = document.createElement('div');
+                    err.className = 'kbf-field-error';
+                    err.textContent = 'This field is required.';
+                    group.appendChild(err);
+                }
+                if(!first) first = el;
+            }
+        });
+        if(first){ first.focus(); return false; }
+        return true;
+    }
+    /**
+     * @function  kbfSubmitSponsor
+     * @purpose   Submits sponsorship checkout request and handles loading, errors, and redirect flow.
+     * @used-by   [Confirm Sponsorship button onclick]
+     * @calls     [kbfGetActiveSponsorForm, kbfGetActiveSponsorModal, kbfGetActiveSponsorMsg, kbfValidateRequired, kbfSetBtnLoading, kbfSetSkeleton, kbfFetchJson, window.open]
+     * @params    [nonce (string) sponsor action nonce]
+     * @returns   [void]
+     * @status    ACTIVE
+     */
+    window.kbfSubmitSponsor=function(nonce){
+        const form=kbfGetActiveSponsorForm();
+        const modal=kbfGetActiveSponsorModal();
+        const btn=modal ? modal.querySelector('.kbf-modal-footer .kbf-btn-primary') : document.querySelector('#kbf-modal-sponsor .kbf-modal-footer .kbf-btn-primary');
+        const msg=kbfGetActiveSponsorMsg();
+        if(!kbfValidateRequired(form)) return;
+        kbfSetBtnLoading(btn,true,'Processing...');
+        kbfSetSkeleton(msg,true);
+        const fd=new FormData(form);
+        fd.append('action', 'kbf_create_checkout');
+        fd.append('nonce',nonce);
+        fd.append('is_anonymous',document.getElementById('anon-check').checked?'1':'0');
+          kbfFetchJson(ajaxurl, fd, (j)=>{
+              if(j.success){
+                if(j.data && j.data.checkout_url){
+                    btn.innerHTML='Redirecting to payment...';
+                    var w = window.open(j.data.checkout_url, '_blank', 'noopener');
+                    if (w) { try { w.opener = null; } catch(e) {} }
+                    if (window.kbfAwaitPaymentSuccess) window.kbfAwaitPaymentSuccess();
+                } else {
+                    msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
+                    kbfSetBtnLoading(btn,false);
+                    kbfSetSkeleton(msg,false);
+                }
+              } else {
+                var serverMsg = (j && j.data && typeof j.data.message !== 'undefined') ? j.data.message : 'Unable to process request.';
+                msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+kbfEscHtml(serverMsg)+'</div>';
+                kbfSetBtnLoading(btn,false);
+                kbfSetSkeleton(msg,false);
+              }
+        }, (err)=>{
+            console.error('KBF checkout error:', err);
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+kbfEscHtml(err)+'</div>';
+            kbfSetBtnLoading(btn,false);
+            kbfSetSkeleton(msg,false);
+        });
+    };
+    /**
+     * @function  kbfSubmitReport
+     * @purpose   Submits report abuse form data and handles modal feedback state.
+     * @used-by   [Submit Report button onclick]
+     * @calls     [document.getElementById, document.querySelector, kbfSetBtnLoading, kbfSetSkeleton, fetch]
+     * @params    [nonce (string) report action nonce]
+     * @returns   [void]
+     * @status    ACTIVE
+     */
+    window.kbfSubmitReport=function(nonce){
+        const form=document.getElementById('kbf-report-form');
+        const btn=document.querySelector('#kbf-modal-report .kbf-modal-footer .kbf-btn-danger');
+        const msg=document.getElementById('kbf-report-msg');
+        kbfSetBtnLoading(btn,true,'Submitting...');
+        kbfSetSkeleton(msg,true);
+        const fd=new FormData(form);fd.append('action','kbf_report_fund');fd.append('nonce',nonce);
+        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
+            var reportMsg = (j && j.data && typeof j.data.message !== 'undefined') ? j.data.message : 'Request completed.';
+            msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+kbfEscHtml(reportMsg)+'</div>';
+            if(j.success)setTimeout(()=>{document.getElementById('kbf-modal-report').style.display='none';},2000);else{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
+        }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
+    };
+    /**
+     * @function  kbfViewOrganizer
+     * @purpose   Opens organizer profile modal and renders organizer data, fund history, and reviews.
+     * @used-by   [Organizer by-link button onclick]
+     * @calls     [document.getElementById, kbfSetSkeleton, fetch, kbfEscHtml, kbfSafeNum, kbfSafeUrl, kbfSafePct, Array.from]
+     * @params    [bizId (number|string) organizer business ID]
+     * @returns   [void]
+     * @status    ACTIVE
+     */
+    window.kbfViewOrganizer=function(bizId){
+        document.getElementById('kbf-modal-organizer').style.display='flex';
+        kbfSetSkeleton(document.getElementById('kbf-organizer-body'), true);
+        const fd=new FormData();fd.append('action','kbf_get_organizer_profile');fd.append('business_id',bizId);fd.append('nonce','<?php echo wp_create_nonce('kbf_sponsor'); ?>');
+        fetch(ajaxurl,{method:'POST',body:fd}).then(r=>r.json()).then(j=>{
+            if(j.success){
+                const d=j.data;
+                const displayName = kbfEscHtml(d.display_name || '');
+                const bio = kbfEscHtml(d.bio || '');
+                const rating = kbfSafeNum(d.rating, 0);
+                const ratingCount = parseInt(d.rating_count, 10) || 0;
+                const totalRaised = kbfSafeNum(d.total_raised, 0);
+                const totalSponsors = parseInt(d.total_sponsors, 10) || 0;
+                const totalFunds = parseInt(d.total_funds, 10) || 0;
+                const avatarUrl = kbfSafeUrl(d.avatar_url || '');
+                const starSvg=(filled)=>{
+                    const color = filled ? '#3b82f6' : '#94a3b8';
+                    const cls = filled ? 'ph-fill ph-thumbs-up' : 'ph ph-thumbs-up';
+                    return '<i class=\"'+cls+' kbf-icon\" style=\"font-size:14px;color:'+color+';\"></i>';
+                };
+                const stars=Array.from({length:5},(_,i)=>starSvg(i<Math.round(rating))).join('');
+                const statusColor={'active':'var(--kbf-blue)','completed':'var(--kbf-blue)'};
+                const statusBg={'active':'var(--kbf-green-lt)','completed':'#dbeafe'};
+
+                // Fund history HTML
+                const fundHistory = d.funds&&d.funds.length
+                    ? '<div style="margin-top:20px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><h4 style="font-size:13px;font-weight:800;color:var(--kbf-navy);margin:0;">Fund History</h4><span style="font-size:11.5px;color:var(--kbf-slate);">'+totalFunds+' total fund'+(totalFunds!==1?'s':'')+'</span></div>'
+                      + d.funds.map(f=>'<div style="border:1px solid var(--kbf-border);border-radius:8px;padding:12px;margin-bottom:8px;">'
+                        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">'
+                        +'<div style="font-weight:700;font-size:13.5px;color:var(--kbf-navy);flex:1;margin-right:8px;">'+kbfEscHtml(f.title || '')+'</div>'
+                        +'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:'+(statusBg[f.status]||'var(--kbf-slate-lt)')+';color:'+(statusColor[f.status]||'var(--kbf-slate)')+';white-space:nowrap;">'+kbfEscHtml(String(f.status || '').toUpperCase())+'</span>'
+                        +'</div>'
+                        +'<div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:6px;">'+kbfEscHtml(f.category || '')+' &bull; '+(parseInt(f.sponsor_count, 10) || 0)+' sponsor'+((parseInt(f.sponsor_count, 10) || 0)!==1?'s':'')+'</div>'
+                        +'<div class="kbf-progress-wrap"><div class="kbf-progress-bar" style="width:'+kbfSafePct(f.pct)+'%"></div></div>'
+                        +'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--kbf-slate);margin-top:4px;"><span>?'+kbfEscHtml(f.raised || '0')+' raised</span><span>'+kbfSafePct(f.pct)+'% of ?'+kbfEscHtml(f.goal || '0')+'</span></div>'
+                        +'</div>').join('')
+                      + '</div>'
+                    : '<div style="text-align:center;padding:16px;color:var(--kbf-slate);font-size:13px;margin-top:16px;">No fund history yet.</div>';
+
+                // Reviews HTML
+                const reviewsHtml = d.reviews&&d.reviews.length
+                    ? '<div style="margin-top:20px;"><h4 style="font-size:13px;font-weight:800;color:var(--kbf-navy);margin:0 0 10px;">Recent Scores</h4>'
+                      + d.reviews.map(r=>'<div style="border:1px solid var(--kbf-border);border-radius:8px;padding:10px 12px;margin-bottom:8px;">'
+                        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'
+                        +'<div style="display:flex;gap:2px;">'+Array.from({length:5},(_,i)=>starSvg(i<(parseInt(r.rating, 10) || 0))).join('')+'</div>'
+                        +'<span style="font-size:11px;color:var(--kbf-slate);">'+kbfEscHtml(r.date || '')+'</span>'
+                        +'</div>'
+                        +(r.review?'<p style="font-size:12.5px;color:var(--kbf-text-sm);margin:0 0 4px;font-style:italic;">"'+kbfEscHtml(r.review)+'"</p>':'')
+                        +'<div style="font-size:11px;color:var(--kbf-slate);">'+kbfEscHtml(r.email || '')+(r.fund_title?' &bull; on "'+kbfEscHtml(r.fund_title)+'"':'')+'</div>'
+                        +'</div>').join('')
+                      + '</div>'
+                    : '';
+
+                document.getElementById('kbf-organizer-body').innerHTML=
+                // Header
+                '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;">'
+                +(avatarUrl?'<img src="'+avatarUrl+'" style="width:62px;height:62px;border-radius:50%;object-fit:cover;border:2px solid var(--kbf-border);flex-shrink:0;">':'<div style="width:62px;height:62px;border-radius:50%;background:var(--kbf-navy);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class=\"ph ph-user kbf-icon\" style=\"font-size:28px;color:#ffffff;\"></i></div>')
+                +'<div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-size:16px;color:var(--kbf-navy);" class="kbf-strong">'+displayName+'</span>'
+                +(d.is_verified?'<span class="kbf-badge kbf-badge-verified" style="font-size:10px;">Verified</span>':'')
+                +'</div>'
+                +'<div style="display:flex;gap:3px;align-items:center;margin-top:5px;">'+stars
+                +'<span style="font-size:12px;color:var(--kbf-slate);margin-left:5px;"><span class="kbf-strong">'+rating+'</span>/5 &nbsp;&bull;&nbsp; '+ratingCount+' score'+(ratingCount!==1?'s':'')+'</span></div>'
+                +(bio?'<p style="font-size:13px;color:var(--kbf-slate);margin:6px 0 0;line-height:1.55;">'+bio+'</p>':'')
+                +'</div></div>'
+                // Stats
+                +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:4px;">'
+                +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Raised</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">?'+totalRaised.toLocaleString()+'</div></div>'
+                +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Sponsors</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">'+totalSponsors+'</div></div>'
+                +'<div style="background:var(--kbf-slate-lt);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--kbf-slate);margin-bottom:3px;">Funds</div><div style="font-size:15px;font-weight:800;color:var(--kbf-navy);">'+totalFunds+'</div></div>'
+                +'</div>'
+                + fundHistory
+                + reviewsHtml;
+            } else {
+                document.getElementById('kbf-organizer-body').innerHTML='<div class="kbf-alert kbf-alert-error">Profile not found.</div>';
+            }
+        }).catch(()=>{ document.getElementById('kbf-organizer-body').innerHTML='<div class="kbf-alert kbf-alert-error">Profile not found.</div>'; });
+    };
+    </script>
+    <?php
+    $c=ob_get_clean();
+    return bntm_universal_container('Browse Funds -- KonekBayan',$c, ['show_topbar'=>false,'show_header'=>false]);
+}
