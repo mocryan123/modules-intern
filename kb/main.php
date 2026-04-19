@@ -348,10 +348,117 @@ add_action('wp_login_failed', function($username) {
     kbf_auth_register_failed_login($username, $ip);
 });
 
-add_action('wp_login', function($user_login) {
+add_action('wp_login', function($user_login, $user) {
     $ip = kbf_auth_get_ip();
     kbf_auth_clear_failed_login($user_login, $ip);
-}, 10, 1);
+    if ($user instanceof WP_User && !headers_sent()) {
+        // Keep bntm-hub single-session guard in sync for custom KBF sign-in flows.
+        $session_token = wp_generate_password(32, false);
+        update_user_meta($user->ID, '_bntm_session_token', $session_token);
+        setcookie(
+            'bntm_session_token',
+            $session_token,
+            time() + (30 * DAY_IN_SECONDS),
+            COOKIEPATH,
+            COOKIE_DOMAIN,
+            is_ssl(),
+            true
+        );
+    }
+}, 10, 2);
+
+if (!function_exists('kbf_dashboard_home_url')) {
+    function kbf_dashboard_home_url() {
+        $dashboard_url = function_exists('kbf_get_page_url') ? (string) kbf_get_page_url('dashboard') : '';
+        $looks_like_filesystem_path = (bool) preg_match('/^[a-zA-Z]:[\\\\\\/]/', $dashboard_url);
+        if ($looks_like_filesystem_path || $dashboard_url === '') {
+            $dashboard_url = '';
+        }
+        if ($dashboard_url !== '' && strpos($dashboard_url, '/') === 0) {
+            $dashboard_url = home_url($dashboard_url);
+        }
+        if ($dashboard_url === '' || !wp_http_validate_url($dashboard_url)) {
+            $dashboard_page = get_page_by_path('fundora-user');
+            if ($dashboard_page && !empty($dashboard_page->ID)) {
+                $dashboard_url = get_permalink($dashboard_page->ID);
+            } else {
+                $dashboard_url = home_url('/fundora-user/');
+            }
+        }
+        return add_query_arg('kbf_tab', 'overview', $dashboard_url);
+    }
+}
+
+if (!function_exists('kbf_landing_page_url')) {
+    function kbf_landing_page_url() {
+        $landing_url = function_exists('kbf_get_page_url') ? (string) kbf_get_page_url('landing') : '';
+        $site_home = (string) home_url('/');
+        $looks_like_filesystem_path = (bool) preg_match('/^[a-zA-Z]:[\\\\\\/]/', $landing_url);
+        if ($looks_like_filesystem_path || $landing_url === '') {
+            $landing_url = '';
+        }
+        // Reject plain site root; for logout we always want Fundora landing page.
+        if ($landing_url !== '' && untrailingslashit($landing_url) === untrailingslashit($site_home)) {
+            $landing_url = '';
+        }
+        if ($landing_url !== '' && strpos($landing_url, '/') === 0) {
+            $landing_url = home_url($landing_url);
+        }
+        if ($landing_url === '' || !wp_http_validate_url($landing_url)) {
+            $landing_page = get_page_by_path('fundora');
+            if ($landing_page && !empty($landing_page->ID)) {
+                $landing_url = get_permalink($landing_page->ID);
+            } else {
+                // Fallback to expected Fundora landing slug (never root "/").
+                $landing_url = home_url('/fundora/');
+                // If slug changed, try resolving by shortcode before final fallback.
+                $pages = get_posts([
+                    'post_type' => 'page',
+                    'post_status' => 'publish',
+                    'numberposts' => -1,
+                    's' => '[kbf_landing]',
+                ]);
+                foreach ($pages as $p) {
+                    if (has_shortcode($p->post_content, 'kbf_landing')) {
+                        $landing_url = get_permalink($p->ID);
+                        break;
+                    }
+                }
+            }
+        }
+        return $landing_url;
+    }
+}
+
+if (!function_exists('kbf_auth_post_login_redirect')) {
+    function kbf_auth_post_login_redirect($user, $default = '') {
+        if (is_wp_error($user) || !($user instanceof WP_User)) {
+            return $default;
+        }
+        if (user_can($user, 'manage_options')) {
+            $requested = trim((string) $default);
+            if ($requested !== '' && wp_http_validate_url($requested)) {
+                return $requested;
+            }
+            return admin_url();
+        }
+        return kbf_dashboard_home_url();
+    }
+}
+
+add_filter('login_redirect', function($redirect_to, $requested_redirect_to, $user) {
+    return kbf_auth_post_login_redirect($user, $redirect_to);
+}, 20, 3);
+
+add_filter('logout_redirect', function($redirect_to, $requested_redirect_to, $user) {
+    return kbf_landing_page_url();
+}, 9999, 3);
+
+add_action('wp_logout', function() {
+    if (!headers_sent()) {
+        setcookie('bntm_session_token', '', time() - HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+    }
+});
 
 add_filter('auth_cookie_expiration', function($seconds, $user_id, $remember) {
     if ($remember) {
@@ -658,10 +765,19 @@ function kbf_get_page_url($page_key) {
     ];
     $shortcode = $shortcode_map[$page_key] ?? $page_key;
     // Try bntm framework page setting first
-    $stored_url = bntm_get_setting('kbf_page_' . $page_key);
-    if($stored_url && stripos($stored_url, 'konekbayan') === false) {
-        $cache[$page_key] = $stored_url;
-        return $stored_url;
+    $stored_url = trim((string) bntm_get_setting('kbf_page_' . $page_key));
+    if ($stored_url !== '' && stripos($stored_url, 'konekbayan') === false) {
+        // Guard against accidentally saved filesystem paths (e.g. C:\...\signin.php).
+        $looks_like_filesystem_path = (bool) preg_match('/^[a-zA-Z]:[\\\\\\/]/', $stored_url);
+        if (!$looks_like_filesystem_path) {
+            if (strpos($stored_url, '/') === 0) {
+                $stored_url = home_url($stored_url);
+            }
+            if (wp_http_validate_url($stored_url)) {
+                $cache[$page_key] = $stored_url;
+                return $stored_url;
+            }
+        }
     }
     // Fall back: search all pages for the shortcode
     $pages = get_posts(['post_type'=>'page','post_status'=>'publish','numberposts'=>-1,'s'=>'['.$shortcode.']']);

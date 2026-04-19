@@ -1,5 +1,5 @@
     <?php
-      $landing_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : home_url('/');
+      $landing_url = function_exists('kbf_landing_page_url') ? kbf_landing_page_url() : (function_exists('kbf_get_page_url') ? kbf_get_page_url('landing') : home_url('/'));
       $signin_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : home_url('/wp-login.php');
       $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : $signin_url;
       $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');

@@ -6,6 +6,17 @@
 if (!defined('ABSPATH')) exit;
 
 function bntm_kbf_render_signup() {
+    if (is_user_logged_in()) {
+        $current_user = wp_get_current_user();
+        $target = function_exists('kbf_auth_post_login_redirect')
+            ? kbf_auth_post_login_redirect($current_user, '')
+            : (function_exists('kbf_dashboard_home_url') ? kbf_dashboard_home_url() : home_url('/fundora-user/?kbf_tab=overview'));
+        if (!headers_sent()) {
+            wp_safe_redirect($target);
+            exit;
+        }
+        return '<script>window.location.href=' . wp_json_encode($target) . ';</script><noscript><meta http-equiv="refresh" content="0;url=' . esc_url($target) . '"></noscript>';
+    }
     kbf_global_assets();
     $signin_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : '#';
     $privacy_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('privacy') : '#';

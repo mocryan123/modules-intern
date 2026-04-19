@@ -7,11 +7,17 @@ if (!defined('ABSPATH')) exit;
 
 function bntm_kbf_render_signin() {
     $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : '#';
-    if (is_user_logged_in()) {
-        $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
-        if ($home) {
-            $home = add_query_arg('kbf_tab', 'overview', $home);
+    $resolve_dashboard_home_url = static function ($user = null) {
+        if ($user instanceof WP_User && function_exists('kbf_auth_post_login_redirect')) {
+            return (string) kbf_auth_post_login_redirect($user, '');
         }
+        if (function_exists('kbf_dashboard_home_url')) {
+            return (string) kbf_dashboard_home_url();
+        }
+        return home_url('/fundora-user/?kbf_tab=overview');
+    };
+    if (is_user_logged_in()) {
+        $home = $resolve_dashboard_home_url(wp_get_current_user());
         if (!headers_sent()) {
             wp_safe_redirect($home);
             exit;
@@ -73,10 +79,7 @@ function bntm_kbf_render_signin() {
                             $login_error = $user->get_error_message();
                         }
                     } else {
-                        $home = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
-                        if ($home) {
-                            $home = add_query_arg('kbf_tab', 'overview', $home);
-                        }
+                        $home = $resolve_dashboard_home_url($user);
                         if (!headers_sent()) {
                             wp_safe_redirect($home);
                             exit;
@@ -576,6 +579,15 @@ function bntm_kbf_render_signin() {
               console.log('[Fundora] Password reset button clicked');
             });
           }
+
+          document.querySelectorAll('.kbf-btn.kbf-btn-primary').forEach(function(btn){
+            btn.addEventListener('click', function(){
+              var form = btn.closest('form');
+              var formId = form && form.id ? form.id : '(no-form-id)';
+              var label = (btn.textContent || '').trim();
+              console.log('[Fundora] Primary button clicked:', label, 'form:', formId);
+            });
+          });
         })();
 
         document.querySelectorAll('.kbf-auth-input input').forEach(function(input){
