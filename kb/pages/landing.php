@@ -1558,7 +1558,7 @@ function bntm_kbf_render_landing() {
 
     @media (max-width: 720px) {
         .kbf-landing { padding: 20px 0 48px; text-align: center; }
-        .kbf-hero { border-radius: 20px; margin-top: 10px !important; margin-bottom: 60px !important; }
+        .kbf-hero { margin-top: 10px !important; margin-bottom: 60px !important; }
         .kbf-hero-inner { gap: 32px !important; }
         .kbf-topbar { flex-wrap: wrap; gap: 12px; justify-content: center; }
         .kbf-actions { width: 100%; justify-content: center; gap: 8px; }
@@ -1591,7 +1591,6 @@ function bntm_kbf_render_landing() {
         .kbf-landing { padding: 14px 0 36px; }
         .kbf-topbar { padding: 12px 12px; }
         .kbf-brand-badge { width: 22px; height: 22px; font-size: 18px; }
-        .kbf-hero { border-radius: 16px !important; }
         .kbf-hero-inner { gap: 28px !important; }
         .kbf-hero-heading { font-size: 28px !important; letter-spacing: -0.5px; }
         .kbf-hero-desc { font-size: 14px !important; }

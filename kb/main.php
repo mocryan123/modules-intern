@@ -194,6 +194,61 @@ add_action('wp_mail_failed', function($error) {
 });
 add_action('user_register', 'kbf_mark_first_login', 10, 1);
 
+/**
+ * Keep onboarding visibility flag in sync with current profile completeness.
+ * This prevents stale kbf_show_onboarding meta from forcing the modal after 5/5 completion.
+ */
+if (!function_exists('kbf_sync_onboarding_flag_for_user')) {
+    function kbf_sync_onboarding_flag_for_user($user_id = 0) {
+        $user_id = (int) $user_id;
+        if ($user_id <= 0) {
+            return false;
+        }
+        if (user_can($user_id, 'manage_options')) {
+            return false;
+        }
+
+        global $wpdb;
+        $pt = $wpdb->prefix . 'kbf_organizer_profiles';
+        $profile = $wpdb->get_row($wpdb->prepare(
+            "SELECT bio,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d",
+            $user_id
+        ));
+        $user = get_userdata($user_id);
+        $social_name = (string) get_user_meta($user_id, 'kbf_social_name', true);
+        $address = (string) get_user_meta($user_id, 'kbf_address', true);
+
+        $has_display_name = $user && !empty(trim((string) $user->display_name));
+        $has_social_name = !empty(trim($social_name));
+        $has_bio = $profile && !empty(trim((string) $profile->bio));
+        $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
+        $has_address = !empty(trim($address));
+
+        $is_complete = ($has_display_name && $has_social_name && $has_bio && $has_payout && $has_address);
+        if (!$is_complete) {
+            return false;
+        }
+
+        $flag = get_user_meta($user_id, 'kbf_show_onboarding', true);
+        if ($flag === '' || $flag === null) {
+            return false;
+        }
+
+        delete_user_meta($user_id, 'kbf_show_onboarding');
+        clean_user_cache($user_id);
+        wp_cache_delete($user_id, 'user_meta');
+        wp_cache_delete($user_id, 'users');
+        return true;
+    }
+}
+
+add_action('template_redirect', function() {
+    if (is_admin() || !is_user_logged_in()) {
+        return;
+    }
+    kbf_sync_onboarding_flag_for_user(get_current_user_id());
+}, 2);
+
 // ============================================================
 // AUTH HARDENING
 // ============================================================
@@ -383,6 +438,9 @@ add_action('wp_login', function($user_login, $user) {
             is_ssl(),
             true
         );
+    }
+    if ($user instanceof WP_User && function_exists('kbf_sync_onboarding_flag_for_user')) {
+        kbf_sync_onboarding_flag_for_user((int) $user->ID);
     }
 }, 10, 2);
 
