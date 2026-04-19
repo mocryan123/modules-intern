@@ -890,6 +890,13 @@ function bntm_ajax_kbf_save_organizer_profile() {
         'twitter'=>esc_url_raw($_POST['social_twitter']??''),
         'website'=>esc_url_raw($_POST['social_website']??''),
     ]);
+    $province     = isset($_POST['province']) ? sanitize_text_field(wp_unslash($_POST['province'])) : '';
+    $municipality = isset($_POST['municipality']) ? sanitize_text_field(wp_unslash($_POST['municipality'])) : '';
+    $barangay     = isset($_POST['barangay']) ? sanitize_text_field(wp_unslash($_POST['barangay'])) : '';
+    if ($province === '' || $municipality === '' || $barangay === '') {
+        wp_send_json_error(['message' => 'Please select province, municipality, and barangay.']);
+    }
+    $address = implode(', ', array_filter([$barangay, $municipality, $province]));
     $data=[
         'bio'=>sanitize_textarea_field($_POST['bio']??''),
         'social_links'=>$socials,
@@ -901,7 +908,7 @@ function bntm_ajax_kbf_save_organizer_profile() {
     ];
     if($avatar) $data['avatar_url']=$avatar;
     if(isset($_POST['phone'])) update_user_meta($biz,'kbf_phone',sanitize_text_field($_POST['phone']));
-    if(isset($_POST['address'])) update_user_meta($biz,'kbf_address',sanitize_text_field($_POST['address']));
+    update_user_meta($biz,'kbf_address',$address);
     if(!empty($_POST['display_name'])) {
         $new_name = sanitize_text_field($_POST['display_name']);
         $current_user = wp_get_current_user();
@@ -985,7 +992,7 @@ function bntm_ajax_kbf_save_organizer_profile() {
     $post_payout_type  = isset($_POST['payout_type']) ? trim(sanitize_text_field($_POST['payout_type'])) : '';
     $post_payout_name  = isset($_POST['payout_name']) ? trim(sanitize_text_field($_POST['payout_name'])) : '';
     $post_payout_num   = isset($_POST['payout_number']) ? trim(sanitize_text_field($_POST['payout_number'])) : '';
-    $post_address      = isset($_POST['address']) ? trim(sanitize_text_field($_POST['address'])) : (string) get_user_meta($biz, 'kbf_address', true);
+    $post_address      = $address !== '' ? $address : (string) get_user_meta($biz, 'kbf_address', true);
 
     $has_display_name = !empty($post_display_name);
     $has_social_name  = !empty($post_social_name) && preg_match('/^[a-zA-Z0-9_]{2,30}$/', $post_social_name);

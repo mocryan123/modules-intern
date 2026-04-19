@@ -168,6 +168,70 @@ function kbf_mark_sponsorship_completed($sponsorship_id, $payment_reference = ''
     return true;
 }
 
+if (!function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
+    /**
+     * Verify a pending sponsorship against its stored Maya checkout before marking it completed.
+     */
+    function kbf_maya_sync_sponsorship_from_checkout($sponsorship_id, $email = '') {
+        global $wpdb;
+        $st = $wpdb->prefix . 'kbf_sponsorships';
+
+        $sponsorship = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$st} WHERE id=%d",
+            (int)$sponsorship_id
+        ));
+        if (!$sponsorship) return false;
+        if ($sponsorship->payment_status === 'completed') return true;
+        if ($email !== '' && strcasecmp((string)$sponsorship->email, (string)$email) !== 0) return false;
+
+        $gateway_payload = [];
+        if (!empty($sponsorship->gateway_payload)) {
+            $gateway_payload = json_decode((string)$sponsorship->gateway_payload, true);
+            if (!is_array($gateway_payload)) $gateway_payload = [];
+        }
+
+        $checkout_id = isset($gateway_payload['checkoutId']) ? sanitize_text_field((string)$gateway_payload['checkoutId']) : '';
+        if ($checkout_id === '') return false;
+
+        $checkout = kbf_maya_request('/checkout/v1/checkouts/' . rawurlencode($checkout_id), null, 'GET');
+        if (isset($checkout['error'])) {
+            $checkout = kbf_maya_request('/checkout/v1/checkouts/' . rawurlencode($checkout_id), null, 'GET', true);
+        }
+        if (isset($checkout['error']) || !is_array($checkout)) return false;
+
+        $status_candidates = array_filter([
+            isset($checkout['status']) ? strtoupper((string)$checkout['status']) : '',
+            isset($checkout['paymentStatus']) ? strtoupper((string)$checkout['paymentStatus']) : '',
+            isset($checkout['checkoutStatus']) ? strtoupper((string)$checkout['checkoutStatus']) : '',
+            isset($checkout['data']['status']) ? strtoupper((string)$checkout['data']['status']) : '',
+            isset($checkout['data']['paymentStatus']) ? strtoupper((string)$checkout['data']['paymentStatus']) : '',
+            isset($checkout['data']['checkoutStatus']) ? strtoupper((string)$checkout['data']['checkoutStatus']) : '',
+        ]);
+        $paid_statuses = ['COMPLETED', 'PAID', 'PAYMENT_SUCCESS', 'CHECKOUT_SUCCESS', 'AUTHORIZED'];
+        $is_paid = false;
+        foreach ($status_candidates as $status) {
+            if (in_array($status, $paid_statuses, true)) {
+                $is_paid = true;
+                break;
+            }
+        }
+        if (!$is_paid) return false;
+
+        $payment_reference = '';
+        if (!empty($checkout['receiptNumber'])) {
+            $payment_reference = sanitize_text_field((string)$checkout['receiptNumber']);
+        } elseif (!empty($checkout['requestReferenceNumber'])) {
+            $payment_reference = sanitize_text_field((string)$checkout['requestReferenceNumber']);
+        } elseif (!empty($checkout['id'])) {
+            $payment_reference = sanitize_text_field((string)$checkout['id']);
+        } else {
+            $payment_reference = $checkout_id;
+        }
+
+        return kbf_mark_sponsorship_completed((int)$sponsorship->id, $payment_reference);
+    }
+}
+
 /**
  * Maya API base URL -- sandbox vs production.
  */

@@ -609,7 +609,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
           </div>
           <div class="kbf-form-group">
             <label>Phone</label>
-            <input type="text" name="phone" value="<?php echo esc_attr($phone); ?>" placeholder="+63 9XX XXX XXXX">
+            <input type="text" id="kbf-contact-phone" name="phone" value="<?php echo esc_attr($phone); ?>" placeholder="09XX XXX XXXX" inputmode="numeric" maxlength="13" oninput="this.value=(function(v){v=String(v||'').replace(/\D/g,'').substring(0,11);if(!v)return '';if(v.charAt(0)!=='0')v='0'+v.substring(0,10);if(v.length>1&&v.charAt(1)!=='9')v='09'+v.substring(2);v=v.substring(0,11);if(v.length<=4)return v;if(v.length<=7)return v.substring(0,4)+' '+v.substring(4);return v.substring(0,4)+' '+v.substring(4,7)+' '+v.substring(7);})(this.value);">
           </div>
         </div>
 
@@ -651,7 +651,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
           <div class="kbf-form-row kbf-form-row-3">
             <div class="kbf-form-group">
               <label>Province</label>
-              <select id="kbf-profile-province" required>
+              <select id="kbf-profile-province" name="province" required>
                 <option value="">Select</option>
                 <?php foreach (kbf_get_provinces() as $p): ?>
                   <option value="<?php echo esc_attr($p); ?>"><?php echo esc_html($p); ?></option>
@@ -661,11 +661,13 @@ function kbf_dashboard_profile_tab( $business_id ) {
             </div>
             <div class="kbf-form-group">
               <label>Municipality</label>
-              <select id="kbf-profile-municipality" disabled><option value="">Select Municipality</option></select>
+              <select id="kbf-profile-municipality" name="municipality" disabled required><option value="">Select Municipality</option></select>
+              <div class="kbf-field-error"></div>
             </div>
             <div class="kbf-form-group">
               <label>Barangay</label>
-              <select id="kbf-profile-barangay" disabled><option value="">Select Barangay</option></select>
+              <select id="kbf-profile-barangay" name="barangay" disabled required><option value="">Select Barangay</option></select>
+              <div class="kbf-field-error"></div>
             </div>
           </div>
           <input type="hidden" name="address" id="kbf-profile-address" value="<?php echo esc_attr($address); ?>">
@@ -833,25 +835,28 @@ function kbf_dashboard_profile_tab( $business_id ) {
 
     // ===== AUTO-FORMAT PHONE NUMBER =====
     (function(){
-        const phone = document.querySelector('[name="phone"]');
+        const phone = document.getElementById('kbf-contact-phone') || document.querySelector('[name="phone"]');
         if(!phone) return;
-        phone.addEventListener('input', function(){
-            let val = this.value;
-            // Remove '0' after '+630' -> '+63'
-            if(val.startsWith('+630')) {
-                this.value = '+63' + val.substring(4);
-                this.setSelectionRange(this.value.length, this.value.length);
-            }
-            // Add '+' after '630' and remove '0' -> '+63'
-            else if(val.startsWith('630')) {
-                this.value = '+63' + val.substring(3);
-                this.setSelectionRange(this.value.length, this.value.length);
-            }
-            // Auto-add '+63' if starting with '09'
-            else if(val.startsWith('09')) {
-                this.value = '+63' + val.substring(1);
-                this.setSelectionRange(this.value.length, this.value.length);
-            }
+
+        function formatMobileNumber(value){
+            var digits = String(value || '').replace(/\D/g, '').substring(0, 11);
+            if (!digits) return '';
+            if (digits.charAt(0) !== '0') digits = '0' + digits.substring(0, 10);
+            if (digits.length > 1 && digits.charAt(1) !== '9') digits = '09' + digits.substring(2);
+            digits = digits.substring(0, 11);
+            if(digits.length <= 4) return digits;
+            if(digits.length <= 7) return digits.substring(0,4) + ' ' + digits.substring(4);
+            return digits.substring(0,4) + ' ' + digits.substring(4,7) + ' ' + digits.substring(7);
+        }
+
+        phone.setAttribute('inputmode', 'numeric');
+        phone.setAttribute('maxlength', '13');
+        phone.placeholder = '09XX XXX XXXX';
+        phone.value = formatMobileNumber(phone.value);
+        ['input', 'change', 'blur', 'paste'].forEach(function(evt){
+            phone.addEventListener(evt, function(){
+                this.value = formatMobileNumber(this.value);
+            });
         });
     })();
 
@@ -1153,11 +1158,12 @@ function kbf_dashboard_profile_tab( $business_id ) {
          * @status    ACTIVE
          */
         function updateAddress(){
-            const parts = [];
-            if(brgy && brgy.value) parts.push(brgy.value);
-            if(muni && muni.value) parts.push(muni.value);
-            if(prov && prov.value) parts.push(prov.value);
-            hidden.value = parts.join(', ');
+            const hasFullAddress = prov && prov.value && muni && muni.value && brgy && brgy.value;
+            if(!hasFullAddress){
+                hidden.value = '';
+                return;
+            }
+            hidden.value = [brgy.value, muni.value, prov.value].join(', ');
         }
         // Expose globally for kbfSaveProfile
         window.updateAddress = updateAddress;
@@ -1313,6 +1319,14 @@ function kbf_dashboard_profile_tab( $business_id ) {
         if(!bio || !bio.value.trim()) showErr(bio, 'Bio is required.');
         else if(bio.value.length > 250) showErr(bio, 'Bio must be 250 characters or less.');
 
+        // Validation: Phone (required)
+        const phone = form.querySelector('[name="phone"]');
+        if(!phone || !phone.value.trim()) showErr(phone, 'Phone number is required.');
+        else {
+            const digits = phone.value.replace(/\D/g,'');
+            if(digits.length !== 11 || !digits.startsWith('09')) showErr(phone, 'Enter a valid 11-digit mobile number starting with 09.');
+        }
+
         // Validation: Payout (required)
         const pType = form.querySelector('[name="payout_type"]');
         const pName = form.querySelector('[name="payout_name"]');
@@ -1333,11 +1347,12 @@ function kbf_dashboard_profile_tab( $business_id ) {
         }
 
         // Validation: Address (required)
-        const addrHidden = document.getElementById('kbf-profile-address');
         const addrProv = document.getElementById('kbf-profile-province');
-        if(!addrHidden || !addrHidden.value.trim()){
-            showErr(addrProv, 'Address is required. Please select province, municipality, and barangay.');
-        }
+        const addrMuni = document.getElementById('kbf-profile-municipality');
+        const addrBrgy = document.getElementById('kbf-profile-barangay');
+        if(!addrProv || !addrProv.value.trim()) showErr(addrProv, 'Province is required.');
+        if(!addrMuni || !addrMuni.value.trim()) showErr(addrMuni, 'Municipality is required.');
+        if(!addrBrgy || !addrBrgy.value.trim()) showErr(addrBrgy, 'Barangay is required.');
         if(!isValid){
             msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+errors[0]+'</div>';
             if(firstInvalidInput){

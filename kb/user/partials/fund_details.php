@@ -247,22 +247,65 @@ function bntm_shortcode_kbf_fund_details() {
     }
     $is_self = $current_user_id && $current_user_id === (int)$fund->business_id;
     $prefill_email = $current_user_id ? wp_get_current_user()->user_email : '';
+    $prefill_phone = $current_user_id ? sanitize_text_field((string)get_user_meta($current_user_id, 'kbf_phone', true)) : '';
     $payment_result = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
     $payment_sid = isset($_GET['sid']) ? intval($_GET['sid']) : 0;
+    $payment_ref = isset($_GET['ref']) ? sanitize_text_field($_GET['ref']) : '';
+    $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
+    if ($demo_mode && $payment_result === 'success' && $payment_sid > 0 && $prefill_email !== '' && function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
+        kbf_maya_sync_sponsorship_from_checkout($payment_sid, $prefill_email);
+    }
+    if ($demo_mode && $payment_result === 'success' && $prefill_email !== '' && function_exists('kbf_mark_sponsorship_completed')) {
+        $demo_return_sponsorship = null;
+        if ($payment_sid > 0) {
+            $demo_return_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,payment_status FROM {$st} WHERE id=%d AND email=%s",
+                $payment_sid,
+                $prefill_email
+            ));
+        } elseif ($payment_ref !== '') {
+            $demo_return_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,payment_status FROM {$st} WHERE rand_id=%s AND email=%s",
+                $payment_ref,
+                $prefill_email
+            ));
+        }
+        if ($demo_return_sponsorship && $demo_return_sponsorship->payment_status !== 'completed') {
+            kbf_mark_sponsorship_completed((int)$demo_return_sponsorship->id, $payment_ref);
+        }
+    }
     $show_payment_banner = in_array($payment_result, ['success', 'failed', 'cancelled'], true) && $current_user_id;
     $payment_banner_data = null;
     if ($show_payment_banner) {
         $pay_sponsorship = null;
-        if ($payment_sid > 0 && $prefill_email !== '') {
+        if ($demo_mode && $payment_sid > 0 && $prefill_email !== '') {
             $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
-                "SELECT id,amount FROM {$st} WHERE id=%d AND email=%s",
+                "SELECT id,amount,payment_status FROM {$st} WHERE id=%d AND email=%s",
                 $payment_sid,
+                $prefill_email
+            ));
+        } elseif ($demo_mode && $payment_ref !== '' && $prefill_email !== '') {
+            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,amount,payment_status FROM {$st} WHERE rand_id=%s AND email=%s",
+                $payment_ref,
+                $prefill_email
+            ));
+        } elseif ($payment_sid > 0 && $prefill_email !== '') {
+            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,amount,payment_status FROM {$st} WHERE id=%d AND email=%s",
+                $payment_sid,
+                $prefill_email
+            ));
+        } elseif ($payment_ref !== '' && $prefill_email !== '') {
+            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,amount,payment_status FROM {$st} WHERE rand_id=%s AND email=%s",
+                $payment_ref,
                 $prefill_email
             ));
         }
         $pay_amount = $pay_sponsorship ? number_format((float)$pay_sponsorship->amount, 2) : '';
         $explore_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
-        if ($payment_result === 'success') {
+        if ($payment_result === 'success' && $pay_sponsorship && $pay_sponsorship->payment_status === 'completed') {
             $payment_banner_data = [
                 'type' => 'success',
                 'icon' => 'ph-fill ph-check-circle',
@@ -270,6 +313,16 @@ function bntm_shortcode_kbf_fund_details() {
                 'message' => $pay_amount !== ''
                     ? 'Your &#8369;' . $pay_amount . ' sponsorship for <strong>' . esc_html($fund->title) . '</strong> was received successfully.'
                     : 'Your sponsorship for <strong>' . esc_html($fund->title) . '</strong> was received successfully.',
+                'countdown' => 15,
+                'redirect' => $explore_url,
+                'btn_text' => 'Go to Explore',
+            ];
+        } elseif ($payment_result === 'success') {
+            $payment_banner_data = [
+                'type' => 'warning',
+                'icon' => 'ph-fill ph-clock-countdown',
+                'title' => 'Payment Processing',
+                'message' => 'Your payment return was received, but confirmation is still being finalized. Please refresh in a moment if this status does not update.',
                 'countdown' => 15,
                 'redirect' => $explore_url,
                 'btn_text' => 'Go to Explore',
@@ -1288,8 +1341,8 @@ function bntm_shortcode_kbf_fund_details() {
               <div class="kbf-char-count" id="kbf-sponsor-message-count">0/300</div>
             </div>
             <div class="kbf-form-row">
-              <div class="kbf-form-group"><label>Email (for receipt) *</label><input type="email" name="email" placeholder="your@email.com" required></div>
-              <div class="kbf-form-group"><label>Phone *</label><input type="text" name="phone" placeholder="+63 9XX XXX XXXX" required></div>
+              <div class="kbf-form-group"><label>Email (for receipt) *</label><input type="email" name="email" placeholder="your@email.com" value="<?php echo esc_attr($prefill_email); ?>" required<?php echo $current_user_id ? ' readonly style="background:#f8fafc;color:var(--kbf-slate);"' : ''; ?>></div>
+              <div class="kbf-form-group"><label>Phone *</label><input type="text" name="phone" id="kbf-sponsor-phone" placeholder="09XX XXX XXXX" value="<?php echo esc_attr($prefill_phone); ?>" required></div>
             </div>
             <input type="hidden" name="payment_method" value="online_payment">
             <div id="kbf-spd-msg" style="margin-top:10px;"></div>
@@ -1602,7 +1655,7 @@ function bntm_shortcode_kbf_fund_details() {
             <div style="margin-top:14px;">
               <button class="kbf-btn kbf-btn-primary" style="width:100%;font-weight:600;" onclick="kbfShowModal('kbf-modal-sponsor')">
                 <i class="ph-fill ph-heart kbf-icon" style="font-size:16px;color:#ffffff;" aria-hidden="true"></i>
-                <?php echo $demo_mode ? 'Demo Sponsor' : 'Sponsor This Campaign'; ?>
+                Sponsor This Campaign
               </button>
               <div class="kbf-card-actions" style="display:flex;gap:10px;margin-top:10px;">
                 <button class="kbf-btn kbf-btn-secondary kbf-save-btn" type="button" data-fund-id="<?php echo (int)$fund->id; ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" data-save-label="Save Fund" onclick="kbfSaveFund('<?php echo (int)$fund->id; ?>', this)" style="pointer-events:auto !important; cursor:pointer !important; position:relative; z-index:302; touch-action:manipulation;">
@@ -2159,6 +2212,19 @@ function bntm_shortcode_kbf_fund_details() {
         amountDisplay.addEventListener('input', formatAmountInput);
         amountDisplay.addEventListener('blur', formatAmountInput);
     })();
+    (function(){
+        var phoneInput = document.getElementById('kbf-sponsor-phone');
+        if(!phoneInput) return;
+        function formatSponsorPhone(){
+            var digits = (phoneInput.value || '').replace(/\D/g, '').substring(0, 11);
+            if(digits.length <= 4) phoneInput.value = digits;
+            else if(digits.length <= 7) phoneInput.value = digits.substring(0,4) + ' ' + digits.substring(4);
+            else phoneInput.value = digits.substring(0,4) + ' ' + digits.substring(4,7) + ' ' + digits.substring(7);
+        }
+        formatSponsorPhone();
+        phoneInput.addEventListener('input', formatSponsorPhone);
+        phoneInput.addEventListener('blur', formatSponsorPhone);
+    })();
     /**
      * @function  kbfEscHtmlMsg
      * @purpose   Escapes untrusted text before rendering inside HTML alert containers.
@@ -2202,21 +2268,21 @@ function bntm_shortcode_kbf_fund_details() {
         fd.append('is_anonymous',document.getElementById('spd-anon').checked?'1':'0');
         kbfFetchJson(ajaxurl, fd, (j)=>{
             if(j.success){
-            if(j.data && j.data.checkout_url){
-                btn.innerHTML='Redirecting to payment...';
-                // Use same-tab navigation because popup windows are often blocked on mobile Safari.
-                const checkoutUrl = String(j.data.checkout_url || '');
-                if (window.kbfAwaitPaymentSuccess) window.kbfAwaitPaymentSuccess();
-                try {
-                    window.location.assign(checkoutUrl);
-                } catch (e) {
-                    window.location.href = checkoutUrl;
+                if(j.data && j.data.checkout_url){
+                    btn.innerHTML='Redirecting to payment...';
+                    // Use same-tab navigation because popup windows are often blocked on mobile Safari.
+                    const checkoutUrl = String(j.data.checkout_url || '');
+                    if (window.kbfAwaitPaymentSuccess) window.kbfAwaitPaymentSuccess();
+                    try {
+                        window.location.assign(checkoutUrl);
+                    } catch (e) {
+                        window.location.href = checkoutUrl;
+                    }
+                } else {
+                    msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
+                    kbfSetBtnLoading(btn,false);
+                    kbfSetSkeleton(msg,false);
                 }
-            } else {
-                msg.innerHTML='<div class="kbf-alert kbf-alert-error">Maya checkout URL was not returned. Please check your Maya API keys and try again.</div>';
-                kbfSetBtnLoading(btn,false);
-                kbfSetSkeleton(msg,false);
-            }
             } else {
                 msg.innerHTML='<div class="kbf-alert kbf-alert-error">'+kbfEscHtmlMsg(j && j.data ? j.data.message : '')+'</div>';
                 kbfSetBtnLoading(btn,false);
