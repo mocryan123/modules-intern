@@ -700,7 +700,12 @@ function kbf_table_has_column($table, $column) {
 function kbf_get_setting($key, $default = null) {
     if (function_exists('bntm_get_setting')) {
         $val = bntm_get_setting($key);
-        return ($val === null || $val === false || $val === '') ? $default : $val;
+        if (!($val === null || $val === false || $val === '')) {
+            return $val;
+        }
+        // If framework setting is empty, fall back to mirrored wp_options value.
+        $stored = get_option('kbf_setting_' . $key, null);
+        return ($stored === null || $stored === false || $stored === '') ? $default : $stored;
     }
     // Fallback: store in wp_options directly
     $stored = get_option('kbf_setting_' . $key, null);
