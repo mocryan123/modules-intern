@@ -420,6 +420,29 @@
           margin-bottom:2px;
           line-height:1.25;
         }
+        .kbf-alert.kbf-alert-warning.kbf-alert-noicon.kbf-home-alert{
+          align-items:center !important;
+          flex-wrap:nowrap !important;
+        }
+        .kbf-alert.kbf-alert-warning.kbf-alert-noicon.kbf-home-alert > div{
+          white-space:normal;
+          overflow:visible;
+          text-overflow:clip;
+          overflow-wrap:anywhere;
+          word-break:break-word;
+          line-height:1.3;
+        }
+        .kbf-alert.kbf-alert-warning.kbf-alert-noicon.kbf-home-alert > div .kbf-strong{
+          display:inline;
+          margin:0 4px 0 0;
+          line-height:inherit;
+        }
+        @media (max-width: 900px){
+          .kbf-alert.kbf-alert-warning.kbf-alert-noicon.kbf-home-alert{
+            flex-wrap:wrap !important;
+            align-items:flex-start !important;
+          }
+        }
         @media (max-width: 680px){
           .kbf-home-alert{ gap:8px !important; }
           .kbf-home-alert > span{ margin-top:1px; }
@@ -591,10 +614,10 @@
         </div>
       <?php if($pending_funds > 0): ?>
       <div class="kbf-alert kbf-alert-warning kbf-alert-noicon kbf-home-alert" style="margin-bottom:20px;display:flex;align-items:center;gap:12px;">
-          <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+        <div>
+          <span style="margin-right:6px;display:inline-flex;vertical-align:middle;">
             <i class="ph-fill ph-warning" aria-hidden="true"></i>
           </span>
-        <div>
           <span class="kbf-strong"><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</span>
           Not visible to sponsors yet. Usually 3-5 days. You'll be notified after approval.
           <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
@@ -747,10 +770,10 @@
         <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status); ?>">
           <?php if($last_wd && $last_wd->status === 'pending'): ?>
           <div class="kbf-alert kbf-alert-warning kbf-alert-noicon kbf-home-alert" style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-              <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;">
+            <div>
+              <span style="margin-right:6px;display:inline-flex;vertical-align:middle;">
                 <i class="ph-fill ph-warning" aria-hidden="true"></i>
               </span>
-            <div>
               <span class="kbf-strong">Withdrawal Pending:</span>
               <span>Your request is being reviewed by admin (2-5 business days).</span>
             </div>

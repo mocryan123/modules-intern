@@ -495,7 +495,17 @@ function kbf_dashboard_profile_tab( $business_id ) {
         display: flex; align-items: center; gap: 10px;
         margin-top: 12px;
       }
-      .kbf-cropper-controls input[type=range] { flex: 1; }
+      .kbf-cropper-controls input[type=range] {
+        flex: 1;
+        accent-color: #3b82f6;
+      }
+      .kbf-cropper-controls input[type=range]::-webkit-slider-thumb {
+        background: #3b82f6;
+      }
+      .kbf-cropper-controls input[type=range]::-moz-range-thumb {
+        background: #3b82f6;
+        border: 0;
+      }
       .kbf-cropper-actions { display: flex; gap: 10px; margin-top: 16px; }
       .kbf-cropper-actions .kbf-btn { width: 100%; justify-content: center; }
       .kbf-cropper-close {
@@ -923,7 +933,32 @@ function kbf_dashboard_profile_tab( $business_id ) {
          */
         function renderImage(){
             if(!img.src) return;
+            clampPan();
             img.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+        }
+
+        /**
+         * @function  clampPan
+         * @purpose   Locks avatar image panning so the circular crop area is always fully covered.
+         * @used-by   renderImage, zoom slider input, drag/touch move handlers
+         * @calls     none
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
+        function clampPan(){
+            const natW = img.naturalWidth || 1;
+            const natH = img.naturalHeight || 1;
+            const scaledW = natW * scale;
+            const scaledH = natH * scale;
+            const minX = Math.min(0, stageSize - scaledW);
+            const maxX = 0;
+            const minY = Math.min(0, stageSize - scaledH);
+            const maxY = 0;
+            if (panX < minX) panX = minX;
+            if (panX > maxX) panX = maxX;
+            if (panY < minY) panY = minY;
+            if (panY > maxY) panY = maxY;
         }
 
         /**
@@ -1001,6 +1036,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
             panX = stageSize / 2 - (stageSize / 2 - panX) * ratio;
             panY = stageSize / 2 - (stageSize / 2 - panY) * ratio;
             scale = newScale;
+            clampPan();
             renderImage();
         });
 
@@ -1015,6 +1051,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
             if(!isDragging) return;
             panX = e.clientX - startX;
             panY = e.clientY - startY;
+            clampPan();
             renderImage();
         });
         window.addEventListener('mouseup', function(){ isDragging = false; });
@@ -1031,6 +1068,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
             const t = e.touches[0];
             panX = t.clientX - startX;
             panY = t.clientY - startY;
+            clampPan();
             renderImage();
         }, {passive: true});
         window.addEventListener('touchend', function(){ isDragging = false; });

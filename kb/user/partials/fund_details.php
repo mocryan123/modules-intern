@@ -247,6 +247,55 @@ function bntm_shortcode_kbf_fund_details() {
     }
     $is_self = $current_user_id && $current_user_id === (int)$fund->business_id;
     $prefill_email = $current_user_id ? wp_get_current_user()->user_email : '';
+    $payment_result = isset($_GET['kbf_payment']) ? sanitize_text_field($_GET['kbf_payment']) : '';
+    $payment_sid = isset($_GET['sid']) ? intval($_GET['sid']) : 0;
+    $show_payment_banner = in_array($payment_result, ['success', 'failed', 'cancelled'], true) && $current_user_id;
+    $payment_banner_data = null;
+    if ($show_payment_banner) {
+        $pay_sponsorship = null;
+        if ($payment_sid > 0 && $prefill_email !== '') {
+            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,amount FROM {$st} WHERE id=%d AND email=%s",
+                $payment_sid,
+                $prefill_email
+            ));
+        }
+        $pay_amount = $pay_sponsorship ? number_format((float)$pay_sponsorship->amount, 2) : '';
+        $explore_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
+        if ($payment_result === 'success') {
+            $payment_banner_data = [
+                'type' => 'success',
+                'icon' => 'ph-fill ph-check-circle',
+                'title' => 'Thank You!',
+                'message' => $pay_amount !== ''
+                    ? 'Your &#8369;' . $pay_amount . ' sponsorship for <strong>' . esc_html($fund->title) . '</strong> was received successfully.'
+                    : 'Your sponsorship for <strong>' . esc_html($fund->title) . '</strong> was received successfully.',
+                'countdown' => 10,
+                'redirect' => $explore_url,
+                'btn_text' => 'Explore Funds',
+            ];
+        } elseif ($payment_result === 'failed') {
+            $payment_banner_data = [
+                'type' => 'error',
+                'icon' => 'ph-fill ph-x-circle',
+                'title' => 'Payment Failed',
+                'message' => 'We could not process your payment. You can try sponsoring again.',
+                'countdown' => 10,
+                'redirect' => $explore_url,
+                'btn_text' => 'Go to Explore',
+            ];
+        } elseif ($payment_result === 'cancelled') {
+            $payment_banner_data = [
+                'type' => 'warning',
+                'icon' => 'ph-fill ph-warning',
+                'title' => 'Payment Cancelled',
+                'message' => 'Your payment was cancelled. You can sponsor again anytime.',
+                'countdown' => 10,
+                'redirect' => $explore_url,
+                'btn_text' => 'Go to Explore',
+            ];
+        }
+    }
 
     // Open Graph meta for social share previews
     if (!empty($fund)) {
@@ -1072,6 +1121,49 @@ function bntm_shortcode_kbf_fund_details() {
       color:var(--kbf-blue);
       flex-shrink:0;
     }
+    /* Payment result banner (Fund Details) */
+    .kbf-payment-banner{
+      position:relative;background:#fff;border:none;border-radius:18px;
+      box-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.08);
+      margin:72px 0 16px;overflow:hidden;
+      max-height:260px;
+      opacity:1;
+      transform:translateY(0);
+      transition:opacity .28s ease, transform .28s ease, max-height .32s ease, margin .32s ease;
+    }
+    .kbf-payment-banner.is-closing{
+      opacity:0;
+      transform:translateY(-8px);
+      max-height:0;
+      margin-top:0;
+      margin-bottom:0;
+      pointer-events:none;
+    }
+    .kbf-payment-banner-inner{display:flex;align-items:center;gap:14px;padding:18px 20px;}
+    .kbf-payment-banner-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .kbf-payment-banner-success .kbf-payment-banner-icon{background:#dcfce7;color:#166534;}
+    .kbf-payment-banner-error .kbf-payment-banner-icon{background:#fee2e2;color:#991b1b;}
+    .kbf-payment-banner-warning .kbf-payment-banner-icon{background:#fef3c7;color:#92400e;}
+    .kbf-payment-banner-content{flex:1;min-width:0;}
+    .kbf-payment-banner-title{margin:0 0 3px;font-size:28px;font-weight:800;color:#0f172a;line-height:1.1}
+    .kbf-payment-banner-message{margin:0;font-size:14px;color:#475569;line-height:1.45}
+    .kbf-payment-banner-countdown{display:inline-flex;align-items:center;gap:7px;margin-top:8px;padding:5px 10px;border-radius:999px;background:#f8fafc;color:#64748b;font-size:12px;font-weight:600}
+    .kbf-payment-banner-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .kbf-payment-banner-progress{height:3px;background:#e2e8f0}
+    .kbf-payment-banner-progress-bar{height:100%;width:0;transition:width .1s linear}
+    .kbf-payment-banner-success .kbf-payment-banner-progress-bar{background:#22c55e}
+    .kbf-payment-banner-error .kbf-payment-banner-progress-bar{background:#ef4444}
+    .kbf-payment-banner-warning .kbf-payment-banner-progress-bar{background:#f59e0b}
+    @media (max-width: 900px){
+      .kbf-payment-banner{margin-top:52px}
+    }
+    @media (max-width: 768px){
+      .kbf-payment-banner-inner{flex-direction:column;align-items:flex-start}
+      .kbf-payment-banner-actions{width:100%}
+      .kbf-payment-banner-actions .kbf-btn{flex:1;justify-content:center}
+      .kbf-payment-banner-title{font-size:24px}
+      .kbf-payment-banner{margin-top:26px}
+    }
 
     /* ===== FIX 7: PILL STYLING ===== */
     .kbf-category-pill{
@@ -1104,6 +1196,67 @@ function bntm_shortcode_kbf_fund_details() {
  </style>
     <!-- ================== HTML ================== -->
     <div class="kbf-wrap">
+    <?php if ($payment_banner_data): ?>
+      <div id="kbf-payment-banner" class="kbf-payment-banner kbf-payment-banner-<?php echo esc_attr($payment_banner_data['type']); ?>">
+        <div class="kbf-payment-banner-inner">
+          <div class="kbf-payment-banner-icon"><i class="<?php echo esc_attr($payment_banner_data['icon']); ?>" aria-hidden="true"></i></div>
+          <div class="kbf-payment-banner-content">
+            <h4 class="kbf-payment-banner-title"><?php echo esc_html($payment_banner_data['title']); ?></h4>
+            <p class="kbf-payment-banner-message"><?php echo $payment_banner_data['message']; ?></p>
+            <div class="kbf-payment-banner-countdown">
+              <i class="ph ph-clock" aria-hidden="true"></i>
+              <span>Staying on this page in <strong id="kbf-payment-countdown"><?php echo (int)$payment_banner_data['countdown']; ?></strong>s</span>
+            </div>
+          </div>
+          <div class="kbf-payment-banner-actions">
+            <a href="<?php echo esc_url($payment_banner_data['redirect']); ?>" class="kbf-btn kbf-btn-primary" id="kbf-payment-btn-go"><?php echo esc_html($payment_banner_data['btn_text']); ?></a>
+            <button type="button" class="kbf-btn kbf-btn-secondary" onclick="kbfDismissPaymentBanner()">Stay here</button>
+          </div>
+        </div>
+        <div class="kbf-payment-banner-progress"><div class="kbf-payment-banner-progress-bar" id="kbf-payment-progress"></div></div>
+      </div>
+      <script>
+        (function(){
+          var totalSeconds = <?php echo (int)$payment_banner_data['countdown']; ?>;
+          var redirectUrl = <?php echo wp_json_encode($payment_banner_data['redirect']); ?>;
+          var countdownEl = document.getElementById('kbf-payment-countdown');
+          var progressEl = document.getElementById('kbf-payment-progress');
+          var startTime = Date.now();
+          var timer = null;
+          function tick(){
+            var elapsed = (Date.now() - startTime) / 1000;
+            var remaining = Math.max(0, totalSeconds - elapsed);
+            var pct = Math.min(100, (elapsed / totalSeconds) * 100);
+            if(countdownEl) countdownEl.textContent = Math.ceil(remaining);
+            if(progressEl) progressEl.style.width = pct + '%';
+            if(remaining <= 0){
+              clearInterval(timer);
+              window.kbfDismissPaymentBanner();
+            }
+          }
+          window.kbfDismissPaymentBanner = function(){
+            clearInterval(timer);
+            var banner = document.getElementById('kbf-payment-banner');
+            if (banner) {
+              banner.classList.add('is-closing');
+              setTimeout(function(){ banner.remove(); }, 320);
+            }
+            try {
+              var url = new URL(window.location.href);
+              url.searchParams.delete('kbf_payment');
+              url.searchParams.delete('sid');
+              url.searchParams.delete('ref');
+              window.history.replaceState({}, '', url.toString());
+            } catch(e){}
+          };
+          timer = setInterval(tick, 100);
+          var goBtn = document.getElementById('kbf-payment-btn-go');
+          if(goBtn){
+            goBtn.addEventListener('click', function(){ clearInterval(timer); });
+          }
+        })();
+      </script>
+    <?php endif; ?>
 
     <!-- Sponsor Modal -->
     <div id="kbf-modal-sponsor" class="kbf-modal-overlay" style="display:none;">

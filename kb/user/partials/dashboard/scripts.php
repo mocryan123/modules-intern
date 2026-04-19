@@ -4117,7 +4117,9 @@
             const m = document.getElementById('kbf-wd-msg');
             m.innerHTML = '<div class="kbf-alert kbf-alert-'+(json.success?'success':'error')+'">'+window.kbfEscapeHtml(json.data.message)+'</div>';
             if(json.success) {
-                kbfCloseModal('kbf-modal-wd');
+                kbfSetBtnLoading(btn,false);
+                kbfSetSkeleton(msg,false);
+                setTimeout(function(){ kbfCloseModal('kbf-modal-wd'); }, 1600);
             } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); });
     }

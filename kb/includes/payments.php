@@ -272,7 +272,7 @@ function bntm_ajax_kbf_create_checkout() {
     // Use a stable absolute URL (home_url) to avoid invalid redirectUrl errors in AJAX context.
     $base_return = kbf_get_page_url('dashboard');
     $fund_token  = function_exists('kbf_get_or_create_fund_token') ? kbf_get_or_create_fund_token($fund_id) : '';
-    $success_url = add_query_arg(['kbf_payment' => 'success', 'kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'ref' => $rand_id, 'fund_id' => $fund_id, 'fund' => $fund_token], $base_return);
+    $success_url = add_query_arg(['kbf_payment' => 'success', 'kbf_tab' => 'find_funds', 'kbf_popup' => '1', 'sid' => $sponsorship_id, 'ref' => $rand_id, 'fund_id' => $fund_id, 'fund' => $fund_token], $base_return);
     $failure_url = add_query_arg(['kbf_payment' => 'failed',  'kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'fund_id' => $fund_id, 'fund' => $fund_token], $base_return);
     $cancel_url  = add_query_arg(['kbf_payment' => 'cancelled','kbf_tab' => 'find_funds', 'sid' => $sponsorship_id, 'fund_id' => $fund_id, 'fund' => $fund_token], $base_return);
 

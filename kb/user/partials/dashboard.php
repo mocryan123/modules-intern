@@ -225,18 +225,26 @@ function bntm_shortcode_kbf_dashboard() {
     // Show "Thank You" card only when opened as a popup tab from Maya.
     // Regular same-tab redirect shows the premium banner in Find Funds instead.
     $is_popup = !empty($_GET['kbf_popup']) && $_GET['kbf_popup'] === '1';
-    if ($is_logged_in && $demo_mode && $is_popup && $payment_state === 'success' && $has_valid_payment_ref) {
-        $find_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
+    if ($is_logged_in && $is_popup && $payment_state === 'success' && $has_valid_payment_ref) {
+        $popup_fund_token = isset($_GET['fund']) ? sanitize_text_field($_GET['fund']) : '';
+        $popup_fund_id = isset($_GET['fund_id']) ? intval($_GET['fund_id']) : 0;
+        $popup_sid = isset($_GET['sid']) ? intval($_GET['sid']) : 0;
+        $popup_ref = isset($_GET['ref']) ? sanitize_text_field($_GET['ref']) : '';
+        $popup_redirect = kbf_get_page_url('fund_details');
+        if ($popup_fund_token !== '') {
+            $popup_redirect = add_query_arg('fund', $popup_fund_token, $popup_redirect);
+        } elseif ($popup_fund_id > 0) {
+            $popup_redirect = add_query_arg('fund_id', $popup_fund_id, $popup_redirect);
+        }
+        $popup_redirect = add_query_arg([
+            'kbf_payment' => 'success',
+            'sid' => $popup_sid,
+            'ref' => $popup_ref,
+            'fund_id' => $popup_fund_id,
+            'fund' => $popup_fund_token,
+        ], $popup_redirect);
         ob_start();
     ?>
-
-    <div class="kbf-user-ui">
-          <div class="kbf-card" style="max-width:640px;margin:50px auto;padding:34px 30px;text-align:center;">
-            <div style="font-size:26px;font-weight:800;color:var(--kbf-navy);margin-bottom:8px;">Thank You</div>
-            <div style="font-size:14px;color:var(--kbf-slate);margin-bottom:22px;">Thank you for your donation or support.</div>
-            <a class="kbf-btn kbf-btn-primary" href="<?php echo esc_url($find_url); ?>" onclick="window.close();return false;">Close Tab</a>
-          </div>
-        </div>
         <script>
           (function(){
             try{
@@ -245,18 +253,32 @@ function bntm_shortcode_kbf_dashboard() {
                 localStorage.setItem('kbf_payment_success', JSON.stringify({
                   ts: Date.now(),
                   sid: '<?php echo isset($_GET['sid']) ? esc_js($_GET['sid']) : ''; ?>',
-                  ref: '<?php echo isset($_GET['ref']) ? esc_js($_GET['ref']) : ''; ?>'
+                  ref: '<?php echo isset($_GET['ref']) ? esc_js($_GET['ref']) : ''; ?>',
+                  fund_id: '<?php echo isset($_GET['fund_id']) ? esc_js($_GET['fund_id']) : ''; ?>',
+                  fund: '<?php echo isset($_GET['fund']) ? esc_js($_GET['fund']) : ''; ?>',
+                  redirect_url: <?php echo wp_json_encode($popup_redirect); ?>
                 }));
               } catch(e){}
               if (window.opener && !window.opener.closed) {
                 var targetOrigin = window.location.origin;
                 try { targetOrigin = new URL('<?php echo esc_js(home_url('/')); ?>', window.location.href).origin; } catch(e) {}
-                window.opener.postMessage({type:'kbf_payment_success', sid:'<?php echo isset($_GET['sid']) ? esc_js($_GET['sid']) : ''; ?>'}, targetOrigin);
-                setTimeout(function(){ window.close(); }, 400);
+                window.opener.postMessage({
+                  type:'kbf_payment_success',
+                  sid:'<?php echo isset($_GET['sid']) ? esc_js($_GET['sid']) : ''; ?>',
+                  ref:'<?php echo isset($_GET['ref']) ? esc_js($_GET['ref']) : ''; ?>',
+                  fund_id:'<?php echo isset($_GET['fund_id']) ? esc_js($_GET['fund_id']) : ''; ?>',
+                  fund:'<?php echo isset($_GET['fund']) ? esc_js($_GET['fund']) : ''; ?>',
+                  redirect_url: <?php echo wp_json_encode($popup_redirect); ?>
+                }, targetOrigin);
               }
+              // Always attempt to self-close this merchant popup/tab.
+              setTimeout(function(){ window.close(); }, 200);
             } catch(e){}
           })();
         </script>
+        <noscript>
+          <div style="padding:16px;font-family:inherit;">Payment completed. You can close this tab now.</div>
+        </noscript>
         <?php
         return ob_get_clean();
     }

@@ -1982,24 +1982,37 @@ function kbf_global_assets() {
         };
         document.addEventListener('DOMContentLoaded', window.kbfInitTableDescriptions);
     }
+    function kbfHandlePaymentSuccessPayload(raw){
+        try {
+            var payload = raw;
+            if (typeof payload === 'string') {
+                payload = JSON.parse(payload);
+            }
+            var redirectUrl = (payload && payload.redirect_url) ? String(payload.redirect_url) : '';
+            var modal = document.getElementById('kbf-modal-sponsor');
+            if (modal) modal.style.display = 'none';
+            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
+            setTimeout(function(){
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                } else {
+                    location.reload();
+                }
+            }, 600);
+        } catch(e){}
+    }
     // Listen for payment success from Maya redirect window.
     window.addEventListener('message', function(ev){
         try {
             if (!ev || !ev.data || ev.data.type !== 'kbf_payment_success') return;
-            var modal = document.getElementById('kbf-modal-sponsor');
-            if (modal) modal.style.display = 'none';
-            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
-            setTimeout(function(){ location.reload(); }, 600);
+            kbfHandlePaymentSuccessPayload(ev.data);
         } catch(e){}
     });
     // Fallback: listen for localStorage flag from other tabs/windows.
     window.addEventListener('storage', function(ev){
         try {
             if (!ev || ev.key !== 'kbf_payment_success' || !ev.newValue) return;
-            var modal = document.getElementById('kbf-modal-sponsor');
-            if (modal) modal.style.display = 'none';
-            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
-            setTimeout(function(){ location.reload(); }, 600);
+            kbfHandlePaymentSuccessPayload(ev.newValue);
             // Clear flag after consumption
             try { localStorage.removeItem('kbf_payment_success'); } catch(e){}
         } catch(e){}
@@ -2009,10 +2022,7 @@ function kbf_global_assets() {
         try {
             var payload = localStorage.getItem('kbf_payment_success');
             if (!payload) return;
-            var modal = document.getElementById('kbf-modal-sponsor');
-            if (modal) modal.style.display = 'none';
-            if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
-            setTimeout(function(){ location.reload(); }, 600);
+            kbfHandlePaymentSuccessPayload(payload);
             localStorage.removeItem('kbf_payment_success');
         } catch(e){}
     })();
@@ -2024,13 +2034,10 @@ function kbf_global_assets() {
             try {
                 var payload = localStorage.getItem('kbf_payment_success');
                 if (payload) {
-                    var modal = document.getElementById('kbf-modal-sponsor');
-                    if (modal) modal.style.display = 'none';
-                    if (window.kbfSetLoadingPage) window.kbfSetLoadingPage(true);
+                    kbfHandlePaymentSuccessPayload(payload);
                     localStorage.removeItem('kbf_payment_success');
                     clearInterval(window.__kbfPaymentPoll);
                     window.__kbfPaymentPoll = null;
-                    setTimeout(function(){ location.reload(); }, 600);
                     return;
                 }
             } catch(e){}
