@@ -138,6 +138,46 @@ function kbf_global_assets() {
         overflow:hidden !important;
         pointer-events:none !important;
     }
+    /* Nuclear override against legacy bntm-frontend.css layout vars */
+    :root,
+    html,
+    body,
+    body.kbf-module-page,
+    body.kbf-fullwidth-page,
+    body:has(.kbf-wrap),
+    body:has(.kbf-user-ui),
+    body:has(.kbf-admin-ui){
+        --bntm-sidebar-width: 0px !important;
+        --bntm-sidebar-collapsed: 0px !important;
+        --bntm-topbar-height: 0px !important;
+    }
+    .kbf-wrap .bntm-layout,
+    .kbf-user-ui .bntm-layout,
+    .kbf-admin-ui .bntm-layout,
+    body.kbf-module-page .bntm-layout,
+    body.kbf-fullwidth-page .bntm-layout{
+        display:block !important;
+        min-height:auto !important;
+    }
+    .kbf-wrap .bntm-main,
+    .kbf-user-ui .bntm-main,
+    .kbf-admin-ui .bntm-main,
+    body.kbf-module-page .bntm-main,
+    body.kbf-fullwidth-page .bntm-main,
+    .bntm-main,
+    main.bntm-main,
+    #bntmMain{
+        margin-left:0 !important;
+        margin-inline-start:0 !important;
+        width:100% !important;
+        max-width:100% !important;
+        min-width:100% !important;
+        padding-left:0 !important;
+        padding-right:0 !important;
+        transform:none !important;
+        --bntm-sidebar-width: 0px !important;
+        --bntm-sidebar-collapsed: 0px !important;
+    }
     @media (min-width: 769px){
         .bntm-sidebar,
         aside#bntmSidebar,

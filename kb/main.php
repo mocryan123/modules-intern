@@ -82,6 +82,59 @@ add_action('wp', function () {
     add_filter('show_admin_bar', '__return_false');
 }, 0);
 
+// KBF pages: block legacy plugin frontend CSS from rendering.
+if (!function_exists('kbf_block_legacy_frontend_css')) {
+    function kbf_block_legacy_frontend_css() {
+        if (is_admin() || !function_exists('kbf_is_kbf_page') || !kbf_is_kbf_page()) {
+            return;
+        }
+
+        // Remove any enqueued style handles that point to legacy frontend CSS.
+        global $wp_styles;
+        if ($wp_styles && !empty($wp_styles->registered)) {
+            foreach ($wp_styles->registered as $handle => $style_obj) {
+                $src = isset($style_obj->src) ? (string) $style_obj->src : '';
+                if ($src === '') {
+                    continue;
+                }
+                if (strpos($src, '/assets/css/bntm-frontend.css') !== false || preg_match('#/assets/css/frontend\.css(?:\?|$)#i', $src)) {
+                    wp_dequeue_style($handle);
+                    wp_deregister_style($handle);
+                }
+            }
+        }
+    }
+}
+add_action('wp_enqueue_scripts', 'kbf_block_legacy_frontend_css', 9999);
+add_action('wp_print_styles', 'kbf_block_legacy_frontend_css', 9999);
+
+if (!function_exists('kbf_filter_legacy_frontend_style_tag')) {
+    function kbf_filter_legacy_frontend_style_tag($html, $handle, $href, $media) {
+        if (is_admin() || !function_exists('kbf_is_kbf_page') || !kbf_is_kbf_page()) {
+            return $html;
+        }
+        $href = (string) $href;
+        if (strpos($href, '/assets/css/bntm-frontend.css') !== false || preg_match('#/assets/css/frontend\.css(?:\?|$)#i', $href)) {
+            return '';
+        }
+        return $html;
+    }
+}
+add_filter('style_loader_tag', 'kbf_filter_legacy_frontend_style_tag', 9999, 4);
+
+if (!function_exists('kbf_strip_hardcoded_legacy_frontend_css')) {
+    function kbf_strip_hardcoded_legacy_frontend_css() {
+        if (is_admin() || !function_exists('kbf_is_kbf_page') || !kbf_is_kbf_page()) {
+            return;
+        }
+        ob_start(function ($html) {
+            $pattern = '#<link\b[^>]*href=["\'][^"\']*(?:/assets/css/bntm-frontend\.css|/assets/css/frontend\.css)(?:\?[^"\']*)?["\'][^>]*>\s*#i';
+            return preg_replace($pattern, '', $html);
+        });
+    }
+}
+add_action('template_redirect', 'kbf_strip_hardcoded_legacy_frontend_css', 0);
+
 // Disable legacy plugin preloader on KBF pages (use KBF branding preloader instead).
 add_filter('bntm_disable_loading_overlay', function($disabled){
     if (function_exists('kbf_is_kbf_page') && kbf_is_kbf_page()) {
