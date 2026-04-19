@@ -377,7 +377,9 @@ if (!function_exists('kbf_dashboard_home_url')) {
         if ($dashboard_url !== '' && strpos($dashboard_url, '/') === 0) {
             $dashboard_url = home_url($dashboard_url);
         }
-        if ($dashboard_url === '' || !wp_http_validate_url($dashboard_url)) {
+        $dashboard_path = $dashboard_url ? (string) wp_parse_url($dashboard_url, PHP_URL_PATH) : '';
+        $dashboard_is_login = $dashboard_path && preg_match('#/(?:wp-login\.php|login)/?$#i', $dashboard_path);
+        if ($dashboard_url === '' || !wp_http_validate_url($dashboard_url) || $dashboard_is_login) {
             $dashboard_page = get_page_by_path('fundora-user');
             if ($dashboard_page && !empty($dashboard_page->ID)) {
                 $dashboard_url = get_permalink($dashboard_page->ID);
@@ -511,7 +513,14 @@ function kbf_handle_email_verification() {
         delete_user_meta($user_id, 'kbf_email_verify_hash');
         delete_user_meta($user_id, 'kbf_email_verify_expires');
         kbf_ensure_organizer_account_row($user_id);
-        $target = function_exists('kbf_get_page_url') ? kbf_get_page_url('signin') : wp_login_url();
+        $target = function_exists('kbf_get_page_url') ? (string) kbf_get_page_url('signin') : '';
+        if ($target === '' || !wp_http_validate_url($target)) {
+            $target = home_url('/fundora-sign-in/');
+        }
+        $target_path = (string) wp_parse_url($target, PHP_URL_PATH);
+        if ($target_path && preg_match('#/(?:wp-login\.php|login)/?$#i', $target_path)) {
+            $target = home_url('/fundora-sign-in/');
+        }
         wp_safe_redirect(add_query_arg('verified', '1', $target));
         exit;
     }
@@ -774,6 +783,13 @@ function kbf_get_page_url($page_key) {
                 $stored_url = home_url($stored_url);
             }
             if (wp_http_validate_url($stored_url)) {
+                // Never use WordPress core login endpoints for Fundora page URLs.
+                $stored_path = (string) wp_parse_url($stored_url, PHP_URL_PATH);
+                if ($stored_path && preg_match('#/(?:wp-login\.php|login)/?$#i', $stored_path)) {
+                    $stored_url = '';
+                }
+            }
+            if ($stored_url !== '' && wp_http_validate_url($stored_url)) {
                 $cache[$page_key] = $stored_url;
                 return $stored_url;
             }
