@@ -2410,6 +2410,255 @@ function bntm_kbf_render_landing() {
         .kbf-topbar{ flex-wrap:nowrap; gap:12px; justify-content:space-between; padding:12px 20px; }
     }
     .kbf-landing .kbf-hero-desc{ font-size: 16px !important; }
+    
+    /* ===== NEW HERO LAYOUT (PIXEL-FAITHFUL MATCH) ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+
+    .kbf-hero {
+        background: #ffffff !important;
+        background-image: none !important;
+    }
+    .kbf-hero::before, .kbf-hero::after {
+        display: none !important;
+    }
+
+    .vh-new-wrapper {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .vh-zone1 {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .vh-hero-headline {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 44px;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #1a1a2e;
+        text-align: center;
+        max-width: 620px;
+        margin: 0 auto 20px auto;
+        padding-top: 10px;
+    }
+    .vh-hero-highlight {
+        color: #4040cc;
+    }
+    .vh-trust-badges {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+    .vh-trust-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #4f5a6b;
+        font-weight: 500;
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    }
+    .vh-trust-badge i {
+        color: #64748b;
+        font-size: 18px;
+    }
+    .kbf-hero-heading {
+        margin-top: 0 !important;
+    }
+    .kbf-eyebrow {
+        color: #3b82f6 !important;
+        font-weight: 700 !important;
+        font-size: 11.5px !important;
+        text-transform: uppercase !important;
+        background: rgba(59, 130, 246, 0.08) !important;
+        border: 1px solid rgba(59, 130, 246, 0.2) !important;
+        padding: 6px 16px !important;
+        border-radius: 999px !important;
+        letter-spacing: 0.1em !important;
+        margin-bottom: 16px !important;
+    }
+    .kbf-eyebrow-dot {
+        background: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+        width: 6px !important;
+        height: 6px !important;
+        border-radius: 50% !important;
+        display: inline-block !important;
+    }
+    .vh-hero-subtext {
+        font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        color: #6b7280;
+        text-align: center;
+        max-width: 480px;
+        margin: 0 auto 32px auto;
+        line-height: 1.65;
+    }
+    .vh-hero-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 0;
+        margin-bottom: 48px;
+    }
+    
+    .vh-btn-filled {
+        background: #3333cc;
+        color: #ffffff !important;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 22px;
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .vh-btn-outlined {
+        background: transparent;
+        color: #1a1a2e !important;
+        border: 1.5px solid #d1d5db;
+        border-radius: 6px;
+        padding: 10px 22px;
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .vh-zone2 {
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        position: relative;
+        overflow: hidden;
+        width: calc(100% + 128px);
+        margin-left: -64px;
+        margin-right: -64px;
+        margin-bottom: -80px; 
+        height: 480px;
+    }
+    .vh-slider-track {
+        display: flex;
+        width: max-content;
+        animation: vhMarquee 40s linear infinite;
+        will-change: transform;
+    }
+    .vh-slider-group {
+        display: flex;
+        gap: 24px;
+        padding-right: 24px;
+    }
+    @keyframes vhMarquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    .vh-photo-card {
+        border-radius: 16px 16px 0 0;
+        overflow: hidden;
+        border: none;
+        box-shadow: none;
+        flex-shrink: 0;
+        width: 330px;
+        height: 480px;
+    }
+    .vh-photo-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        filter: grayscale(100%);
+        transition: filter 0.5s ease;
+    }
+    .vh-photo-card:hover img {
+        filter: grayscale(0%);
+    }
+    .vh-pc-1 { background: #8B9E7A; }
+    .vh-pc-2 { background: #C4A882; }
+    .vh-pc-3 { background: #C17E5E; }
+    .vh-pc-4 { background: #7B9BAA; }
+    .vh-pc-5 { background: #A8B5C2; }
+    .vh-pc-6 { background: #D9C5B2; }
+    .vh-pc-7 { background: #738276; }
+    
+    .vh-photo-fade {
+        position: absolute;
+        inset: 0;
+        background: 
+            linear-gradient(to right, #ffffff 0%, rgba(255, 255, 255, 0.95) 12%, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0) 75%, rgba(255, 255, 255, 0.95) 88%, #ffffff 100%),
+            radial-gradient(ellipse 25% 70% at 0% 100%, #ffffff 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0) 100%),
+            radial-gradient(ellipse 25% 70% at 100% 100%, #ffffff 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0) 100%);
+        pointer-events: none;
+    }
+    
+    @media (max-width: 900px) {
+        .kbf-container { max-width: 100% !important; }
+    }
+
+    @media (max-width: 860px) {
+        .kbf-hero {
+            height: auto !important;
+            min-height: 70vh;
+        }
+        .kbf-hero-inner {
+            padding: 40px 24px !important;
+            gap: 40px !important;
+        }
+        .vh-zone2 { 
+           margin-left: -24px; 
+           margin-right: -24px;
+           margin-bottom: -60px;
+           width: calc(100% + 48px);
+           height: 220px;
+        }
+        .vh-photo-card {
+            width: 150px;
+            height: 220px;
+        }
+        .vh-slider-group {
+            gap: 16px;
+            padding-right: 16px;
+        }
+    }
+    @media (max-width: 480px) {
+        .vh-trust-badges { gap: 16px; margin-top: 24px; justify-content: center; }
+        .vh-trust-badge { font-size: 13px; }
+        .kbf-hero-inner {
+            padding: 30px 16px !important;
+        }
+        .vh-zone2 { 
+           margin-left: -16px; 
+           margin-right: -16px;
+           width: calc(100% + 32px);
+           height: 180px;
+        }
+        .vh-photo-card {
+            width: 120px;
+            height: 180px;
+        }
+        .vh-slider-group {
+            gap: 12px;
+            padding-right: 12px;
+        }
+        .kbf-btn.kbf-hero-cta-btn {
+            width: 100%;
+        }
+    }
     </style>
 
     <!-- ================== HTML ================== -->
@@ -2454,73 +2703,80 @@ function bntm_kbf_render_landing() {
         <!-- HERO -->
         <div id="kbf-home" class="kbf-hero" style="margin-top: 14px; margin-bottom: 90px;">
           <div class="kbf-hero-inner">
-
-            <!-- Left: Text -->
-            <div class="kbf-hero-left">
-              <p class="kbf-eyebrow" style="margin:0; display:flex; align-items:center; gap:8px;">
-                <span class="kbf-eyebrow-dot"></span> Filipino Crowdfunding Platform
-              </p>
-
-              <h1 class="kbf-hero-heading">
-                Fundora:<br>
-                Start a fund,<br>
-                Change a Life.
-              </h1>
-
-              <p class="kbf-hero-desc">
-                Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
-              </p>
-
-              <div>
-                <a class="kbf-btn kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
-                  Start Supporting on Fundora
-                  <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
-                </a>
-                <div class="kbf-hero-trust">
-                  <span class="kbf-trust-badge">
-                    <i class="ph-fill ph-check-circle" aria-hidden="true"></i>
-                    ID Verified Organizers
-                  </span>
-                  <span class="kbf-trust-badge">
-                    <i class="ph-fill ph-shield-check" aria-hidden="true"></i>
-                    Transparent Tracking
-                  </span>
-                  <span class="kbf-trust-badge">
-                    <i class="ph-fill ph-lock" aria-hidden="true"></i>
-                    Secure Payments
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right: Floating phone cards -->
-            <div class="kbf-hero-right" aria-hidden="true">
-              <div class="kbf-cards-wrap">
-                <div class="kbf-pcard kbf-pcard-tl">
-                  <div class="kbf-pcard-img kbf-pimg-1">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/patient.jpg'); ?>" alt="Patient support" width="120" height="150" loading="eager">
+            <div class="vh-new-wrapper">
+               <div class="vh-zone1">
+                  <p class="kbf-eyebrow" style="margin:0; display:flex; align-items:center; gap:8px;">
+                    <span class="kbf-eyebrow-dot"></span> Filipino Crowdfunding Platform
+                  </p>
+                  <h1 class="kbf-hero-heading" style="text-align: center; margin-top: 24px; margin-bottom: 12px; max-width: 800px; width: 100%;">
+                    Fundora: Start a fund, Change a Life.
+                  </h1>
+                  <p class="kbf-hero-desc" style="text-align: center; margin-bottom: 24px; max-width: 500px; width: 100%;">
+                    Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
+                  </p>
+                  <div class="vh-hero-buttons">
+                    <a class="kbf-btn kbf-hero-cta-btn" href="<?php echo esc_url($cta_url); ?>">
+                      Start Supporting on Fundora
+                      <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+                    </a>
                   </div>
-                  <div class="kbf-pcard-bar">
-                    <div class="kbf-pcard-name">Yourself</div>
+                  <div class="vh-trust-badges">
+                     <div class="vh-trust-badge"><i class="ph-fill ph-check-circle"></i> ID Verified Organizers</div>
+                     <div class="vh-trust-badge"><i class="ph-fill ph-shield-check"></i> Transparent Tracking</div>
+                     <div class="vh-trust-badge"><i class="ph-fill ph-lock-key"></i> Secure Payments</div>
                   </div>
-                </div>
-                <div class="kbf-pcard kbf-pcard-main">
-                  <div class="kbf-pcard-img kbf-pimg-2">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/basketball.jpg'); ?>" alt="Basketball community" width="180" height="220" loading="eager">
+               </div>
+               <div class="vh-zone2">
+                  <div class="vh-slider-track">
+                     <div class="vh-slider-group">
+                        <div class="vh-photo-card vh-pc-1">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/disabled.jpg'); ?>" loading="lazy" alt="Elderly">
+                        </div>
+                        <div class="vh-photo-card vh-pc-2">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/patient.jpg'); ?>" loading="lazy" alt="Patient">
+                        </div>
+                        <div class="vh-photo-card vh-pc-3">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/basketball.jpg'); ?>" loading="lazy" alt="Basketball">
+                        </div>
+                        <div class="vh-photo-card vh-pc-4">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/bussiness.jpg'); ?>" loading="lazy" alt="Business">
+                        </div>
+                        <div class="vh-photo-card vh-pc-5">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/futbol.jpg'); ?>" loading="lazy" alt="Futbol">
+                        </div>
+                        <div class="vh-photo-card vh-pc-6">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/kids.jpg'); ?>" loading="lazy" alt="Kids">
+                        </div>
+                        <div class="vh-photo-card vh-pc-7">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/stray.jpg'); ?>" loading="lazy" alt="Dog">
+                        </div>
+                     </div>
+                     <div class="vh-slider-group">
+                        <div class="vh-photo-card vh-pc-1">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/disabled.jpg'); ?>" loading="lazy" alt="Elderly">
+                        </div>
+                        <div class="vh-photo-card vh-pc-2">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/patient.jpg'); ?>" loading="lazy" alt="Patient">
+                        </div>
+                        <div class="vh-photo-card vh-pc-3">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/basketball.jpg'); ?>" loading="lazy" alt="Basketball">
+                        </div>
+                        <div class="vh-photo-card vh-pc-4">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/bussiness.jpg'); ?>" loading="lazy" alt="Business">
+                        </div>
+                        <div class="vh-photo-card vh-pc-5">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/futbol.jpg'); ?>" loading="lazy" alt="Futbol">
+                        </div>
+                        <div class="vh-photo-card vh-pc-6">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/kids.jpg'); ?>" loading="lazy" alt="Kids">
+                        </div>
+                        <div class="vh-photo-card vh-pc-7">
+                           <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/stray.jpg'); ?>" loading="lazy" alt="Dog">
+                        </div>
+                     </div>
                   </div>
-                  <div class="kbf-pcard-bar">
-                    <div class="kbf-pcard-name">Charity or Events</div>
-                  </div>
-                </div>
-                <div class="kbf-pcard kbf-pcard-br">
-                  <div class="kbf-pcard-img kbf-pimg-4">
-                    <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/landing/graduation.jpg'); ?>" alt="Graduation moment" width="110" height="150" loading="eager">
-                  </div>
-                  <div class="kbf-pcard-bar">
-                    <div class="kbf-pcard-name">Someone Else</div>
-                  </div>
-                </div>
-              </div>
+                  <div class="vh-photo-fade"></div>
+               </div>
             </div>
           </div>
         </div>
