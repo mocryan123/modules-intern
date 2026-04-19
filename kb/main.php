@@ -643,22 +643,15 @@ function kbf_refund_all_sponsors($fund_id) {
 // Hide legacy sidebar on both frontend and admin
 function kbf_hide_bntm_sidebar_styles() {
     echo '<style type="text/css">
-        :root {
-            --bntm-sidebar-width: 0px !important;
-        }
-        html, body {
-            overflow-x: hidden !important;
-        }
-        .bntm-layout { display: block !important; flex-direction: column !important; }
-        .bntm-sidebar, #bntmSidebar, 
-        aside.bntm-sidebar, div.bntm-sidebar { 
-            display: none !important; 
-            width: 0 !important; 
-            min-width: 0 !important; 
-            visibility: hidden !important; 
-            opacity: 0 !important; 
-            position: absolute !important; 
-            left: -9999px !important; 
+                .bntm-main,
+        main.bntm-main,
+        #bntmMain,
+        .bntm-container {
+            margin-left: 0px !important;
+            padding-left: 0px !important;
+            transition: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
         }
         .bntm-main, .bntm-container, main.bntm-main, #bntmMain {
             margin-left: 0 !important;
