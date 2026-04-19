@@ -699,6 +699,8 @@ function kbf_hide_bntm_sidebar_styles() {
         /* Force remove sidebar margin on all KBF pages */
         .bntm-main,
         main.bntm-main,
+        .bntm-main.sidebar-collapsed,
+        main.bntm-main.sidebar-collapsed,
         #bntmMain,
         .bntm-container {
             margin-left: 0 !important;
@@ -717,6 +719,8 @@ function kbf_hide_bntm_sidebar_styles() {
         .bntm-main {
             margin-left: 0 !important;
             --bntm-sidebar-width: 0 !important;
+            --bntm-sidebar-collapsed: 0 !important;
+            --bntm-transition: 0s !important;
         }
         
         /* Hide any sidebar elements */
@@ -761,12 +765,19 @@ function kbf_hide_bntm_sidebar_js() {
             function removeSidebarMargin() {
                 // Remove CSS variable
                 document.documentElement.style.setProperty("--bntm-sidebar-width", "0");
+                document.documentElement.style.setProperty("--bntm-sidebar-collapsed", "0");
+                document.documentElement.style.setProperty("--bntm-transition", "0s");
                 
                 // Target all .bntm-main elements
                 var mains = document.querySelectorAll(".bntm-main, main.bntm-main, #bntmMain");
                 mains.forEach(function(main) {
-                    main.style.setProperty("margin-left", "0", "important");
-                    main.style.removeProperty("--bntm-sidebar-width");
+                    main.classList.remove("sidebar-collapsed");
+                    main.style.setProperty("margin-left", "0px", "important");
+                    main.style.setProperty("margin-inline-start", "0px", "important");
+                    main.style.setProperty("transition", "none", "important");
+                    main.style.setProperty("--bntm-sidebar-width", "0px", "important");
+                    main.style.setProperty("--bntm-sidebar-collapsed", "0px", "important");
+                    main.style.setProperty("--bntm-transition", "0s", "important");
                 });
                 
                 // Hide sidebar elements

@@ -150,6 +150,7 @@ function kbf_global_assets() {
         --bntm-sidebar-width: 0px !important;
         --bntm-sidebar-collapsed: 0px !important;
         --bntm-topbar-height: 0px !important;
+        --bntm-transition: 0s !important;
     }
     .kbf-wrap .bntm-layout,
     .kbf-user-ui .bntm-layout,
@@ -164,11 +165,14 @@ function kbf_global_assets() {
     .kbf-admin-ui .bntm-main,
     body.kbf-module-page .bntm-main,
     body.kbf-fullwidth-page .bntm-main,
+    .bntm-main.sidebar-collapsed,
+    main.bntm-main.sidebar-collapsed,
     .bntm-main,
     main.bntm-main,
     #bntmMain{
         margin-left:0 !important;
         margin-inline-start:0 !important;
+        transition:none !important;
         width:100% !important;
         max-width:100% !important;
         min-width:100% !important;
