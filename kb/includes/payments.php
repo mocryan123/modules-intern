@@ -184,7 +184,22 @@ function kbf_maya_base_url() {
  */
 function kbf_maya_request($endpoint, $payload = null, $method = 'POST', $use_secret = false) {
     $key = $use_secret ? kbf_maya_secret_key() : kbf_maya_public_key();
-    if (empty($key)) return ['error' => 'Maya API key not configured.'];
+    if (empty($key)) {
+        $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
+        $mode = $demo ? 'Sandbox' : 'Live';
+        $kind = $use_secret ? 'Secret Key' : 'Public Key';
+        $setting_key = $demo
+            ? ($use_secret ? 'kbf_maya_sandbox_secret' : 'kbf_maya_sandbox_public')
+            : ($use_secret ? 'kbf_maya_live_secret' : 'kbf_maya_live_public');
+        return [
+            'error' => sprintf(
+                'Maya %s %s is not configured (setting: %s).',
+                $mode,
+                $kind,
+                $setting_key
+            ),
+        ];
+    }
 
     $args = [
         'method'  => $method,

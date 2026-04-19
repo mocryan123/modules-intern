@@ -168,7 +168,7 @@ function kbf_admin_settings_tab() {
             <div class="kbf-form-group kbf-settings-field">
               <label for="sb-pub" class="kbf-settings-label">Sandbox Public Key</label>
               <input type="text" id="sb-pub" class="kbf-settings-key" value="<?php echo esc_attr($sb_pub); ?>" placeholder="pk-sandbox-..." autocomplete="off" autocapitalize="off" spellcheck="false">
-              <small class="kbf-settings-helper">Leave blank to keep existing key.</small>
+              <small class="kbf-settings-helper">Required for checkout redirect when Demo Mode is ON. Leave blank to keep existing key.</small>
             </div>
             <div class="kbf-form-group kbf-settings-field">
               <label for="sb-sec" class="kbf-settings-label">Sandbox Secret Key</label>
@@ -182,7 +182,7 @@ function kbf_admin_settings_tab() {
             <div class="kbf-form-group kbf-settings-field">
               <label for="lv-pub" class="kbf-settings-label">Live Public Key</label>
               <input type="text" id="lv-pub" class="kbf-settings-key" value="<?php echo esc_attr($lv_pub); ?>" placeholder="pk-live-..." autocomplete="off" autocapitalize="off" spellcheck="false">
-              <small class="kbf-settings-helper">Leave blank to keep existing key.</small>
+              <small class="kbf-settings-helper">Required for checkout redirect when Demo Mode is OFF (Live). Leave blank to keep existing key.</small>
             </div>
             <div class="kbf-form-group kbf-settings-field">
               <label for="lv-sec" class="kbf-settings-label">Live Secret Key</label>
