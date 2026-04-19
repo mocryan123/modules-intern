@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
  * KBF landing page template (HTML/CSS/JS).
  */
@@ -228,7 +228,7 @@ if (!function_exists('kbf_landing_render_faq')) {
 
 /**
  * @function  bntm_kbf_render_landing
- * @purpose   Main entry point — renders entire landing page HTML.
+ * @purpose   Main entry point â€” renders entire landing page HTML.
  * @used-by   WordPress shortcode [kbf_landing] (registered in includes/shortcodes.php)
  * @calls     kbf_landing_get_urls, kbf_landing_get_faq_items, kbf_landing_build_schema, 
  *            kbf_landing_register_seo, kbf_landing_get_image_sets, kbf_landing_render_faq, ob_start
@@ -546,6 +546,16 @@ function bntm_kbf_render_landing() {
         padding: 80px 64px;
         position: relative;
         z-index: 2;
+        border-radius: 24px;
+        border: 1px solid rgba(207, 224, 246, 0.9);
+        background:
+            radial-gradient(circle at 18% 8%, rgba(126, 196, 255, 0.18) 0%, rgba(126, 196, 255, 0) 34%),
+            radial-gradient(circle at 84% 8%, rgba(61, 142, 240, 0.12) 0%, rgba(61, 142, 240, 0) 38%),
+            linear-gradient(135deg, #f7fbff 0%, #ffffff 70%, #f0f6ff 100%);
+        background-size: 56% 56%, 52% 52%, 100% 100%;
+        background-repeat: no-repeat;
+        background-position: left top, right top, center;
+        box-shadow: 0 14px 34px rgba(31, 111, 224, 0.08);
     }
     /* Premium motion (sophisticated, refined) */
     .kbf-hero .kbf-hero-left,
@@ -682,16 +692,6 @@ function bntm_kbf_render_landing() {
         backdrop-filter: blur(8px) !important;
         -webkit-backdrop-filter: blur(8px) !important;
         line-height: normal !important;
-    }
-    .kbf-eyebrow-dot {
-        width: 3px; height: 3px; border-radius: 50%;
-        background: #3b82f6; display: inline-block; flex-shrink: 0;
-        box-shadow: 0 0 12px rgba(59, 130, 246, 0.7);
-        animation: kbfPulse 2s ease-in-out infinite;
-    }
-    @keyframes kbfPulse {
-        0%, 100% { box-shadow: 0 0 12px rgba(59, 130, 246, 0.7); opacity: 1; }
-        50% { box-shadow: 0 0 20px rgba(59, 130, 246, 1); opacity: 0.9; }
     }
     .kbf-hero-heading {
         font-size: clamp(36px, 5.2vw, 56px);
@@ -1146,16 +1146,19 @@ function bntm_kbf_render_landing() {
     .kbf-card--shine::after {
         content: '';
         position: absolute;
-        inset: 0;
+        top: 0;
+        bottom: 0;
+        left: -65%;
+        width: 55%;
         background: linear-gradient(120deg, transparent 0%, rgba(111,182,255,0.18) 40%, rgba(111,182,255,0.4) 52%, rgba(111,182,255,0.18) 64%, transparent 100%);
-        transform: translateX(-120%) skewX(-12deg);
+        transform: translateX(0) skewX(-12deg);
         opacity: 0;
         transition: opacity .55s ease, transform .55s ease;
         pointer-events: none;
     }
     .kbf-card--shine:hover::after {
         opacity: 1;
-        transform: translateX(150%) skewX(-12deg);
+        transform: translateX(320%) skewX(-12deg);
     }
 
     .kbf-about-values .kbf-about-value {
@@ -1484,6 +1487,10 @@ function bntm_kbf_render_landing() {
     
     /* Mobile navigation */
     @media (max-width: 900px) {
+        .kbf-landing p,
+        .kbf-landing li {
+            font-size: 12px !important;
+        }
         .kbf-hamburger { display: flex !important; }
         .kbf-nav { display: none !important; }
         .kbf-topbar-left { gap: 16px; }
@@ -2457,18 +2464,19 @@ function bntm_kbf_render_landing() {
         margin-top: 20px;
         flex-wrap: wrap;
         margin-bottom: 24px;
+        color: #2563eb;
     }
     .vh-trust-badge {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 14px;
-        color: #4f5a6b;
+        color: #2563eb;
         font-weight: 500;
         font-family: 'Poppins', system-ui, -apple-system, sans-serif;
     }
     .vh-trust-badge i {
-        color: #64748b;
+        color: #2563eb;
         font-size: 18px;
     }
     .kbf-hero-heading {
@@ -2485,14 +2493,6 @@ function bntm_kbf_render_landing() {
         border-radius: 999px !important;
         letter-spacing: 0.1em !important;
         margin-bottom: 16px !important;
-    }
-    .kbf-eyebrow-dot {
-        background: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
-        width: 6px !important;
-        height: 6px !important;
-        border-radius: 50% !important;
-        display: inline-block !important;
     }
     .vh-hero-subtext {
         font-family: 'Poppins', system-ui, -apple-system, sans-serif;
@@ -2613,16 +2613,38 @@ function bntm_kbf_render_landing() {
     @media (max-width: 860px) {
         .kbf-hero {
             height: auto !important;
-            min-height: 70vh;
+            min-height: 0;
         }
         .kbf-hero-inner {
-            padding: 40px 24px !important;
-            gap: 40px !important;
+            padding: 28px 24px !important;
+            gap: 22px !important;
+        }
+        .vh-new-wrapper{
+            height:auto;
+        }
+        .vh-zone1{
+            flex:0 0 auto;
+            justify-content:flex-start;
+            padding-top:0;
+        }
+        .vh-hero-headline{
+            margin-bottom:12px;
+            padding-top:0;
+        }
+        .vh-hero-subtext{
+            margin-bottom:18px;
+        }
+        .vh-hero-buttons{
+            margin-bottom:20px;
+        }
+        .vh-trust-badges{
+            margin-top:8px;
+            margin-bottom:10px;
         }
         .vh-zone2 { 
            margin-left: -24px; 
            margin-right: -24px;
-           margin-bottom: -60px;
+           margin-bottom: -28px;
            width: calc(100% + 48px);
            height: 220px;
         }
@@ -2636,16 +2658,34 @@ function bntm_kbf_render_landing() {
         }
     }
     @media (max-width: 480px) {
+        .kbf-hero{
+            margin-bottom:34px !important;
+        }
         .vh-trust-badges { gap: 16px; margin-top: 24px; justify-content: center; }
         .vh-trust-badge { font-size: 13px; }
         .kbf-hero-inner {
-            padding: 30px 16px !important;
+            padding: 22px 16px !important;
+            gap: 18px !important;
+        }
+        .kbf-hero-heading{
+            margin-top:10px !important;
+            margin-bottom:10px !important;
+        }
+        .kbf-hero-desc{
+            margin-bottom:16px !important;
+        }
+        .vh-hero-buttons{
+            margin-bottom:14px;
+        }
+        .vh-trust-badges{
+            margin-top:4px;
+            margin-bottom:8px;
         }
         .vh-zone2 { 
            margin-left: -16px; 
            margin-right: -16px;
            width: calc(100% + 32px);
-           height: 180px;
+            height: 180px;
         }
         .vh-photo-card {
             width: 120px;
@@ -2657,6 +2697,45 @@ function bntm_kbf_render_landing() {
         }
         .kbf-btn.kbf-hero-cta-btn {
             width: 100%;
+        }
+    }
+    @media (max-width: 900px) {
+        .kbf-landing .kbf-hero {
+            height: auto !important;
+            min-height: 0 !important;
+        }
+        .kbf-landing .kbf-hero-inner {
+            height: auto !important;
+            min-height: 0 !important;
+            align-items: stretch !important;
+        }
+        .kbf-landing .vh-new-wrapper {
+            height: auto !important;
+            min-height: 0 !important;
+        }
+        .kbf-landing .vh-zone1 {
+            flex: 0 0 auto !important;
+        }
+        .kbf-landing .vh-zone2 {
+            flex: 0 0 auto !important;
+            margin-top: 20px !important;
+        }
+        .kbf-landing .kbf-eyebrow {
+            font-size: 10px !important;
+        }
+        /* Legal-page mobile menu sizing/layering */
+        .kbf-landing .kbf-mobile-overlay{
+            z-index: 998 !important;
+        }
+        .kbf-landing .kbf-mobile-menu{
+            top: 60px !important;
+            z-index: 999 !important;
+            border-radius: 0 !important;
+        }
+        .kbf-landing .kbf-mobile-menu a{
+            font-size: 13.5px !important;
+            line-height: 1.35 !important;
+            text-align: center !important;
         }
     }
     </style>
@@ -2705,13 +2784,13 @@ function bntm_kbf_render_landing() {
           <div class="kbf-hero-inner">
             <div class="vh-new-wrapper">
                <div class="vh-zone1">
-                  <p class="kbf-eyebrow" style="margin:0; display:flex; align-items:center; gap:8px;">
-                    <span class="kbf-eyebrow-dot"></span> Filipino Crowdfunding Platform
+                  <p class="kbf-eyebrow" style="margin:0; display:flex; align-items:center;">
+                    Filipino Crowdfunding Platform
                   </p>
-                  <h1 class="kbf-hero-heading" style="text-align: center; margin-top: 24px; margin-bottom: 12px; max-width: 800px; width: 100%;">
+                  <h1 class="kbf-hero-heading" style="text-align: center; margin-top: 24px; margin-bottom: 12px; max-width: 700px; width: 100%;">
                     Fundora: Start a fund, Change a Life.
                   </h1>
-                  <p class="kbf-hero-desc" style="text-align: center; margin-bottom: 24px; max-width: 500px; width: 100%;">
+                  <p class="kbf-hero-desc" style="text-align: center; margin-bottom: 24px; max-width: 700px; width: 100%;">
                     Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
                   </p>
                   <div class="vh-hero-buttons">
@@ -3147,7 +3226,7 @@ function bntm_kbf_render_landing() {
          * @purpose   Animates counter numbers with easing effect.
          * @used-by   statsIO IntersectionObserver callback
          * @calls     requestAnimationFrame
-         * @params    DOMElement container — Element containing stat numbers
+         * @params    DOMElement container â€” Element containing stat numbers
          * @returns   void
          * @status    ACTIVE
          */
@@ -3216,66 +3295,6 @@ function bntm_kbf_render_landing() {
             });
         });
 
-        // -- Hamburger menu toggle --
-        var hamburgerBtn = document.getElementById('kbf-hamburger-btn');
-        var menu = document.getElementById('kbf-mobile-menu');
-        var menuOverlay = document.getElementById('kbf-mobile-overlay');
-        var hamburgerIcon = document.getElementById('kbf-hamburger-icon');
-        if (hamburgerBtn && menu) {
-            var menuOpen = false;
-            /**
-             * @function  setIcon
-             * @purpose   Updates hamburger menu icon classes based on open state.
-             * @used-by   openMobileMenu, closeMobileMenu
-             * @calls     None
-             * @params    boolean stateOpen — True for open (X icon), false for closed (hamburger icon)
-             * @returns   void
-             * @status    ACTIVE
-             */
-            function setIcon(stateOpen) {
-                if (!hamburgerIcon) return;
-                hamburgerIcon.className = '';
-                var classes = stateOpen ? ['ph','ph-x'] : ['ph','ph-list'];
-                classes.forEach(function(c) { hamburgerIcon.classList.add(c); });
-            }
-            /**
-             * @function  openMobileMenu
-             * @purpose   Opens mobile navigation menu and updates icon.
-             * @used-by   hamburgerBtn click handler
-             * @calls     setIcon
-             * @params    none
-             * @returns   void
-             * @status    ACTIVE
-             */
-            function openMobileMenu() {
-                menuOpen = true;
-                menu.classList.add('kbf-menu-open');
-                if (menuOverlay) menuOverlay.classList.add('kbf-overlay-open');
-                setIcon(true);
-            }
-            /**
-             * @function  closeMobileMenu
-             * @purpose   Closes mobile navigation menu and resets icon.
-             * @used-by   hamburgerBtn click handler, overlay click handler, resize event
-             * @calls     setIcon
-             * @params    none
-             * @returns   void
-             * @status    ACTIVE
-             */
-            function closeMobileMenu() {
-                menuOpen = false;
-                menu.classList.remove('kbf-menu-open');
-                if (menuOverlay) menuOverlay.classList.remove('kbf-overlay-open');
-                setIcon(false);
-            }
-            hamburgerBtn.addEventListener('click', function() {
-                menuOpen ? closeMobileMenu() : openMobileMenu();
-            });
-            if (menuOverlay) menuOverlay.addEventListener('click', closeMobileMenu);
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 900 && menuOpen) closeMobileMenu();
-            });
-        }
 
         // -- Sticky navbar scroll effect --
         var topbar = document.querySelector('.kbf-topbar');
@@ -3300,7 +3319,7 @@ function bntm_kbf_render_landing() {
          * @purpose   Checks if element is currently visible in viewport.
          * @used-by   Compare table scroll-jack IIFE
          * @calls     getBoundingClientRect
-         * @params    DOMElement el — Element to check
+         * @params    DOMElement el â€” Element to check
          * @returns   boolean True if element overlaps with viewport
          * @status    ACTIVE
          */
@@ -3374,6 +3393,7 @@ function bntm_kbf_render_landing() {
           }
         }, { passive: true });
     })();
+
     </script>
 
     <!-- Cookie Consent Logic -->
@@ -3392,7 +3412,7 @@ function bntm_kbf_render_landing() {
          * @purpose   Saves cookie consent choice to localStorage.
          * @used-by   acceptBtn click handler, manageBtn click handler, closeBtn click handler
          * @calls     localStorage.setItem
-         * @params    string state — 'accepted' or 'declined'
+         * @params    string state â€” 'accepted' or 'declined'
          * @returns   void
          * @status    ACTIVE
          */
@@ -3452,7 +3472,7 @@ function bntm_kbf_render_landing() {
             hideBanner();
         });
 
-        // Manage cookies — for now same as accept; can be extended
+        // Manage cookies â€” for now same as accept; can be extended
         if (manageBtn) {
             manageBtn.addEventListener('click', function(e) {
                 e.preventDefault();
