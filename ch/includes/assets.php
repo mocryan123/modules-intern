@@ -72,31 +72,38 @@ function ch_global_styles()
 
         /* TOP NAV */
         .ch-burger-menu-btn {
-            display: none;
+            display: none; /* hidden on desktop; shown via mobile media query */
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
             background: transparent;
             border: none;
-            padding: 4px;
+            padding: 0;
             cursor: pointer;
             color: var(--ch-text);
             flex-shrink: 0;
             outline: none;
             border-radius: var(--ch-radius-sm);
             transition: background 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .ch-burger-menu-btn:hover {
-            background: color-mix(in srgb, var(--ch-text) 10%, transparent);
+            background: color-mix(in srgb, var(--ch-text) 8%, transparent);
         }
 
         .ch-top-nav {
             background: rgba(255, 255, 255, 0.88);
             border-bottom: 1px solid var(--ch-border);
-            padding: 0 32px;
-            height: 64px;
-            transition: all 0.25s ease;
-            display: flex;
-            justify-content: space-between;
+            /* Grid: [logo] [nav links] [user actions] — prevents overlap at all widths */
+            display: grid;
+            grid-template-columns: auto 1fr auto;
             align-items: center;
+            padding: 0 28px;
+            height: 64px;
+            box-sizing: border-box;
+            transition: background 0.25s ease, box-shadow 0.25s ease;
             position: sticky;
             top: 0;
             z-index: 200;
@@ -110,13 +117,16 @@ function ch_global_styles()
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 24px rgba(0, 0, 0, 0.3);
         }
 
-        /* Desktop nav center cluster */
+        /* Desktop nav center cluster — static flow, no absolute positioning */
         .ch-top-nav-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+            position: static;
+            left: auto;
+            transform: none;
             display: flex;
             align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            min-width: 0;
         }
 
         .ch-nav-links {
@@ -124,6 +134,7 @@ function ch_global_styles()
             gap: 2px;
             height: 100%;
             align-items: center;
+            flex-wrap: nowrap;
         }
 
         .ch-top-nav-notifications {
@@ -135,20 +146,21 @@ function ch_global_styles()
             display: inline;
         }
 
-        /* hidden at 480px breakpoint */
         .ch-nav-link {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 7px 16px;
+            padding: 8px 14px;
             border-radius: var(--ch-radius);
             text-decoration: none;
             font-size: 13.5px;
             font-weight: 500;
             color: var(--ch-text-muted);
-            transition: all 0.15s;
+            transition: background 0.15s, color 0.15s;
             height: 38px;
             letter-spacing: -0.1px;
+            white-space: nowrap;
+            box-sizing: border-box;
         }
 
         .ch-nav-link:hover {
@@ -178,28 +190,42 @@ function ch_global_styles()
         .ch-user-bar {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
-        /* Subtle separator between notification bell and avatar on desktop */
+        /* Hide desktop-only bars on mobile; show them on desktop */
+        .ch-nav-user-desktop,
+        .ch-nav-guest-desktop {
+            display: none;
+        }
+
+        /* ── Desktop layout (≥781px) ── */
         @media (min-width: 781px) {
             .ch-top-nav {
-                justify-content: flex-start;
-                gap: 16px;
+                grid-template-columns: auto 1fr auto;
+                padding: 0 28px;
             }
 
-            /* Let the drawer grow to fill available space, pushing user bar to far right */
+            /* Drawer becomes a layout passthrough on desktop */
             .ch-top-nav .ch-mobile-drawer-wrap {
-                flex: 1 1 auto;
+                display: contents !important;
             }
 
-            /* Push the desktop user bars to the far right */
+            /* For auth page, hide the user-bar inside drawer on desktop to avoid duplication */
+            .ch-auth-drawer .ch-user-bar {
+                display: none !important;
+            }
+
             .ch-nav-user-desktop,
             .ch-nav-guest-desktop {
-                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-left: 0;
+                justify-self: end;
             }
 
-            /* Remove the old generic rule that no longer applies */
             .ch-top-nav .ch-top-nav-notifications {
                 margin-left: 0;
                 margin-right: 0;
@@ -209,33 +235,41 @@ function ch_global_styles()
                 gap: 8px;
             }
 
+            /* Separator between bell and avatar */
             .ch-user-bar::before {
                 content: '';
                 display: block;
                 width: 1px;
                 height: 22px;
                 background: var(--ch-border);
-                margin-right: 2px;
+                margin-right: 4px;
+                flex-shrink: 0;
+            }
+
+            .ch-burger-menu-btn {
+                display: none !important;
+            }
+
+            .ch-top-drawer-close {
+                display: none !important;
             }
         }
 
-        /* Hide desktop-only bars on mobile; show them on desktop */
-        .ch-nav-user-desktop,
-        .ch-nav-guest-desktop {
-            display: none;
-        }
+        /* ── Tablet: collapse nav labels when space is tight (781–880px) ── */
+        @media (min-width: 781px) and (max-width: 880px) {
+            .ch-nav-label {
+                display: none !important;
+            }
 
-        @media (min-width: 781px) {
-            .ch-nav-user-desktop,
-            .ch-nav-guest-desktop {
-                display: flex;
-                align-items: center;
+            .ch-nav-link {
+                padding: 8px 10px;
+                gap: 0;
             }
         }
 
         .ch-icon-action-btn {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: var(--ch-radius);
             border: 1px solid var(--ch-border);
             background: var(--ch-surface);
@@ -245,7 +279,8 @@ function ch_global_styles()
             justify-content: center;
             position: relative;
             color: var(--ch-text-muted);
-            transition: all 0.15s;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            flex-shrink: 0;
         }
 
         .ch-icon-action-btn:hover {
@@ -255,8 +290,8 @@ function ch_global_styles()
         }
 
         .ch-avatar-btn {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark));
             color: white;
@@ -269,6 +304,8 @@ function ch_global_styles()
             justify-content: center;
             transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
             box-shadow: 0 2px 8px rgba(255, 117, 81, 0.25);
+            flex-shrink: 0;
+            overflow: hidden;
         }
 
         .ch-avatar-btn:hover {
@@ -600,14 +637,36 @@ function ch_global_styles()
             letter-spacing: -0.2px;
         }
 
+        /* Logo container — CSS controls layout; no inline styles needed */
+        .ch-top-nav-logo {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        /* Logo anchor wrapper (used when logo links back to feed) */
+        .ch-brand-logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            line-height: 0;
+        }
+
         .ch-brand-logo {
-            height: 32px;
+            height: 30px;
             width: auto;
-            max-width: 180px;
+            max-width: 160px;
             object-fit: contain;
             display: block;
             flex-shrink: 0;
             filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.08));
+        }
+
+        @media (max-width: 780px) {
+            .ch-brand-logo {
+                height: 26px;
+                max-width: 130px;
+            }
         }
 
         .ch-main-content {
@@ -5009,8 +5068,8 @@ function ch_global_styles()
         }
 
         /* ============================================================
-        RESPONSIVE — comprehensive mobile/tablet fixes
-        ============================================================ */
+            RESPONSIVE — comprehensive mobile/tablet fixes
+            ============================================================ */
 
         /* Global overflow prevention — stops horizontal scroll on mobile */
         html,
@@ -5095,6 +5154,9 @@ function ch_global_styles()
             .ch-filter-btn,
             .ch-vote-btn,
             .ch-icon-btn,
+            .ch-icon-action-btn,
+            .ch-avatar-btn,
+            .ch-burger-menu-btn,
             .ch-page-btn,
             .ch-post-action,
             .ch-comment-action {
@@ -5102,16 +5164,23 @@ function ch_global_styles()
             }
 
             .ch-vote-btn,
-            .ch-icon-btn {
+            .ch-icon-btn,
+            .ch-icon-action-btn,
+            .ch-avatar-btn,
+            .ch-burger-menu-btn {
                 min-width: 44px;
             }
 
             .ch-input,
-            .ch-textarea {
-                font-size: 16px;
+            .ch-textarea,
+            .ch-search-input {
+                font-size: 16px; /* prevents iOS zoom on focus */
             }
 
-            /* prevents iOS zoom on focus */
+            /* Disable flicker-on-tap hover scale for avatar */
+            .ch-avatar-btn:hover {
+                transform: none;
+            }
         }
 
         /* ── Tablet: 1024px ───────────────────────────────────────── */
@@ -5206,9 +5275,9 @@ function ch_global_styles()
             }
 
             .ch-brand-logo {
-                height: 28px;
+                height: 26px;
                 width: auto;
-                max-width: 140px;
+                max-width: 130px;
                 object-fit: contain;
                 display: block;
                 flex-shrink: 0;
@@ -5220,52 +5289,64 @@ function ch_global_styles()
                 margin-right: 0 !important;
             }
 
-            .ch-top-nav-logo {
-                order: 1;
+            /* Mobile top-nav: revert to flex row, safe-area aware */
+            .ch-top-nav {
+                display: flex !important;
+                grid-template-columns: none;
+                padding: 0 16px;
+                height: 60px;
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
             }
 
-            .ch-top-nav .ch-top-nav-notifications {
+            .ch-top-nav-logo {
+                order: 1;
+                flex-shrink: 0;
+                margin-right: 0 !important;
+            }
+
+            /* Mobile drawer: occupies the flex middle but is visually offscreen */
+            .ch-top-nav .ch-mobile-drawer-wrap {
                 order: 2;
+                flex: 1 1 auto;
+            }
+
+            /* Notification bell stays visible in the mobile header (logged-in only) */
+            .ch-top-nav .ch-top-nav-notifications {
+                order: 3;
+                display: flex !important;
+                align-items: center;
                 margin-left: auto;
                 margin-right: 8px;
             }
 
-            .ch-top-nav .ch-burger-menu-btn {
-                display: flex;
-                order: 3;
-                margin-left: 0;
+            /* Burger: far right, full tap target */
+            .ch-top-nav {
+                position: relative;
             }
 
+            .ch-top-nav .ch-burger-menu-btn {
+                order: 4;
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 44px;
+                margin-left: 0;
+                position: absolute;
+                right: max(16px, env(safe-area-inset-right));
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            /* Nav links are inside the drawer on mobile — not shown in the bar */
             .ch-nav-links {
                 display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background: var(--ch-bg);
-                flex-direction: column;
-                padding: 16px 20px;
-                box-shadow: var(--ch-shadow-md);
-                border-bottom: 1px solid var(--ch-border);
             }
 
+            /* User bar also hidden in the top bar on mobile (lives in drawer) */
             .ch-user-bar {
                 display: none;
-                position: absolute;
-                top: calc(100% + 104px);
-                left: 0;
-                width: 100%;
-                background: var(--ch-surface);
-                padding: 6px 20px 24px;
-                box-shadow: var(--ch-shadow-md);
-                border-bottom: 1px solid var(--ch-border);
-                border-radius: 0 0 20px 20px;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .ch-user-bar .ch-btn {
-                width: 100%;
             }
 
             .ch-nav-links.ch-nav-open,
@@ -6054,8 +6135,8 @@ function ch_global_styles()
         }
 
         /* ============================================================
-           POPULAR CATEGORIES CARD
-           ============================================================ */
+               POPULAR CATEGORIES CARD
+               ============================================================ */
         .ch-popular-cats-card {
             background: var(--ch-surface);
             border: 1px solid var(--ch-border);
@@ -6132,8 +6213,8 @@ function ch_global_styles()
         }
 
         /* ============================================================
-           WELCOME POPUP
-           ============================================================ */
+               WELCOME POPUP
+               ============================================================ */
         .ch-welcome-overlay {
             position: fixed;
             inset: 0;
@@ -6385,8 +6466,8 @@ function ch_global_styles()
         }
 
         /* ============================================================
-           SETTINGS MODAL
-           ============================================================ */
+               SETTINGS MODAL
+               ============================================================ */
         .ch-settings-section {
             padding: 6px 0;
             border-bottom: 1px solid var(--ch-border-soft);
@@ -6440,11 +6521,11 @@ function ch_global_styles()
         }
 
         /* ============================================================
-           DARK MODE
-           ============================================================ */
+               DARK MODE
+               ============================================================ */
         /* Variables work whether ch-dark is on <html> (feed/post pages)
-           or on .ch-dashboard-wrap (admin panel — scoped to avoid
-           darkening the BNTM universal container wrapper) */
+               or on .ch-dashboard-wrap (admin panel — scoped to avoid
+               darkening the BNTM universal container wrapper) */
         .ch-dark,
         .ch-dashboard-wrap.ch-dark {
             --ch-accent: #FF7551;
@@ -7078,8 +7159,8 @@ function ch_global_styles()
         }
 
         /* ============================================================
-           COLOR PICKER — wheel + hex input + swatches
-           ============================================================ */
+               COLOR PICKER — wheel + hex input + swatches
+               ============================================================ */
         .ch-color-picker-wrap {
             display: flex;
             flex-direction: column;
@@ -7174,8 +7255,8 @@ function ch_global_styles()
         }
 
         /* ============================================================
-           BUTTON LOADING STATES & SPINNER
-           ============================================================ */
+               BUTTON LOADING STATES & SPINNER
+               ============================================================ */
         @keyframes ch-spin {
             from {
                 transform: rotate(0deg);
@@ -7210,8 +7291,8 @@ function ch_global_styles()
         }
 
         /* ============================================================
-           NAV ITEM ACTIVE TRANSITION (tab switching feel)
-           ============================================================ */
+               NAV ITEM ACTIVE TRANSITION (tab switching feel)
+               ============================================================ */
         .ch-nav-item {
             transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
         }
@@ -7228,8 +7309,8 @@ function ch_global_styles()
         }
 
         /* ============================================================
-           MODAL OPEN / CLOSE ANIMATIONS
-           ============================================================ */
+               MODAL OPEN / CLOSE ANIMATIONS
+               ============================================================ */
         .ch-modal-overlay {
             animation: ch-overlay-in 0.18s ease;
         }
@@ -7288,10 +7369,13 @@ function ch_global_styles()
         }
 
 
-        /* ── REVISED MOBILE DRAWER FOR .ch-mobile-drawer-wrap ── */
+        /* ── MOBILE DRAWER (.ch-mobile-drawer-wrap) ── */
         @media (max-width: 780px) {
             body.ch-drawer-locked {
                 overflow: hidden;
+                /* Prevent iOS momentum-scroll bleed through */
+                position: fixed;
+                width: 100%;
             }
 
             .ch-mobile-drawer-wrap {
@@ -7299,20 +7383,27 @@ function ch_global_styles()
                 top: 0;
                 right: 0;
                 bottom: 0;
-                width: 280px;
-                max-width: 85vw;
+                width: 300px;
+                max-width: 88vw;
                 background: var(--ch-surface);
                 z-index: 99999;
-                transform: translateX(100%);
+                transform: translateX(110%); /* slightly beyond edge avoids 1px flash on Android */
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 display: flex !important;
                 flex-direction: column;
-                padding: 24px 20px;
-                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
+                /* Clear the close button at top, respect notch at bottom */
+                padding-top: 64px;
+                padding-left: 20px;
+                padding-right: 20px;
+                padding-bottom: max(24px, env(safe-area-inset-bottom));
+                box-shadow: -12px 0 48px rgba(0, 0, 0, 0.12);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
             }
 
             .ch-dark .ch-mobile-drawer-wrap {
-                box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+                box-shadow: -12px 0 48px rgba(0, 0, 0, 0.65);
                 border-left: 1px solid var(--ch-border-soft);
             }
 
@@ -7320,6 +7411,7 @@ function ch_global_styles()
                 transform: translateX(0);
             }
 
+            /* Nav links inside the drawer */
             .ch-mobile-drawer-wrap .ch-nav-links,
             .ch-mobile-drawer-wrap .ch-user-bar {
                 position: static !important;
@@ -7331,16 +7423,20 @@ function ch_global_styles()
                 border-bottom: none !important;
                 padding: 0 !important;
                 gap: 4px;
-                margin-top: 32px;
+                margin-top: 0;
+                height: auto !important;
             }
 
             .ch-mobile-drawer-wrap .ch-nav-link {
                 width: 100%;
-                height: auto;
+                height: auto !important;
+                min-height: 50px;
                 justify-content: flex-start;
-                font-size: 16px;
-                padding: 14px 12px;
+                font-size: 15.5px;
+                font-weight: 500;
+                padding: 13px 14px;
                 border-radius: var(--ch-radius);
+                gap: 12px;
             }
 
             .ch-mobile-drawer-wrap .ch-nav-label {
@@ -7350,65 +7446,88 @@ function ch_global_styles()
             .ch-mobile-drawer-wrap .ch-nav-link svg {
                 width: 20px;
                 height: 20px;
+                flex-shrink: 0;
             }
 
             .ch-mobile-drawer-wrap .ch-nav-link.active {
                 background: var(--ch-accent-light);
                 color: var(--ch-accent);
+                font-weight: 600;
             }
 
             .ch-mobile-drawer-wrap .ch-nav-link.active::after {
-                display: none;
+                display: none !important;
             }
 
+            /* Guest auth buttons row inside drawer */
             .ch-mobile-drawer-wrap .ch-user-bar {
-                flex-direction: row;
+                flex-direction: row !important;
                 flex-wrap: wrap;
                 align-items: center;
-                justify-content: flex-start;
-                gap: 16px;
+                justify-content: stretch;
+                gap: 12px;
                 margin-top: auto;
                 padding-top: 24px !important;
                 border-top: 1px solid var(--ch-border-soft) !important;
                 border-radius: 0;
             }
 
+            /* Suppress separator inside drawer */
+            .ch-mobile-drawer-wrap .ch-user-bar::before {
+                display: none !important;
+            }
+
             .ch-mobile-drawer-wrap .ch-user-bar .ch-btn {
                 width: 100%;
                 flex: 1;
-                min-width: 100px;
+                min-width: 110px;
+                min-height: 48px;
+                justify-content: center;
+                font-size: 14px;
             }
 
+            /* Drawer close button — top-right, mirrors burger position */
             .ch-top-drawer-close {
                 position: absolute;
-                top: 16px;
-                left: 16px;
-                background: none;
-                border: none;
-                font-size: 28px;
+                top: 14px;
+                right: 16px;
+                left: auto;
+                width: 38px;
+                height: 38px;
+                background: var(--ch-bg);
+                border: 1px solid var(--ch-border);
+                border-radius: var(--ch-radius-sm);
+                font-size: 22px;
+                line-height: 1;
                 color: var(--ch-text-muted);
                 cursor: pointer;
-                padding: 4px;
-                display: flex;
+                padding: 0;
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                transition: color 0.15s, background 0.15s;
+                z-index: 1;
             }
 
             .ch-top-drawer-close:hover {
                 color: var(--ch-text);
+                background: var(--ch-surface);
             }
 
+            /* Backdrop */
             .ch-menu-backdrop {
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0, 0, 0, 0.4);
+                background: rgba(0, 0, 0, 0.38);
                 z-index: 99998;
                 opacity: 0;
                 pointer-events: none;
                 transition: opacity 0.3s ease;
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
+                backdrop-filter: blur(3px);
+                -webkit-backdrop-filter: blur(3px);
             }
 
             .ch-menu-backdrop.ch-backdrop-visible {
@@ -7428,9 +7547,9 @@ function ch_global_styles()
         }
 
         /* ── GLOBAL UNIFORM MODERNIZATION (Derived from feed search bar) ── */
-        .ch-input, 
-        .ch-select-sm, 
-        .ch-composer-cat-select, 
+        .ch-input,
+        .ch-select-sm,
+        .ch-composer-cat-select,
         .ch-color-input,
         .ch-composer-title,
         .ch-composer-guest-name,
@@ -7442,27 +7561,27 @@ function ch_global_styles()
             border: 1px solid var(--ch-border) !important;
             color: var(--ch-text) !important;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
             box-sizing: border-box !important;
             max-width: 100%;
         }
 
-        .ch-input:focus, 
-        .ch-select-sm:focus, 
+        .ch-input:focus,
+        .ch-select-sm:focus,
         .ch-composer-cat-select:focus,
         .ch-color-input:focus,
         .ch-composer-title:focus,
         .ch-composer-guest-name:focus,
         .ch-composer-tags-input:focus {
             background: var(--ch-surface) !important;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 0 0 3px rgba(255,117,81,0.15) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 3px rgba(255, 117, 81, 0.15) !important;
             border-color: var(--ch-accent) !important;
             transform: translateY(-1px) !important;
             outline: none !important;
         }
 
         /* Textarea uniform protection (Glassy but rectangular) */
-        .ch-textarea, 
+        .ch-textarea,
         .ch-composer-textarea,
         .ch-reason-textarea,
         textarea.ch-input {
@@ -7478,11 +7597,12 @@ function ch_global_styles()
 
         /* Remove ugly native browser up/down spin buttons on number inputs */
         /* WebKit/Blink browsers */
-        input[type="number"]::-webkit-inner-spin-button, 
-        input[type="number"]::-webkit-outer-spin-button { 
-            -webkit-appearance: none !important; 
-            margin: 0 !important; 
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none !important;
+            margin: 0 !important;
         }
+
         /* Firefox */
         input[type="number"] {
             -moz-appearance: textfield !important;
@@ -7492,6 +7612,7 @@ function ch_global_styles()
         input[type="file"] {
             color: var(--ch-text) !important;
         }
+
         input[type="file"]::file-selector-button {
             color: var(--ch-text);
             background: color-mix(in srgb, var(--ch-surface) 60%, var(--ch-bg) 40%);
@@ -7504,51 +7625,120 @@ function ch_global_styles()
             font-family: var(--ch-font);
             font-weight: 500;
         }
+
         input[type="file"]::file-selector-button:hover {
             background: var(--ch-surface);
             border-color: var(--ch-accent);
         }
-        
+
         /* Ensure parents of textareas let them flex correctly */
-        .ch-field-group, .ch-comment-form, .ch-reply-form { flex: 1; width: 100%; }
+        .ch-field-group,
+        .ch-comment-form,
+        .ch-reply-form {
+            flex: 1;
+            width: 100%;
+        }
 
         /* Nuanced restores */
-        .ch-color-input { width: auto; padding: 4px 12px !important; }
-        .ch-composer-title { font-size: 18px !important; font-weight: 700 !important; }
-        .ch-composer-tags-input { border-radius: 999px !important; }
-        .ch-composer-tags-row { padding: 4px; background: transparent; border: none; }
-        .ch-composer-tags-row svg { margin-left: 12px; }
-        .ch-composer-author-info { gap: 12px; }
+        .ch-color-input {
+            width: auto;
+            padding: 4px 12px !important;
+        }
+
+        .ch-composer-title {
+            font-size: 18px !important;
+            font-weight: 700 !important;
+        }
+
+        .ch-composer-tags-input {
+            border-radius: 999px !important;
+        }
+
+        .ch-composer-tags-row {
+            padding: 4px;
+            background: transparent;
+            border: none;
+        }
+
+        .ch-composer-tags-row svg {
+            margin-left: 12px;
+        }
+
+        .ch-composer-author-info {
+            gap: 12px;
+        }
 
         /* Form expansion specifically for desktop feed search to make it prominent */
-        .ch-search-form { flex: 1; min-width: 280px; }
-        .ch-search-form .ch-search-input { width: 100%; flex: 1; }
+        .ch-search-form {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .ch-search-form .ch-search-input {
+            width: 100%;
+            flex: 1;
+        }
 
         /* ── MOBILE LAYOUT REFINEMENT FOR UNIFORM INPUTS ── */
         @media (max-width: 768px) {
+
             /* Put search field and button on the same line to save vertical space */
-            .ch-search-form { flex-direction: row !important; flex-wrap: nowrap !important; }
-            .ch-search-form .ch-search-input { min-width: 0 !important; flex: 1 !important; }
-            .ch-search-form button { width: auto !important; padding: 12px 20px !important; border-radius: 999px !important; }
+            .ch-search-form {
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+            }
+
+            .ch-search-form .ch-search-input {
+                min-width: 0 !important;
+                flex: 1 !important;
+            }
+
+            .ch-search-form button {
+                width: auto !important;
+                padding: 12px 20px !important;
+                border-radius: 999px !important;
+            }
 
             /* Arrange filter row intelligently */
-            .ch-filter-row { 
-                flex-direction: row !important; 
-                flex-wrap: wrap !important; 
-                align-items: center !important; 
+            .ch-filter-row {
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                align-items: center !important;
                 justify-content: space-between !important;
-                gap: 12px 8px !important; 
+                gap: 12px 8px !important;
                 width: 100%;
             }
-            
+
             /* Make dropdown full width for easier tapping */
-            .ch-location-form { flex: 1 1 100% !important; margin: 0 !important; }
-            .ch-location-form .ch-select-sm { width: 100% !important; max-width: none !important; }
+            .ch-location-form {
+                flex: 1 1 100% !important;
+                margin: 0 !important;
+            }
+
+            .ch-location-form .ch-select-sm {
+                width: 100% !important;
+                max-width: none !important;
+            }
 
             /* Let tabs and guidelines sit side-by-side on the next row */
-            .ch-sort-tabs { flex: 1 !important; justify-content: flex-start !important; gap: 8px !important; width: auto !important; margin-bottom: 0 !important; }
-            .ch-sort-tab { flex: 0 1 auto !important; padding: 8px 14px !important; border-radius: 999px !important; }
-            .ch-guidelines-link { margin: 0 !important; padding: 8px 0 !important; }
+            .ch-sort-tabs {
+                flex: 1 !important;
+                justify-content: flex-start !important;
+                gap: 8px !important;
+                width: auto !important;
+                margin-bottom: 0 !important;
+            }
+
+            .ch-sort-tab {
+                flex: 0 1 auto !important;
+                padding: 8px 14px !important;
+                border-radius: 999px !important;
+            }
+
+            .ch-guidelines-link {
+                margin: 0 !important;
+                padding: 8px 0 !important;
+            }
         }
     </style>
     <?php

@@ -865,22 +865,45 @@ function bntm_shortcode_ch_auth() {
     $feed_url_auth = ch_get_feed_url();
     $auth_user_id  = get_current_user_id();
     ?>
-    <nav class="ch-top-nav" style="position:relative;">
-        <div class="ch-top-nav-logo" style="margin:0 16px 0 0;display:flex;align-items:center;">
-            <a href="<?php echo esc_url($feed_url_auth); ?>" style="display:flex;align-items:center;text-decoration:none;">
-                <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo" style="height:28px;">
+    <nav class="ch-top-nav">
+        <div class="ch-top-nav-logo">
+            <a href="<?php echo esc_url($feed_url_auth); ?>" class="ch-brand-logo-link">
+                <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo">
             </a>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-            <?php if (!$auth_user_id): ?>
-            <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>"    class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
-            <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary  ch-btn-sm">Join</a>
-            <?php endif; ?>
-            <a href="<?php echo esc_url($feed_url_auth); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                Forum
-            </a>
+
+        <!-- Mobile drawer (contains nav links + guest auth for mobile) -->
+        <div id="ch-feed-drawer-auth" class="ch-mobile-drawer-wrap ch-auth-drawer">
+            <button class="ch-top-drawer-close" type="button" onclick="chCloseAllMobileMenus()"
+                aria-label="Close menu">&times;</button>
+            <div class="ch-nav-links">
+                <a href="<?php echo esc_url($feed_url_auth); ?>" class="ch-nav-link">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span class="ch-nav-label">Forum</span>
+                </a>
+            </div>
+            <!-- Guest auth buttons (mobile drawer only) -->
+            <div class="ch-user-bar">
+                <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+            </div>
+        </div><!-- /#ch-feed-drawer-auth -->
+
+        <!-- Desktop guest auth buttons (hidden on mobile via CSS) -->
+        <div class="ch-user-bar ch-nav-guest-desktop">
+            <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+            <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
         </div>
+
+        <!-- Burger button: visible on mobile only, opens the drawer -->
+        <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false"
+            onclick="chToggleMobileMenu(this, '#ch-feed-drawer-auth');">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+        </button>
     </nav>
     <div class="ch-auth-wrap">
         <div class="ch-auth-card">
@@ -1021,6 +1044,24 @@ function bntm_shortcode_ch_auth() {
 
     <style>
     /* Auth page inherits ch_global_styles tokens */
+    @media (min-width: 781px) {
+        #ch-feed-drawer-auth > .ch-nav-links {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: start;
+            align-self: center;
+        }
+
+        .ch-top-nav > .ch-nav-guest-desktop {
+            grid-column: 3;
+            grid-row: 1;
+            justify-self: end;
+            align-self: center;
+        }
+    }
     .ch-auth-resend { margin-bottom: 14px; padding: 14px 16px; border: 1px solid var(--ch-border); border-radius: 14px; background: color-mix(in srgb, var(--ch-surface) 76%, var(--ch-bg) 24%); }
     .ch-auth-resend-copy { font-size: 13px; color: var(--ch-text-muted); margin-bottom: 10px; line-height: 1.6; }
     @media (max-width: 500px) { .ch-auth-card { padding: 22px 16px; } }

@@ -322,15 +322,15 @@ function ch_guest_landing_page()
         var chFeedUrl = '<?php echo esc_js(remove_query_arg('view_post')); ?>';
     </script>
     <nav class="ch-top-nav">
+                <div class="ch-top-nav-logo">
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false"
             onclick="chToggleMobileMenu(this, '#ch-feed-drawer');">
-            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path d="M3 12h18M3 6h18M3 18h18" />
             </svg>
         </button>
-        <div class="ch-top-nav-logo" style="margin: 0 16px 0 0; display: flex; align-items: center;">
-            <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo"
-                style="height: 28px;">
+
+            <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo">
         </div>
 
         <!-- Mobile drawer -->
@@ -3825,14 +3825,114 @@ function ch_public_user_profile($view_uid)
     </style>
     <div class="ch-public-profile-shell">
         <nav class="ch-top-nav">
-            <div class="ch-nav-links">
-                <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <polyline points="15 18 9 12 15 6" />
-                    </svg>
-                    Back to Forum
+                        <div class="ch-top-nav-logo">
+            <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false"
+                onclick="chToggleMobileMenu(this, '#ch-feed-drawer-pp');">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path d="M3 12h18M3 6h18M3 18h18" />
+                </svg>
+            </button>
+
+                <a href="<?php echo esc_url($feed_url); ?>" class="ch-brand-logo-link">
+                    <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo">
                 </a>
             </div>
+
+            <!-- Mobile drawer -->
+            <div id="ch-feed-drawer-pp" class="ch-mobile-drawer-wrap">
+                <button class="ch-top-drawer-close" type="button" onclick="chCloseAllMobileMenus()"
+                    aria-label="Close menu">&times;</button>
+                <div class="ch-nav-links">
+                    <a href="<?php echo esc_url($feed_url); ?>" class="ch-nav-link">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <span class="ch-nav-label">Back to Forum</span>
+                    </a>
+                </div>
+                <?php if (!$current_user_id_pp): ?>
+                    <div class="ch-user-bar">
+                        <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                        <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+                    </div>
+                <?php endif; ?>
+            </div><!-- /#ch-feed-drawer-pp -->
+
+            <?php if ($current_user_id_pp): ?>
+                <?php $current_display_pp = wp_get_current_user()->display_name ?: 'U'; ?>
+                <!-- ── Desktop logged-in user bar ── -->
+                <div class="ch-user-bar ch-nav-user-desktop">
+                    <div class="ch-notifications-dropdown ch-top-nav-notifications">
+                        <button class="ch-icon-action-btn ch-notifications-btn" id="ch-notif-btn" onclick="chToggleNotifications(event)"
+                            aria-label="Notifications">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                            </svg>
+                            <span class="ch-notification-badge" id="ch-notification-count" style="display:none;"></span>
+                        </button>
+                        <div class="ch-dropdown-panel" id="ch-notifications-menu" style="display:none;">
+                            <div class="ch-dropdown-header">
+                                <span>Notifications</span>
+                                <button class="ch-dropdown-action" onclick="chMarkAllNotificationsRead()">Mark all read</button>
+                            </div>
+                            <div id="ch-notifications-list" class="ch-notifications-list">
+                                <div class="ch-no-notifications">Loading...</div>
+                            </div>
+                            <div class="ch-dropdown-footer">
+                                <a href="?tab=profile">View all notifications</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ch-profile-dropdown">
+                        <button class="ch-avatar-btn" id="ch-profile-btn" onclick="chToggleProfileMenu(event)"
+                            aria-label="Profile" data-ch-current-user-avatar="1"
+                            data-avatar-name="<?php echo esc_attr($current_display_pp); ?>">
+                            <?php echo ch_render_avatar($current_display_pp, $current_profile_pp->avatar_url ?? '', 'ch-avatar-btn-inner', 'ch-current-user-avatar-img'); ?>
+                        </button>
+                        <div class="ch-dropdown-panel ch-dropdown-panel-sm" id="ch-profile-menu" style="display:none;">
+                            <div class="ch-dropdown-user-info">
+                                <div class="ch-avatar-btn ch-avatar-btn-lg" data-ch-current-user-avatar="1"
+                                    data-avatar-name="<?php echo esc_attr($current_display_pp); ?>">
+                                    <?php echo ch_render_avatar($current_display_pp, $current_profile_pp->avatar_url ?? '', 'ch-avatar-btn-inner ch-avatar-btn-inner-lg', 'ch-current-user-avatar-img'); ?>
+                                </div>
+                                <div>
+                                    <div class="ch-dropdown-username"><?php echo esc_html($current_display_pp); ?></div>
+                                    <div class="ch-dropdown-usermeta">Community Member</div>
+                                </div>
+                            </div>
+                            <div class="ch-dropdown-divider"></div>
+                            <a href="javascript:void(0)" class="ch-dropdown-item"
+                                onclick="chOpenSettingsModal(); chCloseProfileMenu();">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="3" />
+                                    <path
+                                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                                </svg>
+                                Settings
+                            </a>
+                            <div class="ch-dropdown-divider"></div>
+                            <a href="<?php echo wp_logout_url(esc_url($feed_url)); ?>"
+                                class="ch-dropdown-item ch-dropdown-item-danger">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                    <polyline points="16 17 21 12 16 7" />
+                                    <line x1="21" y1="12" x2="9" y2="12" />
+                                </svg>
+                                Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php else: ?>
+                <!-- ── Desktop guest auth buttons ── -->
+                <div class="ch-user-bar ch-nav-guest-desktop">
+                    <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                    <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+                </div>
+            <?php endif; ?>
         </nav>
         <div class="ch-public-profile-page">
             <div class="ch-public-profile-wrap">
@@ -4273,15 +4373,15 @@ function bntm_shortcode_ch_feed()
     </script>
     <div class="ch-feed-shell">
         <nav class="ch-top-nav">
+                        <div class="ch-top-nav-logo">
             <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false"
                 onclick="chToggleMobileMenu(this, '#ch-feed-drawer');">
-                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path d="M3 12h18M3 6h18M3 18h18" />
                 </svg>
             </button>
-            <div class="ch-top-nav-logo" style="margin: 0 16px 0 0; display: flex; align-items: center;">
-                <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo"
-                    style="height: 28px;">
+
+                <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo">
             </div>
             <div id="ch-feed-drawer" class="ch-mobile-drawer-wrap">
                 <button class="ch-top-drawer-close" type="button" onclick="chCloseAllMobileMenus()"
@@ -6318,16 +6418,116 @@ function bntm_shortcode_ch_post_view()
     ob_start(); ?>
     <script>var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';</script>
 
-    <div class="ch-post-view-wrap">
-        <div class="ch-post-view-header">
-            <a href="<?php echo remove_query_arg('view_post'); ?>" class="ch-back-link">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <polyline points="15 18 9 12 15 6" />
-                </svg>
-                Back to Forum
-            </a>
+    <nav class="ch-top-nav">
+                <div class="ch-top-nav-logo">
+        <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false"
+            onclick="chToggleMobileMenu(this, '#ch-feed-drawer-pv');">
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+        </button>
+
+            <img src="<?php echo esc_url(bntm_ch_logo_url()); ?>" alt="CivicHub Logo" class="ch-brand-logo">
         </div>
 
+        <!-- Mobile drawer -->
+        <div id="ch-feed-drawer-pv" class="ch-mobile-drawer-wrap">
+            <button class="ch-top-drawer-close" type="button" onclick="chCloseAllMobileMenus()"
+                aria-label="Close menu">&times;</button>
+            <div class="ch-nav-links">
+                <a href="<?php echo remove_query_arg('view_post'); ?>" class="ch-nav-link">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    <span class="ch-nav-label">Back to Forum</span>
+                </a>
+            </div>
+            <?php if (!$user_id): ?>
+                <div class="ch-user-bar">
+                    <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                    <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+                </div>
+            <?php endif; ?>
+        </div><!-- /#ch-feed-drawer-pv -->
+
+        <?php if ($user_id): ?>
+            <?php $current_display_pv = wp_get_current_user()->display_name ?: 'U'; ?>
+            <!-- ── Desktop logged-in user bar ── -->
+            <div class="ch-user-bar ch-nav-user-desktop">
+                <div class="ch-notifications-dropdown ch-top-nav-notifications">
+                    <button class="ch-icon-action-btn ch-notifications-btn" id="ch-notif-btn" onclick="chToggleNotifications(event)"
+                        aria-label="Notifications">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <span class="ch-notification-badge" id="ch-notification-count" style="display:none;"></span>
+                    </button>
+                    <div class="ch-dropdown-panel" id="ch-notifications-menu" style="display:none;">
+                        <div class="ch-dropdown-header">
+                            <span>Notifications</span>
+                            <button class="ch-dropdown-action" onclick="chMarkAllNotificationsRead()">Mark all read</button>
+                        </div>
+                        <div id="ch-notifications-list" class="ch-notifications-list">
+                            <div class="ch-no-notifications">Loading...</div>
+                        </div>
+                        <div class="ch-dropdown-footer">
+                            <a href="?tab=profile">View all notifications</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="ch-profile-dropdown">
+                    <button class="ch-avatar-btn" id="ch-profile-btn" onclick="chToggleProfileMenu(event)"
+                        aria-label="Profile" data-ch-current-user-avatar="1"
+                        data-avatar-name="<?php echo esc_attr($current_display_pv); ?>">
+                        <?php echo ch_render_avatar($current_display_pv, $current_profile->avatar_url ?? '', 'ch-avatar-btn-inner', 'ch-current-user-avatar-img'); ?>
+                    </button>
+                    <div class="ch-dropdown-panel ch-dropdown-panel-sm" id="ch-profile-menu" style="display:none;">
+                        <div class="ch-dropdown-user-info">
+                            <div class="ch-avatar-btn ch-avatar-btn-lg" data-ch-current-user-avatar="1"
+                                data-avatar-name="<?php echo esc_attr($current_display_pv); ?>">
+                                <?php echo ch_render_avatar($current_display_pv, $current_profile->avatar_url ?? '', 'ch-avatar-btn-inner ch-avatar-btn-inner-lg', 'ch-current-user-avatar-img'); ?>
+                            </div>
+                            <div>
+                                <div class="ch-dropdown-username"><?php echo esc_html($current_display_pv); ?></div>
+                                <div class="ch-dropdown-usermeta">Community Member</div>
+                            </div>
+                        </div>
+                        <div class="ch-dropdown-divider"></div>
+                        <a href="javascript:void(0)" class="ch-dropdown-item"
+                            onclick="chOpenSettingsModal(); chCloseProfileMenu();">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                            Settings
+                        </a>
+                        <div class="ch-dropdown-divider"></div>
+                        <a href="<?php echo wp_logout_url(remove_query_arg('view_post')); ?>"
+                            class="ch-dropdown-item ch-dropdown-item-danger">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                            Sign Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
+            <!-- ── Desktop guest auth buttons ── -->
+            <div class="ch-user-bar ch-nav-guest-desktop">
+                <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+            </div>
+        <?php endif; ?>
+    </nav>
+
+    <div class="ch-post-view-wrap">
         <div class="ch-post-view-grid">
             <div class="ch-post-view-main">
                 <article class="ch-post-full">
