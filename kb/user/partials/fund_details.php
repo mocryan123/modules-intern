@@ -252,57 +252,71 @@ function bntm_shortcode_kbf_fund_details() {
     $payment_sid = isset($_GET['sid']) ? intval($_GET['sid']) : 0;
     $payment_ref = isset($_GET['ref']) ? sanitize_text_field($_GET['ref']) : '';
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
-    if ($demo_mode && $payment_result === 'success' && $payment_sid > 0 && $prefill_email !== '' && function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
-        kbf_maya_sync_sponsorship_from_checkout($payment_sid, $prefill_email);
+    $return_sponsorship = null;
+    if ($payment_sid > 0) {
+        $return_sponsorship = $wpdb->get_row($wpdb->prepare(
+            "SELECT id,amount,payment_status,email,rand_id,fund_id FROM {$st} WHERE id=%d AND fund_id=%d LIMIT 1",
+            $payment_sid,
+            $fund->id
+        ));
+    } elseif ($payment_ref !== '') {
+        $return_sponsorship = $wpdb->get_row($wpdb->prepare(
+            "SELECT id,amount,payment_status,email,rand_id,fund_id FROM {$st} WHERE rand_id=%s AND fund_id=%d LIMIT 1",
+            $payment_ref,
+            $fund->id
+        ));
     }
-    if ($demo_mode && $payment_result === 'success' && $prefill_email !== '' && function_exists('kbf_mark_sponsorship_completed')) {
-        $demo_return_sponsorship = null;
-        if ($payment_sid > 0) {
-            $demo_return_sponsorship = $wpdb->get_row($wpdb->prepare(
-                "SELECT id,payment_status FROM {$st} WHERE id=%d AND email=%s",
-                $payment_sid,
-                $prefill_email
+    if ($demo_mode && $payment_result === 'success' && $return_sponsorship && function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
+        kbf_maya_sync_sponsorship_from_checkout((int)$return_sponsorship->id, (string)$return_sponsorship->email);
+        $return_sponsorship = $wpdb->get_row($wpdb->prepare(
+            "SELECT id,amount,payment_status,email,rand_id,fund_id FROM {$st} WHERE id=%d LIMIT 1",
+            (int)$return_sponsorship->id
+        ));
+    }
+    if ($demo_mode && $payment_result === 'success' && $return_sponsorship && $return_sponsorship->payment_status !== 'completed' && function_exists('kbf_mark_sponsorship_completed')) {
+        kbf_mark_sponsorship_completed((int)$return_sponsorship->id, $payment_ref !== '' ? $payment_ref : (string)$return_sponsorship->rand_id);
+        $return_sponsorship = $wpdb->get_row($wpdb->prepare(
+            "SELECT id,amount,payment_status,email,rand_id,fund_id FROM {$st} WHERE id=%d LIMIT 1",
+            (int)$return_sponsorship->id
+        ));
+    }
+    if ($payment_result === 'success' && $return_sponsorship && $return_sponsorship->payment_status === 'completed') {
+        $fresh_fund = kbf_fund_details_load_fund($wpdb, $ft, $current_user_id);
+        if ($fresh_fund) {
+            $fund = $fresh_fund;
+            $is_owner = $fund && $current_user_id && $fund->business_id == $current_user_id;
+            $pct = $fund->goal_amount > 0 ? min(100, round(($fund->raised_amount / $fund->goal_amount) * 100)) : 0;
+            $sponsors = $wpdb->get_results($wpdb->prepare(
+                "SELECT * FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND message IS NOT NULL AND message != '' ORDER BY created_at DESC LIMIT 20",
+                $fund->id
             ));
-        } elseif ($payment_ref !== '') {
-            $demo_return_sponsorship = $wpdb->get_row($wpdb->prepare(
-                "SELECT id,payment_status FROM {$st} WHERE rand_id=%s AND email=%s",
-                $payment_ref,
-                $prefill_email
+            $sponsor_count = (int)$wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$st} WHERE fund_id=%d AND payment_status='completed' AND is_anonymous=0",
+                $fund->id
             ));
-        }
-        if ($demo_return_sponsorship && $demo_return_sponsorship->payment_status !== 'completed') {
-            kbf_mark_sponsorship_completed((int)$demo_return_sponsorship->id, $payment_ref);
+            $leaderboard = $wpdb->get_results($wpdb->prepare(
+                "SELECT
+                    CASE WHEN is_anonymous=1 THEN 'Anonymous' ELSE COALESCE(NULLIF(sponsor_name,''),'Anonymous') END AS display_name,
+                    is_anonymous,
+                    SUM(amount) AS total_given,
+                    COUNT(*) AS num_donations,
+                    MAX(created_at) AS last_donated
+                 FROM {$st}
+                 WHERE fund_id=%d AND payment_status='completed'
+                 GROUP BY
+                     is_anonymous,
+                     CASE WHEN is_anonymous=0 THEN COALESCE(NULLIF(sponsor_name,''),'Anonymous') ELSE id END
+                 ORDER BY total_given DESC
+                 LIMIT 10",
+                $fund->id
+            ));
+            $days = $fund->deadline ? max(0, ceil((strtotime($fund->deadline) - time()) / 86400)) : null;
         }
     }
-    $show_payment_banner = in_array($payment_result, ['success', 'failed', 'cancelled'], true) && $current_user_id;
+    $show_payment_banner = in_array($payment_result, ['success', 'failed', 'cancelled'], true) && $return_sponsorship;
     $payment_banner_data = null;
     if ($show_payment_banner) {
-        $pay_sponsorship = null;
-        if ($demo_mode && $payment_sid > 0 && $prefill_email !== '') {
-            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
-                "SELECT id,amount,payment_status FROM {$st} WHERE id=%d AND email=%s",
-                $payment_sid,
-                $prefill_email
-            ));
-        } elseif ($demo_mode && $payment_ref !== '' && $prefill_email !== '') {
-            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
-                "SELECT id,amount,payment_status FROM {$st} WHERE rand_id=%s AND email=%s",
-                $payment_ref,
-                $prefill_email
-            ));
-        } elseif ($payment_sid > 0 && $prefill_email !== '') {
-            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
-                "SELECT id,amount,payment_status FROM {$st} WHERE id=%d AND email=%s",
-                $payment_sid,
-                $prefill_email
-            ));
-        } elseif ($payment_ref !== '' && $prefill_email !== '') {
-            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
-                "SELECT id,amount,payment_status FROM {$st} WHERE rand_id=%s AND email=%s",
-                $payment_ref,
-                $prefill_email
-            ));
-        }
+        $pay_sponsorship = $return_sponsorship;
         $pay_amount = $pay_sponsorship ? number_format((float)$pay_sponsorship->amount, 2) : '';
         $explore_url = add_query_arg('kbf_tab', 'find_funds', kbf_get_page_url('dashboard'));
         if ($payment_result === 'success' && $pay_sponsorship && $pay_sponsorship->payment_status === 'completed') {
