@@ -208,6 +208,7 @@
           justify-content:center;
           overflow:hidden;
           background:#eaf1ff;
+          border-radius: 999px;
           border:1px solid rgba(37,99,235,.2);
         }
         .kbf-onboard-avatar.is-empty{

@@ -1252,16 +1252,35 @@ function kbf_dashboard_profile_tab( $business_id ) {
         // Validation: Profile Type
         const pt = form.querySelector('[name="profile_type"]');
         if(!pt || !pt.value) showErr(pt, 'Please select a profile type.');
+        // Validation: Social Name
+        const sn = form.querySelector('[name="kbf_social_name"]');
+        if(sn && sn.value.trim() && !/^[a-zA-Z0-9_]+$/.test(sn.value.trim())) showErr(sn, 'Social name can only contain letters, numbers, and underscores.');
+
         // Validation: Bio
         const bio = form.querySelector('textarea[name="bio"]');
         if(bio && bio.value.length > 250) showErr(bio, 'Bio must be 250 characters or less.');
         // Validation: Payout
+      // Validation: Payout
         const pType = form.querySelector('[name="payout_type"]');
         const pName = form.querySelector('[name="payout_name"]');
         const pNum = form.querySelector('[name="payout_number"]');
         if(pType && pType.value){
             if(!pName.value.trim()) showErr(pName, 'Account name is required.');
-            if(!pNum.value.trim()) showErr(pNum, 'Account number is required.');
+            if(pNum && !pNum.value.trim()){
+                showErr(pNum, 'Account number is required.');
+            } else if(pNum && (pType.value === 'gcash' || pType.value === 'maya_wallet')){
+                const digits = pNum.value.replace(/\D/g,'');
+                if(digits.length !== 11 || !digits.startsWith('09')) showErr(pNum, 'Enter a valid 11-digit mobile number starting with 09.');
+            } else if(pNum && pType.value === 'card'){
+                const digits = pNum.value.replace(/\D/g,'');
+                if(digits.length !== 16) showErr(pNum, 'Enter a valid 16-digit card number.');
+            }
+        }
+        // Validation: Address
+        const addrHidden = document.getElementById('kbf-profile-address');
+        const addrProv = document.getElementById('kbf-profile-province');
+        if(addrHidden && !addrHidden.value.trim() && addrProv){
+            showErr(addrProv, 'Please select a province.');
         }
         if(!isValid){
             msgEl.innerHTML = '<div class="kbf-alert kbf-alert-error">'+errors[0]+'</div>';
