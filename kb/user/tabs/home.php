@@ -384,13 +384,46 @@
           </div>
         </div>
         <script>
-          document.documentElement.classList.add('kbf-onboard-open');
-          // Prevent dismissing by clicking outside the modal.
           (function(){
             var backdrop = document.getElementById('kbf-onboard-backdrop');
-            if (backdrop) {
-              backdrop.addEventListener('click', function(e){ e.stopPropagation(); });
+            if (!backdrop) return;
+
+            var countEl = backdrop.querySelector('.kbf-count');
+            var isComplete = false;
+            if (countEl) {
+              var text = String(countEl.textContent || '').replace(/\s+/g, '');
+              var match = text.match(/(\d+)\/(\d+)/);
+              if (match) {
+                var done = parseInt(match[1], 10);
+                var required = parseInt(match[2], 10);
+                isComplete = !isNaN(done) && !isNaN(required) && done >= required;
+              }
             }
+
+            if (isComplete) {
+              // Defensive client-side fallback: hide stale onboarding modal immediately.
+              document.documentElement.classList.remove('kbf-onboard-open');
+              if (backdrop.parentNode) {
+                backdrop.parentNode.removeChild(backdrop);
+              }
+
+              // Best effort: clear onboarding flag server-side as well.
+              try {
+                var formData = new FormData();
+                formData.append('action', 'kbf_dismiss_onboarding');
+                formData.append('nonce', '<?php echo esc_js(wp_create_nonce('kbf_onboarding')); ?>');
+                fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
+                  method: 'POST',
+                  credentials: 'same-origin',
+                  body: formData
+                });
+              } catch (e) {}
+              return;
+            }
+
+            document.documentElement.classList.add('kbf-onboard-open');
+            // Prevent dismissing by clicking outside the modal.
+            backdrop.addEventListener('click', function(e){ e.stopPropagation(); });
           })();
         </script>
       <?php endif; ?>
