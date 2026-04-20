@@ -301,6 +301,9 @@ function ch_global_styles()
         .ch-avatar-btn {
             width: 38px;
             height: 38px;
+            padding: 0;
+            line-height: 0;
+            appearance: none;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--ch-accent), var(--ch-accent-dark));
             color: white;
@@ -345,6 +348,14 @@ function ch_global_styles()
         .ch-avatar-img {
             width: 100%;
             height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: inherit;
+        }
+
+        .ch-current-user-avatar-img {
+            width: 100% !important;
+            height: 100% !important;
             object-fit: cover;
             display: block;
             border-radius: inherit;

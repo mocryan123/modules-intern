@@ -6453,6 +6453,10 @@ function bntm_shortcode_ch_post_view()
 
     $user_id = get_current_user_id();
     $nonce = wp_create_nonce('ch_post_view_nonce');
+    $current_profile_pv = $user_id ? $wpdb->get_row($wpdb->prepare(
+        "SELECT avatar_url FROM {$wpdb->prefix}ch_user_profiles WHERE user_id = %d",
+        $user_id
+    )) : null;
 
     // Fetch current user's vote on this post and all comments
     $user_vote_on_post = 0;
@@ -6553,13 +6557,13 @@ function bntm_shortcode_ch_post_view()
                     <button class="ch-avatar-btn" id="ch-profile-btn" onclick="chToggleProfileMenu(event)"
                         aria-label="Profile" data-ch-current-user-avatar="1"
                         data-avatar-name="<?php echo esc_attr($current_display_pv); ?>">
-                        <?php echo ch_render_avatar($current_display_pv, $current_profile->avatar_url ?? '', 'ch-avatar-btn-inner', 'ch-current-user-avatar-img'); ?>
+                        <?php echo ch_render_avatar($current_display_pv, $current_profile_pv->avatar_url ?? '', 'ch-avatar-btn-inner', 'ch-current-user-avatar-img'); ?>
                     </button>
                     <div class="ch-dropdown-panel ch-dropdown-panel-sm" id="ch-profile-menu" style="display:none;">
                         <div class="ch-dropdown-user-info">
                             <div class="ch-avatar-btn ch-avatar-btn-lg" data-ch-current-user-avatar="1"
                                 data-avatar-name="<?php echo esc_attr($current_display_pv); ?>">
-                                <?php echo ch_render_avatar($current_display_pv, $current_profile->avatar_url ?? '', 'ch-avatar-btn-inner ch-avatar-btn-inner-lg', 'ch-current-user-avatar-img'); ?>
+                                <?php echo ch_render_avatar($current_display_pv, $current_profile_pv->avatar_url ?? '', 'ch-avatar-btn-inner ch-avatar-btn-inner-lg', 'ch-current-user-avatar-img'); ?>
                             </div>
                             <div>
                                 <div class="ch-dropdown-username"><?php echo esc_html($current_display_pv); ?></div>
