@@ -7,6 +7,22 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!function_exists('kbf_get_env_secret')) {
+    function kbf_get_env_secret($key) {
+        $env = getenv($key);
+        if ($env !== false && $env !== '') {
+            return trim((string) $env);
+        }
+        if (defined($key)) {
+            $val = constant($key);
+            if ($val !== '' && $val !== null) {
+                return trim((string) $val);
+            }
+        }
+        return '';
+    }
+}
+
 /**
  * Resolve Didit configuration based on demo/live mode.
  *
@@ -19,16 +35,13 @@ function kbf_didit_resolve_config() {
         $api_key = (string) kbf_get_setting('kbf_didit_sandbox_api_key', '');
         $workflow_id = (string) kbf_get_setting('kbf_didit_sandbox_workflow_id', '');
         if ($api_key === '' || $workflow_id === '') {
-            $api_key = (string) getenv('KBF_DIDIT_SANDBOX_API_KEY');
-            $workflow_id = (string) getenv('KBF_DIDIT_SANDBOX_WORKFLOW_ID');
+            $api_key = kbf_get_env_secret('KBF_DIDIT_SANDBOX_API_KEY');
+            $workflow_id = kbf_get_env_secret('KBF_DIDIT_SANDBOX_WORKFLOW_ID');
         }
     } else {
-        $api_key = (string) kbf_get_setting('kbf_didit_live_api_key', '');
-        $workflow_id = (string) kbf_get_setting('kbf_didit_live_workflow_id', '');
-        if ($api_key === '' || $workflow_id === '') {
-            $api_key = (string) getenv('KBF_DIDIT_LIVE_API_KEY');
-            $workflow_id = (string) getenv('KBF_DIDIT_LIVE_WORKFLOW_ID');
-        }
+        // Production mode enforces environment-only credentials for KYC.
+        $api_key = kbf_get_env_secret('KBF_DIDIT_LIVE_API_KEY');
+        $workflow_id = kbf_get_env_secret('KBF_DIDIT_LIVE_WORKFLOW_ID');
     }
 
     $api_key = trim($api_key);
@@ -60,7 +73,7 @@ function kbf_didit_resolve_config() {
 function fundora_didit_create_session($user_id) {
     $config = kbf_didit_resolve_config();
     if (!$config) {
-        return new WP_Error('didit_session_error', 'Didit is not configured. Please add your API key and Workflow ID in Platform Settings.');
+        return new WP_Error('didit_session_error', 'Didit is not configured for the current mode. Configure live credentials via environment variables.');
     }
 
     $base = rtrim($config['base_url'], '/');

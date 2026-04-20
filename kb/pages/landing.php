@@ -2593,7 +2593,6 @@ function bntm_kbf_render_landing() {
         100% { transform: translateX(-50%); }
     }
     .vh-photo-card {
-        border-radius: 16px 16px 0 0;
         overflow: hidden;
         border: none;
         box-shadow: none;

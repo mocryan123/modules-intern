@@ -5,10 +5,19 @@
 
 if (!defined('ABSPATH')) exit;
 
+if (!function_exists('kbf_is_production_mode')) {
+    function kbf_is_production_mode() {
+        return !(bool) kbf_get_setting('kbf_demo_mode', true);
+    }
+}
+
 if (!function_exists('kbf_maya_webhook_secret')) {
     function kbf_maya_webhook_secret() {
         $env = kbf_get_env_secret('KBF_MAYA_WEBHOOK_SECRET');
         if ($env !== '') return $env;
+        if (kbf_is_production_mode()) {
+            return '';
+        }
         // TODO: Migrate stored secrets to environment variables and remove DB storage.
         return (string) kbf_get_setting('kbf_maya_webhook_secret', '');
     }
@@ -45,7 +54,7 @@ if (!function_exists('kbf_verify_maya_signature')) {
     function kbf_verify_maya_signature($raw_body) {
         $secret = kbf_maya_webhook_secret();
         if ($secret === '') {
-            return [true, 'no_secret'];
+            return kbf_is_production_mode() ? [false, 'missing_secret'] : [true, 'no_secret'];
         }
         $sig = kbf_get_request_header('X-Maya-Signature');
         if ($sig === '') $sig = kbf_get_request_header('X-Signature');
@@ -67,10 +76,7 @@ function kbf_maya_secret_key() {
         // TODO: Migrate stored secrets to environment variables and remove DB storage.
         return kbf_get_setting('kbf_maya_sandbox_secret', '');
     }
-    $env = kbf_get_env_secret('KBF_MAYA_LIVE_SECRET');
-    if ($env !== '') return $env;
-    // TODO: Migrate stored secrets to environment variables and remove DB storage.
-    return kbf_get_setting('kbf_maya_live_secret', '');
+    return kbf_get_env_secret('KBF_MAYA_LIVE_SECRET');
 }
 
 function kbf_maya_public_key() {
@@ -81,10 +87,7 @@ function kbf_maya_public_key() {
         // TODO: Migrate stored keys to environment variables and remove DB storage.
         return kbf_get_setting('kbf_maya_sandbox_public', '');
     }
-    $env = kbf_get_env_secret('KBF_MAYA_LIVE_PUBLIC');
-    if ($env !== '') return $env;
-    // TODO: Migrate stored keys to environment variables and remove DB storage.
-    return kbf_get_setting('kbf_maya_live_public', '');
+    return kbf_get_env_secret('KBF_MAYA_LIVE_PUBLIC');
 }
 
 /**
@@ -252,15 +255,17 @@ function kbf_maya_request($endpoint, $payload = null, $method = 'POST', $use_sec
         $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
         $mode = $demo ? 'Sandbox' : 'Live';
         $kind = $use_secret ? 'Secret Key' : 'Public Key';
-        $setting_key = $demo
-            ? ($use_secret ? 'kbf_maya_sandbox_secret' : 'kbf_maya_sandbox_public')
-            : ($use_secret ? 'kbf_maya_live_secret' : 'kbf_maya_live_public');
+        $source = $demo
+            ? ($use_secret
+                ? 'setting kbf_maya_sandbox_secret or env KBF_MAYA_SANDBOX_SECRET'
+                : 'setting kbf_maya_sandbox_public or env KBF_MAYA_SANDBOX_PUBLIC')
+            : ($use_secret ? 'env KBF_MAYA_LIVE_SECRET' : 'env KBF_MAYA_LIVE_PUBLIC');
         return [
             'error' => sprintf(
-                'Maya %s %s is not configured (setting: %s).',
+                'Maya %s %s is not configured (%s).',
                 $mode,
                 $kind,
-                $setting_key
+                $source
             ),
         ];
     }

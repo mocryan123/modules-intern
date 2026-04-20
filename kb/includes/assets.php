@@ -16,6 +16,16 @@ function kbf_global_assets() {
     .ph{font-family:'Phosphor' !important;font-style:normal;font-weight:400;line-height:1;}
     .ph-bold{font-weight:700;}
     .ph-fill{font-weight:400;}
+    /* Disable double-tap zoom on KBF surfaces while keeping pinch zoom available. */
+    .kbf-wrap,
+    .kbf-user-ui,
+    .kbf-admin-ui,
+    .kbf-landing,
+    .kbf-legal,
+    .kbf-auth-wrap,
+    .kbf-reset-wrap{
+        touch-action:manipulation;
+    }
     /* === KBF DESIGN SYSTEM -- Landing-aligned (Blue/White) === */
     :root {
         --kbf-navy:       #0f1115;
