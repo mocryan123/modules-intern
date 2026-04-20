@@ -1520,6 +1520,7 @@ function bntm_ajax_ch_login() {
     }
  
     // ── Step 1: Authenticate (does NOT set any cookie) ──────────────────────
+    // Keep this pre-check so we can return tailored CivicHub error payloads.
     $user = wp_authenticate( $username, $password );
  
     if ( is_wp_error( $user ) ) {
@@ -1571,16 +1572,19 @@ function bntm_ajax_ch_login() {
         ] );
     }
  
-    // ── Step 3: Set auth cookie explicitly ──────────────────────────────────
-    //
-    // Use is_ssl() so the Secure flag always matches the site's actual
-    // protocol. This is the key fix for live servers behind proxies or
-    // load balancers where wp_signon()'s internal check can disagree.
-    ch_establish_user_session($user, $remember);
-    do_action( 'wp_login', $user->user_login, $user );
+    // ── Step 3: Establish WordPress auth session via core flow ─────────────
+    $signed_in_user = wp_signon([
+        'user_login' => $username,
+        'user_password' => $password,
+        'remember' => $remember,
+    ], ch_should_use_secure_auth_cookie());
+
+    if (is_wp_error($signed_in_user)) {
+        wp_send_json_error(['message' => 'Unable to establish your session. Please try again.']);
+    }
  
     // ── Step 4: Ensure CivicHub profile row exists ──────────────────────────
-    ch_ensure_profile( $user->ID );
+    ch_ensure_profile( $signed_in_user->ID );
  
     $redirect = ch_normalize_login_redirect($redirect_to);
  
