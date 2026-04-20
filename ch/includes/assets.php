@@ -1489,6 +1489,21 @@ function ch_global_styles()
             color: var(--ch-text-muted);
         }
 
+        .ch-terms-consent {
+            align-items: flex-start;
+            line-height: 1.5;
+        }
+
+        .ch-terms-consent input {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .ch-terms-consent span {
+            display: inline;
+            min-width: 0;
+        }
+
         /* TOOLBAR */
         .ch-toolbar {
             display: flex;
@@ -1803,6 +1818,7 @@ function ch_global_styles()
             outline: none;
             max-width: 200px;
             transition: border-color 0.15s;
+            min-height: 38px;
         }
 
         .ch-composer-cat-select:focus {
@@ -2152,6 +2168,7 @@ function ch_global_styles()
             padding: 16px 24px;
             border-top: 1px solid var(--ch-border-soft);
             gap: 12px;
+            flex-wrap: wrap;
         }
 
         .ch-composer-footer-hint {
@@ -2173,6 +2190,7 @@ function ch_global_styles()
             padding: 10px 28px;
             font-size: 14px;
             border-radius: var(--ch-radius);
+            min-height: 44px;
         }
 
         /* Dark mode tweaks */
@@ -3782,6 +3800,7 @@ function ch_global_styles()
             display: flex;
             align-items: center;
             gap: 10px;
+            row-gap: 8px;
             padding-top: 14px;
             border-top: 1px solid var(--ch-border-soft);
             flex-wrap: wrap;
@@ -3801,6 +3820,8 @@ function ch_global_styles()
             color: var(--ch-text-muted);
             transition: all 0.15s;
             font-family: var(--ch-font);
+            min-height: 38px;
+            white-space: nowrap;
         }
 
         .ch-vote-btn-lg:hover {
@@ -3830,9 +3851,12 @@ function ch_global_styles()
         }
 
         .ch-vote-score {
+            display: inline-flex;
+            align-items: center;
             font-size: 15px;
             font-weight: 700;
             color: var(--ch-accent);
+            min-height: 38px;
         }
 
         /* COMMENTS */
@@ -3855,10 +3879,17 @@ function ch_global_styles()
             display: flex;
             gap: 12px;
             margin-bottom: 24px;
+            align-items: flex-start;
         }
 
         .ch-comment-input-wrap {
             flex: 1;
+            min-width: 0;
+        }
+
+        .ch-comment-input-wrap .ch-input {
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .ch-comment-form-footer {
@@ -3866,6 +3897,12 @@ function ch_global_styles()
             justify-content: space-between;
             align-items: center;
             margin-top: 10px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ch-comment-form-footer .ch-btn {
+            margin-left: auto;
         }
 
         .ch-comments-list {
@@ -3899,6 +3936,7 @@ function ch_global_styles()
             align-items: center;
             gap: 7px;
             margin-bottom: 5px;
+            flex-wrap: wrap;
         }
 
         .ch-comment-header strong {
@@ -3909,6 +3947,7 @@ function ch_global_styles()
         .ch-comment-time {
             font-size: 11px;
             color: var(--ch-text-subtle);
+            white-space: nowrap;
         }
 
         .ch-comment-body p {
@@ -3921,6 +3960,8 @@ function ch_global_styles()
         .ch-comment-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
+            row-gap: 6px;
         }
 
         .ch-comment-action {
@@ -3929,9 +3970,12 @@ function ch_global_styles()
             background: none;
             border: none;
             cursor: pointer;
-            padding: 0;
+            padding: 4px 2px;
             transition: color 0.15s;
             font-family: var(--ch-font);
+            min-height: 32px;
+            display: inline-flex;
+            align-items: center;
         }
 
         .ch-comment-action:hover {
@@ -4025,6 +4069,7 @@ function ch_global_styles()
         .ch-login-prompt {
             font-size: 13.5px;
             color: var(--ch-text-muted);
+            line-height: 1.6;
         }
 
         .ch-login-prompt a {
@@ -4131,21 +4176,29 @@ function ch_global_styles()
             box-shadow: var(--ch-shadow-sm);
         }
 
+        .ch-auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
         .ch-auth-form .ch-field-group {
-            margin-bottom: 20px;
+            margin-bottom: 0;
         }
 
         .ch-auth-form .ch-label {
             font-size: 13px;
             font-weight: 600;
             color: var(--ch-text);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             display: block;
+            line-height: 1.35;
         }
 
         .ch-auth-form .ch-input {
             width: 100%;
             box-sizing: border-box;
+            min-height: 44px;
         }
 
         .ch-password-wrap {
@@ -4224,7 +4277,9 @@ function ch_global_styles()
             height: 42px;
             font-size: 14px;
             border-radius: var(--ch-radius);
-            margin-top: 2px;
+            margin-top: 4px;
+            width: 100%;
+            min-height: 44px;
         }
 
         .ch-auth-submit:disabled {
@@ -4267,13 +4322,23 @@ function ch_global_styles()
             line-height: 1.5;
         }
 
+        #ch-auth-msg {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        #ch-auth-msg:empty {
+            display: none;
+        }
+
         #ch-auth-msg .bntm-notice-success {
             background: #d1fae5;
             color: #065f46;
             padding: 9px 13px;
             border-radius: var(--ch-radius);
             font-size: 12.5px;
-            margin-bottom: 14px;
+            margin-bottom: 0;
         }
 
         #ch-auth-msg .bntm-notice-error {
@@ -4282,7 +4347,24 @@ function ch_global_styles()
             padding: 9px 13px;
             border-radius: var(--ch-radius);
             font-size: 12.5px;
-            margin-bottom: 14px;
+            margin-bottom: 0;
+        }
+
+        #ch-post-msg,
+        #ch-edit-post-msg {
+            display: grid;
+            gap: 8px;
+            padding: 0 24px 10px;
+        }
+
+        #ch-post-msg:empty,
+        #ch-edit-post-msg:empty {
+            display: none;
+        }
+
+        #ch-post-msg .bntm-notice,
+        #ch-edit-post-msg .bntm-notice {
+            margin-bottom: 0;
         }
 
         /* GUEST LANDING */
@@ -5168,7 +5250,11 @@ function ch_global_styles()
             .ch-burger-menu-btn,
             .ch-page-btn,
             .ch-post-action,
-            .ch-comment-action {
+            .ch-comment-action,
+            .ch-vote-btn-lg,
+            .ch-share-option,
+            .ch-auth-submit,
+            .ch-composer-submit {
                 min-height: 44px;
             }
 
@@ -5501,7 +5587,7 @@ function ch_global_styles()
                 padding-top: 0;
             }
 
-            .ch-post-time {
+            .ch-post-card .ch-post-time {
                 margin-left: 0;
                 width: 100%;
             }
@@ -5544,6 +5630,20 @@ function ch_global_styles()
                 grid-template-columns: 1fr;
             }
 
+            .ch-post-view-main {
+                order: 1;
+            }
+
+            .ch-post-view-sidebar {
+                order: 2;
+                display: block;
+                margin-top: 12px;
+            }
+
+            .ch-post-view-sidebar > .ch-sidebar-widget {
+                margin-bottom: 0;
+            }
+
             .ch-post-view-wrap {
                 padding: 14px 12px;
             }
@@ -5556,14 +5656,56 @@ function ch_global_styles()
                 font-size: 18px;
             }
 
-            .ch-post-vote-bar {
-                gap: 6px;
-                flex-wrap: wrap;
+            .ch-post-full-content {
+                font-size: 15px;
+                line-height: 1.7;
+                overflow-wrap: anywhere;
             }
 
-            .ch-vote-btn-lg {
-                padding: 5px 10px;
+            .ch-post-meta-row {
+                align-items: flex-start;
+                row-gap: 6px;
+            }
+
+            .ch-post-full .ch-post-meta-row {
+                width: 100%;
+            }
+
+            .ch-post-full .ch-post-time {
+                margin-left: 0;
+                width: auto;
+            }
+
+            .ch-post-full .ch-cat-badge {
+                max-width: 100%;
+                overflow-wrap: anywhere;
+            }
+
+            .ch-post-views {
+                margin-left: 0;
+            }
+
+            .ch-post-vote-bar {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .ch-post-vote-bar .ch-vote-btn-lg {
+                padding: 8px 10px;
                 font-size: 12px;
+                min-height: 44px;
+                justify-content: center;
+                width: auto;
+                flex: 1 1 calc(50% - 4px);
+            }
+
+            .ch-post-vote-bar .ch-vote-score {
+                flex: 1 1 100%;
+                justify-content: center;
+                min-height: 0;
+                order: -1;
+                text-align: center;
             }
 
             .ch-comments-section {
@@ -5572,12 +5714,28 @@ function ch_global_styles()
 
             .ch-comment-form {
                 gap: 8px;
+                align-items: stretch;
+            }
+
+            .ch-comment-form .ch-avatar-sm {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+            }
+
+            .ch-comment-input-wrap .ch-textarea {
+                min-height: 96px;
             }
 
             .ch-comment-form-footer {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
+            }
+
+            .ch-comment-form-footer .ch-btn {
+                width: 100%;
+                margin-left: 0;
             }
 
             .ch-mf-profile-card {
@@ -5625,6 +5783,14 @@ function ch_global_styles()
 
             .ch-auth-wrap {
                 padding: 20px 12px;
+            }
+
+            .ch-auth-form {
+                gap: 14px;
+            }
+
+            .ch-auth-row {
+                margin-bottom: 0;
             }
 
             .ch-field-row {
@@ -5823,6 +5989,49 @@ function ch_global_styles()
                 font-size: 16px;
             }
 
+            .ch-post-full-content {
+                font-size: 14px;
+            }
+
+            .ch-post-meta-row {
+                gap: 6px;
+            }
+
+            .ch-post-full .ch-post-meta-row > * {
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            .ch-post-author,
+            .ch-post-time,
+            .ch-post-views {
+                font-size: 11px;
+            }
+
+            .ch-post-view-wrap {
+                padding: 12px 10px;
+            }
+
+            .ch-post-full {
+                padding: 14px 12px;
+            }
+
+            .ch-comments-section {
+                padding: 14px 12px;
+            }
+
+            .ch-post-vote-bar .ch-vote-btn-lg {
+                flex-basis: 100%;
+            }
+
+            .ch-comment {
+                gap: 8px;
+            }
+
+            .ch-comment-body p {
+                font-size: 13px;
+            }
+
             .ch-composer-media-preview {
                 grid-template-columns: repeat(auto-fill, minmax(64px, 72px));
             }
@@ -5885,6 +6094,34 @@ function ch_global_styles()
             .ch-modal-footer .ch-btn {
                 flex: 1;
                 justify-content: center;
+            }
+
+            .ch-auth-card {
+                padding: 24px 16px;
+                border-radius: 16px;
+            }
+
+            .ch-auth-tabs {
+                margin-bottom: 18px;
+            }
+
+            .ch-auth-tab {
+                padding: 11px 0;
+                font-size: 13px;
+            }
+
+            .ch-terms-consent {
+                gap: 8px;
+                font-size: 12.5px;
+            }
+
+            .ch-terms-consent input {
+                margin-top: 1px;
+            }
+
+            #ch-post-msg,
+            #ch-edit-post-msg {
+                padding: 0 16px 8px;
             }
 
             .ch-dropdown-panel {
@@ -6061,7 +6298,8 @@ function ch_global_styles()
             }
 
             .ch-post-view-sidebar {
-                display: none;
+                display: block;
+                margin-top: 10px;
             }
 
             .ch-announcement-body {

@@ -579,6 +579,91 @@ function ch_get_guidelines_html() {
 <p><strong>Thank you for helping keep our community safe and welcoming!</strong></p>';
 }
 
+function ch_get_terms_html() {
+    $saved = get_option('ch_terms_content', '');
+    if ($saved) return wp_kses_post($saved);
+
+    return '<h4>Terms and Conditions</h4>
+<p>By creating an account or using this service, you agree to these Terms and Conditions.</p>
+<h5>1. Eligibility and Account Responsibility</h5>
+<ul>
+<li>You must provide accurate information and keep your account credentials secure.</li>
+<li>You are responsible for all activity under your account.</li>
+</ul>
+<h5>2. Acceptable Use</h5>
+<ul>
+<li>Do not post unlawful, abusive, fraudulent, hateful, or misleading content.</li>
+<li>Do not attempt to disrupt, exploit, or misuse the platform.</li>
+</ul>
+<h5>3. User Content and Moderation</h5>
+<ul>
+<li>You retain ownership of your content, but grant us a license to host, display, and moderate it for service operation.</li>
+<li>We may remove content or restrict accounts that violate these terms or community rules.</li>
+</ul>
+<h5>4. Service Availability</h5>
+<p>The service is provided on an "as is" and "as available" basis. We may modify or discontinue features at any time.</p>
+<h5>5. Limitation of Liability</h5>
+<p>To the extent permitted by law, we are not liable for indirect, incidental, or consequential damages arising from use of the service.</p>
+<h5>6. Changes to These Terms</h5>
+<p>We may update these terms periodically. Continued use after updates means you accept the revised terms.</p>
+<h5>7. Contact</h5>
+<p>For legal or policy questions, contact the platform administrator.</p>';
+}
+
+function ch_get_privacy_policy_html() {
+    $saved = get_option('ch_privacy_policy_content', '');
+    if ($saved) return wp_kses_post($saved);
+
+    return '<h4>Privacy Policy</h4>
+<p>This policy explains what personal data we collect, why we collect it, and how we protect it.</p>
+<h5>1. Information We Collect</h5>
+<ul>
+<li>Account information such as name, username, email, and profile details.</li>
+<li>Content and activity data such as posts, comments, reports, and moderation actions.</li>
+<li>Technical data such as IP address, browser details, and device information for security and abuse prevention.</li>
+</ul>
+<h5>2. How We Use Information</h5>
+<ul>
+<li>To provide, maintain, and improve the platform.</li>
+<li>To authenticate users, prevent abuse, and enforce policies.</li>
+<li>To communicate service-related updates and account notices.</li>
+</ul>
+<h5>3. Data Sharing</h5>
+<p>We do not sell personal data. Data may be shared with service providers only when needed to operate the platform or comply with legal obligations.</p>
+<h5>4. Retention</h5>
+<p>We retain data as long as needed for service operation, legal compliance, and security purposes.</p>
+<h5>5. Your Rights</h5>
+<p>Depending on your jurisdiction, you may request access, correction, deletion, or export of your personal data.</p>
+<h5>6. Security</h5>
+<p>We apply reasonable technical and organizational measures to protect personal data.</p>
+<h5>7. Changes to This Policy</h5>
+<p>We may revise this policy from time to time. Material changes will be reflected in the updated policy version/date.</p>
+<h5>8. Contact</h5>
+<p>For privacy requests, contact the platform administrator.</p>';
+}
+
+function ch_get_terms_version() {
+    $saved = trim((string) get_option('ch_terms_version', ''));
+    if ($saved !== '') return $saved;
+    return '2026-04-21';
+}
+
+function ch_get_terms_conditions_url() {
+    $saved = trim((string) get_option('ch_terms_url', ''));
+    if ($saved !== '') return esc_url_raw($saved);
+    return '';
+}
+
+function ch_get_privacy_policy_link_url() {
+    $saved = trim((string) get_option('ch_privacy_url', ''));
+    if ($saved !== '') return esc_url_raw($saved);
+    if (function_exists('get_privacy_policy_url')) {
+        $url = trim((string) get_privacy_policy_url());
+        if ($url !== '') return $url;
+    }
+    return '';
+}
+
 function bntm_ch_get_pages() {
     return [
         'CivicHub Dashboard' => '[ch_dashboard]',
@@ -1110,10 +1195,29 @@ function bntm_shortcode_ch_auth() {
                     <input type="text" id="ch-reg-location" class="ch-input" placeholder="e.g., Barangay San Jose, Cagayan de Oro">
                 </div>
                 <div class="ch-field-group">
-                    <label class="ch-checkbox-label">
-                        <input type="checkbox" id="ch-reg-terms" required disabled>
-                        I agree to the <a href="#" class="ch-auth-link" id="ch-guidelines-link" onclick="chOpenGuidelinesModal(); return false;">Community Guidelines</a>
-                        <span id="ch-guidelines-hint" style="display:block;font-size:11px;color:var(--ch-text-subtle);margin-top:3px;">Please read the Community Guidelines before agreeing.</span>
+                    <?php
+                    $terms_url = ch_get_terms_conditions_url();
+                    $privacy_url = ch_get_privacy_policy_link_url();
+                    ?>
+                    <label class="ch-checkbox-label ch-terms-consent">
+                        <input type="checkbox" id="ch-reg-terms" required>
+                        <span>
+                            I agree to the
+                            <a href="<?php echo esc_url($terms_url ?: '#'); ?>" class="ch-auth-link" id="ch-terms-link"
+                                <?php if ($terms_url): ?>target="_blank" rel="noopener noreferrer"<?php else: ?>onclick="chOpenTermsModal(); return false;"<?php endif; ?>>Terms and Conditions</a>
+                            and
+                            <a href="<?php echo esc_url($privacy_url ?: '#'); ?>" class="ch-auth-link"
+                                <?php if ($privacy_url): ?>target="_blank" rel="noopener noreferrer"<?php else: ?>onclick="chOpenPrivacyModal(); return false;"<?php endif; ?>>Privacy Policy</a>.
+                        </span>
+                    </label>
+                </div>
+                <div class="ch-field-group">
+                    <label class="ch-checkbox-label ch-terms-consent">
+                        <input type="checkbox" id="ch-reg-guidelines" required>
+                        <span>
+                            I agree to follow the
+                            <a href="#" class="ch-auth-link" onclick="chOpenGuidelinesModal(); return false;">Community Guidelines</a>.
+                        </span>
                     </label>
                 </div>
                 <button class="ch-btn ch-btn-primary ch-btn-full ch-auth-submit" id="ch-register-btn"
@@ -1246,12 +1350,14 @@ function bntm_shortcode_ch_auth() {
             const lastname    = document.getElementById('ch-reg-lastname').value.trim();
             const location    = document.getElementById('ch-reg-location').value.trim();
             const terms       = document.getElementById('ch-reg-terms').checked;
+            const guidelines  = document.getElementById('ch-reg-guidelines').checked;
             const msgEl       = document.getElementById('ch-auth-msg');
             const btn         = document.getElementById('ch-register-btn');
 
             if (!username || !email || !pass || !passConfirm) { msgEl.innerHTML = '<div class="bntm-notice-error">Username, email, and password are required.</div>'; return; }
             if (pass !== passConfirm) { msgEl.innerHTML = '<div class="bntm-notice-error">Passwords do not match.</div>'; return; }
-            if (!terms)    { msgEl.innerHTML = '<div class="bntm-notice-error">Please agree to the Community Guidelines.</div>'; return; }
+            if (!terms)    { msgEl.innerHTML = '<div class="bntm-notice-error">You must agree to the Terms and Conditions and Privacy Policy.</div>'; return; }
+            if (!guidelines) { msgEl.innerHTML = '<div class="bntm-notice-error">You must agree to the Community Guidelines.</div>'; return; }
             if (pass.length < 8) { msgEl.innerHTML = '<div class="bntm-notice-error">Password must be at least 8 characters.</div>'; return; }
 
             btn.disabled = true; btn.textContent = 'Creating account…';
@@ -1266,6 +1372,8 @@ function bntm_shortcode_ch_auth() {
             fd.append('first_name',    firstname);
             fd.append('last_name',     lastname);
             fd.append('location',      location);
+            fd.append('terms_accepted', terms ? '1' : '0');
+            fd.append('guidelines_accepted', guidelines ? '1' : '0');
             fd.append('redirect_to',   redirect);
             fd.append('nonce',         nonce);
 
@@ -1333,7 +1441,43 @@ function bntm_shortcode_ch_auth() {
     })();
     </script>
 
-    <!-- Community Guidelines Modal (for registration page) -->
+    <!-- Terms and Conditions Modal (for registration page) -->
+    <div id="ch-modal-terms" class="ch-modal-overlay"
+         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center;">
+        <div class="ch-modal" style="background:#fff;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+            <div class="ch-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f3f4f6;">
+                <h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ch-text);">Terms and Conditions</h3>
+                <button onclick="chCloseTermsModal()"
+                        style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button>
+            </div>
+            <div style="padding:24px;font-size:14px;color:var(--ch-text-muted);line-height:1.7;">
+                <?php echo ch_get_terms_html(); ?>
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;">
+                <button onclick="chCloseTermsModal()"
+                        class="ch-btn ch-btn-primary">I Understand</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="ch-modal-privacy" class="ch-modal-overlay"
+         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center;">
+        <div class="ch-modal" style="background:#fff;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+            <div class="ch-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f3f4f6;">
+                <h3 style="margin:0;font-size:18px;font-weight:700;color:var(--ch-text);">Privacy Policy</h3>
+                <button onclick="chClosePrivacyModal()"
+                        style="background:none;border:none;font-size:22px;cursor:pointer;color:#9ca3af;line-height:1;">&times;</button>
+            </div>
+            <div style="padding:24px;font-size:14px;color:var(--ch-text-muted);line-height:1.7;">
+                <?php echo ch_get_privacy_policy_html(); ?>
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;">
+                <button onclick="chClosePrivacyModal()"
+                        class="ch-btn ch-btn-primary">I Understand</button>
+            </div>
+        </div>
+    </div>
+
     <div id="ch-modal-guidelines" class="ch-modal-overlay"
          style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center;">
         <div class="ch-modal" style="background:#fff;border-radius:16px;max-width:540px;width:90%;max-height:80vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);">
@@ -1361,7 +1505,36 @@ function bntm_shortcode_ch_auth() {
         if (el) { el.style.display = 'none'; document.body.style.overflow = ''; }
     };
 
-    // Guidelines modal with checkbox enable logic
+    window.chOpenTermsModal = function() {
+        var modal = document.getElementById('ch-modal-terms');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    };
+    window.chCloseTermsModal = function() {
+        var modal = document.getElementById('ch-modal-terms');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    };
+
+    window.chOpenPrivacyModal = function() {
+        var modal = document.getElementById('ch-modal-privacy');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    };
+    window.chClosePrivacyModal = function() {
+        var modal = document.getElementById('ch-modal-privacy');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    };
+
     window.chOpenGuidelinesModal = function() {
         var modal = document.getElementById('ch-modal-guidelines');
         if (modal) {
@@ -1375,20 +1548,16 @@ function bntm_shortcode_ch_auth() {
             modal.style.display = 'none';
             document.body.style.overflow = '';
         }
-        // Enable checkbox and hide hint after viewing guidelines
-        var terms = document.getElementById('ch-reg-terms');
-        var hint = document.getElementById('ch-guidelines-hint');
-        if (terms) {
-            terms.disabled = false;
-            terms.title = 'You can now agree to the Community Guidelines';
-        }
-        if (hint) {
-            hint.style.display = 'none';
-        }
     };
 
     // Close on overlay click
     document.addEventListener('click', function(e) {
+        if (e.target.id === 'ch-modal-terms') {
+            chCloseTermsModal();
+        }
+        if (e.target.id === 'ch-modal-privacy') {
+            chClosePrivacyModal();
+        }
         if (e.target.id === 'ch-modal-guidelines') {
             chCloseGuidelinesModal();
         }
@@ -1572,6 +1741,8 @@ function bntm_ajax_ch_register() {
     $first_name       = sanitize_text_field($_POST['first_name'] ?? '');
     $last_name        = sanitize_text_field($_POST['last_name'] ?? '');
     $location         = sanitize_text_field($_POST['location'] ?? '');
+    $terms_accepted   = isset($_POST['terms_accepted']) ? (string) $_POST['terms_accepted'] : '0';
+    $guidelines_accepted = isset($_POST['guidelines_accepted']) ? (string) $_POST['guidelines_accepted'] : '0';
     $redirect_to      = esc_url_raw($_POST['redirect_to'] ?? '');
 
     // Validate
@@ -1586,6 +1757,12 @@ function bntm_ajax_ch_register() {
     }
     if (strlen($password) < 8) {
         wp_send_json_error(['message' => 'Password must be at least 8 characters.']);
+    }
+    if ($terms_accepted !== '1') {
+        wp_send_json_error(['message' => 'You must agree to the Terms and Conditions and Privacy Policy.']);
+    }
+    if ($guidelines_accepted !== '1') {
+        wp_send_json_error(['message' => 'You must agree to the Community Guidelines.']);
     }
     if (username_exists($username)) {
         wp_send_json_error(['message' => 'That username is already taken.']);
@@ -1606,6 +1783,27 @@ function bntm_ajax_ch_register() {
     // Set display name
     $display_name = trim("$first_name $last_name") ?: $username;
     wp_update_user(['ID' => $user_id, 'first_name' => $first_name, 'last_name' => $last_name, 'display_name' => $display_name]);
+
+    // Persist legal consent details for auditability.
+    $terms_version = ch_get_terms_version();
+    $client_ip = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'] ?? ''));
+    $client_agent = sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'] ?? ''));
+    $client_agent = function_exists('mb_substr') ? mb_substr($client_agent, 0, 255) : substr($client_agent, 0, 255);
+    $ip_hash = $client_ip !== '' ? hash('sha256', $client_ip . wp_salt('auth')) : '';
+
+    update_user_meta($user_id, 'ch_terms_accepted', '1');
+    update_user_meta($user_id, 'ch_terms_accepted_at', current_time('mysql', true));
+    update_user_meta($user_id, 'ch_terms_version', $terms_version);
+    update_user_meta($user_id, 'ch_terms_acceptance_source', 'registration_form');
+    if ($ip_hash !== '') {
+        update_user_meta($user_id, 'ch_terms_acceptance_ip_hash', $ip_hash);
+    }
+    if ($client_agent !== '') {
+        update_user_meta($user_id, 'ch_terms_acceptance_user_agent', $client_agent);
+    }
+
+    update_user_meta($user_id, 'ch_guidelines_accepted', '1');
+    update_user_meta($user_id, 'ch_guidelines_accepted_at', current_time('mysql', true));
 
     // Create CivicHub profile
     global $wpdb;

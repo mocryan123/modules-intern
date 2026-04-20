@@ -2868,10 +2868,24 @@ function ch_moderation_tab($user_id)
         update_option('ch_user_category_creation', $cat_creation_enabled);
         $retention_days = max(1, min(365, (int) ($_POST['ch_notification_retention_days'] ?? 30)));
         update_option('ch_notification_retention_days', $retention_days);
-        $guidelines = wp_kses_post($_POST['ch_community_guidelines'] ?? '');
-        if ($guidelines !== '') {
-            update_option('ch_community_guidelines', $guidelines);
+
+        $terms_url = esc_url_raw($_POST['ch_terms_url'] ?? '');
+        $privacy_url = esc_url_raw($_POST['ch_privacy_url'] ?? '');
+        $terms_version = sanitize_text_field($_POST['ch_terms_version'] ?? '');
+        if ($terms_version === '') {
+            $terms_version = '2026-04-21';
         }
+        update_option('ch_terms_url', $terms_url);
+        update_option('ch_privacy_url', $privacy_url);
+        update_option('ch_terms_version', $terms_version);
+
+        $guidelines = wp_kses_post($_POST['ch_community_guidelines'] ?? '');
+        update_option('ch_community_guidelines', $guidelines);
+        $terms_content = wp_kses_post($_POST['ch_terms_content'] ?? '');
+        $privacy_content = wp_kses_post($_POST['ch_privacy_policy_content'] ?? '');
+        update_option('ch_terms_content', $terms_content);
+        update_option('ch_privacy_policy_content', $privacy_content);
+
         if (function_exists('ch_cleanup_old_notifications')) {
             ch_cleanup_old_notifications();
         }
@@ -3090,8 +3104,8 @@ function ch_moderation_tab($user_id)
                 </svg>
                 Community Guidelines
             </h3>
-            <p style="font-size:13px;color:var(--ch-text-muted);margin:4px 0 0;">Displayed to all users in the guidelines
-                modal and on the registration page. Supports basic HTML tags.</p>
+            <p style="font-size:13px;color:var(--ch-text-muted);margin:4px 0 0;">Displayed to all users in the community
+                guidelines modal. Supports basic HTML tags.</p>
         </div>
         <div class="ch-card-body" style="padding:24px;">
             <form method="post">
@@ -3116,6 +3130,81 @@ function ch_moderation_tab($user_id)
                             <polyline points="20 6 9 17 4 12" />
                         </svg>
                         Save Guidelines
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="ch-card" style="margin-bottom:20px;">
+        <div class="ch-card-header">
+            <h3>
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"
+                    style="margin-right:6px;vertical-align:-2px;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                Legal Policies (Registration)
+            </h3>
+            <p style="font-size:13px;color:var(--ch-text-muted);margin:4px 0 0;">Used by the Terms and Conditions and
+                Privacy Policy links in the registration form.</p>
+        </div>
+        <div class="ch-card-body" style="padding:24px;">
+            <form method="post">
+                <?php wp_nonce_field('ch_moderation_settings_nonce', 'ch_moderation_settings_nonce'); ?>
+
+                <div class="ch-field-row" style="margin-bottom:12px;">
+                    <div class="ch-field-group ch-field-half">
+                        <label class="ch-label">Terms URL <span class="ch-optional">(optional)</span></label>
+                        <input type="url" name="ch_terms_url" class="ch-input"
+                            value="<?php echo esc_attr(get_option('ch_terms_url', '')); ?>"
+                            placeholder="https://your-site.com/terms-and-conditions">
+                    </div>
+                    <div class="ch-field-group ch-field-half">
+                        <label class="ch-label">Privacy Policy URL <span class="ch-optional">(optional)</span></label>
+                        <input type="url" name="ch_privacy_url" class="ch-input"
+                            value="<?php echo esc_attr(get_option('ch_privacy_url', '')); ?>"
+                            placeholder="https://your-site.com/privacy-policy">
+                    </div>
+                </div>
+
+                <div class="ch-field-group">
+                    <label class="ch-label">Terms Version</label>
+                    <input type="text" name="ch_terms_version" class="ch-input"
+                        value="<?php echo esc_attr(get_option('ch_terms_version', '2026-04-21')); ?>"
+                        placeholder="e.g. 2026-04-21 or v1.0">
+                    <div style="margin-top:6px;font-size:12px;color:#9ca3af;">
+                        Stored with user consent records for auditability.
+                    </div>
+                </div>
+
+                <div class="ch-field-group" style="margin-top:14px;">
+                    <label class="ch-label">Terms and Conditions Content</label>
+                    <textarea name="ch_terms_content" class="ch-input ch-textarea" rows="10"
+                        style="font-family:monospace;font-size:13px;"
+                        placeholder="Leave blank to use standard default terms content."><?php echo esc_textarea(get_option('ch_terms_content', '')); ?></textarea>
+                </div>
+
+                <div class="ch-field-group" style="margin-top:14px;">
+                    <label class="ch-label">Privacy Policy Content</label>
+                    <textarea name="ch_privacy_policy_content" class="ch-input ch-textarea" rows="10"
+                        style="font-family:monospace;font-size:13px;"
+                        placeholder="Leave blank to use standard default privacy policy content."><?php echo esc_textarea(get_option('ch_privacy_policy_content', '')); ?></textarea>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <button type="button" class="ch-btn ch-btn-secondary ch-btn-sm"
+                        onclick="document.querySelector('[name=ch_terms_content]').value='';document.querySelector('[name=ch_privacy_policy_content]').value='';this.textContent='Cleared — save to reset defaults';">
+                        Reset Legal Content
+                    </button>
+                    <button type="submit" name="ch_save_moderation_settings" class="ch-btn ch-btn-primary">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Save Legal Policies
                     </button>
                 </div>
             </form>
@@ -6667,51 +6756,60 @@ function bntm_shortcode_ch_post_view()
                                 Downvote
                             </button>
                         <?php endif; ?>
-                        <div class="ch-share-dropdown">
-                            <button class="ch-vote-btn-lg ch-share-btn" onclick="chToggleShareMenu(this)">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    stroke-width="2">
-                                    <circle cx="18" cy="5" r="3" />
-                                    <circle cx="6" cy="12" r="3" />
-                                    <circle cx="18" cy="19" r="3" />
-                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                                </svg>
-                                Share
-                            </button>
-                            <div class="ch-share-menu">
-                                <button class="ch-share-option"
-                                    onclick="chShareToSocial('twitter', window.location.href, '<?php echo esc_attr($post->title); ?>')">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-                                    </svg>
-                                    Twitter
-                                </button>
-                                <button class="ch-share-option"
-                                    onclick="chShareToSocial('facebook', window.location.href, '<?php echo esc_attr($post->title); ?>')">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                                    </svg>
-                                    Facebook
-                                </button>
-                                <button class="ch-share-option"
-                                    onclick="chShareToSocial('linkedin', window.location.href, '<?php echo esc_attr($post->title); ?>')">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                                    </svg>
-                                    LinkedIn
-                                </button>
-                                <button class="ch-share-option" onclick="chShareToSocial('copy', window.location.href)">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                        stroke-width="2">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                                    </svg>
-                                    Copy Link
-                                </button>
+                        <button class="ch-vote-btn-lg ch-share-btn" onclick="chOpenModal('ch-modal-share-post')">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2">
+                                <circle cx="18" cy="5" r="3" />
+                                <circle cx="6" cy="12" r="3" />
+                                <circle cx="18" cy="19" r="3" />
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                            </svg>
+                            Share
+                        </button>
+                        <?php $post_share_url = get_permalink() . '?view_post=' . $post->rand_id; ?>
+                        <div id="ch-modal-share-post" class="ch-modal-overlay" style="display:none">
+                            <div class="ch-modal" style="max-width:420px;">
+                                <div class="ch-modal-header">
+                                    <h3>Share this post</h3>
+                                    <button class="ch-modal-close" type="button" onclick="chCloseModal('ch-modal-share-post')"
+                                        aria-label="Close">&times;</button>
+                                </div>
+                                <div class="ch-modal-body" style="display:grid;gap:8px;">
+                                    <button class="ch-share-option"
+                                        onclick="chShareToSocial('twitter', '<?php echo esc_url($post_share_url); ?>', '<?php echo esc_attr($post->title); ?>'); chCloseModal('ch-modal-share-post');">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                                        </svg>
+                                        Twitter
+                                    </button>
+                                    <button class="ch-share-option"
+                                        onclick="chShareToSocial('facebook', '<?php echo esc_url($post_share_url); ?>', '<?php echo esc_attr($post->title); ?>'); chCloseModal('ch-modal-share-post');">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                        </svg>
+                                        Facebook
+                                    </button>
+                                    <button class="ch-share-option"
+                                        onclick="chShareToSocial('linkedin', '<?php echo esc_url($post_share_url); ?>', '<?php echo esc_attr($post->title); ?>'); chCloseModal('ch-modal-share-post');">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                                        </svg>
+                                        LinkedIn
+                                    </button>
+                                    <button class="ch-share-option"
+                                        onclick="chShareToSocial('copy', '<?php echo esc_url($post_share_url); ?>'); chCloseModal('ch-modal-share-post');">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                        </svg>
+                                        Copy Link
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <?php if ($user_id && $post->user_id != $user_id && !current_user_can('manage_options')): ?>
