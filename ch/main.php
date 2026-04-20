@@ -347,8 +347,21 @@ function ch_get_feed_url() {
                     $url = get_permalink($page_id);
                     $source = 'shortcode_scan_page';
                 } else {
-                    $url = home_url('/');
-                    $source = 'fallback_home_root';
+                    // Prefer another CivicHub page over site root when feed discovery fails.
+                    $dashboard_page_id = ch_find_page_id_by_shortcode('ch_dashboard');
+                    if ($dashboard_page_id > 0) {
+                        $url = get_permalink($dashboard_page_id);
+                        $source = 'fallback_dashboard_shortcode_page';
+                    } else {
+                        $auth_page_id = ch_find_page_id_by_shortcode('ch_auth');
+                        if ($auth_page_id > 0) {
+                            $url = get_permalink($auth_page_id);
+                            $source = 'fallback_auth_shortcode_page';
+                        } else {
+                            $url = home_url('/forum-feed/');
+                            $source = 'fallback_forum_feed_path';
+                        }
+                    }
                 }
             }
         }
@@ -1037,7 +1050,18 @@ function bntm_shortcode_ch_auth() {
                     <span class="ch-nav-label">Forum</span>
                 </a>
             </div>
+            <!-- Guest auth buttons (mobile drawer only) -->
+            <div class="ch-user-bar">
+                <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+            </div>
         </div><!-- /#ch-feed-drawer-auth -->
+
+        <!-- Desktop guest auth buttons (hidden on mobile via CSS) -->
+        <div class="ch-user-bar ch-nav-guest-desktop">
+            <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+            <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+        </div>
 
         <!-- Burger button: visible on mobile only, opens the drawer -->
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false"
