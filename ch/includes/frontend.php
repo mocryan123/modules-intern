@@ -447,7 +447,7 @@ function ch_guest_landing_page()
                             Settings
                         </a>
                         <div class="ch-dropdown-divider"></div>
-                        <a href="<?php echo wp_logout_url(get_permalink()); ?>"
+                        <a href="<?php echo esc_url(ch_get_logout_url(get_permalink())); ?>"
                             class="ch-dropdown-item ch-dropdown-item-danger">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 stroke-width="2">
@@ -3942,7 +3942,7 @@ function ch_public_user_profile($view_uid)
                                 Settings
                             </a>
                             <div class="ch-dropdown-divider"></div>
-                            <a href="<?php echo wp_logout_url(esc_url($feed_url)); ?>"
+                            <a href="<?php echo esc_url(ch_get_logout_url($feed_url)); ?>"
                                 class="ch-dropdown-item ch-dropdown-item-danger">
                                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     stroke-width="2">
@@ -4218,7 +4218,7 @@ function bntm_shortcode_ch_feed()
                             Settings
                         </a>
                         <div class="ch-dropdown-divider"></div>
-                        <a href="<?php echo wp_logout_url(esc_url($feed_url_back)); ?>"
+                        <a href="<?php echo esc_url(ch_get_logout_url($feed_url_back)); ?>"
                             class="ch-dropdown-item ch-dropdown-item-danger">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -4481,7 +4481,7 @@ function bntm_shortcode_ch_feed()
                                 </svg>
                                 Settings
                             </a>
-                            <a href="<?php echo wp_logout_url(get_permalink()); ?>" class="ch-dropdown-item ch-dropdown-item-danger"
+                            <a href="<?php echo esc_url(ch_get_logout_url(get_permalink())); ?>" class="ch-dropdown-item ch-dropdown-item-danger"
                                 onclick="chCloseAllMobileMenus()">
                                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     stroke-width="2">
@@ -4557,7 +4557,7 @@ function bntm_shortcode_ch_feed()
                                 Settings
                             </a>
                             <div class="ch-dropdown-divider"></div>
-                            <a href="<?php echo wp_logout_url(get_permalink()); ?>"
+                            <a href="<?php echo esc_url(ch_get_logout_url(get_permalink())); ?>"
                                 class="ch-dropdown-item ch-dropdown-item-danger">
                                 <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                     stroke-width="2">
@@ -6156,7 +6156,7 @@ function bntm_shortcode_ch_feed()
                         <!-- Danger zone -->
                         <div class="ch-settings-section" style="border-bottom:none;">
                             <div class="ch-settings-section-title" style="color:#ef4444;">Account Actions</div>
-                            <a href="<?php echo wp_logout_url(get_permalink()); ?>" class="ch-settings-row ch-settings-row-link"
+                            <a href="<?php echo esc_url(ch_get_logout_url(get_permalink())); ?>" class="ch-settings-row ch-settings-row-link"
                                 style="color:#ef4444;">
                                 <div class="ch-settings-row-info">
                                     <div class="ch-settings-row-label" style="color:#ef4444;">
@@ -6578,7 +6578,7 @@ function bntm_shortcode_ch_post_view()
                             Settings
                         </a>
                         <div class="ch-dropdown-divider"></div>
-                        <a href="<?php echo wp_logout_url(remove_query_arg('view_post')); ?>"
+                        <a href="<?php echo esc_url(ch_get_logout_url(remove_query_arg('view_post'))); ?>"
                             class="ch-dropdown-item ch-dropdown-item-danger">
                             <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 stroke-width="2">

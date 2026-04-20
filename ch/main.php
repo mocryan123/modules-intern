@@ -390,6 +390,21 @@ function ch_normalize_login_redirect($redirect_to = '') {
     return $candidate;
 }
 
+function ch_get_logout_url($redirect_to = '') {
+    $target = $redirect_to !== '' ? esc_url_raw($redirect_to) : ch_get_feed_url();
+    return wp_nonce_url(
+        add_query_arg(
+            [
+                'ch_action' => 'logout',
+                'redirect_to' => rawurlencode($target),
+            ],
+            home_url('/')
+        ),
+        'ch_logout_action',
+        '_ch_logout_nonce'
+    );
+}
+
 function ch_establish_user_session($user, $remember = false) {
     $user = $user instanceof WP_User ? $user : get_user_by('id', (int) $user);
     if (!$user) {
@@ -406,6 +421,26 @@ function ch_establish_user_session($user, $remember = false) {
 
     return true;
 }
+
+add_action('template_redirect', function () {
+    if (($_GET['ch_action'] ?? '') !== 'logout') {
+        return;
+    }
+
+    if (!isset($_GET['_ch_logout_nonce']) || !wp_verify_nonce($_GET['_ch_logout_nonce'], 'ch_logout_action')) {
+        wp_die('Security check failed');
+    }
+
+    if (is_user_logged_in()) {
+        wp_logout();
+        wp_destroy_current_session();
+        wp_clear_auth_cookie();
+    }
+
+    $redirect_to = ch_normalize_login_redirect(wp_unslash($_GET['redirect_to'] ?? ''));
+    wp_safe_redirect($redirect_to);
+    exit;
+}, 1);
 
 add_action('wp_enqueue_scripts', function() {
     if (!bntm_ch_is_frontend_context()) return;
