@@ -368,6 +368,7 @@ function ch_normalize_login_redirect($redirect_to = '') {
         return $default_url;
     }
 
+    $feed_path = strtolower(untrailingslashit((string) wp_parse_url($default_url, PHP_URL_PATH)));
     $candidate_path = (string) wp_parse_url($candidate, PHP_URL_PATH);
     if ($candidate_path !== '') {
         $candidate_path = strtolower(untrailingslashit($candidate_path));
@@ -385,6 +386,11 @@ function ch_normalize_login_redirect($redirect_to = '') {
             if ($candidate_path === $blocked_path || strpos($candidate_path, $blocked_path . '/') === 0) {
                 return $default_url;
             }
+        }
+
+        // Keep post-login navigation inside the CivicHub feed shell.
+        if ($feed_path !== '' && $candidate_path !== $feed_path) {
+            return $default_url;
         }
     }
 
