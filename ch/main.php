@@ -364,6 +364,21 @@ function ch_get_feed_url() {
     return $url;
 }
 
+function ch_get_strict_post_login_url() {
+    // Resolve by shortcode first to avoid slug collisions with other modules.
+    $feed_page_id = ch_find_page_id_by_shortcode('ch_feed');
+    if ($feed_page_id > 0) {
+        return get_permalink($feed_page_id);
+    }
+
+    $dashboard_page_id = ch_find_page_id_by_shortcode('ch_dashboard');
+    if ($dashboard_page_id > 0) {
+        return get_permalink($dashboard_page_id);
+    }
+
+    return '';
+}
+
 function ch_get_auth_url($tab = 'login', $redirect_to = '') {
     static $base = null;
 
@@ -411,7 +426,10 @@ function ch_should_use_secure_auth_cookie() {
 }
 
 function ch_normalize_login_redirect($redirect_to = '') {
-    $default_url = ch_get_feed_url();
+    $default_url = ch_get_strict_post_login_url();
+    if ($default_url === '') {
+        $default_url = ch_get_feed_url();
+    }
     $default_path = strtolower(untrailingslashit((string) wp_parse_url($default_url, PHP_URL_PATH)));
     $auth_path = strtolower(untrailingslashit((string) wp_parse_url(ch_get_auth_url('login'), PHP_URL_PATH)));
     $wp_login_path = strtolower(untrailingslashit((string) wp_parse_url(wp_login_url(), PHP_URL_PATH)));
@@ -1304,7 +1322,7 @@ function bntm_shortcode_ch_auth() {
                             const targetUrl = new URL(target, window.location.origin);
                             const targetPath = (targetUrl.pathname || '').replace(/\/+$/, '').toLowerCase() || '/';
                             if (targetUrl.searchParams.get('session_error') === '1' || targetPath === '/login') {
-                                target = '<?php echo esc_js(ch_get_feed_url()); ?>';
+                                target = '<?php echo esc_js(ch_normalize_login_redirect('')); ?>';
                             }
                         } catch (e) {}
                         window.location.href = target;
