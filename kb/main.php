@@ -509,6 +509,169 @@ if (!function_exists('kbf_landing_page_url')) {
     }
 }
 
+if (!function_exists('kbf_signin_page_url')) {
+    function kbf_signin_page_url() {
+        $signin_url = function_exists('kbf_get_page_url') ? (string) kbf_get_page_url('signin') : '';
+        $looks_like_filesystem_path = (bool) preg_match('/^[a-zA-Z]:[\\\\\/]/', $signin_url);
+        if ($looks_like_filesystem_path || $signin_url === '') {
+            $signin_url = '';
+        }
+        if ($signin_url !== '' && strpos($signin_url, '/') === 0) {
+            $signin_url = home_url($signin_url);
+        }
+        $signin_path = $signin_url ? (string) wp_parse_url($signin_url, PHP_URL_PATH) : '';
+        $signin_is_core_login = $signin_path && preg_match('#/(?:wp-login\.php|login)/?$#i', $signin_path);
+        if ($signin_url === '' || !wp_http_validate_url($signin_url) || $signin_is_core_login) {
+            $signin_page = get_page_by_path('fundora-sign-in');
+            if ($signin_page && !empty($signin_page->ID)) {
+                $signin_url = get_permalink($signin_page->ID);
+            } else {
+                $signin_url = home_url('/fundora-sign-in/');
+            }
+        }
+        return $signin_url;
+    }
+}
+
+if (!function_exists('kbf_set_reauth_lock_cookie')) {
+    function kbf_set_reauth_lock_cookie() {
+        if (headers_sent()) {
+            return;
+        }
+        setcookie('kbf_reauth_lock', '1', time() + (10 * MINUTE_IN_SECONDS), '/', COOKIE_DOMAIN, is_ssl(), true);
+    }
+}
+
+if (!function_exists('kbf_clear_reauth_lock_cookie')) {
+    function kbf_clear_reauth_lock_cookie() {
+        if (headers_sent()) {
+            return;
+        }
+        setcookie('kbf_reauth_lock', '', time() - HOUR_IN_SECONDS, '/', COOKIE_DOMAIN, is_ssl(), true);
+        setcookie('kbf_reauth_lock', '', time() - HOUR_IN_SECONDS, '/', '', is_ssl(), true);
+        unset($_COOKIE['kbf_reauth_lock']);
+    }
+}
+
+if (!function_exists('kbf_expire_bntm_session_cookie')) {
+    function kbf_expire_bntm_session_cookie() {
+        if (headers_sent()) {
+            return;
+        }
+        $secure = is_ssl();
+        $cookie_paths = array_filter(array_unique([
+            '/',
+            (string) COOKIEPATH,
+            defined('SITECOOKIEPATH') ? (string) SITECOOKIEPATH : '',
+        ]));
+        $cookie_domains = array_unique([
+            (string) COOKIE_DOMAIN,
+            '',
+        ]);
+        foreach ($cookie_paths as $path) {
+            foreach ($cookie_domains as $domain) {
+                setcookie('bntm_session_token', '', time() - HOUR_IN_SECONDS, $path, $domain, $secure, true);
+            }
+        }
+        unset($_COOKIE['bntm_session_token']);
+    }
+}
+
+if (!function_exists('kbf_logout_action_url')) {
+    function kbf_logout_action_url() {
+        $base_url = function_exists('kbf_landing_page_url') ? (string) kbf_landing_page_url() : home_url('/');
+        if (!wp_http_validate_url($base_url)) {
+            $base_url = home_url('/');
+        }
+        return add_query_arg([
+            'kbf_action'       => 'logout',
+            'kbf_logout_nonce' => wp_create_nonce('kbf_logout'),
+        ], $base_url);
+    }
+}
+
+if (!function_exists('kbf_handle_logout_request')) {
+    function kbf_handle_logout_request() {
+        if (is_admin()) {
+            return;
+        }
+        $action = isset($_GET['kbf_action']) ? sanitize_key((string) wp_unslash($_GET['kbf_action'])) : '';
+        if ($action !== 'logout') {
+            return;
+        }
+
+        $signin_url = function_exists('kbf_signin_page_url') ? kbf_signin_page_url() : home_url('/fundora-sign-in/');
+        $reauth_url = add_query_arg([
+            'loggedout' => '1',
+            'reauth'    => '1',
+        ], $signin_url);
+
+        if (!is_user_logged_in()) {
+            wp_safe_redirect($reauth_url);
+            exit;
+        }
+
+        $nonce = isset($_GET['kbf_logout_nonce']) ? sanitize_text_field((string) wp_unslash($_GET['kbf_logout_nonce'])) : '';
+        if ($nonce === '' || !wp_verify_nonce($nonce, 'kbf_logout')) {
+            wp_safe_redirect(add_query_arg('logout_error', 'nonce', $signin_url));
+            exit;
+        }
+
+        $user_id = (int) get_current_user_id();
+        if (function_exists('kbf_set_reauth_lock_cookie')) {
+            kbf_set_reauth_lock_cookie();
+        }
+        wp_logout();
+
+        if ($user_id > 0) {
+            delete_user_meta($user_id, '_bntm_session_token');
+        }
+        if (function_exists('kbf_expire_bntm_session_cookie')) {
+            kbf_expire_bntm_session_cookie();
+        }
+
+        wp_safe_redirect($reauth_url);
+        exit;
+    }
+}
+add_action('init', 'kbf_handle_logout_request', 1);
+
+if (!function_exists('kbf_enforce_reauth_lock')) {
+    function kbf_enforce_reauth_lock() {
+        if (is_admin()) {
+            return;
+        }
+        $reauth_requested =
+            (!empty($_GET['reauth']) && $_GET['reauth'] === '1') ||
+            (!empty($_GET['loggedout']) && $_GET['loggedout'] === '1') ||
+            (!empty($_COOKIE['kbf_reauth_lock']) && $_COOKIE['kbf_reauth_lock'] === '1');
+
+        if (!$reauth_requested || !is_user_logged_in()) {
+            return;
+        }
+
+        $user_id = (int) get_current_user_id();
+        wp_logout();
+        if ($user_id > 0) {
+            delete_user_meta($user_id, '_bntm_session_token');
+        }
+        if (function_exists('kbf_expire_bntm_session_cookie')) {
+            kbf_expire_bntm_session_cookie();
+        }
+
+        $signin_url = function_exists('kbf_signin_page_url') ? kbf_signin_page_url() : home_url('/fundora-sign-in/');
+        $reauth_url = add_query_arg([
+            'loggedout' => '1',
+            'reauth'    => '1',
+        ], $signin_url);
+        if (!headers_sent()) {
+            wp_safe_redirect($reauth_url);
+            exit;
+        }
+    }
+}
+add_action('init', 'kbf_enforce_reauth_lock', 20);
+
 if (!function_exists('kbf_auth_post_login_redirect')) {
     function kbf_auth_post_login_redirect($user, $default = '') {
         if (is_wp_error($user) || !($user instanceof WP_User)) {
@@ -530,7 +693,14 @@ add_filter('login_redirect', function($redirect_to, $requested_redirect_to, $use
 }, 20, 3);
 
 add_filter('logout_redirect', function($redirect_to, $requested_redirect_to, $user) {
-    return kbf_landing_page_url();
+    if (function_exists('kbf_set_reauth_lock_cookie')) {
+        kbf_set_reauth_lock_cookie();
+    }
+    $signin_url = function_exists('kbf_signin_page_url') ? kbf_signin_page_url() : home_url('/fundora-sign-in/');
+    return add_query_arg([
+        'loggedout' => '1',
+        'reauth'    => '1',
+    ], $signin_url);
 }, 9999, 3);
 
 add_action('wp_logout', function($user_id = 0) {
@@ -538,8 +708,11 @@ add_action('wp_logout', function($user_id = 0) {
     if ($user_id > 0) {
         delete_user_meta($user_id, '_bntm_session_token');
     }
-    if (!headers_sent()) {
-        setcookie('bntm_session_token', '', time() - HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+    if (function_exists('kbf_expire_bntm_session_cookie')) {
+        kbf_expire_bntm_session_cookie();
+    }
+    if (function_exists('kbf_set_reauth_lock_cookie')) {
+        kbf_set_reauth_lock_cookie();
     }
 }, 20, 1);
 

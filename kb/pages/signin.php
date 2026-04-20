@@ -7,6 +7,10 @@ if (!defined('ABSPATH')) exit;
 
 function bntm_kbf_render_signin() {
     $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : '#';
+  $reauth_requested =
+    (!empty($_GET['reauth']) && $_GET['reauth'] === '1') ||
+    (!empty($_GET['loggedout']) && $_GET['loggedout'] === '1') ||
+    (!empty($_COOKIE['kbf_reauth_lock']) && $_COOKIE['kbf_reauth_lock'] === '1');
     $resolve_dashboard_home_url = static function ($user = null) {
         if ($user instanceof WP_User && function_exists('kbf_auth_post_login_redirect')) {
             return (string) kbf_auth_post_login_redirect($user, '');
@@ -17,6 +21,18 @@ function bntm_kbf_render_signin() {
         return home_url('/fundora-user/?kbf_tab=overview');
     };
     if (is_user_logged_in()) {
+    if ($reauth_requested) {
+      $user_id = (int) get_current_user_id();
+      wp_logout();
+      if ($user_id > 0) {
+        delete_user_meta($user_id, '_bntm_session_token');
+      }
+      if (function_exists('kbf_expire_bntm_session_cookie')) {
+        kbf_expire_bntm_session_cookie();
+      }
+    }
+  }
+  if (is_user_logged_in()) {
         $home = $resolve_dashboard_home_url(wp_get_current_user());
         if (!headers_sent()) {
             wp_safe_redirect($home);
@@ -29,6 +45,9 @@ function bntm_kbf_render_signin() {
     $login_notice = '';
     $forgot_error = '';
     $forgot_notice = '';
+    if (!empty($_GET['loggedout']) && $_GET['loggedout'] === '1') {
+      $login_notice = 'You have signed out. Please sign in again to continue.';
+    }
     if (!empty($_GET['verified']) && $_GET['verified'] === '1') {
         $login_notice = 'Email verified. You can now sign in.';
     }
@@ -79,6 +98,9 @@ function bntm_kbf_render_signin() {
                             $login_error = $user->get_error_message();
                         }
                     } else {
+                      if (function_exists('kbf_clear_reauth_lock_cookie')) {
+                        kbf_clear_reauth_lock_cookie();
+                      }
                         $home = $resolve_dashboard_home_url($user);
                         if (!headers_sent()) {
                             wp_safe_redirect($home);

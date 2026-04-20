@@ -11,7 +11,9 @@
       $avatar_url = ($is_logged_in && $nav_profile && $nav_profile->avatar_url)
         ? $nav_profile->avatar_url
         : '';
-      $logout_url = $is_logged_in ? wp_logout_url($landing_url) : '';
+      $logout_url = $is_logged_in
+        ? (function_exists('kbf_logout_action_url') ? kbf_logout_action_url() : wp_logout_url($landing_url))
+        : '';
       $notif_unread_count = 0;
       $notif_nonce = $is_logged_in ? wp_create_nonce('kbf_notifications') : '';
       $notif_preview_items = [];
