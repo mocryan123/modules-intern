@@ -569,6 +569,85 @@
         }
 
         /**
+         * @function  getCreateBenefitsPayload
+         * @purpose   Builds the final tier payload from the redesign state for AJAX submission.
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    none
+         * @returns   string
+         * @status    ACTIVE
+         */
+        function getCreateBenefitsPayload(){
+          var clean = campaignData.tiers.filter(function(t){
+            return (t.name || '').trim() || (t.amount || '').toString().trim() || (t.perks || '').trim();
+          }).map(function(t){
+            return {
+              title: (t.name || '').trim(),
+              amount: (t.amount || '').toString().trim(),
+              description: (t.perks || '').trim()
+            };
+          });
+          return clean.length ? JSON.stringify(clean) : '';
+        }
+
+        /**
+         * @function  formatBenefitAmountDisplay
+         * @purpose   Formats benefit amounts with comma separators while preserving decimals.
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    value: any - parameter
+         * @returns   string
+         * @status    ACTIVE
+         */
+        function formatBenefitAmountDisplay(value){
+          var clean = String(value || '').replace(/[^0-9.]/g, '');
+          if (!clean) return '';
+          var parts = clean.split('.');
+          var whole = parts.shift() || '';
+          var decimal = parts.length ? parts.join('').slice(0, 2) : '';
+          var wholeFormatted = whole ? whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0';
+          return decimal ? (wholeFormatted + '.' + decimal) : wholeFormatted;
+        }
+        function getCreateTierValidation(index){
+          var tier = campaignData.tiers[index] || {};
+          var title = String(tier.name || '').trim();
+          var amount = String(tier.amount || '').replace(/[^0-9.]/g, '');
+          var desc = String(tier.perks || '').trim();
+          var hasAny = !!(title || amount || desc);
+          var errors = { title: '', amount: '', desc: '' };
+          if (title.length > 80) errors.title = 'Tier name must be 80 characters or fewer.';
+          if (desc.length > 200) errors.desc = 'Description must be 200 characters or fewer.';
+          if (amount) {
+            var amountNum = parseFloat(amount);
+            if (isNaN(amountNum) || amountNum <= 0) errors.amount = 'Enter a valid amount greater than 0.';
+          }
+          if (hasAny) {
+            if (!title) errors.title = errors.title || 'Tier name is required.';
+            if (!amount) errors.amount = errors.amount || 'Amount is required.';
+            if (!desc) errors.desc = errors.desc || 'Description is required.';
+          }
+          return {
+            hasAny: hasAny,
+            valid: !errors.title && !errors.amount && !errors.desc,
+            errors: errors
+          };
+        }
+        function validateCreateTiers(){
+          var firstInvalid = null;
+          campaignData.tiers.forEach(function(_, idx){
+            var result = getCreateTierValidation(idx);
+            if (!result.valid && !firstInvalid) {
+              firstInvalid = tierList && tierList.querySelector('[data-tier-index="' + idx + '"].is-invalid input, [data-tier-index="' + idx + '"].is-invalid textarea');
+            }
+          });
+          renderTiers();
+          if (!firstInvalid && tierList) {
+            firstInvalid = tierList.querySelector('.kbf-benefit-card.is-invalid input, .kbf-benefit-card.is-invalid textarea');
+          }
+          return firstInvalid;
+        }
+
+        /**
          * @function  renderTiers
          * @purpose   Handles renderTiers behavior in the dashboard script flow
          * @used-by   [same file references detected]
@@ -581,26 +660,29 @@
           if (!tierList) return;
           tierList.innerHTML = '';
           campaignData.tiers.forEach(function(tier, idx){
+            var validation = getCreateTierValidation(idx);
             var card = document.createElement('div');
-            card.className = 'kbf-tier-card';
+            card.className = 'kbf-benefit-card';
+            card.setAttribute('data-tier-index', String(idx));
+            if (!validation.valid) card.classList.add('is-invalid');
 
-            var header = document.createElement('div');
-            header.className = 'kbf-tier-header';
-            header.textContent = 'Tier ' + (idx + 1);
+            var row = document.createElement('div');
+            row.className = 'kbf-benefit-row';
 
             var remove = document.createElement('button');
             remove.type = 'button';
-            remove.className = 'kbf-tier-remove';
-            remove.textContent = 'Remove';
+            remove.className = 'kbf-benefit-remove';
+            remove.innerHTML = '&times;';
+            remove.setAttribute('aria-label', 'Remove tier ' + (idx + 1));
             remove.addEventListener('click', function(){
               campaignData.tiers.splice(idx, 1);
               renderTiers();
               updateSaveCloseState();
             });
-            header.appendChild(remove);
 
             var name = document.createElement('input');
             name.type = 'text';
+            name.className = 'kbf-benefit-title';
             name.placeholder = 'Tier name';
             name.value = tier.name || '';
             name.id = 'kbf-tier-name-' + idx;
@@ -608,47 +690,74 @@
             name.setAttribute('data-max', '80');
             name.addEventListener('input', function(){
               setTierData(idx, 'name', name.value);
-              updateCounter(name);
+            });
+            var nameMeta = document.createElement('div');
+            nameMeta.className = 'kbf-benefit-meta kbf-benefit-meta-name';
+            var nameErr = document.createElement('small');
+            nameErr.className = 'kbf-benefit-field-error';
+            nameErr.textContent = validation.errors.title || '';
+            var nameCounter = document.createElement('small');
+            nameCounter.className = 'kbf-benefit-counter';
+            nameCounter.textContent = (name.value || '').length + ' / 80';
+            name.addEventListener('input', function(){
+              nameCounter.textContent = (name.value || '').length + ' / 80';
             });
 
             var amount = document.createElement('input');
-            amount.type = 'number';
-            amount.min = '1';
+            amount.type = 'text';
+            amount.inputMode = 'decimal';
+            amount.className = 'kbf-benefit-amount';
             amount.placeholder = 'Amount (PHP)';
-            amount.value = tier.amount || '';
+            amount.value = formatBenefitAmountDisplay(tier.amount || '');
             amount.addEventListener('input', function(){
-              setTierData(idx, 'amount', amount.value);
+              var rawAmount = String(amount.value || '').replace(/[^0-9.]/g, '');
+              amount.value = formatBenefitAmountDisplay(rawAmount);
+              setTierData(idx, 'amount', rawAmount);
             });
+            var amountMeta = document.createElement('div');
+            amountMeta.className = 'kbf-benefit-meta kbf-benefit-meta-amount';
+            var amountErr = document.createElement('small');
+            amountErr.className = 'kbf-benefit-field-error';
+            amountErr.textContent = validation.errors.amount || '';
+            if (validation.errors.amount) amountMeta.classList.add('has-error');
+            amountMeta.appendChild(amountErr);
 
             var perks = document.createElement('textarea');
-            perks.rows = 2;
-            perks.placeholder = 'What supporters get';
+            perks.className = 'kbf-benefit-desc';
+            perks.rows = 3;
+            perks.placeholder = 'Short description';
             perks.value = tier.perks || '';
             perks.id = 'kbf-tier-perks-' + idx;
             perks.setAttribute('maxlength', '200');
             perks.setAttribute('data-max', '200');
             perks.addEventListener('input', function(){
               setTierData(idx, 'perks', perks.value);
-              updateCounter(perks);
             });
-
-            var nameCounter = document.createElement('small');
-            nameCounter.className = 'kbf-counter';
-            nameCounter.setAttribute('data-counter-for', name.id);
+            var perksMeta = document.createElement('div');
+            perksMeta.className = 'kbf-benefit-meta kbf-benefit-meta-desc';
+            var perksErr = document.createElement('small');
+            perksErr.className = 'kbf-benefit-field-error';
+            perksErr.textContent = validation.errors.desc || '';
             var perksCounter = document.createElement('small');
-            perksCounter.className = 'kbf-counter';
-            perksCounter.setAttribute('data-counter-for', perks.id);
+            perksCounter.className = 'kbf-benefit-counter';
+            perksCounter.textContent = (perks.value || '').length + ' / 200';
+            perks.addEventListener('input', function(){
+              perksCounter.textContent = (perks.value || '').length + ' / 200';
+            });
+            nameMeta.appendChild(nameErr);
+            nameMeta.appendChild(nameCounter);
+            perksMeta.appendChild(perksErr);
+            perksMeta.appendChild(perksCounter);
 
-            card.appendChild(header);
-            card.appendChild(name);
-            card.appendChild(nameCounter);
-            card.appendChild(amount);
+            row.appendChild(name);
+            row.appendChild(amount);
+            row.appendChild(remove);
+            card.appendChild(row);
+            card.appendChild(nameMeta);
+            card.appendChild(amountMeta);
             card.appendChild(perks);
-            card.appendChild(perksCounter);
+            card.appendChild(perksMeta);
             tierList.appendChild(card);
-
-            updateCounter(name);
-            updateCounter(perks);
           });
           updateBenefitsInput();
         }
@@ -817,6 +926,12 @@
             if (!campaignData.title.trim()) invalidate(titleInput, 'Campaign name is required.');
             if (!campaignData.description.trim()) invalidate(descInput, 'Campaign description is required.');
           }
+          if (current === 3) {
+            var tierInvalid = validateCreateTiers();
+            if (tierInvalid) {
+              valid = false;
+            }
+          }
           if (current === 4) {
             clearError(goalInput);
             clearError(deadlineInput);
@@ -841,7 +956,12 @@
             var panel = form.querySelector('.kbf-create-panel.is-active');
             if (panel) {
               var firstError = panel.querySelector('.kbf-field-error');
-              if (firstError) firstError.focus && firstError.focus();
+              if (firstError) {
+                firstError.focus && firstError.focus();
+              } else if (current === 3) {
+                var firstInvalidTier = tierList ? tierList.querySelector('.kbf-benefit-card.is-invalid input, .kbf-benefit-card.is-invalid textarea') : null;
+                if (firstInvalidTier) firstInvalidTier.focus();
+              }
             }
           }
           return valid;
@@ -894,6 +1014,7 @@
           if (benefitsInput) updateBenefitsInput();
 
           var fd = new FormData(form);
+          fd.set('benefits', getCreateBenefitsPayload());
           var goalRaw = (goalInput && goalInput.dataset.kbfRaw) ? goalInput.dataset.kbfRaw : (campaignData.goal_amount || '');
           if (goalRaw) fd.set('goal_amount', String(goalRaw).replace(/,/g, ''));
 
@@ -2934,12 +3055,13 @@
                 title.className = 'kbf-benefit-title';
                 title.placeholder = 'Tier name';
                 title.value = data && data.title ? data.title : '';
+                title.maxLength = 80;
                 var amount = document.createElement('input');
                 amount.type = 'text';
                 amount.inputMode = 'decimal';
                 amount.className = 'kbf-benefit-amount';
                 amount.placeholder = 'Amount (PHP)';
-                amount.value = data && data.amount ? data.amount : '';
+                amount.value = formatAmountInput(data && data.amount ? data.amount : '');
                 var remove = document.createElement('button');
                 remove.type = 'button';
                 remove.className = 'kbf-benefit-remove';
@@ -2951,16 +3073,52 @@
                 row.appendChild(title);
                 row.appendChild(amount);
                 row.appendChild(remove);
+                var titleMeta = document.createElement('div');
+                titleMeta.className = 'kbf-benefit-meta kbf-benefit-meta-name';
+                var titleErr = document.createElement('small');
+                titleErr.className = 'kbf-benefit-field-error';
+                var titleCounter = document.createElement('small');
+                titleCounter.className = 'kbf-benefit-counter';
+                titleCounter.textContent = (title.value || '').length + ' / 80';
                 var desc = document.createElement('textarea');
                 desc.className = 'kbf-benefit-desc';
                 desc.rows = 2;
                 desc.placeholder = 'Short description';
                 desc.value = data && data.description ? data.description : '';
+                desc.maxLength = 200;
+                var descMeta = document.createElement('div');
+                descMeta.className = 'kbf-benefit-meta kbf-benefit-meta-desc';
+                var descErr = document.createElement('small');
+                descErr.className = 'kbf-benefit-field-error';
+                var descCounter = document.createElement('small');
+                descCounter.className = 'kbf-benefit-counter';
+                descCounter.textContent = (desc.value || '').length + ' / 200';
+                var amountMeta = document.createElement('div');
+                amountMeta.className = 'kbf-benefit-meta kbf-benefit-meta-amount';
+                var amountErr = document.createElement('small');
+                amountErr.className = 'kbf-benefit-field-error';
+                amountMeta.appendChild(amountErr);
                 card.appendChild(row);
+                card.appendChild(titleMeta);
+                card.appendChild(amountMeta);
                 card.appendChild(desc);
+                card.appendChild(descMeta);
                 [title, amount, desc].forEach(function(el){
                     el.addEventListener('input', sync);
                 });
+                amount.addEventListener('input', function(){
+                    amount.value = formatAmountInput(amount.value);
+                });
+                title.addEventListener('input', function(){
+                    titleCounter.textContent = (title.value || '').length + ' / 80';
+                });
+                desc.addEventListener('input', function(){
+                    descCounter.textContent = (desc.value || '').length + ' / 200';
+                });
+                titleMeta.appendChild(titleErr);
+                titleMeta.appendChild(titleCounter);
+                descMeta.appendChild(descErr);
+                descMeta.appendChild(descCounter);
                 return card;
             }
             /**
@@ -2976,6 +3134,65 @@
                 return String(val || '').replace(/[^0-9.]/g, '');
             }
             /**
+             * @function  formatAmountInput
+             * @purpose   Adds comma separators to benefit amount inputs while preserving raw numeric values.
+             * @used-by   [same file references detected]
+             * @calls     [normalizeAmount]
+             * @params    val: any - parameter
+             * @returns   string
+             * @status    ACTIVE
+             */
+            function formatAmountInput(val){
+                var clean = normalizeAmount(val);
+                if (!clean) return '';
+                var parts = clean.split('.');
+                var whole = parts.shift() || '';
+                var decimal = parts.length ? parts.join('').slice(0, 2) : '';
+                var wholeFormatted = whole ? whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '0';
+                return decimal ? (wholeFormatted + '.' + decimal) : wholeFormatted;
+            }
+            function validateCard(card){
+                if (!card) return true;
+                var title = card.querySelector('.kbf-benefit-title');
+                var amount = card.querySelector('.kbf-benefit-amount');
+                var desc = card.querySelector('.kbf-benefit-desc');
+                var titleErr = card.querySelectorAll('.kbf-benefit-field-error')[0];
+                var amountErr = card.querySelectorAll('.kbf-benefit-field-error')[1];
+                var descErr = card.querySelectorAll('.kbf-benefit-field-error')[2];
+                var amountMeta = card.querySelector('.kbf-benefit-meta-amount');
+                if (titleErr) titleErr.textContent = '';
+                if (amountErr) amountErr.textContent = '';
+                if (descErr) descErr.textContent = '';
+                if (amountMeta) amountMeta.classList.remove('has-error');
+                card.classList.remove('is-invalid');
+                var t = title ? String(title.value || '').trim() : '';
+                var a = amount ? normalizeAmount(amount.value) : '';
+                var d = desc ? String(desc.value || '').trim() : '';
+                var hasAny = !!(t || a || d);
+                var valid = true;
+                if (t.length > 80) { if (titleErr) titleErr.textContent = 'Tier name must be 80 characters or fewer.'; valid = false; }
+                if (d.length > 200) { if (descErr) descErr.textContent = 'Description must be 200 characters or fewer.'; valid = false; }
+                if (a) {
+                    var amountNum = parseFloat(a);
+                    if (isNaN(amountNum) || amountNum <= 0) {
+                        if (amountErr) amountErr.textContent = 'Enter a valid amount greater than 0.';
+                        if (amountMeta) amountMeta.classList.add('has-error');
+                        valid = false;
+                    }
+                }
+                if (hasAny) {
+                    if (!t) { if (titleErr) titleErr.textContent = titleErr.textContent || 'Tier name is required.'; valid = false; }
+                    if (!a) {
+                        if (amountErr) amountErr.textContent = amountErr.textContent || 'Amount is required.';
+                        if (amountMeta) amountMeta.classList.add('has-error');
+                        valid = false;
+                    }
+                    if (!d) { if (descErr) descErr.textContent = descErr.textContent || 'Description is required.'; valid = false; }
+                }
+                if (!valid) card.classList.add('is-invalid');
+                return valid;
+            }
+            /**
              * @function  sync
              * @purpose   Handles sync behavior in the dashboard script flow
              * @used-by   [same file references detected]
@@ -2988,6 +3205,7 @@
                 var items = container.querySelectorAll('.kbf-benefit-card');
                 var list = [];
                 items.forEach(function(card){
+                    validateCard(card);
                     var title = card.querySelector('.kbf-benefit-title');
                     var amount = card.querySelector('.kbf-benefit-amount');
                     var desc = card.querySelector('.kbf-benefit-desc');
@@ -3002,6 +3220,16 @@
                     });
                 });
                 input.value = list.length ? JSON.stringify(list) : '';
+            }
+            function validate(){
+                var firstInvalid = null;
+                container.querySelectorAll('.kbf-benefit-card').forEach(function(card){
+                    if (!validateCard(card) && !firstInvalid) {
+                        firstInvalid = card.querySelector('input, textarea');
+                    }
+                });
+                sync();
+                return firstInvalid;
             }
             /**
              * @function  set
@@ -3028,7 +3256,7 @@
                 });
             }
             set([]);
-            return { set: set, sync: sync };
+            return { set: set, sync: sync, validate: validate };
         }
         window.kbfBenefitsEditors = window.kbfBenefitsEditors || {};
         if (!isCreateRedesign) {
@@ -3894,6 +4122,9 @@
             window.kbfBenefitsEditors.create.sync();
         }
         const fd = new FormData(form);
+        if (typeof getCreateBenefitsPayload === 'function') {
+            fd.set('benefits', getCreateBenefitsPayload());
+        }
         var goalInput = document.getElementById('kbf-goal-amount');
         if (goalInput) {
             var goalRaw = (goalInput.dataset.kbfRaw || goalInput.value || '').replace(/,/g, '');
@@ -3970,6 +4201,13 @@
         const form = document.getElementById('kbf-edit-fund-form');
         const btn  = document.querySelector('#kbf-modal-edit .kbf-modal-footer .kbf-btn-primary');
         const msg  = document.getElementById('kbf-edit-msg');
+        if (window.kbfBenefitsEditors && window.kbfBenefitsEditors.edit) {
+            var invalidBenefit = window.kbfBenefitsEditors.edit.validate();
+            if (invalidBenefit) {
+                invalidBenefit.focus();
+                return;
+            }
+        }
         const invalid = kbfValidateEditFund(form);
         if (invalid) {
             invalid.focus();

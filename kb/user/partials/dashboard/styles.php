@@ -1295,6 +1295,7 @@
         background:#fff;
         box-shadow:0 1px 0 #ffffffcc inset;
         transition:border-color .2s ease, box-shadow .2s ease;
+        resize:none;
     }
     .kbf-user-ui .kbf-modal input:focus,
     .kbf-user-ui .kbf-modal select:focus,
@@ -1624,45 +1625,87 @@
     }
     .kbf-user-ui .kbf-benefit-card{
         border:1px solid #e2e8f0;
-        border-radius:12px;
-        background:#fff;
-        padding:12px;
+        border-radius:16px;
+        background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+        padding:10px;
         display:grid;
-        gap:8px;
+        gap:6px;
+        box-shadow:0 1px 2px rgba(15,23,42,.03);
+        transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .kbf-user-ui .kbf-benefit-card:focus-within{
+        border-color:#bfdbfe;
+        box-shadow:0 0 0 3px #dbeafe;
+    }
+    .kbf-user-ui .kbf-benefit-card.is-invalid{
+        border-color:#fecdd3;
     }
     .kbf-user-ui .kbf-benefit-row{
         display:grid;
-        grid-template-columns:1fr 120px 32px;
+        grid-template-columns:minmax(0,1fr) 124px 34px;
         gap:8px;
         align-items:center;
     }
+    .kbf-user-ui .kbf-benefit-row .kbf-benefit-title{
+        min-width:0;
+    }
     .kbf-user-ui .kbf-benefit-row input{
-        height:38px;
+        height:40px;
     }
     .kbf-user-ui .kbf-benefit-amount{
-        text-align:right;
+        text-align:left;
     }
     .kbf-user-ui .kbf-benefit-remove{
-        width:32px;
-        height:32px;
-        border-radius:8px;
+        width:34px;
+        height:34px;
+        border-radius:10px;
         border:1px solid #e2e8f0;
-        background:#fff;
+        background:#ffffff;
         color:#64748b;
-        font-size:18px;
+        font-size:16px;
         line-height:1;
         display:flex;
         align-items:center;
         justify-content:center;
         cursor:pointer;
+        transition:border-color .2s ease, color .2s ease, background .2s ease;
     }
     .kbf-user-ui .kbf-benefit-remove:hover{
-        border-color:#cbd5f5;
-        color:#1f2a44;
+        border-color:#fecaca;
+        background:#fff5f5;
+        color:#dc2626;
     }
     .kbf-user-ui .kbf-benefit-desc{
         min-height:64px;
-        resize:vertical;
+        resize:none;
+    }
+    .kbf-user-ui .kbf-benefit-meta{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:8px;
+        min-height:0;
+    }
+    .kbf-user-ui .kbf-benefit-meta-amount{
+        display:none;
+    }
+    .kbf-user-ui .kbf-benefit-meta-amount.has-error{
+        display:flex;
+    }
+    .kbf-user-ui .kbf-benefit-counter{
+        font-size:11.5px;
+        color:#64748b;
+        line-height:1.25;
+        margin-left:auto;
+        text-align:right;
+    }
+    .kbf-user-ui .kbf-benefit-field-error{
+        font-size:11.5px;
+        color:#e11d48;
+        line-height:1.25;
+    }
+    .kbf-user-ui .kbf-benefit-field-error:empty{
+        display:none;
     }
     .kbf-user-ui .kbf-benefit-add{
         margin-top:10px;
@@ -1670,14 +1713,29 @@
         font-size:13px;
     }
     @media (max-width: 600px){
+        .kbf-user-ui .kbf-benefit-card{
+            position:relative;
+            padding-top:42px;
+        }
         .kbf-user-ui .kbf-benefit-row{
             grid-template-columns:1fr;
+            grid-template-areas:
+                "title"
+                "amount";
+            align-items:start;
+        }
+        .kbf-user-ui .kbf-benefit-row .kbf-benefit-title{grid-area:title;}
+        .kbf-user-ui .kbf-benefit-row .kbf-benefit-amount{grid-area:amount;}
+        .kbf-user-ui .kbf-benefit-row .kbf-benefit-remove{
+            position:absolute;
+            top:10px;
+            right:10px;
+            width:30px;
+            height:30px;
+            justify-self:auto;
         }
         .kbf-user-ui .kbf-benefit-amount{
             text-align:left;
-        }
-        .kbf-user-ui .kbf-benefit-remove{
-            justify-self:flex-start;
         }
     }
     .kbf-user-ui .kbf-photo-remove{
@@ -2370,33 +2428,146 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     #kbf-modal-create .kbf-tier-card{
         border:1px solid #e2e8f0;
         border-radius:16px;
-        padding:12px;
-        margin-bottom:10px;
+        padding:14px;
+        margin-bottom:12px;
         background:#ffffff;
+    }
+    #kbf-modal-create .kbf-tier-list{
+        display:flex;
+        flex-direction:column;
+        gap:12px;
     }
     #kbf-modal-create .kbf-tier-header{
         display:flex;
-        align-items:center;
+        align-items:flex-start;
         justify-content:space-between;
-        margin-bottom:8px;
-        font-weight:600;
-        color:#334155;
+        gap:12px;
+        margin-bottom:12px;
+    }
+    #kbf-modal-create .kbf-tier-header-meta{
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+        min-width:0;
+    }
+    #kbf-modal-create .kbf-tier-badge{
+        display:inline-flex;
+        align-items:center;
+        width:max-content;
+        max-width:100%;
+        padding:0;
+        border-radius:999px;
+        background:transparent;
+        border:none;
+        color:#0f172a;
+        font-size:14px;
+        font-weight:700;
+        letter-spacing:0;
+        text-transform:none;
+    }
+    #kbf-modal-create .kbf-tier-hint{
+        color:#64748b;
+        font-size:12px;
+        line-height:1.45;
     }
     #kbf-modal-create .kbf-tier-remove{
-        border:0;
-        background:#fef2f2;
+        border:1px solid #fee2e2;
+        background:#fff7f7;
         color:#dc2626;
         border-radius:999px;
-        padding:4px 10px;
+        padding:5px 10px;
         font-size:11.5px;
         font-weight:600;
         cursor:pointer;
+        transition:background .2s ease, border-color .2s ease;
+        flex-shrink:0;
+    }
+    #kbf-modal-create .kbf-tier-remove:hover{
+        background:#fee2e2;
+        border-color:#fecaca;
+    }
+    #kbf-modal-create .kbf-tier-body{
+        display:grid;
+        grid-template-columns:minmax(0,1.6fr) minmax(180px,.9fr);
+        gap:12px 14px;
+        align-items:start;
+    }
+    #kbf-modal-create .kbf-tier-field{
+        min-width:0;
+    }
+    #kbf-modal-create .kbf-tier-field-perks{
+        grid-column:1 / -1;
+    }
+    #kbf-modal-create .kbf-tier-label{
+        display:block;
+        margin-bottom:6px;
+        color:#334155;
+        font-size:12px;
+        font-weight:600;
+    }
+    #kbf-modal-create .kbf-tier-input{
+        width:100%;
+    }
+    #kbf-modal-create .kbf-tier-amount-wrap{
+        display:flex;
+        align-items:center;
+        border:1.5px solid #94a3b859;
+        border-radius:14px;
+        background:#fff;
+        overflow:hidden;
+        transition:border-color .2s ease, box-shadow .2s ease;
+    }
+    #kbf-modal-create .kbf-tier-amount-wrap:focus-within{
+        border-color:#3b82f6b2;
+        box-shadow:0 0 0 3px #3b82f61f;
+    }
+    #kbf-modal-create .kbf-tier-amount-prefix{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-width:48px;
+        padding:0 12px;
+        align-self:stretch;
+        background:#f8fafc;
+        color:#475569;
+        font-weight:700;
+        border-right:1px solid #e2e8f0;
+    }
+    #kbf-modal-create .kbf-tier-amount-wrap .kbf-tier-input{
+        border:0 !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+    }
+    #kbf-modal-create .kbf-tier-textarea{
+        min-height:96px;
+        resize:vertical;
     }
     #kbf-modal-create .kbf-counter{
         display:block;
         margin-top:4px;
         font-size:11.5px;
         color:#64748b;
+        text-align:left;
+    }
+    @media (max-width: 720px){
+        #kbf-modal-create .kbf-tier-card{
+            padding:14px;
+            border-radius:18px;
+        }
+        #kbf-modal-create .kbf-tier-header{
+            flex-direction:column;
+            align-items:stretch;
+        }
+        #kbf-modal-create .kbf-tier-remove{
+            align-self:flex-start;
+        }
+        #kbf-modal-create .kbf-tier-body{
+            grid-template-columns:1fr;
+            gap:12px;
+        }
+        #kbf-modal-create .kbf-tier-field-perks{
+            grid-column:auto;
+        }
     }
     .kbf-user-ui .kbf-field-error{
         margin-top:6px;
@@ -2602,6 +2773,11 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     }
     /* Create modal uses .kbf-create-panel (not .kbf-step-content), so body must remain scrollable. */
     .kbf-user-ui #kbf-modal-create .kbf-modal-body{
+        overflow-y:auto !important;
+        -webkit-overflow-scrolling:touch;
+    }
+    /* Edit modal step panels now flow to body height, so the body must scroll as well. */
+    .kbf-user-ui #kbf-modal-edit .kbf-modal-body{
         overflow-y:auto !important;
         -webkit-overflow-scrolling:touch;
     }

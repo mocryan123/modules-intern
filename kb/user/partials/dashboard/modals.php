@@ -114,8 +114,8 @@
               </div>
               <div class="kbf-form-group">
                 <label>Support Tiers (optional)</label>
-                <div id="kbf-tier-list" class="kbf-tier-list"></div>
-                <button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm" id="kbf-add-tier">+ Add Tier</button>
+                <div id="kbf-tier-list" class="kbf-benefits-list"></div>
+                <button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-benefit-add" id="kbf-add-tier">+ Add Tier</button>
                 <input type="hidden" name="benefits" id="kbf-create-benefits-input">
                 <small>Max 5 tiers. Add a name, amount, and what supporters receive.</small>
               </div>
