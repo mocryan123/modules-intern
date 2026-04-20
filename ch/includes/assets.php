@@ -3360,10 +3360,17 @@ function ch_global_styles()
             display: none;
             z-index: 10000;
             overflow: hidden;
+            transform-origin: top right;
         }
 
         .ch-share-menu.show {
             display: block;
+            animation: chShareMenuIn 0.15s ease;
+        }
+
+        @keyframes chShareMenuIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .ch-share-option {
@@ -3792,10 +3799,15 @@ function ch_global_styles()
         .ch-post-vote-bar {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             padding-top: 14px;
             border-top: 1px solid var(--ch-border-soft);
             flex-wrap: wrap;
+            row-gap: 8px;
+        }
+
+        .ch-post-vote-bar .ch-share-dropdown {
+            margin-left: auto;
         }
 
         .ch-vote-btn-lg {
@@ -5569,12 +5581,33 @@ function ch_global_styles()
 
             .ch-post-vote-bar {
                 gap: 6px;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                overflow-y: visible;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                padding-bottom: 4px;
+            }
+
+            .ch-post-vote-bar::-webkit-scrollbar {
+                display: none;
+            }
+
+            .ch-post-vote-bar .ch-share-dropdown {
+                margin-left: 0;
+                flex-shrink: 0;
+            }
+
+            .ch-post-vote-bar .ch-vote-score {
+                white-space: nowrap;
+                flex-shrink: 0;
             }
 
             .ch-vote-btn-lg {
                 padding: 5px 10px;
                 font-size: 12px;
+                flex-shrink: 0;
+                white-space: nowrap;
             }
 
             .ch-comments-section {
@@ -8847,19 +8880,29 @@ function ch_global_scripts()
                     const menuWidth = menu.offsetWidth || 170;
                     const menuHeight = menu.offsetHeight || 180;
                     const gap = 8;
+                    const vp = { w: window.innerWidth, h: window.innerHeight };
 
+                    // Horizontal: align right edge of menu to right edge of button, clamp to viewport
                     let left = rect.right - menuWidth;
-                    let top = rect.bottom + gap;
-
                     if (left < gap) left = gap;
-                    if (left + menuWidth > window.innerWidth - gap) {
-                        left = Math.max(gap, window.innerWidth - menuWidth - gap);
-                    }
+                    if (left + menuWidth > vp.w - gap) left = Math.max(gap, vp.w - menuWidth - gap);
 
-                    if (top + menuHeight > window.innerHeight - gap) {
+                    // Vertical: prefer opening ABOVE the button (avoids covering content above)
+                    let top;
+                    const spaceBelow = vp.h - rect.bottom - gap;
+                    const spaceAbove = rect.top - gap;
+
+                    if (spaceAbove >= menuHeight || spaceAbove >= spaceBelow) {
+                        // Open above
                         top = rect.top - menuHeight - gap;
+                        if (top < gap) top = gap;
+                        menu.dataset.dir = 'up';
+                    } else {
+                        // Open below
+                        top = rect.bottom + gap;
+                        if (top + menuHeight > vp.h - gap) top = Math.max(gap, vp.h - menuHeight - gap);
+                        menu.dataset.dir = 'down';
                     }
-                    if (top < gap) top = gap;
 
                     menu.style.position = 'fixed';
                     menu.style.top = top + 'px';
