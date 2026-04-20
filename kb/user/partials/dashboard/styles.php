@@ -935,12 +935,7 @@
         content:none;
     }
     .kbf-user-ui .kbf-modal::after{
-        content:"";
-        position:absolute;
-        inset:0;
-        border-radius:24px;
-        box-shadow:0 0 0 1px #94a3b82e inset;
-        pointer-events:none;
+        content:none;
     }
     .kbf-user-ui .kbf-modal.kbf-modal-sm{
         max-width:520px;

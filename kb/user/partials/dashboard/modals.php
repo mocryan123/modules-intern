@@ -111,6 +111,7 @@
                 <label>Photos (up to 5)</label>
                 <input type="file" id="kbf-create-photos" name="photos[]" accept="image/*" multiple style="display:none;">
                 <div class="kbf-photo-grid" id="kbf-create-photo-grid"></div>
+                <div class="kbf-field-error"></div>
               </div>
               <div class="kbf-form-group">
                 <label>Support Tiers (optional)</label>
@@ -139,6 +140,7 @@
                   <label>Deadline *</label>
                   <input type="date" name="deadline" id="kbf-create-deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" required>
                   <small>Minimum 7 days from today.</small>
+                  <div class="kbf-meta" id="kbf-create-deadline-today" style="margin-top:6px;"></div>
                   <div class="kbf-field-error"></div>
                 </div>
               </div>
@@ -364,8 +366,10 @@
               </div>
               <div class="kbf-form-group">
                 <label>Deadline</label>
-                <input type="date" name="deadline" id="edit-fund-deadline">
-                <small>Optional - update the end date.</small>
+                <input type="date" name="deadline" id="edit-fund-deadline" min="<?php echo date('Y-m-d', strtotime('+7 days')); ?>">
+                <small>Optional - if set, minimum 7 days from today.</small>
+                <div class="kbf-meta" id="kbf-edit-deadline-today" style="margin-top:6px;"></div>
+                <div class="kbf-field-error"></div>
               </div>
               <!-- Auto-return UI removed -->
             </div>

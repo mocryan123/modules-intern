@@ -1681,7 +1681,9 @@ function kbf_global_assets() {
     }
     /* Share modal */
     .kbf-share-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;}
-    .kbf-share-box{background:#fff;border-radius:14px;padding:28px;max-width:420px;width:100%;box-shadow: none;}
+    .kbf-share-box{background:#fff;border-radius:14px;padding:28px;max-width:420px;width:100%;box-shadow: none;font-family:'Poppins',system-ui,-apple-system,sans-serif;}
+    .kbf-share-box input,
+    .kbf-share-box button{font-family:inherit;}
     .kbf-share-url-row{display:flex;gap:8px;margin:16px 0;}
     .kbf-share-url-input{flex:1;padding:10px 14px;border:1.5px solid var(--kbf-border);border-radius:8px;font-size:13px;color:var(--kbf-text);background:var(--kbf-slate-lt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .kbf-share-platforms{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px;}

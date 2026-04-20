@@ -114,6 +114,7 @@
         var descInput = document.getElementById('kbf-create-description');
         var goalInput = document.getElementById('kbf-goal-amount');
         var deadlineInput = document.getElementById('kbf-create-deadline');
+        var deadlineTodayMeta = document.getElementById('kbf-create-deadline-today');
         var photoInput = document.getElementById('kbf-create-photos');
         var photoGrid = document.getElementById('kbf-create-photo-grid');
         var tierList = document.getElementById('kbf-tier-list');
@@ -125,6 +126,9 @@
         var muniInput = document.getElementById('kbf-municipality');
         var brgyInput = document.getElementById('kbf-barangay');
         var termsInput = document.getElementById('kbf-agree-terms');
+        var profileAddressSeed = <?php echo wp_json_encode(is_user_logged_in() ? sanitize_text_field((string) get_user_meta((int) $business_id, 'kbf_address', true)) : ''); ?>;
+        var profilePhoneSeed = <?php echo wp_json_encode(is_user_logged_in() ? sanitize_text_field((string) get_user_meta((int) $business_id, 'kbf_phone', true)) : ''); ?>;
+        var createPhotoMaxSize = 5 * 1024 * 1024;
 
         var campaignData = {
           step: 1,
@@ -873,8 +877,38 @@
         function handlePhotoFiles(files){
           var incoming = Array.from(files || []);
           if (!incoming.length) return;
+          clearError(photoInput || photoGrid);
           var room = Math.max(0, 5 - campaignData.photos.length);
-          incoming.slice(0, room).forEach(function(file){
+          if (room <= 0) {
+            setError(photoInput || photoGrid, 'You can upload up to 5 photos only.');
+            if (photoInput) photoInput.value = '';
+            return;
+          }
+
+          var accepted = [];
+          var firstError = '';
+          incoming.forEach(function(file){
+            if (accepted.length >= room) return;
+            var type = String((file && file.type) ? file.type : '').toLowerCase();
+            var isImage = /^image\//.test(type);
+            if (!isImage) {
+              if (!firstError) firstError = 'Only image files are allowed.';
+              return;
+            }
+            if (file && file.size > createPhotoMaxSize) {
+              if (!firstError) firstError = 'Each photo must be 5MB or smaller.';
+              return;
+            }
+            accepted.push(file);
+          });
+
+          if (!accepted.length) {
+            setError(photoInput || photoGrid, firstError || 'Please select valid image files.');
+            if (photoInput) photoInput.value = '';
+            return;
+          }
+
+          accepted.forEach(function(file){
             campaignData.photos.push(file);
             var reader = new FileReader();
             reader.onload = function(e){
@@ -885,6 +919,8 @@
           });
           syncPhotoInput();
           updateSaveCloseState();
+          if (firstError) setError(photoInput || photoGrid, firstError);
+          if (photoInput) photoInput.value = '';
         }
 
         /**
@@ -899,6 +935,7 @@
         function validateStep(step){
           var current = parseInt(step || campaignData.step || 1, 10);
           var valid = true;
+          var firstInvalidTarget = null;
 
           /**
            * @function  invalidate
@@ -911,6 +948,7 @@
            */
           function invalidate(el, message){
             valid = false;
+            if (!firstInvalidTarget && el) firstInvalidTarget = el;
             setError(el, message);
           }
 
@@ -927,9 +965,14 @@
             if (!campaignData.description.trim()) invalidate(descInput, 'Campaign description is required.');
           }
           if (current === 3) {
+            clearError(photoInput || photoGrid);
+            if (!campaignData.photos.length) {
+              invalidate(photoInput || photoGrid, 'Please upload at least one photo.');
+            }
             var tierInvalid = validateCreateTiers();
             if (tierInvalid) {
               valid = false;
+              if (!firstInvalidTarget) firstInvalidTarget = tierInvalid;
             }
           }
           if (current === 4) {
@@ -954,14 +997,16 @@
 
           if (!valid) {
             var panel = form.querySelector('.kbf-create-panel.is-active');
-            if (panel) {
-              var firstError = panel.querySelector('.kbf-field-error');
-              if (firstError) {
-                firstError.focus && firstError.focus();
-              } else if (current === 3) {
-                var firstInvalidTier = tierList ? tierList.querySelector('.kbf-benefit-card.is-invalid input, .kbf-benefit-card.is-invalid textarea') : null;
-                if (firstInvalidTier) firstInvalidTier.focus();
-              }
+            var scrollTarget = firstInvalidTarget;
+            if (!scrollTarget && panel) {
+              scrollTarget = panel.querySelector('.kbf-input-error, .kbf-field-error');
+            }
+            if (scrollTarget && typeof scrollTarget.scrollIntoView === 'function') {
+              scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (scrollTarget && typeof scrollTarget.focus === 'function') {
+              try { scrollTarget.focus({ preventScroll: true }); }
+              catch(e) { scrollTarget.focus(); }
             }
           }
           return valid;
@@ -988,6 +1033,131 @@
           campaignData.barangay = brgyInput ? brgyInput.value : '';
           campaignData.agree_terms = termsInput ? termsInput.checked : false;
           updateSaveCloseState();
+        }
+
+        /**
+         * @function  renderCreateDeadlineMeta
+         * @purpose   Renders a visible current-date highlighter and selected date context for create deadline input.
+         * @used-by   [initialization, deadline focus/click/change handlers]
+         * @calls     [none]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
+        function renderCreateDeadlineMeta(){
+          if (!deadlineTodayMeta || !deadlineInput) return;
+          var now = new Date();
+          var todayLabel = now.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+          var minRaw = String(deadlineInput.getAttribute('min') || '').trim();
+          var minLabel = '';
+          if (minRaw) {
+            var minDate = new Date(minRaw + 'T00:00:00');
+            if (!isNaN(minDate.getTime())) {
+              minLabel = minDate.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+            }
+          }
+
+          var selectedLabel = '';
+          if (deadlineInput.value) {
+            var selectedDate = new Date(deadlineInput.value + 'T00:00:00');
+            if (!isNaN(selectedDate.getTime())) {
+              selectedLabel = selectedDate.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+            }
+          }
+
+          var html = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:700;">Today: ' + todayLabel + '</span>';
+          if (minLabel) {
+            html += '<span style="margin-left:8px;color:#64748b;">Earliest: ' + minLabel + '</span>';
+          }
+          if (selectedLabel) {
+            html += '<span style="margin-left:8px;color:#0f172a;font-weight:600;">Selected: ' + selectedLabel + '</span>';
+          }
+          deadlineTodayMeta.innerHTML = html;
+        }
+
+        /**
+         * @function  formatCreatePhoneNumber
+         * @purpose   Formats create-modal phone input to 09XX XXX XXXX style, matching profile behavior.
+         * @used-by   [phone input listeners, applyProfilePhonePrefill]
+         * @calls     [none]
+         * @params    value: any - raw phone input value
+         * @returns   string
+         * @status    ACTIVE
+         */
+        function formatCreatePhoneNumber(value){
+          var digits = String(value || '').replace(/\D/g, '').substring(0, 11);
+          if (!digits) return '';
+          if (digits.charAt(0) !== '0') digits = '0' + digits.substring(0, 10);
+          if (digits.length > 1 && digits.charAt(1) !== '9') digits = '09' + digits.substring(2);
+          digits = digits.substring(0, 11);
+          if (digits.length <= 4) return digits;
+          if (digits.length <= 7) return digits.substring(0, 4) + ' ' + digits.substring(4);
+          return digits.substring(0, 4) + ' ' + digits.substring(4, 7) + ' ' + digits.substring(7);
+        }
+
+        /**
+         * @function  applyProfilePhonePrefill
+         * @purpose   Seeds create-modal phone field from saved profile phone when no draft/value exists.
+         * @used-by   [openCreateModal]
+         * @calls     [formatCreatePhoneNumber]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
+        function applyProfilePhonePrefill(){
+          if (!phoneInput || !profilePhoneSeed) return;
+          var hasPhone = !!(
+            String(campaignData.phone || '').trim() ||
+            String(phoneInput.value || '').trim()
+          );
+          if (hasPhone) return;
+          var formattedPhone = formatCreatePhoneNumber(profilePhoneSeed);
+          if (!formattedPhone) return;
+          phoneInput.value = formattedPhone;
+          campaignData.phone = formattedPhone;
+        }
+
+        /**
+         * @function  applyProfileAddressPrefill
+         * @purpose   Seeds create-modal address fields from saved profile address when no draft/location is present.
+         * @used-by   [openCreateModal]
+         * @calls     [window.kbfApplyLocationSelection]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
+        function applyProfileAddressPrefill(){
+          if (!profileAddressSeed || !provInput || !muniInput || !brgyInput) return;
+          var hasLocation = !!(
+            String(campaignData.province || '').trim() ||
+            String(campaignData.municipality || '').trim() ||
+            String(campaignData.barangay || '').trim() ||
+            String(provInput.value || '').trim() ||
+            String(muniInput.value || '').trim() ||
+            String(brgyInput.value || '').trim()
+          );
+          if (hasLocation || typeof window.kbfApplyLocationSelection !== 'function') return;
+
+          var parts = String(profileAddressSeed || '').split(',').map(function(p){ return p.trim(); }).filter(Boolean);
+          if (!parts.length) return;
+
+          // Seed state immediately so step validation has location context before async option loading finishes.
+          campaignData.barangay = parts.length >= 3 ? parts[0] : '';
+          campaignData.municipality = parts.length >= 2 ? parts[parts.length >= 3 ? 1 : 0] : '';
+          campaignData.province = parts.length >= 3 ? parts.slice(2).join(', ') : (parts.length === 2 ? parts[1] : parts[0]);
+
+          window.kbfApplyLocationSelection(provInput, muniInput, brgyInput, profileAddressSeed);
+
+          var syncCount = 0;
+          var syncTimer = setInterval(function(){
+            syncCount++;
+            if (provInput.value) campaignData.province = provInput.value;
+            if (muniInput.value) campaignData.municipality = muniInput.value;
+            if (brgyInput.value) campaignData.barangay = brgyInput.value;
+            if (syncCount >= 12 || (provInput.value && (muniInput.value || muniInput.disabled))) {
+              clearInterval(syncTimer);
+            }
+          }, 120);
         }
 
         /**
@@ -1114,7 +1284,10 @@
           deadlineInput.addEventListener('change', function(){
             updateCampaignData();
             clearError(deadlineInput);
+            renderCreateDeadlineMeta();
           });
+          deadlineInput.addEventListener('focus', renderCreateDeadlineMeta);
+          deadlineInput.addEventListener('click', renderCreateDeadlineMeta);
         }
 
         if (photoInput) {
@@ -1129,10 +1302,23 @@
           updateCampaignData();
           clearError(emailInput);
         });
-        if (phoneInput) phoneInput.addEventListener('input', function(){
-          updateCampaignData();
-          clearError(phoneInput);
-        });
+        if (phoneInput) {
+          phoneInput.setAttribute('inputmode', 'numeric');
+          phoneInput.setAttribute('maxlength', '13');
+          phoneInput.placeholder = '09XX XXX XXXX';
+
+          var onCreatePhoneChange = function(){
+            phoneInput.value = formatCreatePhoneNumber(phoneInput.value);
+            updateCampaignData();
+            clearError(phoneInput);
+          };
+          phoneInput.addEventListener('input', onCreatePhoneChange);
+          phoneInput.addEventListener('change', onCreatePhoneChange);
+          phoneInput.addEventListener('blur', onCreatePhoneChange);
+          phoneInput.addEventListener('paste', function(){
+            setTimeout(onCreatePhoneChange, 0);
+          });
+        }
         if (provInput) provInput.addEventListener('change', function(){
           updateCampaignData();
           clearError(provInput);
@@ -1212,6 +1398,8 @@
             setStep(1);
           }
           updateCampaignData();
+          applyProfilePhonePrefill();
+          applyProfileAddressPrefill();
           lastSavedHash = draftComparable(draft || buildDraft());
           updateSaveCloseState();
         }
@@ -1305,6 +1493,7 @@
         renderTiers();
         bindCounter(titleInput);
         bindCounter(descInput);
+        renderCreateDeadlineMeta();
         setStep(1);
         updateCampaignData();
       });
@@ -3707,6 +3896,75 @@
     }
 
     /**
+     * @function  kbfValidateDateMinField
+     * @purpose   Validates date input value against its min attribute.
+     * @used-by   [edit modal validation]
+     * @calls     [none explicitly documented]
+     * @params    field: any - parameter; message: any - parameter
+     * @returns   void
+     * @status    ACTIVE
+     */
+    function kbfValidateDateMinField(field, message) {
+      if (!field || field.type !== 'date') return true;
+      var valueRaw = String(field.value || '').trim();
+      if (!valueRaw) return true;
+      var minRaw = String(field.getAttribute('min') || '').trim();
+      if (!minRaw) return true;
+      var valueDate = new Date(valueRaw + 'T00:00:00');
+      var minDate = new Date(minRaw + 'T00:00:00');
+      if (isNaN(valueDate.getTime()) || isNaN(minDate.getTime())) return true;
+      if (valueDate < minDate) {
+        kbfSetFieldError(field, message || 'Please select a date at least 7 days from today.');
+        return false;
+      }
+      kbfClearFieldError(field);
+      return true;
+    }
+
+    /**
+     * @function  kbfRenderEditDeadlineMeta
+     * @purpose   Renders visible today/earliest/selected labels for the edit deadline field.
+     * @used-by   [edit modal open and deadline listeners]
+     * @calls     [none explicitly documented]
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
+    function kbfRenderEditDeadlineMeta() {
+      var deadlineInput = document.getElementById('edit-fund-deadline');
+      var meta = document.getElementById('kbf-edit-deadline-today');
+      if (!deadlineInput || !meta) return;
+
+      var now = new Date();
+      var todayLabel = now.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+      var minRaw = String(deadlineInput.getAttribute('min') || '').trim();
+      var minLabel = '';
+      if (minRaw) {
+        var minDate = new Date(minRaw + 'T00:00:00');
+        if (!isNaN(minDate.getTime())) {
+          minLabel = minDate.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+        }
+      }
+
+      var selectedLabel = '';
+      if (deadlineInput.value) {
+        var selectedDate = new Date(deadlineInput.value + 'T00:00:00');
+        if (!isNaN(selectedDate.getTime())) {
+          selectedLabel = selectedDate.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+        }
+      }
+
+      var html = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:700;">Today: ' + todayLabel + '</span>';
+      if (minLabel) {
+        html += '<span style="margin-left:8px;color:#64748b;">Earliest: ' + minLabel + '</span>';
+      }
+      if (selectedLabel) {
+        html += '<span style="margin-left:8px;color:#0f172a;font-weight:600;">Selected: ' + selectedLabel + '</span>';
+      }
+      meta.innerHTML = html;
+    }
+
+    /**
      * @function  kbfValidateEditFund
      * @purpose   Handles kbfValidateEditFund behavior in the dashboard script flow
      * @used-by   [same file references detected]
@@ -3732,6 +3990,11 @@
                 kbfClearFieldError(f);
             }
         }
+            var editDeadline = document.getElementById('edit-fund-deadline');
+            if (editDeadline) {
+              var dateOk = kbfValidateDateMinField(editDeadline, 'Please select a deadline at least 7 days from today.');
+              if (!dateOk && !firstInvalid) firstInvalid = editDeadline;
+            }
         return firstInvalid;
     }
 
@@ -3826,7 +4089,11 @@
             }
         }
         if (firstInvalid) {
-            firstInvalid.focus();
+          if (typeof firstInvalid.scrollIntoView === 'function') {
+            firstInvalid.scrollIntoView({ behavior:'smooth', block:'center' });
+          }
+          try { firstInvalid.focus({ preventScroll:true }); }
+          catch(e) { firstInvalid.focus(); }
             return false;
         }
         return true;
@@ -3871,6 +4138,10 @@
                 }
             } else {
                 kbfClearFieldError(f);
+            }
+            if (f.type === 'date') {
+              var stepDateOk = kbfValidateDateMinField(f, 'Please select a deadline at least 7 days from today.');
+              if (!stepDateOk && !firstInvalid) firstInvalid = f;
             }
         }
         if (firstInvalid) {
@@ -4103,7 +4374,11 @@
         const msg  = document.getElementById('kbf-create-msg');
         const invalid = kbfValidateCreateForm(form);
         if (invalid) {
-            invalid.focus();
+          if (typeof invalid.scrollIntoView === 'function') {
+            invalid.scrollIntoView({ behavior:'smooth', block:'center' });
+          }
+          try { invalid.focus({ preventScroll:true }); }
+          catch(e) { invalid.focus(); }
             kbfSetLoadingPage(false);
             if (btn) kbfSetBtnLoading(btn,false);
             return;
@@ -4446,7 +4721,19 @@
         var titleCounter = document.getElementById('edit-fund-title').parentNode.querySelector('.kbf-title-counter');
         if (titleCounter) titleCounter.textContent = (title || '').length + ' / 150';
         var deadlineEl = document.getElementById('edit-fund-deadline');
-        if (deadlineEl) deadlineEl.value = deadline || '';
+        if (deadlineEl) {
+          deadlineEl.value = deadline || '';
+          if (!deadlineEl.dataset.kbfDeadlineBound) {
+            deadlineEl.addEventListener('change', function(){
+              kbfValidateDateMinField(deadlineEl, 'Please select a deadline at least 7 days from today.');
+              kbfRenderEditDeadlineMeta();
+            });
+            deadlineEl.addEventListener('focus', kbfRenderEditDeadlineMeta);
+            deadlineEl.addEventListener('click', kbfRenderEditDeadlineMeta);
+            deadlineEl.dataset.kbfDeadlineBound = '1';
+          }
+        }
+        kbfRenderEditDeadlineMeta();
         var autoEl = document.getElementById('edit-fund-auto-return');
         if (autoEl) autoEl.checked = String(autoReturn) === '1';
         kbfApplyLocationSelection(
