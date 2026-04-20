@@ -35,20 +35,6 @@ function ch_global_styles()
             --ch-font: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --ch-bg: #0f172a;
-                --ch-surface: #1e293b;
-                --ch-text: #f8fafc;
-                --ch-text-muted: #94a3b8;
-                --ch-border: #334155;
-                --ch-border-soft: #1e293b;
-                --ch-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-                --ch-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-                --ch-shadow-md: 0 12px 32px rgba(0, 0, 0, 0.7);
-            }
-        }
-
         html {
             scroll-padding-top: 80px;
         }
@@ -217,13 +203,36 @@ function ch_global_styles()
                 display: none !important;
             }
 
+            .ch-top-nav .ch-mobile-drawer-wrap > .ch-user-bar-mobile-profile {
+                display: none !important;
+            }
+
             .ch-nav-user-desktop,
             .ch-nav-guest-desktop {
                 display: flex;
                 align-items: center;
                 gap: 8px;
                 margin-left: 0;
+            }
+
+            .ch-top-nav .ch-mobile-drawer-wrap > .ch-nav-links {
+                display: flex;
+                align-items: center;
+                height: 100%;
+                grid-column: 2;
+                grid-row: 1;
+                width: 100%;
+                min-width: 0;
+                justify-self: stretch;
+                align-self: center;
+            }
+
+            .ch-top-nav > .ch-nav-user-desktop,
+            .ch-top-nav > .ch-nav-guest-desktop {
+                grid-column: 3;
+                grid-row: 1;
                 justify-self: end;
+                align-self: center;
             }
 
             .ch-top-nav .ch-top-nav-notifications {
@@ -5312,12 +5321,19 @@ function ch_global_styles()
             }
 
             /* Notification bell stays visible in the mobile header (logged-in only) */
-            .ch-top-nav .ch-top-nav-notifications {
+            .ch-top-nav .ch-nav-user-desktop {
                 order: 3;
                 display: flex !important;
                 align-items: center;
                 margin-left: auto;
-                margin-right: 8px;
+                margin-right: 56px;
+            }
+
+            .ch-top-nav .ch-top-nav-notifications {
+                display: flex !important;
+                align-items: center;
+                margin-left: 0;
+                margin-right: 0;
             }
 
             /* Burger: far right, full tap target */
@@ -5344,9 +5360,22 @@ function ch_global_styles()
                 display: none;
             }
 
-            /* User bar also hidden in the top bar on mobile (lives in drawer) */
+            /* Hide user bars by default on mobile */
             .ch-user-bar {
                 display: none;
+            }
+
+            /* Keep only the logged-in top-nav user bar visible for the notifications bell */
+            .ch-top-nav .ch-nav-user-desktop {
+                display: flex !important;
+            }
+
+            .ch-top-nav .ch-nav-user-desktop::before {
+                display: none !important;
+            }
+
+            .ch-top-nav .ch-nav-user-desktop .ch-profile-dropdown {
+                display: none !important;
             }
 
             .ch-nav-links.ch-nav-open,
@@ -7486,6 +7515,43 @@ function ch_global_styles()
                 font-size: 14px;
             }
 
+            .ch-mobile-drawer-wrap .ch-user-bar-mobile-profile {
+                justify-content: flex-start;
+                align-items: stretch;
+            }
+
+            .ch-mobile-drawer-wrap .ch-mobile-profile-trigger {
+                width: 100%;
+                min-height: 52px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                color: var(--ch-text);
+                cursor: pointer;
+                text-align: left;
+            }
+
+            .ch-mobile-drawer-wrap .ch-mobile-profile-label {
+                font-size: 15px;
+                font-weight: 600;
+            }
+
+            .ch-mobile-drawer-wrap .ch-mobile-profile-menu {
+                display: none;
+                width: 100%;
+                margin-top: 10px;
+                border-top: 1px solid var(--ch-border-soft);
+                padding-top: 10px;
+            }
+
+            .ch-mobile-drawer-wrap .ch-mobile-profile-menu .ch-dropdown-item {
+                width: 100%;
+                border-radius: var(--ch-radius);
+            }
+
             /* Drawer close button — top-right, mirrors burger position */
             .ch-top-drawer-close {
                 position: absolute;
@@ -7796,6 +7862,8 @@ function ch_global_scripts()
                 document.querySelectorAll('.ch-mobile-drawer-wrap.ch-nav-open').forEach((el) => {
                     el.classList.remove('ch-nav-open');
                 });
+                const mobileProfileMenu = document.getElementById('ch-mobile-profile-menu');
+                if (mobileProfileMenu) mobileProfileMenu.style.display = 'none';
                 const backdrop = document.getElementById('ch-menu-backdrop');
                 if (backdrop) backdrop.classList.remove('ch-backdrop-visible');
                 document.body.classList.remove('ch-drawer-locked');
@@ -7804,6 +7872,19 @@ function ch_global_scripts()
                 });
             }
             window.chCloseAllMobileMenus = chCloseAllMobileMenus;
+
+            window.chCloseMobileProfileMenu = function () {
+                const menu = document.getElementById('ch-mobile-profile-menu');
+                if (menu) menu.style.display = 'none';
+            };
+
+            window.chToggleMobileProfileMenu = function (event) {
+                if (event) event.stopPropagation();
+                const menu = document.getElementById('ch-mobile-profile-menu');
+                if (!menu) return;
+                const isVisible = menu.style.display === 'block';
+                menu.style.display = isVisible ? 'none' : 'block';
+            };
 
             window.chToggleMobileMenu = function (button, primarySelector, secondarySelector) {
                 if (!button || !primarySelector) return;
@@ -7946,7 +8027,8 @@ function ch_global_scripts()
 
             document.addEventListener('click', function (event) {
                 if (event.target.closest('.ch-burger-menu-btn')) return;
-                if (event.target.closest('.ch-nav-links.ch-nav-open, .ch-user-bar.ch-nav-open, .ch-nav.ch-nav-open')) return;
+                if (event.target.closest('.ch-mobile-profile-trigger, #ch-mobile-profile-menu')) return;
+                if (event.target.closest('.ch-mobile-drawer-wrap.ch-nav-open, .ch-nav-links.ch-nav-open, .ch-user-bar.ch-nav-open, .ch-nav.ch-nav-open')) return;
                 chCloseAllMobileMenus();
             });
 
