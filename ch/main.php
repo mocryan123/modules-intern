@@ -304,12 +304,30 @@ function ch_get_feed_url() {
     static $url = null;
 
     if ($url === null) {
+        $source = 'unknown';
+        $page_id = 0;
         if (bntm_ch_page_has_shortcode('ch_feed')) {
-            $url = get_permalink(get_queried_object_id());
+            $page_id = (int) get_queried_object_id();
+            $url = get_permalink($page_id);
+            $source = 'queried_shortcode_page';
         } else {
             $page = get_page_by_path('forum-feed');
-            $url = $page ? get_permalink($page) : home_url('/forum-feed/');
+            if ($page) {
+                $page_id = (int) $page->ID;
+                $url = get_permalink($page);
+                $source = 'forum_feed_page';
+            } else {
+                $url = home_url('/forum-feed/');
+                $source = 'fallback_home_forum_feed_path';
+            }
         }
+
+        ch_auth_debug_log('feed_url:resolved', [
+            'source' => $source,
+            'page_id' => $page_id,
+            'url' => $url,
+            'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
+        ]);
     }
 
     return $url;
@@ -1322,6 +1340,9 @@ function bntm_shortcode_ch_auth() {
                             .then(r => r.json())
                             .then(pingJson => {
                                 console.info('[CH_AUTH_DEBUG] auth ping', pingJson);
+                                try {
+                                    console.info('[CH_AUTH_DEBUG] auth ping json', JSON.stringify(pingJson));
+                                } catch (e) {}
                             })
                             .catch(err => {
                                 console.info('[CH_AUTH_DEBUG] auth ping failed', String(err || ''));
