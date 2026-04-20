@@ -335,6 +335,61 @@ function ch_get_auth_url($tab = 'login', $redirect_to = '') {
     return add_query_arg($args, $base);
 }
 
+function ch_should_use_secure_auth_cookie() {
+    if (is_ssl()) {
+        return true;
+    }
+
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        $proto = strtolower(trim((string) $_SERVER['HTTP_X_FORWARDED_PROTO']));
+        if (in_array($proto, ['https', 'https,http', 'http,https'], true) || strpos($proto, 'https') !== false) {
+            return true;
+        }
+    }
+
+    if (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower((string) $_SERVER['HTTP_X_FORWARDED_SSL']) === 'on') {
+        return true;
+    }
+
+    $home_scheme = wp_parse_url(home_url('/'), PHP_URL_SCHEME);
+    $site_scheme = wp_parse_url(site_url('/'), PHP_URL_SCHEME);
+    return $home_scheme === 'https' || $site_scheme === 'https';
+}
+
+function ch_normalize_login_redirect($redirect_to = '') {
+    $default_url = ch_get_feed_url();
+    $redirect_to = esc_url_raw((string) $redirect_to);
+    if ($redirect_to === '') {
+        return $default_url;
+    }
+
+    $candidate = wp_validate_redirect($redirect_to, '');
+    if ($candidate === '') {
+        return $default_url;
+    }
+
+    $candidate_path = (string) wp_parse_url($candidate, PHP_URL_PATH);
+    if ($candidate_path !== '') {
+        $candidate_path = strtolower(untrailingslashit($candidate_path));
+        $blocked_paths = [
+            strtolower(untrailingslashit((string) wp_parse_url(wp_login_url(), PHP_URL_PATH))),
+            strtolower(untrailingslashit((string) wp_parse_url(admin_url(), PHP_URL_PATH))),
+            strtolower(untrailingslashit((string) wp_parse_url(admin_url('index.php'), PHP_URL_PATH))),
+        ];
+
+        foreach ($blocked_paths as $blocked_path) {
+            if ($blocked_path === '') {
+                continue;
+            }
+            if ($candidate_path === $blocked_path || strpos($candidate_path, $blocked_path . '/') === 0) {
+                return $default_url;
+            }
+        }
+    }
+
+    return $candidate;
+}
+
 function ch_establish_user_session($user, $remember = false) {
     $user = $user instanceof WP_User ? $user : get_user_by('id', (int) $user);
     if (!$user) {
@@ -347,7 +402,7 @@ function ch_establish_user_session($user, $remember = false) {
     wp_clear_auth_cookie();
 
     wp_set_current_user($user->ID);
-    wp_set_auth_cookie($user->ID, (bool) $remember, is_ssl());
+    wp_set_auth_cookie($user->ID, (bool) $remember, ch_should_use_secure_auth_cookie());
 
     return true;
 }
@@ -843,8 +898,8 @@ function bntm_shortcode_ch_auth() {
                 ch_establish_user_session($verified_user, true);
                 ch_ensure_profile($verified_user->ID);
 
-                $redirect_after_verify = esc_url_raw(wp_unslash($_GET['redirect_to'] ?? ''));
-                wp_safe_redirect($redirect_after_verify ?: ch_get_feed_url());
+                $redirect_after_verify = ch_normalize_login_redirect(wp_unslash($_GET['redirect_to'] ?? ''));
+                wp_safe_redirect($redirect_after_verify);
                 exit;
             }
         }
@@ -1462,8 +1517,7 @@ function bntm_ajax_ch_login() {
     // ── Step 4: Ensure CivicHub profile row exists ──────────────────────────
     ch_ensure_profile( $user->ID );
  
-    $default_url = ch_get_feed_url();
-    $redirect    = $redirect_to ?: $default_url;
+    $redirect = ch_normalize_login_redirect($redirect_to);
  
     wp_send_json_success( [ 'redirect' => $redirect ] );
 }
