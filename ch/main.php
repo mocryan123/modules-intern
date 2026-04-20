@@ -356,15 +356,44 @@ function ch_should_use_secure_auth_cookie() {
     return $home_scheme === 'https' || $site_scheme === 'https';
 }
 
+function ch_auth_debug_log($event, $context = []) {
+    $enabled = apply_filters('ch_auth_debug_enabled', true);
+    if (!$enabled) {
+        return;
+    }
+
+    $safe = is_array($context) ? $context : ['value' => $context];
+    if (isset($safe['password'])) {
+        $safe['password'] = '[redacted]';
+    }
+    if (isset($safe['username'])) {
+        $safe['username'] = substr((string) $safe['username'], 0, 2) . '***';
+    }
+    if (isset($safe['email'])) {
+        $safe['email'] = substr((string) $safe['email'], 0, 2) . '***';
+    }
+
+    error_log('[CH_AUTH_DEBUG] ' . $event . ' ' . wp_json_encode($safe));
+}
+
 function ch_normalize_login_redirect($redirect_to = '') {
     $default_url = ch_get_feed_url();
     $redirect_to = esc_url_raw((string) $redirect_to);
+    ch_auth_debug_log('normalize_redirect:start', [
+        'redirect_to' => $redirect_to,
+        'default_url' => $default_url,
+    ]);
     if ($redirect_to === '') {
+        ch_auth_debug_log('normalize_redirect:empty_fallback', ['result' => $default_url]);
         return $default_url;
     }
 
     $candidate = wp_validate_redirect($redirect_to, '');
     if ($candidate === '') {
+        ch_auth_debug_log('normalize_redirect:invalid_candidate', [
+            'redirect_to' => $redirect_to,
+            'result' => $default_url,
+        ]);
         return $default_url;
     }
 
@@ -372,6 +401,11 @@ function ch_normalize_login_redirect($redirect_to = '') {
     if ($candidate_query !== '') {
         parse_str($candidate_query, $query_args);
         if (!empty($query_args['session_error'])) {
+            ch_auth_debug_log('normalize_redirect:blocked_session_error', [
+                'candidate' => $candidate,
+                'query' => $query_args,
+                'result' => $default_url,
+            ]);
             return $default_url;
         }
     }
@@ -393,16 +427,29 @@ function ch_normalize_login_redirect($redirect_to = '') {
                 continue;
             }
             if ($candidate_path === $blocked_path || strpos($candidate_path, $blocked_path . '/') === 0) {
+                ch_auth_debug_log('normalize_redirect:blocked_path', [
+                    'candidate' => $candidate,
+                    'candidate_path' => $candidate_path,
+                    'blocked_path' => $blocked_path,
+                    'result' => $default_url,
+                ]);
                 return $default_url;
             }
         }
 
         // Keep post-login navigation inside the CivicHub feed shell.
         if ($feed_path !== '' && $candidate_path !== $feed_path) {
+            ch_auth_debug_log('normalize_redirect:non_feed_path', [
+                'candidate' => $candidate,
+                'candidate_path' => $candidate_path,
+                'feed_path' => $feed_path,
+                'result' => $default_url,
+            ]);
             return $default_url;
         }
     }
 
+    ch_auth_debug_log('normalize_redirect:accepted', ['result' => $candidate]);
     return $candidate;
 }
 
@@ -1516,8 +1563,22 @@ function bntm_ajax_ch_login() {
     $redirect_to = esc_url_raw( $_POST['redirect_to'] ?? '' );
  
     if ( ! $username || ! $password ) {
+        ch_auth_debug_log('login:missing_credentials', [
+            'username' => $username,
+            'redirect_to' => $redirect_to,
+        ]);
         wp_send_json_error( [ 'message' => 'Username and password are required.' ] );
     }
+
+    ch_auth_debug_log('login:start', [
+        'username' => $username,
+        'remember' => $remember ? 1 : 0,
+        'redirect_to' => $redirect_to,
+        'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
+        'referer' => $_SERVER['HTTP_REFERER'] ?? '',
+        'forwarded_proto' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '',
+        'is_ssl' => is_ssl() ? 1 : 0,
+    ]);
  
     // ── Step 1: Authenticate (does NOT set any cookie) ──────────────────────
     // Keep this pre-check so we can return tailored CivicHub error payloads.
@@ -1527,6 +1588,11 @@ function bntm_ajax_ch_login() {
         // Surface the ch_email_unverified and ch_account_restricted errors
         // that are injected by the ch_block_unverified_login filter.
         $code = $user->get_error_code();
+        ch_auth_debug_log('login:auth_error', [
+            'username' => $username,
+            'code' => $code,
+            'message' => $user->get_error_message(),
+        ]);
  
         if ( $code === 'ch_account_restricted' ) {
             wp_send_json_error( [
@@ -1566,6 +1632,10 @@ function bntm_ajax_ch_login() {
     ) );
  
     if ( $profile_row && in_array( $profile_row->status, [ 'banned', 'suspended' ], true ) ) {
+        ch_auth_debug_log('login:profile_restricted', [
+            'user_id' => $user->ID,
+            'status' => $profile_row->status,
+        ]);
         wp_send_json_error( [
             'message'            => 'Your account has been restricted. Please contact support.',
             'account_restricted' => true,
@@ -1580,6 +1650,11 @@ function bntm_ajax_ch_login() {
     ], ch_should_use_secure_auth_cookie());
 
     if (is_wp_error($signed_in_user)) {
+        ch_auth_debug_log('login:wp_signon_error', [
+            'username' => $username,
+            'code' => $signed_in_user->get_error_code(),
+            'message' => $signed_in_user->get_error_message(),
+        ]);
         wp_send_json_error(['message' => 'Unable to establish your session. Please try again.']);
     }
  
@@ -1587,6 +1662,13 @@ function bntm_ajax_ch_login() {
     ch_ensure_profile( $signed_in_user->ID );
  
     $redirect = ch_normalize_login_redirect($redirect_to);
+    ch_auth_debug_log('login:success', [
+        'user_id' => $signed_in_user->ID,
+        'is_user_logged_in' => is_user_logged_in() ? 1 : 0,
+        'current_user_id' => get_current_user_id(),
+        'redirect_to' => $redirect_to,
+        'redirect' => $redirect,
+    ]);
  
     wp_send_json_success( [ 'redirect' => $redirect ] );
 }
