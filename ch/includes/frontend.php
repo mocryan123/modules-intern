@@ -6423,7 +6423,7 @@ function bntm_shortcode_ch_post_view()
     $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_posts SET view_count = view_count + 1 WHERE rand_id = %s", $rand_id));
 
     $comments = $wpdb->get_results($wpdb->prepare(
-        "SELECT cm.*, u.display_name as author_name
+        "SELECT cm.*, u.display_name as author_name, u.avatar_url as author_avatar
          FROM {$wpdb->prefix}ch_comments cm
          LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON cm.user_id = u.user_id
          WHERE cm.post_id = %d AND cm.status = 'active' AND cm.parent_id = 0
@@ -6436,7 +6436,7 @@ function bntm_shortcode_ch_post_view()
         $comment_ids = array_map(fn($c) => (int) $c->id, $comments);
         $placeholders = implode(',', array_fill(0, count($comment_ids), '%d'));
         $reply_rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT cm2.*, u.display_name as author_name
+            "SELECT cm2.*, u.display_name as author_name, u.avatar_url as author_avatar
              FROM {$wpdb->prefix}ch_comments cm2
              LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON cm2.user_id = u.user_id
              WHERE cm2.parent_id IN ($placeholders) AND cm2.status = 'active'
@@ -6759,8 +6759,13 @@ function bntm_shortcode_ch_post_view()
 
                     <?php if ($user_id): ?>
                         <div class="ch-comment-form" id="ch-comment-form-main">
-                            <div class="ch-avatar-sm">
-                                <?php echo strtoupper(substr(wp_get_current_user()->display_name ?: 'U', 0, 1)); ?></div>
+                            <?php echo ch_render_avatar(
+                                wp_get_current_user()->display_name ?: 'U',
+                                $current_profile_pv->avatar_url ?? '',
+                                'ch-avatar-sm',
+                                'ch-current-user-avatar-img',
+                                'data-ch-current-user-avatar="1" data-avatar-name="' . esc_attr(wp_get_current_user()->display_name ?: 'U') . '"'
+                            ); ?>
                             <div class="ch-comment-input-wrap">
                                 <textarea id="ch-comment-content" class="ch-input ch-textarea" rows="3"
                                     placeholder="Share your thoughts..."></textarea>
@@ -6811,9 +6816,18 @@ function bntm_shortcode_ch_post_view()
                         <?php else:
                             foreach ($comments as $cm): ?>
                                 <div class="ch-comment" id="ch-comment-<?php echo (int) $cm->id; ?>">
-                                    <div class="ch-comment-avatar">
-                                        <?php echo strtoupper(substr($cm->is_anonymous ? 'A' : ($cm->author_name ?: 'U'), 0, 1)); ?>
-                                    </div>
+                                    <?php
+                                    $cm_avatar_name = 'U';
+                                    if ($cm->is_anonymous) {
+                                        $cm_avatar_name = 'Anonymous';
+                                    } elseif ($cm->user_id == 0 && !empty($cm->guest_name)) {
+                                        $cm_avatar_name = $cm->guest_name;
+                                    } elseif (!empty($cm->author_name)) {
+                                        $cm_avatar_name = $cm->author_name;
+                                    }
+                                    $cm_avatar_url = (!$cm->is_anonymous && (int) $cm->user_id !== 0) ? ($cm->author_avatar ?? '') : '';
+                                    echo ch_render_avatar($cm_avatar_name, $cm_avatar_url, 'ch-comment-avatar');
+                                    ?>
                                     <div class="ch-comment-body">
                                         <div class="ch-comment-header">
                                             <strong><?php
@@ -6877,9 +6891,11 @@ function bntm_shortcode_ch_post_view()
                                             <div class="ch-replies">
                                                 <?php foreach ($replies_map[$cm->id] as $reply): ?>
                                                     <div class="ch-comment ch-comment-reply" id="ch-comment-<?php echo $reply->id; ?>">
-                                                        <div class="ch-comment-avatar ch-avatar-xs">
-                                                            <?php echo strtoupper(substr($reply->is_anonymous ? 'A' : ($reply->author_name ?: 'U'), 0, 1)); ?>
-                                                        </div>
+                                                        <?php
+                                                        $reply_avatar_name = $reply->is_anonymous ? 'Anonymous' : ($reply->author_name ?: 'U');
+                                                        $reply_avatar_url = (!$reply->is_anonymous && (int) $reply->user_id !== 0) ? ($reply->author_avatar ?? '') : '';
+                                                        echo ch_render_avatar($reply_avatar_name, $reply_avatar_url, 'ch-comment-avatar ch-avatar-xs');
+                                                        ?>
                                                         <div class="ch-comment-body">
                                                             <div class="ch-comment-header">
                                                                 <strong><?php echo $reply->is_anonymous ? 'Anonymous' : esc_html($reply->author_name ?? 'Member'); ?></strong>

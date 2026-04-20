@@ -8840,13 +8840,31 @@ function ch_global_scripts()
                 const isVisible = menu.classList.contains('show');
 
                 if (!isVisible) {
-                    // Position the menu below the button
-                    const rect = btn.getBoundingClientRect();
-                    menu.style.position = 'fixed';
-                    menu.style.top = (rect.bottom + 8) + 'px';
-                    menu.style.left = (rect.right - menu.offsetWidth) + 'px'; // Align to right edge
-                    menu.style.zIndex = '10000';
+                    // Show first so dimensions are measurable, then clamp to viewport.
                     menu.classList.add('show');
+
+                    const rect = btn.getBoundingClientRect();
+                    const menuWidth = menu.offsetWidth || 170;
+                    const menuHeight = menu.offsetHeight || 180;
+                    const gap = 8;
+
+                    let left = rect.right - menuWidth;
+                    let top = rect.bottom + gap;
+
+                    if (left < gap) left = gap;
+                    if (left + menuWidth > window.innerWidth - gap) {
+                        left = Math.max(gap, window.innerWidth - menuWidth - gap);
+                    }
+
+                    if (top + menuHeight > window.innerHeight - gap) {
+                        top = rect.top - menuHeight - gap;
+                    }
+                    if (top < gap) top = gap;
+
+                    menu.style.position = 'fixed';
+                    menu.style.top = top + 'px';
+                    menu.style.left = left + 'px';
+                    menu.style.zIndex = '10000';
                 } else {
                     menu.classList.remove('show');
                 }
