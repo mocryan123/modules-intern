@@ -551,7 +551,7 @@ function bntm_kbf_render_landing() {
         gap: 60px;
         position: relative;
         z-index: 2;
-        border-radius: 24px;
+        border-radius: 26px;
         border: 1px solid rgba(207, 224, 246, 0.9);
         background:
             radial-gradient(circle at 18% 8%, rgba(126, 196, 255, 0.18) 0%, rgba(126, 196, 255, 0) 34%),
@@ -2235,7 +2235,7 @@ function bntm_kbf_render_landing() {
             padding-top: 10px;
         }
         .kbf-footer .kbf-footer-links{
-            flex-direction: column;
+            flex-direction: row;
             gap: 6px;
         }
         .kbf-footer .kbf-social{ gap: 2px; }
