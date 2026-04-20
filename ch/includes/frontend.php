@@ -3804,9 +3804,7 @@ function ch_public_user_profile($view_uid)
             background: var(--ch-surface);
             border-bottom: 1px solid var(--ch-border);
             padding: 0 24px;
-            height: 56px;
-            display: flex;
-            align-items: center;
+            min-height: 56px;
             box-shadow: var(--ch-shadow-sm);
         }
 
@@ -3815,6 +3813,37 @@ function ch_public_user_profile($view_uid)
             gap: 2px;
             height: 100%;
             align-items: center;
+        }
+
+        @media (min-width: 781px) {
+            .ch-public-profile-shell .ch-top-nav {
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+                align-items: center;
+            }
+
+            .ch-public-profile-shell .ch-top-nav .ch-mobile-drawer-wrap > .ch-nav-links {
+                grid-column: 2;
+                grid-row: 1;
+                display: flex;
+                align-items: center;
+                width: 100%;
+                min-width: 0;
+                justify-self: stretch;
+                align-self: center;
+            }
+
+            .ch-public-profile-shell .ch-top-nav .ch-mobile-drawer-wrap > .ch-user-bar {
+                display: none !important;
+            }
+
+            .ch-public-profile-shell .ch-top-nav > .ch-nav-user-desktop,
+            .ch-public-profile-shell .ch-top-nav > .ch-nav-guest-desktop {
+                grid-column: 3;
+                grid-row: 1;
+                justify-self: end;
+                align-self: center;
+            }
         }
 
         .ch-public-profile-page {
