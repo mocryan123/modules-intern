@@ -39,6 +39,31 @@ function bntm_ch_page_has_shortcode($shortcode) {
     return has_shortcode($post->post_content, $shortcode);
 }
 
+function ch_find_page_id_by_shortcode($shortcode) {
+    global $wpdb;
+    $shortcode = sanitize_key((string) $shortcode);
+    if ($shortcode === '') {
+        return 0;
+    }
+
+    $needle_plain = '%[' . $wpdb->esc_like($shortcode) . ']%';
+    $needle_with_attrs = '%[' . $wpdb->esc_like($shortcode) . ' %';
+
+    $id = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT ID
+         FROM {$wpdb->posts}
+         WHERE post_type = 'page'
+           AND post_status = 'publish'
+           AND (post_content LIKE %s OR post_content LIKE %s)
+         ORDER BY ID ASC
+         LIMIT 1",
+        $needle_plain,
+        $needle_with_attrs
+    ));
+
+    return $id > 0 ? $id : 0;
+}
+
 function bntm_ch_extract_inline_asset($html, $type) {
     $pattern = $type === 'css'
         ? '~<style[^>]*>(.*?)</style>~is'
@@ -304,15 +329,54 @@ function ch_get_feed_url() {
     static $url = null;
 
     if ($url === null) {
+        $source = 'unknown';
+        $page_id = 0;
         if (bntm_ch_page_has_shortcode('ch_feed')) {
-            $url = get_permalink(get_queried_object_id());
+            $page_id = (int) get_queried_object_id();
+            $url = get_permalink($page_id);
+            $source = 'queried_shortcode_page';
         } else {
             $page = get_page_by_path('forum-feed');
-            $url = $page ? get_permalink($page) : home_url('/forum-feed/');
+            if ($page && !empty($page->post_content) && has_shortcode($page->post_content, 'ch_feed')) {
+                $page_id = (int) $page->ID;
+                $url = get_permalink($page);
+                $source = 'forum_feed_page';
+            } else {
+                $page_id = ch_find_page_id_by_shortcode('ch_feed');
+                if ($page_id > 0) {
+                    $url = get_permalink($page_id);
+                    $source = 'shortcode_scan_page';
+                } else {
+                    // Prefer another CivicHub page over site root when feed discovery fails.
+                    $dashboard_page_id = ch_find_page_id_by_shortcode('ch_dashboard');
+                    if ($dashboard_page_id > 0) {
+                        $url = get_permalink($dashboard_page_id);
+                        $source = 'fallback_dashboard_shortcode_page';
+                    } else {
+                        $url = home_url('/forum-feed/');
+                        $source = 'fallback_forum_feed_path';
+                    }
+                }
+            }
         }
     }
 
     return $url;
+}
+
+function ch_get_strict_post_login_url() {
+    // Resolve by shortcode first to avoid slug collisions with other modules.
+    $feed_page_id = ch_find_page_id_by_shortcode('ch_feed');
+    if ($feed_page_id > 0) {
+        return get_permalink($feed_page_id);
+    }
+
+    $dashboard_page_id = ch_find_page_id_by_shortcode('ch_dashboard');
+    if ($dashboard_page_id > 0) {
+        return get_permalink($dashboard_page_id);
+    }
+
+    return '';
 }
 
 function ch_get_auth_url($tab = 'login', $redirect_to = '') {
@@ -323,7 +387,12 @@ function ch_get_auth_url($tab = 'login', $redirect_to = '') {
             $base = get_permalink(get_queried_object_id());
         } else {
             $page = get_page_by_path('login-register');
-            $base = $page ? get_permalink($page) : home_url('/login-register/');
+            if ($page && !empty($page->post_content) && has_shortcode($page->post_content, 'ch_auth')) {
+                $base = get_permalink($page);
+            } else {
+                $auth_page_id = ch_find_page_id_by_shortcode('ch_auth');
+                $base = $auth_page_id > 0 ? get_permalink($auth_page_id) : home_url('/');
+            }
         }
     }
 
@@ -357,7 +426,23 @@ function ch_should_use_secure_auth_cookie() {
 }
 
 function ch_normalize_login_redirect($redirect_to = '') {
-    $default_url = ch_get_feed_url();
+    $default_url = ch_get_strict_post_login_url();
+    if ($default_url === '') {
+        $default_url = ch_get_feed_url();
+    }
+    $default_path = strtolower(untrailingslashit((string) wp_parse_url($default_url, PHP_URL_PATH)));
+    $auth_path = strtolower(untrailingslashit((string) wp_parse_url(ch_get_auth_url('login'), PHP_URL_PATH)));
+    $wp_login_path = strtolower(untrailingslashit((string) wp_parse_url(wp_login_url(), PHP_URL_PATH)));
+
+    if (
+        $default_path === '' ||
+        $default_path === $auth_path ||
+        $default_path === $wp_login_path ||
+        $default_path === '/login'
+    ) {
+        $default_url = home_url('/forum-feed/');
+    }
+
     $redirect_to = esc_url_raw((string) $redirect_to);
     if ($redirect_to === '') {
         return $default_url;
@@ -368,6 +453,15 @@ function ch_normalize_login_redirect($redirect_to = '') {
         return $default_url;
     }
 
+    $candidate_query = (string) wp_parse_url($candidate, PHP_URL_QUERY);
+    if ($candidate_query !== '') {
+        parse_str($candidate_query, $query_args);
+        if (!empty($query_args['session_error'])) {
+            return $default_url;
+        }
+    }
+
+    $feed_path = strtolower(untrailingslashit((string) wp_parse_url($default_url, PHP_URL_PATH)));
     $candidate_path = (string) wp_parse_url($candidate, PHP_URL_PATH);
     if ($candidate_path !== '') {
         $candidate_path = strtolower(untrailingslashit($candidate_path));
@@ -376,6 +470,7 @@ function ch_normalize_login_redirect($redirect_to = '') {
             strtolower(untrailingslashit((string) wp_parse_url(admin_url(), PHP_URL_PATH))),
             strtolower(untrailingslashit((string) wp_parse_url(admin_url('index.php'), PHP_URL_PATH))),
             strtolower(untrailingslashit((string) wp_parse_url(ch_get_auth_url('login'), PHP_URL_PATH))),
+            '/login',
         ];
 
         foreach ($blocked_paths as $blocked_path) {
@@ -386,8 +481,12 @@ function ch_normalize_login_redirect($redirect_to = '') {
                 return $default_url;
             }
         }
-    }
 
+        // Keep post-login navigation inside the CivicHub feed shell.
+        if ($feed_path !== '' && $candidate_path !== $feed_path) {
+            return $default_url;
+        }
+    }
     return $candidate;
 }
 
@@ -1321,7 +1420,17 @@ function bntm_shortcode_ch_auth() {
                 if (json.success) {
                     msgEl.innerHTML = '<div class="bntm-notice-success">Welcome back! Redirecting…</div>';
                     if(window.chNavBarStart) window.chNavBarStart();
-                    setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 800);
+                    setTimeout(() => {
+                        let target = json.data.redirect || redirect || window.location.href;
+                        try {
+                            const targetUrl = new URL(target, window.location.origin);
+                            const targetPath = (targetUrl.pathname || '').replace(/\/+$/, '').toLowerCase() || '/';
+                            if (targetUrl.searchParams.get('session_error') === '1' || targetPath === '/login') {
+                                target = '<?php echo esc_js(ch_normalize_login_redirect('')); ?>';
+                            }
+                        } catch (e) {}
+                        window.location.href = target;
+                    }, 800);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
                     if (json.data?.requires_verification && json.data?.email) {
@@ -1664,6 +1773,7 @@ function bntm_ajax_ch_login() {
     }
  
     // ── Step 1: Authenticate (does NOT set any cookie) ──────────────────────
+    // Keep this pre-check so we can return tailored CivicHub error payloads.
     $user = wp_authenticate( $username, $password );
  
     if ( is_wp_error( $user ) ) {
@@ -1715,16 +1825,23 @@ function bntm_ajax_ch_login() {
         ] );
     }
  
-    // ── Step 3: Set auth cookie explicitly ──────────────────────────────────
-    //
-    // Use is_ssl() so the Secure flag always matches the site's actual
-    // protocol. This is the key fix for live servers behind proxies or
-    // load balancers where wp_signon()'s internal check can disagree.
-    ch_establish_user_session($user, $remember);
-    do_action( 'wp_login', $user->user_login, $user );
+    // ── Step 3: Establish WordPress auth session via core flow ─────────────
+    $signed_in_user = wp_signon([
+        'user_login' => $username,
+        'user_password' => $password,
+        'remember' => $remember,
+    ], ch_should_use_secure_auth_cookie());
+
+    if (is_wp_error($signed_in_user)) {
+        wp_send_json_error(['message' => 'Unable to establish your session. Please try again.']);
+    }
+
+    if (!ch_establish_user_session($signed_in_user, $remember)) {
+        wp_send_json_error(['message' => 'Unable to finalize your session. Please try again.']);
+    }
  
     // ── Step 4: Ensure CivicHub profile row exists ──────────────────────────
-    ch_ensure_profile( $user->ID );
+    ch_ensure_profile( $signed_in_user->ID );
  
     $redirect = ch_normalize_login_redirect($redirect_to);
  
