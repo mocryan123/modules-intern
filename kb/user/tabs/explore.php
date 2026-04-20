@@ -721,19 +721,26 @@ function kbf_dashboard_find_funds_tab() {
         color:var(--kbf-navy);
         margin:0;
         line-height:1.45;
+        text-align:left;
       }
       .kbf-explore-title-row{
         display:flex;
-        align-items:center;
+        align-items:flex-start;
         justify-content:space-between;
         gap:10px;
+        text-align:left;
       }
       .kbf-explore-title-text{
         flex:1;
         min-width:0;
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:2;
+        line-clamp:2;
         overflow:hidden;
-        white-space:nowrap;
+        white-space:normal;
         text-overflow:ellipsis;
+        text-align:left;
       }
       .kbf-explore-meta{
         display:flex;
@@ -1033,7 +1040,8 @@ function kbf_dashboard_find_funds_tab() {
         transform:translateY(100%);
         transition:transform 0.3s cubic-bezier(.4,0,.2,1);
         max-height:none;
-        overflow:visible;
+        overflow-x:hidden;
+        overflow-y:visible;
         padding:0 0 32px;
         box-shadow:var(--kbf-shadow-lg);
       }
@@ -1055,6 +1063,7 @@ function kbf_dashboard_find_funds_tab() {
         padding:0 20px 12px;
         display:grid;
         gap:12px;
+        overflow-x:hidden;
       }
         .kbff-sheet-apply{
           height:44px;
@@ -1087,6 +1096,10 @@ function kbf_dashboard_find_funds_tab() {
           font-weight:600;
           text-align:left;
           justify-content:flex-start;
+          white-space:normal;
+          word-break:break-word;
+          width:100%;
+          min-width:0;
           transition:none !important;
         }
         .kbf-user-ui .kbff-sheet-body [data-kbff-group].is-active{
@@ -1099,6 +1112,12 @@ function kbf_dashboard_find_funds_tab() {
         #kbff-sort-select-wrap,
         #kbff-saved-select-wrap{ display:none !important; }
         .kbff-filter-btn{ display:inline-flex; }
+      }
+      @media (max-width: 560px){
+        .kbff-sheet-grid-cat,
+        .kbff-sheet-grid-sort{
+          grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        }
       }
     </style>
 
@@ -1364,7 +1383,7 @@ function kbf_dashboard_find_funds_tab() {
       <div class="kbff-sheet-body">
           <div class="kbf-form-group">
             <label>Category</label>
-            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+            <div class="kbff-sheet-grid-cat" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
               <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo $cat ? '' : 'is-active'; ?>" data-kbff-group="cat" data-kbff-value="" style="justify-content:flex-start;text-align:left;">
                 <i class="ph ph-app-window kbf-icon" aria-hidden="true"></i>
                 All
@@ -1396,7 +1415,7 @@ function kbf_dashboard_find_funds_tab() {
           </div>
           <div class="kbf-form-group">
             <label>Sort By</label>
-            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+            <div class="kbff-sheet-grid-sort" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
               <button type="button" class="kbf-btn kbf-choice-card kbf-btn-secondary <?php echo ($sort==='newest'||!$sort)?'is-active':''; ?>" data-kbff-group="sort" data-kbff-value="newest">
                 <i class="ph ph-clock kbf-icon" aria-hidden="true"></i>
                 Newest
