@@ -7821,6 +7821,9 @@ function ch_global_scripts()
     ob_start(); ?>
     <script>
         (function () {
+            if (window.__chGlobalScriptsInitialized) return;
+            window.__chGlobalScriptsInitialized = true;
+
             window.chAjaxUrl = window.ajaxurl || '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';
             window.chMediaUploadLimit = <?php echo (int) get_option('ch_media_upload_limit', 6); ?>;
             const chAjaxUrl = window.chAjaxUrl;

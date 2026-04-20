@@ -375,6 +375,7 @@ function ch_normalize_login_redirect($redirect_to = '') {
             strtolower(untrailingslashit((string) wp_parse_url(wp_login_url(), PHP_URL_PATH))),
             strtolower(untrailingslashit((string) wp_parse_url(admin_url(), PHP_URL_PATH))),
             strtolower(untrailingslashit((string) wp_parse_url(admin_url('index.php'), PHP_URL_PATH))),
+            strtolower(untrailingslashit((string) wp_parse_url(ch_get_auth_url('login'), PHP_URL_PATH))),
         ];
 
         foreach ($blocked_paths as $blocked_path) {
@@ -942,9 +943,10 @@ function bntm_shortcode_ch_auth() {
 
     $notice = ch_get_auth_notice();
 
-    // If already logged in, redirect to feed
+    // If already logged in, redirect to a safe target (never back to auth/admin/login).
     if (is_user_logged_in()) {
-        wp_redirect(ch_get_feed_url());
+        $redirect_after_login = ch_normalize_login_redirect(wp_unslash($_GET['redirect_to'] ?? ''));
+        wp_safe_redirect($redirect_after_login);
         exit;
     }
 
@@ -1159,6 +1161,9 @@ function bntm_shortcode_ch_auth() {
 
     <script>
     (function(){
+        if (window.__chAuthScriptInitialized) return;
+        window.__chAuthScriptInitialized = true;
+
         var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
 
         window.chTogglePassword = function(inputId, btn) {
