@@ -37,7 +37,7 @@ function kbf_global_assets() {
         --kbf-green-lt:   #e7f1ff;
         --kbf-red:        #ef4444;
         --kbf-red-lt:     #fee2e2;
-        --kbf-blue:       #3b82f6;
+        --kbf-blue:       #2563eb;
         --kbf-blue-lt:    #dbeafe;
         --kbf-slate:      #6f7785;
         --kbf-slate-lt:   #f3f5f8;

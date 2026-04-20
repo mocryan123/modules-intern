@@ -512,9 +512,19 @@ if (!function_exists('kbf_landing_page_url')) {
 if (!function_exists('kbf_signin_page_url')) {
     function kbf_signin_page_url() {
         $signin_url = function_exists('kbf_get_page_url') ? (string) kbf_get_page_url('signin') : '';
+        $site_home = (string) home_url('/');
         $looks_like_filesystem_path = (bool) preg_match('/^[a-zA-Z]:[\\\\\/]/', $signin_url);
         if ($looks_like_filesystem_path || $signin_url === '') {
             $signin_url = '';
+        }
+        if ($signin_url !== '' && untrailingslashit($signin_url) === untrailingslashit($site_home)) {
+            $signin_url = '';
+        }
+        if ($signin_url !== '' && function_exists('kbf_landing_page_url')) {
+            $landing_url = (string) kbf_landing_page_url();
+            if ($landing_url !== '' && untrailingslashit($signin_url) === untrailingslashit($landing_url)) {
+                $signin_url = '';
+            }
         }
         if ($signin_url !== '' && strpos($signin_url, '/') === 0) {
             $signin_url = home_url($signin_url);
@@ -634,6 +644,9 @@ if (!function_exists('kbf_handle_logout_request')) {
         exit;
     }
 }
+if (did_action('init')) {
+    kbf_handle_logout_request();
+}
 add_action('init', 'kbf_handle_logout_request', 1);
 
 if (!function_exists('kbf_enforce_reauth_lock')) {
@@ -669,6 +682,9 @@ if (!function_exists('kbf_enforce_reauth_lock')) {
             exit;
         }
     }
+}
+if (did_action('init')) {
+    kbf_enforce_reauth_lock();
 }
 add_action('init', 'kbf_enforce_reauth_lock', 20);
 

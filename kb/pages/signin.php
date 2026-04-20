@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) exit;
 
 function bntm_kbf_render_signin() {
     $signup_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('signup') : '#';
+    $landing_url = function_exists('kbf_landing_page_url') ? kbf_landing_page_url() : home_url('/');
   $reauth_requested =
     (!empty($_GET['reauth']) && $_GET['reauth'] === '1') ||
     (!empty($_GET['loggedout']) && $_GET['loggedout'] === '1') ||
@@ -329,6 +330,36 @@ function bntm_kbf_render_signin() {
       }
       .kbf-auth-card:hover{transform:none;box-shadow:0 34px 90px rgba(15,23,42,.16), 0 8px 24px rgba(37,99,235,.08);}
       .kbf-auth-left{padding:40px 42px 44px;}
+      .kbf-auth-back{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        margin-bottom:16px;
+        padding:9px 14px;
+        border-radius:999px;
+        border:1px solid rgba(37,99,235,.18);
+        background:rgba(248,251,255,.9);
+        color:#1f4fbf;
+        font-size:12.5px;
+        font-weight:600;
+        text-decoration:none;
+        transition:all .2s ease;
+      }
+      .kbf-auth-back i{
+        font-size:14px;
+        line-height:1;
+      }
+      .kbf-auth-back:hover{
+        background:#ffffff;
+        border-color:rgba(37,99,235,.28);
+        color:#1d4ed8;
+        transform:translateX(-2px);
+      }
+      .kbf-auth-back:focus-visible{
+        outline:2px solid #1d4ed8;
+        outline-offset:2px;
+        box-shadow:0 0 0 4px rgba(37,99,235,.16);
+      }
       .kbf-auth-brand{display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;color:var(--kbf-auth-ink);font-size:15px;margin-bottom:14px;letter-spacing:.2px;}
       .kbf-auth-brand img{width:140px;height:auto;max-height:36px;object-fit:contain;}
       .kbf-auth-title{font-size:26px;font-weight:500;color:var(--kbf-auth-ink);margin:0 0 8px;}
@@ -422,7 +453,21 @@ function bntm_kbf_render_signin() {
       .kbf-input-error{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.12);}
       .kbf-auth-legal{display:flex;gap:6px;align-items:center;justify-content:flex-start;font-size:13px;color:var(--kbf-slate);margin-top:2px;cursor:pointer;}
       .kbf-auth-legal input{width:14px;height:14px;accent-color:var(--kbf-blue);cursor:pointer;}
-      .kbf-auth-cta .kbf-btn.kbf-btn-primary{width:100%;display:block;}
+      .kbf-auth-cta .kbf-btn.kbf-btn-primary{
+        width:100%;
+        display:block;
+        background:#2563eb !important;
+        border-color:#2563eb !important;
+        color:#ffffff !important;
+      }
+      .kbf-auth-cta .kbf-btn.kbf-btn-primary:hover{
+        background:#1d4ed8 !important;
+        border-color:#1d4ed8 !important;
+      }
+      .kbf-auth-cta .kbf-btn.kbf-btn-primary:active{
+        background:#1e40af !important;
+        border-color:#1e40af !important;
+      }
       .kbf-auth-footer{margin-top:14px;font-size:12.5px;color:var(--kbf-slate);}
       .kbf-auth-footer a{color:var(--kbf-auth-blue);font-weight:600;text-decoration:none;}
       @media (max-width: 900px){
@@ -432,6 +477,7 @@ function bntm_kbf_render_signin() {
         .kbf-auth-wrap{padding:0 14px;}
         .kbf-auth-card{border-radius:20px;}
         .kbf-auth-left{padding:26px 20px 28px;}
+        .kbf-auth-back{margin-bottom:14px;font-size:12px;padding:9px 12px;}
         .kbf-auth-brand img{width:120px;}
         .kbf-auth-title{font-size:24px;}
         .kbf-auth-sub{font-size:13.5px;line-height:1.6;margin-bottom:18px;}
@@ -446,6 +492,13 @@ function bntm_kbf_render_signin() {
       @media (max-height: 760px){
         .kbf-auth-wrap{padding:0 16px;}
       }
+      @media (prefers-reduced-motion: reduce){
+        .kbf-auth-back,
+        .kbf-auth-back:hover{
+          transition:none;
+          transform:none;
+        }
+      }
     </style>
 
     <div>
@@ -455,6 +508,9 @@ function bntm_kbf_render_signin() {
         <span class="kbf-auth-orb orb-3"></span>
         <div class="kbf-auth-card">
           <div class="kbf-auth-left">
+            <a class="kbf-auth-back" href="<?php echo esc_url($landing_url); ?>" aria-label="Go back to Fundora home page">
+              <i class="ph ph-arrow-left" aria-hidden="true"></i>
+            </a>
             <div class="kbf-auth-brand">
               <img src="<?php echo esc_url(BNTM_KBF_URL . 'assets/branding/logobanner.png'); ?>" alt="fundora">
             </div>

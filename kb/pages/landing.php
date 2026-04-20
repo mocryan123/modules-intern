@@ -690,9 +690,9 @@ function bntm_kbf_render_landing() {
         padding: 3px 8px !important; border-radius: 999px !important;
         font-size: 6px !important; font-weight: 600 !important;
         letter-spacing: .12em !important; text-transform: uppercase !important;
-        color: #1f6fe0 !important; 
-        background: rgba(59, 130, 246, 0.12) !important;
-        border: 1px solid rgba(59, 130, 246, 0.3) !important; 
+        color: #2563eb !important; 
+        background: rgba(37, 99, 235, 0.12) !important;
+        border: 1px solid rgba(37, 99, 235, 0.3) !important; 
         width: fit-content !important;
         backdrop-filter: blur(8px) !important;
         -webkit-backdrop-filter: blur(8px) !important;
@@ -1653,10 +1653,10 @@ function bntm_kbf_render_landing() {
         font-size: 6px;
         text-transform: uppercase;
         letter-spacing: 0.12em;
-        color: #1f6fe0;
+        color: #2563eb;
         font-weight: 600;
-        background: rgba(59, 130, 246, 0.12);
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        background: rgba(37, 99, 235, 0.12);
+        border: 1px solid rgba(37, 99, 235, 0.3);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
     }
@@ -2488,31 +2488,31 @@ function bntm_kbf_render_landing() {
         margin-top: 20px;
         flex-wrap: wrap;
         margin-bottom: 24px;
-        color: #1f6fe0;
+        color: #2563eb;
     }
     .vh-trust-badge {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 14px;
-        color: #1f6fe0;
+        color: #2563eb;
         font-weight: 500;
         font-family: 'Poppins', system-ui, -apple-system, sans-serif;
     }
     .vh-trust-badge i {
-        color: #1f6fe0;
+        color: #2563eb;
         font-size: 18px;
     }
     .kbf-hero-heading {
         margin-top: 0 !important;
     }
     .kbf-eyebrow {
-        color: #3b82f6 !important;
+        color: #2563eb !important;
         font-weight: 700 !important;
         font-size: 11.5px !important;
         text-transform: uppercase !important;
-        background: rgba(59, 130, 246, 0.08) !important;
-        border: 1px solid rgba(59, 130, 246, 0.2) !important;
+        background: rgba(37, 99, 235, 0.08) !important;
+        border: 1px solid rgba(37, 99, 235, 0.2) !important;
         padding: 6px 16px !important;
         border-radius: 999px !important;
         letter-spacing: 0.1em !important;
