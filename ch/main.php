@@ -1284,6 +1284,13 @@ function bntm_shortcode_ch_auth() {
                         try {
                             const targetUrl = new URL(target, window.location.origin);
                             const targetPath = (targetUrl.pathname || '').replace(/\/+$/, '').toLowerCase() || '/';
+                            console.info('[CH_AUTH_DEBUG] login redirect candidate', {
+                                ajaxRedirect: json?.data?.redirect || '',
+                                fallbackRedirect: redirect || '',
+                                finalCandidate: targetUrl.toString(),
+                                path: targetPath,
+                                sessionError: targetUrl.searchParams.get('session_error') || ''
+                            });
                             if (targetUrl.searchParams.get('session_error') === '1' || targetPath === '/login') {
                                 target = '<?php echo esc_js(ch_get_feed_url()); ?>';
                             }
