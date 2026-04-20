@@ -337,7 +337,7 @@ function ch_get_feed_url() {
             $source = 'queried_shortcode_page';
         } else {
             $page = get_page_by_path('forum-feed');
-            if ($page) {
+            if ($page && !empty($page->post_content) && has_shortcode($page->post_content, 'ch_feed')) {
                 $page_id = (int) $page->ID;
                 $url = get_permalink($page);
                 $source = 'forum_feed_page';
@@ -378,7 +378,7 @@ function ch_get_auth_url($tab = 'login', $redirect_to = '') {
             $base = get_permalink(get_queried_object_id());
         } else {
             $page = get_page_by_path('login-register');
-            if ($page) {
+            if ($page && !empty($page->post_content) && has_shortcode($page->post_content, 'ch_auth')) {
                 $base = get_permalink($page);
             } else {
                 $auth_page_id = ch_find_page_id_by_shortcode('ch_auth');
