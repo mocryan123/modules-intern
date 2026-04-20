@@ -6782,7 +6782,7 @@ function bntm_shortcode_ch_post_view()
                                     placeholder="Share your thoughts..."></textarea>
                                 <div class="ch-comment-form-footer">
                                     <span style="font-size:12px;color:#9ca3af;">Posting as guest &bull; <a
-                                            href="<?php echo wp_login_url(get_permalink()); ?>" style="color:#FF7551;">Sign
+                                            href="<?php echo esc_url(ch_get_auth_url('login', get_permalink())); ?>" style="color:#FF7551;">Sign
                                             in</a> for full access</span>
                                     <button class="ch-btn ch-btn-primary"
                                         onclick="chSubmitGuestComment(<?php echo (int) $post->id; ?>, 0, '<?php echo esc_attr($nonce); ?>')">Post
@@ -6796,7 +6796,7 @@ function bntm_shortcode_ch_post_view()
                                 <rect x="3" y="11" width="18" height="11" rx="2" />
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                             </svg>
-                            This is a private category. Please <a href="<?php echo wp_login_url(get_permalink()); ?>">log in</a>
+                            This is a private category. Please <a href="<?php echo esc_url(ch_get_auth_url('login', get_permalink())); ?>">log in</a>
                             and follow to comment.
                         </p>
                     <?php endif; ?>

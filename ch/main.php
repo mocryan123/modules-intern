@@ -323,7 +323,7 @@ function ch_get_auth_url($tab = 'login', $redirect_to = '') {
             $base = get_permalink(get_queried_object_id());
         } else {
             $page = get_page_by_path('login-register');
-            $base = $page ? get_permalink($page) : wp_login_url();
+            $base = $page ? get_permalink($page) : home_url('/login-register/');
         }
     }
 
