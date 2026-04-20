@@ -368,6 +368,14 @@ function ch_normalize_login_redirect($redirect_to = '') {
         return $default_url;
     }
 
+    $candidate_query = (string) wp_parse_url($candidate, PHP_URL_QUERY);
+    if ($candidate_query !== '') {
+        parse_str($candidate_query, $query_args);
+        if (!empty($query_args['session_error'])) {
+            return $default_url;
+        }
+    }
+
     $feed_path = strtolower(untrailingslashit((string) wp_parse_url($default_url, PHP_URL_PATH)));
     $candidate_path = (string) wp_parse_url($candidate, PHP_URL_PATH);
     if ($candidate_path !== '') {
@@ -377,6 +385,7 @@ function ch_normalize_login_redirect($redirect_to = '') {
             strtolower(untrailingslashit((string) wp_parse_url(admin_url(), PHP_URL_PATH))),
             strtolower(untrailingslashit((string) wp_parse_url(admin_url('index.php'), PHP_URL_PATH))),
             strtolower(untrailingslashit((string) wp_parse_url(ch_get_auth_url('login'), PHP_URL_PATH))),
+            '/login',
         ];
 
         foreach ($blocked_paths as $blocked_path) {
@@ -1223,7 +1232,17 @@ function bntm_shortcode_ch_auth() {
                 if (json.success) {
                     msgEl.innerHTML = '<div class="bntm-notice-success">Welcome back! Redirecting…</div>';
                     if(window.chNavBarStart) window.chNavBarStart();
-                    setTimeout(() => { window.location.href = json.data.redirect || redirect || window.location.href; }, 800);
+                    setTimeout(() => {
+                        let target = json.data.redirect || redirect || window.location.href;
+                        try {
+                            const targetUrl = new URL(target, window.location.origin);
+                            const targetPath = (targetUrl.pathname || '').replace(/\/+$/, '').toLowerCase() || '/';
+                            if (targetUrl.searchParams.get('session_error') === '1' || targetPath === '/login') {
+                                target = '<?php echo esc_js(ch_get_feed_url()); ?>';
+                            }
+                        } catch (e) {}
+                        window.location.href = target;
+                    }, 800);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
                     if (json.data?.requires_verification && json.data?.email) {
