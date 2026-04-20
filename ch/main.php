@@ -353,14 +353,8 @@ function ch_get_feed_url() {
                         $url = get_permalink($dashboard_page_id);
                         $source = 'fallback_dashboard_shortcode_page';
                     } else {
-                        $auth_page_id = ch_find_page_id_by_shortcode('ch_auth');
-                        if ($auth_page_id > 0) {
-                            $url = get_permalink($auth_page_id);
-                            $source = 'fallback_auth_shortcode_page';
-                        } else {
-                            $url = home_url('/forum-feed/');
-                            $source = 'fallback_forum_feed_path';
-                        }
+                        $url = home_url('/forum-feed/');
+                        $source = 'fallback_forum_feed_path';
                     }
                 }
             }
@@ -418,6 +412,19 @@ function ch_should_use_secure_auth_cookie() {
 
 function ch_normalize_login_redirect($redirect_to = '') {
     $default_url = ch_get_feed_url();
+    $default_path = strtolower(untrailingslashit((string) wp_parse_url($default_url, PHP_URL_PATH)));
+    $auth_path = strtolower(untrailingslashit((string) wp_parse_url(ch_get_auth_url('login'), PHP_URL_PATH)));
+    $wp_login_path = strtolower(untrailingslashit((string) wp_parse_url(wp_login_url(), PHP_URL_PATH)));
+
+    if (
+        $default_path === '' ||
+        $default_path === $auth_path ||
+        $default_path === $wp_login_path ||
+        $default_path === '/login'
+    ) {
+        $default_url = home_url('/forum-feed/');
+    }
+
     $redirect_to = esc_url_raw((string) $redirect_to);
     if ($redirect_to === '') {
         return $default_url;
@@ -1640,6 +1647,10 @@ function bntm_ajax_ch_login() {
 
     if (is_wp_error($signed_in_user)) {
         wp_send_json_error(['message' => 'Unable to establish your session. Please try again.']);
+    }
+
+    if (!ch_establish_user_session($signed_in_user, $remember)) {
+        wp_send_json_error(['message' => 'Unable to finalize your session. Please try again.']);
     }
  
     // ── Step 4: Ensure CivicHub profile row exists ──────────────────────────
