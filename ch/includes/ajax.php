@@ -867,7 +867,8 @@ function bntm_ajax_ch_feed_sort() {
     <?php } else {
         foreach ($posts as $post) {
             $uv = $user_post_votes[$post->id] ?? 0;
-            $permalink = get_permalink(); ?>
+            $permalink = get_permalink();
+            $share_url = add_query_arg('view_post', (string) $post->rand_id, $permalink); ?>
             <article class="ch-post-card" data-id="<?php echo (int)$post->id; ?>" data-category="<?php echo $post->category_id; ?>" data-anonymous="<?php echo $post->is_anonymous; ?>">
                 <?php if ($post->is_pinned): ?>
                 <div class="ch-post-pinned-ribbon">
@@ -902,7 +903,6 @@ function bntm_ajax_ch_feed_sort() {
                             <?php echo esc_html($post->author_location); ?>
                         </span>
                         <?php endif; ?>
-                        <span class="ch-post-time"><?php echo human_time_diff(strtotime($post->created_at), current_time('timestamp')); ?> ago</span>
                     </div>
                     <h3 class="ch-post-title">
                         <a href="?view_post=<?php echo $post->rand_id; ?>"><?php echo esc_html($post->title); ?></a>
@@ -949,9 +949,10 @@ function bntm_ajax_ch_feed_sort() {
                                 Share
                             </button>
                             <div class="ch-share-menu">
-                                <button class="ch-share-option" onclick="chShareToSocial('twitter', '<?php echo $permalink; ?>?view_post=<?php echo $post->rand_id; ?>', '<?php echo esc_attr($post->title); ?>')">Twitter</button>
-                                <button class="ch-share-option" onclick="chShareToSocial('facebook', '<?php echo $permalink; ?>?view_post=<?php echo $post->rand_id; ?>', '<?php echo esc_attr($post->title); ?>')">Facebook</button>
-                                <button class="ch-share-option" onclick="chShareToSocial('copy', '<?php echo $permalink; ?>?view_post=<?php echo $post->rand_id; ?>')">Copy Link</button>
+                                <button class="ch-share-option" onclick="chShareToSocial('twitter', '<?php echo esc_js($share_url); ?>', '<?php echo esc_js($post->title); ?>')">Twitter</button>
+                                <button class="ch-share-option" onclick="chShareToSocial('facebook', '<?php echo esc_js($share_url); ?>', '<?php echo esc_js($post->title); ?>')">Facebook</button>
+                                <button class="ch-share-option" onclick="chShareToSocial('linkedin', '<?php echo esc_js($share_url); ?>', '<?php echo esc_js($post->title); ?>')">LinkedIn</button>
+                                <button class="ch-share-option" onclick="chShareToSocial('copy', '<?php echo esc_js($share_url); ?>')">Copy Link</button>
                             </div>
                         </div>
                     </div>
