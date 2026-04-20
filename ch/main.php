@@ -39,6 +39,31 @@ function bntm_ch_page_has_shortcode($shortcode) {
     return has_shortcode($post->post_content, $shortcode);
 }
 
+function ch_find_page_id_by_shortcode($shortcode) {
+    global $wpdb;
+    $shortcode = sanitize_key((string) $shortcode);
+    if ($shortcode === '') {
+        return 0;
+    }
+
+    $needle_plain = '%[' . $wpdb->esc_like($shortcode) . ']%';
+    $needle_with_attrs = '%[' . $wpdb->esc_like($shortcode) . ' %';
+
+    $id = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT ID
+         FROM {$wpdb->posts}
+         WHERE post_type = 'page'
+           AND post_status = 'publish'
+           AND (post_content LIKE %s OR post_content LIKE %s)
+         ORDER BY ID ASC
+         LIMIT 1",
+        $needle_plain,
+        $needle_with_attrs
+    ));
+
+    return $id > 0 ? $id : 0;
+}
+
 function bntm_ch_extract_inline_asset($html, $type) {
     $pattern = $type === 'css'
         ? '~<style[^>]*>(.*?)</style>~is'
@@ -317,17 +342,16 @@ function ch_get_feed_url() {
                 $url = get_permalink($page);
                 $source = 'forum_feed_page';
             } else {
-                $url = home_url('/forum-feed/');
-                $source = 'fallback_home_forum_feed_path';
+                $page_id = ch_find_page_id_by_shortcode('ch_feed');
+                if ($page_id > 0) {
+                    $url = get_permalink($page_id);
+                    $source = 'shortcode_scan_page';
+                } else {
+                    $url = home_url('/');
+                    $source = 'fallback_home_root';
+                }
             }
         }
-
-        ch_auth_debug_log('feed_url:resolved', [
-            'source' => $source,
-            'page_id' => $page_id,
-            'url' => $url,
-            'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
-        ]);
     }
 
     return $url;
@@ -341,7 +365,12 @@ function ch_get_auth_url($tab = 'login', $redirect_to = '') {
             $base = get_permalink(get_queried_object_id());
         } else {
             $page = get_page_by_path('login-register');
-            $base = $page ? get_permalink($page) : home_url('/login-register/');
+            if ($page) {
+                $base = get_permalink($page);
+            } else {
+                $auth_page_id = ch_find_page_id_by_shortcode('ch_auth');
+                $base = $auth_page_id > 0 ? get_permalink($auth_page_id) : home_url('/');
+            }
         }
     }
 
@@ -374,77 +403,15 @@ function ch_should_use_secure_auth_cookie() {
     return $home_scheme === 'https' || $site_scheme === 'https';
 }
 
-function ch_auth_debug_log($event, $context = []) {
-    $enabled = apply_filters('ch_auth_debug_enabled', true);
-    if (!$enabled) {
-        return;
-    }
-
-    $safe = is_array($context) ? $context : ['value' => $context];
-    if (isset($safe['password'])) {
-        $safe['password'] = '[redacted]';
-    }
-    if (isset($safe['username'])) {
-        $safe['username'] = substr((string) $safe['username'], 0, 2) . '***';
-    }
-    if (isset($safe['email'])) {
-        $safe['email'] = substr((string) $safe['email'], 0, 2) . '***';
-    }
-
-    error_log('[CH_AUTH_DEBUG] ' . $event . ' ' . wp_json_encode($safe));
-}
-
-function ch_auth_debug_cookie_snapshot() {
-    $keys = [];
-    foreach ((array) $_COOKIE as $name => $value) {
-        if (stripos((string) $name, 'wordpress') !== false || stripos((string) $name, 'wp-') === 0) {
-            $keys[] = (string) $name;
-        }
-    }
-    sort($keys);
-    return $keys;
-}
-
-add_action('template_redirect', function () {
-    $uri = strtolower((string) ($_SERVER['REQUEST_URI'] ?? ''));
-    if ($uri === '') {
-        return;
-    }
-
-    // Temporary: trace auth state for critical redirects only.
-    if (strpos($uri, '/forum-feed') === false && strpos($uri, '/login-register') === false && strpos($uri, '/login/') === false) {
-        return;
-    }
-
-    ch_auth_debug_log('request:template_redirect', [
-        'uri' => $uri,
-        'is_user_logged_in' => is_user_logged_in() ? 1 : 0,
-        'current_user_id' => get_current_user_id(),
-        'cookie_keys' => ch_auth_debug_cookie_snapshot(),
-        'host' => $_SERVER['HTTP_HOST'] ?? '',
-        'https' => !empty($_SERVER['HTTPS']) ? (string) $_SERVER['HTTPS'] : '',
-        'forwarded_proto' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '',
-    ]);
-}, 0);
-
 function ch_normalize_login_redirect($redirect_to = '') {
     $default_url = ch_get_feed_url();
     $redirect_to = esc_url_raw((string) $redirect_to);
-    ch_auth_debug_log('normalize_redirect:start', [
-        'redirect_to' => $redirect_to,
-        'default_url' => $default_url,
-    ]);
     if ($redirect_to === '') {
-        ch_auth_debug_log('normalize_redirect:empty_fallback', ['result' => $default_url]);
         return $default_url;
     }
 
     $candidate = wp_validate_redirect($redirect_to, '');
     if ($candidate === '') {
-        ch_auth_debug_log('normalize_redirect:invalid_candidate', [
-            'redirect_to' => $redirect_to,
-            'result' => $default_url,
-        ]);
         return $default_url;
     }
 
@@ -452,11 +419,6 @@ function ch_normalize_login_redirect($redirect_to = '') {
     if ($candidate_query !== '') {
         parse_str($candidate_query, $query_args);
         if (!empty($query_args['session_error'])) {
-            ch_auth_debug_log('normalize_redirect:blocked_session_error', [
-                'candidate' => $candidate,
-                'query' => $query_args,
-                'result' => $default_url,
-            ]);
             return $default_url;
         }
     }
@@ -478,29 +440,15 @@ function ch_normalize_login_redirect($redirect_to = '') {
                 continue;
             }
             if ($candidate_path === $blocked_path || strpos($candidate_path, $blocked_path . '/') === 0) {
-                ch_auth_debug_log('normalize_redirect:blocked_path', [
-                    'candidate' => $candidate,
-                    'candidate_path' => $candidate_path,
-                    'blocked_path' => $blocked_path,
-                    'result' => $default_url,
-                ]);
                 return $default_url;
             }
         }
 
         // Keep post-login navigation inside the CivicHub feed shell.
         if ($feed_path !== '' && $candidate_path !== $feed_path) {
-            ch_auth_debug_log('normalize_redirect:non_feed_path', [
-                'candidate' => $candidate,
-                'candidate_path' => $candidate_path,
-                'feed_path' => $feed_path,
-                'result' => $default_url,
-            ]);
             return $default_url;
         }
     }
-
-    ch_auth_debug_log('normalize_redirect:accepted', ['result' => $candidate]);
     return $candidate;
 }
 
@@ -1089,18 +1037,7 @@ function bntm_shortcode_ch_auth() {
                     <span class="ch-nav-label">Forum</span>
                 </a>
             </div>
-            <!-- Guest auth buttons (mobile drawer only) -->
-            <div class="ch-user-bar">
-                <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
-                <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
-            </div>
         </div><!-- /#ch-feed-drawer-auth -->
-
-        <!-- Desktop guest auth buttons (hidden on mobile via CSS) -->
-        <div class="ch-user-bar ch-nav-guest-desktop">
-            <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
-            <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
-        </div>
 
         <!-- Burger button: visible on mobile only, opens the drawer -->
         <button class="ch-burger-menu-btn" type="button" aria-label="Toggle menu" aria-expanded="false"
@@ -1332,38 +1269,14 @@ function bntm_shortcode_ch_auth() {
                     if(window.chNavBarStart) window.chNavBarStart();
                     setTimeout(() => {
                         let target = json.data.redirect || redirect || window.location.href;
-                        const pingFd = new FormData();
-                        pingFd.append('action', 'ch_auth_ping');
-                        pingFd.append('nonce', nonce);
-
-                        fetch(ajaxurl, { method: 'POST', body: pingFd, credentials: 'same-origin' })
-                            .then(r => r.json())
-                            .then(pingJson => {
-                                console.info('[CH_AUTH_DEBUG] auth ping', pingJson);
-                                try {
-                                    console.info('[CH_AUTH_DEBUG] auth ping json', JSON.stringify(pingJson));
-                                } catch (e) {}
-                            })
-                            .catch(err => {
-                                console.info('[CH_AUTH_DEBUG] auth ping failed', String(err || ''));
-                            })
-                            .finally(() => {
-                                try {
-                                    const targetUrl = new URL(target, window.location.origin);
-                                    const targetPath = (targetUrl.pathname || '').replace(/\/+$/, '').toLowerCase() || '/';
-                                    console.info('[CH_AUTH_DEBUG] login redirect candidate', {
-                                        ajaxRedirect: json?.data?.redirect || '',
-                                        fallbackRedirect: redirect || '',
-                                        finalCandidate: targetUrl.toString(),
-                                        path: targetPath,
-                                        sessionError: targetUrl.searchParams.get('session_error') || ''
-                                    });
-                                    if (targetUrl.searchParams.get('session_error') === '1' || targetPath === '/login') {
-                                        target = '<?php echo esc_js(ch_get_feed_url()); ?>';
-                                    }
-                                } catch (e) {}
-                                window.location.href = target;
-                            });
+                        try {
+                            const targetUrl = new URL(target, window.location.origin);
+                            const targetPath = (targetUrl.pathname || '').replace(/\/+$/, '').toLowerCase() || '/';
+                            if (targetUrl.searchParams.get('session_error') === '1' || targetPath === '/login') {
+                                target = '<?php echo esc_js(ch_get_feed_url()); ?>';
+                            }
+                        } catch (e) {}
+                        window.location.href = target;
                     }, 800);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
@@ -1638,22 +1551,8 @@ function bntm_ajax_ch_login() {
     $redirect_to = esc_url_raw( $_POST['redirect_to'] ?? '' );
  
     if ( ! $username || ! $password ) {
-        ch_auth_debug_log('login:missing_credentials', [
-            'username' => $username,
-            'redirect_to' => $redirect_to,
-        ]);
         wp_send_json_error( [ 'message' => 'Username and password are required.' ] );
     }
-
-    ch_auth_debug_log('login:start', [
-        'username' => $username,
-        'remember' => $remember ? 1 : 0,
-        'redirect_to' => $redirect_to,
-        'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
-        'referer' => $_SERVER['HTTP_REFERER'] ?? '',
-        'forwarded_proto' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '',
-        'is_ssl' => is_ssl() ? 1 : 0,
-    ]);
  
     // ── Step 1: Authenticate (does NOT set any cookie) ──────────────────────
     // Keep this pre-check so we can return tailored CivicHub error payloads.
@@ -1663,11 +1562,6 @@ function bntm_ajax_ch_login() {
         // Surface the ch_email_unverified and ch_account_restricted errors
         // that are injected by the ch_block_unverified_login filter.
         $code = $user->get_error_code();
-        ch_auth_debug_log('login:auth_error', [
-            'username' => $username,
-            'code' => $code,
-            'message' => $user->get_error_message(),
-        ]);
  
         if ( $code === 'ch_account_restricted' ) {
             wp_send_json_error( [
@@ -1707,10 +1601,6 @@ function bntm_ajax_ch_login() {
     ) );
  
     if ( $profile_row && in_array( $profile_row->status, [ 'banned', 'suspended' ], true ) ) {
-        ch_auth_debug_log('login:profile_restricted', [
-            'user_id' => $user->ID,
-            'status' => $profile_row->status,
-        ]);
         wp_send_json_error( [
             'message'            => 'Your account has been restricted. Please contact support.',
             'account_restricted' => true,
@@ -1725,11 +1615,6 @@ function bntm_ajax_ch_login() {
     ], ch_should_use_secure_auth_cookie());
 
     if (is_wp_error($signed_in_user)) {
-        ch_auth_debug_log('login:wp_signon_error', [
-            'username' => $username,
-            'code' => $signed_in_user->get_error_code(),
-            'message' => $signed_in_user->get_error_message(),
-        ]);
         wp_send_json_error(['message' => 'Unable to establish your session. Please try again.']);
     }
  
@@ -1737,46 +1622,8 @@ function bntm_ajax_ch_login() {
     ch_ensure_profile( $signed_in_user->ID );
  
     $redirect = ch_normalize_login_redirect($redirect_to);
-    $set_cookie_headers = [];
-    foreach (headers_list() as $header_line) {
-        if (stripos($header_line, 'Set-Cookie:') === 0) {
-            $set_cookie_headers[] = $header_line;
-        }
-    }
-    ch_auth_debug_log('login:success', [
-        'user_id' => $signed_in_user->ID,
-        'is_user_logged_in' => is_user_logged_in() ? 1 : 0,
-        'current_user_id' => get_current_user_id(),
-        'redirect_to' => $redirect_to,
-        'redirect' => $redirect,
-        'secure_cookie' => ch_should_use_secure_auth_cookie() ? 1 : 0,
-        'cookie_domain' => defined('COOKIE_DOMAIN') ? (string) COOKIE_DOMAIN : '',
-        'cookie_path' => defined('COOKIEPATH') ? (string) COOKIEPATH : '',
-        'site_cookie_path' => defined('SITECOOKIEPATH') ? (string) SITECOOKIEPATH : '',
-        'admin_cookie_path' => defined('ADMIN_COOKIE_PATH') ? (string) ADMIN_COOKIE_PATH : '',
-        'set_cookie_headers' => $set_cookie_headers,
-    ]);
  
     wp_send_json_success( [ 'redirect' => $redirect ] );
-}
-
-function bntm_ajax_ch_auth_ping() {
-    $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
-    $nonce_ok = $nonce !== '' && wp_verify_nonce($nonce, 'ch_auth_nonce');
-
-    ch_auth_debug_log('auth_ping', [
-        'nonce_present' => $nonce !== '' ? 1 : 0,
-        'nonce_valid' => $nonce_ok ? 1 : 0,
-        'is_user_logged_in' => is_user_logged_in() ? 1 : 0,
-        'current_user_id' => get_current_user_id(),
-        'cookie_keys' => ch_auth_debug_cookie_snapshot(),
-        'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
-    ]);
-
-    wp_send_json_success([
-        'is_user_logged_in' => is_user_logged_in(),
-        'current_user_id' => get_current_user_id(),
-    ]);
 }
 
 function bntm_ajax_ch_register() {
@@ -1885,7 +1732,6 @@ function bntm_ajax_ch_resend_verification() {
 
 $ajax_actions = [
     'ch_login'               => ['bntm_ajax_ch_login', false],
-    'ch_auth_ping'           => ['bntm_ajax_ch_auth_ping', false],
     'ch_register'            => ['bntm_ajax_ch_register', false],
     'ch_resend_verification' => ['bntm_ajax_ch_resend_verification', false],
     'ch_create_category'     => ['bntm_ajax_ch_create_category', true],
