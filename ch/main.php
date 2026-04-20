@@ -1716,21 +1716,36 @@ function bntm_ajax_ch_login() {
     ch_ensure_profile( $signed_in_user->ID );
  
     $redirect = ch_normalize_login_redirect($redirect_to);
+    $set_cookie_headers = [];
+    foreach (headers_list() as $header_line) {
+        if (stripos($header_line, 'Set-Cookie:') === 0) {
+            $set_cookie_headers[] = $header_line;
+        }
+    }
     ch_auth_debug_log('login:success', [
         'user_id' => $signed_in_user->ID,
         'is_user_logged_in' => is_user_logged_in() ? 1 : 0,
         'current_user_id' => get_current_user_id(),
         'redirect_to' => $redirect_to,
         'redirect' => $redirect,
+        'secure_cookie' => ch_should_use_secure_auth_cookie() ? 1 : 0,
+        'cookie_domain' => defined('COOKIE_DOMAIN') ? (string) COOKIE_DOMAIN : '',
+        'cookie_path' => defined('COOKIEPATH') ? (string) COOKIEPATH : '',
+        'site_cookie_path' => defined('SITECOOKIEPATH') ? (string) SITECOOKIEPATH : '',
+        'admin_cookie_path' => defined('ADMIN_COOKIE_PATH') ? (string) ADMIN_COOKIE_PATH : '',
+        'set_cookie_headers' => $set_cookie_headers,
     ]);
  
     wp_send_json_success( [ 'redirect' => $redirect ] );
 }
 
 function bntm_ajax_ch_auth_ping() {
-    check_ajax_referer('ch_auth_nonce', 'nonce');
+    $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+    $nonce_ok = $nonce !== '' && wp_verify_nonce($nonce, 'ch_auth_nonce');
 
     ch_auth_debug_log('auth_ping', [
+        'nonce_present' => $nonce !== '' ? 1 : 0,
+        'nonce_valid' => $nonce_ok ? 1 : 0,
         'is_user_logged_in' => is_user_logged_in() ? 1 : 0,
         'current_user_id' => get_current_user_id(),
         'cookie_keys' => ch_auth_debug_cookie_snapshot(),
