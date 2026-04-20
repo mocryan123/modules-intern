@@ -7850,6 +7850,179 @@ function ch_global_styles()
                 padding: 8px 0 !important;
             }
         }
+
+        /* ============================================================ */
+        /* UI REFINEMENT & RESPONSIVE GLOBAL OVERRIDES                  */
+        /* ============================================================ */
+
+        /* 1. Global typography and layout normalization */
+        .ch-dashboard-wrap, .ch-feed-wrap, .ch-post-view-wrap, 
+        .ch-guest-landing-wrap, .ch-my-feed-wrap {
+            overflow-x: hidden;
+            width: 100%;
+            overscroll-behavior-y: none;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--ch-text);
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            margin-top: 0;
+            font-weight: 700;
+        }
+
+        /* 2. Component uniformity (Cards, Modals) */
+        .ch-card, .ch-cat-card, .ch-stat-card {
+            border-radius: var(--ch-radius-lg);
+            box-shadow: var(--ch-shadow-sm);
+            border: 1px solid var(--ch-border);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ch-card:hover, .ch-cat-card:hover, .ch-stat-card:hover {
+            box-shadow: var(--ch-shadow);
+        }
+        
+        .ch-modal {
+            border-radius: var(--ch-radius-xl);
+            box-shadow: var(--ch-shadow-md);
+        }
+
+        /* 3. Inputs & forms standard sizing */
+        .ch-input, .ch-textarea, .ch-composer-title-input, .ch-composer-textarea {
+            border-radius: var(--ch-radius-md);
+            padding: 12px 16px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        /* 4. Touch Targets & Mobile Layout (≤ 780px) */
+        @media (max-width: 780px) {
+            /* 44px min-height for interactive elements */
+            .ch-btn,
+            .ch-icon-btn, 
+            .ch-icon-action-btn,
+            .ch-avatar-btn,
+            .ch-nav-item,
+            select.ch-input,
+            .ch-filter-btn {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .ch-nav-link {
+                min-height: 44px;
+            }
+            
+            /* Responsive inputs */
+            .ch-input {
+                padding: 14px 16px;
+                min-height: 44px;
+                box-sizing: border-box;
+            }
+
+            .ch-textarea {
+                padding: 14px 16px;
+            }
+
+            /* Prevent layout-breaking zoom on mobile */
+            input[type="text"], input[type="search"], textarea, select {
+                font-size: 16px !important;
+            }
+
+            /* Adjust flex layouts wrapping for mobile */
+            .ch-page-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .ch-page-header-actions {
+                width: 100%;
+                display: flex;
+            }
+            
+            .ch-page-header-actions .ch-btn {
+                width: 100%;
+            }
+
+            /* Main containers padding reduction */
+            .ch-main-content {
+                padding: 16px 16px 64px;
+            }
+
+            .ch-guest-main {
+                padding: 16px 14px;
+            }
+
+            /* Reset grids */
+            .ch-two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .ch-stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .ch-card {
+                border-radius: var(--ch-radius-md);
+                margin-left: -16px;
+                margin-right: -16px;
+                border-left: none;
+                border-right: none;
+            }
+            
+            /* Stack horizontal elements */
+            .ch-field-row {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .ch-toolbar-left, .ch-toolbar-right {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            
+            .ch-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            /* Modals take full screen on mobile */
+            .ch-modal {
+                border-radius: var(--ch-radius-lg) var(--ch-radius-lg) 0 0;
+                width: 100%;
+                max-width: 100%;
+                margin-top: auto;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .ch-modal-overlay {
+                align-items: flex-end;
+                padding: 0;
+            }
+        }
+        
+        /* 5. Extra Small Compact Devices (≤ 480px) */
+        @media (max-width: 480px) {
+            .ch-stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .ch-list-item {
+                padding: 12px 14px;
+            }
+            .ch-brand-logo {
+                max-width: 110px;
+            }
+            .ch-top-nav {
+                padding: 0 16px;
+            }
+        }
     </style>
     <?php
     return ob_get_clean();
