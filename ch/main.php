@@ -376,6 +376,39 @@ function ch_auth_debug_log($event, $context = []) {
     error_log('[CH_AUTH_DEBUG] ' . $event . ' ' . wp_json_encode($safe));
 }
 
+function ch_auth_debug_cookie_snapshot() {
+    $keys = [];
+    foreach ((array) $_COOKIE as $name => $value) {
+        if (stripos((string) $name, 'wordpress') !== false || stripos((string) $name, 'wp-') === 0) {
+            $keys[] = (string) $name;
+        }
+    }
+    sort($keys);
+    return $keys;
+}
+
+add_action('template_redirect', function () {
+    $uri = strtolower((string) ($_SERVER['REQUEST_URI'] ?? ''));
+    if ($uri === '') {
+        return;
+    }
+
+    // Temporary: trace auth state for critical redirects only.
+    if (strpos($uri, '/forum-feed') === false && strpos($uri, '/login-register') === false && strpos($uri, '/login/') === false) {
+        return;
+    }
+
+    ch_auth_debug_log('request:template_redirect', [
+        'uri' => $uri,
+        'is_user_logged_in' => is_user_logged_in() ? 1 : 0,
+        'current_user_id' => get_current_user_id(),
+        'cookie_keys' => ch_auth_debug_cookie_snapshot(),
+        'host' => $_SERVER['HTTP_HOST'] ?? '',
+        'https' => !empty($_SERVER['HTTPS']) ? (string) $_SERVER['HTTPS'] : '',
+        'forwarded_proto' => $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '',
+    ]);
+}, 0);
+
 function ch_normalize_login_redirect($redirect_to = '') {
     $default_url = ch_get_feed_url();
     $redirect_to = esc_url_raw((string) $redirect_to);
@@ -1281,21 +1314,35 @@ function bntm_shortcode_ch_auth() {
                     if(window.chNavBarStart) window.chNavBarStart();
                     setTimeout(() => {
                         let target = json.data.redirect || redirect || window.location.href;
-                        try {
-                            const targetUrl = new URL(target, window.location.origin);
-                            const targetPath = (targetUrl.pathname || '').replace(/\/+$/, '').toLowerCase() || '/';
-                            console.info('[CH_AUTH_DEBUG] login redirect candidate', {
-                                ajaxRedirect: json?.data?.redirect || '',
-                                fallbackRedirect: redirect || '',
-                                finalCandidate: targetUrl.toString(),
-                                path: targetPath,
-                                sessionError: targetUrl.searchParams.get('session_error') || ''
+                        const pingFd = new FormData();
+                        pingFd.append('action', 'ch_auth_ping');
+                        pingFd.append('nonce', nonce);
+
+                        fetch(ajaxurl, { method: 'POST', body: pingFd, credentials: 'same-origin' })
+                            .then(r => r.json())
+                            .then(pingJson => {
+                                console.info('[CH_AUTH_DEBUG] auth ping', pingJson);
+                            })
+                            .catch(err => {
+                                console.info('[CH_AUTH_DEBUG] auth ping failed', String(err || ''));
+                            })
+                            .finally(() => {
+                                try {
+                                    const targetUrl = new URL(target, window.location.origin);
+                                    const targetPath = (targetUrl.pathname || '').replace(/\/+$/, '').toLowerCase() || '/';
+                                    console.info('[CH_AUTH_DEBUG] login redirect candidate', {
+                                        ajaxRedirect: json?.data?.redirect || '',
+                                        fallbackRedirect: redirect || '',
+                                        finalCandidate: targetUrl.toString(),
+                                        path: targetPath,
+                                        sessionError: targetUrl.searchParams.get('session_error') || ''
+                                    });
+                                    if (targetUrl.searchParams.get('session_error') === '1' || targetPath === '/login') {
+                                        target = '<?php echo esc_js(ch_get_feed_url()); ?>';
+                                    }
+                                } catch (e) {}
+                                window.location.href = target;
                             });
-                            if (targetUrl.searchParams.get('session_error') === '1' || targetPath === '/login') {
-                                target = '<?php echo esc_js(ch_get_feed_url()); ?>';
-                            }
-                        } catch (e) {}
-                        window.location.href = target;
                     }, 800);
                 } else {
                     msgEl.innerHTML = '<div class="bntm-notice-error">' + (json.data?.message || 'Login failed. Please try again.') + '</div>';
@@ -1680,6 +1727,22 @@ function bntm_ajax_ch_login() {
     wp_send_json_success( [ 'redirect' => $redirect ] );
 }
 
+function bntm_ajax_ch_auth_ping() {
+    check_ajax_referer('ch_auth_nonce', 'nonce');
+
+    ch_auth_debug_log('auth_ping', [
+        'is_user_logged_in' => is_user_logged_in() ? 1 : 0,
+        'current_user_id' => get_current_user_id(),
+        'cookie_keys' => ch_auth_debug_cookie_snapshot(),
+        'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
+    ]);
+
+    wp_send_json_success([
+        'is_user_logged_in' => is_user_logged_in(),
+        'current_user_id' => get_current_user_id(),
+    ]);
+}
+
 function bntm_ajax_ch_register() {
     check_ajax_referer('ch_auth_nonce', 'nonce');
 
@@ -1786,6 +1849,7 @@ function bntm_ajax_ch_resend_verification() {
 
 $ajax_actions = [
     'ch_login'               => ['bntm_ajax_ch_login', false],
+    'ch_auth_ping'           => ['bntm_ajax_ch_auth_ping', false],
     'ch_register'            => ['bntm_ajax_ch_register', false],
     'ch_resend_verification' => ['bntm_ajax_ch_resend_verification', false],
     'ch_create_category'     => ['bntm_ajax_ch_create_category', true],
