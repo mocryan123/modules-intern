@@ -2611,13 +2611,13 @@ function bntm_kbf_render_landing() {
     .vh-photo-card:hover img {
         filter: grayscale(0%);
     }
-    .vh-pc-1 { background: #8B9E7A; }
-    .vh-pc-2 { background: #C4A882; }
-    .vh-pc-3 { background: #C17E5E; }
-    .vh-pc-4 { background: #7B9BAA; }
-    .vh-pc-5 { background: #A8B5C2; }
-    .vh-pc-6 { background: #D9C5B2; }
-    .vh-pc-7 { background: #738276; }
+    .vh-pc-1 { background: #edf0f4; }
+    .vh-pc-2 { background: #edf0f4; }
+    .vh-pc-3 { background: #edf0f4; }
+    .vh-pc-4 { background: #edf0f4; }
+    .vh-pc-5 { background: #edf0f4; }
+    .vh-pc-6 { background: #edf0f4; }
+    .vh-pc-7 { background: #edf0f4; }
     
     .vh-photo-fade {
         position: absolute;
