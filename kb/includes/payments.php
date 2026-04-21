@@ -13,13 +13,11 @@ if (!function_exists('kbf_is_production_mode')) {
 
 if (!function_exists('kbf_maya_webhook_secret')) {
     function kbf_maya_webhook_secret() {
+        $stored = (string) kbf_get_setting('kbf_maya_webhook_secret', '');
+        if ($stored !== '') return $stored;
         $env = kbf_get_env_secret('KBF_MAYA_WEBHOOK_SECRET');
         if ($env !== '') return $env;
-        if (kbf_is_production_mode()) {
-            return '';
-        }
-        // TODO: Migrate stored secrets to environment variables and remove DB storage.
-        return (string) kbf_get_setting('kbf_maya_webhook_secret', '');
+        return '';
     }
 }
 
@@ -71,22 +69,28 @@ if (!function_exists('kbf_verify_maya_signature')) {
 function kbf_maya_secret_key() {
     $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
     if ($demo) {
+        $stored = (string) kbf_get_setting('kbf_maya_sandbox_secret', '');
+        if ($stored !== '') return $stored;
         $env = kbf_get_env_secret('KBF_MAYA_SANDBOX_SECRET');
         if ($env !== '') return $env;
-        // TODO: Migrate stored secrets to environment variables and remove DB storage.
-        return kbf_get_setting('kbf_maya_sandbox_secret', '');
+        return '';
     }
+    $stored = (string) kbf_get_setting('kbf_maya_live_secret', '');
+    if ($stored !== '') return $stored;
     return kbf_get_env_secret('KBF_MAYA_LIVE_SECRET');
 }
 
 function kbf_maya_public_key() {
     $demo = (bool)kbf_get_setting('kbf_demo_mode', true);
     if ($demo) {
+        $stored = (string) kbf_get_setting('kbf_maya_sandbox_public', '');
+        if ($stored !== '') return $stored;
         $env = kbf_get_env_secret('KBF_MAYA_SANDBOX_PUBLIC');
         if ($env !== '') return $env;
-        // TODO: Migrate stored keys to environment variables and remove DB storage.
-        return kbf_get_setting('kbf_maya_sandbox_public', '');
+        return '';
     }
+    $stored = (string) kbf_get_setting('kbf_maya_live_public', '');
+    if ($stored !== '') return $stored;
     return kbf_get_env_secret('KBF_MAYA_LIVE_PUBLIC');
 }
 

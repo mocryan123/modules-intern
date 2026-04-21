@@ -886,27 +886,141 @@ function kbf_table_has_column($table, $column) {
  * bntm_get_setting() may not support a second default parameter depending
  * on the framework version -- this wrapper handles both cases.
  */
+function kbf_sensitive_setting_keys() {
+    return [
+        'kbf_maya_sandbox_public',
+        'kbf_maya_sandbox_secret',
+        'kbf_maya_live_public',
+        'kbf_maya_live_secret',
+        'kbf_maya_webhook_secret',
+        'kbf_didit_sandbox_api_key',
+        'kbf_didit_sandbox_app_id',
+        'kbf_didit_sandbox_workflow_id',
+        'kbf_didit_live_api_key',
+        'kbf_didit_live_app_id',
+        'kbf_didit_live_workflow_id',
+        'kbf_didit_webhook_secret',
+    ];
+}
+
+function kbf_is_sensitive_setting_key($key) {
+    return in_array((string) $key, kbf_sensitive_setting_keys(), true);
+}
+
+function kbf_encrypt_setting_value($value) {
+    $raw = (string) $value;
+    if ($raw === '') {
+        return '';
+    }
+    if (strpos($raw, 'kbfenc:v1:') === 0) {
+        return $raw;
+    }
+
+    $key = hash('sha256', wp_salt('auth') . '|kbf-settings-v1', true);
+
+    if (function_exists('sodium_crypto_secretbox') && defined('SODIUM_CRYPTO_SECRETBOX_NONCEBYTES')) {
+        $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+        $cipher = sodium_crypto_secretbox($raw, $nonce, $key);
+        return 'kbfenc:v1:sodium:' . base64_encode($nonce . $cipher);
+    }
+
+    if (function_exists('openssl_encrypt')) {
+        $iv_len = openssl_cipher_iv_length('aes-256-cbc');
+        if (!is_int($iv_len) || $iv_len < 1) {
+            $iv_len = 16;
+        }
+        $iv = random_bytes($iv_len);
+        $cipher = openssl_encrypt($raw, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
+        if ($cipher !== false) {
+            return 'kbfenc:v1:openssl:' . base64_encode($iv . $cipher);
+        }
+    }
+
+    return $raw;
+}
+
+function kbf_decrypt_setting_value($value) {
+    $raw = (string) $value;
+    if ($raw === '') {
+        return '';
+    }
+    if (strpos($raw, 'kbfenc:v1:') !== 0) {
+        return $raw;
+    }
+
+    $parts = explode(':', $raw, 4);
+    if (count($parts) !== 4) {
+        return '';
+    }
+    $algo = $parts[2];
+    $blob = base64_decode($parts[3], true);
+    if ($blob === false) {
+        return '';
+    }
+
+    $key = hash('sha256', wp_salt('auth') . '|kbf-settings-v1', true);
+
+    if ($algo === 'sodium' && function_exists('sodium_crypto_secretbox_open') && defined('SODIUM_CRYPTO_SECRETBOX_NONCEBYTES')) {
+        $nonce_len = SODIUM_CRYPTO_SECRETBOX_NONCEBYTES;
+        if (strlen($blob) <= $nonce_len) {
+            return '';
+        }
+        $nonce = substr($blob, 0, $nonce_len);
+        $cipher = substr($blob, $nonce_len);
+        $plain = sodium_crypto_secretbox_open($cipher, $nonce, $key);
+        return $plain === false ? '' : (string) $plain;
+    }
+
+    if ($algo === 'openssl' && function_exists('openssl_decrypt')) {
+        $iv_len = openssl_cipher_iv_length('aes-256-cbc');
+        if (!is_int($iv_len) || $iv_len < 1 || strlen($blob) <= $iv_len) {
+            return '';
+        }
+        $iv = substr($blob, 0, $iv_len);
+        $cipher = substr($blob, $iv_len);
+        $plain = openssl_decrypt($cipher, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
+        return $plain === false ? '' : (string) $plain;
+    }
+
+    return '';
+}
+
 function kbf_get_setting($key, $default = null) {
+    $is_sensitive = kbf_is_sensitive_setting_key($key);
     if (function_exists('bntm_get_setting')) {
         $val = bntm_get_setting($key);
         if (!($val === null || $val === false || $val === '')) {
-            return $val;
+            $resolved = $is_sensitive ? kbf_decrypt_setting_value((string) $val) : $val;
+            if (!($resolved === null || $resolved === false || $resolved === '')) {
+                return $resolved;
+            }
         }
         // If framework setting is empty, fall back to mirrored wp_options value.
         $stored = get_option('kbf_setting_' . $key, null);
-        return ($stored === null || $stored === false || $stored === '') ? $default : $stored;
+        if ($stored === null || $stored === false || $stored === '') {
+            return $default;
+        }
+        $resolved = $is_sensitive ? kbf_decrypt_setting_value((string) $stored) : $stored;
+        return ($resolved === null || $resolved === false || $resolved === '') ? $default : $resolved;
     }
     // Fallback: store in wp_options directly
     $stored = get_option('kbf_setting_' . $key, null);
-    return ($stored === null) ? $default : $stored;
+    if ($stored === null || $stored === false || $stored === '') {
+        return $default;
+    }
+    $resolved = $is_sensitive ? kbf_decrypt_setting_value((string) $stored) : $stored;
+    return ($resolved === null || $resolved === false || $resolved === '') ? $default : $resolved;
 }
 
 function kbf_set_setting($key, $value) {
+    $to_store = kbf_is_sensitive_setting_key($key)
+        ? kbf_encrypt_setting_value($value)
+        : $value;
     if (function_exists('bntm_set_setting')) {
-        bntm_set_setting($key, $value);
+        bntm_set_setting($key, $to_store);
     }
     // Also mirror to wp_options as fallback
-    update_option('kbf_setting_' . $key, $value);
+    update_option('kbf_setting_' . $key, $to_store);
 }
 
 function kbf_get_platform_fee_rate($fund) {

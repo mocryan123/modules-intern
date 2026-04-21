@@ -173,7 +173,7 @@ function kbf_admin_settings_tab() {
             <div class="kbf-form-group kbf-settings-field">
               <label for="sb-sec" class="kbf-settings-label">Sandbox Secret Key</label>
               <input type="password" id="sb-sec" class="kbf-settings-key" value="" placeholder="sk-sandbox-..." autocomplete="off" autocapitalize="off" spellcheck="false">
-              <small class="kbf-settings-helper">Stored: <?php echo $sb_sec ? 'Yes' : 'No'; ?></small>
+              <small class="kbf-settings-helper">Stored: <?php echo $sb_sec ? 'Yes' : 'No'; ?> (encrypted)</small>
             </div>
           </div>
           <!-- Live Keys -->
@@ -187,7 +187,7 @@ function kbf_admin_settings_tab() {
             <div class="kbf-form-group kbf-settings-field">
               <label for="lv-sec" class="kbf-settings-label">Live Secret Key</label>
               <input type="password" id="lv-sec" class="kbf-settings-key" value="" placeholder="sk-live-..." autocomplete="off" autocapitalize="off" spellcheck="false">
-              <small class="kbf-settings-helper">Stored: <?php echo $lv_sec ? 'Yes' : 'No'; ?></small>
+              <small class="kbf-settings-helper">Stored: <?php echo $lv_sec ? 'Yes' : 'No'; ?> (encrypted)</small>
             </div>
           </div>
         </div>
@@ -215,7 +215,7 @@ function kbf_admin_settings_tab() {
             <div class="kbf-form-group" style="display:flex;flex-direction:row;align-items:center;gap:8px;">
               <input type="password" id="wh-secret" class="kbf-settings-key" value="" placeholder="webhook-secret-..." autocomplete="off" autocapitalize="off" spellcheck="false">
             </div>
-            <small style="color:var(--kbf-slate);display:block;margin-top:4px;">Stored: <?php echo $wh_secret ? 'Yes' : 'No'; ?></small>
+            <small style="color:var(--kbf-slate);display:block;margin-top:4px;">Stored: <?php echo $wh_secret ? 'Yes' : 'No'; ?> (encrypted)</small>
             
             <small style="color:var(--kbf-slate);display:block;margin-top:6px;">
               When set, Fundora verifies incoming webhook signatures before updating payments.
@@ -242,7 +242,7 @@ function kbf_admin_settings_tab() {
               <label for="didit-sb-key" class="kbf-settings-label">Sandbox API Key</label>
               <input type="text" id="didit-sb-key" class="kbf-settings-key" value="<?php echo esc_attr($didit_sb_key); ?>" placeholder="didit-sandbox-key-..." autocomplete="off" autocapitalize="off" spellcheck="false">
               <small class="kbf-settings-helper">Leave blank to keep existing key.</small>
-              <small class="kbf-settings-helper">Stored: <?php echo $didit_sb_key ? 'Yes' : 'No'; ?></small>
+              <small class="kbf-settings-helper">Stored: <?php echo $didit_sb_key ? 'Yes' : 'No'; ?> (encrypted)</small>
             </div>
             <div class="kbf-form-group kbf-settings-field">
               <label for="didit-sb-app-id" class="kbf-settings-label">Sandbox App ID</label>
@@ -261,7 +261,7 @@ function kbf_admin_settings_tab() {
               <label for="didit-lv-key" class="kbf-settings-label">Live API Key</label>
               <input type="text" id="didit-lv-key" class="kbf-settings-key" value="<?php echo esc_attr($didit_lv_key); ?>" placeholder="didit-live-key-..." autocomplete="off" autocapitalize="off" spellcheck="false">
               <small class="kbf-settings-helper">Leave blank to keep existing key.</small>
-              <small class="kbf-settings-helper">Stored: <?php echo $didit_lv_key ? 'Yes' : 'No'; ?></small>
+              <small class="kbf-settings-helper">Stored: <?php echo $didit_lv_key ? 'Yes' : 'No'; ?> (encrypted)</small>
             </div>
             <div class="kbf-form-group kbf-settings-field">
               <label for="didit-lv-app-id" class="kbf-settings-label">Live App ID</label>
@@ -296,7 +296,7 @@ function kbf_admin_settings_tab() {
             <div class="kbf-form-group" style="display:flex;flex-direction:row;align-items:center;gap:8px;">
               <input type="password" id="didit-wh-secret" class="kbf-settings-key" value="" placeholder="webhook-secret-..." autocomplete="off" autocapitalize="off" spellcheck="false">
             </div>
-            <small style="color:var(--kbf-slate);display:block;margin-top:4px;">Stored: <?php echo $didit_wh_secret ? 'Yes' : 'No'; ?></small>
+            <small style="color:var(--kbf-slate);display:block;margin-top:4px;">Stored: <?php echo $didit_wh_secret ? 'Yes' : 'No'; ?> (encrypted)</small>
             <small style="color:var(--kbf-slate);display:block;margin-top:6px;">
               When set, Fundora verifies incoming webhook signatures before updating verification status.
             </small>

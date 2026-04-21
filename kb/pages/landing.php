@@ -245,6 +245,7 @@ function bntm_kbf_render_landing() {
     $site_name = 'fundora';
     $site_url  = $urls['site'];
     $page_url  = $urls['page'];
+    $landing_url = $page_url ?: $site_url;
     $logo_url  = esc_url(BNTM_KBF_URL . 'assets/branding/logo.png');
     $seo_title = 'Fundora: The Filipino Crowdfunding Platform Built on Bayanihan | Transparent, Trusted, Free';
     $seo_desc  = 'Fundora is a community-powered crowdfunding platform built for Filipinos with verified campaigns, transparent fund tracking, and zero platform fees during beta. Start or support a fundraiser today.';
