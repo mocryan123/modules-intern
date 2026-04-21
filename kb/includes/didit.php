@@ -23,6 +23,57 @@ if (!function_exists('kbf_get_env_secret')) {
     }
 }
 
+if (!function_exists('kbf_didit_extract_error_message')) {
+    function kbf_didit_extract_error_message($data, $code) {
+        if (is_array($data)) {
+            if (!empty($data['message']) && is_string($data['message'])) {
+                return sanitize_text_field($data['message']);
+            }
+            if (!empty($data['error']) && is_string($data['error'])) {
+                return sanitize_text_field($data['error']);
+            }
+            if (!empty($data['detail']) && is_string($data['detail'])) {
+                return sanitize_text_field($data['detail']);
+            }
+            if (!empty($data['errors']) && is_array($data['errors'])) {
+                $first = reset($data['errors']);
+                if (is_string($first) && $first !== '') {
+                    return sanitize_text_field($first);
+                }
+                if (is_array($first) && !empty($first['message']) && is_string($first['message'])) {
+                    return sanitize_text_field($first['message']);
+                }
+            }
+        }
+        return 'HTTP ' . (int) $code;
+    }
+}
+
+if (!function_exists('kbf_didit_normalize_session_url')) {
+    function kbf_didit_normalize_session_url($data) {
+        if (!is_array($data)) {
+            return '';
+        }
+        $candidates = [
+            $data['url'] ?? '',
+            $data['session_url'] ?? '',
+            $data['verification_url'] ?? '',
+            $data['redirect_url'] ?? '',
+            isset($data['data']) && is_array($data['data']) ? ($data['data']['url'] ?? '') : '',
+            isset($data['data']) && is_array($data['data']) ? ($data['data']['session_url'] ?? '') : '',
+            isset($data['data']) && is_array($data['data']) ? ($data['data']['verification_url'] ?? '') : '',
+            isset($data['data']) && is_array($data['data']) ? ($data['data']['redirect_url'] ?? '') : '',
+        ];
+        foreach ($candidates as $candidate) {
+            $candidate = esc_url_raw((string) $candidate);
+            if ($candidate !== '') {
+                return $candidate;
+            }
+        }
+        return '';
+    }
+}
+
 /**
  * Resolve Didit configuration based on demo/live mode.
  *
@@ -33,21 +84,25 @@ function kbf_didit_resolve_config() {
 
     if ($demo_mode) {
         $api_key = (string) kbf_get_setting('kbf_didit_sandbox_api_key', '');
+        $app_id = (string) kbf_get_setting('kbf_didit_sandbox_app_id', '');
         $workflow_id = (string) kbf_get_setting('kbf_didit_sandbox_workflow_id', '');
-        if ($api_key === '' || $workflow_id === '') {
-            $api_key = kbf_get_env_secret('KBF_DIDIT_SANDBOX_API_KEY');
-            $workflow_id = kbf_get_env_secret('KBF_DIDIT_SANDBOX_WORKFLOW_ID');
-        }
+        if ($api_key === '') $api_key = kbf_get_env_secret('KBF_DIDIT_SANDBOX_API_KEY');
+        if ($app_id === '') $app_id = kbf_get_env_secret('KBF_DIDIT_SANDBOX_APP_ID');
+        if ($workflow_id === '') $workflow_id = kbf_get_env_secret('KBF_DIDIT_SANDBOX_WORKFLOW_ID');
     } else {
-        // Production mode enforces environment-only credentials for KYC.
-        $api_key = kbf_get_env_secret('KBF_DIDIT_LIVE_API_KEY');
-        $workflow_id = kbf_get_env_secret('KBF_DIDIT_LIVE_WORKFLOW_ID');
+        $api_key = (string) kbf_get_setting('kbf_didit_live_api_key', '');
+        $app_id = (string) kbf_get_setting('kbf_didit_live_app_id', '');
+        $workflow_id = (string) kbf_get_setting('kbf_didit_live_workflow_id', '');
+        if ($api_key === '') $api_key = kbf_get_env_secret('KBF_DIDIT_LIVE_API_KEY');
+        if ($app_id === '') $app_id = kbf_get_env_secret('KBF_DIDIT_LIVE_APP_ID');
+        if ($workflow_id === '') $workflow_id = kbf_get_env_secret('KBF_DIDIT_LIVE_WORKFLOW_ID');
     }
 
     $api_key = trim($api_key);
+    $app_id = trim($app_id);
     $workflow_id = trim($workflow_id);
 
-    if ($api_key === '' || $workflow_id === '') {
+    if ($api_key === '' || $app_id === '' || $workflow_id === '') {
         return null;
     }
 
@@ -58,6 +113,7 @@ function kbf_didit_resolve_config() {
 
     return [
         'api_key' => $api_key,
+        'app_id' => $app_id,
         'workflow_id' => $workflow_id,
         'base_url' => 'https://verification.didit.me',
         'callback' => $callback,
@@ -73,7 +129,7 @@ function kbf_didit_resolve_config() {
 function fundora_didit_create_session($user_id) {
     $config = kbf_didit_resolve_config();
     if (!$config) {
-        return new WP_Error('didit_session_error', 'Didit is not configured for the current mode. Configure live credentials via environment variables.');
+        return new WP_Error('didit_session_error', 'Didit is not fully configured for the current mode. Set API key, App ID, and Workflow ID.');
     }
 
     $base = rtrim($config['base_url'], '/');
@@ -88,6 +144,7 @@ function fundora_didit_create_session($user_id) {
         'headers' => [
             'Content-Type' => 'application/json',
             'x-api-key' => $config['api_key'],
+            'x-app-id' => $config['app_id'],
         ],
         'body' => wp_json_encode($payload),
         'timeout' => 20,
@@ -101,9 +158,35 @@ function fundora_didit_create_session($user_id) {
     $body = wp_remote_retrieve_body($response);
     $data = json_decode($body, true);
 
-    if ((int) $code !== 201 || !is_array($data)) {
-        $message = is_array($data) && !empty($data['message']) ? $data['message'] : ('HTTP ' . $code);
+    $callback = isset($payload['callback']) ? (string) $payload['callback'] : '';
+    $callback_is_https = (stripos($callback, 'https://') === 0);
+    if ((int) $code === 400 && $callback !== '' && !$callback_is_https) {
+        $retry_payload = $payload;
+        unset($retry_payload['callback']);
+        $retry_response = wp_remote_post($endpoint, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'x-api-key' => $config['api_key'],
+                'x-app-id' => $config['app_id'],
+            ],
+            'body' => wp_json_encode($retry_payload),
+            'timeout' => 20,
+        ]);
+        if (!is_wp_error($retry_response)) {
+            $code = wp_remote_retrieve_response_code($retry_response);
+            $body = wp_remote_retrieve_body($retry_response);
+            $data = json_decode($body, true);
+        }
+    }
+
+    if ((int) $code < 200 || (int) $code >= 300 || !is_array($data)) {
+        $message = kbf_didit_extract_error_message($data, $code);
         return new WP_Error('didit_session_error', $message);
+    }
+
+    $normalized_url = kbf_didit_normalize_session_url($data);
+    if ($normalized_url !== '') {
+        $data['url'] = $normalized_url;
     }
 
     if (!empty($data['session_id'])) {
@@ -131,6 +214,7 @@ function fundora_didit_get_session($session_id) {
     $response = wp_remote_get($endpoint, [
         'headers' => [
             'x-api-key' => $config['api_key'],
+            'x-app-id' => $config['app_id'],
         ],
         'timeout' => 20,
     ]);
