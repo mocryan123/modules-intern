@@ -8695,6 +8695,7 @@ function ch_global_scripts()
                 if (messageEl) messageEl.textContent = message || 'Processing your request...';
                 overlay.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
+                if (window.chNavBarStart) window.chNavBarStart();
             };
 
             window.chHideLoadingModal = function () {
@@ -8702,6 +8703,7 @@ function ch_global_scripts()
                 if (!overlay) return;
                 overlay.style.display = 'none';
                 document.body.style.overflow = '';
+                if (window.chNavBarFinish) window.chNavBarFinish();
             };
 
             window.chIsSubmittingPost = window.chIsSubmittingPost || false;
@@ -8896,6 +8898,7 @@ function ch_global_scripts()
                     .finally(function () {
                         target.style.opacity = '';
                         target.style.pointerEvents = '';
+                        if (window.chNavBarFinish) window.chNavBarFinish();
                     });
             };
 
@@ -8954,6 +8957,7 @@ function ch_global_scripts()
                     .finally(function () {
                         list.style.opacity = '';
                         list.style.pointerEvents = '';
+                        if (window.chNavBarFinish) window.chNavBarFinish();
                     });
             };
 
@@ -8995,6 +8999,7 @@ function ch_global_scripts()
                     .finally(function () {
                         target.style.opacity = '';
                         target.style.pointerEvents = '';
+                        if (window.chNavBarFinish) window.chNavBarFinish();
                     });
             };
 
