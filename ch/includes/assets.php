@@ -10565,6 +10565,9 @@ function ch_feed_scripts()
                         (window.chSetNotice || chSetNotice)('ch-post-msg', json.success ? 'success' : 'error', json.data?.message || '');
                         if (json.success) {
                             delete window.chComposerFiles['ch-post-media'];
+                            window.chHideLoadingModal();
+                            (window.chResetButton || chResetButton)(btn, 'Post');
+                            window.chIsSubmittingPost = false;
                             // AJAX reload feed to show new post
                             chAjaxReloadFeed();
                             return;
