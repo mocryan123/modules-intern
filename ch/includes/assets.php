@@ -307,6 +307,11 @@ function ch_global_styles()
             font-size: 13px;
             font-weight: 700;
             border: 2px solid transparent;
+            padding: 0;
+            line-height: 0;
+            box-sizing: border-box;
+            appearance: none;
+            -webkit-appearance: none;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
