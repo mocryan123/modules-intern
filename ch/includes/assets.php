@@ -10566,6 +10566,7 @@ function ch_feed_scripts()
                         if (json.success) {
                             delete window.chComposerFiles['ch-post-media'];
                             window.chHideLoadingModal();
+                            if (window.chCloseModal) window.chCloseModal('ch-modal-create-post');
                             (window.chResetButton || chResetButton)(btn, 'Post');
                             window.chIsSubmittingPost = false;
                             // AJAX reload feed to show new post
@@ -10706,6 +10707,10 @@ function ch_feed_scripts()
                         document.getElementById('ch-edit-post-msg').innerHTML =
                             '<div class="bntm-notice bntm-notice-' + (json.success ? 'success' : 'error') + '">' + (json.data?.message || '') + '</div>';
                         if (json.success) {
+                            window.chHideLoadingModal();
+                            if (window.chCloseModal) window.chCloseModal('ch-modal-edit-post');
+                            btn.disabled = false;
+                            btn.textContent = 'Save Changes';
                             // AJAX reload feed to show updated post
                             chAjaxReloadFeed();
                         }
@@ -10738,6 +10743,7 @@ function ch_feed_scripts()
                 (window.chFetchJson || chFetchJson)(window.chAjaxUrl || window.ajaxurl, { method: 'POST', body: fd })
                     .then(json => {
                         if (json.success) {
+                            window.chHideLoadingModal();
                             window.location.href = window.chFeedUrl || (typeof chFeedUrl !== 'undefined' ? chFeedUrl : '/forum-feed/');
                         } else {
                             window.chHideLoadingModal();
