@@ -331,7 +331,7 @@ function ps_overview_tab($business_id) {
         <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
             <svg width="16" height="16" style="flex-shrink:0;" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17H17.01M17 20H5a2 2 0 01-2-2V9a2 2 0 012-2h2V5a2 2 0 012-2h6a2 2 0 012 2v2h2a2 2 0 012 2v7a2 2 0 01-2 2z"/></svg>
             <span style="font-size:13px;color:#6b7280;white-space:nowrap;flex-shrink:0;">Share your order page:</span>
-            <code style="font-size:12px;color:#374151;background:#e5e7eb;padding:3px 8px;border-radius:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px;display:inline-block;"><?php echo esc_html($order_page_url); ?></code>
+            <code style="font-size:12px;color:#374151;background:#e5e7eb;padding:3px 8px;border-radius:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;display:inline-block;"><?php echo esc_html($order_page_url); ?></code>
         </div>
         <button
             id="ps-copy-order-link"
@@ -1677,7 +1677,7 @@ function bntm_shortcode_ps_order() {
         .pso-fields-grid { grid-template-columns:1fr; }
         .pso-two-col { grid-template-columns:1fr; }
     }
-    @media(max-width:500px){
+    @media(max-width:640px){
         .pso-main { padding:20px 16px; }
         .pso-heading { font-size:24px; }
         .pso-radio-cards { gap:8px; }
@@ -2226,7 +2226,7 @@ function bntm_shortcode_ps_tracking() {
     .ps-badge-picked_up { background:#e5e7eb; color:#374151; }
     .ps-badge-cancelled { background:#fee2e2; color:#991b1b; }
     .ps-track-details-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    @media(max-width:500px) {
+    @media(max-width:640px) {
         .ps-track-wrapper { padding:15px; }
         .ps-track-form { flex-direction:column; }
         .ps-track-form #ps-track-btn { width: 100%; }
@@ -2487,7 +2487,7 @@ function bntm_ajax_ps_get_orders() {
     ob_start();
     ?>
     <h2 style="margin:0 0 20px;font-size:20px;font-weight:700;">Order #<?php echo esc_html($o->rand_id); ?></h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:14px;margin-bottom:20px;">
+    <div class="ps-options-grid" style="gap:16px;font-size:14px;margin-bottom:20px;">
         <div><div style="color:#9ca3af;font-size:12px;margin-bottom:2px;">Customer</div><div style="font-weight:600;"><?php echo esc_html($o->customer_name); ?></div></div>
         <div><div style="color:#9ca3af;font-size:12px;margin-bottom:2px;">Email</div><div><?php echo esc_html($o->customer_email); ?></div></div>
         <div><div style="color:#9ca3af;font-size:12px;margin-bottom:2px;">Phone</div><div><?php echo esc_html($o->customer_phone ?: '—'); ?></div></div>
@@ -2495,7 +2495,7 @@ function bntm_ajax_ps_get_orders() {
     </div>
     <div style="background:#f9fafb;border-radius:10px;padding:16px;margin-bottom:20px;">
         <h4 style="margin:0 0 12px;font-size:14px;">File Details</h4>
-        <div style="font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="ps-options-grid" style="font-size:13px;gap:8px;">
             <div><span style="color:#9ca3af;">File name: </span><?php echo esc_html($o->file_name); ?></div>
             <div><span style="color:#9ca3af;">Size: </span><?php echo ps_format_filesize($o->file_size); ?></div>
             <div><span style="color:#9ca3af;">Doc pages: </span><?php echo $o->page_count ?: 'N/A'; ?></div>
@@ -2504,7 +2504,7 @@ function bntm_ajax_ps_get_orders() {
     </div>
     <div style="background:#f9fafb;border-radius:10px;padding:16px;margin-bottom:20px;">
         <h4 style="margin:0 0 12px;font-size:14px;">Print Configuration</h4>
-        <div style="font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="ps-options-grid" style="font-size:13px;gap:8px;">
             <div><span style="color:#9ca3af;">Paper: </span><?php echo esc_html($o->paper_size); ?></div>
             <div><span style="color:#9ca3af;">Color: </span><?php echo $color_label; ?></div>
             <div><span style="color:#9ca3af;">Orientation: </span><?php echo ucfirst($o->orientation); ?></div>
