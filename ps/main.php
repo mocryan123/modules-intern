@@ -532,7 +532,7 @@ function ps_orders_tab($business_id) {
                         <div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr($o->file_name); ?>"><?php echo esc_html($o->file_name); ?></div>
                         <div style="font-size:11px;color:#9ca3af;"><?php echo ps_format_filesize($o->file_size); ?></div>
                         <?php if ($o->file_path && file_exists($o->file_path)): ?>
-                            <a href="<?php echo esc_url(ps_get_file_url($o->file_path)); ?>" target="_blank" style="font-size:11px;color:#1a3c8f;">Download</a>
+                            <a href="<?php echo esc_url(ps_get_file_url($o->file_path)); ?>" download="<?php echo esc_attr($o->file_name); ?>" target="_blank" style="font-size:11px;color:#1a3c8f;">Download</a>
                         <?php endif; ?>
                     </td>
                     <td style="font-size:12px;">
@@ -2499,7 +2499,7 @@ function bntm_ajax_ps_get_orders() {
             <div><span style="color:#9ca3af;">File name: </span><?php echo esc_html($o->file_name); ?></div>
             <div><span style="color:#9ca3af;">Size: </span><?php echo ps_format_filesize($o->file_size); ?></div>
             <div><span style="color:#9ca3af;">Doc pages: </span><?php echo $o->page_count ?: 'N/A'; ?></div>
-            <?php if ($file_url): ?><div><a href="<?php echo esc_url($file_url); ?>" target="_blank" style="color:#1a3c8f;">Download File</a></div><?php endif; ?>
+            <?php if ($file_url): ?><div><a href="<?php echo esc_url($file_url); ?>" download="<?php echo esc_attr($o->file_name); ?>" target="_blank" style="color:#1a3c8f;">Download File</a></div><?php endif; ?>
         </div>
     </div>
     <div style="background:#f9fafb;border-radius:10px;padding:16px;margin-bottom:20px;">
