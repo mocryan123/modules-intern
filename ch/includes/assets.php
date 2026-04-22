@@ -39,6 +39,14 @@ function ch_global_styles()
             scroll-padding-top: 80px;
         }
 
+        /* Hide third-party debug overlay that can appear on frontend pages */
+        body > div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="font-family:monospace"],
+        body > div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="max-height:30vh"][style*="overflow:auto"] {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
 
 
 
@@ -261,6 +269,12 @@ function ch_global_styles()
 
             .ch-top-drawer-close {
                 display: none !important;
+            }
+
+            .ch-post-media-preview-feed .ch-post-media-thumb,
+            .ch-post-media-preview-feed .ch-post-media-thumb-img,
+            .ch-post-media-preview-feed .ch-post-media-thumb-video {
+                max-height: none;
             }
         }
 
