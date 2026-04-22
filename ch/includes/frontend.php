@@ -2031,6 +2031,7 @@ function ch_categories_tab($user_id, $is_admin)
                         document.getElementById('ch-edit-cat-msg').innerHTML =
                             '<div class="bntm-notice bntm-notice-' + (json.success ? 'success' : 'error') + '">' + (json.data?.message || '') + '</div>';
                         if (json.success) {
+                            chCloseModal('ch-modal-edit-cat');
                             chAjaxReloadCategoriesSidebar();
                         }
                         else { btn.disabled = false; btn.textContent = 'Save Changes'; }
