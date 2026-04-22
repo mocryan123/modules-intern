@@ -350,6 +350,17 @@ function ch_global_styles()
             border-radius: inherit;
         }
 
+        .ch-avatar-btn > img,
+        .ch-avatar-btn-inner > img,
+        .ch-avatar-btn-inner-lg > img,
+        .ch-composer-trigger-avatar-inner > img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: inherit;
+        }
+
         .ch-avatar-fallback {
             display: inline-flex;
             align-items: center;
@@ -8253,7 +8264,8 @@ function ch_global_scripts()
 
                 document.querySelectorAll('[data-ch-current-user-avatar="1"]').forEach(el => {
                     const name = el.dataset.avatarName || 'U';
-                    el.innerHTML = '<img src="' + freshUrl + '" alt="' + chEscapeHtml(name) + '" class="ch-avatar-img ch-current-user-avatar-img">';
+                    const innerClass = el.classList.contains('ch-avatar-btn-lg') ? 'ch-avatar-btn-inner ch-avatar-btn-inner-lg' : 'ch-avatar-btn-inner';
+                    el.innerHTML = '<div class="' + innerClass + '"><img src="' + freshUrl + '" alt="' + chEscapeHtml(name) + '" class="ch-avatar-img ch-current-user-avatar-img"></div>';
                 });
 
                 document.querySelectorAll('.ch-mf-avatar-img, #ch-avatar-preview-img').forEach(el => {
