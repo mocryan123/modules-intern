@@ -1090,7 +1090,7 @@ function bntm_shortcode_ps_order() {
                         <div class="pso-file-icon">
                             <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0120 9.414V19a2 2 0 01-2 2z"/></svg>
                         </div>
-                        <div style="flex:1;">
+                        <div style="flex:1; min-width:0;">
                             <div id="pso-progress-filename" class="pso-progress-filename"></div>
                             <div class="pso-progress-track"><div class="pso-progress-fill" id="pso-progress-fill"></div></div>
                             <div id="pso-progress-pct" class="pso-progress-pct">0%</div>
@@ -1101,7 +1101,7 @@ function bntm_shortcode_ps_order() {
                         <div class="pso-success-check">
                             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         </div>
-                        <div>
+                        <div style="flex:1; min-width:0;">
                             <div id="pso-success-filename" class="pso-success-filename"></div>
                             <div id="pso-success-meta" class="pso-success-meta"></div>
                         </div>
@@ -1534,13 +1534,13 @@ function bntm_shortcode_ps_order() {
     .pso-upload-or  { font-size:13px; color:var(--pso-ink-4); margin:0 0 14px; }
     .pso-upload-progress { display:flex; align-items:center; gap:16px; text-align:left; }
     .pso-file-icon { color:var(--pso-accent); flex-shrink:0; }
-    .pso-progress-filename { font-size:13px; font-weight:600; color:var(--pso-ink); margin-bottom:8px; }
+    .pso-progress-filename { font-size:13px; font-weight:600; color:var(--pso-ink); margin-bottom:8px; word-break:break-word; overflow-wrap:anywhere; }
     .pso-progress-track { height:6px; background:var(--pso-border); border-radius:99px; overflow:hidden; }
     .pso-progress-fill { height:100%; width:0%; background:var(--pso-accent); border-radius:99px; transition:width .3s; }
     .pso-progress-pct { font-size:11px; color:var(--pso-ink-4); margin-top:4px; }
     .pso-upload-success { display:flex; align-items:center; gap:16px; text-align:left; }
     .pso-success-check { width:48px; height:48px; border-radius:50%; background:var(--pso-green); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-    .pso-success-filename { font-size:14px; font-weight:600; color:var(--pso-ink); }
+    .pso-success-filename { font-size:14px; font-weight:600; color:var(--pso-ink); word-break:break-word; overflow-wrap:anywhere; }
     .pso-success-meta { font-size:12px; color:var(--pso-ink-3); margin-top:3px; }
     .pso-reupload-btn { margin-left:auto; display:inline-flex; align-items:center; gap:5px; background:none; border:1px solid var(--pso-border); border-radius:6px; padding:6px 12px; font-size:12px; color:var(--pso-ink-3); cursor:pointer; transition:all .2s; }
     .pso-reupload-btn:hover { border-color:var(--pso-ink-3); color:var(--pso-ink); }
