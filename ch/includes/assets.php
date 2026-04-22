@@ -11253,7 +11253,8 @@ function ch_announcements_tab()
             <h1>Announcements</h1>
             <p>Create and manage community announcements shown in the forum feed</p>
         </div>
-        <button class="ch-btn ch-btn-primary" onclick="chOpenModal('ch-modal-create-announcement')">
+        <button class="ch-btn ch-btn-primary"
+            onclick="if (typeof chResetCreateAnnouncementForm === 'function') chResetCreateAnnouncementForm(); chOpenModal('ch-modal-create-announcement')">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -11287,7 +11288,7 @@ function ch_announcements_tab()
         <div class="ch-modal ch-modal-lg">
             <div class="ch-modal-header">
                 <h3>Create Announcement</h3>
-                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-create-announcement')">&times;</button>
+                <button class="ch-modal-close" onclick="chCloseCreateAnnouncementModal()">&times;</button>
             </div>
             <div class="ch-modal-body">
                 <div class="ch-field-group">
@@ -11308,8 +11309,7 @@ function ch_announcements_tab()
                 </div>
             </div>
             <div class="ch-modal-footer">
-                <button class="ch-btn ch-btn-secondary"
-                    onclick="chCloseModal('ch-modal-create-announcement')">Cancel</button>
+                <button class="ch-btn ch-btn-secondary" onclick="chCloseCreateAnnouncementModal()">Cancel</button>
                 <button class="ch-btn ch-btn-primary" id="ch-ann-create-btn" onclick="chAnnCreate()">Create
                     Announcement</button>
             </div>
@@ -11373,6 +11373,32 @@ function ch_announcements_tab()
                 if (ok) setTimeout(() => { el.innerHTML = ''; }, 3000);
             }
 
+            window.chResetCreateAnnouncementForm = function () {
+                const titleEl = document.getElementById('ch-ann-create-title');
+                const contentEl = document.getElementById('ch-ann-create-content');
+                const statusEl = document.getElementById('ch-ann-create-status');
+                const msgEl = document.getElementById('ch-ann-create-msg');
+                const btn = document.getElementById('ch-ann-create-btn');
+
+                if (titleEl) titleEl.value = '';
+                if (contentEl) contentEl.value = '';
+                if (statusEl) statusEl.checked = true;
+                if (msgEl) msgEl.innerHTML = '';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Create Announcement';
+                }
+            };
+
+            window.chCloseCreateAnnouncementModal = function () {
+                if (typeof chCloseModal === 'function') {
+                    chCloseModal('ch-modal-create-announcement');
+                }
+                if (typeof window.chResetCreateAnnouncementForm === 'function') {
+                    window.chResetCreateAnnouncementForm();
+                }
+            };
+
             function loadAnnouncements() {
                 post('ch_get_announcements', {}).then(json => {
                     const tbody = document.getElementById('ch-ann-tbody');
@@ -11415,11 +11441,20 @@ function ch_announcements_tab()
                 post('ch_create_announcement', { title, content, status }).then(json => {
                     showMsg('ch-ann-create-msg', json.data?.message || (json.success ? 'Created!' : 'Failed'), json.success);
                     if (json.success) {
-                        chCloseModal('ch-modal-create-announcement'); document.getElementById('ch-ann-create-title').value = ''; document.getElementById('ch-ann-create-content').value = ''; document.getElementById('ch-ann-create-status').checked = true; loadAnnouncements();
+                        if (typeof window.chCloseCreateAnnouncementModal === 'function') {
+                            window.chCloseCreateAnnouncementModal();
+                        }
+                        loadAnnouncements();
                     }
                     btn.disabled = false; btn.textContent = 'Create Announcement';
                 });
             };
+
+            document.addEventListener('click', function (e) {
+                if (e.target && e.target.id === 'ch-modal-create-announcement' && typeof window.chResetCreateAnnouncementForm === 'function') {
+                    window.chResetCreateAnnouncementForm();
+                }
+            });
 
             window.chAnnOpenEdit = function (id) {
                 post('ch_get_announcement', { announcement_id: id }).then(json => {
