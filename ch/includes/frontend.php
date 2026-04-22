@@ -1686,7 +1686,8 @@ function ch_categories_tab($user_id, $is_admin)
                 </div>
             </form>
             <?php if ($is_admin): ?>
-                <button class="ch-btn ch-btn-primary" onclick="chOpenModal('ch-modal-create-cat')">
+                <button class="ch-btn ch-btn-primary"
+                    onclick="if (typeof chResetCreateCategoryForm === 'function') chResetCreateCategoryForm(); chOpenModal('ch-modal-create-cat')">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                         <line x1="12" y1="5" x2="12" y2="19" />
                         <line x1="5" y1="12" x2="19" y2="12" />
@@ -1773,7 +1774,7 @@ function ch_categories_tab($user_id, $is_admin)
         <div class="ch-modal">
             <div class="ch-modal-header">
                 <h3>Create Category</h3>
-                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-create-cat')">&times;</button>
+                <button class="ch-modal-close" onclick="chCloseCreateCategoryModal()">&times;</button>
             </div>
             <div class="ch-modal-body">
                 <div class="ch-field-group">
@@ -1843,7 +1844,7 @@ function ch_categories_tab($user_id, $is_admin)
                 </div>
             </div>
             <div class="ch-modal-footer">
-                <button class="ch-btn ch-btn-secondary" onclick="chCloseModal('ch-modal-create-cat')">Cancel</button>
+                <button class="ch-btn ch-btn-secondary" onclick="chCloseCreateCategoryModal()">Cancel</button>
                 <button class="ch-btn ch-btn-primary" id="ch-save-cat-btn"
                     onclick="chSaveCategory('<?php echo esc_attr($nonce); ?>')">Create Category</button>
             </div>
@@ -1935,6 +1936,45 @@ function ch_categories_tab($user_id, $is_admin)
 
     <script>
         (function () {
+            window.chResetCreateCategoryForm = function () {
+                var nameEl = document.getElementById('ch-cat-name');
+                var descEl = document.getElementById('ch-cat-desc');
+                var colorEl = document.getElementById('ch-cat-color');
+                var wheelEl = document.getElementById('ch-cat-color-wheel');
+                var previewEl = document.getElementById('ch-cat-color-preview');
+                var publicEl = document.getElementById('ch-cat-vis-public');
+                var privateEl = document.getElementById('ch-cat-vis-private');
+                var approvalEl = document.getElementById('ch-cat-require-approval');
+                var msgEl = document.getElementById('ch-cat-msg');
+                var btn = document.getElementById('ch-save-cat-btn');
+
+                if (nameEl) nameEl.value = '';
+                if (descEl) descEl.value = '';
+                if (colorEl) colorEl.value = '#FF7551';
+                if (wheelEl) wheelEl.value = '#FF7551';
+                if (previewEl) {
+                    previewEl.style.background = '#FF7551';
+                    previewEl.style.opacity = '1';
+                }
+                if (publicEl) publicEl.checked = true;
+                if (privateEl) privateEl.checked = false;
+                if (approvalEl) approvalEl.checked = false;
+                if (msgEl) msgEl.innerHTML = '';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Create Category';
+                }
+            };
+
+            window.chCloseCreateCategoryModal = function () {
+                if (typeof chCloseModal === 'function') {
+                    chCloseModal('ch-modal-create-cat');
+                }
+                if (typeof window.chResetCreateCategoryForm === 'function') {
+                    window.chResetCreateCategoryForm();
+                }
+            };
+
             window.chEditCategory = function (id, name, desc, color, icon, isPrivate, requireApproval) {
                 document.getElementById('ch-edit-cat-id').value = id;
                 document.getElementById('ch-edit-cat-name').value = name;
@@ -1986,9 +2026,12 @@ function ch_categories_tab($user_id, $is_admin)
                             msgEl.innerHTML = '<div class="bntm-notice bntm-notice-' + (json.success ? 'success' : 'error') + '">' + errorMsg + '</div>';
                         }
                         if (json.success) {
+                            if (typeof window.chResetCreateCategoryForm === 'function') {
+                                window.chResetCreateCategoryForm();
+                            }
                             // Close modal before reload to prevent modal HTML from being replaced
-                            if (typeof chCloseModal === 'function') {
-                                chCloseModal('ch-modal-create-cat');
+                            if (typeof window.chCloseCreateCategoryModal === 'function') {
+                                window.chCloseCreateCategoryModal();
                             }
                             // Small delay to let modal close animation finish
                             setTimeout(function () {
@@ -2005,6 +2048,12 @@ function ch_categories_tab($user_id, $is_admin)
                         btn.disabled = false; btn.textContent = 'Create Category';
                     });
             };
+
+            document.addEventListener('click', function (e) {
+                if (e.target && e.target.id === 'ch-modal-create-cat' && typeof window.chResetCreateCategoryForm === 'function') {
+                    window.chResetCreateCategoryForm();
+                }
+            });
 
             window.chUpdateCategory = function (nonce) {
                 const id = document.getElementById('ch-edit-cat-id').value;
