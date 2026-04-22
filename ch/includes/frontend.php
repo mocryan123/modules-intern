@@ -4493,6 +4493,10 @@ function bntm_shortcode_ch_feed()
     }
 
     $categories = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}ch_categories $cat_where ORDER BY $cat_order");
+    $sidebar_categories_limit = max(1, (int) apply_filters('ch_feed_sidebar_category_limit', 12));
+    $sidebar_following_limit = max(1, (int) apply_filters('ch_feed_sidebar_following_limit', 12));
+    $visible_categories = array_slice($categories, 0, $sidebar_categories_limit);
+    $visible_followed_ids = array_slice(array_keys($followed), 0, $sidebar_following_limit);
     $total_pages = ceil($total / $per_page);
 
     // Get available locations for filtering
@@ -5062,7 +5066,7 @@ function bntm_shortcode_ch_feed()
                             data-cat-slug="">
                             All Topics
                         </a>
-                        <?php foreach ($categories as $cat):
+                        <?php foreach ($visible_categories as $cat):
                             if ($cat->is_private) {
                                 if (!$user_id)
                                     continue;
@@ -5076,15 +5080,17 @@ function bntm_shortcode_ch_feed()
                                     class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>"
                                     style="flex:1;min-width:0;" data-cat-slug="<?php echo esc_attr($cat->slug); ?>">
                                     <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
-                                    <?php echo esc_html($cat->name); ?>
-                                    <?php if ($cat->is_private): ?>
-                                        <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                            stroke-width="2" style="opacity:.5;margin-left:2px;flex-shrink:0" title="Private">
-                                            <rect x="3" y="11" width="18" height="11" rx="2" />
-                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                        </svg>
-                                    <?php endif; ?>
-                                    <span class="ch-cat-count"><?php echo $cat->post_count; ?></span>
+                                    <span class="ch-cat-link-label"><?php echo esc_html($cat->name); ?></span>
+                                    <span class="ch-cat-link-trailing">
+                                        <?php if ($cat->is_private): ?>
+                                            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                stroke-width="2" style="opacity:.5;flex-shrink:0" title="Private">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" />
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                            </svg>
+                                        <?php endif; ?>
+                                        <span class="ch-cat-count"><?php echo $cat->post_count; ?></span>
+                                    </span>
                                 </a>
 
                             </div>
@@ -5116,12 +5122,12 @@ function bntm_shortcode_ch_feed()
 
                         <?php if ($user_id): ?>
                             <div id="ch-followed-categories" class="ch-followed-categories"
-                                style="margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--ch-border);<?php echo empty($followed) ? 'display:none;' : ''; ?>">
+                                style="margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--ch-border);<?php echo empty($visible_followed_ids) ? 'display:none;' : ''; ?>">
                                 <h5
                                     style="margin: 0 0 8px; font-size: 10.5px; font-weight: 700; color: var(--ch-text-subtle); text-transform: uppercase; letter-spacing: 0.8px;">
                                     Following</h5>
-                                <div id="ch-followed-categories-list">
-                                    <?php foreach ($followed as $cat_id => $dummy): ?>
+                                <div id="ch-followed-categories-list" data-max-items="<?php echo (int) $sidebar_following_limit; ?>">
+                                    <?php foreach ($visible_followed_ids as $cat_id): ?>
                                         <?php $cat = $categories_by_id[(int) $cat_id] ?? null; ?>
                                         <?php if ($cat): ?>
                                             <a href="?cat=<?php echo esc_attr($cat->slug); ?>"
@@ -5129,7 +5135,7 @@ function bntm_shortcode_ch_feed()
                                                 style="font-size: 14px;" data-followed-cat-id="<?php echo (int) $cat->id; ?>"
                                                 data-cat-slug="<?php echo esc_attr($cat->slug); ?>">
                                                 <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
-                                                <?php echo esc_html($cat->name); ?>
+                                                <span class="ch-cat-link-label"><?php echo esc_html($cat->name); ?></span>
                                             </a>
                                         <?php endif; ?>
                                     <?php endforeach; ?>
