@@ -356,8 +356,9 @@ function bntm_bae_ajax_ticket_generate() {
  * Client JS also clears it locally
  */
 function bntm_bae_ajax_ticket_logout() {
-    // Expire cookie server-side
+    // Expire identity cookies server-side
     setcookie( 'bae_ticket', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), false );
+    setcookie( 'bae_session', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
     wp_send_json_success( [ 'message' => 'Logged out.' ] );
 }
 
@@ -462,6 +463,7 @@ function bntm_bae_inject_settings_ticket( $html ) {
         var fd = new FormData(); fd.append(\'action\', \'bae_ticket_logout\');
         fetch(\'' . $aj . '\', {method:\'POST\',body:fd}).finally(function() {
             document.cookie = \'bae_ticket=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax\';
+            document.cookie = \'bae_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax\';
             window.location.href = window.location.pathname;
         });
     }

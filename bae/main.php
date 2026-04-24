@@ -1063,6 +1063,28 @@ function bae_wizard_shortcode($user_id) {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
         </div>
+
+        <!-- Token modal -->
+        <div class="bae-wiz-token-overlay" id="bae-wiz-token-overlay" onclick="if(event.target===this)baeWizTokenClose()">
+            <div class="bae-wiz-token-modal">
+                <div class="bae-wiz-token-modal-header">
+                    <div class="bae-wiz-token-modal-title">Enter your ticket</div>
+                    <button type="button" class="bae-wiz-token-modal-close" onclick="baeWizTokenClose()" aria-label="Close">&times;</button>
+                </div>
+                <div class="bae-wiz-token-modal-body">
+                    <div class="bae-wiz-token-modal-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <div class="bae-wiz-token-modal-desc">Use your existing ticket to load your saved workspace.</div>
+                    <div class="bae-wiz-token-input-wrap">
+                        <input type="text" id="bae-wiz-token-field" class="bae-wiz-token-input" placeholder="BAE-XXXX-XXXX" maxlength="13" autocomplete="off" spellcheck="false">
+                    </div>
+                    <button type="button" id="bae-wiz-token-submit" class="bae-wiz-token-submit" onclick="baeWizTokenSubmit()">Continue</button>
+                    <div id="bae-wiz-token-err" class="bae-wiz-token-err">Invalid token. Please try again.</div>
+                    <div id="bae-wiz-token-success" class="bae-wiz-token-success">Token verified. Opening your workspace...</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1204,8 +1226,23 @@ function bae_wizard_shortcode($user_id) {
         // Enter key for token input
         (function(){
             var f = document.getElementById('bae-wiz-token-field');
-            if(f) f.addEventListener('keydown', function(e){ if(e.key==='Enter') baeWizTokenSubmit(); });
+            if (!f) return;
+            f.addEventListener('input', function() {
+                var raw = this.value.replace(/[^A-Z0-9]/gi, '').toUpperCase().substring(0, 11);
+                var out = raw;
+                if (raw.length >= 3 && raw.substring(0, 3) === 'BAE') {
+                    var rest = raw.substring(3);
+                    out = rest.length <= 4 ? 'BAE-' + rest : 'BAE-' + rest.substring(0, 4) + '-' + rest.substring(4, 8);
+                }
+                this.value = out;
+                var errEl = document.getElementById('bae-wiz-token-err');
+                if (errEl) errEl.style.display = 'none';
+            });
+            f.addEventListener('keydown', function(e){ if(e.key==='Enter') baeWizTokenSubmit(); });
         })();
+        window.baeWizTokenOpen = baeWizTokenOpen;
+        window.baeWizTokenClose = baeWizTokenClose;
+        window.baeWizTokenSubmit = baeWizTokenSubmit;
 
         // Static fallback palettes — used if AI fails or times out
         var staticPalettes = [
@@ -4678,13 +4715,15 @@ if (dlPngBtn) {
         fd.append('action', 'bae_ticket_logout');
         fetch(ajaxurl, { method: 'POST', body: fd })
             .then(function() {
-                // Clear cookie client-side too
+                // Clear client-side identity cookies and force wizard entry.
                 document.cookie = 'bae_ticket=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax';
-                window.location.reload();
+                document.cookie = 'bae_session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax';
+                window.location.href = window.location.pathname;
             })
             .catch(function() {
                 document.cookie = 'bae_ticket=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax';
-                window.location.reload();
+                document.cookie = 'bae_session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax';
+                window.location.href = window.location.pathname;
             });
     }
 
