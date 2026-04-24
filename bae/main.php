@@ -2025,7 +2025,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         <div class="bae-header">
             <div class="bae-header-logo">
                 <div class="bae-header-brand">
-                    <img class="bae-brand-logo-img bae-header-logo-img" src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie">
+                    <img class="bae-header-logo-img" src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie">
                     <span class="bae-header-wordmark">MOTHIE</span>
                 </div>
             </div>
@@ -2528,11 +2528,14 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         flex-shrink: 0;
     }
     .bae-header-logo-img {
-        width: 22px;
-        height: 22px;
+        width: 32px;
+        height: 32px;
         object-fit: contain;
         flex-shrink: 0;
+        display: block;
     }
+    .bae-wrap .bae-header-logo-img { filter: invert(1); }
+    .bae-wrap.bae-light .bae-header-logo-img { filter: none; }
     .bae-header-wordmark {
         font-family: 'Noto Serif JP', 'Noto Serif', 'Yu Mincho', 'Hiragino Mincho Pro', serif;
         font-size: 10px;
