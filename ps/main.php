@@ -1073,17 +1073,20 @@ function bntm_shortcode_ps_order() {
                         $types_array = array_map('trim', explode(',', $allowed_types));
                         foreach ($types_array as $t): 
                             $t = strtolower($t);
+                            $clean_t = ltrim($t, '.');
+                            if (in_array($clean_t, ['doc', 'pptx'])) continue;
+
                             $color = '#6b7280';
-                            if (in_array($t, ['pdf'])) $color = '#ef4444';
-                            elseif (in_array($t, ['doc','docx'])) $color = '#3b82f6';
-                            elseif (in_array($t, ['ppt','pptx'])) $color = '#f97316';
-                            elseif (in_array($t, ['xls','xlsx'])) $color = '#10b981';
-                            elseif (in_array($t, ['jpg','jpeg','png'])) $color = '#8b5cf6';
+                            if (in_array($clean_t, ['pdf'])) $color = '#ef4444';
+                            elseif (in_array($clean_t, ['doc','docx'])) $color = '#3b82f6';
+                            elseif (in_array($clean_t, ['ppt','pptx'])) $color = '#f97316';
+                            elseif (in_array($clean_t, ['xls','xlsx'])) $color = '#10b981';
+                            elseif (in_array($clean_t, ['jpg','jpeg','png'])) $color = '#8b5cf6';
                         ?>
-                        <div class="pso-file-badge" style="--badge-color:<?php echo $color; ?>;" title="<?php echo strtoupper($t); ?>">
+                        <div class="pso-file-badge" style="--badge-color:<?php echo $color; ?>;" title="<?php echo strtoupper($clean_t); ?>">
                             <div class="pso-file-badge-fold"></div>
                             <div class="pso-file-badge-band">
-                                <span><?php echo strtoupper($t); ?></span>
+                                <span><?php echo strtoupper($clean_t); ?></span>
                             </div>
                         </div>
                         <?php endforeach; ?>
