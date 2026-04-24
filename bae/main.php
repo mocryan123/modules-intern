@@ -2125,13 +2125,23 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                 <button class="bae-theme-switch" id="bae-theme-btn" onclick="baeToggleTheme()" aria-label="Toggle theme" title="Toggle light/dark">
                     <div class="bae-ts-track" id="bae-toggle-track">
                         <div class="bae-ts-thumb" id="bae-ts-thumb">
-                            <!-- Sun icon (light mode) -->
                             <svg id="bae-ts-sun" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-                            <!-- Moon icon (dark mode) -->
                             <svg id="bae-ts-moon" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                         </div>
                     </div>
                 </button>
+
+                <?php if (is_user_logged_in()): ?>
+                <a href="<?php echo esc_url(wp_logout_url(get_permalink())); ?>" class="bae-header-auth-btn" title="Sign out">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span>Logout</span>
+                </a>
+                <?php else: ?>
+                <button class="bae-header-auth-btn" onclick="baeHeaderAuthOpen()" title="Sign in / Enter ticket">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    <span>Login</span>
+                </button>
+                <?php endif; ?>
             </div>
         </div>
 
