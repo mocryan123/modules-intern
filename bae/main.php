@@ -1065,28 +1065,6 @@ function bae_wizard_shortcode($user_id) {
         </div>
     </div>
 
-    <!-- Token Modal — outside bae-wiz-wrap so overflow:hidden doesn't clip it -->
-    <div class="bae-wiz-token-overlay" id="bae-wiz-token-overlay" onclick="if(event.target===this)baeWizTokenClose()">
-        <div class="bae-wiz-token-modal">
-            <div class="bae-wiz-token-modal-header">
-                <span class="bae-wiz-token-modal-title">Enter your token</span>
-                <button class="bae-wiz-token-modal-close" onclick="baeWizTokenClose()">&times;</button>
-            </div>
-            <div class="bae-wiz-token-modal-body">
-                <div class="bae-wiz-token-modal-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                </div>
-                <p class="bae-wiz-token-modal-desc">Enter your ticket or access token to restore your brand session and unlock your workspace.</p>
-                <div class="bae-wiz-token-input-wrap">
-                    <input type="text" class="bae-wiz-token-input" id="bae-wiz-token-field" placeholder="e.g. BAE-XXXX-XXXX" autocomplete="off" maxlength="20" onkeydown="if(event.key==='Enter')baeWizTokenSubmit()">
-                </div>
-                <button class="bae-wiz-token-submit" id="bae-wiz-token-submit" onclick="baeWizTokenSubmit()">Unlock My Workspace</button>
-                <div class="bae-wiz-token-err" id="bae-wiz-token-err">Invalid token. Please check and try again.</div>
-                <div class="bae-wiz-token-success" id="bae-wiz-token-success">Token accepted! Redirecting...</div>
-            </div>
-        </div>
-    </div>
-
     <script>
     (function() {
         document.querySelectorAll('div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"]').forEach(function(el) {
@@ -1183,13 +1161,17 @@ function bae_wizard_shortcode($user_id) {
         function baeWizTokenOpen() {
             var overlay = document.getElementById('bae-wiz-token-overlay');
             if (!overlay) return;
+            // Move to body so it escapes wizard's overflow:hidden
+            if (overlay.parentNode !== document.body) {
+                document.body.appendChild(overlay);
+            }
             overlay.classList.add('open');
             var field = document.getElementById('bae-wiz-token-field');
-            if (field) { setTimeout(function(){ field.focus(); }, 150); }
+            if (field) { setTimeout(function(){ field.focus(); }, 200); }
         }
         function baeWizTokenClose() {
             var overlay = document.getElementById('bae-wiz-token-overlay');
-            if (overlay) overlay.classList.remove('open');
+            if (overlay) { overlay.classList.remove('open'); }
         }
         function baeWizTokenSubmit() {
             var field   = document.getElementById('bae-wiz-token-field');
@@ -1883,11 +1865,9 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         nonce:    '<?php echo esc_js(wp_create_nonce('bae_pm_checkout')); ?>'
     };
     window.BAE_SESSION = {
-        has_ticket:   <?php echo $ticket ? 'true' : 'false'; ?>,
-        ticket:       '<?php echo esc_js($ticket); ?>',
-        claim_nonce:  '<?php echo esc_js(wp_create_nonce('bae_claim_ticket')); ?>',
-        is_logged_in: <?php echo is_user_logged_in() ? 'true' : 'false'; ?>,
-        login_url:    '<?php echo esc_js(wp_login_url(get_permalink())); ?>'
+        has_ticket:  <?php echo $ticket ? 'true' : 'false'; ?>,
+        ticket:      '<?php echo esc_js($ticket); ?>',
+        claim_nonce: '<?php echo esc_js(wp_create_nonce('bae_claim_ticket')); ?>'
     };
     </script>
     <div class="bae-wrap" id="bae-wrap" style="opacity:0;transition:opacity 0.25s ease;">
@@ -1899,7 +1879,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                 <div class="bae-loader-kicker">Mothie</div>
                 <div class="bae-loader-title">
                     <span class="jp">読み込み中</span>
-                    <span class="en" id="bae-loader-title-en">Setting things up</span>
+                    <span class="en" id="bae-loader-title-en">Loading your workspace</span>
                 </div>
                 <div class="bae-loader-bars">
                     <span></span>
@@ -1907,7 +1887,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                     <span></span>
                 </div>
                 <div class="bae-loader-meta">
-                    <span id="bae-loader-meta-step">Getting your tools ready</span>
+                    <span id="bae-loader-meta-step">Preparing assets</span>
                 </div>
             </div>
         </div>
@@ -2045,7 +2025,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         <div class="bae-header">
             <div class="bae-header-logo">
                 <div class="bae-header-brand">
-                    <img class="bae-header-logo-img" src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie">
+                    <img class="bae-brand-logo-img bae-header-logo-img" src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie">
                     <span class="bae-header-wordmark">MOTHIE</span>
                 </div>
             </div>
@@ -2181,16 +2161,8 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
             <?php endforeach; ?>
         </nav>
 
-        </div>
-
-        </div><!-- /.bae-body-row -->
-
-    </div><!-- /.bae-wrap -->
-
-    <!-- ── MODALS (outside .bae-wrap so no stacking context traps them) ── -->
-
-    <!-- Shared Asset Preview Modal -->
-    <div id="bae-modal-overlay" class="bae-modal-overlay" style="display:none;">
+        <!-- Shared Modal -->
+        <div id="bae-modal-overlay" class="bae-modal-overlay" style="display:none;">
             <div class="bae-modal">
                 <div class="bae-modal-header">
                     <span id="bae-modal-title" class="bae-modal-title">Asset Preview</span>
@@ -2233,7 +2205,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
                         Unlock the full Mothie
                     </div>
-                    <div class="bae-pricing-title" id="bae-pricing-title">Unlock more Mothie tools</div>
+                    <div class="bae-pricing-title" id="bae-pricing-title">Take your brand further</div>
                     <div class="bae-pricing-subtitle" id="bae-pricing-subtitle">Regenerate assets anytime, use the custom AI generator, and share your brand kit publicly.</div>
                 </div>
 
@@ -2262,7 +2234,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                             </li>
                             <li class="locked">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5c5972" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
-                                Full Mothie toolkit
+                                Single brand workspace
                             </li>
                         </ul>
                         <div style="display:flex;flex-direction:column;gap:8px;">
@@ -2288,7 +2260,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                             </li>
                             <li>
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f76fb0" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
-                                Full Mothie toolkit
+                                Single brand workspace
                             </li>
                             <li>
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f76fb0" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
@@ -2438,7 +2410,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         background: var(--bg);
         color: var(--text);
         border-radius: 0;
-        overflow: visible;
+        overflow: hidden;
         transition: background 0.5s, color 0.5s;
         position: relative;
         min-height: 100vh;
@@ -2450,7 +2422,6 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         display: flex;
         flex: 1;
         min-height: 0;
-        align-items: flex-start;
     }
     /* Sidebar nav */
     .bae-sidebar {
@@ -2462,29 +2433,25 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         gap: 2px;
         background: var(--bg);
         border-right: 1px solid var(--border);
-        transition: width 0.28s cubic-bezier(0.4,0,0.2,1), padding 0.28s cubic-bezier(0.4,0,0.2,1), background 0.5s, border-color 0.5s;
+        transition: width 0.28s cubic-bezier(0.4,0,0.2,1), background 0.5s, border-color 0.5s;
         position: sticky;
-        top: 52px;
-        height: calc(100vh - 52px);
+        top: 58px;
+        height: calc(100vh - 58px);
         overflow-y: auto;
         overflow-x: hidden;
         scrollbar-width: none;
         z-index: 50;
     }
     .bae-sidebar::-webkit-scrollbar { display: none; }
-    .bae-sidebar.collapsed {
-        width: 48px;
-        padding: 12px 6px;
-    }
+    .bae-sidebar.collapsed { width: 52px; }
     .bae-sidebar-toggle {
         display: flex; align-items: center; justify-content: flex-end;
-        padding: 2px 0 10px;
+        padding: 4px 2px 10px;
         flex-shrink: 0;
     }
-    .bae-sidebar.collapsed .bae-sidebar-toggle { justify-content: center; }
     .bae-sidebar-toggle-btn {
-        width: 26px; height: 26px;
-        border-radius: 7px;
+        width: 28px; height: 28px;
+        border-radius: 8px;
         border: 1px solid var(--border);
         background: var(--surface);
         color: var(--text-3);
@@ -2493,7 +2460,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         transition: background 0.15s, color 0.15s, border-color 0.15s;
         flex-shrink: 0;
     }
-    .bae-sidebar-toggle-btn:hover { color: var(--text); background: var(--bg-2); border-color: var(--border-2); }
+    .bae-sidebar-toggle-btn:hover { color: var(--text); background: var(--surface-2); border-color: var(--border-2); }
     .bae-sidebar .bae-hn-item {
         width: 100%;
         display: flex; align-items: center; gap: 10px;
@@ -2505,7 +2472,6 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         transition: color .15s, background .15s;
         position: relative;
         overflow: hidden;
-        min-width: 0;
     }
     .bae-sidebar .bae-hn-item:hover { color: var(--text-2); background: var(--surface); }
     .bae-sidebar .bae-hn-active {
@@ -2513,26 +2479,12 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         background: rgba(243,45,134,0.10) !important;
         box-shadow: inset 0 0 0 1px rgba(243,45,134,0.22);
     }
-    /* Collapsed state — icons only, labels hidden */
-    .bae-sidebar.collapsed .bae-hn-label {
-        opacity: 0;
-        width: 0;
-        overflow: hidden;
-        transition: opacity 0.2s, width 0.28s;
-    }
-    .bae-sidebar:not(.collapsed) .bae-hn-label {
-        opacity: 1;
-        transition: opacity 0.2s 0.1s;
-    }
-    .bae-sidebar.collapsed .bae-hn-item {
-        padding: 9px;
-        justify-content: center;
-    }
-    /* Content area expands to fill remaining space */
+    .bae-sidebar.collapsed .bae-hn-label { display: none; }
+    .bae-sidebar.collapsed .bae-hn-item { padding: 9px; justify-content: center; }
+    .bae-sidebar.collapsed .bae-sidebar-toggle { justify-content: center; }
     .bae-tab-content {
         flex: 1;
         min-width: 0;
-        transition: none;
     }
 
     div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="z-index:99999"] {
@@ -2559,50 +2511,43 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 0 16px;
-        height: 52px;
+        padding: 0 20px;
+        height: 58px;
         border-bottom: none;
         background: var(--bg);
         transition: background 0.5s;
         position: sticky; top: 0; z-index: 100;
-        flex-shrink: 0;
+        overflow-x: auto; scrollbar-width: none;
     }
     .bae-header::-webkit-scrollbar { display: none; }
     .bae-header-brand {
         display: flex;
         flex-direction: row;
         align-items: center;
-        gap: 7px;
-        flex-shrink: 0;
-        text-decoration: none;
-    }
-    .bae-header-logo-img {
-        width: 32px;
-        height: 32px;
-        object-fit: contain;
-        flex-shrink: 0;
-        display: block;
-    }
-    /* Light mode: logo is already for light, dark mode invert it */
-    .bae-wrap .bae-header-logo-img { filter: invert(1); }
-    .bae-wrap.bae-light .bae-header-logo-img { filter: none; }
-    .bae-header-wordmark {
-        font-family: 'Noto Serif JP', 'Noto Serif', 'Yu Mincho', serif;
-        font-size: 9px;
-        font-weight: 300;
-        letter-spacing: 0.35em;
-        color: var(--text-2);
-        text-transform: uppercase;
-        line-height: 1;
-        white-space: nowrap;
-    }
-    .bae-wrap.bae-light .bae-header-wordmark { color: var(--text-3); }
-    .bae-header-right {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
         gap: 8px;
         flex-shrink: 0;
+    }
+    .bae-header-logo-img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+    .bae-header-wordmark {
+        font-family: 'Noto Serif JP', 'Noto Serif', 'Yu Mincho', 'Hiragino Mincho Pro', serif;
+        font-size: 10px;
+        font-weight: 300;
+        letter-spacing: 0.32em;
+        color: var(--text-2);
+        text-transform: uppercase;
+        writing-mode: horizontal-tb;
+        transition: color 0.4s;
+        line-height: 1;
+        margin-top: 1px;
+    }
+    .bae-wrap.bae-light .bae-header-wordmark { color: var(--text-3); }
+    .bae-header-logo {
+        display: flex; align-items: center; gap: 10px; flex-shrink: 0;
     }
     .bae-brand-mark {
         width: 52px;
@@ -3115,9 +3060,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         .bae-sidebar { display: none !important; }
         .bae-mobile-nav { display: flex; }
         .bae-body-row { flex-direction: column; }
-        .bae-tab-content { padding: 16px; padding-bottom: 96px; }
-        .bae-header { padding: 0 14px; height: 48px; }
-        .bae-header-wordmark { display: none; } /* hide text on very small, logo only */
+        .bae-tab-content { padding-bottom: 88px; }
     }
 
     /* Theme toggle */
@@ -3287,24 +3230,6 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         text-align: center; padding: 0 32px 24px;
         font-size: 12px; color: var(--text-3);
     }
-    /* ── LOGIN WALL (inside pricing modal) ── */
-    .bae-login-wall {
-        padding: 8px 24px 24px;
-        display: flex; flex-direction: column;
-        align-items: center; text-align: center;
-        gap: 10px;
-    }
-    .bae-login-wall-icon {
-        width: 56px; height: 56px;
-        background: rgba(243,45,134,0.08);
-        border: 1px solid rgba(243,45,134,0.2);
-        border-radius: 16px;
-        display: flex; align-items: center; justify-content: center;
-        margin-bottom: 4px;
-    }
-    .bae-login-wall-title { font-size: 18px; font-weight: 700; color: var(--text); }
-    .bae-login-wall-desc { font-size: 13px; color: var(--text-3); line-height: 1.6; max-width: 280px; }
-    .bae-login-wall .bae-pricing-cta { width: 100%; max-width: 320px; text-decoration: none; }
     /* ── LOCKED ASSET CARD OVERLAY ── */
     .bae-asset-locked-overlay {
         position: absolute; inset: 0;
@@ -3328,7 +3253,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     }
 
     /* ── TAB CONTENT ── */
-    .bae-tab-content { padding: 28px; background: var(--bg); transition: background 0.5s; min-height: calc(100vh - 52px); }
+    .bae-tab-content { padding: 28px; background: var(--bg); transition: background 0.5s; min-height: calc(100vh - 58px); }
 
     @media (min-width: 1025px) {
         .bae-tab-content {
@@ -3396,7 +3321,6 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     .bae-badge-green  { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
     .bae-badge-gray   { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--border); }
     .bae-badge-yellow { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
-    .bae-badge-brand { background: rgba(243,45,134,0.12); color: var(--brand-soft); border: 1px solid rgba(243,45,134,0.2); }
     .bae-badge-purple { background: rgba(243,45,134,0.12); color: var(--brand-soft); border: 1px solid rgba(243,45,134,0.2); }
 
     /* ── BUTTONS ── */
@@ -4205,8 +4129,6 @@ if (dlPngBtn) {
         window.baePricingClose = function() {
             var overlay = document.getElementById('bae-pricing-overlay');
             if (!overlay) return;
-            // Reset login wall back to plans view
-            if (window.baeLoginWallBack) baeLoginWallBack();
             if (window.gsap) {
                 gsap.to('.bae-pricing-modal', {opacity:0, y:16, duration:0.2, ease:'power2.in', onComplete:function(){ overlay.style.display='none'; }});
             } else { overlay.style.display = 'none'; }
@@ -4214,103 +4136,11 @@ if (dlPngBtn) {
 
         window.baePricingSelect = function(plan, billing) {
             billing = billing || 'monthly';
-
-            // ── LOGIN GATE ──────────────────────────────────────────────────
-            if (!window.BAE_SESSION || !window.BAE_SESSION.is_logged_in) {
-                baeShowLoginWall(plan, billing);
-                return;
-            }
-            // ────────────────────────────────────────────────────────────────
-
             var btns = document.querySelectorAll('.bae-pricing-cta');
             var clickedBtn = event && event.target ? event.target : null;
             var origText   = clickedBtn ? clickedBtn.textContent : '';
             btns.forEach(function(b){ b.disabled = true; });
             if (clickedBtn) clickedBtn.textContent = 'Redirecting...';
-
-            var fd = new FormData();
-            fd.append('action',  'bae_pm_checkout');
-            fd.append('nonce',   (window.BAE_PM && window.BAE_PM.nonce) ? window.BAE_PM.nonce : '');
-            fd.append('plan',    plan);
-            fd.append('billing', billing);
-
-            fetch((window.BAE_PM && window.BAE_PM.ajax_url) ? window.BAE_PM.ajax_url : ajaxurl, { method: 'POST', body: fd })
-                .then(function(r){ return r.json(); })
-                .then(function(res) {
-                    if (res.success && res.data.checkout_url) {
-                        window.location.href = res.data.checkout_url;
-                    } else {
-                        alert(res.data && res.data.message ? res.data.message : 'Something went wrong. Please try again.');
-                        btns.forEach(function(b){ b.disabled = false; });
-                        if (clickedBtn) clickedBtn.textContent = origText;
-                    }
-                })
-                .catch(function() {
-                    alert('Network error. Please try again.');
-                    btns.forEach(function(b){ b.disabled = false; });
-                    if (clickedBtn) clickedBtn.textContent = origText;
-                });
-        };
-
-        // ── LOGIN WALL (shown inside pricing modal when guest clicks a plan) ──
-        window.baeShowLoginWall = function(plan, billing) {
-            var modal = document.getElementById('bae-pricing-overlay');
-            if (!modal) return;
-            // Swap pricing cards for login prompt
-            var cards = modal.querySelector('.bae-pricing-cards');
-            var footer = modal.querySelector('.bae-pricing-footer');
-            if (cards) cards.style.display = 'none';
-            if (footer) footer.style.display = 'none';
-            var loginUrl = (window.BAE_SESSION && window.BAE_SESSION.login_url) ? window.BAE_SESSION.login_url : '/wp-login.php';
-            var existing = modal.querySelector('.bae-login-wall');
-            if (!existing) {
-                var wall = document.createElement('div');
-                wall.className = 'bae-login-wall';
-                wall.innerHTML = [
-                    '<div class="bae-login-wall-icon">',
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F32D86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
-                        '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-                        '</svg>',
-                    '</div>',
-                    '<div class="bae-login-wall-title">Sign in to continue</div>',
-                    '<div class="bae-login-wall-desc">You need an account to purchase a plan. It only takes a second.</div>',
-                    '<a href="' + loginUrl + '" class="bae-pricing-cta primary" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px;">',
-                        'Sign in to your account',
-                    '</a>',
-                    '<a href="' + loginUrl.replace('wp-login.php', 'wp-login.php?action=register') + '" class="bae-pricing-cta outline" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:10px;">',
-                        'Create a free account',
-                    '</a>',
-                    '<button onclick="baeLoginWallBack()" style="margin-top:14px;background:none;border:none;color:var(--text-3);font-size:12px;cursor:pointer;font-family:\'Geist\',sans-serif;width:100%;text-align:center;">← Back to plans</button>'
-                ].join('');
-                if (footer) {
-                    modal.querySelector('.bae-pricing-modal').insertBefore(wall, footer);
-                } else {
-                    modal.querySelector('.bae-pricing-modal').appendChild(wall);
-                }
-            } else {
-                existing.style.display = '';
-            }
-            // Update title
-            var title = document.getElementById('bae-pricing-title');
-            var sub   = document.getElementById('bae-pricing-subtitle');
-            if (title) title.textContent = 'Almost there!';
-            if (sub)   sub.textContent   = 'Sign in or create a free account to unlock your chosen plan.';
-        };
-
-        window.baeLoginWallBack = function() {
-            var modal = document.getElementById('bae-pricing-overlay');
-            if (!modal) return;
-            var cards  = modal.querySelector('.bae-pricing-cards');
-            var footer = modal.querySelector('.bae-pricing-footer');
-            var wall   = modal.querySelector('.bae-login-wall');
-            if (cards)  cards.style.display  = '';
-            if (footer) footer.style.display = '';
-            if (wall)   wall.style.display   = 'none';
-            var title = document.getElementById('bae-pricing-title');
-            var sub   = document.getElementById('bae-pricing-subtitle');
-            if (title) title.textContent = 'Unlock more Mothie tools';
-            if (sub)   sub.textContent   = 'Regenerate assets anytime, use the custom AI generator, and share your brand kit publicly.';
-        };
 
             var fd = new FormData();
             fd.append('action',  'bae_pm_checkout');
@@ -4479,7 +4309,7 @@ if (dlPngBtn) {
         }
 
         window.baeShowPageTransition = function(title, step, href) {
-            baeSetLoaderCopy(title || 'Setting things up', step || 'Getting your tools ready');
+            baeSetLoaderCopy(title || 'Loading your workspace', step || 'Preparing assets');
             if (loader) {
                 loader.classList.remove('is-hidden');
                 loader.classList.add('is-transitioning');
