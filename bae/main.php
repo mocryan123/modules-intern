@@ -1883,9 +1883,11 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         nonce:    '<?php echo esc_js(wp_create_nonce('bae_pm_checkout')); ?>'
     };
     window.BAE_SESSION = {
-        has_ticket:  <?php echo $ticket ? 'true' : 'false'; ?>,
-        ticket:      '<?php echo esc_js($ticket); ?>',
-        claim_nonce: '<?php echo esc_js(wp_create_nonce('bae_claim_ticket')); ?>'
+        has_ticket:   <?php echo $ticket ? 'true' : 'false'; ?>,
+        ticket:       '<?php echo esc_js($ticket); ?>',
+        claim_nonce:  '<?php echo esc_js(wp_create_nonce('bae_claim_ticket')); ?>',
+        is_logged_in: <?php echo is_user_logged_in() ? 'true' : 'false'; ?>,
+        login_url:    '<?php echo esc_js(wp_login_url(get_permalink())); ?>'
     };
     </script>
     <div class="bae-wrap" id="bae-wrap" style="opacity:0;transition:opacity 0.25s ease;">
@@ -3278,6 +3280,24 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         text-align: center; padding: 0 32px 24px;
         font-size: 12px; color: var(--text-3);
     }
+    /* ── LOGIN WALL (inside pricing modal) ── */
+    .bae-login-wall {
+        padding: 8px 24px 24px;
+        display: flex; flex-direction: column;
+        align-items: center; text-align: center;
+        gap: 10px;
+    }
+    .bae-login-wall-icon {
+        width: 56px; height: 56px;
+        background: rgba(243,45,134,0.08);
+        border: 1px solid rgba(243,45,134,0.2);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 4px;
+    }
+    .bae-login-wall-title { font-size: 18px; font-weight: 700; color: var(--text); }
+    .bae-login-wall-desc { font-size: 13px; color: var(--text-3); line-height: 1.6; max-width: 280px; }
+    .bae-login-wall .bae-pricing-cta { width: 100%; max-width: 320px; text-decoration: none; }
     /* ── LOCKED ASSET CARD OVERLAY ── */
     .bae-asset-locked-overlay {
         position: absolute; inset: 0;
@@ -4178,6 +4198,8 @@ if (dlPngBtn) {
         window.baePricingClose = function() {
             var overlay = document.getElementById('bae-pricing-overlay');
             if (!overlay) return;
+            // Reset login wall back to plans view
+            if (window.baeLoginWallBack) baeLoginWallBack();
             if (window.gsap) {
                 gsap.to('.bae-pricing-modal', {opacity:0, y:16, duration:0.2, ease:'power2.in', onComplete:function(){ overlay.style.display='none'; }});
             } else { overlay.style.display = 'none'; }
@@ -4185,11 +4207,103 @@ if (dlPngBtn) {
 
         window.baePricingSelect = function(plan, billing) {
             billing = billing || 'monthly';
+
+            // ── LOGIN GATE ──────────────────────────────────────────────────
+            if (!window.BAE_SESSION || !window.BAE_SESSION.is_logged_in) {
+                baeShowLoginWall(plan, billing);
+                return;
+            }
+            // ────────────────────────────────────────────────────────────────
+
             var btns = document.querySelectorAll('.bae-pricing-cta');
             var clickedBtn = event && event.target ? event.target : null;
             var origText   = clickedBtn ? clickedBtn.textContent : '';
             btns.forEach(function(b){ b.disabled = true; });
             if (clickedBtn) clickedBtn.textContent = 'Redirecting...';
+
+            var fd = new FormData();
+            fd.append('action',  'bae_pm_checkout');
+            fd.append('nonce',   (window.BAE_PM && window.BAE_PM.nonce) ? window.BAE_PM.nonce : '');
+            fd.append('plan',    plan);
+            fd.append('billing', billing);
+
+            fetch((window.BAE_PM && window.BAE_PM.ajax_url) ? window.BAE_PM.ajax_url : ajaxurl, { method: 'POST', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(res) {
+                    if (res.success && res.data.checkout_url) {
+                        window.location.href = res.data.checkout_url;
+                    } else {
+                        alert(res.data && res.data.message ? res.data.message : 'Something went wrong. Please try again.');
+                        btns.forEach(function(b){ b.disabled = false; });
+                        if (clickedBtn) clickedBtn.textContent = origText;
+                    }
+                })
+                .catch(function() {
+                    alert('Network error. Please try again.');
+                    btns.forEach(function(b){ b.disabled = false; });
+                    if (clickedBtn) clickedBtn.textContent = origText;
+                });
+        };
+
+        // ── LOGIN WALL (shown inside pricing modal when guest clicks a plan) ──
+        window.baeShowLoginWall = function(plan, billing) {
+            var modal = document.getElementById('bae-pricing-overlay');
+            if (!modal) return;
+            // Swap pricing cards for login prompt
+            var cards = modal.querySelector('.bae-pricing-cards');
+            var footer = modal.querySelector('.bae-pricing-footer');
+            if (cards) cards.style.display = 'none';
+            if (footer) footer.style.display = 'none';
+            var loginUrl = (window.BAE_SESSION && window.BAE_SESSION.login_url) ? window.BAE_SESSION.login_url : '/wp-login.php';
+            var existing = modal.querySelector('.bae-login-wall');
+            if (!existing) {
+                var wall = document.createElement('div');
+                wall.className = 'bae-login-wall';
+                wall.innerHTML = [
+                    '<div class="bae-login-wall-icon">',
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F32D86" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+                        '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+                        '</svg>',
+                    '</div>',
+                    '<div class="bae-login-wall-title">Sign in to continue</div>',
+                    '<div class="bae-login-wall-desc">You need an account to purchase a plan. It only takes a second.</div>',
+                    '<a href="' + loginUrl + '" class="bae-pricing-cta primary" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px;">',
+                        'Sign in to your account',
+                    '</a>',
+                    '<a href="' + loginUrl.replace('wp-login.php', 'wp-login.php?action=register') + '" class="bae-pricing-cta outline" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:10px;">',
+                        'Create a free account',
+                    '</a>',
+                    '<button onclick="baeLoginWallBack()" style="margin-top:14px;background:none;border:none;color:var(--text-3);font-size:12px;cursor:pointer;font-family:\'Geist\',sans-serif;width:100%;text-align:center;">← Back to plans</button>'
+                ].join('');
+                if (footer) {
+                    modal.querySelector('.bae-pricing-modal').insertBefore(wall, footer);
+                } else {
+                    modal.querySelector('.bae-pricing-modal').appendChild(wall);
+                }
+            } else {
+                existing.style.display = '';
+            }
+            // Update title
+            var title = document.getElementById('bae-pricing-title');
+            var sub   = document.getElementById('bae-pricing-subtitle');
+            if (title) title.textContent = 'Almost there!';
+            if (sub)   sub.textContent   = 'Sign in or create a free account to unlock your chosen plan.';
+        };
+
+        window.baeLoginWallBack = function() {
+            var modal = document.getElementById('bae-pricing-overlay');
+            if (!modal) return;
+            var cards  = modal.querySelector('.bae-pricing-cards');
+            var footer = modal.querySelector('.bae-pricing-footer');
+            var wall   = modal.querySelector('.bae-login-wall');
+            if (cards)  cards.style.display  = '';
+            if (footer) footer.style.display = '';
+            if (wall)   wall.style.display   = 'none';
+            var title = document.getElementById('bae-pricing-title');
+            var sub   = document.getElementById('bae-pricing-subtitle');
+            if (title) title.textContent = 'Unlock more Mothie tools';
+            if (sub)   sub.textContent   = 'Regenerate assets anytime, use the custom AI generator, and share your brand kit publicly.';
+        };
 
             var fd = new FormData();
             fd.append('action',  'bae_pm_checkout');
