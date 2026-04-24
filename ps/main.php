@@ -1062,9 +1062,35 @@ function bntm_shortcode_ps_order() {
 
             <!-- STEP 1: Upload -->
             <div class="pso-panel active" id="pso-panel-1">
-                <div class="pso-panel-header">
-                    <h1 class="pso-heading">Upload your document</h1>
-                    <p class="pso-subheading">Accepted: <strong><?php echo esc_html($allowed_types); ?></strong> &nbsp;&middot;&nbsp; Max <strong><?php echo $max_mb; ?>MB</strong></p>
+                <div class="pso-upload-header-layout">
+                    <div class="pso-upload-header-title">
+                        <h1 class="pso-heading">Upload your document</h1>
+                        <p class="pso-subheading">Securely upload your file to begin configuring your print.</p>
+                    </div>
+                    <div class="pso-accepted-files">
+                        <span class="pso-accepted-label">Accepted formats:</span>
+                        <?php 
+                        $types_array = array_map('trim', explode(',', $allowed_types));
+                        foreach ($types_array as $t): 
+                            $t = strtolower($t);
+                            $color = '#6b7280';
+                            if (in_array($t, ['pdf'])) $color = '#ef4444';
+                            elseif (in_array($t, ['doc','docx'])) $color = '#3b82f6';
+                            elseif (in_array($t, ['ppt','pptx'])) $color = '#f97316';
+                            elseif (in_array($t, ['xls','xlsx'])) $color = '#10b981';
+                            elseif (in_array($t, ['jpg','jpeg','png'])) $color = '#8b5cf6';
+                        ?>
+                        <div class="pso-file-badge" style="--badge-color:<?php echo $color; ?>;" title="<?php echo strtoupper($t); ?>">
+                            <div class="pso-file-badge-fold"></div>
+                            <div class="pso-file-badge-band">
+                                <span><?php echo strtoupper($t); ?></span>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                        <div class="pso-accepted-max">
+                            &bull; Max <?php echo $max_mb; ?>MB
+                        </div>
+                    </div>
                 </div>
 
                 <div class="pso-upload-zone" id="pso-drop-zone">
@@ -1510,6 +1536,16 @@ function bntm_shortcode_ps_order() {
     .pso-panel-header { margin-bottom:32px; }
     .pso-heading { font-family:var(--pso-font-head); font-size:30px; font-weight:400; color:var(--pso-ink); margin:0 0 6px; line-height:1.2; }
     .pso-subheading { font-size:14px; color:var(--pso-ink-3); margin:0; }
+    .pso-upload-header-layout { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px; margin-bottom:32px; padding-bottom:16px; border-bottom:1px solid var(--pso-border); }
+    .pso-upload-header-title { flex:1; min-width:280px; }
+    .pso-upload-header-title .pso-heading { margin-bottom:4px; }
+    .pso-accepted-files { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    .pso-accepted-label { font-size:12px; color:#6b7280; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-right:4px; }
+    .pso-file-badge { position:relative; width:34px; height:44px; background:#f8f9fa; border-radius:4px 12px 4px 4px; border:1px solid #e5e7eb; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; align-items:flex-end; overflow:hidden; }
+    .pso-file-badge-fold { position:absolute; top:-1px; right:-1px; width:12px; height:12px; background:#fff; border-bottom:1px solid #e5e7eb; border-left:1px solid #e5e7eb; border-bottom-left-radius:4px; z-index:1; }
+    .pso-file-badge-band { width:100%; height:16px; background:var(--badge-color); display:flex; align-items:center; justify-content:center; }
+    .pso-file-badge-band span { color:#fff; font-size:9px; font-weight:700; letter-spacing:0.5px; line-height:1; }
+    .pso-accepted-max { font-size:13px; color:#9ca3af; margin-left:8px; font-weight:500; }
     .pso-panel-footer { display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:32px; border-top:1px solid var(--pso-border); }
     .pso-btn-primary { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; border:none; border-radius:var(--pso-radius-sm); padding:12px 24px; font-size:14px; font-weight:600; font-family:var(--pso-font-body); cursor:pointer; text-decoration:none; transition:background .2s,transform .1s,box-shadow .2s; box-shadow:0 2px 8px rgba(22,163,74,.3); }
     .pso-btn-primary:hover { background:linear-gradient(135deg,#15803d,#16a34a); box-shadow:0 4px 16px rgba(22,163,74,.4); }
@@ -1684,6 +1720,14 @@ function bntm_shortcode_ps_order() {
         .pso-radio-card-inner { padding:10px 12px; min-width:64px; }
         .pso-payment-options { flex-direction:column; }
         .pso-total-amount { font-size:28px; }
+        .pso-upload-header-layout { flex-direction:column; align-items:flex-start; gap:12px; padding-bottom:16px; margin-bottom:24px; }
+        .pso-accepted-files { justify-content:flex-start; gap:6px; margin-top:0; }
+        .pso-accepted-label { font-size:11px; }
+        .pso-file-badge { width:28px; height:36px; border-radius:3px 8px 3px 3px; }
+        .pso-file-badge-fold { width:8px; height:8px; border-bottom-left-radius:3px; }
+        .pso-file-badge-band { height:12px; }
+        .pso-file-badge-band span { font-size:8px; letter-spacing:0; }
+        .pso-accepted-max { font-size:12px; margin-left:4px; }
     }
     </style>
 
