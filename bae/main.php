@@ -2181,8 +2181,16 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
             <?php endforeach; ?>
         </nav>
 
-        <!-- Shared Modal -->
-        <div id="bae-modal-overlay" class="bae-modal-overlay" style="display:none;">
+        </div>
+
+        </div><!-- /.bae-body-row -->
+
+    </div><!-- /.bae-wrap -->
+
+    <!-- ── MODALS (outside .bae-wrap so no stacking context traps them) ── -->
+
+    <!-- Shared Asset Preview Modal -->
+    <div id="bae-modal-overlay" class="bae-modal-overlay" style="display:none;">
             <div class="bae-modal">
                 <div class="bae-modal-header">
                     <span id="bae-modal-title" class="bae-modal-title">Asset Preview</span>
@@ -2462,7 +2470,6 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         overflow-x: hidden;
         scrollbar-width: none;
         z-index: 50;
-        will-change: width;
     }
     .bae-sidebar::-webkit-scrollbar { display: none; }
     .bae-sidebar.collapsed {
@@ -2570,8 +2577,8 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         text-decoration: none;
     }
     .bae-header-logo-img {
-        width: 20px;
-        height: 20px;
+        width: 32px;
+        height: 32px;
         object-fit: contain;
         flex-shrink: 0;
         display: block;
