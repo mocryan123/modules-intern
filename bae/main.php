@@ -1065,6 +1065,28 @@ function bae_wizard_shortcode($user_id) {
         </div>
     </div>
 
+    <!-- Token Modal — outside bae-wiz-wrap so overflow:hidden doesn't clip it -->
+    <div class="bae-wiz-token-overlay" id="bae-wiz-token-overlay" onclick="if(event.target===this)baeWizTokenClose()">
+        <div class="bae-wiz-token-modal">
+            <div class="bae-wiz-token-modal-header">
+                <span class="bae-wiz-token-modal-title">Enter your token</span>
+                <button class="bae-wiz-token-modal-close" onclick="baeWizTokenClose()">&times;</button>
+            </div>
+            <div class="bae-wiz-token-modal-body">
+                <div class="bae-wiz-token-modal-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <p class="bae-wiz-token-modal-desc">Enter your ticket or access token to restore your brand session and unlock your workspace.</p>
+                <div class="bae-wiz-token-input-wrap">
+                    <input type="text" class="bae-wiz-token-input" id="bae-wiz-token-field" placeholder="e.g. BAE-XXXX-XXXX" autocomplete="off" maxlength="20" onkeydown="if(event.key==='Enter')baeWizTokenSubmit()">
+                </div>
+                <button class="bae-wiz-token-submit" id="bae-wiz-token-submit" onclick="baeWizTokenSubmit()">Unlock My Workspace</button>
+                <div class="bae-wiz-token-err" id="bae-wiz-token-err">Invalid token. Please check and try again.</div>
+                <div class="bae-wiz-token-success" id="bae-wiz-token-success">Token accepted! Redirecting...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
     (function() {
         document.querySelectorAll('div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"]').forEach(function(el) {
@@ -1161,17 +1183,13 @@ function bae_wizard_shortcode($user_id) {
         function baeWizTokenOpen() {
             var overlay = document.getElementById('bae-wiz-token-overlay');
             if (!overlay) return;
-            // Move to body so it escapes wizard's overflow:hidden
-            if (overlay.parentNode !== document.body) {
-                document.body.appendChild(overlay);
-            }
             overlay.classList.add('open');
             var field = document.getElementById('bae-wiz-token-field');
-            if (field) { setTimeout(function(){ field.focus(); }, 200); }
+            if (field) { setTimeout(function(){ field.focus(); }, 150); }
         }
         function baeWizTokenClose() {
             var overlay = document.getElementById('bae-wiz-token-overlay');
-            if (overlay) { overlay.classList.remove('open'); }
+            if (overlay) overlay.classList.remove('open');
         }
         function baeWizTokenSubmit() {
             var field   = document.getElementById('bae-wiz-token-field');
@@ -2025,7 +2043,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         <div class="bae-header">
             <div class="bae-header-logo">
                 <div class="bae-header-brand">
-                    <img class="bae-brand-logo-img bae-header-logo-img" src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie">
+                    <img class="bae-header-logo-img" src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie">
                     <span class="bae-header-wordmark">MOTHIE</span>
                 </div>
             </div>
@@ -2410,7 +2428,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         background: var(--bg);
         color: var(--text);
         border-radius: 0;
-        overflow: hidden;
+        overflow: visible;
         transition: background 0.5s, color 0.5s;
         position: relative;
         min-height: 100vh;
@@ -2422,6 +2440,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         display: flex;
         flex: 1;
         min-height: 0;
+        align-items: flex-start;
     }
     /* Sidebar nav */
     .bae-sidebar {
@@ -2433,25 +2452,30 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         gap: 2px;
         background: var(--bg);
         border-right: 1px solid var(--border);
-        transition: width 0.28s cubic-bezier(0.4,0,0.2,1), background 0.5s, border-color 0.5s;
+        transition: width 0.28s cubic-bezier(0.4,0,0.2,1), padding 0.28s cubic-bezier(0.4,0,0.2,1), background 0.5s, border-color 0.5s;
         position: sticky;
-        top: 58px;
-        height: calc(100vh - 58px);
+        top: 52px;
+        height: calc(100vh - 52px);
         overflow-y: auto;
         overflow-x: hidden;
         scrollbar-width: none;
         z-index: 50;
+        will-change: width;
     }
     .bae-sidebar::-webkit-scrollbar { display: none; }
-    .bae-sidebar.collapsed { width: 52px; }
+    .bae-sidebar.collapsed {
+        width: 48px;
+        padding: 12px 6px;
+    }
     .bae-sidebar-toggle {
         display: flex; align-items: center; justify-content: flex-end;
-        padding: 4px 2px 10px;
+        padding: 2px 0 10px;
         flex-shrink: 0;
     }
+    .bae-sidebar.collapsed .bae-sidebar-toggle { justify-content: center; }
     .bae-sidebar-toggle-btn {
-        width: 28px; height: 28px;
-        border-radius: 8px;
+        width: 26px; height: 26px;
+        border-radius: 7px;
         border: 1px solid var(--border);
         background: var(--surface);
         color: var(--text-3);
@@ -2460,7 +2484,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         transition: background 0.15s, color 0.15s, border-color 0.15s;
         flex-shrink: 0;
     }
-    .bae-sidebar-toggle-btn:hover { color: var(--text); background: var(--surface-2); border-color: var(--border-2); }
+    .bae-sidebar-toggle-btn:hover { color: var(--text); background: var(--bg-2); border-color: var(--border-2); }
     .bae-sidebar .bae-hn-item {
         width: 100%;
         display: flex; align-items: center; gap: 10px;
@@ -2472,6 +2496,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         transition: color .15s, background .15s;
         position: relative;
         overflow: hidden;
+        min-width: 0;
     }
     .bae-sidebar .bae-hn-item:hover { color: var(--text-2); background: var(--surface); }
     .bae-sidebar .bae-hn-active {
@@ -2479,12 +2504,26 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         background: rgba(243,45,134,0.10) !important;
         box-shadow: inset 0 0 0 1px rgba(243,45,134,0.22);
     }
-    .bae-sidebar.collapsed .bae-hn-label { display: none; }
-    .bae-sidebar.collapsed .bae-hn-item { padding: 9px; justify-content: center; }
-    .bae-sidebar.collapsed .bae-sidebar-toggle { justify-content: center; }
+    /* Collapsed state — icons only, labels hidden */
+    .bae-sidebar.collapsed .bae-hn-label {
+        opacity: 0;
+        width: 0;
+        overflow: hidden;
+        transition: opacity 0.2s, width 0.28s;
+    }
+    .bae-sidebar:not(.collapsed) .bae-hn-label {
+        opacity: 1;
+        transition: opacity 0.2s 0.1s;
+    }
+    .bae-sidebar.collapsed .bae-hn-item {
+        padding: 9px;
+        justify-content: center;
+    }
+    /* Content area expands to fill remaining space */
     .bae-tab-content {
         flex: 1;
         min-width: 0;
+        transition: none;
     }
 
     div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="z-index:99999"] {
@@ -2511,43 +2550,50 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 0 20px;
-        height: 58px;
+        padding: 0 16px;
+        height: 52px;
         border-bottom: none;
         background: var(--bg);
         transition: background 0.5s;
         position: sticky; top: 0; z-index: 100;
-        overflow-x: auto; scrollbar-width: none;
+        flex-shrink: 0;
     }
     .bae-header::-webkit-scrollbar { display: none; }
     .bae-header-brand {
         display: flex;
         flex-direction: row;
         align-items: center;
-        gap: 8px;
+        gap: 7px;
         flex-shrink: 0;
+        text-decoration: none;
     }
     .bae-header-logo-img {
-        width: 22px;
-        height: 22px;
+        width: 20px;
+        height: 20px;
         object-fit: contain;
         flex-shrink: 0;
+        display: block;
     }
+    /* Light mode: logo is already for light, dark mode invert it */
+    .bae-wrap .bae-header-logo-img { filter: invert(1); }
+    .bae-wrap.bae-light .bae-header-logo-img { filter: none; }
     .bae-header-wordmark {
-        font-family: 'Noto Serif JP', 'Noto Serif', 'Yu Mincho', 'Hiragino Mincho Pro', serif;
-        font-size: 10px;
+        font-family: 'Noto Serif JP', 'Noto Serif', 'Yu Mincho', serif;
+        font-size: 9px;
         font-weight: 300;
-        letter-spacing: 0.32em;
+        letter-spacing: 0.35em;
         color: var(--text-2);
         text-transform: uppercase;
-        writing-mode: horizontal-tb;
-        transition: color 0.4s;
         line-height: 1;
-        margin-top: 1px;
+        white-space: nowrap;
     }
     .bae-wrap.bae-light .bae-header-wordmark { color: var(--text-3); }
-    .bae-header-logo {
-        display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    .bae-header-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
     }
     .bae-brand-mark {
         width: 52px;
@@ -3060,7 +3106,9 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         .bae-sidebar { display: none !important; }
         .bae-mobile-nav { display: flex; }
         .bae-body-row { flex-direction: column; }
-        .bae-tab-content { padding-bottom: 88px; }
+        .bae-tab-content { padding: 16px; padding-bottom: 96px; }
+        .bae-header { padding: 0 14px; height: 48px; }
+        .bae-header-wordmark { display: none; } /* hide text on very small, logo only */
     }
 
     /* Theme toggle */
@@ -3253,7 +3301,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     }
 
     /* ── TAB CONTENT ── */
-    .bae-tab-content { padding: 28px; background: var(--bg); transition: background 0.5s; min-height: calc(100vh - 58px); }
+    .bae-tab-content { padding: 28px; background: var(--bg); transition: background 0.5s; min-height: calc(100vh - 52px); }
 
     @media (min-width: 1025px) {
         .bae-tab-content {
