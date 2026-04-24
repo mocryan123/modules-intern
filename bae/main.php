@@ -2204,7 +2204,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
                         New here?
                     </span>
-                    <button class="bae-ticket-modal-new-btn" onclick="baeTicketModalClose(); baeTkNew && baeTkNew();" id="bae-tkm-new-btn">Generate a free ticket</button>
+                    <button class="bae-ticket-modal-new-btn" onclick="baeTicketModalGenerate()" id="bae-tkm-new-btn">Generate a free ticket</button>
                 </div>
             </div>
         </div>
@@ -4557,6 +4557,50 @@ if (dlPngBtn) {
             .catch(function() {
                 baeTicketModalSetLoading(false);
                 baeTicketModalShowErr('Network error. Please try again.');
+            });
+    }
+
+    function baeTicketModalGenerate() {
+        var btn = document.getElementById('bae-tkm-new-btn');
+        var err = document.getElementById('bae-tkm-err');
+        var originalText = btn ? btn.textContent : '';
+
+        if (err) err.style.display = 'none';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+        }
+
+        var fd = new FormData();
+        fd.append('action', 'bae_claim_ticket');
+        fd.append('nonce', (window.BAE_SESSION && window.BAE_SESSION.claim_nonce) ? window.BAE_SESSION.claim_nonce : '');
+
+        fetch(ajaxurl, { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.success) {
+                    baeTicketModalShowErr(data.data && data.data.message ? data.data.message : 'Could not generate ticket. Please try again.');
+                    return;
+                }
+
+                var d = data.data || {};
+                if (d.ticket) {
+                    var exp = new Date();
+                    exp.setFullYear(exp.getFullYear() + 1);
+                    document.cookie = 'bae_ticket=' + encodeURIComponent(d.ticket) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+                }
+
+                baeTicketModalClose();
+                window.location.reload();
+            })
+            .catch(function() {
+                baeTicketModalShowErr('Network error. Please try again.');
+            })
+            .finally(function() {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText || 'Generate a free ticket';
+                }
             });
     }
 

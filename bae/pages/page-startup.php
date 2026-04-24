@@ -26,100 +26,8 @@ function bae_startup_tab($user_id, $profile) {
         return ob_get_clean();
     }
 
-    // ── Ticket claim banner (shown only when user has no ticket yet) ──────────
-    $has_ticket   = !empty($profile['ticket']);
-    $claim_nonce  = wp_create_nonce('bae_claim_ticket');
-    ob_start();
-    if (!$has_ticket): ?>
-    <div id="bae-claim-banner" style="
-        background: linear-gradient(135deg, rgba(195,25,106,.08) 0%, rgba(243,45,134,.06) 100%);
-        border: 1.5px solid rgba(243,45,134,.25);
-        border-radius: 18px;
-        padding: 28px 32px;
-        margin-bottom: 32px;
-        display: flex;
-        align-items: center;
-        gap: 28px;
-        flex-wrap: wrap;
-    ">
-        <div style="flex:1;min-width:220px;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F32D86" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                <strong style="font-size:15px;color:var(--text);">Save your brand work</strong>
-                <span style="background:rgba(243,45,134,.15);color:#F32D86;font-size:10px;font-weight:700;letter-spacing:.08em;padding:3px 8px;border-radius:20px;text-transform:uppercase;">Free</span>
-            </div>
-            <p style="font-size:13px;color:var(--text-2);margin:0;line-height:1.7;">
-                Your brand profile and assets are saved in this browser. Get a free ticket code so you can access them again anytime, from any device.
-            </p>
-        </div>
-        <div id="bae-claim-form" style="display:flex;flex-direction:column;gap:10px;min-width:260px;">
-            <button id="bae-claim-btn" onclick="baeClaim()"
-                style="background:linear-gradient(135deg,#c4196a,#F32D86);color:white;border:none;border-radius:12px;padding:13px 24px;font-size:14px;font-weight:700;font-family:'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;box-shadow:0 6px 20px rgba(195,25,106,.35);">
-                <svg id="bae-claim-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                <div id="bae-claim-spin" style="width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:bae-spin .7s linear infinite;display:none;"></div>
-                <span id="bae-claim-lbl">Generate My Ticket</span>
-            </button>
-            <p style="font-size:11px;color:var(--text-3);text-align:center;margin:0;">Already have a ticket? <a href="#" onclick="baeClaim(document.getElementById('bae-existing-ticket').value);return false;" style="color:#F32D86;text-decoration:none;">Enter it below</a></p>
-            <input id="bae-existing-ticket" type="text" placeholder="BAE-XXXX-XXXX (optional)"
-                style="background:var(--surface-2,rgba(0,0,0,.04));border:1.5px solid var(--border-2,rgba(0,0,0,.1));border-radius:10px;padding:10px 14px;font-size:13px;font-family:'Geist',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text);outline:none;text-align:center;"
-                maxlength="13" autocomplete="off">
-            <div id="bae-claim-msg" style="display:none;font-size:12px;border-radius:8px;padding:8px 12px;text-align:center;"></div>
-        </div>
-    </div>
-    <script>
-    function baeClaim(existingTicket) {
-        var btn  = document.getElementById('bae-claim-btn');
-        var spin = document.getElementById('bae-claim-spin');
-        var icon = document.getElementById('bae-claim-icon');
-        var lbl  = document.getElementById('bae-claim-lbl');
-        var msg  = document.getElementById('bae-claim-msg');
-        var inp  = document.getElementById('bae-existing-ticket');
-        var ticket = existingTicket || (inp ? inp.value.trim().toUpperCase() : '');
-
-        btn.disabled = true;
-        spin.style.display = 'block';
-        icon.style.display = 'none';
-        lbl.textContent = 'Saving…';
-
-        var fd = new FormData();
-        fd.append('action', 'bae_claim_ticket');
-        fd.append('nonce', '<?php echo esc_js($claim_nonce); ?>');
-        if (ticket) fd.append('ticket', ticket);
-
-        fetch(ajaxurl, { method: 'POST', body: fd })
-            .then(function(r){ return r.json(); })
-            .then(function(j) {
-                btn.disabled = false;
-                spin.style.display = 'none';
-                icon.style.display = 'block';
-                if (j.success) {
-                    var t = j.data.ticket;
-                    lbl.textContent = 'Saved!';
-                    msg.style.display = 'block';
-                    msg.style.background = 'rgba(22,163,74,.1)';
-                    msg.style.border = '1px solid rgba(22,163,74,.25)';
-                    msg.style.color = '#16a34a';
-                    msg.innerHTML = j.data.returning
-                        ? '✓ Welcome back! Your previous brand has been loaded.'
-                        : '✓ Your ticket is <strong style="font-family:monospace;letter-spacing:.1em;">' + t + '</strong> — save it somewhere safe!';
-                    // Dismiss banner after 2s and reload to stamp ticket
-                    setTimeout(function(){
-                        window.location.reload();
-                    }, 2200);
-                } else {
-                    lbl.textContent = 'Generate My Ticket';
-                    msg.style.display = 'block';
-                    msg.style.background = 'rgba(244,63,94,.08)';
-                    msg.style.border = '1px solid rgba(244,63,94,.2)';
-                    msg.style.color = '#f43f5e';
-                    msg.textContent = (j.data && j.data.message) ? j.data.message : 'Something went wrong. Try again.';
-                }
-            })
-            .catch(function(){ btn.disabled=false; lbl.textContent='Generate My Ticket'; });
-    }
-    </script>
-    <?php endif;
-    $claim_html = ob_get_clean();
+    // Ticket claim/generation is now centralized in the header "Enter Ticket" modal.
+    $claim_html = '';
     $biz_raw   = $p['business_name'] ?? 'yourbusiness';
     $biz_slug  = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $biz_raw));
     $biz_words = explode(' ', strtolower(trim($biz_raw)));
@@ -1207,4 +1115,3 @@ function bae_bb_render_japanese_min($c) {
     return $o;
 }
 }
-
