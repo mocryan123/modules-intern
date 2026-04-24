@@ -2131,17 +2131,81 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                     </div>
                 </button>
 
-                <?php if (is_user_logged_in()): ?>
-                <a href="<?php echo esc_url(wp_logout_url(get_permalink())); ?>" class="bae-header-auth-btn" title="Sign out">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                <?php if ($ticket): ?>
+                <!-- Logged in: show ticket chip + logout button -->
+                <div class="bae-auth-ticket-chip" id="bae-auth-ticket-chip" title="Your access ticket">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>
+                    <span class="bae-auth-ticket-val"><?php echo esc_html($ticket); ?></span>
+                </div>
+                <button class="bae-header-logout-btn" id="bae-header-logout-btn" onclick="baeHeaderLogout()" title="Sign out / Clear ticket">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     <span>Logout</span>
-                </a>
+                </button>
                 <?php else: ?>
-                <button class="bae-header-auth-btn" onclick="baeHeaderAuthOpen()" title="Sign in / Enter ticket">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                    <span>Login</span>
+                <!-- Not logged in: show login button -->
+                <button class="bae-header-login-btn" id="bae-header-login-btn" onclick="baeTicketModalOpen()" title="Enter your ticket to access your workspace">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>
+                    <span>Enter Ticket</span>
                 </button>
                 <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- ══ TICKET LOGIN MODAL ══ -->
+        <div class="bae-ticket-modal-overlay" id="bae-ticket-modal-overlay" onclick="if(event.target===this)baeTicketModalClose()">
+            <div class="bae-ticket-modal" id="bae-ticket-modal">
+                <div class="bae-ticket-modal-header">
+                    <div class="bae-ticket-modal-header-left">
+                        <div class="bae-ticket-modal-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>
+                        </div>
+                        <span class="bae-ticket-modal-title">Enter Your Ticket</span>
+                    </div>
+                    <button class="bae-modal-close" onclick="baeTicketModalClose()" aria-label="Close">&times;</button>
+                </div>
+                <div class="bae-ticket-modal-body">
+                    <p class="bae-ticket-modal-desc">Enter your access ticket to open your workspace. Your ticket is your permanent identity — no account needed.</p>
+
+                    <!-- Step 1: Ticket input -->
+                    <div id="bae-tkm-step-ticket">
+                        <div class="bae-ticket-modal-input-wrap">
+                            <input type="text" id="bae-tkm-input" class="bae-ticket-modal-input"
+                                   placeholder="BAE-XXXX-XXXX"
+                                   maxlength="13" autocomplete="off" spellcheck="false" inputmode="text">
+                        </div>
+                        <div class="bae-ticket-modal-err" id="bae-tkm-err" style="display:none"></div>
+                        <button class="bae-btn bae-btn-primary bae-ticket-modal-submit" id="bae-tkm-btn" onclick="baeTicketModalSubmit()">
+                            <div class="bae-tkm-spin" id="bae-tkm-spin"></div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="bae-tkm-arrow"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            <span id="bae-tkm-lbl">Open Workspace</span>
+                        </button>
+                    </div>
+
+                    <!-- Step 2: OTP verification (shown when login_code_enabled) -->
+                    <div id="bae-tkm-step-otp" style="display:none">
+                        <p class="bae-ticket-modal-otp-hint" id="bae-tkm-otp-hint">A 6-digit code was sent to your email.</p>
+                        <div class="bae-ticket-modal-input-wrap">
+                            <input type="text" id="bae-tkm-otp" class="bae-ticket-modal-input bae-ticket-modal-input-otp"
+                                   placeholder="000000" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+                        </div>
+                        <div class="bae-ticket-modal-err" id="bae-tkm-otp-err" style="display:none"></div>
+                        <button class="bae-btn bae-btn-primary bae-ticket-modal-submit" id="bae-tkm-otp-btn" onclick="baeTicketModalOtpSubmit()">
+                            <div class="bae-tkm-spin" id="bae-tkm-otp-spin"></div>
+                            <span>Verify Code</span>
+                        </button>
+                        <button class="bae-ticket-modal-back" onclick="baeTicketModalBackToTicket()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                            Back
+                        </button>
+                    </div>
+                </div>
+                <div class="bae-ticket-modal-footer">
+                    <span class="bae-ticket-modal-footer-hint">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                        New here?
+                    </span>
+                    <button class="bae-ticket-modal-new-btn" onclick="baeTicketModalClose(); baeTkNew && baeTkNew();" id="bae-tkm-new-btn">Generate a free ticket</button>
+                </div>
             </div>
         </div>
 
@@ -2963,6 +3027,157 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         .bae-dash-card { border-right: none; }
     }
     .bae-header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    /* ── Header Login Button ── */
+    .bae-header-login-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 7px 14px; border-radius: 10px;
+        font-size: 12px; font-weight: 700; font-family: 'Geist', sans-serif;
+        color: #fff; background: linear-gradient(135deg, #c4196a, #F32D86);
+        border: none; cursor: pointer; white-space: nowrap;
+        box-shadow: 0 4px 16px rgba(243,45,134,0.35);
+        transition: transform .18s, box-shadow .18s, opacity .18s;
+        letter-spacing: .01em;
+    }
+    .bae-header-login-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(243,45,134,0.48); }
+    .bae-header-login-btn:active { transform: translateY(0); opacity: .88; }
+    .bae-header-login-btn svg { flex-shrink: 0; }
+
+    /* ── Header Ticket Chip (when logged in) ── */
+    .bae-auth-ticket-chip {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 12px; border-radius: 999px;
+        background: rgba(243,45,134,0.08); border: 1px solid rgba(243,45,134,0.22);
+        font-size: 11px; font-weight: 700; font-family: 'Geist', monospace;
+        color: #F32D86; letter-spacing: .06em; white-space: nowrap;
+        cursor: default; user-select: all;
+        transition: background .2s, border-color .2s;
+    }
+    .bae-auth-ticket-chip:hover { background: rgba(243,45,134,0.12); border-color: rgba(243,45,134,0.34); }
+    .bae-auth-ticket-chip svg { flex-shrink: 0; opacity: .8; }
+
+    /* ── Header Logout Button ── */
+    .bae-header-logout-btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 7px 14px; border-radius: 10px;
+        font-size: 12px; font-weight: 600; font-family: 'Geist', sans-serif;
+        color: var(--text-2); background: var(--surface-2);
+        border: 1px solid var(--border); cursor: pointer; white-space: nowrap;
+        transition: color .15s, background .15s, border-color .15s, transform .15s;
+        letter-spacing: .01em;
+    }
+    .bae-header-logout-btn:hover {
+        color: #fb7185; background: rgba(244,63,94,0.07);
+        border-color: rgba(244,63,94,0.22); transform: translateY(-1px);
+    }
+    .bae-header-logout-btn:active { transform: translateY(0); }
+    .bae-header-logout-btn svg { flex-shrink: 0; }
+
+    /* ── Ticket Login Modal ── */
+    .bae-ticket-modal-overlay {
+        position: fixed; inset: 0; z-index: 99999;
+        background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center; padding: 24px;
+        opacity: 0; visibility: hidden;
+        transition: opacity .25s, visibility .25s;
+    }
+    .bae-ticket-modal-overlay.open { opacity: 1; visibility: visible; }
+    .bae-ticket-modal {
+        background: var(--surface); border: 1px solid var(--border);
+        border-radius: 22px; width: 100%; max-width: 420px;
+        box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+        transform: translateY(18px) scale(.97);
+        transition: transform .3s cubic-bezier(0.16,1,0.3,1);
+        overflow: hidden;
+    }
+    .bae-ticket-modal-overlay.open .bae-ticket-modal { transform: translateY(0) scale(1); }
+    .bae-ticket-modal-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 18px 22px; border-bottom: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(196,25,106,0.1), rgba(243,45,134,0.05));
+    }
+    .bae-ticket-modal-header-left { display: flex; align-items: center; gap: 12px; }
+    .bae-ticket-modal-icon {
+        width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+        background: linear-gradient(135deg, #c4196a, #F32D86);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 14px rgba(243,45,134,0.35);
+    }
+    .bae-ticket-modal-title {
+        font-family: 'Instrument Serif', serif; font-size: 17px; font-style: italic;
+        color: var(--text); line-height: 1;
+    }
+    .bae-ticket-modal-body { padding: 24px 24px 20px; }
+    .bae-ticket-modal-desc {
+        font-size: 13px; color: var(--text-2); line-height: 1.65;
+        margin: 0 0 20px; transition: color .5s;
+    }
+    .bae-ticket-modal-input-wrap { margin-bottom: 12px; }
+    .bae-ticket-modal-input {
+        width: 100%; box-sizing: border-box;
+        background: var(--bg-3, var(--surface-2));
+        border: 1.5px solid var(--border);
+        border-radius: 12px; padding: 14px 18px;
+        font-size: 20px; font-family: 'Geist', monospace;
+        font-weight: 700; letter-spacing: .15em;
+        color: var(--text); outline: none; text-align: center;
+        text-transform: uppercase;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .bae-ticket-modal-input:focus { border-color: #F32D86; box-shadow: 0 0 0 3px rgba(243,45,134,0.15); }
+    .bae-ticket-modal-input::placeholder { color: var(--text-3); font-size: 14px; letter-spacing: .06em; }
+    .bae-ticket-modal-input-otp { font-size: 26px; letter-spacing: .22em; }
+    .bae-ticket-modal-err {
+        font-size: 12px; color: #fb7185;
+        background: rgba(244,63,94,.08); border: 1px solid rgba(244,63,94,.2);
+        border-radius: 9px; padding: 9px 14px; margin-bottom: 12px; text-align: center;
+    }
+    .bae-ticket-modal-submit {
+        width: 100%; justify-content: center; gap: 8px;
+        padding: 13px 20px; font-size: 14px; font-weight: 700;
+        background: linear-gradient(135deg, #c4196a, #F32D86) !important;
+        box-shadow: 0 6px 20px rgba(243,45,134,0.38) !important;
+        transition: transform .18s, box-shadow .18s !important;
+    }
+    .bae-ticket-modal-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(243,45,134,0.5) !important; }
+    .bae-ticket-modal-submit:disabled { opacity: .42; cursor: not-allowed; transform: none !important; }
+    .bae-tkm-spin {
+        width: 16px; height: 16px; flex-shrink: 0;
+        border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+        border-radius: 50%; animation: bae-tkm-spin .7s linear infinite; display: none;
+    }
+    @keyframes bae-tkm-spin { to { transform: rotate(360deg); } }
+    .bae-ticket-modal-otp-hint { font-size: 13px; color: var(--text-3); margin: 0 0 14px; text-align: center; }
+    .bae-ticket-modal-back {
+        display: flex; align-items: center; gap: 6px; justify-content: center;
+        width: 100%; margin-top: 10px; padding: 8px;
+        background: none; border: none; cursor: pointer;
+        font-size: 12px; color: var(--text-3); font-family: 'Geist', sans-serif;
+        font-weight: 600; transition: color .15s;
+    }
+    .bae-ticket-modal-back:hover { color: var(--text-2); }
+    .bae-ticket-modal-footer {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 10px; padding: 14px 22px; border-top: 1px solid var(--border);
+    }
+    .bae-ticket-modal-footer-hint {
+        display: flex; align-items: center; gap: 5px;
+        font-size: 12px; color: var(--text-3);
+    }
+    .bae-ticket-modal-new-btn {
+        background: none; border: none; cursor: pointer;
+        font-size: 12px; font-weight: 700; color: #F32D86;
+        font-family: 'Geist', sans-serif; padding: 0;
+        text-decoration: underline; text-underline-offset: 3px;
+        transition: opacity .15s;
+    }
+    .bae-ticket-modal-new-btn:hover { opacity: .75; }
+    @media (max-width: 480px) {
+        .bae-auth-ticket-chip { display: none; }
+        .bae-header-login-btn span, .bae-header-logout-btn span { display: none; }
+        .bae-header-login-btn, .bae-header-logout-btn { padding: 7px 10px; }
+    }
+
 
     /* ── 7-TAB HEADER NAV ── */
     .bae-headnav {
@@ -4247,8 +4462,187 @@ if (dlPngBtn) {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             baeNavLockClose();
+            baeTicketModalClose();
         }
     });
+
+    /* ══ TICKET LOGIN MODAL ══ */
+    function baeTicketModalOpen() {
+        var overlay = document.getElementById('bae-ticket-modal-overlay');
+        if (!overlay) return;
+        overlay.classList.add('open');
+        // Reset to step 1
+        baeTicketModalBackToTicket();
+        // Clear errors
+        var err = document.getElementById('bae-tkm-err');
+        if (err) { err.style.display = 'none'; err.textContent = ''; }
+        // Focus input after transition
+        setTimeout(function() {
+            var inp = document.getElementById('bae-tkm-input');
+            if (inp) inp.focus();
+        }, 320);
+    }
+
+    function baeTicketModalClose() {
+        var overlay = document.getElementById('bae-ticket-modal-overlay');
+        if (overlay) overlay.classList.remove('open');
+    }
+
+    function baeTicketModalBackToTicket() {
+        document.getElementById('bae-tkm-step-ticket').style.display = '';
+        document.getElementById('bae-tkm-step-otp').style.display = 'none';
+    }
+
+    function baeTicketModalSetLoading(loading) {
+        var btn  = document.getElementById('bae-tkm-btn');
+        var spin = document.getElementById('bae-tkm-spin');
+        var arrow = document.getElementById('bae-tkm-arrow');
+        var lbl  = document.getElementById('bae-tkm-lbl');
+        if (!btn) return;
+        btn.disabled = loading;
+        if (spin)  spin.style.display = loading ? 'block' : 'none';
+        if (arrow) arrow.style.display = loading ? 'none' : '';
+        if (lbl)   lbl.textContent = loading ? 'Verifying…' : 'Open Workspace';
+    }
+
+    function baeTicketModalShowErr(msg) {
+        var err = document.getElementById('bae-tkm-err');
+        if (err) { err.textContent = msg; err.style.display = 'block'; }
+    }
+
+    function baeTicketModalSubmit() {
+        var inp = document.getElementById('bae-tkm-input');
+        var ticket = inp ? inp.value.trim().toUpperCase() : '';
+        if (!ticket) { baeTicketModalShowErr('Please enter your ticket code.'); return; }
+        if (!/^(BAE|ADM)-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(ticket)) {
+            baeTicketModalShowErr('Invalid format. Expected: BAE-XXXX-XXXX');
+            return;
+        }
+        var err = document.getElementById('bae-tkm-err');
+        if (err) err.style.display = 'none';
+        baeTicketModalSetLoading(true);
+        var fd = new FormData();
+        fd.append('action', 'bae_ticket_check');
+        fd.append('ticket', ticket);
+        fd.append('nonce', (window.BAE_SESSION && window.BAE_SESSION.claim_nonce) ? window.BAE_SESSION.claim_nonce : '');
+        fetch(ajaxurl, { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                baeTicketModalSetLoading(false);
+                if (!data.success) {
+                    baeTicketModalShowErr(data.data && data.data.message ? data.data.message : 'Ticket not found. Check your code and try again.');
+                    return;
+                }
+                var d = data.data || {};
+                // Set cookie
+                var exp = new Date(); exp.setFullYear(exp.getFullYear() + 1);
+                document.cookie = 'bae_ticket=' + encodeURIComponent(ticket) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+
+                if (d.requires_code) {
+                    // Show OTP step
+                    document.getElementById('bae-tkm-step-ticket').style.display = 'none';
+                    document.getElementById('bae-tkm-step-otp').style.display = '';
+                    var hint = document.getElementById('bae-tkm-otp-hint');
+                    if (hint) hint.textContent = 'A 6-digit code was sent to ' + (d.masked_email || 'your email') + '.';
+                    setTimeout(function() {
+                        var otpInp = document.getElementById('bae-tkm-otp');
+                        if (otpInp) otpInp.focus();
+                    }, 200);
+                    return;
+                }
+                // Success — reload page
+                baeTicketModalClose();
+                window.location.reload();
+            })
+            .catch(function() {
+                baeTicketModalSetLoading(false);
+                baeTicketModalShowErr('Network error. Please try again.');
+            });
+    }
+
+    function baeTicketModalOtpSubmit() {
+        var otp = (document.getElementById('bae-tkm-otp') || {}).value || '';
+        otp = otp.trim();
+        if (!otp || otp.length !== 6) {
+            var oe = document.getElementById('bae-tkm-otp-err');
+            if (oe) { oe.textContent = 'Please enter the 6-digit code.'; oe.style.display = 'block'; }
+            return;
+        }
+        var inp = document.getElementById('bae-tkm-input');
+        var ticket = inp ? inp.value.trim().toUpperCase() : '';
+        var btn = document.getElementById('bae-tkm-otp-btn');
+        var spin = document.getElementById('bae-tkm-otp-spin');
+        if (btn) btn.disabled = true;
+        if (spin) spin.style.display = 'block';
+        var fd = new FormData();
+        fd.append('action', 'bae_verify_login_otp');
+        fd.append('ticket', ticket);
+        fd.append('otp', otp);
+        fetch(ajaxurl, { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (btn) btn.disabled = false;
+                if (spin) spin.style.display = 'none';
+                if (!data.success) {
+                    var oe = document.getElementById('bae-tkm-otp-err');
+                    if (oe) { oe.textContent = (data.data && data.data.message) ? data.data.message : 'Invalid code. Please try again.'; oe.style.display = 'block'; }
+                    return;
+                }
+                baeTicketModalClose();
+                window.location.reload();
+            })
+            .catch(function() {
+                if (btn) btn.disabled = false;
+                if (spin) spin.style.display = 'none';
+                var oe = document.getElementById('bae-tkm-otp-err');
+                if (oe) { oe.textContent = 'Network error. Please try again.'; oe.style.display = 'block'; }
+            });
+    }
+
+    // Auto-format ticket input in modal
+    document.addEventListener('DOMContentLoaded', function() {
+        var inp = document.getElementById('bae-tkm-input');
+        if (!inp) return;
+        inp.addEventListener('input', function() {
+            var raw = this.value.replace(/[^A-Z0-9]/gi, '').toUpperCase().substring(0, 12);
+            var out = raw;
+            if (raw.length >= 3) {
+                var p3 = raw.substring(0, 3);
+                if (p3 === 'BAE' || p3 === 'ADM') {
+                    var rest = raw.substring(3);
+                    out = rest.length <= 4 ? p3 + '-' + rest : p3 + '-' + rest.substring(0, 4) + '-' + rest.substring(4, 8);
+                }
+            }
+            this.value = out;
+            var err = document.getElementById('bae-tkm-err');
+            if (err) err.style.display = 'none';
+        });
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') baeTicketModalSubmit();
+        });
+        var otpInp = document.getElementById('bae-tkm-otp');
+        if (otpInp) {
+            otpInp.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') baeTicketModalOtpSubmit();
+            });
+        }
+    });
+
+    /* ══ HEADER LOGOUT (ticket-only) ══ */
+    function baeHeaderLogout() {
+        var fd = new FormData();
+        fd.append('action', 'bae_ticket_logout');
+        fetch(ajaxurl, { method: 'POST', body: fd })
+            .then(function() {
+                // Clear cookie client-side too
+                document.cookie = 'bae_ticket=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax';
+                window.location.reload();
+            })
+            .catch(function() {
+                document.cookie = 'bae_ticket=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax';
+                window.location.reload();
+            });
+    }
 
     /* ── SIDEBAR TOGGLE ── */
     (function() {
