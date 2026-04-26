@@ -326,7 +326,7 @@ function bntm_kbf_render_landing() {
         width: 100%;
         max-width: 1500px !important;
         margin: 0 auto;
-        padding: 62px 24px 0;
+        padding: 52px 24px 0;
     }
     .kbf-landing a { color: inherit; text-decoration: none; }
     .kbf-brand-text { color: #3d8ef0; font-family: 'Poppins', system-ui, -apple-system, sans-serif; }
@@ -2449,6 +2449,8 @@ function bntm_kbf_render_landing() {
     .kbf-hero {
         background: #ffffff !important;
         background-image: none !important;
+        height: auto !important;
+        min-height: 80vh;
     }
     .kbf-hero::before, .kbf-hero::after {
         display: none !important;
@@ -2466,6 +2468,8 @@ function bntm_kbf_render_landing() {
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        position: relative;
+        z-index: 2;
     }
     .vh-hero-headline {
         font-family: 'Playfair Display', Georgia, serif;
@@ -2575,8 +2579,8 @@ function bntm_kbf_render_landing() {
         width: calc(100% + 128px);
         margin-left: -64px;
         margin-right: -64px;
-        margin-bottom: -80px; 
-        height: 480px;
+        margin-bottom: 0;
+        z-index: 1;
     }
     .vh-slider-track {
         display: flex;
@@ -2599,12 +2603,13 @@ function bntm_kbf_render_landing() {
         box-shadow: none;
         flex-shrink: 0;
         width: 330px;
-        height: 480px;
+        height: 180px;
     }
     .vh-photo-card img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: 50% 42%;
         display: block;
         filter: grayscale(100%);
         transition: filter 0.5s ease;
@@ -2619,14 +2624,23 @@ function bntm_kbf_render_landing() {
     .vh-pc-5 { background: #edf0f4; }
     .vh-pc-6 { background: #edf0f4; }
     .vh-pc-7 { background: #edf0f4; }
+
+    /* Strong per-image focal points so subjects stay visible in portrait crops */
+    .vh-pc-1 img { object-position: 62% 28% !important; }
+    .vh-pc-2 img { object-position: 80% 30% !important; }
+    .vh-pc-3 img { object-position: 52% 26% !important; }
+    .vh-pc-4 img { object-position: 56% 42% !important; }
+    .vh-pc-5 img { object-position: 52% 32% !important; }
+    .vh-pc-6 img { object-position: 54% 34% !important; }
+    .vh-pc-7 img { object-position: 38% 26% !important; }
     
     .vh-photo-fade {
         position: absolute;
         inset: 0;
         background: 
-            linear-gradient(to right, #ffffff 0%, rgba(255, 255, 255, 0.95) 12%, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0) 75%, rgba(255, 255, 255, 0.95) 88%, #ffffff 100%),
-            radial-gradient(ellipse 25% 70% at 0% 100%, #ffffff 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0) 100%),
-            radial-gradient(ellipse 25% 70% at 100% 100%, #ffffff 0%, rgba(255, 255, 255, 0.8) 40%, rgba(255, 255, 255, 0) 100%);
+            linear-gradient(to right, #ffffff 0%, rgba(255, 255, 255, 0.82) 6%, rgba(255, 255, 255, 0) 16%, rgba(255, 255, 255, 0) 84%, rgba(255, 255, 255, 0.82) 94%, #ffffff 100%),
+            radial-gradient(ellipse 22% 62% at 0% 100%, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.46) 36%, rgba(255, 255, 255, 0) 100%),
+            radial-gradient(ellipse 22% 62% at 100% 100%, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.46) 36%, rgba(255, 255, 255, 0) 100%);
         pointer-events: none;
     }
     
@@ -2681,7 +2695,6 @@ function bntm_kbf_render_landing() {
         }
         .vh-trust-badges{
             margin-top:8px;
-            margin-bottom:10px;
         }
         .vh-zone2 { 
            margin-left: 0;
