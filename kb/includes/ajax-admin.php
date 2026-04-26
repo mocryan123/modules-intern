@@ -21,11 +21,6 @@ function bntm_ajax_kbf_admin_approve_fund() {
             'target_id' => (string)((int)$fund->id),
         ]);
     }
-    // =====================================================
-    // NOTIFICATION PLACEHOLDER
-    // TODO: Notify funder their fund is now live
-    // do_action('kbf_fund_approved', $id);
-    // =====================================================
     wp_send_json_success(['message'=>'Fund approved and is now live!']);
 }
 
@@ -263,11 +258,6 @@ function bntm_ajax_kbf_admin_confirm_payment() {
             }
         }
     }
-    // =====================================================
-    // NOTIFICATION PLACEHOLDER
-    // TODO: Send receipt to sponsor here
-    // do_action('kbf_send_sponsorship_receipt', $id, $sp->fund_id);
-    // =====================================================
     wp_send_json_success(['message'=>'Payment confirmed! Sponsor notified.']);
 }
 
@@ -287,9 +277,6 @@ function bntm_ajax_kbf_admin_verify_organizer() {
     ];
     if($exists) $wpdb->update($pt,$data,['business_id'=>$biz],['%d','%s','%s','%s'],['%d']);
     else { $data['business_id']=$biz; $wpdb->insert($pt,$data,['%d','%s','%s','%s','%d']); }
-    // =====================================================
-    // TODO: Send verification status email to user (approved/rejected + reason)
-    // =====================================================
     if (function_exists('kbf_push_user_notification')) {
         $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
         kbf_push_user_notification((int)$biz, [

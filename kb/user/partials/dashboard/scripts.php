@@ -498,6 +498,7 @@
               }
             });
           }
+          syncPhotoInput();
           renderPhotoGrid();
 
           campaignData.tiers = Array.isArray(campaignData.tiers) ? campaignData.tiers : [];
@@ -1182,8 +1183,16 @@
           if (funderInput) funderInput.value = campaignData.funder_type || '';
           if (categoryInput) categoryInput.value = campaignData.category || '';
           if (benefitsInput) updateBenefitsInput();
+          syncPhotoInput();
 
           var fd = new FormData(form);
+          var expectedPhotos = campaignData.photos.filter(function(file){ return !!file; });
+          if (expectedPhotos.length && typeof fd.delete === 'function') {
+            fd.delete('photos[]');
+            expectedPhotos.forEach(function(file){
+              fd.append('photos[]', file, file.name || 'photo.jpg');
+            });
+          }
           fd.set('benefits', getCreateBenefitsPayload());
           var goalRaw = (goalInput && goalInput.dataset.kbfRaw) ? goalInput.dataset.kbfRaw : (campaignData.goal_amount || '');
           if (goalRaw) fd.set('goal_amount', String(goalRaw).replace(/,/g, ''));
