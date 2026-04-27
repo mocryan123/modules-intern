@@ -390,7 +390,7 @@ function bae_overview_tab($user_id, $profile) {
                 <?php echo bae_generate_asset_html_static($first_preview_type, $p, ''); ?>
             </div>
             <?php endif; ?>
-            <div id="bae-live-preview-loading" style="display:none;position:absolute;inset:0;background:var(--bg-2);display:flex;align-items:center;justify-content:center;border-radius:12px;">
+            <div id="bae-live-preview-loading" style="display:none;position:absolute;inset:0;background:var(--bg-2);align-items:center;justify-content:center;border-radius:12px;">
                 <div style="width:24px;height:24px;border:2px solid rgba(243,45,134,0.2);border-top-color:#F32D86;border-radius:50%;animation:bae-spin 0.8s linear infinite;"></div>
             </div>
         </div>

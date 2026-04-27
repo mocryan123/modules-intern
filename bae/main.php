@@ -177,6 +177,8 @@ function bntm_bae_get_tables() {
             session_id VARCHAR(64) NOT NULL DEFAULT '',
             logo_url VARCHAR(500) NOT NULL DEFAULT '',
             plan VARCHAR(20) NOT NULL DEFAULT 'free',
+            beta_free_claimed TINYINT(1) NOT NULL DEFAULT 0,
+            beta_claimed_at DATETIME NULL,
             tone_statement TEXT NOT NULL DEFAULT '',
             kit_visibility VARCHAR(10) NOT NULL DEFAULT 'private',
             kit_slug VARCHAR(100) UNIQUE NOT NULL DEFAULT '',
@@ -260,6 +262,8 @@ add_action('wp_ajax_bae_toolkit_checklist_save',   'bntm_ajax_bae_toolkit_checkl
 add_action('wp_ajax_bae_upload_logo',              'bntm_ajax_bae_upload_logo');
 add_action('wp_ajax_bae_claim_ticket',             'bntm_ajax_bae_claim_ticket');
 add_action('wp_ajax_nopriv_bae_claim_ticket',      'bntm_ajax_bae_claim_ticket');
+add_action('wp_ajax_bae_beta_campaign_status',        'bntm_ajax_bae_beta_campaign_status');
+add_action('wp_ajax_nopriv_bae_beta_campaign_status', 'bntm_ajax_bae_beta_campaign_status');
 add_action('wp_ajax_nopriv_bae_upload_logo',       'bntm_ajax_bae_upload_logo');
 add_action('wp_ajax_bae_export_zip',               'bntm_ajax_bae_export_zip');
 add_action('wp_ajax_bae_undo_asset',               'bntm_ajax_bae_undo_asset');
@@ -371,6 +375,101 @@ function bae_get_profile_by_ticket($ticket) {
     );
     return $row ?: null;
 }
+
+function bae_beta_is_enabled() {
+    return (int) get_option('bae_beta_enabled', 1) === 1;
+}
+
+function bae_beta_slots_remaining() {
+    return max(0, (int) get_option('bae_beta_slots_remaining', 100));
+}
+
+function bae_beta_status_payload() {
+    $enabled = bae_beta_is_enabled();
+    $remaining = bae_beta_slots_remaining();
+    $total = max(1, (int) get_option('bae_beta_slots_total', 100));
+    return [
+        'enabled' => $enabled,
+        'total' => $total,
+        'remaining' => $remaining,
+        'available' => $enabled && $remaining > 0,
+    ];
+}
+
+function bae_beta_try_consume_slot() {
+    global $wpdb;
+    $opt = $wpdb->options;
+    $name = 'bae_beta_slots_remaining';
+    $rows = $wpdb->query(
+        $wpdb->prepare(
+            "UPDATE {$opt}
+             SET option_value = CAST(option_value AS UNSIGNED) - 1
+             WHERE option_name = %s AND CAST(option_value AS UNSIGNED) > 0",
+            $name
+        )
+    );
+    if ($rows === 1) {
+        wp_cache_delete($name, 'options');
+        return true;
+    }
+    return false;
+}
+
+function bae_try_apply_beta_claim_to_profile($profile_id) {
+    $pid = (int) $profile_id;
+    if ($pid <= 0) return false;
+    if (!bae_beta_is_enabled() || bae_beta_slots_remaining() <= 0) return false;
+    if (!bae_beta_try_consume_slot()) return false;
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_profiles';
+    $updated = $wpdb->update(
+        $table,
+        [
+            'plan' => 'pro',
+            'beta_free_claimed' => 1,
+            'beta_claimed_at' => current_time('mysql'),
+        ],
+        [
+            'id' => $pid,
+            'beta_free_claimed' => 0,
+        ],
+        ['%s', '%d', '%s'],
+        ['%d', '%d']
+    );
+
+    if ($updated === 1) return true;
+
+    // Refund consumed slot when update didn't apply (already claimed/race).
+    update_option('bae_beta_slots_remaining', bae_beta_slots_remaining() + 1, false);
+    return false;
+}
+
+function bntm_ajax_bae_beta_campaign_status() {
+    check_ajax_referer('bae_claim_ticket', 'nonce', false);
+    wp_send_json_success(bae_beta_status_payload());
+}
+
+function bae_maybe_migrate_beta_claim_columns() {
+    if (get_option('bae_beta_schema_v1', '0') === '1') return;
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_profiles';
+    $wpdb->hide_errors();
+    $col1 = $wpdb->get_results("SHOW COLUMNS FROM {$table} LIKE 'beta_free_claimed'");
+    if (empty($col1)) {
+        $wpdb->query("ALTER TABLE {$table} ADD COLUMN beta_free_claimed TINYINT(1) NOT NULL DEFAULT 0 AFTER plan");
+    }
+    $col2 = $wpdb->get_results("SHOW COLUMNS FROM {$table} LIKE 'beta_claimed_at'");
+    if (empty($col2)) {
+        $wpdb->query("ALTER TABLE {$table} ADD COLUMN beta_claimed_at DATETIME NULL AFTER beta_free_claimed");
+    }
+    $wpdb->show_errors();
+    if (get_option('bae_beta_enabled', null) === null) update_option('bae_beta_enabled', 1, false);
+    if (get_option('bae_beta_slots_remaining', null) === null) update_option('bae_beta_slots_remaining', 100, false);
+    if (get_option('bae_beta_slots_total', null) === null) update_option('bae_beta_slots_total', 100, false);
+    update_option('bae_beta_schema_v1', '1', false);
+}
+add_action('init', 'bae_maybe_migrate_beta_claim_columns');
 
 function bae_make_unique_kit_slug($name, $exclude_id = 0) {
     global $wpdb;
@@ -1932,6 +2031,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         ticket:      '<?php echo esc_js($ticket); ?>',
         claim_nonce: '<?php echo esc_js(wp_create_nonce('bae_claim_ticket')); ?>'
     };
+    window.BAE_BETA = <?php echo wp_json_encode(bae_beta_status_payload()); ?>;
     </script>
     <div class="bae-wrap" id="bae-wrap" style="opacity:0;transition:opacity 0.25s ease;">
 
@@ -2228,6 +2328,14 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                 </div>
                 <div class="bae-ticket-modal-body">
                     <p class="bae-ticket-modal-desc" id="bae-tkm-desc">Enter your access ticket to open your workspace, or generate one to bind this workspace for later return. No account needed.</p>
+                    <div id="bae-beta-banner" style="display:none;margin:0 0 12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(243,45,134,.28);background:rgba(243,45,134,.08);">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                            <div style="font-size:12px;font-weight:700;color:var(--text);">Beta Free Pro · First <span id="bae-beta-total">100</span></div>
+                            <div id="bae-beta-remaining" style="font-size:11px;font-weight:700;color:var(--brand-soft);">Remaining: --</div>
+                        </div>
+                        <div style="font-size:11px;color:var(--text-3);margin-top:4px;">Claim now to get Pro plan instantly when slots are available.</div>
+                        <button type="button" class="bae-btn bae-btn-primary bae-ticket-modal-submit" id="bae-beta-claim-btn" style="margin-top:10px;height:34px;" onclick="baeTicketModalGenerate('beta')">Claim Beta Pro Ticket</button>
+                    </div>
 
                     <!-- Step 1: Ticket input -->
                     <div id="bae-tkm-step-ticket">
@@ -2273,6 +2381,11 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         </div>
 
         <!-- Mobile floating bottom nav -->
+        <button type="button" class="bae-mobile-nav-toggle" id="bae-mobile-nav-toggle" onclick="baeMobileNavToggle()" aria-expanded="true" aria-controls="bae-mobile-nav" title="Toggle navigation">
+            <svg id="bae-mob-nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            <svg id="bae-mob-nav-icon-closed" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="m18 15-6-6-6 6"/></svg>
+            <span id="bae-mobile-nav-toggle-label">Hide Menu</span>
+        </button>
         <nav class="bae-mobile-nav" id="bae-mobile-nav">
             <?php foreach ($nav_tabs as $slug => $tab): ?>
             <?php
@@ -3334,8 +3447,43 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         max-width: calc(100vw - 32px);
         overflow-x: auto;
         scrollbar-width: none;
+        transition: transform .22s ease, opacity .22s ease;
     }
     .bae-mobile-nav::-webkit-scrollbar { display: none; }
+    .bae-mobile-nav.collapsed {
+        transform: translateX(-50%) translateY(140%);
+        opacity: 0;
+        pointer-events: none;
+    }
+    .bae-mobile-nav-toggle {
+        display: none;
+        position: fixed;
+        bottom: 84px;
+        right: 14px;
+        z-index: 210;
+        border: 1px solid var(--border-2);
+        background: var(--surface);
+        color: var(--text-2);
+        border-radius: 999px;
+        padding: 8px 10px;
+        gap: 6px;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 700;
+        font-family: 'Geist', sans-serif;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        transition: all .18s ease;
+    }
+    .bae-mobile-nav-toggle:hover {
+        color: var(--text);
+        border-color: var(--border);
+        background: var(--surface-2);
+    }
+    .bae-mobile-nav-toggle.collapsed {
+        bottom: 14px;
+    }
     .bae-mob-item {
         display: flex; flex-direction: column; align-items: center;
         gap: 3px; padding: 8px 10px; border-radius: 16px;
@@ -3358,6 +3506,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     @media (max-width: 768px) {
         .bae-sidebar { display: none !important; }
         .bae-mobile-nav { display: flex; }
+        .bae-mobile-nav-toggle { display: inline-flex; }
         .bae-body-row { flex-direction: column; }
         .bae-tab-content { padding-bottom: 88px; }
     }
@@ -4557,8 +4706,48 @@ if (dlPngBtn) {
 
     /* ══ TICKET LOGIN MODAL ══ */
     var baeTicketSubmitIdleLabel = 'Continue';
+    var baeTicketModalContext = 'header';
+    var baeBetaRefreshTimer = null;
+
+    function baeBetaRenderStatus(payload) {
+        var banner = document.getElementById('bae-beta-banner');
+        var rem = document.getElementById('bae-beta-remaining');
+        var total = document.getElementById('bae-beta-total');
+        var btn = document.getElementById('bae-beta-claim-btn');
+        if (!banner || !rem || !btn) return;
+
+        var p = payload || (window.BAE_BETA || {});
+        var enabled = !!p.enabled;
+        var remaining = Math.max(0, parseInt(p.remaining || 0, 10));
+        if (total) total.textContent = String(p.total || 100);
+        rem.textContent = 'Remaining: ' + remaining;
+
+        banner.style.display = enabled ? '' : 'none';
+        btn.style.display = (enabled && remaining > 0) ? '' : 'none';
+        if (enabled && remaining <= 0) rem.textContent = 'Remaining: 0 (claimed out)';
+        if (window.gsap && enabled && !banner.dataset.popped) {
+            banner.dataset.popped = '1';
+            gsap.fromTo(banner, {opacity:0, y:8, scale:0.98}, {opacity:1, y:0, scale:1, duration:0.28, ease:'power3.out'});
+        }
+    }
+
+    function baeBetaFetchStatus() {
+        var fd = new FormData();
+        fd.append('action', 'bae_beta_campaign_status');
+        fd.append('nonce', (window.BAE_SESSION && window.BAE_SESSION.claim_nonce) ? window.BAE_SESSION.claim_nonce : '');
+        return fetch(ajaxurl, { method: 'POST', body: fd })
+            .then(function(r){ return r.json(); })
+            .then(function(j){
+                if (j && j.success && j.data) {
+                    window.BAE_BETA = j.data;
+                    baeBetaRenderStatus(j.data);
+                }
+            })
+            .catch(function(){});
+    }
     function baeTicketModalApplyContext(context) {
         var mode = context || 'header';
+        baeTicketModalContext = mode;
         var titleEl = document.getElementById('bae-tkm-title');
         var descEl = document.getElementById('bae-tkm-desc');
         var hintEl = document.getElementById('bae-tkm-footer-hint-text');
@@ -4578,6 +4767,7 @@ if (dlPngBtn) {
             baeTicketSubmitIdleLabel = 'Open Workspace';
         }
         if (submitLbl) submitLbl.textContent = baeTicketSubmitIdleLabel;
+        baeBetaRenderStatus(window.BAE_BETA || {});
     }
 
     function baeTicketModalOpen(context) {
@@ -4595,11 +4785,18 @@ if (dlPngBtn) {
             var inp = document.getElementById('bae-tkm-input');
             if (inp) inp.focus();
         }, 320);
+        baeBetaFetchStatus();
+        if (baeBetaRefreshTimer) clearInterval(baeBetaRefreshTimer);
+        baeBetaRefreshTimer = setInterval(baeBetaFetchStatus, 15000);
     }
 
     function baeTicketModalClose() {
         var overlay = document.getElementById('bae-ticket-modal-overlay');
         if (overlay) overlay.classList.remove('open');
+        if (baeBetaRefreshTimer) {
+            clearInterval(baeBetaRefreshTimer);
+            baeBetaRefreshTimer = null;
+        }
     }
 
     function baeTicketModalBackToTicket() {
@@ -4674,20 +4871,28 @@ if (dlPngBtn) {
             });
     }
 
-    function baeTicketModalGenerate() {
+    function baeTicketModalGenerate(mode) {
         var btn = document.getElementById('bae-tkm-new-btn');
+        var betaBtn = document.getElementById('bae-beta-claim-btn');
         var err = document.getElementById('bae-tkm-err');
         var originalText = btn ? btn.textContent : '';
+        var betaOriginalText = betaBtn ? betaBtn.textContent : '';
+        var isBeta = mode === 'beta';
 
         if (err) err.style.display = 'none';
         if (btn) {
             btn.disabled = true;
-            btn.textContent = 'Generating...';
+            btn.textContent = isBeta ? 'Claiming...' : 'Generating...';
+        }
+        if (betaBtn) {
+            betaBtn.disabled = true;
+            betaBtn.textContent = isBeta ? 'Claiming...' : betaOriginalText;
         }
 
         var fd = new FormData();
         fd.append('action', 'bae_claim_ticket');
         fd.append('nonce', (window.BAE_SESSION && window.BAE_SESSION.claim_nonce) ? window.BAE_SESSION.claim_nonce : '');
+        if (isBeta) fd.append('beta_claim', '1');
 
         fetch(ajaxurl, { method: 'POST', body: fd })
             .then(function(r) { return r.json(); })
@@ -4703,6 +4908,7 @@ if (dlPngBtn) {
                     exp.setFullYear(exp.getFullYear() + 1);
                     document.cookie = 'bae_ticket=' + encodeURIComponent(d.ticket) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
                 }
+                if (d.beta_status) window.BAE_BETA = d.beta_status;
 
                 baeTicketModalClose();
                 window.location.reload();
@@ -4713,7 +4919,11 @@ if (dlPngBtn) {
             .finally(function() {
                 if (btn) {
                     btn.disabled = false;
-                    btn.textContent = originalText || 'Generate a free ticket';
+                    btn.textContent = originalText || 'Generate and bind ticket';
+                }
+                if (betaBtn) {
+                    betaBtn.disabled = false;
+                    betaBtn.textContent = betaOriginalText || 'Claim Beta Pro Ticket';
                 }
             });
     }
@@ -4830,6 +5040,35 @@ if (dlPngBtn) {
         applySb(sbCollapsed, false);
     })();
 
+    /* Mobile bottom nav collapse */
+    (function() {
+        var nav = document.getElementById('bae-mobile-nav');
+        var toggle = document.getElementById('bae-mobile-nav-toggle');
+        var iconOpen = document.getElementById('bae-mob-nav-icon-open');
+        var iconClosed = document.getElementById('bae-mob-nav-icon-closed');
+        var label = document.getElementById('bae-mobile-nav-toggle-label');
+        if (!nav || !toggle) return;
+
+        var collapsed = (localStorage.getItem('bae_mobile_nav_collapsed') === '1');
+
+        function apply() {
+            nav.classList.toggle('collapsed', collapsed);
+            toggle.classList.toggle('collapsed', collapsed);
+            toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            if (label) label.textContent = collapsed ? 'Show Menu' : 'Hide Menu';
+            if (iconOpen) iconOpen.style.display = collapsed ? 'none' : '';
+            if (iconClosed) iconClosed.style.display = collapsed ? '' : 'none';
+        }
+
+        window.baeMobileNavToggle = function() {
+            collapsed = !collapsed;
+            localStorage.setItem('bae_mobile_nav_collapsed', collapsed ? '1' : '0');
+            apply();
+        };
+
+        apply();
+    })();
+
     function baeToggleTheme() {
         baeIsDark = !baeIsDark;
         localStorage.setItem('bae_theme', baeIsDark ? 'dark' : 'light');
@@ -4860,6 +5099,13 @@ if (dlPngBtn) {
     document.addEventListener('DOMContentLoaded', function() {
         // Sync toggle thumb position to saved theme
         baeApplyTheme(baeIsDark, false);
+        if (typeof window.baeInitColorPairs === 'function') window.baeInitColorPairs();
+        setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+            if (window.ScrollTrigger && typeof window.ScrollTrigger.refresh === 'function') {
+                window.ScrollTrigger.refresh();
+            }
+        }, 80);
 
         // Reveal the wrap — hide loader, fade in content
         var wrap   = document.getElementById('bae-wrap');
@@ -5758,6 +6004,7 @@ function bntm_ajax_bae_upload_logo() {
 // =============================================================================
 function bntm_ajax_bae_claim_ticket() {
     check_ajax_referer('bae_claim_ticket', 'nonce', false);
+    $wants_beta = !empty($_POST['beta_claim']) && (string) $_POST['beta_claim'] === '1';
 
     // Get or generate ticket
     $ticket = '';
@@ -5787,7 +6034,21 @@ function bntm_ajax_bae_claim_ticket() {
         $profile = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}bae_profiles WHERE ticket = %s LIMIT 1", $ticket
         ), ARRAY_A);
-        wp_send_json_success(['ticket' => $ticket, 'returning' => true, 'profile' => $profile]);
+        $beta_claimed = false;
+        if ($wants_beta && !empty($profile['id']) && empty($profile['beta_free_claimed'])) {
+            $beta_claimed = bae_try_apply_beta_claim_to_profile((int) $profile['id']);
+            $profile = $wpdb->get_row($wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}bae_profiles WHERE id = %d LIMIT 1",
+                (int) $profile['id']
+            ), ARRAY_A);
+        }
+        wp_send_json_success([
+            'ticket' => $ticket,
+            'returning' => true,
+            'profile' => $profile,
+            'beta_claimed' => $beta_claimed,
+            'beta_status' => bae_beta_status_payload(),
+        ]);
     }
 
     // Stamp all unclaimed session rows with this ticket
@@ -5817,7 +6078,22 @@ function bntm_ajax_bae_claim_ticket() {
         "SELECT * FROM {$wpdb->prefix}bae_profiles WHERE ticket = %s LIMIT 1", $ticket
     ), ARRAY_A);
 
-    wp_send_json_success(['ticket' => $ticket, 'returning' => false, 'profile' => $profile]);
+    $beta_claimed = false;
+    if ($wants_beta && !empty($profile['id']) && empty($profile['beta_free_claimed'])) {
+        $beta_claimed = bae_try_apply_beta_claim_to_profile((int) $profile['id']);
+        $profile = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}bae_profiles WHERE id = %d LIMIT 1",
+            (int) $profile['id']
+        ), ARRAY_A);
+    }
+
+    wp_send_json_success([
+        'ticket' => $ticket,
+        'returning' => false,
+        'profile' => $profile,
+        'beta_claimed' => $beta_claimed,
+        'beta_status' => bae_beta_status_payload(),
+    ]);
 }
 
 function bntm_ajax_bae_custom_generate() {

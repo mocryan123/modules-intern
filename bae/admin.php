@@ -195,6 +195,14 @@ function bae_ajax_admin_save_all_settings() {
     update_option('bae_smtp_from', sanitize_email($_POST['smtp_from'] ?? ''));
     update_option('bae_smtp_pass', sanitize_text_field($_POST['smtp_pass'] ?? ''));
 
+    // Beta campaign
+    $beta_enabled = !empty($_POST['beta_enabled']) ? 1 : 0;
+    $beta_remaining = max(0, intval($_POST['beta_slots_remaining'] ?? get_option('bae_beta_slots_remaining', 100)));
+    $beta_total = max(1, intval($_POST['beta_slots_total'] ?? get_option('bae_beta_slots_total', 100)));
+    update_option('bae_beta_enabled', $beta_enabled, false);
+    update_option('bae_beta_slots_remaining', $beta_remaining, false);
+    update_option('bae_beta_slots_total', $beta_total, false);
+
     wp_send_json_success(['message' => 'Settings saved successfully.']);
 }
 
@@ -571,6 +579,9 @@ function bae_admin_dashboard() {
 
     $smtp_from = get_option('bae_smtp_from', '');
     $smtp_pass = get_option('bae_smtp_pass', '');
+    $beta_enabled = (int) get_option('bae_beta_enabled', 1);
+    $beta_slots_remaining = max(0, (int) get_option('bae_beta_slots_remaining', 100));
+    $beta_slots_total = max(1, (int) get_option('bae_beta_slots_total', 100));
 
     ob_start();
     ?>
@@ -2467,6 +2478,30 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
     </button>
 </div>
 
+                            <div class="bae-env-group">
+                                <h3 style="margin:0 0 16px;">Beta Campaign (First 100 Free Pro)</h3>
+                                <div class="bae-adm-field" style="display:flex;align-items:center;gap:10px;">
+                                    <input type="checkbox" id="bae-beta-enabled" <?php checked($beta_enabled, 1); ?> style="width:auto;">
+                                    <label for="bae-beta-enabled" style="margin:0;">Enable beta free-pro campaign</label>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                                    <div class="bae-adm-field">
+                                        <label>Total Slots</label>
+                                        <input type="number" id="bae-beta-slots-total" min="1" step="1" value="<?php echo esc_attr($beta_slots_total); ?>">
+                                    </div>
+                                    <div class="bae-adm-field">
+                                        <label>Remaining Slots</label>
+                                        <input type="number" id="bae-beta-slots-remaining" min="0" step="1" value="<?php echo esc_attr($beta_slots_remaining); ?>">
+                                    </div>
+                                </div>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                    <button type="button" class="bae-add-btn" onclick="baeAdmAddBetaSlots(10)">+10 Slots</button>
+                                    <button type="button" class="bae-add-btn" onclick="baeAdmAddBetaSlots(25)">+25 Slots</button>
+                                    <button type="button" class="bae-add-btn" onclick="baeAdmAddBetaSlots(100)">+100 Slots</button>
+                                </div>
+                                <button type="button" class="bae-adm-save-btn" style="margin-top:12px;" onclick="baeAdmSaveSection('beta')">Save Beta Campaign</button>
+                            </div>
+
                             <button class="bae-adm-save-btn" id="bae-settings-save" onclick="baeAdmSaveAllSettings()">Save All Settings</button>
                         </div>
                         
@@ -2668,33 +2703,7 @@ div[style*="position:fixed"][style*="bottom:10px"][style*="right:10px"][style*="
     }
 
 function baeAdmSaveSection(section) {
-    var fd = new FormData();
-    fd.append('action', 'bae_admin_save_all_settings');
-    fd.append('nonce', _baeAdmNonce);
-
-    if (section === 'ai') {
-        document.querySelectorAll('#list-gemini input').forEach(function(i){ fd.append('gemini_keys[]', i.value.trim()); });
-        document.querySelectorAll('#list-groq input').forEach(function(i){ fd.append('groq_keys[]', i.value.trim()); });
-        document.querySelectorAll('#list-or input').forEach(function(i){ fd.append('or_keys[]', i.value.trim()); });
-    } else if (section === 'paymaya') {
-        fd.append('pm_public',  document.getElementById('bae-pm-public')?.value.trim() || '');
-        fd.append('pm_secret',  document.getElementById('bae-pm-secret')?.value.trim() || '');
-        fd.append('pm_webhook', document.getElementById('bae-pm-webhook')?.value.trim() || '');
-        fd.append('pm_base',    document.getElementById('bae-pm-base')?.value.trim() || '');
-    } else if (section === 'stripe') {
-        fd.append('stripe_public',  document.getElementById('bae-stripe-public')?.value.trim() || '');
-        fd.append('stripe_secret',  document.getElementById('bae-stripe-secret')?.value.trim() || '');
-        fd.append('stripe_webhook', document.getElementById('bae-stripe-webhook')?.value.trim() || '');
-    }
-
-    fetch(_baeAdmAj, { method: 'POST', body: fd })
-        .then(function(r) { return r.json(); })
-        .then(function(j) {
-            baeAdmToast(j.success ? 'Saved.' : (j.data?.message || 'Failed.'), j.success ? 'success' : 'error');
-        })
-        .catch(function() {
-            baeAdmToast('Network error.', 'error');
-        });
+    baeAdmSaveAllSettings();
 }
 
         
@@ -2735,6 +2744,9 @@ function baeAdmSaveSection(section) {
     // SMTP (NEW)
     fd.append('smtp_from', document.getElementById('bae-smtp-from')?.value.trim() || '');
     fd.append('smtp_pass', document.getElementById('bae-smtp-pass')?.value.trim() || '');
+    fd.append('beta_enabled', document.getElementById('bae-beta-enabled')?.checked ? '1' : '');
+    fd.append('beta_slots_total', document.getElementById('bae-beta-slots-total')?.value.trim() || '');
+    fd.append('beta_slots_remaining', document.getElementById('bae-beta-slots-remaining')?.value.trim() || '');
 
     fetch(_baeAdmAj, { method: 'POST', body: fd })
         .then(function(r) { return r.json(); })
@@ -2746,6 +2758,14 @@ function baeAdmSaveSection(section) {
             if (btn) { btn.textContent = 'Save All Settings'; btn.disabled = false; }
             baeAdmToast('Network error. Try again.', 'error');
         });
+}
+
+function baeAdmAddBetaSlots(amount) {
+    var input = document.getElementById('bae-beta-slots-remaining');
+    if (!input) return;
+    var current = parseInt(input.value || '0', 10);
+    if (isNaN(current)) current = 0;
+    input.value = String(Math.max(0, current + amount));
 }
 
 
