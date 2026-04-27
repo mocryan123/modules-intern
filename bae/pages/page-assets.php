@@ -475,7 +475,7 @@ function bae_assets_tab($user_id, $profile) {
             fetch(ajaxurl, { method:'POST', body:fd })
                 .then(function(r) { return r.json(); })
                 .then(function(j) {
-                    if (j && j.success && j.data && j.data.first_time) {
+                    if (j && j.success) {
                         baeNeedsFirstAssetView = false;
                         var guide = document.getElementById('bae-assets-first-view-guide');
                         if (guide) {

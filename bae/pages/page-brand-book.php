@@ -276,6 +276,14 @@ function bntm_ajax_bae_mark_asset_viewed() {
     if ($ticket) {
         $where['ticket'] = $ticket;
         $where_format[] = '%s';
+    } elseif (!empty($_COOKIE['bae_session'])) {
+        $session = sanitize_text_field($_COOKIE['bae_session']);
+        if (preg_match('/^[a-f0-9]{32}$/', $session)) {
+            $where['session_id'] = $session;
+            $where_format[] = '%s';
+        } else {
+            wp_send_json_error(['message' => 'Unauthorized']);
+        }
     } elseif (is_user_logged_in()) {
         $where['user_id'] = get_current_user_id();
         $where_format[] = '%d';

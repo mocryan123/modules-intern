@@ -1,5 +1,5 @@
-<?php
 if (!defined('ABSPATH')) exit;
+<?php
 
 function bae_render_modern_dashboard($user_id, $profile) {
     if (empty($profile)) return bae_overview_tab($user_id, $profile);
