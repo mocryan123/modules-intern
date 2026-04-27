@@ -1270,7 +1270,6 @@
                 ok = (json.success === true || json.success === 1 || json.success === '1' || json.success === 'true' || json.status === 'success');
                 if (!ok && json.data && (json.data.success === true || json.data.success === 1 || json.data.success === '1')) ok = true;
                 if (!ok && json.data && json.data.status === 'success') ok = true;
-                if (!ok && json.data && json.data.message && !/error|fail|invalid/i.test(String(json.data.message))) ok = true;
               } else if (res.ok) {
                 ok = true;
               }
@@ -4537,7 +4536,6 @@
                 ok = (json.success === true || json.success === 1 || json.success === '1' || json.success === 'true' || json.status === 'success');
                 if (!ok && json.data && (json.data.success === true || json.data.success === 1 || json.data.success === '1')) ok = true;
                 if (!ok && json.data && json.data.status === 'success') ok = true;
-                if (!ok && json.data && json.data.message && !/error|fail|invalid/i.test(String(json.data.message))) ok = true;
             } else if (res.ok) {
                 ok = true;
             }

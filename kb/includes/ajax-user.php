@@ -219,7 +219,7 @@ if (!function_exists('kbf_is_onboarding_complete')) {
         }
         global $wpdb;
         $pt = $wpdb->prefix.'kbf_organizer_profiles';
-        $profile = $wpdb->get_row($wpdb->prepare("SELECT bio,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d", $user_id));
+        $profile = $wpdb->get_row($wpdb->prepare("SELECT bio,profile_type,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d", $user_id));
         $user = get_userdata($user_id);
         $social_name = (string)get_user_meta($user_id, 'kbf_social_name', true);
         $address = (string)get_user_meta($user_id, 'kbf_address', true);
