@@ -414,7 +414,7 @@ function ch_guest_landing_page()
                             <div class="ch-no-notifications">Loading...</div>
                         </div>
                         <div class="ch-dropdown-footer">
-                            <a href="?tab=profile">View all notifications</a>
+                            <a href="#" onclick="chOpenAllNotifications(event)">View all notifications</a>
                         </div>
                     </div>
                 </div>
@@ -4056,7 +4056,7 @@ function ch_public_user_profile($view_uid)
                                 <div class="ch-no-notifications">Loading...</div>
                             </div>
                             <div class="ch-dropdown-footer">
-                                <a href="?tab=profile">View all notifications</a>
+                                <a href="#" onclick="chOpenAllNotifications(event)">View all notifications</a>
                             </div>
                         </div>
                     </div>
@@ -4690,7 +4690,7 @@ function bntm_shortcode_ch_feed()
                                 <div class="ch-no-notifications">Loading...</div>
                             </div>
                             <div class="ch-dropdown-footer">
-                                <a href="?tab=profile">View all notifications</a>
+                                <a href="#" onclick="chOpenAllNotifications(event)">View all notifications</a>
                             </div>
                         </div>
                     </div>
@@ -6820,7 +6820,7 @@ function bntm_shortcode_ch_post_view()
                             <div class="ch-no-notifications">Loading...</div>
                         </div>
                         <div class="ch-dropdown-footer">
-                            <a href="?tab=profile">View all notifications</a>
+                            <a href="#" onclick="chOpenAllNotifications(event)">View all notifications</a>
                         </div>
                     </div>
                 </div>
@@ -7276,6 +7276,21 @@ function bntm_shortcode_ch_post_view()
         ]);
     ?>
     <?php endif; ?>
+    <!-- All Notifications Modal -->
+    <div id="ch-modal-all-notifications" class="ch-modal-overlay" style="display:none">
+        <div class="ch-modal ch-modal-lg">
+            <div class="ch-modal-header">
+                <h3>All Notifications</h3>
+                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-all-notifications')">&times;</button>
+            </div>
+            <div class="ch-modal-body" style="padding:0">
+                <div id="ch-all-notifications-list" class="ch-notifications-list" style="max-height:70vh;overflow-y:auto;padding:8px 0"></div>
+                <div id="ch-all-notifications-footer" style="padding:12px;text-align:center;display:none">
+                    <button class="ch-btn ch-btn-outline ch-btn-sm" onclick="chLoadMoreNotifications()">Load more</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Report Modal -->
     <div id="ch-modal-report" class="ch-modal-overlay" style="display:none">
         <div class="ch-modal">
