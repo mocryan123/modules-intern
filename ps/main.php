@@ -138,7 +138,9 @@ function bntm_shortcode_ps_dashboard() {
 
     ob_start();
     ?>
-    <script>var ajaxurl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';</script>
+    <script>
+    var ajaxurl = '<?php echo esc_js( set_url_scheme( admin_url( 'admin-ajax.php' ), is_ssl() ? 'https' : 'http' ) ); ?>';
+    </script>
 
     <!-- EmailJS SDK (needed for ready-for-pickup notifications) -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -1308,7 +1310,7 @@ function bntm_shortcode_ps_order() {
     </script>
 
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script>var ajaxurl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';</script>
+    <script>var ajaxurl = '<?php echo esc_js( set_url_scheme( admin_url( 'admin-ajax.php' ), is_ssl() ? 'https' : 'http' ) ); ?>';</script>
 
     <div class="pso-root">
 
@@ -2555,7 +2557,7 @@ function bntm_shortcode_ps_tracking() {
         emailjs.init('<?php echo esc_js(PS_EMAILJS_PUBLIC_KEY); ?>');
     })();
     </script>
-    <script>var ajaxurl = '<?php echo esc_js(admin_url('admin-ajax.php')); ?>';</script>
+    <script>var ajaxurl = '<?php echo esc_js( set_url_scheme( admin_url( 'admin-ajax.php' ), is_ssl() ? 'https' : 'http' ) ); ?>';</script>
 
     <div class="ps-track-wrapper">
         <h2 style="font-size:24px;font-weight:700;margin-bottom:8px;color:#1a3c8f;">Track Your Order</h2>
@@ -2968,15 +2970,23 @@ function bntm_ajax_ps_delete_order() {
 }
 
 function bntm_ajax_ps_check_new_orders() {
-    check_ajax_referer('ps_check_nonce', 'nonce');
+    $nonce_result = check_ajax_referer( 'ps_check_nonce', 'nonce', false );
+    if ( ! $nonce_result ) {
+        // Nonce failed — likely a cookie/domain issue on the subdomain.
+        // Log it for debugging, then bail.
+        if ( defined('WP_DEBUG_LOG') && WP_DEBUG_LOG ) {
+            error_log( 'PrintEase: ps_check_new_orders nonce failed. Referer: ' . ( $_SERVER['HTTP_REFERER'] ?? 'none' ) );
+        }
+        wp_send_json_error( [ 'message' => 'Security check failed. Please refresh the page and try again.' ] );
+    }
     if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
 
     global $wpdb;
     $t = $wpdb->prefix . 'ps_orders';
     $last_check = intval($_POST['last_check'] ?? 0);
     
-    // Convert milliseconds to seconds and add to a datetime
-    $last_check_time = date('Y-m-d H:i:s', floor($last_check / 1000));
+    // Convert JS milliseconds (UTC) to the same timezone WordPress uses for created_at
+    $last_check_time = get_date_from_gmt( gmdate( 'Y-m-d H:i:s', floor( $last_check / 1000 ) ) );
     
     // Get new orders since last check, limit to 10
     $orders = $wpdb->get_results($wpdb->prepare(
