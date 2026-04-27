@@ -1546,7 +1546,9 @@ function ch_get_overview_counts()
             "SELECT
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS total_posts,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_comments WHERE status = 'active') AS total_comments,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles) AS total_users,
+            (SELECT COUNT(*)
+             FROM {$wpdb->prefix}ch_user_profiles p
+             INNER JOIN {$wpdb->users} u ON p.user_id = u.ID) AS total_users,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_categories WHERE status = 'active') AS total_cats,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'pending') AS pending_posts,
@@ -1587,8 +1589,14 @@ function ch_get_moderation_stats()
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'active') AS active_posts,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE status = 'removed') AS removed_posts,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_reports WHERE status = 'pending') AS pending_reports,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status = 'suspended') AS suspended_users,
-            (SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles WHERE status = 'banned') AS banned_users,
+            (SELECT COUNT(*)
+             FROM {$wpdb->prefix}ch_user_profiles p
+             INNER JOIN {$wpdb->users} u ON p.user_id = u.ID
+             WHERE p.status = 'suspended') AS suspended_users,
+            (SELECT COUNT(*)
+             FROM {$wpdb->prefix}ch_user_profiles p
+             INNER JOIN {$wpdb->users} u ON p.user_id = u.ID
+             WHERE p.status = 'banned') AS banned_users,
             (SELECT COUNT(*) FROM {$wpdb->prefix}ch_votes) AS total_votes"
     );
 
@@ -2462,13 +2470,13 @@ function ch_users_tab($user_id, $is_admin)
 
     $total = (int) $wpdb->get_var(
         "SELECT COUNT(*) FROM {$wpdb->prefix}ch_user_profiles p
-         LEFT JOIN {$wpdb->users} u ON p.user_id = u.ID $where"
+         INNER JOIN {$wpdb->users} u ON p.user_id = u.ID $where"
     );
 
     $users = $wpdb->get_results(
         "SELECT p.*, u.user_email, u.user_registered
          FROM {$wpdb->prefix}ch_user_profiles p
-         LEFT JOIN {$wpdb->users} u ON p.user_id = u.ID
+         INNER JOIN {$wpdb->users} u ON p.user_id = u.ID
          $where
          ORDER BY p.created_at DESC
          LIMIT {$per_page} OFFSET {$offset}"
