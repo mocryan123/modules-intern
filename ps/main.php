@@ -491,18 +491,57 @@ function bntm_shortcode_ps_dashboard() {
             }
         });
 
-        // Check for new orders every 5 seconds
+        // ── AudioContext: create once on first user gesture so mobile allows sound ──
+        let audioCtx = null;
+        function ensureAudioCtx() {
+            if (!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().catch(() => {});
+            }
+        }
+        // Unlock audio on first touch/click (required by iOS/Android)
+        document.addEventListener('touchstart', ensureAudioCtx, { once: true, passive: true });
+        document.addEventListener('click',      ensureAudioCtx, { once: true });
+
+        function playNotificationSound() {
+            try {
+                ensureAudioCtx();
+                if (!audioCtx) return;
+                const osc  = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = 800;
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.5);
+            } catch(e) {
+                // Sound not available — silent fail is fine
+            }
+        }
+
+        // ── Polling ──
+        let pollTimer = null;
+        let isFetching = false; // prevent overlapping requests on slow connections
+
         function checkNewOrders() {
+            if (isFetching) return;
+            isFetching = true;
+            const checkTime = lastCheckTime; // snapshot before fetch
             fetch(ajaxurl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'action=ps_check_new_orders&nonce=<?php echo wp_create_nonce('ps_check_nonce'); ?>&last_check=' + lastCheckTime
+                body: 'action=ps_check_new_orders&nonce=<?php echo wp_create_nonce('ps_check_nonce'); ?>&last_check=' + checkTime
             })
             .then(r => r.json())
             .then(res => {
+                // Always advance the clock so we never re-fetch the same window
+                lastCheckTime = new Date().getTime();
                 if (res.success && res.data.orders && res.data.orders.length > 0) {
                     const unreadOrders = res.data.orders.filter(o => !readOrderIds.has(String(o.id)));
-                    lastCheckTime = new Date().getTime();
                     updateNotificationPanel(res.data.orders);
                     if (unreadOrders.length > 0) {
                         notificationCount = unreadOrders.length;
@@ -514,8 +553,38 @@ function bntm_shortcode_ps_dashboard() {
                     }
                 }
             })
-            .catch(err => console.log('Notification check failed:', err));
+            .catch(() => {}) // silent on network errors (common on mobile)
+            .finally(() => { isFetching = false; });
         }
+
+        function startPolling() {
+            if (pollTimer) return;
+            checkNewOrders(); // immediate check when we (re)gain focus
+            pollTimer = setInterval(checkNewOrders, 5000);
+        }
+        function stopPolling() {
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        }
+
+        // ── Pause polling when tab/screen is hidden, resume when visible ──
+        // This is the key fix for mobile: browsers throttle/kill setInterval
+        // when the page is backgrounded. We restart it fresh on visibility restore.
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                startPolling();
+            } else {
+                stopPolling();
+            }
+        });
+
+        // Also re-poll on page focus (covers PWA / app-switcher return on iOS)
+        window.addEventListener('focus', function() {
+            if (document.visibilityState === 'visible') startPolling();
+        });
+        window.addEventListener('pageshow', function(e) {
+            // pageshow fires on back/forward cache restore on iOS Safari
+            startPolling();
+        });
 
         function updateNotificationPanel(orders) {
             notifyItems.innerHTML = '';
@@ -526,7 +595,7 @@ function bntm_shortcode_ps_dashboard() {
                 const customerFontSize = isMobileView ? '13px' : '12px';
                 const timeFontSize = isMobileView ? '12px' : '11px';
                 const minTouchHeight = isMobileView ? '60px' : 'auto';
-                
+
                 const isRead = readOrderIds.has(String(order.id));
                 item.style.cssText = `padding:${padding};border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .2s;min-height:${minTouchHeight};display:flex;align-items:center;opacity:${isRead ? '0.5' : '1'};`;
                 item.setAttribute('data-order-id', order.id);
@@ -543,24 +612,29 @@ function bntm_shortcode_ps_dashboard() {
                         <div style="text-align:right;font-weight:600;font-size:${fontSize};color:#16a34a;white-space:nowrap;margin-left:8px;flex-shrink:0;">₱${parseFloat(order.total_price).toFixed(2)}</div>
                     </div>
                 `;
-                item.addEventListener('mouseover', () => { if (!isMobileView) item.style.background = '#f9fafb'; });
-                item.addEventListener('mouseout', () => { if (!isMobileView) item.style.background = 'transparent'; });
-                item.addEventListener('click', () => {
-                    const orderId = item.getAttribute('data-order-id');
-                    markOrderRead(orderId);
-                    openNotificationOrder(orderId);
-                });
+                // Touch-friendly: use touchend for tap on mobile, click on desktop
+                if (isMobileView) {
+                    let touchMoved = false;
+                    item.addEventListener('touchstart', () => { touchMoved = false; item.style.background = '#f0f4ff'; }, { passive: true });
+                    item.addEventListener('touchmove',  () => { touchMoved = true;  item.style.background = 'transparent'; }, { passive: true });
+                    item.addEventListener('touchend',   () => {
+                        item.style.background = 'transparent';
+                        if (!touchMoved) { markOrderRead(item.getAttribute('data-order-id')); openNotificationOrder(item.getAttribute('data-order-id')); }
+                    });
+                } else {
+                    item.addEventListener('mouseover', () => item.style.background = '#f9fafb');
+                    item.addEventListener('mouseout',  () => item.style.background = 'transparent');
+                    item.addEventListener('click', () => { markOrderRead(item.getAttribute('data-order-id')); openNotificationOrder(item.getAttribute('data-order-id')); });
+                }
                 notifyItems.appendChild(item);
             });
         }
 
         function openNotificationOrder(orderId) {
-            // Close notification panel first
             bellPanel.style.display = 'none';
             const backdrop = document.getElementById('ps-notification-backdrop');
             if (backdrop) backdrop.remove();
 
-            // Fetch and open order details in modal
             fetch(ajaxurl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -580,26 +654,8 @@ function bntm_shortcode_ps_dashboard() {
             });
         }
 
-        function playNotificationSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = 800;
-                gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-                osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + 0.5);
-            } catch(e) {
-                console.log('Audio notification not available');
-            }
-        }
-
-        // Start checking for new orders
-        checkNewOrders();
-        setInterval(checkNewOrders, 5000);
+        // Start polling
+        startPolling();
     })();
     </script>
     <?php
