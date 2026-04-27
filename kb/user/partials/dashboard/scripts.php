@@ -284,7 +284,10 @@
           }
 
           var body = modal.querySelector('.kbf-modal-body');
-          if (body) body.scrollTop = 0;
+          if (body) {
+            if (typeof body.scrollTo === 'function') body.scrollTo({ top: 0, behavior: 'smooth' });
+            else body.scrollTop = 0;
+          }
           updateSaveCloseState();
         }
 
@@ -2022,10 +2025,16 @@
         var modal = document.getElementById('kbf-modal-create');
         if (modal) {
             var body = modal.querySelector('.kbf-modal-body');
-            if (body) body.scrollTop = 0;
+          if (body) {
+            if (typeof body.scrollTo === 'function') body.scrollTo({ top: 0, behavior: 'smooth' });
+            else body.scrollTop = 0;
+          }
         }
         var activePanel = form.querySelector('.kbf-step-content.is-active');
-        if (activePanel) activePanel.scrollTop = 0;
+        if (activePanel) {
+          if (typeof activePanel.scrollTo === 'function') activePanel.scrollTo({ top: 0, behavior: 'smooth' });
+          else activePanel.scrollTop = 0;
+        }
         var prev = document.getElementById('kbf-create-prev');
         var next = document.getElementById('kbf-create-next');
         var submit = document.getElementById('kbf-create-submit');
@@ -2071,6 +2080,19 @@
             var pStep = parseInt(p.getAttribute('data-step') || '0', 10);
             if (pStep === n) p.classList.add('is-active');
             else p.classList.remove('is-active');
+        }
+        var modal = document.getElementById('kbf-modal-edit');
+        if (modal) {
+          var body = modal.querySelector('.kbf-modal-body');
+          if (body) {
+            if (typeof body.scrollTo === 'function') body.scrollTo({ top: 0, behavior: 'smooth' });
+            else body.scrollTop = 0;
+          }
+        }
+        var activePanel = form.querySelector('.kbf-step-content.is-active');
+        if (activePanel) {
+          if (typeof activePanel.scrollTo === 'function') activePanel.scrollTo({ top: 0, behavior: 'smooth' });
+          else activePanel.scrollTop = 0;
         }
         var prev = document.getElementById('kbf-edit-prev');
         var next = document.getElementById('kbf-edit-next');
@@ -3769,7 +3791,7 @@
      * @status    ACTIVE
      */
     window.kbfRequestCloseCreate = function(){
-        kbfCloseModal('kbf-modal-create');
+      kbfCloseModal('kbf-modal-create');
     };
     /**
      * @function  kbfSaveAndCloseCreateDraft

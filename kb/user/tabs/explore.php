@@ -658,7 +658,6 @@ function kbf_dashboard_find_funds_tab() {
         min-width:0;
         box-sizing:border-box;
       }
-      .kbf-explore-card.is-menu-open{z-index:60;}
       .kbf-explore-card:hover{
         box-shadow:var(--kbf-shadow-lg);
         transform:translateY(-2px);
@@ -737,6 +736,9 @@ function kbf_dashboard_find_funds_tab() {
         -webkit-box-orient:vertical;
         -webkit-line-clamp:2;
         line-clamp:2;
+        line-height:1.45;
+        min-height:calc(1.45em * 2);
+        max-height:calc(1.45em * 2);
         overflow:hidden;
         white-space:normal;
         text-overflow:ellipsis;
@@ -749,6 +751,7 @@ function kbf_dashboard_find_funds_tab() {
         font-size:11.5px;
         color:var(--kbf-slate);
         gap:8px;
+        min-height:18px;
       }
       .kbf-explore-meta-item{
         display:inline-flex;
@@ -772,6 +775,7 @@ function kbf_dashboard_find_funds_tab() {
         background:#eef2f7;
         border-radius:999px;
         overflow:hidden;
+        margin-top:auto;
       }
       .kbf-explore-progress span{
         display:block;
@@ -797,11 +801,16 @@ function kbf_dashboard_find_funds_tab() {
         gap:8px;
         align-items:center;
       }
-      .kbf-explore-actions.is-own{ grid-template-columns:minmax(0,1fr) auto auto; }
-      .kbf-explore-actions.is-public{ grid-template-columns:minmax(0,1fr) auto auto; }
+      .kbf-explore-actions.is-own{ grid-template-columns:minmax(0,1fr) auto; }
+      .kbf-explore-actions.is-public{ grid-template-columns:minmax(0,1fr) auto; }
       .kbf-explore-actions > .kbf-btn-primary{
         min-width:0;
         width:100%;
+        height:38px;
+        min-height:38px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
         box-sizing:border-box;
       }
       .kbf-explore-card .kbf-btn-primary{
@@ -817,33 +826,6 @@ function kbf_dashboard_find_funds_tab() {
           0 2px 6px rgba(32, 112, 224, 0.16),
           0 6px 16px rgba(42, 120, 220, 0.22);
       }
-      .kbf-explore-more-wrap{position:relative;z-index:30;}
-      .kbf-explore-more-menu{
-        position:absolute;
-        right:0;
-        top:calc(100% + 8px);
-        background:rgba(255,255,255,0.98);
-        border:1px solid #e2e8f0;
-        border-radius:14px;
-        box-shadow:
-          0 14px 30px rgba(15,23,42,.12),
-          0 4px 10px rgba(15,23,42,.08);
-        padding:8px;
-        min-width:170px;
-        z-index:50;
-        opacity:0;
-        visibility:hidden;
-        pointer-events:none;
-        transform:translateY(-6px) scale(0.98);
-        transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
-        backdrop-filter:blur(10px);
-      }
-      .kbf-explore-more-menu.open{
-        opacity:1;
-        visibility:visible;
-        pointer-events:auto;
-        transform:translateY(0) scale(1);
-      }
       .kbf-explore-actions .kbf-btn-sm{
         width:38px;
         height:38px;
@@ -852,19 +834,6 @@ function kbf_dashboard_find_funds_tab() {
         display:inline-flex;
         align-items:center;
         justify-content:center;
-      }
-      .kbf-explore-more-menu .kbf-btn-sm{
-        width:100%;
-        min-width:0;
-        padding:8px 10px;
-        justify-content:flex-start;
-        border:0;
-        background:transparent;
-        border-radius:10px;
-        font-size:12.5px;
-        font-weight:600;
-        color:#0f172a;
-        transition:background .15s ease, color .15s ease, transform .15s ease;
       }
       .kbf-explore-actions .kbf-btn-sm i{margin:0;}
       .kbf-save-btn{
@@ -905,39 +874,6 @@ function kbf_dashboard_find_funds_tab() {
       }
       .kbf-save-btn.is-saved i{
         color:#3b82f6;
-      }
-      .kbf-explore-more-menu button{
-        width:100%;
-        justify-content:flex-start;
-        gap:8px;
-        margin:4px 0;
-        border:0;
-        background:transparent;
-        padding:8px 10px;
-        border-radius:10px;
-        font-size:12.5px;
-        font-weight:600;
-        color:#0f172a;
-        transition:background .15s ease, color .15s ease, transform .15s ease;
-      }
-      .kbf-explore-more-menu .kbf-btn,
-      .kbf-explore-more-menu .kbf-btn-secondary{
-        background:transparent !important;
-        border:0 !important;
-        box-shadow:none !important;
-      }
-      .kbf-explore-more-menu button:hover,
-      .kbf-explore-more-menu .kbf-btn:hover,
-      .kbf-explore-more-menu .kbf-btn-secondary:hover{
-        background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
-        color:#0f172a !important;
-        transform:none;
-        box-shadow:
-          inset 0 0 0 1px #bfdbfe,
-          0 8px 18px rgba(59,130,246,.16);
-      }
-      .kbf-explore-more-menu button:active{
-        background:#e7f1ff;
       }
       .kbf-explore-pager{
         display:flex;
@@ -1497,7 +1433,7 @@ function kbf_dashboard_find_funds_tab() {
         <div class="kbf-explore-body">
           <a href="<?php echo $detail_url; ?>" style="text-decoration:none;">
           <div class="kbf-explore-title-row">
-            <h4 class="kbf-explore-title kbf-explore-title-text"><?php echo esc_html($f->title); ?></h4>
+            <h4 class="kbf-explore-title kbf-explore-title-text" title="<?php echo esc_attr($f->title); ?>"><?php echo esc_html($f->title); ?></h4>
             <?php if(!empty($f->verified_badge)): ?><span class="kbf-badge kbf-badge-verified">Verified</span><?php endif; ?>
           </div>
         </a>
@@ -1536,21 +1472,6 @@ function kbf_dashboard_find_funds_tab() {
                 <i class="<?php echo esc_attr($save_icon); ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
                 <span class="kbf-save-loader" aria-hidden="true"></span>
               </button>
-            <div class="kbf-explore-more-wrap">
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleExploreMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
-                <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-              </button>
-              <div class="kbf-explore-more-menu" id="kbf-explore-more-<?php echo esc_attr($f->id); ?>">
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
-                  <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-                  Share
-                </button>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();<?php if(!$current_user_id): ?>if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to report abuse.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}<?php else: ?>if(window.kbffOpenReport){window.kbffOpenReport(<?php echo (int)$f->id; ?>);}<?php endif; ?>">
-                  <i class="ph ph-flag kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-                  Report Abuse
-                </button>
-              </div>
-            </div>
           </div>
           <?php else: ?>
           <div class="kbf-explore-actions is-public">
@@ -1559,21 +1480,6 @@ function kbf_dashboard_find_funds_tab() {
                 <i class="<?php echo esc_attr($save_icon); ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
                 <span class="kbf-save-loader" aria-hidden="true"></span>
               </button>
-            <div class="kbf-explore-more-wrap">
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleExploreMore(event,'<?php echo esc_js($f->id); ?>')" title="More" data-tooltip="More">
-                <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-              </button>
-              <div class="kbf-explore-more-menu" id="kbf-explore-more-<?php echo esc_attr($f->id); ?>">
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();kbffShareFund('<?php echo esc_js($f->share_token); ?>','<?php echo esc_js($f->title); ?>','<?php echo esc_js(wp_trim_words($f->description,18)); ?>')">
-                  <i class="ph ph-share kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-                  Share
-                </button>
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="event.stopPropagation();<?php if(!$current_user_id): ?>if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to report abuse.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}<?php else: ?>if(window.kbffOpenReport){window.kbffOpenReport(<?php echo (int)$f->id; ?>);}<?php endif; ?>">
-                  <i class="ph ph-flag kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-                  Report Abuse
-                </button>
-              </div>
-            </div>
           </div>
           <?php endif; ?>
         </div>
@@ -2005,39 +1911,6 @@ function kbf_dashboard_find_funds_tab() {
             });
         };
     }
-    /**
-     * @function  kbfToggleExploreMore
-     * @purpose   Toggles a card action dropdown and closes other open dropdowns.
-     * @used-by   [More button onclick on explore cards]
-     * @calls     [document.getElementById, querySelectorAll, classList.toggle]
-     * @params    [Event e - Click event, number|string id - Fund identifier]
-     * @returns   [void]
-     * @status    ACTIVE
-     */
-    window.kbfToggleExploreMore=function(e,id){
-        if(e) e.stopPropagation();
-        var menu = document.getElementById('kbf-explore-more-' + id);
-        if(!menu) return;
-        var card = menu.closest('.kbf-explore-card');
-        menu.onclick = function(ev){ ev.stopPropagation(); };
-        document.querySelectorAll('.kbf-explore-more-menu.open').forEach(function(m){
-            if(m !== menu) m.classList.remove('open');
-        });
-        document.querySelectorAll('.kbf-explore-card.is-menu-open').forEach(function(c){
-            if(!card || c !== card) c.classList.remove('is-menu-open');
-        });
-        menu.classList.toggle('open');
-        if(card){ card.classList.toggle('is-menu-open', menu.classList.contains('open')); }
-    };
-    document.addEventListener('click', function(){
-        document.querySelectorAll('.kbf-explore-more-menu.open').forEach(function(m){
-            m.classList.remove('open');
-        });
-        document.querySelectorAll('.kbf-explore-card.is-menu-open').forEach(function(c){
-            c.classList.remove('is-menu-open');
-        });
-    });
-
       /**
        * @function  kbffSetModalLock
        * @purpose   Bridges modal open/close states to the shared page scroll lock controller.

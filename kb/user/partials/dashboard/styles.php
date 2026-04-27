@@ -985,6 +985,7 @@
         padding:22px 24px 20px;
         background:#fff;
         overflow-y:auto;
+        scroll-behavior:smooth;
         max-height:70vh;
     }
     .kbf-user-ui #kbf-modal-create .kbf-modal-body,
@@ -1426,6 +1427,7 @@
         height:500px;
         overflow-y:auto;
         overflow-x:hidden;
+        scroll-behavior:smooth;
     }
     .kbf-user-ui #kbf-modal-create .kbf-step-content[data-step="3"]{
         height:auto;
@@ -1450,6 +1452,7 @@
         height:500px;
         overflow-y:auto;
         overflow-x:hidden;
+        scroll-behavior:smooth;
     }
     @media (max-width: 900px){
         .kbf-user-ui #kbf-modal-edit .kbf-step-content{
@@ -2745,6 +2748,7 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     #kbf-modal-create.is-success .kbf-modal-body form,
     #kbf-modal-create.is-success .kbf-modal-footer{display:none;}
     #kbf-modal-create.is-success .kbf-create-success{display:flex;}
+    #kbf-modal-create.is-success .kbf-modal-header .kbf-modal-close{display:none;}
     @keyframes kbfSuccessRing{to{stroke-dashoffset:0;}}
     @keyframes kbfSuccessCheck{to{stroke-dashoffset:0;}}
         /* ===== AUDIT SAFE OVERRIDES ===== */
