@@ -9462,6 +9462,33 @@ function ch_global_scripts()
                 document.querySelectorAll('.ch-share-menu.show').forEach(menu => menu.classList.remove('show'));
             };
 
+            window.chOpenFeedShareModal = function (url, title) {
+                const modal = document.getElementById('ch-modal-share-feed-post');
+                if (!modal) return;
+                modal.dataset.shareUrl = url || '';
+                modal.dataset.shareTitle = title || '';
+                if (typeof window.chOpenModal === 'function') {
+                    window.chOpenModal('ch-modal-share-feed-post');
+                } else {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+            };
+
+            window.chShareFeedPost = function (platform) {
+                const modal = document.getElementById('ch-modal-share-feed-post');
+                if (!modal) return;
+                const shareUrl = modal.dataset.shareUrl || '';
+                const shareTitle = modal.dataset.shareTitle || '';
+                window.chShareToSocial(platform, shareUrl, shareTitle);
+                if (typeof window.chCloseModal === 'function') {
+                    window.chCloseModal('ch-modal-share-feed-post');
+                } else {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            };
+
             // Close share menus when clicking outside
             document.addEventListener('click', function (e) {
                 if (!e.target.closest('.ch-share-dropdown')) {
