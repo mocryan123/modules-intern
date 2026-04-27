@@ -2970,9 +2970,9 @@ function ch_global_styles()
         }
 
         .ch-view-all-btn:hover {
-            color: var(--ch-text);
-            background: var(--ch-hover);
-            border-color: var(--ch-border-hover);
+            color: var(--ch-accent);
+            background: var(--ch-accent-light, rgba(255, 117, 81, 0.1));
+            border-color: var(--ch-accent-mid, var(--ch-accent));
         }
 
         .ch-view-all-btn:active {
