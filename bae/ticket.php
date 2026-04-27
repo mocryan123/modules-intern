@@ -549,7 +549,9 @@ function bntm_bae_inject_settings_ticket( $html ) {
 function bntm_bae_ajax_toggle_login_code() {
     $ticket = bntm_bae_read_ticket();
     if ( ! bntm_bae_ticket_valid( $ticket ) ) {
-        wp_send_json_error( [ 'message' => 'Invalid ticket.' ] );
+        // Session-only users (no ticket yet) can't enable login verification —
+        // it requires a ticket to identify them on future logins.
+        wp_send_json_error( [ 'message' => 'Login verification requires a ticket. Claim your free ticket first to enable this feature.' ] );
     }
 
     global $wpdb;

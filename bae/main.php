@@ -1201,38 +1201,51 @@ function bae_wizard_shortcode($user_id) {
             var errEl   = document.getElementById('bae-wiz-token-err');
             var succEl  = document.getElementById('bae-wiz-token-success');
             var ticket  = (field ? field.value.trim().toUpperCase() : '');
-            if (!ticket) { if(errEl){errEl.style.display='block';errEl.textContent='Please enter a token.';} return; }
+            if (!ticket) { if(errEl){errEl.style.display='block';errEl.textContent='Please enter your ticket code.';} return; }
+            // Validate format before hitting server
+            if (!/^(BAE|ADM)-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(ticket)) {
+                if (errEl) { errEl.style.display='block'; errEl.textContent='Invalid format. Expected: BAE-XXXX-XXXX'; }
+                return;
+            }
             if (errEl)  errEl.style.display = 'none';
             if (succEl) succEl.style.display = 'none';
             if (btn) btn.disabled = true;
 
+            // Use bae_ticket_check (validates existence) not bae_claim_ticket (creates/stamps)
             var fd = new FormData();
-            fd.append('action', 'bae_claim_ticket');
+            fd.append('action', 'bae_ticket_check');
             fd.append('ticket', ticket);
             fd.append('nonce',  '<?php echo esc_js(wp_create_nonce("bae_claim_ticket")); ?>');
             fetch(ajaxurl, { method: 'POST', body: fd })
                 .then(function(r){ return r.json(); })
                 .then(function(data) {
                     if (data && data.success) {
+                        // Set ticket cookie then reload
+                        var exp = new Date(); exp.setFullYear(exp.getFullYear() + 1);
+                        document.cookie = 'bae_ticket=' + encodeURIComponent(ticket) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
                         if (succEl) { succEl.style.display='block'; }
                         setTimeout(function(){ window.location.reload(); }, 900);
                     } else {
-                        if (errEl) { errEl.style.display='block'; errEl.textContent = (data && data.data && data.data.message) ? data.data.message : 'Invalid token. Please try again.'; }
+                        if (errEl) { errEl.style.display='block'; errEl.textContent = (data && data.data && data.data.message) ? data.data.message : 'Ticket not found. Check your code and try again.'; }
                         if (btn) btn.disabled = false;
                     }
                 })
                 .catch(function(){ if(errEl){errEl.style.display='block';errEl.textContent='Connection error. Please try again.';} if(btn)btn.disabled=false; });
         }
-        // Enter key for token input
+        // Enter key and auto-format for token input
         (function(){
             var f = document.getElementById('bae-wiz-token-field');
             if (!f) return;
             f.addEventListener('input', function() {
-                var raw = this.value.replace(/[^A-Z0-9]/gi, '').toUpperCase().substring(0, 11);
+                // Strip non-alphanumeric, uppercase, limit to 12 chars (BAE + 4 + 4)
+                var raw = this.value.replace(/[^A-Z0-9]/gi, '').toUpperCase().substring(0, 12);
                 var out = raw;
-                if (raw.length >= 3 && raw.substring(0, 3) === 'BAE') {
-                    var rest = raw.substring(3);
-                    out = rest.length <= 4 ? 'BAE-' + rest : 'BAE-' + rest.substring(0, 4) + '-' + rest.substring(4, 8);
+                if (raw.length >= 3) {
+                    var p3 = raw.substring(0, 3);
+                    if (p3 === 'BAE' || p3 === 'ADM') {
+                        var rest = raw.substring(3);
+                        out = rest.length <= 4 ? p3 + '-' + rest : p3 + '-' + rest.substring(0, 4) + '-' + rest.substring(4, 8);
+                    }
                 }
                 this.value = out;
                 var errEl = document.getElementById('bae-wiz-token-err');
@@ -1682,6 +1695,13 @@ function bae_wizard_shortcode($user_id) {
             fd.append('font_body',       'Inter');
             fd.append('logo_style',      'wordmark');
             fd.append('logo_icon',       '');
+            // FIX: Send ticket via POST so nopriv handler can read it even
+            // when the cookie hasn't propagated to $_COOKIE yet (new users)
+            var _tk = (function() {
+                var m = document.cookie.match('(?:^|; )bae_ticket=([^;]*)');
+                return m ? decodeURIComponent(m[1]) : '';
+            })();
+            if (_tk) fd.append('bae_ticket', _tk);
 
             document.getElementById('bae-wiz-gen-status').textContent = 'Saving your brand profile...';
 
@@ -5549,9 +5569,14 @@ function bntm_ajax_bae_consistency_scan() {
 // =============================================================================
 function bntm_ajax_bae_toolkit_checklist_save() {
     check_ajax_referer( 'bae_save_profile', 'nonce', false );
-    if ( ! is_user_logged_in() ) wp_send_json_error( [ 'message' => 'Unauthorized' ] );
 
-    $user_id    = get_current_user_id();
+    // Allow ticket or session identity (not WP login required)
+    $ticket  = bae_get_ticket_cookie();
+    $session = !empty($_COOKIE['bae_session']) ? sanitize_text_field($_COOKIE['bae_session']) : '';
+    if ( !$ticket && !$session && !is_user_logged_in() ) {
+        wp_send_json_error( [ 'message' => 'No identity found. Please refresh.' ] );
+    }
+
     $profile_id = intval( $_POST['profile_id'] ?? 0 );
     $key        = sanitize_key( $_POST['key'] ?? '' );
     $checked    = isset($_POST['checked']) ? (int) $_POST['checked'] : 0;
@@ -5559,24 +5584,36 @@ function bntm_ajax_bae_toolkit_checklist_save() {
 
     if ( ! $profile_id ) wp_send_json_error( [ 'message' => 'Missing profile.' ] );
 
-    $meta_key = 'bae_toolkit_checklist_' . $profile_id;
+    global $wpdb;
+    $table = $wpdb->prefix . 'bae_profiles';
 
-    if ( $reset ) {
-        update_user_meta( $user_id, $meta_key, wp_json_encode( [] ) );
-        wp_send_json_success( [ 'message' => 'Checklist reset.' ] );
+    // Use WP user meta for logged-in users, profile column for ticket/session users
+    if ( is_user_logged_in() ) {
+        $user_id  = get_current_user_id();
+        $meta_key = 'bae_toolkit_checklist_' . $profile_id;
+        if ( $reset ) {
+            update_user_meta( $user_id, $meta_key, wp_json_encode( [] ) );
+            wp_send_json_success( [ 'message' => 'Checklist reset.' ] );
+        }
+        if ( ! $key ) wp_send_json_error( [ 'message' => 'Missing key.' ] );
+        $raw   = get_user_meta( $user_id, $meta_key, true );
+        $state = ( is_string($raw) && $raw ) ? (json_decode($raw, true) ?: []) : [];
+        $state[$key] = $checked ? 1 : 0;
+        update_user_meta( $user_id, $meta_key, wp_json_encode($state) );
+    } else {
+        // Store checklist in profile row as JSON in toolkit_checklist column (if exists), else silently succeed
+        $wpdb->hide_errors();
+        $col_exists = $wpdb->get_results("SHOW COLUMNS FROM `{$table}` LIKE 'toolkit_checklist'");
+        if ( $col_exists ) {
+            $where = $ticket ? ['ticket' => $ticket] : ['session_id' => $session];
+            $raw   = $wpdb->get_var($wpdb->prepare("SELECT toolkit_checklist FROM {$table} WHERE id = %d", $profile_id));
+            $state = ( is_string($raw) && $raw ) ? (json_decode($raw, true) ?: []) : [];
+            if ($reset) $state = [];
+            else $state[$key] = $checked ? 1 : 0;
+            $wpdb->update($table, ['toolkit_checklist' => wp_json_encode($state)], ['id' => $profile_id]);
+        }
+        $wpdb->show_errors();
     }
-
-    if ( ! $key ) wp_send_json_error( [ 'message' => 'Missing key.' ] );
-
-    $raw = get_user_meta( $user_id, $meta_key, true );
-    $state = [];
-    if ( is_string( $raw ) && $raw ) {
-        $decoded = json_decode( $raw, true );
-        if ( is_array( $decoded ) ) $state = $decoded;
-    }
-
-    $state[ $key ] = $checked ? 1 : 0;
-    update_user_meta( $user_id, $meta_key, wp_json_encode( $state ) );
 
     wp_send_json_success( [ 'saved' => true ] );
 }
@@ -5586,7 +5623,11 @@ function bntm_ajax_bae_toolkit_checklist_save() {
 // =============================================================================
 function bntm_ajax_bae_upload_logo() {
     check_ajax_referer( 'bae_save_profile', 'nonce', false );
-    if ( !is_user_logged_in() ) wp_send_json_error(['message' => 'Unauthorized.']);
+    $ticket  = bae_get_ticket_cookie();
+    $session = !empty($_COOKIE['bae_session']) ? sanitize_text_field($_COOKIE['bae_session']) : '';
+    if ( !$ticket && !$session && !is_user_logged_in() ) {
+        wp_send_json_error(['message' => 'No identity found. Please refresh.']);
+    }
     if ( empty($_FILES['logo_file']) ) wp_send_json_error(['message' => 'No file uploaded.']);
 
     require_once ABSPATH . 'wp-admin/includes/image.php';
