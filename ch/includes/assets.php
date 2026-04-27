@@ -546,7 +546,7 @@ function ch_global_styles()
 
         .ch-notification-item:not(.unread) {
             opacity: 0.62;
-            background: color-mix(in srgb, var(--ch-bg) 70%, var(--ch-surface));
+            background: #f8f4f2;
         }
 
         .ch-notification-item:not(.unread) .ch-notification-message {
@@ -560,16 +560,16 @@ function ch_global_styles()
 
         /* ── Unread state ── */
         .ch-notification-item.unread {
-            background: color-mix(in srgb, var(--ch-accent) 24%, var(--ch-surface));
-            border-left-color: var(--ch-accent);
+            background: #fff1ea;
+            border-left-color: #ff6b3d;
             box-shadow:
-                inset 0 0 0 1px color-mix(in srgb, var(--ch-accent) 24%, transparent),
+                inset 0 0 0 1px rgba(255, 107, 61, 0.22),
                 0 6px 18px rgba(15, 23, 42, 0.08);
             opacity: 1;
         }
 
         .ch-notification-item.unread:hover {
-            background: color-mix(in srgb, var(--ch-accent) 30%, var(--ch-surface));
+            background: #ffe7dc;
         }
 
         .ch-notification-item.unread .ch-notification-message {
@@ -7385,15 +7385,15 @@ function ch_global_styles()
         /* Notification unread item — dark mode */
         .ch-dark .ch-notification-item.unread,
         .ch-dashboard-wrap.ch-dark .ch-notification-item.unread {
-            background: color-mix(in srgb, var(--ch-accent) 24%, var(--ch-surface));
+            background: rgba(255, 117, 81, 0.18);
             box-shadow:
-                inset 0 0 0 1px color-mix(in srgb, var(--ch-accent) 24%, transparent),
+                inset 0 0 0 1px rgba(255, 117, 81, 0.28),
                 0 8px 24px rgba(0, 0, 0, 0.24);
         }
 
         .ch-dark .ch-notification-item.unread:hover,
         .ch-dashboard-wrap.ch-dark .ch-notification-item.unread:hover {
-            background: color-mix(in srgb, var(--ch-accent) 30%, var(--ch-surface));
+            background: rgba(255, 117, 81, 0.24);
         }
 
         .ch-dark .ch-notification-icon.type-reply,
