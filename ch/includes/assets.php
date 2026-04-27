@@ -2953,85 +2953,154 @@ function ch_global_styles()
         .ch-view-all-btn {
             width: 100%;
             min-height: 44px;
-            padding: 10px 12px;
-            border-radius: var(--ch-radius-sm);
+            padding: 10px 14px;
+            border-radius: var(--ch-radius);
             font-size: 13px;
             font-weight: 600;
-            line-height: 1.2;
+            line-height: normal;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.1s ease;
+            color: var(--ch-text-subtle);
+            background: transparent;
+            border: 1px solid var(--ch-border);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 8px;
         }
 
         .ch-view-all-btn:hover {
-            transform: translateY(-1px);
+            color: var(--ch-text);
+            background: var(--ch-hover);
+            border-color: var(--ch-border-hover);
         }
 
         .ch-view-all-btn:active {
-            transform: translateY(0);
+            transform: scale(0.98);
         }
 
         .ch-view-all-btn:focus-visible {
             outline: none;
             box-shadow: 0 0 0 3px color-mix(in srgb, var(--ch-accent) 22%, transparent);
+            border-color: var(--ch-accent);
         }
 
         .ch-category-modal-overlay {
-            padding: 16px;
-            animation: ch-category-modal-overlay-in 0.18s ease;
+            padding: 24px;
+            animation: ch-category-modal-overlay-in 0.2s ease-out forwards;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
         }
 
         .ch-modal.ch-modal-category-browser {
-            width: min(680px, calc(100vw - 32px));
-            max-width: 680px;
-            max-height: min(88vh, 760px);
-            margin: 0;
+            width: min(520px, calc(100vw - 32px));
+            max-width: 520px;
+            max-height: min(85vh, 700px);
+            margin: auto;
+            display: flex;
+            flex-direction: column;
             will-change: transform, opacity;
-            animation: ch-category-modal-pop-in 0.2s cubic-bezier(0.22, 0.9, 0.36, 1);
+            animation: ch-category-modal-pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+            border-radius: var(--ch-radius-lg, 12px);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.15);
+            background: var(--ch-bg, #fff);
+            border: 1px solid var(--ch-border, #e5e7eb);
+            overflow: hidden;
         }
 
         .ch-category-modal-header {
             padding: 16px 20px;
+            background: var(--ch-bg-card, #f9fafb);
+            border-bottom: 1px solid var(--ch-border, #e5e7eb);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            border-radius: calc(var(--ch-radius-lg, 12px) - 1px) calc(var(--ch-radius-lg, 12px) - 1px) 0 0;
         }
 
         .ch-category-modal-header h3 {
-            font-size: 17px;
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--ch-text, #111827);
             letter-spacing: -0.1px;
+            line-height: 1.4;
         }
 
         .ch-category-modal-body {
-            padding: 16px 20px 18px;
-            gap: 12px;
+            padding: 20px;
+            gap: 16px;
+            overflow-y: auto;
+            flex-grow: 1;
+            overscroll-behavior: contain;
+            /* smooth scroll */
+            scroll-behavior: smooth;
         }
 
         .ch-category-browser-section {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
             min-width: 0;
         }
 
+        .ch-category-browser-section h4 {
+            margin: 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ch-text-subtle, #6b7280);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .ch-category-browser-list {
-            display: grid;
-            gap: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
             max-height: none;
             overflow: visible;
         }
 
         .ch-category-browser-list .ch-cat-link {
-            min-height: 40px;
-            padding: 8px 10px;
+            min-height: 44px;
+            padding: 10px 12px;
+            border-radius: var(--ch-radius-sm, 6px);
+            background: var(--ch-bg-card, transparent);
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--ch-text, #111827);
+            text-decoration: none;
+        }
+        
+        .ch-category-browser-list .ch-cat-link:hover,
+        .ch-category-browser-list .ch-cat-link:focus-visible {
+            background: var(--ch-hover, #f3f4f6);
+            border-color: var(--ch-border-hover, #e5e7eb);
+            outline: none;
         }
 
         .ch-category-modal-footer {
-            padding: 12px 20px;
+            padding: 14px 20px;
+            background: var(--ch-bg-card, #f9fafb);
+            border-top: 1px solid var(--ch-border, #e5e7eb);
+            display: flex;
             justify-content: flex-end;
+            align-items: center;
+            flex-shrink: 0;
+            gap: 12px;
+            border-radius: 0 0 calc(var(--ch-radius-lg, 12px) - 1px) calc(var(--ch-radius-lg, 12px) - 1px);
         }
 
         .ch-category-modal-close-btn {
             min-width: 90px;
+            min-height: 40px;
+            border-radius: var(--ch-radius-sm, 6px);
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
         @keyframes ch-category-modal-overlay-in {
@@ -3047,7 +3116,7 @@ function ch_global_styles()
         @keyframes ch-category-modal-pop-in {
             from {
                 opacity: 0;
-                transform: translateY(8px) scale(0.985);
+                transform: translateY(12px) scale(0.97);
             }
 
             to {
@@ -8196,12 +8265,13 @@ function ch_global_styles()
             }
 
             .ch-category-browser-list {
-                max-height: 48vh;
+                flex-direction: column;
             }
 
             .ch-view-all-btn {
                 width: 100%;
-                min-height: 44px;
+                min-height: 48px; /* Larger tap target for mobile */
+                margin-top: 12px;
             }
 
             .ch-category-modal-overlay {
@@ -8215,23 +8285,33 @@ function ch_global_styles()
                 height: min(92dvh, 100dvh);
                 max-height: 100dvh;
                 border-radius: 16px 16px 0 0;
-                border-bottom-left-radius: 0;
-                border-bottom-right-radius: 0;
+                position: relative;
+                margin: 0;
+                animation: ch-category-modal-pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
             }
 
             .ch-category-modal-header {
                 position: sticky;
                 top: 0;
-                z-index: 3;
-                padding: 14px 16px;
+                z-index: 10;
+                padding: 16px 20px;
+            }
+
+            .ch-category-modal-header .ch-modal-close {
+                width: 44px;
+                height: 44px;
+                font-size: 28px;
             }
 
             .ch-category-modal-body {
-                padding: 14px 16px 16px;
+                padding: 16px 20px 20px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
-            .ch-category-browser-list {
-                max-height: none;
+            .ch-category-browser-list .ch-cat-link {
+                min-height: 48px; /* Bigger touch targets */
+                padding: 12px 14px;
             }
 
             .ch-modal.ch-modal-category-browser .ch-category-browser-list {
@@ -8243,9 +8323,13 @@ function ch_global_styles()
             .ch-category-modal-footer {
                 position: sticky;
                 bottom: 0;
-                z-index: 3;
-                padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+                z-index: 10;
+                padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
                 justify-content: stretch;
+            }
+            .ch-category-modal-footer .ch-category-modal-close-btn {
+                width: 100%;
+                min-height: 48px;
             }
 
             .ch-category-modal-close-btn {
