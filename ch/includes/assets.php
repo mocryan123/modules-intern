@@ -3079,6 +3079,12 @@ function ch_global_styles()
             padding-right: 2px;
         }
 
+        .ch-modal.ch-modal-category-browser .ch-category-browser-list {
+            max-height: none;
+            overflow: visible;
+            padding-right: 0;
+        }
+
         .ch-cat-item {
             display: flex;
             align-items: center;
@@ -8226,6 +8232,12 @@ function ch_global_styles()
 
             .ch-category-browser-list {
                 max-height: none;
+            }
+
+            .ch-modal.ch-modal-category-browser .ch-category-browser-list {
+                max-height: none;
+                overflow: visible;
+                padding-right: 0;
             }
 
             .ch-category-modal-footer {
