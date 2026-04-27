@@ -4736,6 +4736,11 @@ function bntm_shortcode_ch_feed()
                         </div>
                     </div>
                 </div>
+            <?php else: ?>
+                <div class="ch-user-bar ch-nav-guest-desktop">
+                    <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary ch-btn-sm">Sign In</a>
+                    <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary ch-btn-sm">Join</a>
+                </div>
             <?php endif; ?>
         </nav>
 
