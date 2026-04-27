@@ -5528,6 +5528,24 @@ function bntm_shortcode_ch_feed()
                             <?php endforeach; ?>
                         <?php endif; ?>
 
+                        <div id="ch-modal-vote-auth" class="ch-modal-overlay" style="display:none">
+                            <div class="ch-modal ch-vote-auth-modal">
+                                <div class="ch-modal-header">
+                                    <h3>Join the conversation</h3>
+                                    <button class="ch-modal-close" onclick="chCloseModal('ch-modal-vote-auth')">&times;</button>
+                                </div>
+                                <div class="ch-modal-body">
+                                    <div class="ch-vote-auth-copy">
+                                        <p>Sign in or create an account to upvote and downvote posts.</p>
+                                    </div>
+                                </div>
+                                <div class="ch-modal-footer ch-vote-auth-actions">
+                                    <a href="<?php echo esc_url(ch_get_auth_url('login')); ?>" class="ch-btn ch-btn-secondary">Sign In</a>
+                                    <a href="<?php echo esc_url(ch_get_auth_url('register')); ?>" class="ch-btn ch-btn-primary">Join Us</a>
+                                </div>
+                            </div>
+                        </div>
+
                         <?php if (empty($posts)): ?>
                             <div class="ch-empty-state">
                                 <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="1.5">
@@ -5554,7 +5572,7 @@ function bntm_shortcode_ch_feed()
                                             $uv = $user_id ? ($user_post_votes[$post->id] ?? 0) : 0;
                                             $vote_click = $user_id 
                                                 ? "onclick=\"chVote(this, '" . esc_attr($nonce) . "')\"" 
-                                                : "onclick=\"window.location.href='" . esc_url(ch_get_auth_url('login')) . "'\"";
+                                                : "onclick=\"chPromptVoteAuth(); return false;\"";
                                         ?>
                                         <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>"
                                             data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="1"
@@ -6923,7 +6941,7 @@ function bntm_shortcode_ch_post_view()
                             $uv_single = $user_id ? ($user_vote_on_post ?? 0) : 0;
                             $vote_click_single = $user_id 
                                 ? "onclick=\"chVote(this, '" . esc_attr($nonce) . "')\"" 
-                                : "onclick=\"window.location.href='" . esc_url(ch_get_auth_url('login')) . "'\"";
+                                : "onclick=\"chPromptVoteAuth(); return false;\"";
                         ?>
                         <button class="ch-vote-btn-lg ch-vote-up <?php echo $uv_single === 1 ? 'active-up' : ''; ?>"
                             data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="1"

@@ -882,7 +882,7 @@ function bntm_ajax_ch_feed_sort() {
                     <?php 
                         $vote_click = $user_id 
                             ? "onclick=\"chVote(this, '" . esc_attr($nonce) . "')\"" 
-                            : "onclick=\"window.location.href='" . esc_url(ch_get_auth_url('login')) . "'\"";
+                            : "onclick=\"chPromptVoteAuth(); return false;\"";
                     ?>
                     <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" <?php echo $vote_click; ?>>
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>

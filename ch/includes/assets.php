@@ -10616,8 +10616,43 @@ function ch_feed_scripts()
         (function () {
             window.chOpenModal = window.chOpenModal || function (id) { document.getElementById(id).style.display = 'flex'; };
             window.chCloseModal = window.chCloseModal || function (id) { document.getElementById(id).style.display = 'none'; };
+            const chVoteAuthLoginUrl = <?php echo wp_json_encode(ch_get_auth_url('login')); ?>;
+            const chVoteAuthRegisterUrl = <?php echo wp_json_encode(ch_get_auth_url('register')); ?>;
 
             window.chShowGuidelines = function () { chOpenModal('ch-modal-guidelines'); };
+            window.chPromptVoteAuth = function () {
+                let modal = document.getElementById('ch-modal-vote-auth');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'ch-modal-vote-auth';
+                    modal.className = 'ch-modal-overlay';
+                    modal.style.display = 'none';
+                    modal.innerHTML = `
+                        <div class="ch-modal ch-vote-auth-modal">
+                            <div class="ch-modal-header">
+                                <h3>Join the conversation</h3>
+                                <button class="ch-modal-close" type="button" aria-label="Close">&times;</button>
+                            </div>
+                            <div class="ch-modal-body">
+                                <div class="ch-vote-auth-copy">
+                                    <p>Sign in or create an account to upvote and downvote posts.</p>
+                                </div>
+                            </div>
+                            <div class="ch-modal-footer ch-vote-auth-actions">
+                                <a href="${chVoteAuthLoginUrl}" class="ch-btn ch-btn-secondary">Sign In</a>
+                                <a href="${chVoteAuthRegisterUrl}" class="ch-btn ch-btn-primary">Join Us</a>
+                            </div>
+                        </div>`;
+                    document.body.appendChild(modal);
+                    modal.addEventListener('click', function (event) {
+                        if (event.target === modal) window.chCloseModal('ch-modal-vote-auth');
+                    });
+                    modal.querySelector('.ch-modal-close')?.addEventListener('click', function () {
+                        window.chCloseModal('ch-modal-vote-auth');
+                    });
+                }
+                chOpenModal('ch-modal-vote-auth');
+            };
 
             window.chVote = function (btn, nonce) {
                 const targetId = btn.dataset.id;
@@ -10667,6 +10702,10 @@ function ch_feed_scripts()
                             }
                             // action === 'removed' → both stay cleared (already done above)
                         } else {
+                            if ((json.data?.message || '').toLowerCase().includes('log in to vote')) {
+                                window.chPromptVoteAuth?.();
+                                return;
+                            }
                             alert(json.data?.message || 'Vote failed');
                         }
                     })
