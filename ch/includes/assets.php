@@ -7871,25 +7871,17 @@ function ch_global_styles()
             }
         }
 
-        /* Mobile-first drawer override */
+        /* Mobile feed sidebar: stack it in-layout instead of hiding it */
         @media (max-width: 780px) {
 
-            .ch-feed-sidebar,
-            .ch-guest-sidebar {
-                display: none !important;
+            .ch-feed-sidebar {
+                display: block !important;
+                width: 100%;
+                order: 2;
             }
 
-            body.ch-drawer-open .ch-feed-sidebar {
-                display: flex !important;
-                flex-direction: column;
-                position: fixed;
-                inset: 0 auto 0 0;
-                width: 280px;
-                z-index: 10001;
-                background: var(--ch-surface);
-                box-shadow: 4px 0 32px rgba(0, 0, 0, 0.15);
-                padding: 24px;
-                overflow-y: auto;
+            .ch-guest-sidebar {
+                display: none !important;
             }
 
             .ch-input {
