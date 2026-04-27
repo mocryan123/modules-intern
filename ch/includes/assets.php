@@ -1168,12 +1168,14 @@ function ch_global_styles()
         }
 
         .ch-post-excerpt {
-            font-size: 12px;
+            font-size: 14px;
             color: var(--ch-text-muted);
-            margin: 2px 0 0;
+            margin: 4px 0 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            line-height: 1.5;
         }
 
         .ch-mini-stat {
@@ -3391,17 +3393,18 @@ function ch_global_styles()
             background: color-mix(in srgb, var(--ch-surface) 60%, var(--ch-bg) 40%);
             border: 1px solid var(--ch-border);
             border-radius: var(--ch-radius-lg);
-            padding: 24px;
+            padding: 20px;
             display: flex;
-            gap: 18px;
+            gap: 16px;
+            box-shadow: var(--ch-shadow-sm);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
         }
 
-        .ch-post-card:hover {
+        .ch-post-card:hover, .ch-post-card:focus-within {
             box-shadow: var(--ch-shadow-md);
             border-color: var(--ch-accent);
-            transform: translateY(-3px) scale(1.005);
+            transform: translateY(-2px);
         }
 
         .ch-post-pinned-ribbon {
@@ -3423,15 +3426,15 @@ function ch_global_styles()
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             flex-shrink: 0;
-            padding-top: 2px;
-            min-width: 32px;
+            padding-top: 4px;
+            min-width: 44px;
         }
 
         .ch-vote-btn {
-            width: 32px;
-            height: 32px;
+            width: 44px;
+            height: 44px;
             border-radius: var(--ch-radius);
             border: 1px solid var(--ch-border);
             background: var(--ch-surface);
@@ -3440,13 +3443,19 @@ function ch_global_styles()
             align-items: center;
             justify-content: center;
             color: var(--ch-text-subtle);
-            transition: all 0.15s;
+            transition: all 0.2s ease;
         }
 
-        .ch-vote-btn:hover {
+        .ch-vote-btn:hover, .ch-vote-btn:focus-visible {
             border-color: var(--ch-accent-mid);
             color: var(--ch-accent);
             background: var(--ch-accent-light);
+            outline: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .ch-vote-btn:active {
+            transform: scale(0.92);
         }
 
         .ch-vote-btn.active-up {
@@ -3499,28 +3508,29 @@ function ch_global_styles()
         .ch-post-meta-row {
             display: flex;
             align-items: center;
-            gap: 7px;
+            gap: 10px;
             flex-wrap: wrap;
-            margin-bottom: 7px;
+            margin-bottom: 10px;
         }
 
         .ch-post-author {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
-            color: var(--ch-text-muted);
+            color: var(--ch-text);
         }
 
         .ch-post-location {
             display: inline-flex;
             align-items: center;
-            gap: 3px;
-            font-size: 11.5px;
+            gap: 4px;
+            font-size: 12px;
             color: var(--ch-text-subtle);
         }
 
         .ch-post-time {
-            font-size: 11.5px;
+            font-size: 12px;
             color: var(--ch-text-subtle);
+            font-weight: 500;
             margin-left: auto;
         }
 
@@ -3548,35 +3558,36 @@ function ch_global_styles()
         }
 
         .ch-post-title {
-            margin: 0 0 8px;
-            font-size: 20px;
+            margin: 0 0 10px;
+            font-size: 18px;
             font-weight: 700;
             line-height: 1.4;
-            letter-spacing: -0.3px;
-            color: inherit;
+            letter-spacing: -0.2px;
+            color: var(--ch-text);
         }
 
         .ch-post-title a {
             text-decoration: none;
             color: var(--ch-text);
+            transition: color 0.15s;
         }
 
-        .ch-post-title a:hover {
+        .ch-post-title a:hover, .ch-post-title a:focus {
             color: var(--ch-accent);
         }
 
         .ch-post-preview {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--ch-text-muted);
-            margin: 0 0 12px;
+            margin: 0 0 16px;
             line-height: 1.6;
         }
 
         .ch-post-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
         .ch-tag {
@@ -3599,9 +3610,10 @@ function ch_global_styles()
 
         .ch-post-actions-row {
             display: flex;
-            gap: 2px;
+            gap: 8px;
             align-items: center;
-            padding-top: 8px;
+            padding-top: 12px;
+            margin-top: 16px;
             border-top: 1px solid var(--ch-border-soft);
             flex-wrap: wrap;
         }
@@ -3609,23 +3621,29 @@ function ch_global_styles()
         .ch-post-action {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            font-size: 12px;
+            gap: 6px;
+            font-size: 13px;
             color: var(--ch-text-subtle);
-            background: none;
+            background: transparent;
             border: none;
             cursor: pointer;
-            padding: 4px 9px;
-            border-radius: var(--ch-radius-sm);
+            min-height: 44px;
+            padding: 8px 12px;
+            border-radius: 99px;
             text-decoration: none;
-            transition: all 0.15s;
-            font-weight: 500;
+            transition: all 0.2s ease;
+            font-weight: 600;
             font-family: var(--ch-font);
         }
 
-        .ch-post-action:hover {
+        .ch-post-action:hover, .ch-post-action:focus-visible {
             color: var(--ch-accent);
             background: var(--ch-accent-light);
+            outline: none;
+        }
+
+        .ch-post-action:active {
+            transform: scale(0.96);
         }
 
         .ch-post-action.ch-bookmarked {
@@ -4874,14 +4892,15 @@ function ch_global_styles()
             background: var(--ch-surface);
             border: 1px solid var(--ch-border);
             border-radius: var(--ch-radius-lg);
-            padding: 16px 18px;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            padding: 20px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: var(--ch-shadow-sm);
         }
 
-        .ch-mf-post-card:hover {
-            border-color: var(--ch-accent-mid);
-            box-shadow: var(--ch-shadow);
+        .ch-mf-post-card:hover, .ch-mf-post-card:focus-within {
+            border-color: var(--ch-accent);
+            box-shadow: var(--ch-shadow-md);
+            transform: translateY(-2px);
         }
 
         .ch-mf-post-top {
@@ -5100,17 +5119,18 @@ function ch_global_styles()
             background: var(--ch-surface);
             border: 1px solid var(--ch-border);
             border-radius: var(--ch-radius-lg);
-            padding: 16px;
+            padding: 20px;
             margin-bottom: 10px;
             text-decoration: none;
             color: inherit;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: var(--ch-shadow-sm);
         }
 
-        .ch-public-post-card:hover {
-            border-color: var(--ch-accent-mid);
-            box-shadow: var(--ch-shadow);
+        .ch-public-post-card:hover, .ch-public-post-card:focus-within {
+            border-color: var(--ch-accent);
+            box-shadow: var(--ch-shadow-md);
+            transform: translateY(-2px);
         }
 
         .ch-public-post-top {
@@ -5356,17 +5376,18 @@ function ch_global_styles()
             background: var(--ch-surface);
             border: 1px solid var(--ch-border);
             border-radius: var(--ch-radius-lg);
-            padding: 16px 18px;
+            padding: 20px;
             display: flex;
-            gap: 14px;
+            gap: 16px;
             align-items: flex-start;
             box-shadow: var(--ch-shadow-sm);
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .ch-trending-post-card:hover {
-            border-color: var(--ch-accent-mid);
-            box-shadow: var(--ch-shadow);
+        .ch-trending-post-card:hover, .ch-trending-post-card:focus-within {
+            border-color: var(--ch-accent);
+            box-shadow: var(--ch-shadow-md);
+            transform: translateY(-2px);
         }
 
         .ch-trending-rank {
