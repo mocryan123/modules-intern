@@ -13,6 +13,14 @@ if (!defined('ABSPATH')) exit;
 define('BNTM_CH_PATH', dirname(__FILE__) . '/');
 define('BNTM_CH_URL', plugin_dir_url(__FILE__));
 
+function ch_request_text($value = '') {
+    return sanitize_text_field(wp_unslash($value ?? ''));
+}
+
+function ch_request_textarea($value = '') {
+    return sanitize_textarea_field(wp_unslash($value ?? ''));
+}
+
 function bntm_ch_is_frontend_context() {
     if (is_admin()) return false;
     if ((defined('REST_REQUEST') && REST_REQUEST) || wp_doing_ajax()) return false;
@@ -1811,7 +1819,7 @@ function bntm_ch_og_meta_tags() {
 function bntm_ajax_ch_login() {
     check_ajax_referer( 'ch_auth_nonce', 'nonce' );
  
-    $username    = sanitize_text_field( $_POST['username'] ?? '' );
+    $username    = ch_request_text($_POST['username'] ?? '');
     $password    = $_POST['password'] ?? '';
     $remember    = ! empty( $_POST['remember'] );
     $redirect_to = esc_url_raw( $_POST['redirect_to'] ?? '' );
@@ -1903,9 +1911,9 @@ function bntm_ajax_ch_register() {
     $email            = sanitize_email($_POST['email'] ?? '');
     $password         = $_POST['password'] ?? '';
     $password_confirm = $_POST['password_confirm'] ?? '';
-    $first_name       = sanitize_text_field($_POST['first_name'] ?? '');
-    $last_name        = sanitize_text_field($_POST['last_name'] ?? '');
-    $location         = sanitize_text_field($_POST['location'] ?? '');
+    $first_name       = ch_request_text($_POST['first_name'] ?? '');
+    $last_name        = ch_request_text($_POST['last_name'] ?? '');
+    $location         = ch_request_text($_POST['location'] ?? '');
     $terms_accepted   = isset($_POST['terms_accepted']) ? (string) $_POST['terms_accepted'] : '0';
     $guidelines_accepted = isset($_POST['guidelines_accepted']) ? (string) $_POST['guidelines_accepted'] : '0';
     $redirect_to      = esc_url_raw($_POST['redirect_to'] ?? '');

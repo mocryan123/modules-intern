@@ -44,8 +44,8 @@ function bntm_ajax_ch_create_category() {
         }
     }
 
-    $name       = sanitize_text_field($_POST['name'] ?? '');
-    $desc       = sanitize_textarea_field($_POST['description'] ?? '');
+    $name       = ch_request_text($_POST['name'] ?? '');
+    $desc       = ch_request_textarea($_POST['description'] ?? '');
     $color      = sanitize_hex_color($_POST['color'] ?? '#FF7551') ?: '#FF7551';
     $order      = (int)($_POST['sort_order'] ?? 0);
     $is_private = (int)(!empty($_POST['is_private']));
@@ -121,8 +121,8 @@ function bntm_ajax_ch_edit_category() {
     global $wpdb;
     $user_id = get_current_user_id();
     $id      = (int)($_POST['category_id'] ?? 0);
-    $name    = sanitize_text_field($_POST['name'] ?? '');
-    $desc    = sanitize_textarea_field($_POST['description'] ?? '');
+    $name    = ch_request_text($_POST['name'] ?? '');
+    $desc    = ch_request_textarea($_POST['description'] ?? '');
     $color   = sanitize_hex_color($_POST['color'] ?? '#FF7551') ?: '#FF7551';
 
     if (!$id || !$name) wp_send_json_error(['message' => 'Invalid input']);
@@ -271,13 +271,13 @@ function bntm_ajax_ch_create_post() {
         check_ajax_referer('ch_feed_nonce', 'nonce');
     }
 
-    $title      = sanitize_text_field($_POST['title'] ?? '');
-    $content    = sanitize_textarea_field($_POST['content'] ?? '');
-    $cat_input  = sanitize_text_field($_POST['category_id'] ?? '');
+    $title      = ch_request_text($_POST['title'] ?? '');
+    $content    = ch_request_textarea($_POST['content'] ?? '');
+    $cat_input  = ch_request_text($_POST['category_id'] ?? '');
     $cat_id     = (int)$cat_input;
-    $tags       = sanitize_text_field($_POST['tags'] ?? '');
+    $tags       = ch_request_text($_POST['tags'] ?? '');
     $is_anon    = (int)(!empty($_POST['is_anonymous']));
-    $guest_name = sanitize_text_field($_POST['guest_name'] ?? '');
+    $guest_name = ch_request_text($_POST['guest_name'] ?? '');
     $media_limit = max(1, min(20, (int)get_option('ch_media_upload_limit', 6)));
 
     if ($cat_id <= 0 && $cat_input !== '') {
@@ -404,10 +404,10 @@ function bntm_ajax_ch_edit_post() {
     global $wpdb;
     $user_id  = get_current_user_id();
     $post_id  = (int)($_POST['post_id'] ?? 0);
-    $title    = sanitize_text_field($_POST['title'] ?? '');
-    $content  = sanitize_textarea_field($_POST['content'] ?? '');
+    $title    = ch_request_text($_POST['title'] ?? '');
+    $content  = ch_request_textarea($_POST['content'] ?? '');
     $cat_id   = (int)($_POST['category_id'] ?? 0);
-    $tags     = sanitize_text_field($_POST['tags'] ?? '');
+    $tags     = ch_request_text($_POST['tags'] ?? '');
     $is_anon  = (int)(!empty($_POST['is_anonymous']));
     $kept_existing_media = json_decode(wp_unslash($_POST['existing_media_urls'] ?? '[]'), true);
     $kept_existing_media = is_array($kept_existing_media) ? array_values(array_filter(array_map('esc_url_raw', $kept_existing_media))) : [];
@@ -1138,9 +1138,9 @@ function bntm_ajax_ch_add_comment() {
     $user_id    = get_current_user_id();
     $post_id    = (int)($_POST['post_id'] ?? 0);
     $parent_id  = (int)($_POST['parent_id'] ?? 0);
-    $content    = sanitize_textarea_field($_POST['content'] ?? '');
+    $content    = ch_request_textarea($_POST['content'] ?? '');
     $is_anon    = (int)(!empty($_POST['is_anonymous']));
-    $guest_name = sanitize_text_field($_POST['guest_name'] ?? '');
+    $guest_name = ch_request_text($_POST['guest_name'] ?? '');
 
     if (!$post_id || !$content) wp_send_json_error(['message' => 'Content is required']);
 
@@ -1767,9 +1767,9 @@ function bntm_ajax_ch_update_profile() {
 
     global $wpdb;
     $user_id  = get_current_user_id();
-    $name     = sanitize_text_field($_POST['display_name'] ?? '');
-    $bio      = sanitize_textarea_field($_POST['bio'] ?? '');
-    $location = sanitize_text_field($_POST['location'] ?? '');
+    $name     = ch_request_text($_POST['display_name'] ?? '');
+    $bio      = ch_request_textarea($_POST['bio'] ?? '');
+    $location = ch_request_text($_POST['location'] ?? '');
     $is_anon  = (int)(!empty($_POST['is_anonymous']));
 
     ch_ensure_profile($user_id);

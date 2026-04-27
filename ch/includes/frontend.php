@@ -636,7 +636,7 @@ function bntm_shortcode_ch()
 
     $current_user = wp_get_current_user();
     $user_id = $current_user->ID;
-    $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overview';
+$active_tab = isset($_GET['tab']) ? ch_request_text($_GET['tab']) : 'overview';
 
     // Ensure user profile exists
     ch_ensure_profile($user_id);
@@ -1640,8 +1640,8 @@ function ch_categories_tab($user_id, $is_admin)
 {
     global $wpdb;
 
-    $search = sanitize_text_field($_GET['cat_search'] ?? '');
-    $sort = sanitize_text_field($_GET['cat_sort'] ?? 'sort_order');
+$search = ch_request_text($_GET['cat_search'] ?? '');
+$sort = ch_request_text($_GET['cat_sort'] ?? 'sort_order');
 
     $where = "WHERE 1=1";
     if ($search) {
@@ -2176,8 +2176,8 @@ function ch_posts_tab($user_id, $is_admin)
     $page = max(1, (int) ($_GET['paged'] ?? 1));
     $per_page = 20;
     $offset = ($page - 1) * $per_page;
-    $filter = sanitize_text_field($_GET['filter'] ?? $_POST['filter'] ?? 'all');
-    $search = sanitize_text_field($_GET['s'] ?? $_POST['s'] ?? '');
+$filter = ch_request_text($_GET['filter'] ?? $_POST['filter'] ?? 'all');
+$search = ch_request_text($_GET['s'] ?? $_POST['s'] ?? '');
     $cat_id = (int) ($_GET['cat'] ?? $_POST['cat'] ?? 0);
 
     $where = "WHERE p.status != 'removed'";
@@ -2459,8 +2459,8 @@ function ch_users_tab($user_id, $is_admin)
     $page = max(1, (int) ($_GET['paged'] ?? 1));
     $per_page = 20;
     $offset = ($page - 1) * $per_page;
-    $search = sanitize_text_field($_GET['s'] ?? $_POST['s'] ?? '');
-    $status = sanitize_text_field($_GET['status'] ?? $_POST['status'] ?? 'all');
+$search = ch_request_text($_GET['s'] ?? $_POST['s'] ?? '');
+$status = ch_request_text($_GET['status'] ?? $_POST['status'] ?? 'all');
 
     $where = "WHERE 1=1";
     if ($status !== 'all')
@@ -2604,7 +2604,7 @@ function ch_reports_tab($user_id, $is_admin)
 {
     global $wpdb;
 
-    $status = sanitize_text_field($_GET['rstatus'] ?? $_POST['rstatus'] ?? 'pending');
+$status = ch_request_text($_GET['rstatus'] ?? $_POST['rstatus'] ?? 'pending');
 
     $reports = $wpdb->get_results($wpdb->prepare(
         "SELECT r.*,
@@ -2929,7 +2929,7 @@ function ch_moderation_tab($user_id)
 
         $terms_url = esc_url_raw($_POST['ch_terms_url'] ?? '');
         $privacy_url = esc_url_raw($_POST['ch_privacy_url'] ?? '');
-        $terms_version = sanitize_text_field($_POST['ch_terms_version'] ?? '');
+        $terms_version = ch_request_text($_POST['ch_terms_version'] ?? '');
         if ($terms_version === '') {
             $terms_version = '2026-04-21';
         }
@@ -3491,7 +3491,7 @@ function bntm_shortcode_ch_my_feed()
     $display_name = $profile->display_name ?: $wp_user->display_name ?: 'Community Member';
     $joined = $wp_user->user_registered ? date('F Y', strtotime($wp_user->user_registered)) : 'Unknown';
     $feed_url = ch_get_feed_url();
-    $subtab = sanitize_text_field($_GET['subtab'] ?? 'posts');
+$subtab = ch_request_text($_GET['subtab'] ?? 'posts');
 
     $user_posts = $wpdb->get_results($wpdb->prepare(
         "SELECT p.*, c.name as cat_name, c.color as cat_color
@@ -4210,10 +4210,10 @@ function bntm_shortcode_ch_feed()
 {
     global $wpdb;
 
-    $tab = sanitize_text_field($_GET['tab'] ?? '');
+$tab = ch_request_text($_GET['tab'] ?? '');
 
     // Route: viewing a single post
-    $rand_id = sanitize_text_field($_GET['view_post'] ?? '');
+$rand_id = ch_request_text($_GET['view_post'] ?? '');
     if ($rand_id) {
         return bntm_shortcode_ch_post_view();
     }
@@ -4388,10 +4388,10 @@ function bntm_shortcode_ch_feed()
     }
 
     $user_id = get_current_user_id();
-    $sort = sanitize_text_field($_GET['sort'] ?? 'new');
-    $cat_slug = sanitize_text_field($_GET['cat'] ?? '');
-    $search = sanitize_text_field($_GET['s'] ?? '');
-    $location = sanitize_text_field($_GET['location'] ?? '');
+$sort = ch_request_text($_GET['sort'] ?? 'new');
+$cat_slug = ch_request_text($_GET['cat'] ?? '');
+$search = ch_request_text($_GET['s'] ?? '');
+$location = ch_request_text($_GET['location'] ?? '');
     $bookmarks = isset($_GET['bookmarks']) ? 1 : 0;
     $page = max(1, (int) ($_GET['paged'] ?? 1));
     $per_page = 15;
@@ -4485,8 +4485,8 @@ function bntm_shortcode_ch_feed()
          LIMIT 5"
     );
 
-    $cat_search = sanitize_text_field($_GET['cat_search'] ?? '');
-    $cat_sort = sanitize_text_field($_GET['cat_sort'] ?? 'name');
+$cat_search = ch_request_text($_GET['cat_search'] ?? '');
+$cat_sort = ch_request_text($_GET['cat_sort'] ?? 'name');
 
     $cat_where = "WHERE status='active'";
     if ($cat_search) {
@@ -6668,7 +6668,7 @@ function bntm_shortcode_ch_post_view()
 {
     global $wpdb;
 
-    $rand_id = sanitize_text_field($_GET['view_post'] ?? '');
+$rand_id = ch_request_text($_GET['view_post'] ?? '');
     if (!$rand_id)
         return '<p>Post not found.</p>';
 
