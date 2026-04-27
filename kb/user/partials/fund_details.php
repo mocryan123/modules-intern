@@ -1727,7 +1727,7 @@ function bntm_shortcode_kbf_fund_details() {
             <div class="kbf-leaderboard-head">
               <div class="kbf-leaderboard-title">
                 <div>
-                  <div class="kbf-leaderboard-text">Top Sponsors</div>
+                  <div class="kbf-leaderboard-text">Top Supporters</div>
                   <div class="kbf-leaderboard-sub">Recent supporters</div>
                 </div>
               </div>

@@ -20,7 +20,7 @@
     $at = $wpdb->prefix.'kbf_appeals';
       $fund_details_url = kbf_get_page_url('fund_details');
       $pt = $wpdb->prefix.'kbf_organizer_profiles';
-      $profile = $business_id ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d", $business_id)) : null;
+      $profile = $business_id ? $wpdb->get_row($wpdb->prepare("SELECT avatar_url,bio,profile_type,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d", $business_id)) : null;
       $show_onboarding = $business_id ? (bool) get_user_meta($business_id, 'kbf_show_onboarding', true) : false;
       $address = $business_id ? get_user_meta($business_id, 'kbf_address', true) : '';
       $user = $business_id ? get_userdata($business_id) : null;
@@ -29,10 +29,11 @@
       $has_display_name = $user && !empty(trim((string) $user->display_name));
       $has_social_name = !empty(trim($social_name));
       $has_bio = $profile && !empty(trim((string) $profile->bio));
+      $has_profile_type = $profile && !empty(trim((string) $profile->profile_type));
       $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
       $has_address = !empty(trim((string) $address));
-      $onboard_required = 5;
-      $onboard_done = ($has_display_name ? 1 : 0) + ($has_social_name ? 1 : 0) + ($has_bio ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
+      $onboard_required = 6;
+      $onboard_done = ($has_display_name ? 1 : 0) + ($has_social_name ? 1 : 0) + ($has_bio ? 1 : 0) + ($has_profile_type ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
       $onboard_pct = round(($onboard_done / $onboard_required) * 100);
       $onboard_complete = ($onboard_done >= $onboard_required);
       // Source of truth: show onboarding only while required 5/5 profile fields are incomplete.
@@ -191,12 +192,14 @@
           min-height:260px;
         }
         .kbf-onboard-left{
-          padding:20px 18px;
+          padding:24px 22px;
           background:linear-gradient(160deg,#eef4ff 0%, #f7fbff 55%, #ffffff 100%);
           border-right:1px solid rgba(15,23,42,.08);
           display:flex;
           flex-direction:column;
-          gap:12px;
+          align-items:center;
+          text-align:center;
+          gap:10px;
         }
         .kbf-onboard-avatar{
           width:54px;
@@ -236,6 +239,8 @@
           align-items:center;
           gap:6px;
           padding:6px 10px;
+          width:auto;
+          align-self:center;
           border-radius:999px;
           background:#eef4ff;
           color:#1d4ed8;
@@ -243,10 +248,29 @@
           font-weight:600;
           text-transform:uppercase;
         }
+        .kbf-onboard-left h4,
+        .kbf-onboard-left p,
+        .kbf-onboard-left .kbf-onboard-progress{
+          width:100%;
+          text-align:center;
+        }
+        .kbf-onboard-left h4{
+          margin-top:2px;
+          margin-bottom:2px;
+          line-height:1.28;
+        }
+        .kbf-onboard-left p{
+          margin-bottom:4px;
+          font-size:12.8px;
+          line-height:1.65;
+        }
         .kbf-onboard-progress{
           display:flex;
-          align-items:flex-end;
+          align-items:center;
+          justify-content:center;
           gap:10px;
+          margin-top:auto;
+          padding-top:8px;
         }
         .kbf-onboard-progress .kbf-count{
           font-size:28px;
@@ -349,7 +373,7 @@
                 <h4 id="kbf-onboard-title">Set up your account profile</h4>
                 <p>Complete the essentials below to unlock withdrawals and build supporter trust.</p>
                 <div class="kbf-onboard-progress">
-                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/5</span></div>
+                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/6</span></div>
                   <div class="kbf-onboard-bar"><span style="width:<?php echo (int) $onboard_pct; ?>%;"></span></div>
                 </div>
               </div>
@@ -366,6 +390,10 @@
                   <li class="kbf-onboard-step <?php echo $has_bio ? 'is-done' : ''; ?>">
                     <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>About/Bio</span>
                     <span class="kbf-onboard-meta"><?php echo $has_bio ? 'Done' : 'Pending'; ?></span>
+                  </li>
+                  <li class="kbf-onboard-step <?php echo $has_profile_type ? 'is-done' : ''; ?>">
+                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Account type</span>
+                    <span class="kbf-onboard-meta"><?php echo $has_profile_type ? 'Done' : 'Pending'; ?></span>
                   </li>
                   <li class="kbf-onboard-step <?php echo $has_payout ? 'is-done' : ''; ?>">
                     <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Payout details</span>

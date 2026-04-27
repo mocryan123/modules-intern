@@ -1312,6 +1312,17 @@ function kbf_dashboard_profile_tab( $business_id ) {
         if(!sn || !sn.value.trim()) showErr(sn, 'Social name is required.');
         else if(!/^[a-zA-Z0-9_]{2,30}$/.test(sn.value.trim())) showErr(sn, 'Social name must be 2-30 characters with letters, numbers, and underscores only.');
 
+        // Validation: Profile Type (required + allowed values)
+        const ptype = form.querySelector('[name="profile_type"]');
+        if(!ptype || !ptype.value.trim()) {
+          showErr(ptype, 'Account type is required.');
+        } else {
+          const allowedTypes = ['individual','nonprofit','business'];
+          if(!allowedTypes.includes(ptype.value.trim())) {
+            showErr(ptype, 'Invalid account type selected.');
+          }
+        }
+
         // Validation: Bio / About (required)
         const bio = form.querySelector('textarea[name="bio"]');
         if(!bio || !bio.value.trim()) showErr(bio, 'Bio is required.');

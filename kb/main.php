@@ -221,10 +221,11 @@ if (!function_exists('kbf_sync_onboarding_flag_for_user')) {
         $has_display_name = $user && !empty(trim((string) $user->display_name));
         $has_social_name = !empty(trim($social_name));
         $has_bio = $profile && !empty(trim((string) $profile->bio));
+        $has_profile_type = $profile && !empty(trim((string) $profile->profile_type));
         $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
         $has_address = !empty(trim($address));
 
-        $is_complete = ($has_display_name && $has_social_name && $has_bio && $has_payout && $has_address);
+        $is_complete = ($has_display_name && $has_social_name && $has_bio && $has_profile_type && $has_payout && $has_address);
         if (!$is_complete) {
             return false;
         }
