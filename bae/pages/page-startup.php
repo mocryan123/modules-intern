@@ -144,7 +144,6 @@ function bae_startup_tab($user_id, $profile) {
                 </div>
             </div>
             <?php endforeach; ?>
-        </div>
         <div class="bae-notice bae-notice-info" style="margin-top:16px;">
             Check availability at <strong><a href="https://www.namecheap.com" target="_blank">Namecheap.com</a></strong> or <strong><a href="https://www.dot.ph" target="_blank">dot.ph</a></strong> for .ph domains. Average cost: ₱600–₱1,200/year for .com, ₱1,500–₱2,000/year for .ph.
         </div>
@@ -172,7 +171,6 @@ function bae_startup_tab($user_id, $profile) {
                         style="margin-top:8px;border:1px solid var(--border-2);background:none;color:var(--text-3);font-size:11px;cursor:pointer;padding:4px 10px;border-radius:6px;width:100%;font-family:'Geist',sans-serif;transition:all .2s;">Copy</button>
             </div>
             <?php endforeach; ?>
-        </div>
         </div>
         <div class="bae-notice bae-notice-info" style="margin-top:16px;">
             Register all handles even if you're not active on every platform yet — prevents brand squatting and ensures consistency when you scale.

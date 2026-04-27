@@ -472,6 +472,15 @@ function bae_assets_tab($user_id, $profile) {
             fd.append('profile_id', btn.dataset.pid || '');
             fd.append('nonce', btn.dataset.nonce || '');
 
+            var stayOnAssetsUrl = null;
+            try {
+                var u = new URL(window.location.href);
+                u.searchParams.set('tab', 'assets');
+                stayOnAssetsUrl = u.toString();
+            } catch (e) {
+                stayOnAssetsUrl = window.location.pathname + '?tab=assets';
+            }
+
             fetch(ajaxurl, { method:'POST', body:fd })
                 .then(function(r) { return r.json(); })
                 .then(function(j) {
@@ -479,9 +488,11 @@ function bae_assets_tab($user_id, $profile) {
                         baeNeedsFirstAssetView = false;
                         var guide = document.getElementById('bae-assets-first-view-guide');
                         if (guide) {
-                            guide.innerHTML = 'Nice. <strong>Brand Kit</strong> and <strong>Launch Toolkit</strong> are now unlocked. Refreshing...';
+                            guide.innerHTML = 'Nice. <strong>Brand Kit</strong> and <strong>Launch Toolkit</strong> are now unlocked. Refreshing this page to update navigation...';
                         }
-                        setTimeout(function() { window.location.reload(); }, 900);
+                        setTimeout(function() {
+                            window.location.href = stayOnAssetsUrl;
+                        }, 1100);
                     }
                 })
                 .catch(function() {});

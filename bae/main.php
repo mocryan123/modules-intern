@@ -2278,6 +2278,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
             <?php
                 $is_active = $active_tab === $slug;
                 $is_locked = $tab['locked'];
+                $lock_msg  = $tab['lock_msg'];
                 $mob_cls = 'bae-mob-item';
                 if ($is_active) $mob_cls .= ' bae-mob-active';
                 if ($is_locked) $mob_cls .= ' bae-hn-locked';
@@ -2286,12 +2287,17 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
             <button type="button" class="<?php echo $mob_cls; ?>"
                 onclick="baeNavLockModal(<?php echo esc_attr(json_encode($tab['label'])); ?>, <?php echo esc_attr(json_encode($lock_msg)); ?>)"
                 title="<?php echo esc_attr($tab['label']); ?>">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><?php echo $tab['icon']; ?></svg>
+                <span class="bae-mob-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><?php echo $tab['icon']; ?></svg>
+                    <svg class="bae-hn-lock bae-mob-lock lucide lucide-lock" xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
                 <span class="bae-mob-label"><?php echo esc_html($tab['label']); ?></span>
             </button>
             <?php else: ?>
             <a href="<?php echo esc_url(add_query_arg('tab', $slug, $base_url)); ?>" class="<?php echo $mob_cls; ?>" title="<?php echo esc_attr($tab['label']); ?>">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><?php echo $tab['icon']; ?></svg>
+                <span class="bae-mob-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><?php echo $tab['icon']; ?></svg>
+                </span>
                 <span class="bae-mob-label"><?php echo esc_html($tab['label']); ?></span>
             </a>
             <?php endif; ?>
@@ -2447,7 +2453,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                 title="<?php echo esc_attr($tab['label']); ?>">
                 <span class="bae-hn-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><?php echo $tab['icon']; ?></svg>
-                    <svg class="bae-hn-lock" xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
+                    <svg class="bae-hn-lock lucide lucide-lock" xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 </span>
                 <span class="bae-hn-label"><?php echo esc_html($tab['label']); ?></span>
             </button>
@@ -3269,6 +3275,8 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         position: absolute; bottom: -4px; right: -5px;
         color: var(--text-3); opacity: 0.9;
     }
+    .bae-mob-icon { position: relative; display: flex; align-items: center; justify-content: center; }
+    .bae-mob-lock { right: -6px; bottom: -5px; }
     /* Lock modal */
     .bae-lock-modal-overlay {
         position: fixed; inset: 0; z-index: 99998;
