@@ -565,22 +565,6 @@ function kbf_dashboard_profile_tab( $business_id ) {
           <div class="kbf-profile-section-title"><i class="ph ph-user-circle"></i> Identity</div>
           <div class="kbf-form-row">
             <div class="kbf-form-group">
-              <label>Display Name</label>
-              <input type="text" name="display_name" value="<?php echo esc_attr($user->display_name); ?>" placeholder="Your display name" maxlength="50" required>
-              <div class="kbf-field-error"></div>
-            </div>
-               <div class="kbf-form-row">
-            <div class="kbf-form-group">
-              <label>Social Name</label>
-              <div class="kbf-input-with-prefix">
-                <span class="kbf-input-prefix">@</span>
-                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr($social_name); ?>" placeholder="yourname" maxlength="30" required>
-              </div>
-              <div class="kbf-form-hint">Letters, numbers, underscores only. Used for signing in.</div>
-              <div class="kbf-field-error" id="kbf-social-name-error"></div>
-            </div>
-          </div>
-            <div class="kbf-form-group">
               <label>Profile Type</label>
               <select name="profile_type" id="kbf-profile-type">
                 <option value="">Select account type</option>
@@ -591,7 +575,21 @@ function kbf_dashboard_profile_tab( $business_id ) {
               <div class="kbf-form-hint">This helps sponsors understand your organization type.</div>
               <div class="kbf-field-error"></div>
             </div>
-          </div> 
+            <div class="kbf-form-group">
+              <label>Display Name</label>
+              <input type="text" name="display_name" value="<?php echo esc_attr($user->display_name); ?>" placeholder="Your display name" maxlength="50" required>
+              <div class="kbf-field-error"></div>
+            </div>
+            <div class="kbf-form-group">
+              <label>Social Name</label>
+              <div class="kbf-input-with-prefix">
+                <span class="kbf-input-prefix">@</span>
+                <input type="text" name="kbf_social_name" id="kbf-social-name" value="<?php echo esc_attr($social_name); ?>" placeholder="yourname" maxlength="30" required>
+              </div>
+              <div class="kbf-form-hint">Letters, numbers, underscores only. Used for signing in.</div>
+              <div class="kbf-field-error" id="kbf-social-name-error"></div>
+            </div>
+          </div>
           <div class="kbf-form-group kbf-bio-wrap">
             <label>Bio / About</label>
             <textarea name="bio" rows="4" maxlength="250" placeholder="Tell sponsors about yourself..." required><?php echo esc_textarea(isset($profile->bio) ? str_replace('\\', '', wp_unslash($profile->bio)) : ''); ?></textarea>
