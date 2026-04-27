@@ -9,29 +9,31 @@ if (!function_exists('kbf_fund_details_load_fund')) {
      * @params    object $wpdb - WordPress database object
      * @params    string $ft - Funds table name
      * @params    int $current_user_id - Current logged-in user ID for owner visibility checks
+     * @params    bool $is_admin_viewer - Whether current viewer can access non-public fund statuses
      * @returns   object|null - Fund row object when found, otherwise null
      * @status    ACTIVE
      */
-    function kbf_fund_details_load_fund($wpdb, $ft, $current_user_id) {
+    function kbf_fund_details_load_fund($wpdb, $ft, $current_user_id, $is_admin_viewer = false) {
+        $admin_flag = $is_admin_viewer ? 1 : 0;
         if(!empty($_GET['fund'])) {
             $f_token = sanitize_text_field($_GET['fund']);
             return $wpdb->get_row($wpdb->prepare(
-                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.fund_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d)",
-                $f_token, $current_user_id
+                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.fund_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d OR %d=1)",
+                $f_token, $current_user_id, $admin_flag
             ));
         }
         if(!empty($_GET['fund_id'])) {
             $fid = intval($_GET['fund_id']);
             return $wpdb->get_row($wpdb->prepare(
-                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.id=%d AND (f.status IN ('active','completed') OR f.business_id=%d)",
-                $fid, $current_user_id
+                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.id=%d AND (f.status IN ('active','completed') OR f.business_id=%d OR %d=1)",
+                $fid, $current_user_id, $admin_flag
             ));
         }
         if(!empty($_GET['kbf_share'])) {
             $token = sanitize_text_field($_GET['kbf_share']);
             return $wpdb->get_row($wpdb->prepare(
-                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.share_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d)",
-                $token, $current_user_id
+                "SELECT f.*,u.display_name as organizer_name FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.share_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d OR %d=1)",
+                $token, $current_user_id, $admin_flag
             ));
         }
         return null;
@@ -78,28 +80,32 @@ if (!function_exists('kbf_fund_details_output_social_meta')) {
         global $wpdb;
         $ft = $wpdb->prefix . 'kbf_funds';
         $current_user_id = get_current_user_id();
+        $admin_flag = current_user_can('manage_options') ? 1 : 0;
         $fund = null;
 
         if (!empty($_GET['kbf_share'])) {
             $token = sanitize_text_field(wp_unslash($_GET['kbf_share']));
             $fund = $wpdb->get_row($wpdb->prepare(
-                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.share_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d) LIMIT 1",
+                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.share_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d OR %d=1) LIMIT 1",
                 $token,
-                (int)$current_user_id
+                (int)$current_user_id,
+                $admin_flag
             ));
         } elseif (!empty($_GET['fund'])) {
             $token = sanitize_text_field(wp_unslash($_GET['fund']));
             $fund = $wpdb->get_row($wpdb->prepare(
-                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.fund_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d) LIMIT 1",
+                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.fund_token=%s AND (f.status IN ('active','completed') OR f.business_id=%d OR %d=1) LIMIT 1",
                 $token,
-                (int)$current_user_id
+                (int)$current_user_id,
+                $admin_flag
             ));
         } elseif (!empty($_GET['fund_id'])) {
             $fid = intval($_GET['fund_id']);
             $fund = $wpdb->get_row($wpdb->prepare(
-                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.id=%d AND (f.status IN ('active','completed') OR f.business_id=%d) LIMIT 1",
+                "SELECT f.*,u.display_name as organizer_name,u.user_login as organizer_login FROM {$ft} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID WHERE f.id=%d AND (f.status IN ('active','completed') OR f.business_id=%d OR %d=1) LIMIT 1",
                 $fid,
-                (int)$current_user_id
+                (int)$current_user_id,
+                $admin_flag
             ));
         }
 
@@ -160,7 +166,7 @@ function bntm_shortcode_kbf_fund_details() {
     $ft = $wpdb->prefix.'kbf_funds';
     $fund = null;
     $current_user_id = get_current_user_id();
-    $fund = kbf_fund_details_load_fund($wpdb, $ft, $current_user_id);
+    $fund = kbf_fund_details_load_fund($wpdb, $ft, $current_user_id, current_user_can('manage_options'));
     $is_owner = $fund && $current_user_id && $fund->business_id == $current_user_id;
     if(!$fund) return bntm_universal_container('Fund Details', '<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Fund not found or no longer active.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
 
@@ -547,6 +553,21 @@ function bntm_shortcode_kbf_fund_details() {
       display:grid;
       gap:6px;
     }
+    .kbf-benefits-view li.is-clickable{
+      cursor:pointer;
+      transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+    .kbf-benefits-view li.is-clickable:hover{
+      border-color:#93c5fd;
+      box-shadow:0 8px 18px rgba(37,99,235,.12);
+      transform:translateY(-1px);
+    }
+    .kbf-benefits-view li.is-clickable:focus-visible{
+      outline:2px solid #3b82f6;
+      outline-offset:2px;
+      border-color:#3b82f6;
+      box-shadow:0 0 0 4px rgba(59,130,246,.18);
+    }
     .kbf-benefits-amount{
       font-weight:700;
       color:var(--kbf-blue);
@@ -560,6 +581,14 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-benefits-desc{
       font-size:12.5px;
       color:var(--kbf-slate);
+    }
+    .kbf-story-photo{
+      cursor:zoom-in;
+      transition:transform .16s ease, box-shadow .16s ease;
+    }
+    .kbf-story-photo:hover{
+      transform:translateY(-1px);
+      box-shadow:0 8px 16px rgba(15,23,42,.16);
     }
     .kbf-section-description:hover,
     .kbf-section-milestones:hover,
@@ -590,53 +619,15 @@ function bntm_shortcode_kbf_fund_details() {
       align-self:stretch;
   }
   .kbf-detail-tab-list{
-      display:flex;
-      gap:22px;
-      align-items:center;
-      border-bottom:1px solid var(--kbf-border);
-      padding-bottom:8px;
-      flex-wrap:wrap;
-      width:100%;
+      display:none;
   }
-  .kbf-detail-tab{
-      background:none;
-      border:none;
-      padding:8px 12px;
-      font-size:14px;
-      font-weight:600;
-      color:var(--kbf-slate);
-      cursor:pointer;
-      position:relative;
-      border-radius:8px 8px 0 0;
-      transition:background .15s ease, color .15s ease;
-  }
-  .kbf-detail-tab:hover{
-      background:#f8fafc;
-      color:var(--kbf-navy);
-  }
-  .kbf-detail-tab::after{
-      content:'';
-      position:absolute;
-      left:0;
-      bottom:-9px;
-      width:0;
-      height:3px;
-      background:var(--kbf-blue);
-      border-radius:99px;
-      transition:width .2s ease;
-  }
-  .kbf-detail-tab.is-active{
-      background:#eef4ff;
-      color:var(--kbf-blue);
-  }
-  .kbf-detail-tab.is-active::after{
-      width:100%;
-  }
-  .kbf-detail-tab-panel{display:none;}
-  .kbf-detail-tab-panel.is-active{display:block;}
-  .kbf-detail-tab-panels{width:100%;}
+  .kbf-detail-tab-panels{display:flex;flex-direction:column;gap:14px;width:100%;}
   .kbf-detail-tab-panel{width:100%;}
+  .kbf-detail-tab-panel{display:block;}
   .kbf-detail-tab-panel .kbf-card{width:100%; box-sizing:border-box;}
+  .kbf-detail-tab-panel[data-kbf-panel="desc"]{order:1;}
+  .kbf-detail-tab-panel[data-kbf-panel="benefits"]{order:2;}
+  .kbf-detail-tab-panel[data-kbf-panel="milestones"]{order:3;}
   .kbf-detail-secondary{width:100%;}
     .kbf-detail-sticky > *{margin-top:0 !important;margin-bottom:0 !important;}
     .kbf-poster-modal .kbf-modal{max-width:980px;width:980px;}
@@ -671,6 +662,9 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-poster-link{font-size:12px;color:#475569;line-height:1.45;word-break:break-word;overflow-wrap:anywhere;background:#f8fafc;border:1px solid var(--kbf-border);border-radius:8px;padding:6px 8px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;text-overflow:ellipsis;}
     .kbf-poster-qr > div:last-child{flex:1;min-width:0;}
     .kbf-poster-qr-canvas{flex-shrink:0;}
+    #kbf-modal-report form .kbf-form-group{cursor:pointer;}
+    #kbf-modal-report form select,
+    #kbf-modal-report form input[type="file"]{cursor:pointer;}
     .kbf-poster-count{font-size:13px;color:var(--kbf-slate);margin-top:4px;}
     .kbf-poster-close{position:absolute;top:10px;right:10px;}
     @media (max-width: 1000px){
@@ -889,6 +883,7 @@ function bntm_shortcode_kbf_fund_details() {
         transition:transform .3s ease;
     }
     .kbf-photo-lightbox.open img{transform:scale(1);}
+    .kbf-photo-lightbox.is-story .kbf-photo-lightbox-nav{display:none;}
     .kbf-photo-lightbox-nav{
         position:absolute;
         top:50%;
@@ -1484,7 +1479,7 @@ function bntm_shortcode_kbf_fund_details() {
     <!-- Report Modal -->
     <div id="kbf-modal-report" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
-        <div class="kbf-modal-header"><h3>Report This Campaign</h3><button class="kbf-modal-close" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}">&times;</button></div>
+        <div class="kbf-modal-header"><h3>Report This Campaign</h3><button class="kbf-modal-close" onclick="kbfCloseReportModal()">&times;</button></div>
         <div class="kbf-modal-body">
           <form id="kbf-report-form">
             <input type="hidden" name="fund_id" value="<?php echo esc_attr((int) $fund->id); ?>">
@@ -1500,7 +1495,7 @@ function bntm_shortcode_kbf_fund_details() {
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.classList.remove('is-open');m.style.display='none';}">Cancel</button>
+          <button class="kbf-btn kbf-btn-secondary" onclick="kbfCloseReportModal()">Cancel</button>
           <button class="kbf-btn kbf-btn-danger" onclick="kbfSpdReport('<?php echo esc_js($nonce_report); ?>')">Submit Report</button>
         </div>
       </div>
@@ -1804,7 +1799,7 @@ function bntm_shortcode_kbf_fund_details() {
                           Report Abuse
                         </button>
                       <?php else: ?>
-                        <button type="button" onclick="var m=document.getElementById('kbf-modal-report');if(m){m.style.display='flex';m.classList.add('is-open');}">Report Abuse</button>
+                        <button type="button" onclick="kbfOpenReportModal()">Report Abuse</button>
                       <?php endif; ?>
                       <?php if($already_rated): ?>
                         <button type="button" disabled style="opacity:0.7;cursor:not-allowed;">
@@ -1832,15 +1827,10 @@ function bntm_shortcode_kbf_fund_details() {
       </div>
     </div>
   <div class="kbf-detail-secondary">
-    <!-- Tabs (full width) -->
+    <!-- Detail sections (full width) -->
     <div class="kbf-detail-tabs" style="margin-top:18px;">
-      <div class="kbf-detail-tab-list" role="tablist" aria-label="Fund details tabs">
-        <button class="kbf-detail-tab is-active" type="button" data-kbf-tab="desc" role="tab" aria-selected="true">Description</button>
-        <button class="kbf-detail-tab" type="button" data-kbf-tab="milestones" role="tab" aria-selected="false">Stories</button>
-        <button class="kbf-detail-tab" type="button" data-kbf-tab="benefits" role="tab" aria-selected="false">Rewards</button>
-      </div>
       <div class="kbf-detail-tab-panels">
-        <div class="kbf-detail-tab-panel is-active" data-kbf-panel="desc" role="tabpanel">
+        <div class="kbf-detail-tab-panel" data-kbf-panel="desc" role="tabpanel">
           <div class="kbf-card kbf-section-description" style="padding:18px;">
             <h3 class="kbf-section-title" style="margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--kbf-border);">About This Fund</h3>
             <div style="font-size:14.5px;color:var(--kbf-text-sm);line-height:1.8;"><?php echo nl2br(esc_html(wp_unslash($fund->description))); ?></div>
@@ -1852,8 +1842,8 @@ function bntm_shortcode_kbf_fund_details() {
             <?php if(!empty($milestones)): ?>
               <div style="display:grid;gap:12px;">
                 <?php foreach($milestones as $ms):
-                  $ms_title = isset($ms['title']) ? $ms['title'] : '';
-                  $ms_body = isset($ms['body']) ? $ms['body'] : '';
+                  $ms_title = isset($ms['title']) ? wp_unslash((string)$ms['title']) : '';
+                  $ms_body = isset($ms['body']) ? wp_unslash((string)$ms['body']) : '';
                   $ms_date = isset($ms['created_at']) ? $ms['created_at'] : '';
                   $ms_photos = isset($ms['photos']) ? $ms['photos'] : [];
                   if (is_string($ms_photos)) {
@@ -1865,7 +1855,7 @@ function bntm_shortcode_kbf_fund_details() {
                   <div style="border:1px solid var(--kbf-border);border-radius:12px;padding:12px;background:#fff;">
                     <?php if($ms_title !== ''): ?><div style="font-weight:600;color:var(--kbf-navy);margin-bottom:4px;"><?php echo esc_html($ms_title); ?></div><?php endif; ?>
                     <?php if($ms_date): ?><div style="font-size:11.5px;color:var(--kbf-slate);margin-bottom:6px;"><?php echo esc_html(date('M d, Y', strtotime($ms_date))); ?></div><?php endif; ?>
-                    <?php if($ms_body !== ''): ?><div style="font-size:13px;color:var(--kbf-text-sm);line-height:1.6;"><?php echo nl2br(esc_html(wp_unslash($ms_body))); ?></div><?php endif; ?>
+                    <?php if($ms_body !== ''): ?><div style="font-size:13px;color:var(--kbf-text-sm);line-height:1.6;"><?php echo nl2br(esc_html($ms_body)); ?></div><?php endif; ?>
                     <?php if(!empty($ms_photos)): ?>
                       <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
                         <?php foreach($ms_photos as $p):
@@ -1878,7 +1868,7 @@ function bntm_shortcode_kbf_fund_details() {
                           $url = $url ? wp_unslash($url) : '';
                           if (!$url) continue;
                         ?>
-                          <img src="<?php echo esc_url($url); ?>" alt="Story photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">
+                          <img class="kbf-story-photo" data-lightbox-src="<?php echo esc_url($url); ?>" src="<?php echo esc_url($url); ?>" alt="Story photo" style="width:110px;height:82px;object-fit:cover;border-radius:8px;border:1px solid var(--kbf-border);">
                         <?php endforeach; ?>
                       </div>
                     <?php endif; ?>
@@ -1900,11 +1890,13 @@ function bntm_shortcode_kbf_fund_details() {
             <?php if(!empty($benefits)): ?>
               <ul class="kbf-benefits-view">
                 <?php foreach($benefits as $b):
-                  $b_title = isset($b['title']) ? $b['title'] : '';
-                  $b_desc  = isset($b['description']) ? $b['description'] : '';
+                  $b_title = isset($b['title']) ? wp_unslash((string)$b['title']) : '';
+                  $b_desc  = isset($b['description']) ? wp_unslash((string)$b['description']) : '';
                   $b_amt   = isset($b['amount']) ? $b['amount'] : '';
+                  $b_amt_int = (is_numeric($b_amt) && (float)$b_amt > 0) ? (int) round((float)$b_amt) : 0;
+                  $b_label = trim($b_title) !== '' ? $b_title : 'reward';
                 ?>
-                  <li>
+                  <li class="<?php echo $b_amt_int > 0 ? 'is-clickable' : ''; ?>"<?php if($b_amt_int > 0): ?> role="button" tabindex="0" data-kbf-benefit-amount="<?php echo esc_attr($b_amt_int); ?>" aria-label="<?php echo esc_attr('Choose reward ' . $b_label . ' for PHP ' . number_format($b_amt_int, 0)); ?>"<?php endif; ?>>
                     <?php if($b_title !== ''): ?><div class="kbf-benefits-title"><?php echo esc_html($b_title); ?></div><?php endif; ?>
                     <?php if($b_amt !== '' && (float)$b_amt > 0): ?><div class="kbf-benefits-amount">&#8369;<?php echo number_format((float)$b_amt, 0); ?></div><?php endif; ?>
                     <?php if($b_desc !== ''): ?><div class="kbf-benefits-desc"><?php echo esc_html($b_desc); ?></div><?php endif; ?>
@@ -1932,7 +1924,9 @@ function bntm_shortcode_kbf_fund_details() {
       <?php if(!empty($sponsors)): ?>
       <div class="kbf-sponsor-wall">
         <?php foreach($sponsors as $sp):
-          $initials = $sp->is_anonymous ? '?' : strtoupper(substr(isset($sp->sponsor_name) ? $sp->sponsor_name : 'A',0,1));
+          $sp_name = isset($sp->sponsor_name) ? wp_unslash((string)$sp->sponsor_name) : '';
+          $sp_message = isset($sp->message) ? wp_unslash((string)$sp->message) : '';
+          $initials = $sp->is_anonymous ? '?' : strtoupper(substr($sp_name !== '' ? $sp_name : 'A',0,1));
         ?>
         <div class="kbf-sponsor-item">
           <div class="kbf-sponsor-avatar">
@@ -1945,12 +1939,12 @@ function bntm_shortcode_kbf_fund_details() {
           <div style="flex:1;min-width:0;padding-left:4px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-weight:600;font-size:13.5px;color:var(--kbf-navy);">
-                <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp->sponsor_name); ?>
+                <?php echo $sp->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($sp_name); ?>
               </span>
               <?php $sp_created_ts = !empty($sp->created_at) ? strtotime((string) $sp->created_at) : false; ?>
               <span style="font-size:12px;color:var(--kbf-slate);"><?php echo esc_html($sp_created_ts !== false ? wp_date('M d g:ia', $sp_created_ts) : '--'); ?></span>
             </div>
-            <?php if($sp->message): ?><div class="kbf-sponsor-msg" style="margin-top:6px;">"<?php echo esc_html($sp->message); ?>"</div><?php endif; ?>
+            <?php if($sp_message !== ''): ?><div class="kbf-sponsor-msg" style="margin-top:6px;">"<?php echo esc_html($sp_message); ?>"</div><?php endif; ?>
           </div>
         </div>
         <?php endforeach; ?>
@@ -1977,35 +1971,11 @@ function bntm_shortcode_kbf_fund_details() {
     * @returns   void
     * @status    ACTIVE
     */
-   function kbfSyncDetailPanels(){
+function kbfSyncDetailPanels(){
     var sticky = document.querySelector('.kbf-detail-sticky');
     if(sticky) sticky.style.height = 'auto';
 }
     document.addEventListener('DOMContentLoaded', function(){
-        var tabRoot = document.querySelector('.kbf-detail-tabs');
-        if (tabRoot) {
-            var tabList = tabRoot.querySelector('.kbf-detail-tab-list');
-            var tabs = Array.prototype.slice.call(tabRoot.querySelectorAll('.kbf-detail-tab'));
-            var panels = Array.prototype.slice.call(tabRoot.querySelectorAll('.kbf-detail-tab-panel'));
-            var activateTab = function(key){
-                tabs.forEach(function(tab){
-                    var isActive = tab.getAttribute('data-kbf-tab') === key;
-                    tab.classList.toggle('is-active', isActive);
-                    tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                });
-                panels.forEach(function(panel){
-                    var isActive = panel.getAttribute('data-kbf-panel') === key;
-                    panel.classList.toggle('is-active', isActive);
-                });
-            };
-            if (tabList) {
-                tabList.addEventListener('click', function(e){
-                    var btn = e.target.closest('.kbf-detail-tab');
-                    if (!btn) return;
-                    activateTab(btn.getAttribute('data-kbf-tab'));
-                });
-            }
-        }
         /* ===== PHOTO SLIDER ===== */
         var mainWrap = document.getElementById('kbf-photo-main');
         var lightbox = document.getElementById('kbf-photo-lightbox');
@@ -2024,6 +1994,7 @@ function bntm_shortcode_kbf_fund_details() {
         var isTransitioning = false;
         var touchStartX = 0;
         var touchEndX = 0;
+        var lightboxMode = 'gallery';
 
         /**
          * @function  goTo
@@ -2155,6 +2126,15 @@ function bntm_shortcode_kbf_fund_details() {
             mainWrap.classList.remove('is-paused');
             scheduleAuto();
         }
+        function openLightboxWithSrc(src, mode){
+            if(!src) return;
+            lightboxMode = mode === 'story' ? 'story' : 'gallery';
+            lightbox.classList.toggle('is-story', lightboxMode === 'story');
+            lightImg.src = src;
+            lightbox.classList.add('open');
+            lightbox.setAttribute('aria-hidden','false');
+            pauseAuto();
+        }
 
         // Events
         if(prevBtn) prevBtn.addEventListener('click', function(e){ e.stopPropagation(); goPrev(); });
@@ -2168,10 +2148,19 @@ function bntm_shortcode_kbf_fund_details() {
         // Click on main image opens lightbox
         mainWrap.addEventListener('click', function(e){
             if(e.target.closest('.kbf-photo-nav') || e.target.closest('.kbf-photo-dot')) return;
-            lightImg.src = slides[currentIndex].querySelector('img').src;
-            lightbox.classList.add('open');
-            lightbox.setAttribute('aria-hidden','false');
-            pauseAuto();
+            var activeSlide = slides[currentIndex];
+            if(!activeSlide) return;
+            var activeImg = activeSlide.querySelector('img');
+            if(!activeImg) return;
+            openLightboxWithSrc(activeImg.src, 'gallery');
+        });
+        var storyPhotos = Array.prototype.slice.call(document.querySelectorAll('.kbf-story-photo'));
+        storyPhotos.forEach(function(photo){
+            photo.addEventListener('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                openLightboxWithSrc(photo.getAttribute('data-lightbox-src') || photo.src, 'story');
+            });
         });
         mainWrap.addEventListener('mouseenter', pauseAuto);
         mainWrap.addEventListener('mouseleave', resumeAuto);
@@ -2199,18 +2188,31 @@ function bntm_shortcode_kbf_fund_details() {
          */
         function closeLightbox(){
             lightbox.classList.remove('open');
+            lightbox.classList.remove('is-story');
             lightbox.setAttribute('aria-hidden','true');
+            lightboxMode = 'gallery';
             resumeAuto();
         }
         if(lbClose) lbClose.addEventListener('click', closeLightbox);
-        if(lbPrev) lbPrev.addEventListener('click', function(e){ e.stopPropagation(); goPrev(); lightImg.src = slides[currentIndex].querySelector('img').src; });
-        if(lbNext) lbNext.addEventListener('click', function(e){ e.stopPropagation(); goNext(); lightImg.src = slides[currentIndex].querySelector('img').src; });
+        if(lbPrev) lbPrev.addEventListener('click', function(e){
+            e.stopPropagation();
+            if(lightboxMode !== 'gallery') return;
+            goPrev();
+            if(slides[currentIndex]) lightImg.src = slides[currentIndex].querySelector('img').src;
+        });
+        if(lbNext) lbNext.addEventListener('click', function(e){
+            e.stopPropagation();
+            if(lightboxMode !== 'gallery') return;
+            goNext();
+            if(slides[currentIndex]) lightImg.src = slides[currentIndex].querySelector('img').src;
+        });
         lightbox.addEventListener('click', function(e){ if(e.target === lightbox) closeLightbox(); });
         document.addEventListener('keydown', function(e){
             if(!lightbox.classList.contains('open')) return;
             if(e.key === 'Escape') closeLightbox();
-            if(e.key === 'ArrowRight') { goNext(); if(lightImg) lightImg.src = slides[currentIndex].querySelector('img').src; }
-            if(e.key === 'ArrowLeft') { goPrev(); if(lightImg) lightImg.src = slides[currentIndex].querySelector('img').src; }
+            if(lightboxMode !== 'gallery') return;
+            if(e.key === 'ArrowRight') { goNext(); if(lightImg && slides[currentIndex]) lightImg.src = slides[currentIndex].querySelector('img').src; }
+            if(e.key === 'ArrowLeft') { goPrev(); if(lightImg && slides[currentIndex]) lightImg.src = slides[currentIndex].querySelector('img').src; }
         });
 
         scheduleAuto();
@@ -2271,6 +2273,67 @@ function bntm_shortcode_kbf_fund_details() {
         var modal = kbfGetActiveSponsorModal();
         if (!modal) return null;
         return modal.querySelector('#kbf-spd-msg') || modal.querySelector('#kbf-sponsor-msg');
+    }
+    /**
+     * @function  kbfSelectBenefitAmount
+     * @purpose   Opens sponsor modal from a reward selection and prefills amount fields.
+     * @used-by   Reward click and keyboard quick-select handlers
+     * @calls     kbfGetActiveSponsorModal, kbfGetActiveSponsorMsg, kbfShowModal
+     * @params    mixed amount - Reward amount value to prefill
+     * @returns   void
+     * @status    ACTIVE
+     */
+    window.kbfSelectBenefitAmount = function(amount){
+        var val = parseInt(String(amount == null ? '' : amount).replace(/[^\d]/g, ''), 10);
+        if (!val || val <= 0) return;
+
+        if (typeof window.kbfShowModal === 'function') {
+            window.kbfShowModal('kbf-modal-sponsor');
+        } else {
+            var fallbackModal = document.getElementById('kbf-modal-sponsor');
+            if (fallbackModal) {
+                fallbackModal.style.display = 'flex';
+                fallbackModal.classList.add('is-open');
+            }
+        }
+
+        var modal = kbfGetActiveSponsorModal() || document.getElementById('kbf-modal-sponsor');
+        if (!modal) return;
+        var amountDisplay = modal.querySelector('#kbf-sponsor-amount-display');
+        var amountHidden = modal.querySelector('#kbf-sponsor-amount');
+        if (!amountDisplay || !amountHidden) return;
+
+        amountHidden.value = String(val);
+        amountDisplay.value = Number(val).toLocaleString('en-US');
+        var msg = kbfGetActiveSponsorMsg();
+        if (msg) msg.innerHTML = '';
+        amountDisplay.focus();
+    };
+    /**
+     * @function  kbfInitBenefitQuickSelect
+     * @purpose   Binds reward items so click/keyboard opens contribute modal with selected amount.
+     * @used-by   DOMContentLoaded flow
+     * @calls     kbfSelectBenefitAmount
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
+    function kbfInitBenefitQuickSelect(){
+        var items = document.querySelectorAll('.kbf-benefits-view [data-kbf-benefit-amount]');
+        if (!items || !items.length) return;
+        items.forEach(function(item){
+            if (item.getAttribute('data-kbf-benefit-ready') === '1') return;
+            item.setAttribute('data-kbf-benefit-ready', '1');
+            item.addEventListener('click', function(){
+                window.kbfSelectBenefitAmount(item.getAttribute('data-kbf-benefit-amount'));
+            });
+            item.addEventListener('keydown', function(e){
+                var key = e.key || '';
+                if (key !== 'Enter' && key !== ' ') return;
+                e.preventDefault();
+                window.kbfSelectBenefitAmount(item.getAttribute('data-kbf-benefit-amount'));
+            });
+        });
     }
     /**
      * @function  kbfValidateRequired
@@ -2365,6 +2428,46 @@ function bntm_shortcode_kbf_fund_details() {
             return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
         });
     }
+    if (typeof window.kbfShowTransientNotice !== 'function') {
+      window.kbfShowTransientNotice = function(message, type){
+        var text = String(message || '').trim();
+        if (!text) return;
+        var notice = document.createElement('div');
+        notice.className = 'kbf-alert kbf-alert-' + (type || 'success') + ' kbf-alert-noicon';
+        notice.textContent = text;
+        notice.style.position = 'fixed';
+        notice.style.bottom = '16px';
+        notice.style.right = '16px';
+        notice.style.zIndex = '9999';
+        notice.style.maxWidth = '360px';
+        notice.style.fontFamily = "'Poppins', sans-serif";
+        notice.style.boxShadow = '0 8px 24px rgba(15,23,42,.12)';
+        notice.style.opacity = '0';
+        notice.style.transform = 'translateY(-8px)';
+        notice.style.transition = 'opacity .18s ease, transform .18s ease';
+        document.body.appendChild(notice);
+        requestAnimationFrame(function(){
+          notice.style.opacity = '1';
+          notice.style.transform = 'translateY(0)';
+        });
+        setTimeout(function(){
+          notice.style.opacity = '0';
+          notice.style.transform = 'translateY(-8px)';
+          setTimeout(function(){
+            if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
+          }, 220);
+        }, 2600);
+      };
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      try {
+        var reportedAt = parseInt(localStorage.getItem('kbf_report_submitted') || '0', 10);
+        if (!reportedAt) return;
+        localStorage.removeItem('kbf_report_submitted');
+        if ((Date.now() - reportedAt) > (5 * 60 * 1000)) return;
+        window.kbfShowTransientNotice('Report submitted successfully.', 'success');
+      } catch(e) {}
+    });
     /**
      * @function  kbfValidateReportImageSize
      * @purpose   Validates report image size and renders inline field error for invalid files.
@@ -2385,6 +2488,7 @@ function bntm_shortcode_kbf_fund_details() {
         }
         if(!(imageEl.files && imageEl.files[0])) return true;
         if(imageEl.files[0].size >= maxBytes){
+            try { imageEl.value = ''; } catch(e) {}
             if(imageGroup){
                 var imageErr = document.createElement('div');
                 imageErr.className = 'kbf-field-error';
@@ -2404,6 +2508,63 @@ function bntm_shortcode_kbf_fund_details() {
             kbfValidateReportImageSize(form, 5 * 1024 * 1024);
         });
     })();
+    /**
+     * @function  kbfResetReportModalState
+     * @purpose   Resets report modal UI state to default form mode.
+     * @used-by   kbfOpenReportModal, kbfCloseReportModal
+     * @calls     document.getElementById, querySelectorAll, kbfSetBtnLoading, kbfSetSkeleton
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
+    function kbfResetReportModalState(){
+        var modal = document.getElementById('kbf-modal-report');
+        var form = document.getElementById('kbf-report-form');
+        var msg = document.getElementById('kbf-rpt-msg');
+        var btn = document.querySelector('#kbf-modal-report .kbf-modal-footer .kbf-btn-danger');
+        if (form) {
+            form.reset();
+            form.querySelectorAll('.kbf-field-error').forEach(function(el){ el.remove(); });
+        }
+        if (msg) msg.innerHTML = '';
+        if (btn) kbfSetBtnLoading(btn, false);
+        if (msg) kbfSetSkeleton(msg, false);
+        kbfSetLoadingPage(false);
+    }
+    /**
+     * @function  kbfOpenReportModal
+     * @purpose   Opens report modal and ensures clean initial state.
+     * @used-by   Report Abuse button
+     * @calls     kbfResetReportModalState
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
+    window.kbfOpenReportModal = function(){
+        var modal = document.getElementById('kbf-modal-report');
+        if(!modal) return;
+        kbfResetReportModalState();
+        modal.style.display = 'flex';
+        requestAnimationFrame(function(){ modal.classList.add('is-open'); });
+    };
+    /**
+     * @function  kbfCloseReportModal
+     * @purpose   Closes report modal and resets state safely.
+     * @used-by   Report modal close and cancel actions
+     * @calls     kbfResetReportModalState
+     * @params    none
+     * @returns   void
+     * @status    ACTIVE
+     */
+    window.kbfCloseReportModal = function(){
+        var modal = document.getElementById('kbf-modal-report');
+        if(!modal) return;
+        modal.classList.remove('is-open');
+        setTimeout(function(){
+            modal.style.display = 'none';
+            kbfResetReportModalState();
+        }, 220);
+    };
     /**
      * @function  kbfSpdSponsor
      * @purpose   Submits sponsor checkout payload and opens returned Maya checkout URL.
@@ -2490,9 +2651,10 @@ function bntm_shortcode_kbf_fund_details() {
         }).then(j=>{
             msg.innerHTML='<div class="kbf-alert kbf-alert-'+(j.success?'success':'error')+'">'+kbfEscHtmlMsg(j && j.data ? j.data.message : 'Request failed.')+'</div>';
         if(j.success){
-            var m=document.getElementById('kbf-modal-report');
-            if(m){m.classList.remove('is-open');m.style.display='none';}
-            if(form) form.reset();
+          try { localStorage.setItem('kbf_report_submitted', String(Date.now())); } catch(e) {}
+            kbfSetBtnLoading(btn,false);
+            kbfSetSkeleton(msg,false);
+          setTimeout(function(){ window.location.reload(); }, 350);
         } else {
                 kbfSetBtnLoading(btn,false); 
                 kbfSetSkeleton(msg,false);
@@ -3060,30 +3222,7 @@ function bntm_shortcode_kbf_fund_details() {
         render();
     }
     document.addEventListener('DOMContentLoaded', function(){
-        var tabRoot = document.querySelector('.kbf-detail-tabs');
-        if (tabRoot) {
-            var tabList = tabRoot.querySelector('.kbf-detail-tab-list');
-            var tabs = Array.prototype.slice.call(tabRoot.querySelectorAll('.kbf-detail-tab'));
-            var panels = Array.prototype.slice.call(tabRoot.querySelectorAll('.kbf-detail-tab-panel'));
-            var activateTab = function(key){
-                tabs.forEach(function(tab){
-                    var isActive = tab.getAttribute('data-kbf-tab') === key;
-                    tab.classList.toggle('is-active', isActive);
-                    tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                });
-                panels.forEach(function(panel){
-                    var isActive = panel.getAttribute('data-kbf-panel') === key;
-                    panel.classList.toggle('is-active', isActive);
-                });
-            };
-            if (tabList) {
-                tabList.addEventListener('click', function(e){
-                    var btn = e.target.closest('.kbf-detail-tab');
-                    if (!btn) return;
-                    activateTab(btn.getAttribute('data-kbf-tab'));
-                });
-            }
-        }
+        kbfInitBenefitQuickSelect();
         initLeaderboardPager();
     });
     </script>

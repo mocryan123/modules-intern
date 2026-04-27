@@ -961,7 +961,7 @@
               </a>
               <?php if($f->status === 'suspended'): ?>
                 <?php if($appeal_pending): ?>
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" disabled aria-disabled="true" title="Appeal already submitted and under review">
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" disabled aria-disabled="true">
                     Appeal Pending Review
                   </button>
                 <?php else: ?>
@@ -984,7 +984,7 @@
               <?php endif; ?>
                 <?php if(in_array($f->status,['active','completed'], true) && $f->escrow_status==='released'): ?>
                   <?php if($wd_block): ?>
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw" disabled aria-disabled="true">
                     <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>
@@ -996,7 +996,7 @@
                   <?php endif; ?>
                 <?php endif; ?>
               <div class="kbf-card-more-wrap">
-                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js((string) ((int) $f->id)); ?>')" title="More" data-tooltip="More">
+                <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleHomeMore(event,'<?php echo esc_js((string) ((int) $f->id)); ?>')" aria-label="More actions">
                   <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                 </button>
                 <div class="kbf-card-more-menu" id="kbf-home-more-<?php echo esc_attr((int) $f->id); ?>">
@@ -1020,7 +1020,7 @@
                 <?php endif; ?>
                 <?php if(in_array($f->status,['active','completed'], true) && $f->escrow_status==='released'): ?>
                   <?php if($wd_block): ?>
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" disabled aria-disabled="true" title="Withdrawal pending">
+                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-btn-withdraw kbf-more-withdraw" disabled aria-disabled="true">
                     <i class="ph ph-money-wavy kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
                     Request Withdrawal
                   </button>

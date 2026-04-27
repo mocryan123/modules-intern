@@ -79,6 +79,55 @@
           return '';
         };
       }
+      if (typeof window.kbfShowTransientNotice !== 'function') {
+        /**
+         * @function  kbfShowTransientNotice
+         * @purpose   Shows a temporary floating notice on the page
+         * @used-by   [same file references detected]
+         * @calls     [none explicitly documented]
+         * @params    message: any - parameter; type: any - parameter
+         * @returns   void
+         * @status    ACTIVE
+         */
+        window.kbfShowTransientNotice = function(message, type){
+          var text = String(message || '').trim();
+          if (!text) return;
+          var notice = document.createElement('div');
+          notice.className = 'kbf-alert kbf-alert-' + (type || 'success') + ' kbf-alert-noicon';
+          notice.textContent = text;
+          notice.style.position = 'fixed';
+          notice.style.bottom = '16px';
+          notice.style.right = '16px';
+          notice.style.zIndex = '9999';
+          notice.style.maxWidth = '360px';
+          notice.style.fontFamily = "'Poppins', sans-serif";
+          notice.style.boxShadow = '0 8px 24px rgba(15,23,42,.12)';
+          notice.style.opacity = '0';
+          notice.style.transform = 'translateY(-8px)';
+          notice.style.transition = 'opacity .18s ease, transform .18s ease';
+          document.body.appendChild(notice);
+          requestAnimationFrame(function(){
+            notice.style.opacity = '1';
+            notice.style.transform = 'translateY(0)';
+          });
+          setTimeout(function(){
+            notice.style.opacity = '0';
+            notice.style.transform = 'translateY(-8px)';
+            setTimeout(function(){
+              if (notice && notice.parentNode) notice.parentNode.removeChild(notice);
+            }, 220);
+          }, 2600);
+        };
+      }
+      document.addEventListener('DOMContentLoaded', function(){
+        try {
+          var updatedAt = parseInt(localStorage.getItem('kbf_fund_updated') || '0', 10);
+          if (!updatedAt) return;
+          localStorage.removeItem('kbf_fund_updated');
+          if ((Date.now() - updatedAt) > (5 * 60 * 1000)) return;
+          window.kbfShowTransientNotice('Campaign updated successfully.', 'success');
+        } catch(e) {}
+      });
       document.addEventListener('click', function(e){
         var modal = document.getElementById('kbf-auth-modal');
         if (modal && e.target === modal) window.kbfCloseAuthModal();
@@ -2618,6 +2667,16 @@
         var kbfEditFiles = [];
         var kbfEditExistingUrls = [];
         var kbfEditRemovedUrls = [];
+        var EDIT_MAX_PHOTO_BYTES = 5 * 1024 * 1024; // < 5MB only
+        function kbfSetEditPhotoError(message){
+            if (!editPhotoInput) return;
+            var group = editPhotoInput.closest('.kbf-form-group');
+            if (!group) return;
+            var err = group.querySelector('.kbf-field-error');
+            if (!err) return;
+            err.textContent = message || '';
+            err.style.display = message ? 'block' : '';
+        }
         /**
          * @function  kbfSyncEditFiles
          * @purpose   Handles kbfSyncEditFiles behavior in the dashboard script flow
@@ -2758,6 +2817,24 @@
             editPhotoInput.addEventListener('change', function(){
                 var incoming = Array.from(editPhotoInput.files || []);
                 if (!incoming.length) return;
+                var oversizedFound = false;
+                incoming = incoming.filter(function(f){
+                    if (!f || typeof f.size !== 'number') return false;
+                    if (f.size >= EDIT_MAX_PHOTO_BYTES) {
+                        oversizedFound = true;
+                        return false;
+                    }
+                    return true;
+                });
+                if (oversizedFound) {
+                    kbfSetEditPhotoError('Please upload photos below 5MB.');
+                } else {
+                    kbfSetEditPhotoError('');
+                }
+                if (!incoming.length) {
+                    editPhotoInput.value = '';
+                    return;
+                }
                 /**
                  * @function  kbfFileKey
                  * @purpose   Handles kbfFileKey behavior in the dashboard script flow
@@ -4507,6 +4584,21 @@
         const form = document.getElementById('kbf-edit-fund-form');
         const btn  = document.querySelector('#kbf-modal-edit .kbf-modal-footer .kbf-btn-primary');
         const msg  = document.getElementById('kbf-edit-msg');
+        var editInputEl = document.getElementById('kbf-edit-photos');
+        var editMaxBytes = (typeof EDIT_MAX_PHOTO_BYTES !== 'undefined' && EDIT_MAX_PHOTO_BYTES) ? EDIT_MAX_PHOTO_BYTES : (5 * 1024 * 1024);
+        var editFilesSafe = [];
+        if (typeof kbfEditFiles !== 'undefined' && Array.isArray(kbfEditFiles)) {
+            editFilesSafe = kbfEditFiles;
+        } else if (editInputEl && editInputEl.files) {
+            editFilesSafe = Array.from(editInputEl.files || []);
+        }
+        if (editFilesSafe.some(function(f){ return f && typeof f.size === 'number' && f.size >= editMaxBytes; })) {
+            if (typeof kbfSetEditPhotoError === 'function') kbfSetEditPhotoError('Please upload photos below 5MB.');
+            if (editInputEl) editInputEl.focus();
+            return;
+        } else if (typeof kbfSetEditPhotoError === 'function') {
+            kbfSetEditPhotoError('');
+        }
         if (window.kbfBenefitsEditors && window.kbfBenefitsEditors.edit) {
             var invalidBenefit = window.kbfBenefitsEditors.edit.validate();
             if (invalidBenefit) {
@@ -4635,9 +4727,13 @@
                     if (btn.dataset) delete btn.dataset.kbfLabel;
                 }
                 kbfSetSkeleton(msg,false);
-                kbfCloseModal('kbf-modal-edit');
+                var editModal = document.getElementById('kbf-modal-edit');
+                if (editModal) editModal.classList.add('is-success');
                 try { localStorage.setItem('kbf_fund_updated', String(Date.now())); } catch(e){}
-                setTimeout(function(){ window.location.reload(); }, 200);
+                setTimeout(function(){
+                    kbfCloseModal('kbf-modal-edit');
+                    setTimeout(function(){ window.location.reload(); }, 220);
+                }, 1200);
             } else { kbfSetBtnLoading(btn,false); kbfSetSkeleton(msg,false); }
         }).catch(()=>{ 
             kbfSetBtnLoading(btn,false); 
@@ -4720,6 +4816,8 @@
      * @status    NEEDS REVIEW
      */
     window.kbfOpenEdit = function(id, title, desc, loc, deadline, autoReturn, photosJson, benefitsJson) {
+        var editModal = document.getElementById('kbf-modal-edit');
+        if (editModal) editModal.classList.remove('is-success');
         document.getElementById('edit-fund-id').value = id;
         document.getElementById('edit-fund-title').value = title;
         document.getElementById('edit-fund-desc').value = desc;
@@ -4826,6 +4924,16 @@
     var kbfMilestoneFiles = [];
     var milestoneInput = document.getElementById('kbf-milestone-photos');
     var milestoneWrap = document.getElementById('kbf-milestone-photo-previews');
+    var MILESTONE_MAX_PHOTO_BYTES = 5 * 1024 * 1024; // < 5MB only
+    function kbfSetMilestonePhotoError(message){
+        if (!milestoneInput) return;
+        var group = milestoneInput.closest('.kbf-form-group');
+        if (!group) return;
+        var err = group.querySelector('.kbf-field-error');
+        if (!err) return;
+        err.textContent = message || '';
+        err.style.display = message ? 'block' : '';
+    }
     /**
      * @function  kbfSyncMilestoneFiles
      * @purpose   Handles kbfSyncMilestoneFiles behavior in the dashboard script flow
@@ -4897,11 +5005,22 @@
         milestoneInput.dataset.bound = '1';
         milestoneInput.addEventListener('change', function(){
             var files = Array.prototype.slice.call(milestoneInput.files || []);
+            var oversizedFound = false;
             files.forEach(function(f){
+                if (!f || typeof f.size !== 'number') return;
+                if (f.size >= MILESTONE_MAX_PHOTO_BYTES) {
+                    oversizedFound = true;
+                    return;
+                }
                 if (kbfMilestoneFiles.length < 5) {
                     kbfMilestoneFiles.push(f);
                 }
             });
+            if (oversizedFound) {
+                kbfSetMilestonePhotoError('Please upload photos below 5MB.');
+            } else {
+                kbfSetMilestonePhotoError('');
+            }
             kbfSyncMilestoneFiles();
             kbfRenderMilestoneThumbs();
         });
@@ -4917,6 +5036,8 @@
      * @status    NEEDS REVIEW
      */
     window.kbfOpenMilestoneModal = function(fundId, title) {
+        var milestoneModal = document.getElementById('kbf-modal-milestone');
+        if (milestoneModal) milestoneModal.classList.remove('is-success');
         var titleEl = document.getElementById('kbf-milestone-fund-title');
         var idEl = document.getElementById('kbf-milestone-fund-id');
         if (titleEl) titleEl.textContent = title ? ('Fund: ' + title) : '';
@@ -5023,9 +5144,13 @@
             setErr(photos, 'Please upload up to 5 photos only.');
             hasError = true;
         }
+        if (kbfMilestoneFiles.some(function(f){ return f && typeof f.size === 'number' && f.size >= MILESTONE_MAX_PHOTO_BYTES; })) {
+            setErr(photos, 'Please upload photos below 5MB.');
+            hasError = true;
+        }
 
         if (hasError) {
-            if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Please fix the highlighted fields.</div>';
+            if (msg) msg.innerHTML = '';
             return;
         }
         if (typeof window.ajaxurl === 'undefined' || !window.ajaxurl) {
@@ -5061,10 +5186,14 @@
                 if (json.data && json.data.milestone) {
                     kbfPrependMilestoneToUI(json.data.milestone);
                 }
-                msg.innerHTML = '<div class="kbf-alert kbf-alert-success">Story saved!</div>';
+                if (typeof window.kbfShowTransientNotice === 'function') {
+                    window.kbfShowTransientNotice('Story saved successfully.', 'success');
+                }
+                var milestoneModalSuccess = document.getElementById('kbf-modal-milestone');
+                if (milestoneModalSuccess) milestoneModalSuccess.classList.add('is-success');
                 setTimeout(function(){
                     kbfCloseModal('kbf-modal-milestone');
-                }, 900);
+                }, 1100);
             }
         }).catch(()=>{
             if (msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-error">Request failed.</div>';

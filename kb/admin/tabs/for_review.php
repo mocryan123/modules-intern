@@ -21,7 +21,7 @@ function kbf_admin_pending_tab() {
     $params = [];
     $where = "WHERE f.status='pending'";
     $where .= kbf_admin_date_where('f.created_at', $params);
-    $sql = "SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY f.created_at ASC";
+    $sql = "SELECT f.*,u.display_name as organizer FROM {$t} f LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY f.created_at DESC";
     $funds = $params ? $wpdb->get_results($wpdb->prepare($sql, $params)) : $wpdb->get_results($sql); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input when params empty
     /**
      * @function  format_currency
@@ -75,6 +75,10 @@ function kbf_admin_pending_tab() {
       <h3 class="kbf-section-title">Funds Pending Approval <span style="background:var(--kbf-red-lt);color:var(--kbf-red);padding:2px 8px;border-radius:99px;font-size:12px;margin-left:8px;"><?php echo count($funds); ?></span></h3>
       <?php if(empty($funds)): ?><div class="kbf-empty"><p>No funds pending review.</p></div>
       <?php else: foreach($funds as $f): ?>
+        <?php
+          $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+          $view_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$f->id], $dashboard_url);
+        ?>
         <div class="kbf-card">
           <div class="kbf-card-header">
             <div>
@@ -90,6 +94,9 @@ function kbf_admin_pending_tab() {
             <span class="kbf-badge kbf-badge-pending">Pending</span>
           </div>
           <div class="kbf-btn-group" style="margin-top:14px;">
+            <a class="kbf-btn kbf-btn-secondary kbf-btn-sm" href="<?php echo esc_url($view_url); ?>" target="_blank" rel="noopener noreferrer">
+              View Fund
+            </a>
             <button class="kbf-btn kbf-btn-success kbf-btn-sm" onclick="kbfApprove(<?php echo (int)$f->id; ?>)">
               <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Approve
             </button>

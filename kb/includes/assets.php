@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if (!defined('ABSPATH')) exit;
 
 // GLOBAL CSS + JS (shared across all shortcodes)
@@ -92,12 +92,53 @@ function kbf_global_assets() {
         display:flex;
         align-items:center;
         justify-content:center;
-        background:#f8fafcbf;
-        width:100vw;
-        height:100vh;
-        
+        background:#ffffff;
+        width:100%;
+        height:100%;
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
+        overflow:hidden;
+        overscroll-behavior:contain;
+        touch-action:none;
+        transition:opacity .35s ease, visibility .35s ease;
+    }
+    #kbf-loading-overlay::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+            linear-gradient(115deg, #ffffff 0%, #eef3f8 28%, #ffffff 52%, #e9eff6 76%, #ffffff 100%),
+            radial-gradient(95% 72% at 14% 18%, rgba(255,255,255,.96) 0%, rgba(241,246,252,.58) 62%, rgba(255,255,255,.92) 100%);
+        background-size:220% 220%, 160% 160%;
+        background-position:0% 50%, 20% 20%;
+        opacity:.98;
+        transform:translate3d(0,0,0) scale(1);
+        animation:kbfLoaderAuroraDrift 3.6s ease-in-out infinite;
+        z-index:1;
+    }
+    #kbf-loading-overlay::after{
+        content:"";
+        position:absolute;
+        inset:-18%;
+        background:
+            radial-gradient(52% 48% at 24% 30%, rgba(235,242,250,.72) 0%, rgba(235,242,250,0) 70%),
+            radial-gradient(44% 40% at 76% 66%, rgba(228,236,246,.64) 0%, rgba(228,236,246,0) 74%);
+        opacity:.8;
+        transform:translate3d(0,0,0);
+        animation:kbfLoaderAuroraGlow 4.9s ease-in-out infinite;
+        z-index:1;
+        pointer-events:none;
+    }
+    #kbf-loading-overlay.is-ready{
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+        animation:none;
     }
     #kbf-loading-overlay .kbf-loading-mark{
+        position:relative;
+        z-index:2;
         width:54px;height:54px;
         border-radius:14px;
         background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
@@ -109,18 +150,28 @@ function kbf_global_assets() {
         letter-spacing:.6px;
         box-shadow:0 8px 18px rgba(61,142,240,.2);
         overflow:hidden;
-        animation:kbfpreloadjump 1.2s cubic-bezier(.34,1.2,.64,1) infinite;
+        animation:kbfpreloadpulse 1.2s cubic-bezier(.34,1.2,.64,1) infinite;
     }
     #kbf-loading-overlay .kbf-loading-mark img{
         width:26px;height:26px;object-fit:contain;display:block;
         filter:brightness(0) invert(1);
     }
-    @keyframes kbfpreloadjump{
+    @keyframes kbfpreloadpulse{
         0%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
         25%{transform:translateY(-14px) rotate(-8deg) scale(1.01); box-shadow:0 16px 28px rgba(61,142,240,.3);}
         50%{transform:translateY(2px) rotate(6deg) scale(.99); box-shadow:0 6px 14px rgba(61,142,240,.18);}
         75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
         100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
+    }
+    @keyframes kbfLoaderAuroraDrift{
+        0%{background-position:0% 50%, 18% 18%; opacity:.92;}
+        50%{background-position:100% 50%, 72% 68%; opacity:1;}
+        100%{background-position:0% 50%, 18% 18%; opacity:.92;}
+    }
+    @keyframes kbfLoaderAuroraGlow{
+        0%{transform:translate3d(-1%,0,0) scale(1); opacity:.5;}
+        50%{transform:translate3d(3.5%,-2%,0) scale(1.08); opacity:.86;}
+        100%{transform:translate3d(-1%,0,0) scale(1); opacity:.5;}
     }
     /* Hide legacy BNTM chrome on KBF pages */
     .bntm-topbar,
@@ -1645,7 +1696,7 @@ function kbf_global_assets() {
     .kbf-star { color: #f43f5e; }
     .kbf-star-empty { color: #fecdd3; }
 
-    /* Page header Ã¢â‚¬â€ redesigned (clean, minimal card) */
+    /* Page header ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â redesigned (clean, minimal card) */
     .kbf-page-header {
         position: relative;
         background: #fff;
@@ -1922,7 +1973,7 @@ function kbf_global_assets() {
                         if(p === 'gap'){
                             var span = document.createElement('span');
                             span.className = 'kbf-page-gap';
-                            span.textContent = 'Ã¢â‚¬Â¦';
+                            span.textContent = 'ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦';
                             pagesWrap.appendChild(span);
                             return;
                         }
@@ -2264,7 +2315,7 @@ function kbf_global_assets() {
     window.kbffShareFund     = function(token, title, desc) { kbfOpenShare(token, title || 'Support this fund on KonekBayan', desc); };
     window.kbfShareFundDetail= function(token, title, desc) { kbfOpenShare(token, title || 'Support this fund on KonekBayan', desc); };
 
-    // ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ NEAR ME: browser geolocation ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Nominatim reverse geocode ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ fill location input ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬ÃƒÂ¢Ã¢â‚¬ÂÃ¢â€šÂ¬
+    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ NEAR ME: browser geolocation ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Nominatim reverse geocode ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ fill location input ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
     window.kbfNearMe = function(inputId, formId, btnRef) {
         const input = document.getElementById(inputId);
         let btn = null;
@@ -2326,6 +2377,7 @@ function kbf_global_assets() {
         echo kbf_render_loading_overlay();
     }
 }
+
 
 
 

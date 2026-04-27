@@ -539,7 +539,23 @@ function bntm_ajax_kbf_update_fund() {
         $data['photos'] = !empty($unique_photos) ? json_encode($unique_photos) : null;
     }
     $res=$wpdb->update($t,$data,['id'=>$id],array_fill(0,count($data),'%s'),['%d']);
-    if($res!==false) wp_send_json_success(['message'=>'Fund updated successfully!']);
+    if($res!==false){
+        if (function_exists('kbf_push_user_notification')) {
+            $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+            $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$id], $dashboard_url);
+            $is_pending_review = isset($data['status']) && $data['status'] === 'pending';
+            kbf_push_user_notification($biz, [
+                'type' => $is_pending_review ? 'fund_update_pending_review' : 'fund_updated',
+                'title' => $is_pending_review ? 'Fund update submitted for review' : 'Fund updated',
+                'message' => $is_pending_review
+                    ? 'Your changes were saved and are now pending admin approval.'
+                    : 'Your campaign changes were saved successfully.',
+                'url' => $fund_url,
+                'target_id' => (string)((int)$id),
+            ]);
+        }
+        wp_send_json_success(['message'=>'Fund updated successfully!']);
+    }
     else wp_send_json_error(['message'=>'Failed to update fund.']);
 }
 
@@ -822,6 +838,17 @@ function bntm_ajax_kbf_add_milestone() {
     );
     if ($res === false) {
         wp_send_json_error(['message'=>'Failed to save milestone.', 'debug'=>$wpdb->last_error]);
+    }
+    if (function_exists('kbf_push_user_notification')) {
+        $dashboard_url = function_exists('kbf_get_page_url') ? kbf_get_page_url('dashboard') : home_url('/');
+        $fund_url = add_query_arg(['kbf_tab' => 'fund_details', 'fund_id' => (int)$fund_id], $dashboard_url);
+        kbf_push_user_notification($biz, [
+            'type' => 'fund_story_added',
+            'title' => 'Story posted',
+            'message' => 'Your story/update was posted successfully.',
+            'url' => $fund_url,
+            'target_id' => (string)((int)$fund_id),
+        ]);
     }
     $fresh = $wpdb->get_row($wpdb->prepare("SELECT milestones FROM {$ft} WHERE id=%d", $fund_id));
     $saved_raw = $fresh ? $fresh->milestones : null;

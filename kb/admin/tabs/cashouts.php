@@ -75,12 +75,13 @@ function kbf_admin_withdrawals_tab() {
       <h3 class="kbf-section-title">Withdrawal Requests</h3>
       <?php if(empty($rows)): ?>
         <div class="kbf-table-empty" data-kbf-table-desc="Lists withdrawal requests and their processing status.">
-          <div class="kbf-table-empty-head" style="grid-template-columns:1.3fr 1fr .8fr .9fr 1.2fr .8fr .8fr .8fr .8fr;">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.3fr 1fr .8fr .9fr 1.2fr .9fr .8fr .8fr .8fr .8fr;">
             <span>Fund</span>
             <span>Funder</span>
             <span>Amount</span>
             <span>Account Type</span>
             <span>Account</span>
+            <span>TRN</span>
             <span>Status</span>
             <span>Requested</span>
             <span>Released</span>
@@ -91,7 +92,7 @@ function kbf_admin_withdrawals_tab() {
       <?php else: ?>
       <div class="kbf-table-wrap" data-kbf-table-desc="Lists withdrawal requests and their processing status.">
         <table class="kbf-table">
-          <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Account Type</th><th>Account</th><th>Status</th><th>Requested</th><th>Released</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Fund</th><th>Funder</th><th>Amount</th><th>Account Type</th><th>Account</th><th>TRN</th><th>Status</th><th>Requested</th><th>Released</th><th>Actions</th></tr></thead>
           <tbody>
           <?php foreach($rows as $w): ?>
             <tr>
@@ -112,6 +113,7 @@ function kbf_admin_withdrawals_tab() {
               <td><span class="kbf-strong">PHP <?php echo $format_amount($w->amount, 2); ?></span></td>
               <td class="kbf-meta"><?php echo esc_html($format_account_type($w->account_type)); ?></td>
               <td class="kbf-meta"><?php echo esc_html($w->account_name); ?><br><?php echo esc_html($w->account_number); ?></td>
+              <td class="kbf-meta"><?php echo esc_html($w->rand_id ?: '-'); ?></td>
               <td><span class="kbf-badge kbf-badge-<?php echo esc_attr(kbf_withdrawal_badge_class($w->status)); ?>"><?php echo esc_html(kbf_withdrawal_status_label($w->status)); ?></span></td>
               <td class="kbf-meta"><?php echo $format_date($w->requested_at); ?></td>
               <td class="kbf-meta"><?php echo $format_date($w->processed_at); ?></td>

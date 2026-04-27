@@ -274,6 +274,16 @@
               <div class="kbf-field-error"></div>
             </div>
           </form>
+          <div class="kbf-milestone-success" id="kbf-milestone-success" aria-live="polite">
+            <div class="kbf-success-icon">
+              <svg viewBox="0 0 52 52" aria-hidden="true">
+                <circle class="kbf-success-ring" cx="26" cy="26" r="25" fill="none"></circle>
+                <path class="kbf-success-check" fill="none" d="M14 27 L22 35 L38 19"></path>
+              </svg>
+            </div>
+            <h3>Story Saved!</h3>
+            <p>Your update was posted successfully.</p>
+          </div>
           <div id="kbf-milestone-msg" style="margin-top:10px;"></div>
           <div class="kbf-meta">This will appear in the Stories & Updates section.</div>
         </div>
@@ -321,10 +331,10 @@
                 <label>Photos (up to 5)</label>
                 <input type="file" id="kbf-edit-photos" name="photos[]" accept="image/*" multiple style="display:none;">
                 <small></small>
-                <div class="kbf-field-error"></div>
                 <div class="kbf-photo-previews kbf-photo-grid" id="kbf-edit-photo-previews">
                   <button class="kbf-photo-add" type="button" id="kbf-edit-photo-add" aria-label="Add photos">+</button>
                 </div>
+                <div class="kbf-field-error"></div>
               </div>
               <div class="kbf-form-group">
                 <label>Support Tiers (optional)</label>
@@ -377,6 +387,16 @@
             <input type="hidden" name="remove_photos" id="kbf-edit-removed-photos">
             <div id="kbf-edit-msg"></div>
           </form>
+          <div class="kbf-edit-success" id="kbf-edit-success" aria-live="polite">
+            <div class="kbf-success-icon">
+              <svg viewBox="0 0 52 52" aria-hidden="true">
+                <circle class="kbf-success-ring" cx="26" cy="26" r="25" fill="none"></circle>
+                <path class="kbf-success-check" fill="none" d="M14 27 L22 35 L38 19"></path>
+              </svg>
+            </div>
+            <h3>Campaign Updated!</h3>
+            <p>Your changes were saved successfully.</p>
+          </div>
         </div>
         <div class="kbf-modal-footer">
           <button class="kbf-btn kbf-btn-secondary kbf-modal-left" id="kbf-edit-prev" type="button">Back</button>

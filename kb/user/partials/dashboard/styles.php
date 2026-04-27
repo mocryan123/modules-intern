@@ -1,4 +1,4 @@
-        <!-- ================== CSS ================== -->
+﻿        <!-- ================== CSS ================== -->
     <style>
     .kbf-user-ui{
     font-family: "Poppins",system-ui,-apple-system,sans-serif;
@@ -1903,10 +1903,53 @@
         display:flex;
         align-items:center;
         justify-content:center;
-        background:#f8fafcbf;
-        
+        background:#ffffff;
+        width:100%;
+        height:100%;
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
+        overflow:hidden;
+        overscroll-behavior:contain;
+        touch-action:none;
+        transition:opacity .35s ease, visibility .35s ease;
+    }
+    .kbf-user-ui #kbf-loading-overlay::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+            linear-gradient(115deg, #ffffff 0%, #eef3f8 28%, #ffffff 52%, #e9eff6 76%, #ffffff 100%),
+            radial-gradient(95% 72% at 14% 18%, rgba(255,255,255,.96) 0%, rgba(241,246,252,.58) 62%, rgba(255,255,255,.92) 100%);
+        background-size:220% 220%, 160% 160%;
+        background-position:0% 50%, 20% 20%;
+        opacity:.98;
+        transform:translate3d(0,0,0) scale(1);
+        animation:kbfLoaderAuroraDrift 3.6s ease-in-out infinite;
+        z-index:1;
+    }
+    .kbf-user-ui #kbf-loading-overlay::after{
+        content:"";
+        position:absolute;
+        inset:-18%;
+        background:
+            radial-gradient(52% 48% at 24% 30%, rgba(235,242,250,.72) 0%, rgba(235,242,250,0) 70%),
+            radial-gradient(44% 40% at 76% 66%, rgba(228,236,246,.64) 0%, rgba(228,236,246,0) 74%);
+        opacity:.8;
+        transform:translate3d(0,0,0);
+        animation:kbfLoaderAuroraGlow 4.9s ease-in-out infinite;
+        z-index:1;
+        pointer-events:none;
+    }
+    .kbf-user-ui #kbf-loading-overlay.is-ready{
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+        animation:none;
     }
     .kbf-user-ui .kbf-loading-mark{
+        position:relative;
+        z-index:2;
         width:54px;height:54px;
         border-radius:14px;
         background:linear-gradient(135deg,#5ba8f5,#3d8ef0);
@@ -1918,18 +1961,28 @@
         letter-spacing:.6px;
         box-shadow:0 8px 18px rgba(61,142,240,.2);
         overflow:hidden;
-        animation:kbfpreloadjump 1.2s cubic-bezier(.34,1.2,.64,1) infinite;
+        animation:kbfpreloadpulse 1.2s cubic-bezier(.34,1.2,.64,1) infinite;
     }
     .kbf-user-ui .kbf-loading-mark img{
         width:26px;height:26px;object-fit:contain;display:block;
         filter:brightness(0) invert(1);
     }
-    @keyframes kbfpreloadjump{
+    @keyframes kbfpreloadpulse{
         0%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
         25%{transform:translateY(-14px) rotate(-8deg) scale(1.01); box-shadow:0 16px 28px rgba(61,142,240,.3);}
         50%{transform:translateY(2px) rotate(6deg) scale(.99); box-shadow:0 6px 14px rgba(61,142,240,.18);}
         75%{transform:translateY(-8px) rotate(-6deg) scale(1.005); box-shadow:0 12px 24px rgba(61,142,240,.26);}
         100%{transform:translateY(0) rotate(0deg) scale(1); box-shadow:0 8px 18px rgba(61,142,240,.2);}
+    }
+    @keyframes kbfLoaderAuroraDrift{
+        0%{background-position:0% 50%, 18% 18%; opacity:.92;}
+        50%{background-position:100% 50%, 72% 68%; opacity:1;}
+        100%{background-position:0% 50%, 18% 18%; opacity:.92;}
+    }
+    @keyframes kbfLoaderAuroraGlow{
+        0%{transform:translate3d(-1%,0,0) scale(1); opacity:.5;}
+        50%{transform:translate3d(3.5%,-2%,0) scale(1.08); opacity:.86;}
+        100%{transform:translate3d(-1%,0,0) scale(1); opacity:.5;}
     }
 html.kbf-modal-lock, body.kbf-modal-lock {
     overflow: hidden !important;
@@ -2596,6 +2649,26 @@ html.kbf-modal-lock, body.kbf-modal-lock {
         justify-content:center;
         gap:10px;
     }
+    #kbf-modal-edit .kbf-edit-success{
+        display:none;
+        text-align:center;
+        min-height:100%;
+        height:100%;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+    }
+    #kbf-modal-milestone .kbf-milestone-success{
+        display:none;
+        text-align:center;
+        min-height:100%;
+        height:100%;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:10px;
+    }
     /* ===== CREATE MODAL RESPONSIVE ===== */
     @media (max-width: 980px){
         #kbf-modal-create .kbf-modal{max-width:92vw;}
@@ -2724,19 +2797,25 @@ html.kbf-modal-lock, body.kbf-modal-lock {
             justify-content:flex-start;
         }
     }
-    #kbf-modal-create .kbf-success-icon{
+    #kbf-modal-create .kbf-success-icon,
+    #kbf-modal-edit .kbf-success-icon,
+    #kbf-modal-milestone .kbf-success-icon{
         width:84px;
         height:84px;
         margin:0 auto 16px;
     }
-    #kbf-modal-create .kbf-success-ring{
+    #kbf-modal-create .kbf-success-ring,
+    #kbf-modal-edit .kbf-success-ring,
+    #kbf-modal-milestone .kbf-success-ring{
         stroke:#22c55e;
         stroke-width:2.5;
         stroke-dasharray:157;
         stroke-dashoffset:157;
         animation:kbfSuccessRing 1.2s ease forwards;
     }
-    #kbf-modal-create .kbf-success-check{
+    #kbf-modal-create .kbf-success-check,
+    #kbf-modal-edit .kbf-success-check,
+    #kbf-modal-milestone .kbf-success-check{
         stroke:#16a34a;
         stroke-width:3;
         stroke-linecap:round;
@@ -2749,6 +2828,14 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     #kbf-modal-create.is-success .kbf-modal-footer{display:none;}
     #kbf-modal-create.is-success .kbf-create-success{display:flex;}
     #kbf-modal-create.is-success .kbf-modal-header .kbf-modal-close{display:none;}
+    #kbf-modal-edit.is-success .kbf-modal-body form,
+    #kbf-modal-edit.is-success .kbf-modal-footer{display:none;}
+    #kbf-modal-edit.is-success .kbf-edit-success{display:flex;}
+    #kbf-modal-edit.is-success .kbf-modal-header .kbf-modal-close{display:none;}
+    #kbf-modal-milestone.is-success .kbf-modal-body > :not(.kbf-milestone-success){display:none;}
+    #kbf-modal-milestone.is-success .kbf-modal-footer{display:none;}
+    #kbf-modal-milestone.is-success .kbf-milestone-success{display:flex;}
+    #kbf-modal-milestone.is-success .kbf-modal-header .kbf-modal-close{display:none;}
     @keyframes kbfSuccessRing{to{stroke-dashoffset:0;}}
     @keyframes kbfSuccessCheck{to{stroke-dashoffset:0;}}
         /* ===== AUDIT SAFE OVERRIDES ===== */
@@ -2911,6 +2998,7 @@ html.kbf-modal-lock, body.kbf-modal-lock {
         }
     }
     </style>
+
 
 
 
