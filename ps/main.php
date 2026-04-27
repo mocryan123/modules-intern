@@ -149,15 +149,15 @@ function bntm_shortcode_ps_dashboard() {
     </script>
 
     <div class="bntm-ps-container">
-        <div id="ps-dashboard-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-            <div class="bntm-tabs" style="flex:1;min-width:280px;">
+        <div id="ps-dashboard-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:8px;">
+            <div class="bntm-tabs" style="flex:1;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
                 <a href="?page_id=<?php echo get_the_ID(); ?>&tab=overview"  class="bntm-tab <?php echo $active_tab === 'overview' ? 'active' : ''; ?>">Overview</a>
                 <a href="?page_id=<?php echo get_the_ID(); ?>&tab=orders"    class="bntm-tab <?php echo $active_tab === 'orders' ? 'active' : ''; ?>">Orders</a>
                 <a href="?page_id=<?php echo get_the_ID(); ?>&tab=settings"  class="bntm-tab <?php echo $active_tab === 'settings' ? 'active' : ''; ?>">Settings</a>
             </div>
             <!-- Notification Bell -->
             <div id="ps-notification-bell-wrapper" class="ps-notification-wrapper" style="position:relative;display:inline-flex;align-items:center;flex-shrink:0;">
-                <button id="ps-notification-bell" class="ps-notification-btn" style="background:none;border:none;cursor:pointer;padding:8px;position:relative;transition:transform .2s;" title="New Orders" aria-label="New Orders Notifications">
+                <button id="ps-notification-bell" class="ps-notification-btn" style="background:none;border:none;cursor:pointer;position:relative;transition:transform .2s;" title="New Orders" aria-label="New Orders Notifications">
                     <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:#1a3c8f;">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0018 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                     </svg>
@@ -217,10 +217,10 @@ function bntm_shortcode_ps_dashboard() {
     .ps-pickup-btn { background: linear-gradient(135deg,#16a34a,#22c55e) !important; border-color: #16a34a !important; color: #fff !important; box-shadow: 0 2px 6px rgba(22,163,74,.3) !important; }
     .ps-pickup-btn:hover { background: linear-gradient(135deg,#15803d,#16a34a) !important; }
 
+    /* ── Stat Cards ── */
     .bntm-stats-row {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: wrap !important;
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
         gap: 12px !important;
         margin-bottom: 24px !important;
     }
@@ -232,50 +232,21 @@ function bntm_shortcode_ps_dashboard() {
         text-align: center !important;
         gap: 10px !important;
         overflow: hidden !important;
-        flex: 1 1 160px !important;
-        min-width: 140px !important;
+        min-width: 0 !important;
         padding: 16px 12px !important;
     }
     .bntm-stat-card .stat-icon {
-        width: 52px !important;
-        height: 52px !important;
-        min-width: 52px !important;
-        min-height: 52px !important;
+        width: 52px !important; height: 52px !important;
+        min-width: 52px !important; min-height: 52px !important;
         border-radius: 14px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0 !important;
-        overflow: hidden !important;
-        margin: 0 auto !important;
+        display: flex !important; align-items: center !important; justify-content: center !important;
+        flex-shrink: 0 !important; overflow: hidden !important; margin: 0 auto !important;
     }
-    .bntm-stat-card .stat-icon svg {
-        display: block !important;
-        flex-shrink: 0 !important;
-    }
-    .bntm-stat-card .stat-content {
-        flex: unset !important;
-        min-width: 0 !important;
-        width: 100% !important;
-        text-align: center !important;
-    }
-    .bntm-stat-card .stat-content h3 {
-        text-align: center !important;
-        margin: 0 0 4px !important;
-    }
-    .bntm-stat-card .stat-content .stat-number {
-        text-align: center !important;
-        margin: 0 0 4px !important;
-    }
-    .bntm-stat-card .stat-content .stat-label {
-        text-align: center !important;
-        display: block !important;
-    }
-    @media (max-width: 640px) {
-        .bntm-stats-row { flex-direction: column !important; }
-        .bntm-stat-card { flex: 1 1 100% !important; flex-direction: row !important; text-align: left !important; }
-        .bntm-stat-card .stat-content { text-align: left !important; }
-    }
+    .bntm-stat-card .stat-icon svg { display: block !important; flex-shrink: 0 !important; }
+    .bntm-stat-card .stat-content { flex: unset !important; min-width: 0 !important; width: 100% !important; text-align: center !important; }
+    .bntm-stat-card .stat-content h3 { text-align: center !important; margin: 0 0 4px !important; }
+    .bntm-stat-card .stat-content .stat-number { text-align: center !important; margin: 0 0 4px !important; }
+    .bntm-stat-card .stat-content .stat-label { text-align: center !important; display: block !important; }
 
     /* ── Modal ── */
     .ps-modal-overlay {
@@ -298,146 +269,98 @@ function bntm_shortcode_ps_dashboard() {
     .ps-modal-close:hover { color: #111; }
 
     /* ── Notification Bell ── */
-    #ps-notification-bell,
-    .ps-notification-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        transition: all .2s ease;
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
+    #ps-notification-bell, .ps-notification-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 40px; height: 40px; border-radius: 8px;
+        transition: all .2s ease; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
     }
-    #ps-notification-bell:hover,
-    .ps-notification-btn:hover {
-        background: #f0f4f8;
-        color: #0f5c3a;
-    }
-    #ps-notification-bell:active,
-    .ps-notification-btn:active {
-        transform: scale(0.95);
-    }
-    #ps-notification-badge,
-    .ps-notification-badge {
+    #ps-notification-bell:hover, .ps-notification-btn:hover { background: #f0f4f8; }
+    #ps-notification-bell:active, .ps-notification-btn:active { transform: scale(0.95); }
+    #ps-notification-badge, .ps-notification-badge {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
-    #ps-notification-panel,
-    .ps-notification-panel {
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    #ps-notification-panel, .ps-notification-panel {
+        box-shadow: 0 10px 40px rgba(0,0,0,.15);
         animation: slideDown .3s ease;
         min-width: 280px;
     }
     @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-8px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
-    #ps-notification-items,
-    .ps-notification-items {
-        max-height: 320px;
-        overflow-y: auto;
-    }
-    #ps-notification-items::-webkit-scrollbar,
-    .ps-notification-items::-webkit-scrollbar {
-        width: 6px;
-    }
-    #ps-notification-items::-webkit-scrollbar-track,
-    .ps-notification-items::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    #ps-notification-items::-webkit-scrollbar-thumb,
-    .ps-notification-items::-webkit-scrollbar-thumb {
-        background: #d1d5db;
-        border-radius: 3px;
-    }
-    #ps-notification-items::-webkit-scrollbar-thumb:hover,
-    .ps-notification-items::-webkit-scrollbar-thumb:hover {
-        background: #9ca3af;
-    }
+    #ps-notification-items, .ps-notification-items { max-height: 320px; overflow-y: auto; }
+    #ps-notification-items::-webkit-scrollbar, .ps-notification-items::-webkit-scrollbar { width: 6px; }
+    #ps-notification-items::-webkit-scrollbar-track, .ps-notification-items::-webkit-scrollbar-track { background: transparent; }
+    #ps-notification-items::-webkit-scrollbar-thumb, .ps-notification-items::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 
-    /* ── Mobile Responsive ── */
+    /* ── Mobile: tabs + bell on one row, 2-col stat grid ── */
     @media (max-width: 768px) {
+        /* Header row: tabs left, bell right, never wraps */
         #ps-dashboard-header {
-            flex-direction: column;
-            align-items: flex-start !important;
-            gap: 12px !important;
+            flex-wrap: nowrap !important;
+            align-items: center !important;
+            gap: 6px !important;
+            margin-bottom: 12px !important;
         }
         .bntm-tabs {
-            width: 100% !important;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            flex: 1 1 0 !important;
+            min-width: 0 !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+            display: flex !important;
+        }
+        .bntm-tabs::-webkit-scrollbar { display: none !important; }
+        .bntm-tab {
+            font-size: 13px !important;
+            padding: 8px 12px !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
         }
         .ps-notification-wrapper {
-            align-self: flex-end;
-            width: 100%;
-            justify-content: flex-end;
+            flex-shrink: 0 !important;
+            width: auto !important;
         }
-        .ps-notification-btn {
-            width: 44px;
-            height: 44px;
+        /* Stat cards: 2 columns */
+        .bntm-stats-row {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
         }
+        .bntm-stat-card { padding: 14px 10px !important; }
+        .bntm-stat-card .stat-icon {
+            width: 46px !important; height: 46px !important;
+            min-width: 46px !important; min-height: 46px !important;
+        }
+        .bntm-stat-card .stat-content h3 { font-size: 12px !important; }
+        .bntm-stat-card .stat-content .stat-number { font-size: 22px !important; }
+        .bntm-stat-card .stat-content .stat-label { font-size: 11px !important; }
+        /* Notification panel slides up */
         .ps-notification-panel {
-            position: fixed;
-            top: auto;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-width: 100%;
-            max-height: 60vh;
-            min-width: unset;
-            width: 100%;
-            border-radius: 16px 16px 0 0;
-            margin: 0;
-            animation: slideUp .3s ease;
+            position: fixed !important;
+            top: auto !important; bottom: 0 !important;
+            left: 0 !important; right: 0 !important;
+            width: 100% !important; max-width: 100% !important;
+            max-height: 65vh !important; min-width: unset !important;
+            border-radius: 20px 20px 0 0 !important;
+            margin: 0 !important; animation: slideUp .25s ease !important;
         }
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(100%);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(100%); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        .ps-notification-items {
-            max-height: calc(60vh - 60px);
+        .ps-notification-items { max-height: calc(65vh - 60px) !important; }
+        /* Modal slides up from bottom */
+        .ps-modal-overlay { align-items: flex-end !important; }
+        .ps-modal {
+            width: 100% !important; max-width: 100% !important;
+            border-radius: 20px 20px 0 0 !important;
+            padding: 20px 16px !important; max-height: 90vh !important;
         }
     }
-    @media (max-width: 480px) {
-        .ps-notification-btn {
-            width: 44px;
-            height: 44px;
-            padding: 6px;
-        }
-        .ps-notification-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-        #ps-notification-badge,
-        .ps-notification-badge {
-            width: 20px;
-            height: 20px;
-            font-size: 11px;
-            top: -4px;
-            right: -4px;
-        }
-        .bntm-tabs {
-            display: flex;
-            flex-direction: row;
-            gap: 4px;
-        }
-        .bntm-tab {
-            font-size: 12px !important;
-            padding: 6px 12px !important;
-        }
+    @media (max-width: 400px) {
+        .bntm-tab { font-size: 12px !important; padding: 7px 9px !important; }
+        .bntm-stats-row { gap: 8px !important; }
+        .bntm-stat-card { padding: 10px 8px !important; }
     }
 
     /* ── Badges ── */
