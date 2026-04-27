@@ -4423,6 +4423,31 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     .bae-completeness-item.done { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
     .bae-completeness-item.todo { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--border); }
 
+    /* Frontend toasts */
+    .bae-toast-stack {
+        position: fixed;
+        right: 16px;
+        bottom: 18px;
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-width: min(90vw, 360px);
+    }
+    .bae-toast {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text-2);
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+    }
+    .bae-toast.success { border-color: rgba(16,185,129,0.35); color: #34d399; background: rgba(16,185,129,0.08); }
+    .bae-toast.error { border-color: rgba(244,63,94,0.35); color: #fb7185; background: rgba(244,63,94,0.08); }
+    .bae-toast.info { border-color: rgba(243,45,134,0.35); color: var(--brand-soft); background: rgba(243,45,134,0.1); }
+
     .bae-wrap ::-webkit-scrollbar { width: 5px; }
     .bae-wrap ::-webkit-scrollbar-track { background: transparent; }
     .bae-wrap ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 999px; }
@@ -4461,6 +4486,32 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         }
         initColorPairs();
         window.baeInitColorPairs = initColorPairs;
+        window.baeToast = function(message, type, ttl) {
+            if (!message) return;
+            var kind = type || 'info';
+            var duration = (typeof ttl === 'number' ? ttl : 3200);
+            var stack = document.getElementById('bae-toast-stack');
+            if (!stack) {
+                stack = document.createElement('div');
+                stack.id = 'bae-toast-stack';
+                stack.className = 'bae-toast-stack';
+                document.body.appendChild(stack);
+            }
+            var el = document.createElement('div');
+            el.className = 'bae-toast ' + kind;
+            el.textContent = message;
+            stack.appendChild(el);
+            if (window.gsap) {
+                gsap.fromTo(el, {opacity:0, y:10}, {opacity:1, y:0, duration:0.22, ease:'power3.out'});
+            }
+            setTimeout(function() {
+                if (window.gsap) {
+                    gsap.to(el, {opacity:0, y:8, duration:0.18, onComplete:function(){ if (el && el.parentNode) el.parentNode.removeChild(el); }});
+                } else if (el && el.parentNode) {
+                    el.parentNode.removeChild(el);
+                }
+            }, Math.max(1200, duration));
+        };
 
         // ── Modal ──────────────────────────────────────────────────────────
         var overlay   = document.getElementById('bae-modal-overlay');
@@ -4619,14 +4670,14 @@ if (dlPngBtn) {
                             baeTicketModalOpen('pricing');
                             baeTicketModalShowErr('Bind this workspace with a ticket first before upgrading.');
                         } else {
-                            alert(msg);
+                            if (typeof window.baeToast === 'function') window.baeToast(msg, 'error');
                         }
                         btns.forEach(function(b){ b.disabled = false; });
                         if (clickedBtn) clickedBtn.textContent = origText;
                     }
                 })
                 .catch(function() {
-                    alert('Network error. Please try again.');
+                    if (typeof window.baeToast === 'function') window.baeToast('Network error. Please try again.', 'error');
                     btns.forEach(function(b){ b.disabled = false; });
                     if (clickedBtn) clickedBtn.textContent = origText;
                 });
@@ -4862,6 +4913,12 @@ if (dlPngBtn) {
                     return;
                 }
                 // Success — reload page
+                try {
+                    sessionStorage.setItem('bae_toast_flash', JSON.stringify({
+                        msg: 'Ticket verified. Welcome back!',
+                        type: 'success'
+                    }));
+                } catch (e) {}
                 baeTicketModalClose();
                 window.location.reload();
             })
@@ -4909,6 +4966,16 @@ if (dlPngBtn) {
                     document.cookie = 'bae_ticket=' + encodeURIComponent(d.ticket) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
                 }
                 if (d.beta_status) window.BAE_BETA = d.beta_status;
+                try {
+                    var flash = null;
+                    if (isBeta) {
+                        if (d.beta_claimed) flash = { msg: 'Beta Pro claimed successfully!', type: 'success' };
+                        else flash = { msg: 'Ticket bound. Beta slots are currently unavailable.', type: 'info' };
+                    } else {
+                        flash = { msg: 'Ticket generated and bound successfully.', type: 'success' };
+                    }
+                    if (flash) sessionStorage.setItem('bae_toast_flash', JSON.stringify(flash));
+                } catch (e) {}
 
                 baeTicketModalClose();
                 window.location.reload();
@@ -4956,6 +5023,12 @@ if (dlPngBtn) {
                     if (oe) { oe.textContent = (data.data && data.data.message) ? data.data.message : 'Invalid code. Please try again.'; oe.style.display = 'block'; }
                     return;
                 }
+                try {
+                    sessionStorage.setItem('bae_toast_flash', JSON.stringify({
+                        msg: 'Login verified successfully.',
+                        type: 'success'
+                    }));
+                } catch (e) {}
                 baeTicketModalClose();
                 window.location.reload();
             })
@@ -5099,6 +5172,16 @@ if (dlPngBtn) {
     document.addEventListener('DOMContentLoaded', function() {
         // Sync toggle thumb position to saved theme
         baeApplyTheme(baeIsDark, false);
+        try {
+            var _flash = sessionStorage.getItem('bae_toast_flash');
+            if (_flash) {
+                sessionStorage.removeItem('bae_toast_flash');
+                var parsed = JSON.parse(_flash);
+                if (parsed && parsed.msg && typeof window.baeToast === 'function') {
+                    window.baeToast(parsed.msg, parsed.type || 'info');
+                }
+            }
+        } catch (e) {}
         if (typeof window.baeInitColorPairs === 'function') window.baeInitColorPairs();
         setTimeout(function() {
             window.dispatchEvent(new Event('resize'));

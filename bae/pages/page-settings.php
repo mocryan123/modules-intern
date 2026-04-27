@@ -179,7 +179,7 @@ function bae_settings_tab($user_id, $profile) {
                     .then(function(r) { return r.json(); })
                     .then(function(json) {
                         if (json.success) location.href = '?tab=overview';
-                        else alert(json.data.message);
+                        else if (window.baeToast) window.baeToast((json.data && json.data.message) ? json.data.message : 'Reset failed. Please try again.', 'error');
                     });
                 });
             });

@@ -463,6 +463,10 @@ function bae_assets_tab($user_id, $profile) {
     <script>
     (function() {
         var baeNeedsFirstAssetView = <?php echo $needs_first_asset_view ? 'true' : 'false'; ?>;
+        function baeNotify(msg, type) {
+            if (!msg) return;
+            if (typeof window.baeToast === 'function') window.baeToast(msg, type || 'info');
+        }
 
         function baeMarkFirstAssetViewed(btn) {
             if (!baeNeedsFirstAssetView || !btn) return;
@@ -687,12 +691,12 @@ function bae_assets_tab($user_id, $profile) {
                         }
                         baeSetUndoButtonState(self, currentMode === 'undo' ? 'redo' : 'undo');
                     } else {
-                        alert((json.data && json.data.message) ? json.data.message : 'Undo failed.');
+                        baeNotify((json.data && json.data.message) ? json.data.message : 'Undo failed.', 'error');
                         self.disabled = false;
                     }
                 })
                 .catch(function() {
-                    alert('Undo failed.');
+                    baeNotify('Undo failed.', 'error');
                     self.disabled = false;
                 });
             });
@@ -827,7 +831,7 @@ function bae_assets_tab($user_id, $profile) {
                     .then(function(r) { return r.json(); })
                     .then(function(json) {
                         if (json.success) location.reload();
-                        else alert(json.data.message);
+                        else baeNotify((json.data && json.data.message) ? json.data.message : 'Delete failed.', 'error');
                     });
                 });
             });
@@ -980,7 +984,7 @@ function bae_assets_tab($user_id, $profile) {
                     }
                 } else {
                     console.log('[BAE Regen] Error:', json.data.message);
-                    alert(json.data.message || 'Generation failed.');
+                    baeNotify(json.data.message || 'Generation failed.', 'error');
                     if (btn) {
                         btn.disabled = false;
                         btn.textContent = original;
@@ -1199,9 +1203,9 @@ function bae_assets_tab($user_id, $profile) {
                     consBtn.textContent = originalText;
                     if (consStatus) consStatus.textContent = '';
 
-                    if (!j.success) { alert((j.data && j.data.message) ? j.data.message : 'Consistency scan failed.'); return; }
+                    if (!j.success) { baeNotify((j.data && j.data.message) ? j.data.message : 'Consistency scan failed.', 'error'); return; }
                     var report = j.data && j.data.report ? j.data.report : null;
-                    if (!report) { alert('No report returned.'); return; }
+                    if (!report) { baeNotify('No report returned.', 'error'); return; }
 
                     var score = report.score || 0;
                     var issues = report.issues || [];
@@ -1297,7 +1301,7 @@ function bae_assets_tab($user_id, $profile) {
                     consBtn.disabled = false;
                     consBtn.textContent = originalText;
                     if (consStatus) consStatus.textContent = '';
-                    alert('Consistency scan failed.');
+                    baeNotify('Consistency scan failed.', 'error');
                 });
             });
         }

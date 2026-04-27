@@ -353,7 +353,11 @@ function bae_startup_tab($user_id, $profile) {
                     cbs.forEach(function(cb){ cb.checked = false; applyChecklistUI(cb); });
                     resetBtn.disabled = false;
                     resetBtn.textContent = original;
-                    if (!ok) alert('Reset failed. Please try again.');
+                    if (!ok) {
+                        if (typeof window.baeToast === 'function') window.baeToast('Reset failed. Please try again.', 'error');
+                    } else if (typeof window.baeToast === 'function') {
+                        window.baeToast('Checklist reset.', 'success');
+                    }
                 });
             });
         }
