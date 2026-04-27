@@ -545,16 +545,11 @@ add_action('template_redirect', function () {
 add_action('wp_enqueue_scripts', function() {
     if (!bntm_ch_is_frontend_context()) return;
 
-    $css_url = bntm_ch_get_compiled_asset_url('css');
-    if ($css_url) {
-        wp_enqueue_style('bntm-ch-global-style', $css_url, [], null);
-    } else {
-        $css_inline = bntm_ch_get_inline_asset_content('css');
-        if ($css_inline !== '') {
-            wp_register_style('bntm-ch-global-style-inline', false, [], null);
-            wp_enqueue_style('bntm-ch-global-style-inline');
-            wp_add_inline_style('bntm-ch-global-style-inline', $css_inline);
-        }
+    $css_inline = bntm_ch_get_inline_asset_content('css');
+    if ($css_inline !== '') {
+        wp_register_style('bntm-ch-global-style-inline', false, [], null);
+        wp_enqueue_style('bntm-ch-global-style-inline');
+        wp_add_inline_style('bntm-ch-global-style-inline', $css_inline);
     }
 
     $js_url = bntm_ch_get_compiled_asset_url('js');
