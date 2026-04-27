@@ -1877,18 +1877,21 @@ function ch_global_styles()
             font-family: var(--ch-font);
             color: var(--ch-text);
             background: var(--ch-bg);
-            border: 1px solid var(--ch-border);
+            border: 1.5px solid color-mix(in srgb, var(--ch-border) 55%, #d8d0ca 45%);
             border-radius: var(--ch-radius-sm);
             padding: 6px 10px;
             cursor: pointer;
             outline: none;
             max-width: 200px;
-            transition: border-color 0.15s;
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
             min-height: 38px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
         }
 
         .ch-composer-cat-select:focus {
             border-color: var(--ch-accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255, 117, 81, 0.12);
         }
 
         .ch-composer-anon-toggle {
@@ -1934,19 +1937,23 @@ function ch_global_styles()
         .ch-composer-title {
             width: 100%;
             box-sizing: border-box;
-            border: none;
-            padding: 6px 2px;
+            border: 1.5px solid color-mix(in srgb, var(--ch-border) 50%, #ddd4ce 50%);
+            border-radius: 999px;
+            padding: 12px 18px;
             font-size: 18px;
             font-weight: 700;
             font-family: var(--ch-font);
             color: var(--ch-text);
-            background: transparent;
+            background: color-mix(in srgb, var(--ch-surface) 60%, #fff 40%);
             outline: none;
-            border-bottom: 1px solid var(--ch-border-soft);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
         }
 
         .ch-composer-title:focus {
-            border-bottom-color: var(--ch-accent);
+            border-color: var(--ch-accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255, 117, 81, 0.12);
         }
 
         .ch-composer-title::placeholder {
@@ -1975,15 +1982,25 @@ function ch_global_styles()
         .ch-composer-textarea {
             width: 100%;
             box-sizing: border-box;
-            border: none;
+            border: 1.5px solid color-mix(in srgb, var(--ch-border) 50%, #ddd4ce 50%);
+            border-radius: var(--ch-radius-xl);
             resize: none;
             font-size: 16px;
             font-family: var(--ch-font);
             color: var(--ch-text);
-            background: transparent;
+            background: color-mix(in srgb, var(--ch-surface) 55%, #fff 45%);
             outline: none;
             line-height: 1.55;
             min-height: 120px;
+            padding: 18px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.84);
+            transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+
+        .ch-composer-textarea:focus {
+            border-color: var(--ch-accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255, 117, 81, 0.12);
         }
 
         .ch-composer-textarea::placeholder {
@@ -1998,7 +2015,14 @@ function ch_global_styles()
             padding: 10px 16px;
             background: var(--ch-bg);
             border-radius: var(--ch-radius-sm);
-            border: 1px solid var(--ch-border-soft);
+            border: 1.5px solid color-mix(in srgb, var(--ch-border) 50%, #ddd4ce 50%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .ch-composer-tags-row:focus-within {
+            border-color: var(--ch-accent);
+            box-shadow: 0 0 0 3px rgba(255, 117, 81, 0.12);
         }
 
         .ch-composer-tags-row svg {
@@ -2023,17 +2047,19 @@ function ch_global_styles()
         /* Media upload area */
         .ch-composer-media-area {
             display: block;
-            border: 2px dashed var(--ch-border);
+            border: 2px dashed color-mix(in srgb, var(--ch-border) 45%, #d8d0ca 55%);
             border-radius: 10px;
             cursor: pointer;
-            transition: border-color 0.15s, background 0.15s;
+            transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
             text-decoration: none;
             padding: 10px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
         }
 
         .ch-composer-media-area:hover {
             border-color: var(--ch-accent-mid);
             background: var(--ch-accent-light);
+            box-shadow: 0 0 0 3px rgba(255, 117, 81, 0.08);
         }
 
         .ch-composer-media-inner {
@@ -8191,6 +8217,28 @@ function ch_global_styles()
             border-color: var(--ch-accent) !important;
             transform: translateY(-1px) !important;
             outline: none !important;
+        }
+
+        /* Modal form controls: strengthen faint field edges in dialogs
+           without making page-level search/toolbars heavier. */
+        .ch-modal .ch-input,
+        .ch-modal .ch-select-sm,
+        .ch-modal .ch-color-input,
+        .ch-modal select.ch-input,
+        .ch-modal textarea.ch-input {
+            border: 1.5px solid color-mix(in srgb, var(--ch-border) 48%, #d8d0ca 52%) !important;
+            background: color-mix(in srgb, var(--ch-surface) 52%, #fff 48%) !important;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+        }
+
+        .ch-modal .ch-input:focus,
+        .ch-modal .ch-select-sm:focus,
+        .ch-modal .ch-color-input:focus,
+        .ch-modal select.ch-input:focus,
+        .ch-modal textarea.ch-input:focus {
+            background: #fff !important;
+            border-color: var(--ch-accent) !important;
+            box-shadow: 0 0 0 3px rgba(255, 117, 81, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
         }
 
         /* Textarea uniform protection (Glassy but rectangular) */

@@ -4,6 +4,28 @@ if (!defined('ABSPATH')) exit;
 // AJAX HANDLERS
 // ============================================================
 
+function ch_sync_category_post_count($category_id) {
+    global $wpdb;
+
+    $category_id = (int) $category_id;
+    if ($category_id <= 0) {
+        return;
+    }
+
+    $active_posts = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}ch_posts WHERE category_id = %d AND status = 'active'",
+        $category_id
+    ));
+
+    $wpdb->update(
+        "{$wpdb->prefix}ch_categories",
+        ['post_count' => $active_posts],
+        ['id' => $category_id],
+        ['%d'],
+        ['%d']
+    );
+}
+
 function bntm_ajax_ch_create_category() {
     check_ajax_referer('ch_category_nonce', 'nonce');
 
@@ -363,7 +385,7 @@ function bntm_ajax_ch_create_post() {
         if ($user_id) {
             $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_user_profiles SET post_count = post_count + 1, karma_points = karma_points + 2 WHERE user_id = %d", $user_id));
         }
-        $wpdb->query($wpdb->prepare("UPDATE {$wpdb->prefix}ch_categories SET post_count = post_count + 1 WHERE id = %d", $cat_id));
+        ch_sync_category_post_count($cat_id);
         ch_flush_overview_cache();
         $success_message = $status === 'pending'
             ? 'Post submitted for approval.'
@@ -406,6 +428,8 @@ function bntm_ajax_ch_edit_post() {
     );
     if (!$can_delete_post) wp_send_json_error(['message' => 'Unauthorized']);
 
+    $old_category_id = (int) $post->category_id;
+
     $result = $wpdb->update("{$wpdb->prefix}ch_posts", [
         'title'        => $title,
         'content'      => $content,
@@ -434,6 +458,10 @@ function bntm_ajax_ch_edit_post() {
             }
         }
 
+        if ($old_category_id !== $cat_id) {
+            ch_sync_category_post_count($old_category_id);
+        }
+        ch_sync_category_post_count($cat_id);
         ch_flush_overview_cache();
         wp_send_json_success(['message' => 'Post updated!']);
     } else {
@@ -466,6 +494,7 @@ function bntm_ajax_ch_delete_post() {
     if ($deleted === false) {
         wp_send_json_error(['message' => 'Failed to delete post']);
     }
+    ch_sync_category_post_count((int) $post->category_id);
     ch_flush_overview_cache();
     wp_send_json_success(['message' => 'Post deleted']);
 }
@@ -1418,14 +1447,18 @@ function bntm_ajax_ch_moderate_action() {
 
     switch ($action) {
         case 'approve_post':
+            $post = $wpdb->get_row($wpdb->prepare("SELECT category_id FROM {$wpdb->prefix}ch_posts WHERE id = %d", $target_id));
             $wpdb->update("{$wpdb->prefix}ch_posts", ['status' => 'active'], ['id' => $target_id], ['%s'], ['%d']);
+            if ($post) ch_sync_category_post_count((int) $post->category_id);
             ch_flush_overview_cache();
             ch_log_activity('approve_post', 'post', $target_id, 'Post approved for publication');
             wp_send_json_success(['message' => 'Post approved']);
             break;
 
         case 'reject_post':
+            $post = $wpdb->get_row($wpdb->prepare("SELECT category_id FROM {$wpdb->prefix}ch_posts WHERE id = %d", $target_id));
             $wpdb->update("{$wpdb->prefix}ch_posts", ['status' => 'removed'], ['id' => $target_id], ['%s'], ['%d']);
+            if ($post) ch_sync_category_post_count((int) $post->category_id);
             ch_flush_overview_cache();
             ch_log_activity('reject_post', 'post', $target_id, 'Post rejected');
             wp_send_json_success(['message' => 'Post rejected']);
@@ -1435,7 +1468,9 @@ function bntm_ajax_ch_moderate_action() {
             if ($reason === '') {
                 wp_send_json_error(['message' => 'Reason is required when removing a post.']);
             }
+            $post = $wpdb->get_row($wpdb->prepare("SELECT category_id FROM {$wpdb->prefix}ch_posts WHERE id = %d", $target_id));
             $wpdb->update("{$wpdb->prefix}ch_posts", ['status' => 'removed'], ['id' => $target_id], ['%s'], ['%d']);
+            if ($post) ch_sync_category_post_count((int) $post->category_id);
             ch_flush_overview_cache();
             ch_log_activity('remove_post', 'post', $target_id, 'Post removed by admin: ' . $reason);
             wp_send_json_success(['message' => 'Post removed']);
@@ -1449,7 +1484,9 @@ function bntm_ajax_ch_moderate_action() {
             break;
 
         case 'restore_post':
+            $post = $wpdb->get_row($wpdb->prepare("SELECT category_id FROM {$wpdb->prefix}ch_posts WHERE id = %d", $target_id));
             $wpdb->update("{$wpdb->prefix}ch_posts", ['status' => 'active'], ['id' => $target_id], ['%s'], ['%d']);
+            if ($post) ch_sync_category_post_count((int) $post->category_id);
             ch_flush_overview_cache();
             ch_log_activity('restore_post', 'post', $target_id, 'Post restored by admin');
             wp_send_json_success(['message' => 'Post restored']);

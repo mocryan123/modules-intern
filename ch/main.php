@@ -1026,6 +1026,26 @@ function bntm_ch_get_shortcodes() {
     ];
 }
 
+function ch_repair_all_category_post_counts() {
+    global $wpdb;
+
+    $categories_table = "{$wpdb->prefix}ch_categories";
+    $posts_table = "{$wpdb->prefix}ch_posts";
+
+    $wpdb->query("UPDATE {$categories_table} SET post_count = 0");
+
+    $wpdb->query(
+        "UPDATE {$categories_table} c
+         LEFT JOIN (
+            SELECT category_id, COUNT(*) AS active_count
+            FROM {$posts_table}
+            WHERE status = 'active'
+            GROUP BY category_id
+         ) p ON p.category_id = c.id
+         SET c.post_count = COALESCE(p.active_count, 0)"
+    );
+}
+
 function bntm_ch_create_tables() {
     global $wpdb;
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -1104,6 +1124,12 @@ function bntm_ch_create_tables() {
             update_option('ch_schema_version', 4);
             $schema_version = 4;
         }
+    }
+
+    if ($schema_version < 5) {
+        ch_repair_all_category_post_counts();
+        update_option('ch_schema_version', 5);
+        $schema_version = 5;
     }
 
     // Bust the cached schema flag so the next request re-checks the live column list
