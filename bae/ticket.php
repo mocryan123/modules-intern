@@ -2476,50 +2476,15 @@ function bae_wizard_shortcode_with_ticket( $ticket ) {
 // We hook into save_profile to also save the ticket on the profile row.
 // =============================================================================
 
-add_action( 'wp_ajax_nopriv_bae_save_profile', 'bntm_bae_ticket_patch_save_profile', 1 );
-add_action( 'wp_ajax_bae_save_profile',        'bntm_bae_ticket_patch_save_profile', 1 );
+// NOTE: No patch hooks needed. main.php's bntm_ajax_bae_save_profile() already
+// reads $_COOKIE['bae_ticket'] natively and saves it to the profile row.
 
-function bntm_bae_ticket_patch_save_profile() {
-    // This runs at priority 1, before the main handler at default priority 10
-    // It adds the ticket to the $_POST so the main handler saves it naturally
-    $ticket = bntm_bae_read_ticket();
-    if ( bntm_bae_ticket_valid( $ticket ) && empty( $_POST['bae_ticket_injected'] ) ) {
-        $_POST['bae_ticket_injected'] = '1';
-        // We'll handle saving ticket in the after-save hook below
-        // Store in global for the after hook
-        $GLOBALS['bae_pending_ticket'] = $ticket;
-    }
-}
-
-add_action( 'wp_ajax_nopriv_bae_save_profile', 'bntm_bae_ticket_after_save', 99 );
-add_action( 'wp_ajax_bae_save_profile',        'bntm_bae_ticket_after_save', 99 );
-
-function bntm_bae_ticket_after_save() {
-    // Runs after main save handler — but save handler calls wp_send_json_success
-    // which calls die() so this never actually runs.
-    // Instead we use output buffering trick — not needed.
-    // The right approach: just override save_profile entirely for nopriv.
-    // See the nopriv-specific handler below.
-}
-
-// Remove the generic nopriv save_profile we added above and replace
-// with a ticket-aware version for non-logged-in clients only
-remove_action( 'wp_ajax_nopriv_bae_save_profile', 'bntm_ajax_bae_save_profile' );
-remove_action( 'wp_ajax_nopriv_bae_save_profile', 'bntm_bae_ticket_patch_save_profile', 1 );
-remove_action( 'wp_ajax_nopriv_bae_save_profile', 'bntm_bae_ticket_after_save', 99 );
-add_action(    'wp_ajax_nopriv_bae_save_profile', 'bntm_bae_nopriv_save_profile' );
-
-remove_action( 'wp_ajax_nopriv_bae_generate_asset',    'bntm_ajax_bae_generate_asset' );
-add_action(    'wp_ajax_nopriv_bae_generate_asset',    'bntm_bae_nopriv_generate_asset' );
-
-remove_action( 'wp_ajax_nopriv_bae_delete_asset',      'bntm_ajax_bae_delete_asset' );
-add_action(    'wp_ajax_nopriv_bae_delete_asset',      'bntm_bae_nopriv_delete_asset' );
-
-remove_action( 'wp_ajax_nopriv_bae_reset_profile',     'bntm_ajax_bae_reset_profile' );
-add_action(    'wp_ajax_nopriv_bae_reset_profile',     'bntm_bae_nopriv_reset_profile' );
-
-remove_action( 'wp_ajax_nopriv_bae_save_kit_settings', 'bntm_ajax_bae_save_kit_settings' );
-add_action(    'wp_ajax_nopriv_bae_save_kit_settings', 'bntm_bae_nopriv_save_kit_settings' );
+// FIX: Do NOT override the nopriv handlers for save_profile, generate_asset,
+// delete_asset, reset_profile, or save_kit_settings. The handlers in main.php
+// already support both ticket-based AND session-based (no-ticket) identity.
+// Overriding them with ticket-only versions broke all non-logged-in wizard users
+// who land directly on the wizard without a ticket (the new flow).
+// The main.php handlers are the source of truth — leave them in place.
 
 // =============================================================================
 // NOPRIV AJAX HANDLERS — ticket-based, for non-logged-in clients
