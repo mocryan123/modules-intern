@@ -1560,7 +1560,7 @@ function bntm_ajax_ch_get_notifications() {
             'id'           => $n->id,
             'type'         => $n->type,
             'message'      => $message,
-            'is_read'      => $n->is_read,
+            'is_read'      => (int) $n->is_read,
             'created_at'   => human_time_diff(strtotime($n->created_at), current_time('timestamp')) . ' ago',
             'post_id'      => $n->post_id,
             'post_rand_id' => $n->post_rand_id ?? '',

@@ -9690,6 +9690,7 @@ function ch_global_scripts()
                 };
 
                 list.innerHTML = data.notifications.map(n => {
+                    const isUnread = parseInt(n.is_read, 10) !== 1;
                     const postUrl = n.post_rand_id
                         ? (chFeedUrl + '?view_post=' + encodeURIComponent(n.post_rand_id))
                         : null;
@@ -9698,7 +9699,7 @@ function ch_global_scripts()
                         : `onclick="chMarkNotificationRead(${n.id}, null, this)"`;
                     const icon = typeIcons[n.type] || { cls: 'type-default', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' };
                     return `
-                <div class="ch-notification-item ${n.is_read ? '' : 'unread'}" ${clickAttr} data-id="${n.id}">
+                <div class="ch-notification-item ${isUnread ? 'unread' : ''}" ${clickAttr} data-id="${n.id}">
                     <div class="ch-notification-dot"></div>
                     <div class="ch-notification-icon ${icon.cls}">${icon.svg}</div>
                     <div class="ch-notification-content">
