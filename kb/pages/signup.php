@@ -466,6 +466,14 @@ function bntm_kbf_render_signup() {
       .kbf-auth-legal a:hover{text-decoration:underline;}
       .kbf-field-error{margin-top:6px;font-size:11.5px;color:#e11d48;display:none;}
       .kbf-input-error{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.12);}
+      .kbf-auth-form .kbf-alert{
+        align-items:center;
+        line-height:1.45;
+      }
+      .kbf-auth-form .kbf-alert::before{
+        margin-top:0;
+        align-self:center;
+      }
       .kbf-pass-req{margin-top:8px;background:rgba(15,23,42,0.04);border-radius:10px;padding:10px 12px;font-size:14px;color:#475569;}
       .kbf-pass-req ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;}
       .kbf-pass-req li{font-size:13px;display:flex;align-items:center;gap:6px;}

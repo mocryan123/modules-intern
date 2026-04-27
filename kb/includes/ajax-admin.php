@@ -342,13 +342,46 @@ function bntm_ajax_kbf_admin_process_escrow_request() {
     }
 }
 
-function bntm_ajax_kbf_admin_trigger_onboarding() {
+function bntm_ajax_kbf_admin_toggle_account_suspend() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
     $biz = intval(isset($_POST['business_id']) ? $_POST['business_id'] : 0);
+    $suspended = intval(isset($_POST['suspended']) ? $_POST['suspended'] : 0) === 1 ? 1 : 0;
     if(!$biz) { wp_send_json_error(['message'=>'Invalid account.']); }
-    update_user_meta($biz, 'kbf_show_onboarding', 1);
-    wp_send_json_success(['message'=>'Onboarding has been triggered for this account.']);
+
+    $user = get_userdata($biz);
+    if (!$user || is_wp_error($user)) {
+        wp_send_json_error(['message'=>'Account not found.']);
+    }
+    if (user_can($biz, 'manage_options')) {
+        wp_send_json_error(['message'=>'Administrator accounts cannot be suspended from this panel.']);
+    }
+
+    if ($suspended) {
+        update_user_meta($biz, 'kbf_account_suspended', 1);
+        update_user_meta($biz, 'kbf_account_suspended_at', current_time('mysql'));
+
+        // Invalidate active WP sessions so the account is signed out quickly.
+        if (class_exists('WP_Session_Tokens')) {
+            $manager = WP_Session_Tokens::get_instance($biz);
+            if ($manager) {
+                $manager->destroy_all();
+            }
+        }
+        delete_user_meta($biz, '_bntm_session_token');
+
+        wp_send_json_success([
+            'message'=>'Account suspended. User will be signed out and blocked from signing in.',
+            'suspended'=>1,
+        ]);
+    }
+
+    delete_user_meta($biz, 'kbf_account_suspended');
+    delete_user_meta($biz, 'kbf_account_suspended_at');
+    wp_send_json_success([
+        'message'=>'Account unsuspended. User can sign in again.',
+        'suspended'=>0,
+    ]);
 }
 
 

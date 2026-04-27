@@ -50,7 +50,7 @@ add_action('wp_ajax_kbf_admin_review_appeal',        'bntm_ajax_kbf_admin_review
 add_action('wp_ajax_kbf_admin_confirm_payment',      'bntm_ajax_kbf_admin_confirm_payment');
 add_action('wp_ajax_kbf_admin_process_escrow_request','bntm_ajax_kbf_admin_process_escrow_request');
 add_action('wp_ajax_kbf_admin_verify_organizer',     'bntm_ajax_kbf_admin_verify_organizer');
-add_action('wp_ajax_kbf_admin_trigger_onboarding',   'bntm_ajax_kbf_admin_trigger_onboarding');
+add_action('wp_ajax_kbf_admin_toggle_account_suspend','bntm_ajax_kbf_admin_toggle_account_suspend');
 add_action('wp_ajax_kbf_save_setting',               'bntm_ajax_kbf_save_setting');
 add_action('wp_ajax_kbf_save_settings_batch',        'bntm_ajax_kbf_save_settings_batch');
 add_action('wp_ajax_kbf_admin_refresh_tab',          'bntm_ajax_kbf_admin_refresh_tab');

@@ -202,7 +202,7 @@ function kbf_admin_organizers_tab() {
             <span>Didit Verified</span>
             <span>ID Verification</span>
             <span>Verify</span>
-            <span>Onboarding</span>
+            <span>Account Status</span>
           </div>
           <div class="kbf-table-empty-body">No account profiles yet.</div>
         </div>
@@ -221,10 +221,10 @@ function kbf_admin_organizers_tab() {
             <col style="width:8%">
             <col style="width:7%">
           </colgroup>
-          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Credibility Score</th><th>Didit Status</th><th>Didit Verified</th><th>ID Verification</th><th>Verify</th><th>Onboarding</th></tr></thead>
+          <thead><tr><th>Account</th><th>Email</th><th>Raised</th><th>Supporters</th><th>Credibility Score</th><th>Didit Status</th><th>Didit Verified</th><th>ID Verification</th><th>Verify</th><th>Account Status</th></tr></thead>
           <tbody>
           <?php foreach($rows as $p): ?>
-            <?php $onboarding_active = !empty(get_user_meta($p->business_id, 'kbf_show_onboarding', true)); ?>
+            <?php $is_suspended_account = !empty(get_user_meta($p->business_id, 'kbf_account_suspended', true)); ?>
             <?php
               $verify_status = isset($p->verify_status) ? $p->verify_status : '';
               $is_approved = ($verify_status === 'approved') || !empty($p->is_verified);
@@ -265,8 +265,13 @@ function kbf_admin_organizers_tab() {
               </td>
               <td class="kbf-verify-cell">
                 <div class="kbf-btn-group kbf-verify-stack">
-                  <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfTriggerOnboarding(<?php echo (int)$p->business_id; ?>)">Send</button>
-                  <span class="kbf-verify-empty"><?php echo $onboarding_active ? 'Active' : 'Off'; ?></span>
+                  <?php if($is_suspended_account): ?>
+                    <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfToggleAccountSuspension(<?php echo (int)$p->business_id; ?>, 0)">Unsuspend</button>
+                    <span class="kbf-verify-empty" style="color:#be123c;">Suspended</span>
+                  <?php else: ?>
+                    <button class="kbf-btn kbf-btn-danger kbf-btn-sm" onclick="kbfToggleAccountSuspension(<?php echo (int)$p->business_id; ?>, 1)">Suspend</button>
+                    <span class="kbf-verify-empty">Active</span>
+                  <?php endif; ?>
                 </div>
               </td>
             </tr>

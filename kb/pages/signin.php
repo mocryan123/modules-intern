@@ -46,14 +46,14 @@ function bntm_kbf_render_signin() {
     $login_notice = '';
     $forgot_error = '';
     $forgot_notice = '';
-    if (!empty($_GET['loggedout']) && $_GET['loggedout'] === '1') {
-      $login_notice = 'You have signed out. Please sign in again to continue.';
-    }
     if (!empty($_GET['verified']) && $_GET['verified'] === '1') {
         $login_notice = 'Email verified. You can now sign in.';
     }
     if (!empty($_GET['reset']) && $_GET['reset'] === '1') {
         $login_notice = 'Password updated. You can now sign in.';
+    }
+    if (!empty($_GET['suspended']) && $_GET['suspended'] === '1') {
+        $login_error = 'This account is suspended.';
     }
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action'])) {
         $auth_action = sanitize_key((string) wp_unslash($_POST['kbf_auth_action']));
@@ -95,6 +95,8 @@ function bntm_kbf_render_signin() {
                         $login_error = 'Invalid login details. Please try again.';
                         if ($user->get_error_code() === 'kbf_email_unverified') {
                             $login_error = 'Please verify your email before signing in.';
+                        } elseif ($user->get_error_code() === 'kbf_account_suspended') {
+                            $login_error = 'This account is suspended.';
                         } elseif ($user->get_error_code() === 'kbf_rate_limited') {
                             $login_error = $user->get_error_message();
                         }
@@ -451,6 +453,14 @@ function bntm_kbf_render_signin() {
       }
       .kbf-field-error{margin-top:6px;font-size:11.5px;color:#e11d48;display:none;}
       .kbf-input-error{border-color:#dc2626 !important;box-shadow:0 0 0 3px rgba(220,38,38,.12);}
+      .kbf-auth-form .kbf-alert{
+        align-items:center;
+        line-height:1.45;
+      }
+      .kbf-auth-form .kbf-alert::before{
+        margin-top:0;
+        align-self:center;
+      }
       .kbf-auth-legal{display:flex;gap:6px;align-items:center;justify-content:flex-start;font-size:13px;color:var(--kbf-slate);margin-top:2px;cursor:pointer;}
       .kbf-auth-legal input{width:14px;height:14px;accent-color:var(--kbf-blue);cursor:pointer;}
       .kbf-auth-cta .kbf-btn.kbf-btn-primary{

@@ -709,6 +709,82 @@ add_filter('login_redirect', function($redirect_to, $requested_redirect_to, $use
     return kbf_auth_post_login_redirect($user, $redirect_to);
 }, 20, 3);
 
+if (!function_exists('kbf_is_account_suspended')) {
+    function kbf_is_account_suspended($user_id) {
+        $user_id = (int) $user_id;
+        if ($user_id <= 0) {
+            return false;
+        }
+        return !empty(get_user_meta($user_id, 'kbf_account_suspended', true));
+    }
+}
+
+if (!function_exists('kbf_enforce_suspended_account_logout')) {
+    function kbf_enforce_suspended_account_logout() {
+        if (!is_user_logged_in()) {
+            return;
+        }
+        $user_id = (int) get_current_user_id();
+        if ($user_id <= 0 || user_can($user_id, 'manage_options')) {
+            return;
+        }
+        if (!function_exists('kbf_is_account_suspended') || !kbf_is_account_suspended($user_id)) {
+            return;
+        }
+
+        wp_logout();
+        delete_user_meta($user_id, '_bntm_session_token');
+        if (function_exists('kbf_expire_bntm_session_cookie')) {
+            kbf_expire_bntm_session_cookie();
+        }
+
+        $signin_url = function_exists('kbf_signin_page_url') ? kbf_signin_page_url() : home_url('/fundora-sign-in/');
+        $target = add_query_arg('suspended', '1', $signin_url);
+        if (!headers_sent()) {
+            wp_safe_redirect($target);
+            exit;
+        }
+    }
+}
+add_action('init', 'kbf_enforce_suspended_account_logout', 21);
+
+add_filter('authenticate', function($user, $username, $password) {
+    if (is_wp_error($user)) {
+        return $user;
+    }
+    $subject = null;
+    if ($user instanceof WP_User) {
+        $subject = $user;
+    } else {
+        $login = is_string($username) ? trim($username) : '';
+        if ($login !== '') {
+            if (is_email($login)) {
+                $subject = get_user_by('email', $login);
+            }
+            if (!($subject instanceof WP_User)) {
+                $subject = get_user_by('login', $login);
+            }
+            if (!($subject instanceof WP_User)) {
+                $social = ltrim($login, '@');
+                if ($social !== '') {
+                    $social_user = get_users([
+                        'meta_key'   => 'kbf_social_name',
+                        'meta_value' => $social,
+                        'number'     => 1,
+                    ]);
+                    if (!empty($social_user) && $social_user[0] instanceof WP_User) {
+                        $subject = $social_user[0];
+                    }
+                }
+            }
+        }
+    }
+    if ($subject instanceof WP_User && !user_can($subject, 'manage_options') && function_exists('kbf_is_account_suspended') && kbf_is_account_suspended((int)$subject->ID)) {
+        return new WP_Error('kbf_account_suspended', __('This account is suspended.'));
+    }
+    return $user;
+}, 50, 3);
+
 add_filter('logout_redirect', function($redirect_to, $requested_redirect_to, $user) {
     if (function_exists('kbf_set_reauth_lock_cookie')) {
         kbf_set_reauth_lock_cookie();

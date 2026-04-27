@@ -1123,17 +1123,24 @@ window.kbfSubmitReject = function(){
     kbfAdminInitTableTools(document);
     kbfAdminInitCardPagers(document);
     /**
-     * @function  kbfTriggerOnboarding
-     * @purpose   Handles kbfTriggerOnboarding behavior for the admin UI script.
-     * @used-by   [same file event flow, onclick handler, or function call]
-     * @calls     [same file helpers and browser APIs]
-     * @params    [mixed id - parameter]
+     * @function  kbfToggleAccountSuspension
+     * @purpose   Handles suspend/unsuspend account actions for organizer accounts.
+     * @used-by   [accounts tab action buttons]
+     * @calls     [kbfAdmin, browser confirm]
+     * @params    [mixed id - organizer user ID, mixed suspended - 1 to suspend, 0 to unsuspend]
      * @returns   [void]
-     * @status    ACTIVE | NEEDS REVIEW
+     * @status    ACTIVE
      */
-    window.kbfTriggerOnboarding=function(id){
-        if(!confirm('Restart onboarding for this account?')) return;
-        kbfAdmin('kbf_admin_trigger_onboarding',{business_id:id});
+    window.kbfToggleAccountSuspension = function(id, suspended){
+        var next = parseInt(suspended, 10) === 1 ? 1 : 0;
+        var prompt = next
+            ? 'Suspend this account? The user will be signed out and blocked from signing in.'
+            : 'Unsuspend this account? The user can sign in again.';
+        if(!confirm(prompt)) return;
+        kbfAdmin('kbf_admin_toggle_account_suspend', {
+            business_id: id,
+            suspended: next
+        });
     };
     if (kbfAdminAutoRefresh) {
         kbfAdminStartRefresh();
