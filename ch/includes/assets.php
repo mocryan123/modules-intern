@@ -545,12 +545,13 @@ function ch_global_styles()
         }
 
         .ch-notification-item:not(.unread) {
-            opacity: 0.78;
+            opacity: 0.62;
+            background: color-mix(in srgb, var(--ch-bg) 70%, var(--ch-surface));
         }
 
         .ch-notification-item:not(.unread) .ch-notification-message {
             color: var(--ch-text-muted);
-            font-weight: 500;
+            font-weight: 400;
         }
 
         .ch-notification-item:not(.unread) .ch-notification-time {
@@ -559,23 +560,40 @@ function ch_global_styles()
 
         /* ── Unread state ── */
         .ch-notification-item.unread {
-            background: color-mix(in srgb, var(--ch-accent) 12%, var(--ch-surface));
+            background: color-mix(in srgb, var(--ch-accent) 24%, var(--ch-surface));
             border-left-color: var(--ch-accent);
-            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ch-accent) 12%, transparent);
+            box-shadow:
+                inset 0 0 0 1px color-mix(in srgb, var(--ch-accent) 24%, transparent),
+                0 6px 18px rgba(15, 23, 42, 0.08);
             opacity: 1;
         }
 
         .ch-notification-item.unread:hover {
-            background: color-mix(in srgb, var(--ch-accent) 16%, var(--ch-surface));
+            background: color-mix(in srgb, var(--ch-accent) 30%, var(--ch-surface));
         }
 
         .ch-notification-item.unread .ch-notification-message {
-            font-weight: 600;
+            font-weight: 700;
             color: var(--ch-text);
         }
 
         .ch-notification-item.unread .ch-notification-time {
             color: var(--ch-accent);
+        }
+
+        .ch-notification-item.unread::after {
+            content: 'NEW';
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #fff;
+            background: var(--ch-accent);
+            border-radius: 999px;
+            padding: 3px 7px;
+            line-height: 1;
         }
 
         /* ── Unread dot ── */
@@ -7367,13 +7385,15 @@ function ch_global_styles()
         /* Notification unread item — dark mode */
         .ch-dark .ch-notification-item.unread,
         .ch-dashboard-wrap.ch-dark .ch-notification-item.unread {
-            background: color-mix(in srgb, var(--ch-accent) 16%, var(--ch-surface));
-            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ch-accent) 18%, transparent);
+            background: color-mix(in srgb, var(--ch-accent) 24%, var(--ch-surface));
+            box-shadow:
+                inset 0 0 0 1px color-mix(in srgb, var(--ch-accent) 24%, transparent),
+                0 8px 24px rgba(0, 0, 0, 0.24);
         }
 
         .ch-dark .ch-notification-item.unread:hover,
         .ch-dashboard-wrap.ch-dark .ch-notification-item.unread:hover {
-            background: color-mix(in srgb, var(--ch-accent) 22%, var(--ch-surface));
+            background: color-mix(in srgb, var(--ch-accent) 30%, var(--ch-surface));
         }
 
         .ch-dark .ch-notification-icon.type-reply,
