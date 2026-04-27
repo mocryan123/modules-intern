@@ -7284,13 +7284,18 @@ function bntm_shortcode_ch_post_view()
                 <button class="ch-modal-close" onclick="chCloseModal('ch-modal-all-notifications')">&times;</button>
             </div>
             <div class="ch-modal-body" style="padding:0">
-                <div id="ch-all-notifications-list" class="ch-notifications-list" style="max-height:70vh;overflow-y:auto;padding:8px 0"></div>
+                <div class="ch-dropdown-header" style="padding:10px 16px;border-bottom:1px solid var(--ch-border);display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:13px;color:var(--ch-text-subtle);">Your notifications</span>
+                    <button class="ch-dropdown-action" onclick="chMarkAllNotificationsRead()">Mark all read</button>
+                </div>
+                <div id="ch-all-notifications-list" class="ch-notifications-list" style="max-height:65vh;overflow-y:auto;padding:4px 0"></div>
                 <div id="ch-all-notifications-footer" style="padding:12px;text-align:center;display:none">
                     <button class="ch-btn ch-btn-outline ch-btn-sm" onclick="chLoadMoreNotifications()">Load more</button>
                 </div>
             </div>
         </div>
     </div>
+
     <!-- Report Modal -->
     <div id="ch-modal-report" class="ch-modal-overlay" style="display:none">
         <div class="ch-modal">

@@ -9818,71 +9818,73 @@ function ch_global_scripts()
                 fetch(chAjaxUrl, { method: 'POST', body: fd }).catch(() => { });
             };
 
+            // ── All Notifications Modal ──────────────────────────────────
             window._chAllNotifPage = 1;
             window._chAllNotifLoading = false;
 
-            window.chOpenAllNotifications = function(e) {
+            window.chOpenAllNotifications = function (e) {
                 if (e) e.preventDefault();
-                document.getElementById('ch-notifications-menu').style.display = 'none';
-                document.getElementById('ch-modal-all-notifications').style.display = 'flex';
+                const menu = document.getElementById('ch-notifications-menu');
+                if (menu) menu.style.display = 'none';
+                const modal = document.getElementById('ch-modal-all-notifications');
+                if (modal) modal.style.display = 'flex';
                 window._chAllNotifPage = 1;
                 chFetchAllNotifications(1, true);
             };
 
-            window.chFetchAllNotifications = function(page, replace) {
+            window.chFetchAllNotifications = function (page, replace) {
                 if (window._chAllNotifLoading) return;
                 window._chAllNotifLoading = true;
                 const list = document.getElementById('ch-all-notifications-list');
+                if (!list) { window._chAllNotifLoading = false; return; }
                 if (replace) list.innerHTML = '<div class="ch-no-notifications">Loading...</div>';
+
+                const typeIcons = {
+                    reply: { cls: 'type-reply', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' },
+                    mention: { cls: 'type-mention', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>' },
+                    vote: { cls: 'type-vote', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>' },
+                    announcement: { cls: 'type-announcement', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>' },
+                    report_resolved: { cls: 'type-report_resolved', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' },
+                };
+                const defaultIcon = { cls: 'type-default', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' };
 
                 fetch(ajaxurl + '?action=ch_get_notifications&page=' + page)
                     .then(r => r.json())
                     .then(json => {
                         window._chAllNotifLoading = false;
                         if (!json.success) return;
-                        const data = json.data;
-                        const items = data.notifications || [];
-
+                        const items = json.data.notifications || [];
                         if (replace) list.innerHTML = '';
                         if (items.length === 0 && replace) {
                             list.innerHTML = '<div class="ch-no-notifications">You\'re all caught up!</div>';
+                            document.getElementById('ch-all-notifications-footer').style.display = 'none';
                             return;
                         }
-
-                        const typeIcons = {
-                            reply: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-                            mention: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"/></svg>',
-                            vote: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>',
-                            announcement: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
-                            report_resolved: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-                        };
-
                         list.insertAdjacentHTML('beforeend', items.map(n => {
                             const isUnread = parseInt(n.is_read, 10) !== 1;
-                            const icon = typeIcons[n.type] || typeIcons.announcement;
+                            const icon = typeIcons[n.type] || defaultIcon;
                             return `<div class="ch-notification-item ${isUnread ? 'unread' : ''}"
                                         onclick="chHandleNotificationClick(${n.id}, this)"
                                         data-id="${n.id}">
                                 <div class="ch-notification-dot"></div>
-                                <div class="ch-notification-icon">${icon}</div>
+                                <div class="ch-notification-icon ${icon.cls}">${icon.svg}</div>
                                 <div class="ch-notification-content">
                                     <div class="ch-notification-message">${n.message}</div>
                                     <div class="ch-notification-time">${n.created_at}</div>
                                 </div>
                             </div>`;
                         }).join(''));
-
-                        // Show "Load more" if a full page was returned (20 items = per_page)
                         const footer = document.getElementById('ch-all-notifications-footer');
-                        footer.style.display = items.length >= 20 ? 'block' : 'none';
+                        if (footer) footer.style.display = items.length >= 20 ? 'block' : 'none';
                     })
                     .catch(() => { window._chAllNotifLoading = false; });
             };
 
-            window.chLoadMoreNotifications = function() {
+            window.chLoadMoreNotifications = function () {
                 window._chAllNotifPage++;
                 chFetchAllNotifications(window._chAllNotifPage, false);
             };
+            // ────────────────────────────────────────────────────────────
 
             window.chLoadNotificationCount = function () {
                 if (window.chNotificationCache.payload) {
