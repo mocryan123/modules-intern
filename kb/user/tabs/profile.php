@@ -143,6 +143,18 @@ function kbf_dashboard_profile_tab( $business_id ) {
       }
       .kbf-avatar-wrap:hover .kbf-avatar-overlay { opacity: 1; }
       .kbf-avatar-overlay i { font-size: 20px; color: #fff; }
+      .kbf-avatar-wrap.kbf-avatar-input-error img,
+      .kbf-avatar-wrap.kbf-avatar-input-error .kbf-avatar-fallback {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220,38,38,.08), 0 4px 16px rgba(15,23,42,.12);
+      }
+      .kbf-avatar-error {
+        display: none;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #dc2626;
+        font-weight: 600;
+      }
       .kbf-file-input {
         position: absolute; width: 1px; height: 1px;
         overflow: hidden; clip: rect(0,0,0,0);
@@ -539,6 +551,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
             <div class="kbf-avatar-overlay"><i class="ph ph-camera"></i></div>
           </label>
           <input id="kbf-avatar" class="kbf-file-input" type="file" name="avatar" accept="image/*">
+          <div class="kbf-avatar-error kbf-field-error" id="kbf-avatar-error"></div>
           <div class="kbf-header-name"><?php echo esc_html($user->display_name); ?></div>
           <?php if($social_name): ?>
             <div class="kbf-header-social">@<?php echo esc_html($social_name); ?></div>
@@ -870,6 +883,8 @@ function kbf_dashboard_profile_tab( $business_id ) {
      */
     (function(){
         const fileInput = document.getElementById('kbf-avatar');
+        const avatarWrap = document.querySelector('.kbf-avatar-wrap');
+        const avatarErr = document.getElementById('kbf-avatar-error');
         const backdrop = document.getElementById('kbf-cropper-backdrop');
         const stage = document.getElementById('kbf-cropper-stage');
         const img = document.getElementById('kbf-cropper-image');
@@ -885,6 +900,23 @@ function kbf_dashboard_profile_tab( $business_id ) {
         let isDragging = false;
         let startX, startY;
         let stageSize = 240;
+        const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+
+        function setAvatarError(message){
+            if(avatarWrap) avatarWrap.classList.add('kbf-avatar-input-error');
+            if(avatarErr){
+                avatarErr.textContent = message || '';
+                avatarErr.style.display = message ? 'block' : 'none';
+            }
+        }
+
+        function clearAvatarError(){
+            if(avatarWrap) avatarWrap.classList.remove('kbf-avatar-input-error');
+            if(avatarErr){
+                avatarErr.textContent = '';
+                avatarErr.style.display = 'none';
+            }
+        }
 
         /**
          * @function  openCropper
@@ -1026,9 +1058,16 @@ function kbf_dashboard_profile_tab( $business_id ) {
         // File input opens cropper
         fileInput.addEventListener('change', function(){
             if(!this.files || !this.files[0]) return;
+            clearAvatarError();
+            const selectedFile = this.files[0];
+            if (selectedFile.size > AVATAR_MAX_BYTES) {
+                setAvatarError('Please upload an avatar below 5MB.');
+                this.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function(e){ openCropper(e.target.result); };
-            reader.readAsDataURL(this.files[0]);
+            reader.readAsDataURL(selectedFile);
         });
 
         // Zoom slider

@@ -251,7 +251,7 @@ if (!function_exists('kbf_require_onboarding_complete')) {
 if (!function_exists('kbf_handle_image_upload')) {
     function kbf_handle_image_upload($file, $args = []) {
         $defaults = [
-            'max_bytes'    => 8 * 1024 * 1024,
+            'max_bytes'    => 5 * 1024 * 1024,
             'max_dim'      => 2500,
             'quality'      => 78,
             'allowed_exts' => ['jpg','jpeg','png','webp'],
@@ -266,7 +266,7 @@ if (!function_exists('kbf_handle_image_upload')) {
             return ['error' => 'Upload failed. Please try again.'];
         }
         if (!empty($file['size']) && $file['size'] > $cfg['max_bytes']) {
-            return ['error' => 'Image too large. Max size is 8MB.'];
+            return ['error' => 'Image too large. Max size is 5MB.'];
         }
 
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
