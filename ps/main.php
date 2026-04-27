@@ -571,7 +571,7 @@ function bntm_shortcode_ps_dashboard() {
                     existing.forEach(o => existMap[o.id] = o);
                     res.data.orders.forEach(o => existMap[o.id] = o);
                     const merged = Object.values(existMap)
-                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                        .sort((a, b) => new Date(b.created_at.replace(' ', 'T') + '+08:00') - new Date(a.created_at.replace(' ', 'T') + '+08:00'))
                         .slice(0, 20);
                     saveCachedOrders(merged);
 
@@ -641,7 +641,7 @@ function bntm_shortcode_ps_dashboard() {
                                 <div style="font-weight:600;font-size:${fontSize};color:#111;word-break:break-word;">Order #${order.rand_id}</div>
                             </div>
                             <div style="font-size:${customerFontSize};color:#6b7280;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${order.customer_name}</div>
-                            <div style="font-size:${timeFontSize};color:#9ca3af;margin-top:2px;white-space:nowrap;">${new Date(order.created_at).toLocaleTimeString()}</div>
+                            <div style="font-size:${timeFontSize};color:#9ca3af;margin-top:2px;white-space:nowrap;">${new Date(order.created_at.replace(' ', 'T') + '+08:00').toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
                         </div>
                         <div style="text-align:right;font-weight:600;font-size:${fontSize};color:#16a34a;white-space:nowrap;margin-left:8px;flex-shrink:0;">₱${parseFloat(order.total_price).toFixed(2)}</div>
                     </div>
@@ -1428,9 +1428,10 @@ function bntm_shortcode_ps_order() {
                     <div>
                         <div class="pso-brand-name"><?php echo esc_html($shop_name); ?></div>
                         <div class="pso-brand-sub">Fast &amp; Easy Online Printing</div>
-                        <a href="http://localhost/bntm/?page_id=16" class="pso-brand-link">
+                        <?php $pso_tracking_url = get_permalink(get_page_by_path('order-tracking')) ?: home_url('/order-tracking/'); ?>
+                        <a href="<?php echo esc_url($pso_tracking_url); ?>" class="pso-brand-link">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                            Track Order
+                            Order Tracking
                         </a>
                     </div>
                 </div>
@@ -1888,7 +1889,7 @@ function bntm_shortcode_ps_order() {
                         <?php if ($tracking_url): ?>
                         <a href="<?php echo esc_url($tracking_url); ?>" class="pso-btn-primary">
                             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                            Track Order
+                            Order Tracking
                         </a>
                         <?php endif; ?>
                         <button class="pso-btn-ghost" id="pso-new-order">Place Another Order</button>
