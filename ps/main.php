@@ -120,6 +120,8 @@ add_action('wp_ajax_ps_calculate_price',         'bntm_ajax_ps_calculate_price')
 add_action('wp_ajax_nopriv_ps_calculate_price',  'bntm_ajax_ps_calculate_price');
 add_action('wp_ajax_ps_mark_picked_up',          'bntm_ajax_ps_mark_picked_up');
 add_action('wp_ajax_ps_mark_paid',               'bntm_ajax_ps_mark_paid');
+add_action('wp_ajax_ps_check_new_orders',        'bntm_ajax_ps_check_new_orders');
+add_action('wp_ajax_nopriv_ps_check_new_orders', 'bntm_ajax_ps_check_new_orders');
 
 // ─────────────────────────────────────────────────────────────
 // 3. ADMIN DASHBOARD SHORTCODE
@@ -147,10 +149,30 @@ function bntm_shortcode_ps_dashboard() {
     </script>
 
     <div class="bntm-ps-container">
-        <div class="bntm-tabs">
-            <a href="?page_id=<?php echo get_the_ID(); ?>&tab=overview"  class="bntm-tab <?php echo $active_tab === 'overview' ? 'active' : ''; ?>">Overview</a>
-            <a href="?page_id=<?php echo get_the_ID(); ?>&tab=orders"    class="bntm-tab <?php echo $active_tab === 'orders' ? 'active' : ''; ?>">Orders</a>
-            <a href="?page_id=<?php echo get_the_ID(); ?>&tab=settings"  class="bntm-tab <?php echo $active_tab === 'settings' ? 'active' : ''; ?>">Settings</a>
+        <div id="ps-dashboard-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <div class="bntm-tabs" style="flex:1;min-width:280px;">
+                <a href="?page_id=<?php echo get_the_ID(); ?>&tab=overview"  class="bntm-tab <?php echo $active_tab === 'overview' ? 'active' : ''; ?>">Overview</a>
+                <a href="?page_id=<?php echo get_the_ID(); ?>&tab=orders"    class="bntm-tab <?php echo $active_tab === 'orders' ? 'active' : ''; ?>">Orders</a>
+                <a href="?page_id=<?php echo get_the_ID(); ?>&tab=settings"  class="bntm-tab <?php echo $active_tab === 'settings' ? 'active' : ''; ?>">Settings</a>
+            </div>
+            <!-- Notification Bell -->
+            <div id="ps-notification-bell-wrapper" class="ps-notification-wrapper" style="position:relative;display:inline-flex;align-items:center;flex-shrink:0;">
+                <button id="ps-notification-bell" class="ps-notification-btn" style="background:none;border:none;cursor:pointer;padding:8px;position:relative;transition:transform .2s;" title="New Orders" aria-label="New Orders Notifications">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:#1a3c8f;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0018 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <span id="ps-notification-badge" class="ps-notification-badge" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;display:none;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.2);">0</span>
+                </button>
+                <!-- Notification Popup -->
+                <div id="ps-notification-panel" class="ps-notification-panel" style="position:absolute;top:100%;right:-10px;margin-top:8px;background:#fff;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:280px;max-width:400px;max-height:400px;overflow-y:auto;display:none;z-index:1000;border:1px solid #e5e7eb;">
+                    <div style="padding:16px;border-bottom:1px solid #e5e7eb;">
+                        <h3 style="margin:0;font-size:14px;font-weight:700;">Recent Orders</h3>
+                    </div>
+                    <div id="ps-notification-items" class="ps-notification-items" style="max-height:320px;overflow-y:auto;">
+                        <!-- New orders will be listed here -->
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="bntm-tab-content">
             <?php
@@ -275,6 +297,149 @@ function bntm_shortcode_ps_dashboard() {
     }
     .ps-modal-close:hover { color: #111; }
 
+    /* ── Notification Bell ── */
+    #ps-notification-bell,
+    .ps-notification-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        transition: all .2s ease;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    #ps-notification-bell:hover,
+    .ps-notification-btn:hover {
+        background: #f0f4f8;
+        color: #0f5c3a;
+    }
+    #ps-notification-bell:active,
+    .ps-notification-btn:active {
+        transform: scale(0.95);
+    }
+    #ps-notification-badge,
+    .ps-notification-badge {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    #ps-notification-panel,
+    .ps-notification-panel {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        animation: slideDown .3s ease;
+        min-width: 280px;
+    }
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    #ps-notification-items,
+    .ps-notification-items {
+        max-height: 320px;
+        overflow-y: auto;
+    }
+    #ps-notification-items::-webkit-scrollbar,
+    .ps-notification-items::-webkit-scrollbar {
+        width: 6px;
+    }
+    #ps-notification-items::-webkit-scrollbar-track,
+    .ps-notification-items::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    #ps-notification-items::-webkit-scrollbar-thumb,
+    .ps-notification-items::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 3px;
+    }
+    #ps-notification-items::-webkit-scrollbar-thumb:hover,
+    .ps-notification-items::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 768px) {
+        #ps-dashboard-header {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+        .bntm-tabs {
+            width: 100% !important;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .ps-notification-wrapper {
+            align-self: flex-end;
+            width: 100%;
+            justify-content: flex-end;
+        }
+        .ps-notification-btn {
+            width: 44px;
+            height: 44px;
+        }
+        .ps-notification-panel {
+            position: fixed;
+            top: auto;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 100%;
+            max-height: 60vh;
+            min-width: unset;
+            width: 100%;
+            border-radius: 16px 16px 0 0;
+            margin: 0;
+            animation: slideUp .3s ease;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .ps-notification-items {
+            max-height: calc(60vh - 60px);
+        }
+    }
+    @media (max-width: 480px) {
+        .ps-notification-btn {
+            width: 44px;
+            height: 44px;
+            padding: 6px;
+        }
+        .ps-notification-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+        #ps-notification-badge,
+        .ps-notification-badge {
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            top: -4px;
+            right: -4px;
+        }
+        .bntm-tabs {
+            display: flex;
+            flex-direction: row;
+            gap: 4px;
+        }
+        .bntm-tab {
+            font-size: 12px !important;
+            padding: 6px 12px !important;
+        }
+    }
+
     /* ── Badges ── */
     .ps-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; letter-spacing:.3px; text-transform:capitalize; }
     .ps-badge-pending   { background:#fef3c7; color:#92400e; }
@@ -299,6 +464,217 @@ function bntm_shortcode_ps_dashboard() {
         window.psCloseModal = function() { overlay.style.display = 'none'; };
         document.getElementById('ps-modal-close').addEventListener('click', psCloseModal);
         overlay.addEventListener('click', function(e) { if (e.target === overlay) psCloseModal(); });
+
+        // ── Real-time Notification Bell ──
+        const bellBtn = document.getElementById('ps-notification-bell');
+        const bellPanel = document.getElementById('ps-notification-panel');
+        const bellWrapper = document.getElementById('ps-notification-bell-wrapper');
+        const bellBadge = document.getElementById('ps-notification-badge');
+        const notifyItems = document.getElementById('ps-notification-items');
+        let lastCheckTime = new Date().getTime();
+        let notificationCount = 0;
+        let isMobileView = window.innerWidth <= 768;
+
+        // Detect screen size changes
+        window.addEventListener('resize', function() {
+            isMobileView = window.innerWidth <= 768;
+        });
+
+        // Persist read order IDs across tab navigation using sessionStorage
+        function loadReadIds() {
+            try { return new Set(JSON.parse(sessionStorage.getItem('ps_read_order_ids') || '[]')); }
+            catch(e) { return new Set(); }
+        }
+        function saveReadIds() {
+            try { sessionStorage.setItem('ps_read_order_ids', JSON.stringify([...readOrderIds])); }
+            catch(e) {}
+        }
+        let readOrderIds = loadReadIds();
+
+        function markOrderRead(orderId) {
+            const id = String(orderId);
+            readOrderIds.add(id);
+            saveReadIds();
+            // Dim the item in the panel
+            const el = notifyItems.querySelector('[data-order-id="' + id + '"]');
+            if (el) {
+                el.style.opacity = '0.5';
+                const dot = el.querySelector('.ps-unread-dot');
+                if (dot) dot.style.display = 'none';
+            }
+            // Recalculate badge count from remaining unread items
+            const unreadCount = [...notifyItems.querySelectorAll('[data-order-id]')]
+                .filter(function(el) { return !readOrderIds.has(el.getAttribute('data-order-id')); }).length;
+            if (unreadCount > 0) {
+                notificationCount = unreadCount;
+                bellBadge.textContent = unreadCount;
+                bellBadge.style.display = 'flex';
+            } else {
+                notificationCount = 0;
+                bellBadge.style.display = 'none';
+                bellBadge.textContent = '0';
+            }
+        }
+
+        // Toggle notification panel — does NOT mark anything as read
+        bellBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = bellPanel.style.display === 'block';
+            bellPanel.style.display = isVisible ? 'none' : 'block';
+            if (isMobileView && !isVisible) {
+                addMobileBackdrop();
+            }
+        });
+
+        // Add mobile backdrop to close panel on tap
+        function addMobileBackdrop() {
+            if (isMobileView) {
+                const backdrop = document.createElement('div');
+                backdrop.id = 'ps-notification-backdrop';
+                backdrop.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.3);';
+                backdrop.addEventListener('click', function(e) {
+                    if (e.target === backdrop) {
+                        bellPanel.style.display = 'none';
+                        backdrop.remove();
+                    }
+                });
+                document.body.appendChild(backdrop);
+            }
+        }
+
+        // Close panel when clicking outside (desktop only)
+        document.addEventListener('click', function(e) {
+            if (!isMobileView && !bellBtn.contains(e.target) && !bellPanel.contains(e.target) && !bellWrapper.contains(e.target)) {
+                bellPanel.style.display = 'none';
+            }
+        });
+
+        // Close panel when pressing Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && bellPanel.style.display === 'block') {
+                bellPanel.style.display = 'none';
+                const backdrop = document.getElementById('ps-notification-backdrop');
+                if (backdrop) backdrop.remove();
+            }
+        });
+
+        // Remove backdrop when panel is hidden
+        bellPanel.addEventListener('transitionend', function() {
+            if (bellPanel.style.display === 'none') {
+                const backdrop = document.getElementById('ps-notification-backdrop');
+                if (backdrop) backdrop.remove();
+            }
+        });
+
+        // Check for new orders every 5 seconds
+        function checkNewOrders() {
+            fetch(ajaxurl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'action=ps_check_new_orders&nonce=<?php echo wp_create_nonce('ps_check_nonce'); ?>&last_check=' + lastCheckTime
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success && res.data.orders && res.data.orders.length > 0) {
+                    const unreadOrders = res.data.orders.filter(o => !readOrderIds.has(String(o.id)));
+                    lastCheckTime = new Date().getTime();
+                    updateNotificationPanel(res.data.orders);
+                    if (unreadOrders.length > 0) {
+                        notificationCount = unreadOrders.length;
+                        bellBadge.textContent = notificationCount;
+                        bellBadge.style.display = 'flex';
+                        playNotificationSound();
+                        bellBtn.style.transform = 'scale(1.15)';
+                        setTimeout(() => bellBtn.style.transform = 'scale(1)', 200);
+                    }
+                }
+            })
+            .catch(err => console.log('Notification check failed:', err));
+        }
+
+        function updateNotificationPanel(orders) {
+            notifyItems.innerHTML = '';
+            orders.forEach(order => {
+                const item = document.createElement('div');
+                const padding = isMobileView ? '16px' : '12px 16px';
+                const fontSize = isMobileView ? '14px' : '13px';
+                const customerFontSize = isMobileView ? '13px' : '12px';
+                const timeFontSize = isMobileView ? '12px' : '11px';
+                const minTouchHeight = isMobileView ? '60px' : 'auto';
+                
+                const isRead = readOrderIds.has(String(order.id));
+                item.style.cssText = `padding:${padding};border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .2s;min-height:${minTouchHeight};display:flex;align-items:center;opacity:${isRead ? '0.5' : '1'};`;
+                item.setAttribute('data-order-id', order.id);
+                item.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;width:100%;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span class="ps-unread-dot" style="display:${isRead ? 'none' : 'inline-block'};width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></span>
+                                <div style="font-weight:600;font-size:${fontSize};color:#111;word-break:break-word;">Order #${order.rand_id}</div>
+                            </div>
+                            <div style="font-size:${customerFontSize};color:#6b7280;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${order.customer_name}</div>
+                            <div style="font-size:${timeFontSize};color:#9ca3af;margin-top:2px;white-space:nowrap;">${new Date(order.created_at).toLocaleTimeString()}</div>
+                        </div>
+                        <div style="text-align:right;font-weight:600;font-size:${fontSize};color:#16a34a;white-space:nowrap;margin-left:8px;flex-shrink:0;">₱${parseFloat(order.total_price).toFixed(2)}</div>
+                    </div>
+                `;
+                item.addEventListener('mouseover', () => { if (!isMobileView) item.style.background = '#f9fafb'; });
+                item.addEventListener('mouseout', () => { if (!isMobileView) item.style.background = 'transparent'; });
+                item.addEventListener('click', () => {
+                    const orderId = item.getAttribute('data-order-id');
+                    markOrderRead(orderId);
+                    openNotificationOrder(orderId);
+                });
+                notifyItems.appendChild(item);
+            });
+        }
+
+        function openNotificationOrder(orderId) {
+            // Close notification panel first
+            bellPanel.style.display = 'none';
+            const backdrop = document.getElementById('ps-notification-backdrop');
+            if (backdrop) backdrop.remove();
+
+            // Fetch and open order details in modal
+            fetch(ajaxurl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'action=ps_get_orders&nonce=<?php echo wp_create_nonce('ps_admin_nonce'); ?>&order_id=' + orderId
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    psOpenModal(res.data.html);
+                } else {
+                    alert('Failed to load order details: ' + (res.data?.message || 'Unknown error'));
+                }
+            })
+            .catch(err => {
+                console.error('Order fetch error:', err);
+                alert('Error loading order details');
+            });
+        }
+
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
+            } catch(e) {
+                console.log('Audio notification not available');
+            }
+        }
+
+        // Start checking for new orders
+        checkNewOrders();
+        setInterval(checkNewOrders, 5000);
     })();
     </script>
     <?php
@@ -1023,6 +1399,10 @@ function bntm_shortcode_ps_order() {
                     <div>
                         <div class="pso-brand-name"><?php echo esc_html($shop_name); ?></div>
                         <div class="pso-brand-sub">Fast &amp; Easy Online Printing</div>
+                        <a href="http://localhost/bntm/?page_id=16" class="pso-brand-link">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                            Track Order
+                        </a>
                     </div>
                 </div>
 
@@ -1512,6 +1892,8 @@ function bntm_shortcode_ps_order() {
     .pso-brand-icon { width:48px; height:48px; background:linear-gradient(135deg,rgba(34,197,94,.3),rgba(22,163,74,.5)); border:1px solid rgba(34,197,94,.4); border-radius:12px; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
     .pso-brand-name { font-family:var(--pso-font-head); font-size:16px; color:#fff; line-height:1.2; }
     .pso-brand-sub { font-size:11px; color:rgba(255,255,255,.45); margin-top:2px; letter-spacing:.3px; }
+    .pso-brand-link { display:inline-flex; align-items:center; gap:4px; font-size:11px; color:rgba(255,255,255,.6); margin-top:8px; text-decoration:none; transition:color .2s; }
+    .pso-brand-link:hover { color:#fff; }
     .pso-step-nav { display:flex; flex-direction:column; gap:0; }
     .pso-step-item { display:flex; align-items:flex-start; gap:14px; padding:12px 0; opacity:.4; transition:opacity .25s; }
     .pso-step-item.active { opacity:1; }
@@ -2660,6 +3042,34 @@ function bntm_ajax_ps_delete_order() {
     $result = $wpdb->delete($t, ['id' => $order_id], ['%d']);
     if ($result) wp_send_json_success(['message' => 'Order deleted.']);
     else wp_send_json_error(['message' => 'Delete failed.']);
+}
+
+function bntm_ajax_ps_check_new_orders() {
+    check_ajax_referer('ps_check_nonce', 'nonce');
+    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
+
+    global $wpdb;
+    $t = $wpdb->prefix . 'ps_orders';
+    $last_check = intval($_POST['last_check'] ?? 0);
+    
+    // Convert milliseconds to seconds and add to a datetime
+    $last_check_time = date('Y-m-d H:i:s', floor($last_check / 1000));
+    
+    // Get new orders since last check, limit to 10
+    $orders = $wpdb->get_results($wpdb->prepare(
+        "SELECT id, rand_id, customer_name, customer_email, total_price, status, created_at 
+         FROM {$t} 
+         WHERE created_at > %s 
+         ORDER BY created_at DESC 
+         LIMIT 10",
+        $last_check_time
+    ));
+
+    if ($orders) {
+        wp_send_json_success(['orders' => $orders]);
+    } else {
+        wp_send_json_success(['orders' => []]);
+    }
 }
 
 function bntm_ajax_ps_save_pricing() {
