@@ -601,9 +601,22 @@ add_action('wp_enqueue_scripts', function() {
 
 add_action('wp_head', function() {
     if (!bntm_ch_is_frontend_context()) return;
-    // Synchronous FOUC prevention: keep body invisible immediately
-    echo '<script>document.documentElement.classList.add("ch-ui-pending");</script>';
-    echo '<style>html.ch-ui-pending{opacity:0}html.ch-ui-ready{opacity:1}html.ch-ui-ready body,html.ch-ui-pending body{visibility:visible!important;opacity:inherit}html.ch-ui-pending body{opacity:0}html.ch-ui-ready body{opacity:1;transition:opacity .15s ease}</style>';
+    // Critical FOUC prevention and full-viewport loader.
+    echo '<script>(function(){var d=document.documentElement;d.classList.add("ch-ui-pending");try{if(localStorage.getItem("ch_dark_mode")==="1"){d.classList.add("ch-dark");}}catch(e){}})();</script>';
+    echo '<style>
+html.ch-ui-pending,html.ch-ui-pending body{overflow:hidden}
+html body{visibility:visible!important}
+html.ch-ui-pending body{opacity:0;visibility:hidden!important}
+html.ch-ui-ready body{opacity:1;visibility:visible!important;transition:opacity .2s ease}
+html::before,html::after{content:"";position:fixed;z-index:2147483647;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .24s ease,visibility .24s ease}
+html::before{inset:0;background:#FFF8F5}
+html.ch-dark::before{background:#121214}
+html.ch-ui-pending::before,html.ch-ui-pending::after{opacity:1;visibility:visible}
+html.ch-ui-ready::before,html.ch-ui-ready::after{opacity:0;visibility:hidden}
+html::after{top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:3px solid rgba(255,117,81,.22);border-top-color:#FF7551;animation:ch-ui-spin .7s linear infinite;box-sizing:border-box}
+@keyframes ch-ui-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){html::before,html::after,html.ch-ui-ready body{transition:none}html::after{animation:none}}
+</style>';
 }, -1);
 
 add_action('wp_head', function() {
@@ -611,29 +624,47 @@ add_action('wp_head', function() {
     ?>
     <script>
     (function() {
-        function chRevealCommunityUi() {
-            if (document.documentElement.classList.contains('ch-ui-ready')) return;
-            document.documentElement.classList.remove('ch-ui-pending');
-            document.documentElement.classList.add('ch-ui-ready');
+        var docEl = document.documentElement;
+        var revealed = false;
+
+        function chRevealCommunityUi(force) {
+            if (revealed) return;
+            if (!force && document.readyState !== 'complete') return;
+
+            revealed = true;
+            docEl.classList.remove('ch-ui-pending');
+            docEl.classList.add('ch-ui-ready');
         }
-        try {
-            if (localStorage.getItem('ch_dark_mode') === '1') {
-                document.documentElement.classList.add('ch-dark');
+
+        function chFinalizeReveal(force) {
+            var raf = window.requestAnimationFrame || function(cb) { setTimeout(cb, 16); };
+            raf(function() {
+                raf(function() {
+                    chRevealCommunityUi(force);
+                });
+            });
+        }
+
+        function chWaitForFontsAndReveal() {
+            if (document.fonts && typeof document.fonts.ready === 'object' && typeof document.fonts.ready.then === 'function') {
+                document.fonts.ready.then(function() {
+                    chFinalizeReveal(false);
+                }, function() {
+                    chFinalizeReveal(false);
+                });
+                return;
             }
-        } catch (e) {}
-        // Reveal immediately if DOM is ready, otherwise wait for DOMContentLoaded
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                requestAnimationFrame(chRevealCommunityUi);
-            }, { once: true });
-        } else {
-            // DOM is already loaded, reveal immediately
-            chRevealCommunityUi();
+            chFinalizeReveal(false);
         }
-        // Safety fallback: reveal after 3s even if DOMContentLoaded hasn't fired
-        setTimeout(function() {
-            chRevealCommunityUi();
-        }, 3000);
+
+        if (document.readyState === 'complete') {
+            chWaitForFontsAndReveal();
+        } else {
+            window.addEventListener('load', chWaitForFontsAndReveal, { once: true });
+        }
+
+        // Safety fallback: always reveal eventually in case of stalled assets/fonts.
+        setTimeout(function() { chFinalizeReveal(true); }, 4200);
     })();
     </script>
     <?php
