@@ -624,7 +624,7 @@ add_action('wp_head', function() {
 
         function chRevealCommunityUi(force) {
             if (revealed) return;
-            if (!force && document.readyState !== 'complete') return;
+            if (!force && document.readyState === 'loading') return;
 
             revealed = true;
             docEl.classList.remove('ch-ui-pending');
@@ -644,22 +644,14 @@ add_action('wp_head', function() {
             });
         }
 
-        function chWaitForFontsAndReveal() {
-            if (document.fonts && typeof document.fonts.ready === 'object' && typeof document.fonts.ready.then === 'function') {
-                document.fonts.ready.then(function() {
-                    chFinalizeReveal(false);
-                }, function() {
-                    chFinalizeReveal(false);
-                });
-                return;
-            }
+        function chWaitForReveal() {
             chFinalizeReveal(false);
         }
 
-        if (document.readyState === 'complete') {
-            chWaitForFontsAndReveal();
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
+            chWaitForReveal();
         } else {
-            window.addEventListener('load', chWaitForFontsAndReveal, { once: true });
+            document.addEventListener('DOMContentLoaded', chWaitForReveal, { once: true });
         }
 
         // Safety fallback: always reveal eventually in case of stalled assets/fonts.
