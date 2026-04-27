@@ -10581,6 +10581,35 @@ function ch_settings_modal_html($logout_url = '')
                 window.chShowFeedLoadingOverlay = chShowFeedLoadingOverlay;
                 window.chHideFeedLoadingOverlay = chHideFeedLoadingOverlay;
 
+                function chHandleCategoryFilterFormSubmit(form, shouldPush) {
+                    if (!form || !document.querySelector('.ch-feed-shell')) return false;
+
+                    var url = new URL(window.location.href, window.location.href);
+                    var searchValue = (form.querySelector('[name=\"cat_search\"]')?.value || '').trim();
+                    var sortValue = (form.querySelector('[name=\"cat_sort\"]')?.value || '').trim();
+
+                    if (searchValue) {
+                        url.searchParams.set('cat_search', searchValue);
+                    } else {
+                        url.searchParams.delete('cat_search');
+                    }
+
+                    if (sortValue && sortValue !== 'name') {
+                        url.searchParams.set('cat_sort', sortValue);
+                    } else {
+                        url.searchParams.delete('cat_sort');
+                    }
+
+                    chShowFeedLoadingOverlay();
+                    chLoadFeedShell(url.toString(), shouldPush !== false).catch(function () {
+                        window.location.href = url.toString();
+                    }).finally(function () {
+                        chHideFeedLoadingOverlay();
+                    });
+
+                    return true;
+                }
+
                 window.chLoadFeedShell = chLoadFeedShell;
                 window.chHandleFeedNavClick = function (link, event) {
                     if (!chCanSoftLoadFeedLink(link)) return true;
@@ -10641,6 +10670,21 @@ function ch_settings_modal_html($logout_url = '')
                     chLoadFeedShell(feedLink.href, true).catch(function () {
                         window.location.href = feedLink.href;
                     });
+                });
+
+                document.addEventListener('submit', function (e) {
+                    var categoryFilterForm = e.target.closest('.ch-categories-filter-form');
+                    if (!categoryFilterForm) return;
+                    e.preventDefault();
+                    chHandleCategoryFilterFormSubmit(categoryFilterForm, true);
+                });
+
+                document.addEventListener('change', function (e) {
+                    var sortSelect = e.target.closest('.ch-categories-filter-form select[name=\"cat_sort\"]');
+                    if (!sortSelect) return;
+                    var form = sortSelect.closest('.ch-categories-filter-form');
+                    if (!form) return;
+                    chHandleCategoryFilterFormSubmit(form, true);
                 });
 
                 window.addEventListener('popstate', function () {
