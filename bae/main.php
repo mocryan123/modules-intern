@@ -901,6 +901,36 @@ function bae_wizard_shortcode($user_id) {
     .bae-wiz-wrap.bae-light .bae-wiz-tile-desc { color: #5c586d; }
     .bae-wiz-wrap.bae-light .bae-wiz-hint { color: #6b6880; }
     .bae-wiz-wrap.bae-light .bae-wiz-question, .bae-wiz-wrap.bae-light .bae-wiz-tagline-opt { color: #1d1a16; }
+    /* ── LIGHT MODE: missing overrides ── */
+    .bae-wiz-wrap.bae-light .bae-wiz-back { color: #6b6880; }
+    .bae-wiz-wrap.bae-light .bae-wiz-back:hover { color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-step-label { color: #6b6880; }
+    .bae-wiz-wrap.bae-light .bae-wiz-error { color: #e11d48; }
+    .bae-wiz-wrap.bae-light .bae-wiz-gen-title { color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-gen-sub { color: #6b6880; }
+    .bae-wiz-wrap.bae-light .bae-wiz-tagline-custom { background: rgba(255,255,255,0.9); border-color: rgba(243,45,134,0.35); color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-tagline-custom::placeholder { color: #9390a8; }
+    .bae-wiz-wrap.bae-light .bae-wiz-tagline-opt { background: rgba(255,255,255,0.72); border-color: rgba(28,20,40,0.12); color: #5c586d; }
+    .bae-wiz-wrap.bae-light .bae-wiz-tagline-opt:hover { border-color: rgba(243,45,134,0.4); color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-tagline-opt.selected { border-color: #F32D86; color: #1d1a16; background: rgba(243,45,134,0.1); }
+    .bae-wiz-wrap.bae-light .bae-wiz-color-name { color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-color-tile.selected { border-color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-token-modal { background: #fff; border: 1px solid rgba(28,20,40,0.1); }
+    .bae-wiz-wrap.bae-light .bae-wiz-token-modal-title { color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-wiz-token-modal-desc { color: #6b6880; }
+    .bae-wiz-wrap.bae-light .bae-wiz-token-input { background: #f7f5ff; color: #1d1a16; border-color: rgba(243,45,134,0.3); }
+    .bae-wiz-wrap.bae-light .bae-wiz-token-input::placeholder { color: #9390a8; }
+    /* AI Name modal - light */
+    .bae-wiz-wrap.bae-light .bae-name-gen-modal { background: #fff; border-color: rgba(28,20,40,.1); }
+    .bae-wiz-wrap.bae-light .bae-name-gen-modal-title { color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-name-gen-desc { color: #6b6880; }
+    .bae-wiz-wrap.bae-light .bae-name-gen-input { background: rgba(255,255,255,0.9); border-color: rgba(243,45,134,0.3); color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-name-gen-input::placeholder { color: #9390a8; }
+    .bae-wiz-wrap.bae-light .bae-name-gen-chip { background: rgba(255,255,255,0.72); border-color: rgba(28,20,40,.14); color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-name-gen-chip:hover { border-color: rgba(243,45,134,.4); background: rgba(243,45,134,.1); }
+    .bae-wiz-wrap.bae-light .bae-name-gen-chip.selected { border-color: #F32D86; background: rgba(243,45,134,.15); }
+    .bae-wiz-wrap.bae-light .bae-name-result-item { background: rgba(255,255,255,0.8); border-color: rgba(28,20,40,.12); color: #1d1a16; }
+    .bae-wiz-wrap.bae-light .bae-name-result-item:hover { border-color: rgba(243,45,134,.5); background: rgba(243,45,134,.08); }
     .bae-wiz-brand {
         display: inline-flex;
         align-items: flex-end;
@@ -981,14 +1011,23 @@ function bae_wizard_shortcode($user_id) {
     .bae-wiz-back:hover { color: #8b88a4; }
     .bae-wiz-error { font-size: 12px; color: #fb7185; margin-bottom: 12px; display: none; margin-top: -8px; }
     .bae-wiz-generating { text-align: center; }
-    .bae-wiz-spinner {
-        width: 52px; height: 52px;
-        border: 3px solid rgba(243,45,134,0.2);
-        border-top-color: #F32D86; border-radius: 50%;
-        margin: 0 auto 24px;
-        animation: bae-wiz-spin 0.9s linear infinite;
+    /* ── Moth loader (replaces plain spinner) ── */
+    .bae-wiz-moth-loader {
+        display: flex; gap: 10px; justify-content: center;
+        align-items: flex-end; margin: 0 auto 28px; height: 36px;
     }
-    @keyframes bae-wiz-spin { to { transform: rotate(360deg); } }
+    .bae-moth-dot {
+        width: 13px; border-radius: 999px; flex-shrink: 0;
+    }
+    .bae-moth-dot-1 { background: #F32D86; animation: bae-moth-rise 1.5s ease-in-out 0s infinite; }
+    .bae-moth-dot-2 { background: #c4196a; animation: bae-moth-rise 1.5s ease-in-out 0.18s infinite; }
+    .bae-moth-dot-3 { background: #9b1157; animation: bae-moth-rise 1.5s ease-in-out 0.36s infinite; }
+    .bae-moth-dot-4 { background: #c4196a; animation: bae-moth-rise 1.5s ease-in-out 0.54s infinite; }
+    .bae-moth-dot-5 { background: #F32D86; animation: bae-moth-rise 1.5s ease-in-out 0.72s infinite; }
+    @keyframes bae-moth-rise {
+        0%, 100% { height: 8px;  opacity: 0.35; border-radius: 999px; }
+        45%       { height: 30px; opacity: 1;    border-radius: 6px 6px 999px 999px; }
+    }
     .bae-wiz-gen-title { font-family: 'Instrument Serif', serif; font-size: 26px; font-style: italic; color: #ede9ff; margin-bottom: 8px; }
     .bae-wiz-gen-sub { font-size: 13px; color: #4d4a65; }
     @media (max-width: 480px) {
@@ -1018,6 +1057,15 @@ function bae_wizard_shortcode($user_id) {
             <div class="bae-wiz-hint">This will appear on all your brand assets.</div>
             <input type="text" class="bae-wiz-input" id="bae-wiz-name" placeholder="e.g. Dela Cruz Bakery" autocomplete="off">
             <div class="bae-wiz-error" id="bae-wiz-name-err">Please enter your business name.</div>
+
+            <!-- AI name generator trigger -->
+            <div style="text-align:center;margin-bottom:18px;margin-top:-6px;">
+                <button type="button" class="bae-name-gen-trigger" onclick="baeNameGenOpen()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                    Can't decide? Generate a name with AI
+                </button>
+            </div>
+
             <button class="bae-wiz-next" onclick="baeWizGo(2)">Continue &rarr;</button>
             <!-- OR separator + token button -->
             <div class="bae-wiz-or-sep">
@@ -1030,6 +1078,158 @@ function bae_wizard_shortcode($user_id) {
                 Already have a token? Enter it here
             </button>
         </div>
+
+        <!-- ══ AI NAME GENERATOR MODAL ══ -->
+        <div class="bae-name-gen-overlay" id="bae-name-gen-overlay" onclick="if(event.target===this)baeNameGenClose()">
+            <div class="bae-name-gen-modal" id="bae-name-gen-modal">
+                <div class="bae-name-gen-modal-header">
+                    <div class="bae-name-gen-modal-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                        AI Business Name Generator
+                    </div>
+                    <button type="button" class="bae-name-gen-close" onclick="baeNameGenClose()">&times;</button>
+                </div>
+                <div class="bae-name-gen-modal-body">
+                    <div class="bae-name-gen-desc">Briefly describe your business and we'll generate name ideas.</div>
+
+                    <textarea class="bae-name-gen-input" id="bae-name-gen-desc-input" placeholder="e.g. A bakery that specializes in traditional Filipino breads with a modern twist" rows="3"></textarea>
+
+                    <div style="margin-bottom:10px;">
+                        <div class="bae-name-gen-section-label">Industry</div>
+                        <div class="bae-name-gen-chips" id="bae-name-gen-industry">
+                            <?php
+                            $ng_industries = ['Food & Drinks','Retail','Services','Health & Beauty','Tech & Digital','Education','Creative','Real Estate','Finance','Other'];
+                            foreach ($ng_industries as $ni):
+                            ?><button type="button" class="bae-name-gen-chip" data-group="industry" onclick="baeNameGenChip(this)"><?php echo esc_html($ni); ?></button><?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:10px;">
+                        <div class="bae-name-gen-section-label">Brand Vibe</div>
+                        <div class="bae-name-gen-chips">
+                            <?php
+                            $ng_vibes = ['Professional','Playful','Luxe','Minimal','Bold','Friendly','Tech','Eco'];
+                            foreach ($ng_vibes as $nv):
+                            ?><button type="button" class="bae-name-gen-chip" data-group="vibe" onclick="baeNameGenChip(this)"><?php echo esc_html($nv); ?></button><?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <div class="bae-name-gen-section-label">Target Audience <span style="font-weight:400;opacity:.7;">(optional)</span></div>
+                        <input type="text" class="bae-name-gen-input" id="bae-name-gen-audience" placeholder="e.g. Young professionals, small businesses, parents…" style="margin-bottom:0;">
+                    </div>
+
+                    <button type="button" class="bae-name-gen-btn" id="bae-name-gen-go" onclick="baeNameGenGenerate()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                        Generate Names
+                    </button>
+
+                    <!-- Loading state -->
+                    <div id="bae-name-gen-loading" style="display:none;text-align:center;padding:20px 0;">
+                        <div class="bae-wiz-moth-loader" style="margin:0 auto 12px;">
+                            <div class="bae-moth-dot bae-moth-dot-1"></div>
+                            <div class="bae-moth-dot bae-moth-dot-2"></div>
+                            <div class="bae-moth-dot bae-moth-dot-3"></div>
+                            <div class="bae-moth-dot bae-moth-dot-4"></div>
+                            <div class="bae-moth-dot bae-moth-dot-5"></div>
+                        </div>
+                        <div style="font-size:13px;color:#4d4a65;">Generating name ideas…</div>
+                    </div>
+
+                    <!-- Results -->
+                    <div id="bae-name-gen-results" style="display:none;margin-top:16px;">
+                        <div class="bae-name-gen-section-label" style="margin-bottom:8px;">Tap a name to use it</div>
+                        <div id="bae-name-gen-results-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+                    </div>
+
+                    <div id="bae-name-gen-err" style="font-size:12px;color:#fb7185;margin-top:10px;display:none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        /* ── AI Name Generator ── */
+        .bae-name-gen-trigger {
+            background: none; border: none;
+            font-size: 12px; font-weight: 600;
+            color: #F32D86; cursor: pointer;
+            font-family: 'Geist', sans-serif;
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 8px; border-radius: 8px;
+            transition: all .2s; opacity: .85;
+        }
+        .bae-name-gen-trigger:hover { opacity: 1; background: rgba(243,45,134,.1); }
+        .bae-name-gen-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; opacity: 0; visibility: hidden;
+            transition: opacity .2s, visibility .2s;
+        }
+        .bae-name-gen-overlay.open { opacity: 1; visibility: visible; }
+        .bae-name-gen-modal {
+            background: #1a1630; border: 1px solid rgba(243,45,134,.2);
+            border-radius: 20px; width: 100%; max-width: 480px;
+            max-height: 90vh; overflow-y: auto;
+            transform: translateY(16px); transition: transform .25s;
+        }
+        .bae-name-gen-overlay.open .bae-name-gen-modal { transform: translateY(0); }
+        .bae-name-gen-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 22px 0;
+        }
+        .bae-name-gen-modal-title {
+            font-size: 15px; font-weight: 700; color: #ede9ff;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .bae-name-gen-close {
+            background: none; border: none; color: #8b88a4;
+            font-size: 20px; cursor: pointer; padding: 4px 8px; line-height: 1;
+            border-radius: 8px; transition: all .15s; font-family: sans-serif;
+        }
+        .bae-name-gen-close:hover { background: rgba(255,255,255,.08); color: #ede9ff; }
+        .bae-name-gen-modal-body { padding: 18px 22px 22px; }
+        .bae-name-gen-desc { font-size: 13px; color: #9390a8; margin-bottom: 16px; line-height: 1.5; }
+        .bae-name-gen-section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #8b88a4; margin-bottom: 8px; }
+        .bae-name-gen-input {
+            width: 100%; background: rgba(255,255,255,.05);
+            border: 1px solid rgba(243,45,134,.25); border-radius: 12px;
+            padding: 12px 16px; font-size: 14px; font-family: 'Geist', sans-serif;
+            color: #ede9ff; outline: none; resize: vertical;
+            transition: border-color .2s; margin-bottom: 14px; display: block;
+        }
+        .bae-name-gen-input:focus { border-color: #F32D86; box-shadow: 0 0 0 3px rgba(243,45,134,.12); }
+        .bae-name-gen-input::placeholder { color: #4d4a65; }
+        .bae-name-gen-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .bae-name-gen-chip {
+            background: rgba(255,255,255,.04); border: 1.5px solid rgba(255,255,255,.1);
+            border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 600;
+            color: #ede9ff; cursor: pointer; font-family: 'Geist', sans-serif;
+            transition: all .15s;
+        }
+        .bae-name-gen-chip:hover { border-color: rgba(243,45,134,.4); background: rgba(243,45,134,.08); }
+        .bae-name-gen-chip.selected { border-color: #F32D86; background: rgba(243,45,134,.18); color: #fff; }
+        .bae-name-gen-btn {
+            width: 100%; background: linear-gradient(135deg,#c4196a,#F32D86);
+            color: white; border: none; border-radius: 12px;
+            padding: 13px 24px; font-size: 14px; font-weight: 700;
+            font-family: 'Geist', sans-serif; cursor: pointer;
+            transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 6px 22px rgba(195,25,106,.4);
+        }
+        .bae-name-gen-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(195,25,106,.5); }
+        .bae-name-gen-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+        .bae-name-result-item {
+            background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.08);
+            border-radius: 12px; padding: 14px 18px; cursor: pointer;
+            transition: all .18s; display: flex; align-items: center; justify-content: space-between;
+        }
+        .bae-name-result-item:hover { border-color: rgba(243,45,134,.45); background: rgba(243,45,134,.07); }
+        .bae-name-result-name { font-size: 16px; font-weight: 700; color: #ede9ff; }
+        .bae-name-result-tag { font-size: 11px; color: #8b88a4; margin-top: 3px; }
+        .bae-name-result-use { font-size: 11px; font-weight: 700; color: #F32D86; opacity: 0; transition: opacity .15s; }
+        .bae-name-result-item:hover .bae-name-result-use { opacity: 1; }
+        </style>
 
         <!-- Step 2: Industry -->
         <div class="bae-wiz-screen" id="bae-step-2" style="display:none;">
@@ -1144,7 +1344,13 @@ function bae_wizard_shortcode($user_id) {
 
         <!-- Generating -->
         <div class="bae-wiz-screen bae-wiz-generating" id="bae-step-gen" style="display:none;">
-            <div class="bae-wiz-spinner"></div>
+            <div class="bae-wiz-moth-loader">
+                <div class="bae-moth-dot bae-moth-dot-1"></div>
+                <div class="bae-moth-dot bae-moth-dot-2"></div>
+                <div class="bae-moth-dot bae-moth-dot-3"></div>
+                <div class="bae-moth-dot bae-moth-dot-4"></div>
+                <div class="bae-moth-dot bae-moth-dot-5"></div>
+            </div>
             <div class="bae-wiz-gen-title">Mothifying your brand...</div>
             <div class="bae-wiz-gen-sub" id="bae-wiz-gen-status">Saving your profile</div>
         </div>
@@ -1362,7 +1568,138 @@ function bae_wizard_shortcode($user_id) {
         window.baeWizTokenClose = baeWizTokenClose;
         window.baeWizTokenSubmit = baeWizTokenSubmit;
 
-        // Static fallback palettes — used if AI fails or times out
+        /* ════════════════════════════════════════
+           AI BUSINESS NAME GENERATOR
+        ════════════════════════════════════════ */
+        (function(){
+            function baeNameGenOpen() {
+                var ov = document.getElementById('bae-name-gen-overlay');
+                if (ov) { ov.classList.add('open'); }
+                // Pre-select an industry chip if the user already picked one in step 2
+                // (state.industry isn't set yet at step 1, but we try anyway)
+                setTimeout(function(){
+                    var descInput = document.getElementById('bae-name-gen-desc-input');
+                    if (descInput) descInput.focus();
+                }, 200);
+            }
+            function baeNameGenClose() {
+                var ov = document.getElementById('bae-name-gen-overlay');
+                if (ov) ov.classList.remove('open');
+            }
+            function baeNameGenChip(el) {
+                var group = el.dataset.group;
+                // Single-select per group
+                document.querySelectorAll('.bae-name-gen-chip[data-group="'+group+'"]').forEach(function(c){ c.classList.remove('selected'); });
+                el.classList.toggle('selected');
+                // toggling: if it was selected, clicking again deselects
+            }
+            function baeNameGenGenerate() {
+                var desc = (document.getElementById('bae-name-gen-desc-input')||{}).value || '';
+                var audience = (document.getElementById('bae-name-gen-audience')||{}).value || '';
+                var industry = '';
+                var vibe = '';
+                document.querySelectorAll('.bae-name-gen-chip[data-group="industry"].selected').forEach(function(c){ industry = c.textContent.trim(); });
+                document.querySelectorAll('.bae-name-gen-chip[data-group="vibe"].selected').forEach(function(c){ vibe = c.textContent.trim(); });
+
+                var err = document.getElementById('bae-name-gen-err');
+                if (!desc.trim() && !industry) {
+                    if (err) { err.textContent = 'Please describe your business or pick an industry.'; err.style.display = 'block'; }
+                    return;
+                }
+                if (err) err.style.display = 'none';
+
+                var btn = document.getElementById('bae-name-gen-go');
+                var loading = document.getElementById('bae-name-gen-loading');
+                var results = document.getElementById('bae-name-gen-results');
+                var list = document.getElementById('bae-name-gen-results-list');
+
+                if (btn) btn.disabled = true;
+                if (loading) loading.style.display = 'block';
+                if (results) results.style.display = 'none';
+                if (list) list.innerHTML = '';
+
+                var prompt = 'Generate 7 creative, memorable, and unique business name ideas.\n'
+                    + (desc    ? 'Business description: ' + desc + '\n' : '')
+                    + (industry? 'Industry: ' + industry + '\n' : '')
+                    + (vibe    ? 'Brand vibe/style: ' + vibe + '\n' : '')
+                    + (audience? 'Target audience: ' + audience + '\n' : '')
+                    + '\nReturn ONLY a JSON array of objects, no markdown, no explanation.\n'
+                    + 'Each object must have: "name" (the business name) and "why" (one short sentence why it works, max 10 words).\n'
+                    + 'Example: [{"name":"Lumina Co","why":"Bright and modern — perfect for tech or wellness."}]\n'
+                    + 'Names must be original, not generic. Mix short (1-2 words), compound, and invented words. No "Inc", "LLC".';
+
+                fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1000,
+                        messages: [{ role: 'user', content: prompt }]
+                    })
+                })
+                .then(function(r){ return r.json(); })
+                .then(function(data){
+                    if (btn) btn.disabled = false;
+                    if (loading) loading.style.display = 'none';
+
+                    var text = '';
+                    if (data.content && data.content[0] && data.content[0].text) {
+                        text = data.content[0].text.trim();
+                    }
+                    // Strip markdown fences if present
+                    text = text.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```$/,'').trim();
+
+                    var names = [];
+                    try { names = JSON.parse(text); } catch(e) {
+                        if (err) { err.textContent = 'Could not parse names. Try again.'; err.style.display='block'; }
+                        return;
+                    }
+
+                    if (!Array.isArray(names) || names.length === 0) {
+                        if (err) { err.textContent = 'No names returned. Try rephrasing.'; err.style.display='block'; }
+                        return;
+                    }
+
+                    names.forEach(function(item){
+                        var n = item.name || '';
+                        var w = item.why || '';
+                        if (!n) return;
+                        var div = document.createElement('div');
+                        div.className = 'bae-name-result-item';
+                        div.innerHTML = '<div>'
+                            + '<div class="bae-name-result-name">' + n + '</div>'
+                            + (w ? '<div class="bae-name-result-tag">' + w + '</div>' : '')
+                            + '</div>'
+                            + '<div class="bae-name-result-use">Use this ↗</div>';
+                        div.addEventListener('click', function(){
+                            var inp = document.getElementById('bae-wiz-name');
+                            if (inp) { inp.value = n; inp.dispatchEvent(new Event('input',{bubbles:true})); }
+                            baeNameGenClose();
+                            // tiny toast
+                            if (typeof window.baeToast === 'function') window.baeToast('"'+n+'" selected!', 'success');
+                        });
+                        list.appendChild(div);
+                    });
+
+                    if (results) results.style.display = 'block';
+                })
+                .catch(function(){
+                    if (btn) btn.disabled = false;
+                    if (loading) loading.style.display = 'none';
+                    if (err) { err.textContent = 'Network error. Please try again.'; err.style.display='block'; }
+                });
+            }
+
+            window.baeNameGenOpen     = baeNameGenOpen;
+            window.baeNameGenClose    = baeNameGenClose;
+            window.baeNameGenChip     = baeNameGenChip;
+            window.baeNameGenGenerate = baeNameGenGenerate;
+
+            // Close on Escape
+            document.addEventListener('keydown', function(e){
+                if (e.key === 'Escape') baeNameGenClose();
+            });
+        })();
         var staticPalettes = [
             { name:'Bold',    primary:'#c4196a', secondary:'#2d1066', accent:'#F32D86', personality:'Bold, premium, innovative',         reason:'Strong contrast and vibrant energy — great for brands that want to stand out.' },
             { name:'Pro',     primary:'#1d4ed8', secondary:'#1e3a5f', accent:'#38bdf8', personality:'Professional, trustworthy, reliable', reason:'Deep blue tones communicate credibility and calm confidence.' },
