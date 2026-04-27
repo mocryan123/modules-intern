@@ -327,6 +327,7 @@ function bntm_ajax_ch_create_post() {
     $global_requires_approval = (int)get_option('ch_post_approval_enabled', 0);
     $category_requires_approval = (int)($cat->require_post_approval ?? 0);
     $status  = ($global_requires_approval || $category_requires_approval) ? 'pending' : 'active';
+    $guest_is_anonymous = !$user_id && $guest_name === '';
     $result  = $wpdb->insert("{$wpdb->prefix}ch_posts", [
         'rand_id'      => $rand_id,
         'business_id'  => $user_id,
@@ -336,7 +337,7 @@ function bntm_ajax_ch_create_post() {
         'content'      => $content,
         'tags'         => $tags,
         'media_urls'   => '',
-        'is_anonymous' => $user_id ? $is_anon : 1,
+        'is_anonymous' => $user_id ? $is_anon : ($guest_is_anonymous ? 1 : 0),
         'guest_name'   => (!$user_id && $guest_name) ? $guest_name : null,
         'status'       => $status,
     ], ['%s','%d','%d','%d','%s','%s','%s','%s','%d','%s','%s']);
@@ -821,7 +822,8 @@ function bntm_ajax_ch_feed_sort() {
 
     $posts = $wpdb->get_results(
         "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
-                u.display_name as author_name, u.karma_points as author_karma, u.location as author_location
+                COALESCE(NULLIF(p.guest_name, ''), u.display_name, 'Community Member') as author_name,
+                u.karma_points as author_karma, u.location as author_location
          FROM {$wpdb->prefix}ch_posts p
          LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
          LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
@@ -1073,7 +1075,8 @@ function bntm_ajax_ch_get_post_detail() {
     if ($post_id) {
         $post = $wpdb->get_row($wpdb->prepare(
             "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
-                    u.display_name as author_name, u.karma_points as author_karma, u.location as author_location
+                    COALESCE(NULLIF(p.guest_name, ''), u.display_name, 'Community Member') as author_name,
+                    u.karma_points as author_karma, u.location as author_location
              FROM {$wpdb->prefix}ch_posts p
              LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
              LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
@@ -1083,7 +1086,8 @@ function bntm_ajax_ch_get_post_detail() {
     } elseif ($rand_id) {
         $post = $wpdb->get_row($wpdb->prepare(
             "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
-                    u.display_name as author_name, u.karma_points as author_karma, u.location as author_location
+                    COALESCE(NULLIF(p.guest_name, ''), u.display_name, 'Community Member') as author_name,
+                    u.karma_points as author_karma, u.location as author_location
              FROM {$wpdb->prefix}ch_posts p
              LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
              LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id

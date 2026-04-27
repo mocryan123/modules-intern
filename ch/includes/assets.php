@@ -8699,6 +8699,33 @@ function ch_global_scripts()
                 }
             };
 
+            window.chResetCreatePostForm = function () {
+                const titleEl = document.getElementById('ch-post-title');
+                const contentEl = document.getElementById('ch-post-content');
+                const catEl = document.getElementById('ch-post-cat');
+                const tagsEl = document.getElementById('ch-post-tags');
+                const guestEl = document.getElementById('ch-post-guest-name');
+                const anonEl = document.getElementById('ch-post-anon');
+                const inputEl = document.getElementById('ch-post-media');
+
+                if (titleEl) titleEl.value = '';
+                if (contentEl) contentEl.value = '';
+                if (catEl) catEl.value = '';
+                if (tagsEl) tagsEl.value = '';
+                if (guestEl) guestEl.value = '';
+                if (anonEl) anonEl.checked = false;
+                if (inputEl) inputEl.value = '';
+
+                window.chComposerFiles['ch-post-media'] = [];
+                window.chComposerExistingMedia['ch-post-media'] = [];
+                window.chSyncComposerInput('ch-post-media', []);
+                window.chUpdateMediaLabel(inputEl || { files: [] }, 'ch-post-media-label');
+                window.chRenderComposerMediaPreview('ch-post-media', 'ch-post-media-preview', 'ch-post-media-label');
+
+                const msg = document.getElementById('ch-post-msg');
+                if (msg) msg.innerHTML = '';
+            };
+
             window.chHandleComposerMediaChange = function (input, labelId, previewId) {
                 if (!input) return;
                 const existingCount = (window.chComposerExistingMedia[input.id] || []).length;
@@ -10922,6 +10949,9 @@ function ch_feed_scripts()
                     .then(json => {
                         (window.chSetNotice || chSetNotice)('ch-post-msg', json.success ? 'success' : 'error', json.data?.message || '');
                         if (json.success) {
+                            if (typeof window.chResetCreatePostForm === 'function') {
+                                window.chResetCreatePostForm();
+                            }
                             delete window.chComposerFiles['ch-post-media'];
                             window.chHideLoadingModal();
                             if (window.chCloseModal) window.chCloseModal('ch-modal-create-post');

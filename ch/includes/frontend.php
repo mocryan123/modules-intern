@@ -4457,7 +4457,8 @@ function bntm_shortcode_ch_feed()
 
     $posts = $wpdb->get_results(
         "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
-                u.display_name as author_name, u.karma_points as author_karma, u.location as author_location
+                COALESCE(NULLIF(p.guest_name, ''), u.display_name, 'Community Member') as author_name,
+                u.karma_points as author_karma, u.location as author_location
          FROM {$wpdb->prefix}ch_posts p
          LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
          LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
@@ -4762,7 +4763,7 @@ function bntm_shortcode_ch_feed()
 
             $trending_posts = $wpdb->get_results(
                 "SELECT p.*, c.name as cat_name, c.color as cat_color,
-                COALESCE(u.display_name, 'Community Member') as author_name
+                COALESCE(NULLIF(p.guest_name, ''), u.display_name, 'Community Member') as author_name
          FROM {$wpdb->prefix}ch_posts p
          LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
          LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
@@ -4897,7 +4898,7 @@ function bntm_shortcode_ch_feed()
             <?php
             $bookmarked_posts = $wpdb->get_results($wpdb->prepare(
                 "SELECT p.*, c.name as cat_name, c.color as cat_color,
-                COALESCE(u.display_name, 'Community Member') as author_name,
+                COALESCE(NULLIF(p.guest_name, ''), u.display_name, 'Community Member') as author_name,
                 bm.created_at as bookmarked_at
          FROM {$wpdb->prefix}ch_bookmarks bm
          JOIN {$wpdb->prefix}ch_posts p ON bm.post_id = p.id
@@ -6641,7 +6642,8 @@ function bntm_shortcode_ch_post_view()
 
     $post = $wpdb->get_row($wpdb->prepare(
         "SELECT p.*, c.name as cat_name, c.color as cat_color, c.slug as cat_slug,
-                u.display_name as author_name, u.karma_points as author_karma, u.bio as author_bio
+                COALESCE(NULLIF(p.guest_name, ''), u.display_name, 'Community Member') as author_name,
+                u.karma_points as author_karma, u.bio as author_bio
          FROM {$wpdb->prefix}ch_posts p
          LEFT JOIN {$wpdb->prefix}ch_categories c ON p.category_id = c.id
          LEFT JOIN {$wpdb->prefix}ch_user_profiles u ON p.user_id = u.user_id
