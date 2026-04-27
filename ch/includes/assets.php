@@ -530,9 +530,10 @@ function ch_global_styles()
             padding: 12px 16px;
             border-bottom: 1px solid var(--ch-border-soft);
             cursor: pointer;
-            transition: background 0.12s;
+            transition: background 0.12s, border-color 0.12s, opacity 0.12s;
             position: relative;
             border-left: 3px solid transparent;
+            background: var(--ch-surface);
         }
 
         .ch-notification-item:last-child {
@@ -543,14 +544,29 @@ function ch_global_styles()
             background: var(--ch-bg);
         }
 
+        .ch-notification-item:not(.unread) {
+            opacity: 0.78;
+        }
+
+        .ch-notification-item:not(.unread) .ch-notification-message {
+            color: var(--ch-text-muted);
+            font-weight: 500;
+        }
+
+        .ch-notification-item:not(.unread) .ch-notification-time {
+            color: var(--ch-text-subtle);
+        }
+
         /* ── Unread state ── */
         .ch-notification-item.unread {
-            background: color-mix(in srgb, var(--ch-accent) 5%, var(--ch-surface));
+            background: color-mix(in srgb, var(--ch-accent) 12%, var(--ch-surface));
             border-left-color: var(--ch-accent);
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ch-accent) 12%, transparent);
+            opacity: 1;
         }
 
         .ch-notification-item.unread:hover {
-            background: color-mix(in srgb, var(--ch-accent) 9%, var(--ch-surface));
+            background: color-mix(in srgb, var(--ch-accent) 16%, var(--ch-surface));
         }
 
         .ch-notification-item.unread .ch-notification-message {
@@ -7351,12 +7367,13 @@ function ch_global_styles()
         /* Notification unread item — dark mode */
         .ch-dark .ch-notification-item.unread,
         .ch-dashboard-wrap.ch-dark .ch-notification-item.unread {
-            background: color-mix(in srgb, var(--ch-accent) 10%, var(--ch-surface));
+            background: color-mix(in srgb, var(--ch-accent) 16%, var(--ch-surface));
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ch-accent) 18%, transparent);
         }
 
         .ch-dark .ch-notification-item.unread:hover,
         .ch-dashboard-wrap.ch-dark .ch-notification-item.unread:hover {
-            background: color-mix(in srgb, var(--ch-accent) 15%, var(--ch-surface));
+            background: color-mix(in srgb, var(--ch-accent) 22%, var(--ch-surface));
         }
 
         .ch-dark .ch-notification-icon.type-reply,
