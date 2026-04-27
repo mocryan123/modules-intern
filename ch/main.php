@@ -2040,6 +2040,7 @@ $ajax_actions = [
     'ch_get_notifications'   => ['bntm_ajax_ch_get_notifications', false],
     'ch_get_notification_count' => ['bntm_ajax_ch_get_notification_count', false],
     'ch_mark_notifications'  => ['bntm_ajax_ch_mark_notifications', false],
+    'ch_resolve_notification_target' => ['bntm_ajax_ch_resolve_notification_target', false],
     'ch_moderate_action'     => ['bntm_ajax_ch_moderate_action', true],
     'ch_search'              => ['bntm_ajax_ch_search', false],
     'ch_admin_stats'         => ['bntm_ajax_ch_admin_stats', true],

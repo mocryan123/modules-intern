@@ -1611,6 +1611,88 @@ function bntm_ajax_ch_mark_notifications() {
     wp_send_json_success(['message' => 'Notifications marked as read']);
 }
 
+function bntm_ajax_ch_resolve_notification_target() {
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => 'Unauthorized']);
+    }
+
+    global $wpdb;
+    $user_id = get_current_user_id();
+    $notification_id = (int) ($_POST['notification_id'] ?? 0);
+
+    if ($notification_id <= 0) {
+        wp_send_json_error(['message' => 'Notification not found.']);
+    }
+
+    $notification = $wpdb->get_row($wpdb->prepare(
+        "SELECT id, type, post_id, comment_id
+         FROM {$wpdb->prefix}ch_notifications
+         WHERE id = %d AND user_id = %d
+         LIMIT 1",
+        $notification_id,
+        $user_id
+    ));
+
+    if (!$notification) {
+        wp_send_json_error(['message' => 'Notification not found.']);
+    }
+
+    if (in_array($notification->type, ['reply', 'mention', 'vote'], true)) {
+        $post = null;
+        if (!empty($notification->post_id)) {
+            $post = $wpdb->get_row($wpdb->prepare(
+                "SELECT rand_id, status
+                 FROM {$wpdb->prefix}ch_posts
+                 WHERE id = %d
+                 LIMIT 1",
+                (int) $notification->post_id
+            ));
+        }
+
+        if (!$post || $post->status !== 'active' || empty($post->rand_id)) {
+            wp_send_json_success([
+                'action' => 'warning',
+                'title' => 'Post Unavailable',
+                'message' => 'This post does not exist anymore or has already been deleted.',
+            ]);
+        }
+
+        wp_send_json_success([
+            'action' => 'navigate',
+            'url' => add_query_arg('view_post', $post->rand_id, ch_get_feed_url()),
+        ]);
+    }
+
+    if ($notification->type === 'announcement') {
+        $announcement = null;
+        if (!empty($notification->post_id)) {
+            $announcement = $wpdb->get_row($wpdb->prepare(
+                "SELECT id, is_active
+                 FROM {$wpdb->prefix}ch_announcements
+                 WHERE id = %d
+                 LIMIT 1",
+                (int) $notification->post_id
+            ));
+        }
+
+        if (!$announcement || (int) $announcement->is_active !== 1) {
+            wp_send_json_success([
+                'action' => 'warning',
+                'title' => 'Announcement Unavailable',
+                'message' => 'This announcement does not exist anymore or has already been removed.',
+            ]);
+        }
+
+        wp_send_json_success([
+            'action' => 'none',
+        ]);
+    }
+
+    wp_send_json_success([
+        'action' => 'none',
+    ]);
+}
+
 function bntm_ajax_ch_search() {
     global $wpdb;
     $query = sanitize_text_field($_POST['query'] ?? '');

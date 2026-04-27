@@ -9694,9 +9694,7 @@ function ch_global_scripts()
                     const postUrl = n.post_rand_id
                         ? (chFeedUrl + '?view_post=' + encodeURIComponent(n.post_rand_id))
                         : null;
-                    const clickAttr = postUrl
-                        ? `onclick="chMarkNotificationRead(${n.id}, '${postUrl}', this)"`
-                        : `onclick="chMarkNotificationRead(${n.id}, null, this)"`;
+                    const clickAttr = `onclick="chHandleNotificationClick(${n.id}, this)"`;
                     const icon = typeIcons[n.type] || { cls: 'type-default', svg: '<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' };
                     return `
                 <div class="ch-notification-item ${isUnread ? 'unread' : ''}" ${clickAttr} data-id="${n.id}">
@@ -9759,6 +9757,49 @@ function ch_global_scripts()
                 if (postUrl) {
                     window.location.href = postUrl;
                 }
+            };
+
+            window.chHandleNotificationClick = function (notificationId, el) {
+                const item = el?.closest('.ch-notification-item') || document.querySelector(`.ch-notification-item[data-id="${notificationId}"]`);
+                window.chMarkNotificationRead(notificationId, null, item || el);
+
+                const fd = new FormData();
+                fd.append('action', 'ch_resolve_notification_target');
+                fd.append('notification_id', notificationId);
+
+                fetch(chAjaxUrl, { method: 'POST', body: fd })
+                    .then(r => r.json())
+                    .then(json => {
+                        if (!json.success) {
+                            window.chOpenWarningModal({
+                                title: 'Notification Unavailable',
+                                message: json.data?.message || 'This notification target is unavailable.',
+                                buttonLabel: 'Okay'
+                            });
+                            return;
+                        }
+
+                        const action = json.data?.action || 'none';
+                        if (action === 'navigate' && json.data?.url) {
+                            window.location.href = json.data.url;
+                            return;
+                        }
+
+                        if (action === 'warning') {
+                            window.chOpenWarningModal({
+                                title: json.data?.title || 'Unavailable',
+                                message: json.data?.message || 'This notification target is unavailable.',
+                                buttonLabel: 'Okay'
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        window.chOpenWarningModal({
+                            title: 'Notification Unavailable',
+                            message: 'We could not open this notification right now.',
+                            buttonLabel: 'Okay'
+                        });
+                    });
             };
 
             window.chMarkAllNotificationsRead = function () {
