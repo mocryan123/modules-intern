@@ -2945,6 +2945,117 @@ function ch_global_styles()
             border-radius: 10px;
         }
 
+        .ch-sidebar-action-row {
+            margin-top: 10px;
+            display: flex;
+        }
+
+        .ch-view-all-btn {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border-radius: var(--ch-radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.1s ease;
+        }
+
+        .ch-view-all-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .ch-view-all-btn:active {
+            transform: translateY(0);
+        }
+
+        .ch-view-all-btn:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--ch-accent) 22%, transparent);
+        }
+
+        .ch-category-modal-overlay {
+            padding: 16px;
+            animation: ch-category-modal-overlay-in 0.18s ease;
+        }
+
+        .ch-modal.ch-modal-category-browser {
+            width: min(680px, calc(100vw - 32px));
+            max-width: 680px;
+            max-height: min(88vh, 760px);
+            margin: 0;
+            will-change: transform, opacity;
+            animation: ch-category-modal-pop-in 0.2s cubic-bezier(0.22, 0.9, 0.36, 1);
+        }
+
+        .ch-category-modal-header {
+            padding: 16px 20px;
+        }
+
+        .ch-category-modal-header h3 {
+            font-size: 17px;
+            letter-spacing: -0.1px;
+        }
+
+        .ch-category-modal-body {
+            padding: 16px 20px 18px;
+            gap: 12px;
+        }
+
+        .ch-category-browser-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .ch-category-browser-list {
+            display: grid;
+            gap: 6px;
+            max-height: none;
+            overflow: visible;
+        }
+
+        .ch-category-browser-list .ch-cat-link {
+            min-height: 40px;
+            padding: 8px 10px;
+        }
+
+        .ch-category-modal-footer {
+            padding: 12px 20px;
+            justify-content: flex-end;
+        }
+
+        .ch-category-modal-close-btn {
+            min-width: 90px;
+        }
+
+        @keyframes ch-category-modal-overlay-in {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes ch-category-modal-pop-in {
+            from {
+                opacity: 0;
+                transform: translateY(8px) scale(0.985);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
         .ch-category-browser-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -8080,6 +8191,54 @@ function ch_global_styles()
 
             .ch-category-browser-list {
                 max-height: 48vh;
+            }
+
+            .ch-view-all-btn {
+                width: 100%;
+                min-height: 44px;
+            }
+
+            .ch-category-modal-overlay {
+                padding: 0;
+                align-items: flex-end;
+            }
+
+            .ch-modal.ch-modal-category-browser {
+                width: 100vw;
+                max-width: none;
+                height: min(92dvh, 100dvh);
+                max-height: 100dvh;
+                border-radius: 16px 16px 0 0;
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+
+            .ch-category-modal-header {
+                position: sticky;
+                top: 0;
+                z-index: 3;
+                padding: 14px 16px;
+            }
+
+            .ch-category-modal-body {
+                padding: 14px 16px 16px;
+            }
+
+            .ch-category-browser-list {
+                max-height: none;
+            }
+
+            .ch-category-modal-footer {
+                position: sticky;
+                bottom: 0;
+                z-index: 3;
+                padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+                justify-content: stretch;
+            }
+
+            .ch-category-modal-close-btn {
+                width: 100%;
+                min-height: 44px;
             }
 
             .ch-search-form button {

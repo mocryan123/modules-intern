@@ -5102,16 +5102,15 @@ function bntm_shortcode_ch_feed()
                         <?php endforeach; ?>
 
                         <?php if ($has_more_categories): ?>
-                            <div style="margin-top:10px;">
-                                <button type="button" class="ch-btn ch-btn-outline ch-btn-full ch-btn-sm"
-                                    onclick="chOpenModal('ch-modal-all-categories')"
-                                    style="font-size:13px;">
+                            <div class="ch-sidebar-action-row ch-sidebar-action-row-categories">
+                                <button type="button" class="ch-btn ch-btn-outline ch-btn-sm ch-view-all-btn"
+                                    onclick="chOpenModal('ch-modal-all-categories')">
                                     <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                         stroke-width="2.4">
                                         <circle cx="12" cy="12" r="9" />
                                         <path d="M12 8v4l3 3" />
                                     </svg>
-                                    View all categories
+                                    <span>View all categories</span>
                                 </button>
                             </div>
                         <?php endif; ?>
@@ -5161,16 +5160,15 @@ function bntm_shortcode_ch_feed()
                                     <?php endforeach; ?>
                                 </div>
                                 <?php if ($has_more_followed): ?>
-                                    <div style="margin-top:10px;">
-                                        <button type="button" class="ch-btn ch-btn-outline ch-btn-full ch-btn-sm"
-                                            onclick="chOpenModal('ch-modal-all-following')"
-                                            style="font-size:13px;">
+                                    <div class="ch-sidebar-action-row ch-sidebar-action-row-following">
+                                        <button type="button" class="ch-btn ch-btn-outline ch-btn-sm ch-view-all-btn"
+                                            onclick="chOpenModal('ch-modal-all-following')">
                                             <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                                 stroke-width="2.4">
                                                 <circle cx="12" cy="12" r="9" />
                                                 <path d="M12 8v4l3 3" />
                                             </svg>
-                                            View all following
+                                            <span>View all following categories</span>
                                         </button>
                                     </div>
                                 <?php endif; ?>
@@ -5202,14 +5200,15 @@ function bntm_shortcode_ch_feed()
                 </aside>
 
                 <?php if ($has_more_categories): ?>
-                    <div id="ch-modal-all-categories" class="ch-modal-overlay" style="display:none;">
-                        <div class="ch-modal ch-modal-lg">
-                            <div class="ch-modal-header">
+                    <div id="ch-modal-all-categories" class="ch-modal-overlay ch-category-modal-overlay" style="display:none;">
+                        <div class="ch-modal ch-modal-lg ch-modal-category-browser">
+                            <div class="ch-modal-header ch-category-modal-header">
                                 <h3>All Categories</h3>
                                 <button class="ch-modal-close" onclick="chCloseModal('ch-modal-all-categories')">&times;</button>
                             </div>
-                            <div class="ch-modal-body">
+                            <div class="ch-modal-body ch-category-modal-body">
                                 <div class="ch-category-browser-section">
+                                    <h4>All categories</h4>
                                     <div class="ch-category-browser-list">
                                         <?php foreach ($sidebar_visible_categories as $cat): ?>
                                             <a href="?cat=<?php echo esc_attr($cat->slug); ?>"
@@ -5234,19 +5233,24 @@ function bntm_shortcode_ch_feed()
                                     </div>
                                 </div>
                             </div>
+                            <div class="ch-modal-footer ch-category-modal-footer">
+                                <button type="button" class="ch-btn ch-btn-secondary ch-btn-sm ch-category-modal-close-btn"
+                                    onclick="chCloseModal('ch-modal-all-categories')">Close</button>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>
 
                 <?php if ($user_id && $has_more_followed): ?>
-                    <div id="ch-modal-all-following" class="ch-modal-overlay" style="display:none;">
-                        <div class="ch-modal ch-modal-lg">
-                            <div class="ch-modal-header">
+                    <div id="ch-modal-all-following" class="ch-modal-overlay ch-category-modal-overlay" style="display:none;">
+                        <div class="ch-modal ch-modal-lg ch-modal-category-browser">
+                            <div class="ch-modal-header ch-category-modal-header">
                                 <h3>All Following Categories</h3>
                                 <button class="ch-modal-close" onclick="chCloseModal('ch-modal-all-following')">&times;</button>
                             </div>
-                            <div class="ch-modal-body">
+                            <div class="ch-modal-body ch-category-modal-body">
                                 <div class="ch-category-browser-section">
+                                    <h4>Following</h4>
                                     <div class="ch-category-browser-list">
                                         <?php foreach ($followed_safe as $cat_id => $dummy): ?>
                                             <?php $cat = $categories_by_id[(int) $cat_id] ?? null; ?>
@@ -5263,6 +5267,10 @@ function bntm_shortcode_ch_feed()
                                         <?php endforeach; ?>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="ch-modal-footer ch-category-modal-footer">
+                                <button type="button" class="ch-btn ch-btn-secondary ch-btn-sm ch-category-modal-close-btn"
+                                    onclick="chCloseModal('ch-modal-all-following')">Close</button>
                             </div>
                         </div>
                     </div>
