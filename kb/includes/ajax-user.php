@@ -350,12 +350,12 @@ function bntm_ajax_kbf_create_fund() {
     global $wpdb;$table=$wpdb->prefix.'kbf_funds';
     $biz=get_current_user_id();
     if (!kbf_require_onboarding_complete($biz)) { return; }
-    $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? $_POST['location_full'] : (isset($_POST['location']) ? $_POST['location'] : '');
+    $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? wp_unslash($_POST['location_full']) : (isset($_POST['location']) ? wp_unslash($_POST['location']) : '');
     if (empty($location_full)) {
         $parts = [];
-        if (!empty($_POST['barangay'])) $parts[] = sanitize_text_field($_POST['barangay']);
-        if (!empty($_POST['municipality'])) $parts[] = sanitize_text_field($_POST['municipality']);
-        if (!empty($_POST['province'])) $parts[] = sanitize_text_field($_POST['province']);
+        if (!empty($_POST['barangay'])) $parts[] = sanitize_text_field(wp_unslash($_POST['barangay']));
+        if (!empty($_POST['municipality'])) $parts[] = sanitize_text_field(wp_unslash($_POST['municipality']));
+        if (!empty($_POST['province'])) $parts[] = sanitize_text_field(wp_unslash($_POST['province']));
         if (!empty($parts)) $location_full = implode(', ', $parts);
     }
     foreach(['title','description','goal_amount','email','phone','category','funder_type','deadline'] as $f) {
@@ -363,7 +363,7 @@ function bntm_ajax_kbf_create_fund() {
     }
     if (empty($location_full)) wp_send_json_error(['message'=>'Please fill all required fields.']);
     $goal=floatval($_POST['goal_amount']);
-    $deadline = sanitize_text_field($_POST['deadline'] ?? '');
+    $deadline = sanitize_text_field(wp_unslash($_POST['deadline'] ?? ''));
     if(!$deadline) wp_send_json_error(['message'=>'Please fill all required fields.']);
     $min_deadline = strtotime('+7 days', current_time('timestamp'));
     if(strtotime($deadline) < $min_deadline) {
@@ -405,15 +405,15 @@ function bntm_ajax_kbf_create_fund() {
     $res=$wpdb->insert($table,[
         'rand_id'       =>bntm_rand_id(),
         'business_id'   =>$biz,
-        'funder_type'   =>sanitize_text_field($_POST['funder_type']),
-        'title'         =>sanitize_text_field($_POST['title']),
-        'description'   =>sanitize_textarea_field($_POST['description']),
+        'funder_type'   =>sanitize_text_field(wp_unslash($_POST['funder_type'])),
+        'title'         =>sanitize_text_field(wp_unslash($_POST['title'])),
+        'description'   =>sanitize_textarea_field(wp_unslash($_POST['description'])),
         'photos'        =>!empty($photo_urls)?json_encode($photo_urls):null,
         'benefits'      =>$benefits_json,
         'goal_amount'   =>$goal,
-        'category'      =>sanitize_text_field($_POST['category']),
-        'email'         =>sanitize_email($_POST['email']),
-        'phone'         =>sanitize_text_field($_POST['phone']),
+        'category'      =>sanitize_text_field(wp_unslash($_POST['category'])),
+        'email'         =>sanitize_email(wp_unslash($_POST['email'])),
+        'phone'         =>sanitize_text_field(wp_unslash($_POST['phone'])),
         'location'      =>sanitize_text_field($location_full),
         'auto_return'   =>isset($_POST['auto_return'])?1:0,
         'deadline'      =>$deadline,
@@ -441,7 +441,7 @@ function bntm_ajax_kbf_create_fund() {
         kbf_notify_admin_users([
             'type' => 'admin_new_pending_fund',
             'title' => 'New fund pending review',
-            'message' => sanitize_text_field($_POST['title']),
+            'message' => sanitize_text_field(wp_unslash($_POST['title'])),
             'url' => add_query_arg(['kbf_tab' => 'pending'], $dashboard_url),
             'target_id' => (string)((int)$wpdb->insert_id),
         ]);
@@ -463,8 +463,8 @@ function bntm_ajax_kbf_update_fund() {
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$t} WHERE id=%d AND business_id=%d",$id,$biz));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found.']);
     if(!in_array($fund->status, ['pending', 'active'])) wp_send_json_error(['message'=>'Only pending or active funds can be updated.']);
-    $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? $_POST['location_full'] : (isset($_POST['location']) ? $_POST['location'] : '');
-    $deadline = !empty($_POST['deadline']) ? sanitize_text_field($_POST['deadline']) : null;
+    $location_full = isset($_POST['location_full']) && $_POST['location_full'] !== '' ? wp_unslash($_POST['location_full']) : (isset($_POST['location']) ? wp_unslash($_POST['location']) : '');
+    $deadline = !empty($_POST['deadline']) ? sanitize_text_field(wp_unslash($_POST['deadline'])) : null;
     if ($deadline) {
         $min_deadline = strtotime('+7 days', current_time('timestamp'));
         if(strtotime($deadline) < $min_deadline) {
@@ -472,8 +472,8 @@ function bntm_ajax_kbf_update_fund() {
         }
     }
     $data=[
-        'title'=>sanitize_text_field($_POST['title']),
-        'description'=>sanitize_textarea_field($_POST['description']),
+        'title'=>sanitize_text_field(wp_unslash($_POST['title'])),
+        'description'=>sanitize_textarea_field(wp_unslash($_POST['description'])),
         'location'=>sanitize_text_field($location_full),
         'deadline'=>$deadline,
         'auto_return'=>isset($_POST['auto_return']) ? 1 : 0
