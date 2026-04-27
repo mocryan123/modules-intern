@@ -1220,6 +1220,12 @@ function bae_wizard_shortcode($user_id) {
                 .then(function(r){ return r.json(); })
                 .then(function(data) {
                     if (data && data.success) {
+                        var d = data.data || {};
+                        // Admin ticket — redirect to admin panel
+                        if (d.is_admin) {
+                            window.location.href = window.location.pathname + '?bae=admin';
+                            return;
+                        }
                         // Set ticket cookie then reload
                         var exp = new Date(); exp.setFullYear(exp.getFullYear() + 1);
                         document.cookie = 'bae_ticket=' + encodeURIComponent(ticket) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
