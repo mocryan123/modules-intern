@@ -9067,8 +9067,10 @@ function ch_global_scripts()
                 document.body.appendChild(bar);
 
                 let _navTimer = null;
+                let _barActive = false;
 
                 function chStartNavBar() {
+                    _barActive = true;
                     bar.style.transition = 'width 0.25s ease, opacity 0.1s ease';
                     bar.style.opacity = '1';
                     bar.style.width = '0%';
@@ -9080,9 +9082,21 @@ function ch_global_scripts()
                 }
 
                 function chFinishNavBar() {
+                    if (!_barActive) return;
+                    _barActive = false;
                     bar.style.transition = 'width 0.2s ease, opacity 0.5s ease 0.2s';
                     bar.style.width = '100%';
                     setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => { bar.style.width = '0%'; }, 500); }, 200);
+                }
+
+                function chSyncNavBarWithFullPageLoader() {
+                    const hasPendingClass = document.documentElement.classList.contains('ch-ui-pending');
+                    const pending = hasPendingClass || window.__chUiPending === true;
+                    if (pending) {
+                        chStartNavBar();
+                    } else {
+                        chFinishNavBar();
+                    }
                 }
 
                 // Hook all same-page navigation links (tab navigation)
@@ -9108,6 +9122,9 @@ function ch_global_scripts()
 
                 // If page was loaded (e.g. from back/forward), finish any lingering bar
                 window.addEventListener('pageshow', chFinishNavBar);
+                window.addEventListener('ch:ui-pending', chStartNavBar);
+                window.addEventListener('ch:ui-ready', chFinishNavBar);
+                chSyncNavBarWithFullPageLoader();
 
                 // Expose globally for AJAX-triggered reloads
                 window.chNavBarStart = chStartNavBar;
@@ -11155,6 +11172,7 @@ function ch_feed_scripts()
             if (!list) return;
 
             function chFeedRequest(params, onSuccess) {
+                if (window.chNavBarStart) window.chNavBarStart();
                 list.style.opacity = '0.45';
                 list.style.pointerEvents = 'none';
 
@@ -11192,6 +11210,7 @@ function ch_feed_scripts()
                     .finally(function () {
                         list.style.opacity = '';
                         list.style.pointerEvents = '';
+                        if (window.chNavBarFinish) window.chNavBarFinish();
                     });
             }
 
@@ -11255,6 +11274,7 @@ function ch_feed_scripts()
             if (!list || !tabs) return;
 
             function loadFeedResults(nextState) {
+                if (window.chNavBarStart) window.chNavBarStart();
                 list.style.opacity = '0.45';
                 list.style.pointerEvents = 'none';
 
@@ -11307,6 +11327,7 @@ function ch_feed_scripts()
                     .finally(function () {
                         list.style.opacity = '';
                         list.style.pointerEvents = '';
+                        if (window.chNavBarFinish) window.chNavBarFinish();
                     });
             }
 

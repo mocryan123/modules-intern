@@ -4863,6 +4863,7 @@ function bntm_shortcode_ch_feed()
                             <h4>🔥 Hot Categories</h4>
                             <?php foreach ($trending_cats as $tcat): ?>
                                 <a href="?cat=<?php echo esc_attr($tcat->slug); ?>" class="ch-cat-link"
+                                    data-cat-slug="<?php echo esc_attr($tcat->slug); ?>"
                                     style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
                                     <span style="display:flex;align-items:center;gap:6px;">
                                         <span class="ch-cat-dot" style="background:<?php echo esc_attr($tcat->color); ?>"></span>

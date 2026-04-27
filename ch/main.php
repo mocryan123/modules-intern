@@ -602,7 +602,7 @@ add_action('wp_enqueue_scripts', function() {
 add_action('wp_head', function() {
     if (!bntm_ch_is_frontend_context()) return;
     // Critical FOUC prevention and full-viewport loader.
-    echo '<script>(function(){var d=document.documentElement;d.classList.add("ch-ui-pending");try{if(localStorage.getItem("ch_dark_mode")==="1"){d.classList.add("ch-dark");}}catch(e){}})();</script>';
+    echo '<script>(function(){var d=document.documentElement;d.classList.add("ch-ui-pending");window.__chUiPending=true;try{if(localStorage.getItem("ch_dark_mode")==="1"){d.classList.add("ch-dark");}}catch(e){}if(window.dispatchEvent){window.dispatchEvent(new CustomEvent("ch:ui-pending"));}})();</script>';
     echo '<style>
 html.ch-ui-pending,html.ch-ui-pending body{overflow:hidden}
 html body{visibility:visible!important}
@@ -634,6 +634,10 @@ add_action('wp_head', function() {
             revealed = true;
             docEl.classList.remove('ch-ui-pending');
             docEl.classList.add('ch-ui-ready');
+            window.__chUiPending = false;
+            if (window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('ch:ui-ready'));
+            }
         }
 
         function chFinalizeReveal(force) {
