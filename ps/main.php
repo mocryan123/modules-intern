@@ -391,30 +391,53 @@ function bntm_shortcode_ps_dashboard() {
         overlay.addEventListener('click', function(e) { if (e.target === overlay) psCloseModal(); });
 
         // ── Real-time Notification Bell ──
-        const bellBtn = document.getElementById('ps-notification-bell');
-        const bellPanel = document.getElementById('ps-notification-panel');
+        const bellBtn     = document.getElementById('ps-notification-bell');
+        const bellPanel   = document.getElementById('ps-notification-panel');
         const bellWrapper = document.getElementById('ps-notification-bell-wrapper');
-        const bellBadge = document.getElementById('ps-notification-badge');
+        const bellBadge   = document.getElementById('ps-notification-badge');
         const notifyItems = document.getElementById('ps-notification-items');
-        let lastCheckTime = new Date().getTime();
         let notificationCount = 0;
         let isMobileView = window.innerWidth <= 768;
 
-        // Detect screen size changes
-        window.addEventListener('resize', function() {
-            isMobileView = window.innerWidth <= 768;
-        });
+        window.addEventListener('resize', function() { isMobileView = window.innerWidth <= 768; });
 
-        // Persist read order IDs across tab navigation using sessionStorage
+        // ── Persistence helpers (localStorage survives reloads and tab closes) ──
+        const LS_READ   = 'ps_read_order_ids';
+        const LS_ORDERS = 'ps_cached_orders';
+        const LS_TIME   = 'ps_last_check_time';
+
         function loadReadIds() {
-            try { return new Set(JSON.parse(sessionStorage.getItem('ps_read_order_ids') || '[]')); }
+            try { return new Set(JSON.parse(localStorage.getItem(LS_READ) || '[]')); }
             catch(e) { return new Set(); }
         }
         function saveReadIds() {
-            try { sessionStorage.setItem('ps_read_order_ids', JSON.stringify([...readOrderIds])); }
+            try { localStorage.setItem(LS_READ, JSON.stringify([...readOrderIds])); }
             catch(e) {}
         }
-        let readOrderIds = loadReadIds();
+        function loadCachedOrders() {
+            try { return JSON.parse(localStorage.getItem(LS_ORDERS) || '[]'); }
+            catch(e) { return []; }
+        }
+        function saveCachedOrders(orders) {
+            try { localStorage.setItem(LS_ORDERS, JSON.stringify(orders)); }
+            catch(e) {}
+        }
+        // Restore lastCheckTime from localStorage so we never re-fetch already-seen orders.
+        // First-ever load defaults to 24 hours ago so today's orders are shown immediately.
+        function loadLastCheckTime() {
+            try {
+                const saved = localStorage.getItem(LS_TIME);
+                if (saved) return parseInt(saved, 10);
+            } catch(e) {}
+            return new Date().getTime() - (24 * 60 * 60 * 1000);
+        }
+        function saveLastCheckTime(t) {
+            try { localStorage.setItem(LS_TIME, String(t)); }
+            catch(e) {}
+        }
+
+        let readOrderIds  = loadReadIds();
+        let lastCheckTime = loadLastCheckTime();
 
         function markOrderRead(orderId) {
             const id = String(orderId);
@@ -538,11 +561,22 @@ function bntm_shortcode_ps_dashboard() {
             })
             .then(r => r.json())
             .then(res => {
-                // Always advance the clock so we never re-fetch the same window
+                // Always advance the clock and persist it
                 lastCheckTime = new Date().getTime();
+                saveLastCheckTime(lastCheckTime);
                 if (res.success && res.data.orders && res.data.orders.length > 0) {
-                    const unreadOrders = res.data.orders.filter(o => !readOrderIds.has(String(o.id)));
-                    updateNotificationPanel(res.data.orders);
+                    // Merge new orders with cached ones, deduplicate by id, keep latest 20
+                    const existing  = loadCachedOrders();
+                    const existMap  = {};
+                    existing.forEach(o => existMap[o.id] = o);
+                    res.data.orders.forEach(o => existMap[o.id] = o);
+                    const merged = Object.values(existMap)
+                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                        .slice(0, 20);
+                    saveCachedOrders(merged);
+
+                    const unreadOrders = merged.filter(o => !readOrderIds.has(String(o.id)));
+                    updateNotificationPanel(merged);
                     if (unreadOrders.length > 0) {
                         notificationCount = unreadOrders.length;
                         bellBadge.textContent = notificationCount;
@@ -653,6 +687,20 @@ function bntm_shortcode_ps_dashboard() {
                 alert('Error loading order details');
             });
         }
+
+        // ── Restore panel from cache immediately on load (no flash/wait) ──
+        (function restoreFromCache() {
+            const cached = loadCachedOrders();
+            if (cached.length > 0) {
+                updateNotificationPanel(cached);
+                const unread = cached.filter(o => !readOrderIds.has(String(o.id)));
+                if (unread.length > 0) {
+                    notificationCount = unread.length;
+                    bellBadge.textContent = notificationCount;
+                    bellBadge.style.display = 'flex';
+                }
+            }
+        })();
 
         // Start polling
         startPolling();
