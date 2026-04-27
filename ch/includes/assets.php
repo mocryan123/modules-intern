@@ -6816,15 +6816,9 @@ function ch_global_styles()
                 order: 1;
             }
 
+            /* Keep drawer-only auth/profile controls off desktop headers. */
             .ch-top-nav .ch-mobile-drawer-wrap>.ch-user-bar {
-                position: absolute;
-                right: 0px;
-                padding: 10px;
-            }
-
-            .ch-top-nav .ch-mobile-drawer-wrap>.ch-user-bar .ch-profile-dropdown {
-                display: flex;
-                align-items: center;
+                display: none !important;
             }
         }
 
