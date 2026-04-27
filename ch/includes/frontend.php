@@ -5550,28 +5550,29 @@ function bntm_shortcode_ch_feed()
                                         </div>
                                     <?php endif; ?>
                                     <div class="ch-post-vote-col">
-                                        <?php if ($user_id):
-                                            $uv = $user_post_votes[$post->id] ?? 0; ?>
-                                            <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>"
-                                                data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="1"
-                                                onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
-                                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                                    stroke-width="2.5">
-                                                    <polyline points="18 15 12 9 6 15" />
-                                                </svg>
-                                            </button>
-                                        <?php endif; ?>
+                                        <?php 
+                                            $uv = $user_id ? ($user_post_votes[$post->id] ?? 0) : 0;
+                                            $vote_click = $user_id 
+                                                ? "onclick=\"chVote(this, '" . esc_attr($nonce) . "')\"" 
+                                                : "onclick=\"window.location.href='" . esc_url(ch_get_auth_url('login')) . "'\"";
+                                        ?>
+                                        <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>"
+                                            data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="1"
+                                            <?php echo $vote_click; ?>>
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                stroke-width="2.5">
+                                                <polyline points="18 15 12 9 6 15" />
+                                            </svg>
+                                        </button>
                                         <span class="ch-vote-count"><?php echo (int) $post->vote_count; ?></span>
-                                        <?php if ($user_id): ?>
-                                            <button class="ch-vote-btn ch-vote-down <?php echo $uv === -1 ? 'active-down' : ''; ?>"
-                                                data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="-1"
-                                                onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
-                                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                                    stroke-width="2.5">
-                                                    <polyline points="6 9 12 15 18 9" />
-                                                </svg>
-                                            </button>
-                                        <?php endif; ?>
+                                        <button class="ch-vote-btn ch-vote-down <?php echo $uv === -1 ? 'active-down' : ''; ?>"
+                                            data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="-1"
+                                            <?php echo $vote_click; ?>>
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                stroke-width="2.5">
+                                                <polyline points="6 9 12 15 18 9" />
+                                            </svg>
+                                        </button>
                                     </div>
                                     <div class="ch-post-body">
                                         <div class="ch-post-meta-row">
@@ -6918,30 +6919,32 @@ function bntm_shortcode_ch_post_view()
                     <?php endif; ?>
 
                     <div class="ch-post-vote-bar">
-                        <?php if ($user_id): ?>
-                            <button class="ch-vote-btn-lg ch-vote-up <?php echo $user_vote_on_post === 1 ? 'active-up' : ''; ?>"
-                                data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="1"
-                                onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
-                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    stroke-width="2.5">
-                                    <polyline points="18 15 12 9 6 15" />
-                                </svg>
-                                Upvote
-                            </button>
-                        <?php endif; ?>
+                        <?php 
+                            $uv_single = $user_id ? ($user_vote_on_post ?? 0) : 0;
+                            $vote_click_single = $user_id 
+                                ? "onclick=\"chVote(this, '" . esc_attr($nonce) . "')\"" 
+                                : "onclick=\"window.location.href='" . esc_url(ch_get_auth_url('login')) . "'\"";
+                        ?>
+                        <button class="ch-vote-btn-lg ch-vote-up <?php echo $uv_single === 1 ? 'active-up' : ''; ?>"
+                            data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="1"
+                            <?php echo $vote_click_single; ?>>
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2.5">
+                                <polyline points="18 15 12 9 6 15" />
+                            </svg>
+                            Upvote
+                        </button>
                         <span class="ch-vote-score" id="ch-post-score"><?php echo (int) $post->vote_count; ?> points</span>
-                        <?php if ($user_id): ?>
-                            <button
-                                class="ch-vote-btn-lg ch-vote-down <?php echo $user_vote_on_post === -1 ? 'active-down' : ''; ?>"
-                                data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="-1"
-                                onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
-                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                    stroke-width="2.5">
-                                    <polyline points="6 9 12 15 18 9" />
-                                </svg>
-                                Downvote
-                            </button>
-                        <?php endif; ?>
+                        <button
+                            class="ch-vote-btn-lg ch-vote-down <?php echo $uv_single === -1 ? 'active-down' : ''; ?>"
+                            data-id="<?php echo (int) $post->id; ?>" data-type="post" data-val="-1"
+                            <?php echo $vote_click_single; ?>>
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                stroke-width="2.5">
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                            Downvote
+                        </button>
                         <button class="ch-vote-btn-lg ch-share-btn" onclick="chOpenModal('ch-modal-share-post')">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 stroke-width="2">

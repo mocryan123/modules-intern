@@ -879,17 +879,18 @@ function bntm_ajax_ch_feed_sort() {
                 </div>
                 <?php endif; ?>
                 <div class="ch-post-vote-col">
-                    <?php if ($user_id): ?>
-                    <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                    <?php 
+                        $vote_click = $user_id 
+                            ? "onclick=\"chVote(this, '" . esc_attr($nonce) . "')\"" 
+                            : "onclick=\"window.location.href='" . esc_url(ch_get_auth_url('login')) . "'\"";
+                    ?>
+                    <button class="ch-vote-btn ch-vote-up <?php echo $uv === 1 ? 'active-up' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="1" <?php echo $vote_click; ?>>
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
                     </button>
-                    <?php endif; ?>
                     <span class="ch-vote-count"><?php echo (int)$post->vote_count; ?></span>
-                    <?php if ($user_id): ?>
-                    <button class="ch-vote-btn ch-vote-down <?php echo $uv === -1 ? 'active-down' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="-1" onclick="chVote(this, '<?php echo esc_attr($nonce); ?>')">
+                    <button class="ch-vote-btn ch-vote-down <?php echo $uv === -1 ? 'active-down' : ''; ?>" data-id="<?php echo (int)$post->id; ?>" data-type="post" data-val="-1" <?php echo $vote_click; ?>>
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
-                    <?php endif; ?>
                 </div>
                 <div class="ch-post-body">
                     <div class="ch-post-meta-row">
