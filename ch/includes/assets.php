@@ -3998,6 +3998,8 @@ function ch_global_styles()
         }
 
         .ch-media-lightbox-image {
+            width: min(100%, 960px);
+            height: auto;
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
