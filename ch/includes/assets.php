@@ -2912,6 +2912,13 @@ function ch_global_styles()
             justify-content: space-between;
         }
 
+        .ch-cat-name {
+            flex: 1 1 auto;
+            min-width: 0;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+        }
+
         .ch-cat-link:hover {
             background: var(--ch-bg);
             color: var(--ch-text);
@@ -10191,6 +10198,7 @@ function ch_feed_scripts()
 
             window.chToggleFollowCategory = function (categoryId, btn, nonce) {
                 if (btn) btn.disabled = true;
+                const followCategoryLimit = parseInt(window.chFollowedCategoryLimit || 8, 10);
                 const fd = new FormData();
                 fd.append('action', 'ch_follow_category');
                 fd.append('category_id', categoryId);
@@ -10240,8 +10248,12 @@ function ch_feed_scripts()
                                 a.className = 'ch-cat-link';
                                 a.style.fontSize = '14px';
                                 a.setAttribute('data-followed-cat-id', String(categoryId));
-                                a.innerHTML = '<span class="ch-cat-dot" style="background:' + catColor + '"></span>' + catName;
-                                followedList.appendChild(a);
+                                a.innerHTML = '<span class="ch-cat-dot" style="background:' + catColor + '"></span><span class="ch-cat-name">' + catName + '</span>';
+                                followedList.insertBefore(a, followedList.firstChild || null);
+
+                                while (followedList.querySelectorAll('a[data-followed-cat-id]').length > followCategoryLimit) {
+                                    followedList.removeChild(followedList.lastElementChild);
+                                }
                             }
                             if (!following && existing) {
                                 existing.remove();
