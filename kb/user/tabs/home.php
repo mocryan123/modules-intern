@@ -498,6 +498,33 @@
             inset 0 0 0 1px #bfdbfe,
             0 8px 18px rgba(59,130,246,.16);
         }
+        /* Keep Home more-menu typography and spacing aligned with Fund Details */
+        .kbf-card-more-menu button{
+          font-size:12.5px !important;
+          font-weight:600 !important;
+          color:#0f172a !important;
+          gap:0 !important;
+        }
+        .kbf-card-more-menu .kbf-btn,
+        .kbf-card-more-menu .kbf-btn-secondary,
+        .kbf-card-more-menu .kbf-btn-sm{
+          background:transparent !important;
+          border:0 !important;
+          box-shadow:none !important;
+        }
+        .kbf-card-more-menu button:hover,
+        .kbf-card-more-menu button:focus-visible,
+        .kbf-card-more-menu .kbf-btn:hover,
+        .kbf-card-more-menu .kbf-btn-secondary:hover,
+        .kbf-card-more-menu .kbf-btn-sm:hover{
+          background:linear-gradient(90deg,#e7f1ff 0%, #edf5ff 60%, #f8fbff 100%) !important;
+          color:#0f172a !important;
+          box-shadow:inset 0 0 0 1px #bfdbfe, 0 8px 18px rgba(59,130,246,.16) !important;
+          transform:none !important;
+        }
+        .kbf-card-more-menu button .kbf-icon{
+          display:none !important;
+        }
       </style>
       <style>
         .kbf-sponsor-details{border-top:1px solid var(--kbf-border);margin-top:14px;}
@@ -653,7 +680,7 @@
          <h3 class="kbf-section-title">Dashboard Overview</h3>
           <button class="kbf-btn kbf-btn-primary kbf-btn-sm" style="padding:0 14px;" onclick="kbfOpenModal('kbf-modal-create')">
             <i class="ph ph-plus kbf-icon" style="font-size:12px; color:#ffffff;" aria-hidden="true"></i>
-            Create Fund
+            Create Campaign
           </button>
         </div>
       <?php if($pending_funds > 0): ?>
@@ -664,7 +691,7 @@
           </span>
           <span class="kbf-strong"><?php echo $pending_funds; ?> fund<?php echo $pending_funds>1?'s':''; ?> under review.</span>
           Not visible to sponsors yet. Usually 3-5 days. You'll be notified after approval.
-          <span style="margin-left:6px;font-weight:700;">View all funds below.</span>
+          <span style="margin-left:6px;font-weight:700;">View all campaigns below.</span>
         </div>
       </div>
       <?php endif; ?>
@@ -673,7 +700,7 @@
           <div class="kbf-stat-icon kbf-stat-icon--plain">
             <i class="ph ph-cards-three kbf-stat-icon-img kbf-icon" style="font-size:20px" aria-hidden="true"></i>
           </div>
-          <div><div class="kbf-stat-label">Total Funds</div><div class="kbf-stat-value"><?php echo $total_funds; ?></div></div>
+          <div><div class="kbf-stat-label">Total Campaign</div><div class="kbf-stat-value"><?php echo $total_funds; ?></div></div>
         </div>
         <div class="kbf-stat">
           <div class="kbf-stat-icon kbf-stat-icon--plain">
@@ -696,7 +723,7 @@
       </div>
 
       <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;">
-        <h3 class="kbf-section-title">All My Funds</h3>
+        <h3 class="kbf-section-title">All My Campaigns</h3>
         <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
             <button type="button" class="kbf-btn kbf-btn-secondary kbf-home-filter-btn" onclick="kbfHomeOpenSheet()">
               <i class="ph ph-sliders kbf-icon" style="font-size:14px" aria-hidden="true"></i>
@@ -1065,7 +1092,7 @@
       <div class="kbf-cta-card">
         <div>
           <div class="kbf-cta-eyebrow">Next Step</div>
-          <div class="kbf-cta-title">Launch your next fundraiser</div>
+          <div class="kbf-cta-title" style="font-weight:600;">Launch your next fundraiser</div>
           <div class="kbf-cta-sub">Create a new fund to mobilize support. Keep updates consistent to build trust and improve conversion.</div>
           <div class="kbf-cta-checklist">
             <div class="kbf-cta-check">
@@ -1090,13 +1117,13 @@
           <div class="kbf-cta-actions">
             <button class="kbf-btn kbf-btn-primary" onclick="kbfOpenModal('kbf-modal-create')">
               <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              Start a Fundraiser
+              Start a Campaign
             </button>
             <a class="kbf-btn kbf-btn-secondary" href="<?php echo esc_url($find_funds_url); ?>">
-              Browse Funds
+              Browse Campaign
             </a>
           </div>
-          <div class="kbf-cta-note">Start a fund in under 3 minutes. We'll guide you step-by-step.</div>
+          <div class="kbf-cta-note">Start a Campaign in under 3 minutes. We'll guide you step-by-step.</div>
         </div>
       </div>
       

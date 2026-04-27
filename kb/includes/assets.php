@@ -1684,6 +1684,26 @@ function kbf_global_assets() {
     .kbf-share-box{background:#fff;border-radius:14px;padding:28px;max-width:420px;width:100%;box-shadow: none;font-family:'Poppins',system-ui,-apple-system,sans-serif;}
     .kbf-share-box input,
     .kbf-share-box button{font-family:inherit;}
+    #kbf-share-modal .kbf-modal-close{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      border:1px solid #94a3b859;
+      background:#fff;
+      color:#64748b;
+      font-size:18px;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    #kbf-share-modal .kbf-modal-close:hover{
+      transform:translateY(-1px);
+      border-color:#3b82f680;
+      box-shadow:0 10px 22px #0f172a1f;
+    }
     .kbf-share-url-row{display:flex;gap:8px;margin:16px 0;}
     .kbf-share-url-input{flex:1;padding:10px 14px;border:1.5px solid var(--kbf-border);border-radius:8px;font-size:13px;color:var(--kbf-text);background:var(--kbf-slate-lt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .kbf-share-platforms{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px;}
@@ -2065,15 +2085,15 @@ function kbf_global_assets() {
     <div id="kbf-share-modal" class="kbf-share-modal-overlay" style="display:none;" onclick="if(event.target===this)kbfCloseShare()">
       <div class="kbf-share-box">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <h3 style="font-size:17px;font-weight:800;color:var(--kbf-navy);margin:0;">Share This Fund</h3>
-          <button onclick="kbfCloseShare()" style="background:none;border:none;cursor:pointer;color:var(--kbf-slate);font-size:22px;line-height:1;padding:0;">&times;</button>
+          <h3 style="font-size:17px;font-weight:400;color:var(--kbf-navy);margin:0;">Share this Campaign</h3>
+          <button type="button" class="kbf-modal-close" onclick="kbfCloseShare()" aria-label="Close share modal">&times;</button>
         </div>
 
         <p id="kbf-share-fund-title" style="font-size:13px;color:var(--kbf-slate);margin:0 0 4px;"></p>
         <div class="kbf-share-url-row">
           <input type="text" id="kbf-share-url-input" class="kbf-share-url-input" readonly>
           <button id="kbf-copy-btn" onclick="kbfCopyShareUrl()" class="kbf-btn kbf-btn-primary" style="padding:10px 16px;white-space:nowrap;flex-shrink:0;">
-            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <i class="ph ph-copy kbf-icon" style="font-size:14px;" aria-hidden="true"></i>
             Copy
           </button>
         </div>
@@ -2183,7 +2203,7 @@ function kbf_global_assets() {
         const shareText = 'Support this fundraiser: "' + _kbfShareTitle + '"\n\n' + shareBody + '\n\nLearn more here:\n' + _kbfShareUrl;
         document.getElementById('kbf-share-url-input').value = _kbfShareUrl;
         document.getElementById('kbf-share-fund-title').textContent = '"' + _kbfShareTitle + '"';
-        document.getElementById('kbf-copy-btn').innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copy';
+        document.getElementById('kbf-copy-btn').innerHTML = '<i class="ph ph-copy kbf-icon" style="font-size:14px;" aria-hidden="true"></i> Copy';
         // Facebook: sharer pre-fills the URL in the post composer -- add quote param for caption text
         const fbQuote = 'Support this fundraiser: "' + _kbfShareTitle + '"' + (_kbfShareDesc ? '\n\n' + _kbfShareDesc : '');
         const fbUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(_kbfShareUrl) + '&quote=' + encodeURIComponent(fbQuote);
@@ -2213,9 +2233,9 @@ function kbf_global_assets() {
         const btn   = document.getElementById('kbf-copy-btn');
         if(navigator.clipboard) {
             navigator.clipboard.writeText(_kbfShareUrl).then(function() {
-                btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Copied!';
+                btn.innerHTML = '<i class="ph ph-check kbf-icon" style="font-size:14px;" aria-hidden="true"></i> Copied!';
                 btn.style.background = 'var(--kbf-green)';
-                setTimeout(function(){ btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg> Copy'; btn.style.background = ''; }, 2500);
+                setTimeout(function(){ btn.innerHTML = '<i class="ph ph-copy kbf-icon" style="font-size:14px;" aria-hidden="true"></i> Copy'; btn.style.background = ''; }, 2500);
             });
         } else {
             input.select();

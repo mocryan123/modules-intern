@@ -821,7 +821,7 @@ function kbf_dashboard_find_funds_tab() {
         margin-top:2px;
       }
       .kbf-explore-amount{
-        font-weight:800;
+        font-weight:600;
         color:#1f2a44;
         font-size:13.5px;
       }

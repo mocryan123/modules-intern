@@ -128,6 +128,37 @@ function bntm_shortcode_kbf_organizer_profile() {
     if(!$user) return bntm_universal_container('Organizer Profile','<div class="kbf-wrap"><div class="kbf-alert kbf-alert-error">Organizer not found.</div></div>', ['show_topbar'=>false,'show_header'=>false]);
     $funds=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$ft} WHERE business_id=%d AND status IN ('active','completed') AND (status!='active' OR deadline IS NULL OR deadline > NOW()) ORDER BY created_at DESC LIMIT 50",$biz_id));
     $reviews=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$rt} WHERE organizer_id=%d ORDER BY created_at DESC LIMIT 50",$biz_id));
+    $review_public_names = [];
+    if (!empty($reviews)) {
+        $review_emails = array_values(array_filter(array_unique(array_map(function($r){
+            return strtolower(trim((string)($r->sponsor_email ?? '')));
+        }, $reviews))));
+        if (!empty($review_emails)) {
+            $email_placeholders = implode(',', array_fill(0, count($review_emails), '%s'));
+            $user_rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT u.user_email, u.display_name, um.meta_value AS social_name
+                 FROM {$wpdb->users} u
+                 LEFT JOIN {$wpdb->usermeta} um
+                   ON um.user_id = u.ID AND um.meta_key = 'kbf_social_name'
+                 WHERE u.user_email IN ({$email_placeholders})",
+                $review_emails
+            ));
+            foreach ($user_rows as $urow) {
+                $email_key = strtolower(trim((string)$urow->user_email));
+                if ($email_key !== '') {
+                    $social_name = trim((string)($urow->social_name ?? ''));
+                    $display_name = trim((string)($urow->display_name ?? ''));
+                    if ($social_name !== '') {
+                        $social_core = ltrim($social_name, '@');
+                        $first_char = function_exists('mb_substr') ? mb_substr($social_core, 0, 1, 'UTF-8') : substr($social_core, 0, 1);
+                        $review_public_names[$email_key] = '@' . ($first_char !== '' ? $first_char : 'u') . '****';
+                    } else {
+                        $review_public_names[$email_key] = $display_name;
+                    }
+                }
+            }
+        }
+    }
     $sponsor_counts = [];
     $fund_ids = [];
     if (!empty($funds)) {
@@ -173,6 +204,23 @@ function bntm_shortcode_kbf_organizer_profile() {
     <!-- ================== HTML ================== -->
     <div class="kbf-wrap">
       <style>
+        #kbf-modal-rating .kbf-modal-header{
+          display:grid;
+          grid-template-columns:minmax(0,1fr) auto;
+          align-items:start;
+          column-gap:12px;
+          row-gap:2px;
+        }
+        #kbf-modal-rating .kbf-modal-header h3{
+          margin:0;
+          line-height:1.25;
+        }
+        #kbf-modal-rating .kbf-modal-header p{
+          margin:0;
+          grid-column:1 / -1;
+          max-width:480px;
+          line-height:1.45;
+        }
         .kbf-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--kbf-slate);margin-bottom:20px;}
         .kbf-breadcrumb a{color:var(--kbf-blue);text-decoration:none;font-weight:600;}
         .kbf-breadcrumb a:hover{text-decoration:none;}
@@ -264,6 +312,54 @@ function bntm_shortcode_kbf_organizer_profile() {
           align-items:start;
           overflow:visible;
         }
+        .kbf-wrap,
+        .kbf-page-header,
+        .kbf-profile-grid,
+        .kbf-profile-grid > div,
+        .kbf-card,
+        .kbf-card-list,
+        .kbf-table-pager{
+          width:100%;
+          max-width:100%;
+          min-width:0;
+          box-sizing:border-box;
+        }
+        .kbf-section-header > *{
+          min-width:0;
+        }
+        .kbf-ap-card-top{
+          display:flex;
+          align-items:flex-start;
+          gap:6px;
+          margin-bottom:4px;
+          flex-wrap:wrap;
+        }
+        .kbf-ap-card-top .kbf-card-title{
+          flex:1 1 220px;
+          min-width:0;
+        }
+        .kbf-ap-card-top .kbf-badge{
+          flex:0 0 auto;
+        }
+        .kbf-ap-card-meta .kbf-meta-row{
+          display:flex;
+          flex-wrap:wrap;
+          gap:6px 8px;
+        }
+        .kbf-ap-card-meta .kbf-meta-divider{
+          align-self:center;
+        }
+        .kbf-ap-stat-row{
+          display:flex;
+          justify-content:space-between;
+          gap:12px;
+          align-items:flex-start;
+        }
+        .kbf-ap-stat-row .kbf-meta{
+          white-space:normal;
+          overflow:visible;
+          text-overflow:unset;
+        }
 
         .kbf-section-header{
           margin-bottom:14px;
@@ -280,10 +376,36 @@ function bntm_shortcode_kbf_organizer_profile() {
         }
         @media(max-width:768px){
           .kbf-page-header {
-            padding: 20px 24px;
+            padding: 18px 16px;
           }
           .kbf-page-header > div {
             gap: 16px;
+          }
+          .kbf-profile-grid{
+            gap:16px !important;
+          }
+          .kbf-fund-amounts{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:6px;
+          }
+          .kbf-card-actions .kbf-btn{
+            width:100%;
+            justify-content:center;
+          }
+          .kbf-table-pager{
+            flex-wrap:wrap;
+            gap:8px;
+          }
+          .kbf-table-pager-left,
+          .kbf-table-pager-right{
+            width:100%;
+          }
+          .kbf-table-pager-right{
+            justify-content:space-between;
+          }
+          .kbf-profile-sidebar{
+            overflow-x:hidden;
           }
         }
         .kbf-page-header.kbf-ap-compact {
@@ -444,7 +566,27 @@ function bntm_shortcode_kbf_organizer_profile() {
           .kbf-page-header h2 {
             font-size: 16px;
           }
+          .kbf-ap-meta-row{
+            flex-direction:column;
+            align-items:flex-start !important;
+            gap:8px !important;
+          }
           .kbf-breadcrumb{font-size:12px;flex-wrap:wrap;}
+          #kbf-modal-rating .kbf-modal-footer{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:8px;
+          }
+          #kbf-modal-rating .kbf-modal-footer .kbf-btn{
+            width:100%;
+          }
+          #kbf-star-picker{
+            justify-content:space-between;
+            gap:6px !important;
+          }
+          #kbf-star-picker .kbf-star-btn{
+            font-size:24px !important;
+          }
         }
         .kbf-card-list[data-kbf-card-pager="organizer-campaigns"] + .kbf-table-pager .kbf-table-pager-btn.is-loading::after,
         .kbf-card-list[data-kbf-card-pager="organizer-reviews"] + .kbf-table-pager .kbf-table-pager-btn.is-loading::after{
@@ -772,11 +914,11 @@ function bntm_shortcode_kbf_organizer_profile() {
           <div class="kbf-card" data-status="<?php echo esc_attr($f->status); ?>" data-escrow="<?php echo esc_attr($f->escrow_status ?? ''); ?>">
             <div class="kbf-card-header">
               <div style="flex:1;">
-                <div style="display:flex;flex-direction:row;gap:6px;margin-bottom:4px;">
+                <div class="kbf-ap-card-top" style="display:flex;flex-direction:row;gap:6px;margin-bottom:4px;">
                   <span class="kbf-card-title kbf-strong"><?php echo esc_html($f->title); ?></span>
                   <span class="kbf-badge kbf-badge-<?php echo esc_attr(sanitize_html_class((string)$f->status)); ?>" style="width:max-content;"><?php echo esc_html(ucfirst((string)$f->status)); ?></span>
                 </div>
-                <div class="kbf-meta">
+                <div class="kbf-meta kbf-ap-card-meta">
                   <div class="kbf-meta-row">
                       <span class="kbf-meta-item">
                       <i class="ph ph-tag kbf-icon" aria-hidden="true"></i>
@@ -832,9 +974,9 @@ function bntm_shortcode_kbf_organizer_profile() {
         <div class="kbf-card" style="margin-bottom:16px;">
           <h4 style="font-size:13px;font-weight:700;color:var(--kbf-navy);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Stats</h4>
           <div style="display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Raised</span><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo number_format($profile->total_raised,0); ?></span></div>
-            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Sponsors</span><span class="kbf-strong"><?php echo number_format($profile->total_sponsors); ?></span></div>
-            <div style="display:flex;justify-content:space-between;"><span class="kbf-meta">Active Funds</span><span class="kbf-strong"><?php $active_count=0; foreach($funds as $f){ if($f->status==='active') $active_count++; } echo $active_count; ?></span></div>             
+            <div class="kbf-ap-stat-row" style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Raised</span><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo number_format($profile->total_raised,0); ?></span></div>
+            <div class="kbf-ap-stat-row" style="display:flex;justify-content:space-between;"><span class="kbf-meta">Total Sponsors</span><span class="kbf-strong"><?php echo number_format($profile->total_sponsors); ?></span></div>
+            <div class="kbf-ap-stat-row" style="display:flex;justify-content:space-between;"><span class="kbf-meta">Active Funds</span><span class="kbf-strong"><?php $active_count=0; foreach($funds as $f){ if($f->status==='active') $active_count++; } echo $active_count; ?></span></div>             
           </div>
         </div>
         <?php endif; ?>
@@ -864,8 +1006,8 @@ function bntm_shortcode_kbf_organizer_profile() {
           <?php elseif(!is_user_logged_in()): ?>
             <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" disabled style="margin-bottom:10px;padding:6px 12px;opacity:0.6;cursor:not-allowed;">Log in to score</button>
           <?php else: ?>
-            <div class="kbf-card-actions">
-              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="padding:6px 12px;" onclick="document.getElementById('kbf-modal-rating').style.display='flex'">Add Score</button>
+            <div class="kbf-card-actions" style="margin:4px 0 12px;">
+              <button class="kbf-btn kbf-btn-secondary kbf-btn-sm" type="button" style="padding:6px 12px;" onclick="kbfOpenTrustModal()">Add Trust</button>
             </div>
           <?php endif; ?>
           <?php if(empty($reviews)): ?>
@@ -883,7 +1025,15 @@ function bntm_shortcode_kbf_organizer_profile() {
                 <span class="kbf-meta"><?php echo date('M d, Y',strtotime($r->created_at)); ?></span>
               </div>
               <?php if($r->review): ?><p style="margin:0;font-size:13.5px;color:var(--kbf-text-sm);font-style:italic;">"<?php echo esc_html($r->review); ?>"</p><?php endif; ?>
-              <div class="kbf-meta" style="margin-top:6px;"><?php echo esc_html($r->sponsor_email?:'Anonymous'); ?></div>
+              <div class="kbf-meta" style="margin-top:6px;">
+                <?php
+                  $review_email_key = strtolower(trim((string)($r->sponsor_email ?? '')));
+                  $review_name = ($review_email_key !== '' && isset($review_public_names[$review_email_key]) && $review_public_names[$review_email_key] !== '')
+                    ? $review_public_names[$review_email_key]
+                    : 'Anonymous';
+                  echo esc_html($review_name);
+                ?>
+              </div>
             </div>
           <?php endforeach; ?>
           </div>
@@ -902,9 +1052,9 @@ function bntm_shortcode_kbf_organizer_profile() {
     <div id="kbf-modal-rating" class="kbf-modal-overlay" style="display:none;">
       <div class="kbf-modal kbf-modal-sm">
         <div class="kbf-modal-header">
-          <h3>Credibility Score</h3>
-          <button class="kbf-modal-close" onclick="document.getElementById('kbf-modal-rating').style.display='none'">&times;</button>
-          <p style="font-size:12.5px;color:var(--kbf-slate);margin:2px 0 0;">Rate this organizer's trustworthiness. You can only submit once.</p>
+          <h3>Add Trust</h3>
+          <button class="kbf-modal-close" onclick="kbfHideModal('kbf-modal-rating')">&times;</button>
+          <p style="font-size:12.5px;color:var(--kbf-slate);margin:2px 0 0;">Rate this account's trustworthiness. You can only submit once.</p>
         </div>
         <div class="kbf-modal-body">
           <form id="kbf-rating-form" onsubmit="return false;">
@@ -916,20 +1066,15 @@ function bntm_shortcode_kbf_organizer_profile() {
                   <i class="kbf-star-btn ph ph-thumbs-up kbf-icon" data-val="<?php echo $i; ?>" data-filled="ph-fill ph-thumbs-up" data-empty="ph ph-thumbs-up" style="cursor:pointer;font-size:28px;color:#94a3b8;" onclick="kbfSetRating(<?php echo $i; ?>)" aria-hidden="true"></i>
                 <?php endfor; ?>
               </div>
-              <input type="hidden" name="rating" id="kbf-rating-val" value="5">
+              <input type="hidden" name="rating" id="kbf-rating-val" value="0">
             </div>
-            <div class="kbf-form-group"><label>Your Email *</label>
-              <input type="email" name="sponsor_email" required placeholder="your@email.com" value="<?php echo esc_attr($prefill_email); ?>"<?php echo $current_user_id ? ' readonly style="background:#f8fafc;color:var(--kbf-slate);"' : ''; ?>>
-              <?php if($current_user_id): ?>
-                <small class="kbf-meta" style="margin-top:4px;display:block;">Submitting as your account email. This cannot be changed.</small>
-              <?php endif; ?>
-            </div>
+            <input type="hidden" name="sponsor_email" value="<?php echo esc_attr($prefill_email); ?>">
             <div class="kbf-form-group"><label>Comment (optional)</label><textarea name="review" rows="3" placeholder="Share your thoughts..."></textarea></div>
             <div id="kbf-rate-msg"></div>
           </form>
         </div>
         <div class="kbf-modal-footer">
-          <button class="kbf-btn kbf-btn-secondary" onclick="document.getElementById('kbf-modal-rating').style.display='none'">Cancel</button>
+          <button class="kbf-btn kbf-btn-secondary" onclick="kbfHideModal('kbf-modal-rating')">Cancel</button>
           <button class="kbf-btn kbf-btn-primary" onclick="kbfSubmitRating('<?php echo $nonce_rating; ?>')">Submit Score</button>
         </div>
       </div>
@@ -937,6 +1082,43 @@ function bntm_shortcode_kbf_organizer_profile() {
     <?php endif; ?>
     <script>
     (function(){
+      /**
+       * @function  kbfOpenTrustModal
+       * @purpose   Opens trust modal and resets picker state to no selection.
+       * @used-by   Add Trust button onclick
+       * @calls     kbfResetTrustPicker, window.kbfShowModal, document.getElementById
+       * @params    none
+       * @returns   void
+       * @status    ACTIVE
+       */
+      window.kbfOpenTrustModal = function(){
+        kbfResetTrustPicker();
+        if (window.kbfShowModal) {
+          window.kbfShowModal('kbf-modal-rating');
+          return;
+        }
+        var modal = document.getElementById('kbf-modal-rating');
+        if(modal) modal.style.display='flex';
+      };
+      /**
+       * @function  kbfResetTrustPicker
+       * @purpose   Resets trust picker icons/messages and clears validation errors.
+       * @used-by   kbfOpenTrustModal, initial setup
+       * @calls     document.getElementById, document.querySelector
+       * @params    none
+       * @returns   void
+       * @status    ACTIVE
+       */
+      function kbfResetTrustPicker(){
+        var msg = document.getElementById('kbf-rate-msg');
+        if(msg) msg.innerHTML = '';
+        var ratingGroup = document.querySelector('#kbf-star-picker');
+        ratingGroup = ratingGroup ? ratingGroup.closest('.kbf-form-group') : null;
+        if(ratingGroup){
+          ratingGroup.querySelectorAll('.kbf-field-error').forEach(function(el){ el.remove(); });
+        }
+        window.kbfSetRating(0);
+      }
       /**
        * @function  kbfSetRating
        * @purpose   Updates selected thumbs-up rating UI state and hidden rating input value.
@@ -959,6 +1141,13 @@ function bntm_shortcode_kbf_organizer_profile() {
         });
         var inp = document.getElementById('kbf-rating-val');
         if(inp) inp.value = v;
+        if(v > 0){
+          var ratingGroup = document.querySelector('#kbf-star-picker');
+          ratingGroup = ratingGroup ? ratingGroup.closest('.kbf-form-group') : null;
+          if(ratingGroup){
+            ratingGroup.querySelectorAll('.kbf-field-error').forEach(function(el){ el.remove(); });
+          }
+        }
       };
       /**
        * @function  kbfSubmitRating
@@ -973,6 +1162,22 @@ function bntm_shortcode_kbf_organizer_profile() {
         var form = document.getElementById('kbf-rating-form');
         var btn = document.querySelector('#kbf-modal-rating .kbf-modal-footer .kbf-btn-primary');
         if(!form || !btn) return;
+        var ratingInput = document.getElementById('kbf-rating-val');
+        var ratingValue = ratingInput ? parseInt(ratingInput.value || '0', 10) : 0;
+        var ratingGroup = form.querySelector('#kbf-star-picker');
+        ratingGroup = ratingGroup ? ratingGroup.closest('.kbf-form-group') : null;
+        if(ratingGroup){
+          ratingGroup.querySelectorAll('.kbf-field-error').forEach(function(el){ el.remove(); });
+        }
+        if(!(ratingValue > 0)){
+          if(ratingGroup){
+            var ratingErr = document.createElement('div');
+            ratingErr.className = 'kbf-field-error';
+            ratingErr.textContent = 'Please select a trust score.';
+            ratingGroup.appendChild(ratingErr);
+          }
+          return;
+        }
         var kbfEscHtmlMsg = function(v){
           return String(v == null ? '' : v).replace(/[&<>"']/g, function(ch){
             return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
@@ -989,8 +1194,8 @@ function bntm_shortcode_kbf_organizer_profile() {
           // ===== RULE 3C: HANDLE DUPLICATE ERROR =====
           if (!j.success && j.data && j.data.message && j.data.message.indexOf('already submitted') !== -1) {
             if(msg) msg.innerHTML = '<div class="kbf-alert kbf-alert-warning kbf-alert-compact">' + kbfEscHtmlMsg(j.data.message) + '</div>';
-            setTimeout(function(){ document.getElementById('kbf-modal-rating').style.display='none'; }, 2000);
-            document.querySelectorAll('[onclick*="kbf-modal-rating"]').forEach(function(el){
+            setTimeout(function(){ kbfHideModal('kbf-modal-rating'); }, 2000);
+            document.querySelectorAll('[onclick*="kbf-modal-rating"],[onclick*="kbfOpenTrustModal"]').forEach(function(el){
               if(el.tagName === 'BUTTON' && !el.closest('.kbf-modal')) {
                 el.disabled = true;
                 el.textContent = 'Already Scored';
@@ -1011,6 +1216,7 @@ function bntm_shortcode_kbf_organizer_profile() {
           btn.textContent = old;
         });
       };
+      kbfResetTrustPicker();
       /**
        * @function  initCardPager
        * @purpose   Initializes client-side card pagination controls for campaign and review card lists.
