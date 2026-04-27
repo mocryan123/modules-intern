@@ -136,8 +136,8 @@ function kbf_dashboard_find_funds_tab() {
     }
     if($q)  {
         $like = $build_like($q);
-        $where .= " AND (f.title LIKE %s OR f.description LIKE %s OR f.location LIKE %s OR u.display_name LIKE %s)";
-        $params[] = $like; $params[] = $like; $params[] = $like; $params[] = $like;
+        $where .= " AND (f.title LIKE %s OR f.location LIKE %s OR u.display_name LIKE %s OR u.user_login LIKE %s OR umsn.meta_value LIKE %s)";
+        $params[] = $like; $params[] = $like; $params[] = $like; $params[] = $like; $params[] = $like;
     }
     if($cat){ $where .= " AND f.category=%s"; $params[] = $cat; }
     $order = $sort === 'most_funded' ? 'f.raised_amount DESC' : ($sort === 'ending_soon' ? 'f.deadline ASC' : 'f.created_at DESC');
@@ -153,7 +153,7 @@ function kbf_dashboard_find_funds_tab() {
     }
     if(!isset($funds)) {
         $max_funds = 200;
-        $sql = "SELECT f.*,u.display_name as organizer_name FROM {$ft} f {$join} LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID {$where} ORDER BY {$order} LIMIT %d";
+        $sql = "SELECT f.*,u.display_name as organizer_name FROM {$ft} f {$join} LEFT JOIN {$wpdb->users} u ON f.business_id=u.ID LEFT JOIN {$wpdb->usermeta} umsn ON umsn.user_id=u.ID AND umsn.meta_key='kbf_social_name' {$where} ORDER BY {$order} LIMIT %d";
         $params[] = $max_funds;
         $funds = $wpdb->get_results($wpdb->prepare($sql,...$params)); // phpcs:ignore
     }
@@ -415,6 +415,16 @@ function kbf_dashboard_find_funds_tab() {
         flex-wrap:wrap;
         align-items:center;
       }
+      .kbff-toolbar-row .kbff-filter-control,
+      .kbff-toolbar-row #kbff-filter-btn.kbff-filter-btn,
+      .kbff-toolbar-row #kbff-reset-filters-btn.kbff-reset-filters-btn,
+      .kbff-toolbar-row #kbff-search-input.kbff-search-input,
+      .kbff-toolbar-row #kbff-near-me-btn.kbff-near-btn,
+      .kbff-toolbar-row .kbff-search-submit{
+        height:var(--kbff-control-h);
+        min-height:var(--kbff-control-h);
+        box-sizing:border-box;
+      }
       #kbff-search-form.kbff-toolbar-form{
         display:flex;
         gap:8px;
@@ -439,6 +449,7 @@ function kbf_dashboard_find_funds_tab() {
         border:1.5px solid var(--kbf-border);
         border-radius:10px;
         padding:3px 8px 3px 3px;
+        cursor:pointer;
       }
       .kbff-filter-icon{
         width:calc(var(--kbff-control-h) - 8px);
@@ -456,6 +467,18 @@ function kbf_dashboard_find_funds_tab() {
         border-radius:10px;
         padding:0 12px;
       }
+      #kbff-reset-filters-btn.kbff-reset-filters-btn{
+        border-radius:10px;
+        width:var(--kbff-control-h);
+        padding:0;
+        white-space:nowrap;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+      }
+      #kbff-reset-filters-btn.kbff-reset-filters-btn.is-hidden{
+        display:none;
+      }
       .kbff-filter-control select{
         border:none !important;
         background:transparent !important;
@@ -464,6 +487,10 @@ function kbf_dashboard_find_funds_tab() {
         height:calc(var(--kbff-control-h) - 8px) !important;
         line-height:calc(var(--kbff-control-h) - 8px) !important;
         box-shadow:none !important;
+        cursor:pointer;
+      }
+      .kbff-filter-control select option{
+        cursor:pointer;
       }
       .kbff-search-group{
         display:flex;
@@ -476,7 +503,7 @@ function kbf_dashboard_find_funds_tab() {
         flex:1 1 auto;
         min-width:0;
         height:var(--kbff-control-h);
-        padding:3px 8px 3px 3px;
+        padding:3px 10px;
         border-radius:10px;
         border:1.5px solid var(--kbf-border);
         font-size:13px;
@@ -531,6 +558,7 @@ function kbf_dashboard_find_funds_tab() {
         max-width:100%;
         box-sizing:border-box;
         align-self:stretch;
+        margin-top:8px;
       }
       @media (max-width: 900px){
         .kbff-toolbar-card{padding:10px;}
@@ -558,6 +586,7 @@ function kbf_dashboard_find_funds_tab() {
       @media (max-width: 720px){
         .kbff-filter-control{flex:1 1 calc(50% - 6px);min-width:0;}
         .kbff-filter-control select{min-width:0;width:100%;}
+        #kbff-reset-filters-btn{display:none !important;}
         .kbff-filter-btn{
           order:3;
           margin-right:auto;
@@ -1283,17 +1312,20 @@ function kbf_dashboard_find_funds_tab() {
 
             <div id="kbff-saved-select-wrap" class="kbff-filter-control">
               <span class="kbff-filter-icon">
-                <i class="ph-fill ph-bookmark-simple kbf-icon" style="font-size:14px" aria-hidden="true"></i>
+                <i class="ph ph-bookmark-simple kbf-icon" style="font-size:14px" aria-hidden="true"></i>
               </span>
               <select id="kbff-saved-select" name="ff_saved">
                 <option value="">All Funds</option>
                 <option value="1" <?php echo $saved_only ? 'selected' : ''; ?>>Saved</option>
               </select>
             </div>
+            <button type="button" id="kbff-reset-filters-btn" class="kbf-btn kbf-btn-secondary kbff-reset-filters-btn <?php echo $active_filters ? '' : 'is-hidden'; ?>" aria-label="Reset filters">
+              <i class="ph ph-arrow-counter-clockwise kbf-icon" style="font-size:14px" aria-hidden="true"></i>
+            </button>
           </div>
 
           <div class="kbff-search-group">
-            <input type="text" name="ff_q" id="kbff-search-input" class="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, location, or organizer...">
+            <input type="text" name="ff_q" id="kbff-search-input" class="kbff-search-input" value="<?php echo esc_attr($q); ?>" placeholder="Search title, account/profile name, or address...">
             <button type="button" id="kbff-near-me-btn" onclick="kbfNearMe('kbff-search-input','kbff-search-form', this)" class="kbf-btn kbf-btn-secondary kbff-near-btn" aria-label="Near Me">
               <i class="ph ph-map-pin kbf-icon" style="font-size:14px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
             </button>
@@ -1468,7 +1500,7 @@ function kbf_dashboard_find_funds_tab() {
           <?php if($is_own): ?>
           <div class="kbf-explore-actions is-own">
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-primary" style="font-size:12.5px;text-align:center;">View Details</a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" title="<?php echo esc_attr($save_title); ?>" data-tooltip="<?php echo esc_attr($save_title); ?>">
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" aria-label="<?php echo esc_attr($save_title); ?>">
                 <i class="<?php echo esc_attr($save_icon); ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
                 <span class="kbf-save-loader" aria-hidden="true"></span>
               </button>
@@ -1476,7 +1508,7 @@ function kbf_dashboard_find_funds_tab() {
           <?php else: ?>
           <div class="kbf-explore-actions is-public">
             <a href="<?php echo $detail_url; ?>" class="kbf-btn kbf-btn-primary" style="font-size:12.5px;text-align:center;">View Campaign</a>
-            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" title="<?php echo esc_attr($save_title); ?>" data-tooltip="<?php echo esc_attr($save_title); ?>">
+            <button class="kbf-btn kbf-btn-secondary kbf-btn-sm kbf-save-btn <?php echo $is_saved ? 'is-saved' : ''; ?>" data-fund-id="<?php echo esc_attr($f->id); ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" onclick="kbfSaveFund('<?php echo esc_js($f->id); ?>', this)" aria-label="<?php echo esc_attr($save_title); ?>">
                 <i class="<?php echo esc_attr($save_icon); ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
                 <span class="kbf-save-loader" aria-hidden="true"></span>
               </button>
@@ -1564,6 +1596,7 @@ function kbf_dashboard_find_funds_tab() {
         var sheet = document.getElementById('kbff-sheet');
         var overlay = document.getElementById('kbff-sheet-overlay');
         var btn = document.getElementById('kbff-filter-btn');
+        var resetBtn = document.getElementById('kbff-reset-filters-btn');
         var badge = document.getElementById('kbff-filter-badge');
         var applyBtn = document.getElementById('kbff-sheet-apply');
         var clearBtn = document.getElementById('kbff-sheet-clear');
@@ -1589,8 +1622,23 @@ function kbf_dashboard_find_funds_tab() {
             btn.classList.toggle('has-filters', count > 0);
             badge.textContent = String(count);
             badge.classList.toggle('is-hidden', count === 0);
+            if (resetBtn) {
+                resetBtn.classList.toggle('is-hidden', count === 0);
+                resetBtn.disabled = (count === 0);
+            }
         }
         updateFilterBtnState();
+        window.kbffResetFilters = function(){
+            if (catSel) catSel.value = '';
+            if (sortSel) sortSel.value = 'newest';
+            if (savedSel) savedSel.value = '';
+            sheetCatVal = '';
+            sheetSortVal = 'newest';
+            sheetSavedVal = '';
+            updateFilterBtnState();
+            window.location.href = buildUrl();
+        };
+        if (resetBtn) resetBtn.addEventListener('click', window.kbffResetFilters);
 
         /**
          * @function  kbffOpenSheet
@@ -1885,8 +1933,7 @@ function kbf_dashboard_find_funds_tab() {
                     if(el){
                         el.classList.toggle('is-saved', saved);
                         el.setAttribute('data-saved', saved ? '1' : '0');
-                        el.title = saved ? 'Saved' : 'Save';
-                        el.setAttribute('data-tooltip', saved ? 'Saved' : 'Save');
+                        el.setAttribute('aria-label', saved ? 'Saved' : 'Save');
                         var icon = el.querySelector('i');
                         if(icon){
                           icon.classList.remove('ph','ph-bookmark-simple','ph-fill');

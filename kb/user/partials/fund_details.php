@@ -1150,6 +1150,27 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-detail-right .kbf-more-wrap .kbf-btn i{
       pointer-events:none;
     }
+    .kbf-detail-right .kbf-fund-cta-actions{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto auto;
+      gap:10px;
+      align-items:center;
+    }
+    .kbf-detail-right .kbf-fund-cta-actions .kbf-fund-cta-primary{
+      width:100%;
+      min-width:0;
+      margin:0;
+      font-weight:600;
+    }
+    .kbf-detail-right .kbf-fund-cta-actions .kbf-save-btn,
+    .kbf-detail-right .kbf-fund-cta-actions .kbf-more-wrap .kbf-btn{
+      height:42px;
+      width:42px;
+      min-width:42px;
+      padding:0;
+      justify-content:center;
+      white-space:nowrap;
+    }
 
     /* ===== FIX 9: COMPACT LEADERBOARD ITEM ===== */
     .kbf-leaderboard-item{
@@ -1161,10 +1182,9 @@ function bntm_shortcode_kbf_fund_details() {
     }
     .kbf-leaderboard-item:last-child{border-bottom:none;}
     .kbf-lb-rank{
-      font-size:11px;
-      font-weight:700;
-      color:#92400e;
-      background:#fef3c7;
+      font-size:10px;
+      font-weight:600;
+      color:var(--kbf-slate);
       border-radius:4px;
       padding:2px 6px;
       min-width:24px;
@@ -1346,7 +1366,6 @@ function bntm_shortcode_kbf_fund_details() {
               <input type="hidden" name="amount" id="kbf-sponsor-amount" min="50" step="1">
               <div class="kbf-meta" style="margin-top:4px;">Minimum sponsorship: &#8369;50.00</div>
               <?php if($fund->goal_amount>0): ?>
-                <div class="kbf-meta" style="margin-top:4px;">Max allowed: &#8369;<?php echo number_format(max(0,$fund->goal_amount-$fund->raised_amount),2); ?> (remaining goal)</div>
               <?php endif; ?>
             </div>
             <div class="kbf-form-group">
@@ -1626,7 +1645,7 @@ function bntm_shortcode_kbf_fund_details() {
               <div class="kbf-leaderboard-body" data-kbf-leaderboard-list>
                 <?php $pos=0; foreach($leaderboard as $row): $pos++; ?>
                   <div class="kbf-leaderboard-item">
-                    <span class="kbf-lb-rank">#<?php echo $pos; ?></span>
+                    <span class="kbf-lb-rank"><?php echo $pos; ?></span>
                     <span class="kbf-lb-name">
                       <?php if ($row->is_anonymous): ?>
                       <?php endif; ?>
@@ -1667,19 +1686,17 @@ function bntm_shortcode_kbf_fund_details() {
               </div>
             </div>
             <div style="margin-top:14px;">
-              <button class="kbf-btn kbf-btn-primary" style="width:100%;font-weight:600;" onclick="kbfShowModal('kbf-modal-sponsor')">
-                <i class="ph-fill ph-heart kbf-icon" style="font-size:16px;color:#ffffff;" aria-hidden="true"></i>
-                Sponsor This Campaign
-              </button>
-              <div class="kbf-card-actions" style="display:flex;gap:10px;margin-top:10px;">
-                <button class="kbf-btn kbf-btn-secondary kbf-save-btn" type="button" data-fund-id="<?php echo (int)$fund->id; ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" data-save-label="Save Fund" onclick="kbfSaveFund('<?php echo (int)$fund->id; ?>', this)" style="pointer-events:auto !important; cursor:pointer !important; position:relative; z-index:302; touch-action:manipulation;">
-                  <i class="<?php echo $is_saved ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple'; ?> kbf-icon" style="font-size:13px;color:var(--kbf-text-sm);" aria-hidden="true"></i>
-                  <span class="kbf-save-label"><?php echo $is_saved ? 'Saved' : 'Save Fund'; ?></span>
+              <div class="kbf-fund-cta-actions">
+                <button class="kbf-btn kbf-btn-primary kbf-fund-cta-primary" onclick="kbfShowModal('kbf-modal-sponsor')">
+                  <i class="ph-fill ph-heart kbf-icon" style="font-size:16px;color:#ffffff;" aria-hidden="true"></i>
+                  Sponsor This Campaign
+                </button>
+                <button class="kbf-btn kbf-btn-secondary kbf-save-btn<?php echo $is_saved ? ' is-saved' : ''; ?>" type="button" aria-label="<?php echo esc_attr($is_saved ? 'Saved' : 'Save Fund'); ?>" title="<?php echo esc_attr($is_saved ? 'Saved' : 'Save Fund'); ?>" data-fund-id="<?php echo (int)$fund->id; ?>" data-saved="<?php echo $is_saved ? '1' : '0'; ?>" data-save-label="Save Fund" onclick="kbfSaveFund('<?php echo (int)$fund->id; ?>', this)" style="pointer-events:auto !important; cursor:pointer !important; position:relative; z-index:302; touch-action:manipulation;">
+                  <i class="<?php echo $is_saved ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple'; ?> kbf-icon" style="font-size:13px;" aria-hidden="true"></i>
                 </button>
                 <div class="kbf-more-wrap">
-                  <button class="kbf-btn kbf-btn-secondary" type="button" onclick="kbfToggleMoreMenu(event)" style="pointer-events:auto !important; cursor:pointer !important; position:relative; z-index:201; touch-action:manipulation;">
+                  <button class="kbf-btn kbf-btn-secondary" type="button" aria-label="More actions" title="More actions" onclick="kbfToggleMoreMenu(event)" style="pointer-events:auto !important; cursor:pointer !important; position:relative; z-index:201; touch-action:manipulation;">
                     <i class="ph ph-dots-three-vertical kbf-icon" style="font-size:12px; filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
-                    More
                   </button>
                   <div class="kbf-more-menu" id="kbf-more-menu">
                     <button type="button" onclick="kbfShareFundDetail('<?php echo esc_js($fund->share_token); ?>','<?php echo esc_js($fund->title); ?>','<?php echo esc_js(wp_trim_words($fund->description,18)); ?>')">Share</button>
@@ -2660,11 +2677,19 @@ function bntm_shortcode_kbf_fund_details() {
                     var icon = el.querySelector('i');
                     if(icon){
                         icon.classList.remove('ph','ph-bookmark-simple','ph-fill');
-                        if(saved){ icon.classList.add('ph-fill','ph-bookmark-simple'); }
-                        else { icon.classList.add('ph','ph-bookmark-simple'); }
+                        if(saved){
+                            icon.classList.add('ph-fill','ph-bookmark-simple');
+                            icon.style.color = '#3b82f6';
+                        } else {
+                            icon.classList.add('ph','ph-bookmark-simple');
+                            icon.style.color = 'var(--kbf-text-sm)';
+                        }
                     }
+                    var nextLabel = saved ? 'Saved' : (el.getAttribute('data-save-label') || 'Save Fund');
+                    el.setAttribute('aria-label', nextLabel);
+                    el.setAttribute('title', nextLabel);
                     var label = el.querySelector('.kbf-save-label');
-                    if(label){ label.textContent = saved ? 'Saved' : (el.getAttribute('data-save-label') || 'Save Fund'); }
+                    if(label){ label.textContent = nextLabel; }
                 }
             } else {
                 alert((j && j.data && j.data.message) ? j.data.message : 'Unable to save.');

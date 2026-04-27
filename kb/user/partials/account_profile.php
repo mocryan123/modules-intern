@@ -457,6 +457,18 @@ function bntm_shortcode_kbf_organizer_profile() {
           margin-left:auto;
           flex-shrink:0;
         }
+        #kbf-ap-filter-status-wrap,
+        #kbf-ap-filter-escrow-wrap{
+          cursor:pointer;
+        }
+        #kbf-filter-status,
+        #kbf-filter-escrow{
+          cursor:pointer;
+        }
+        #kbf-filter-status option,
+        #kbf-filter-escrow option{
+          cursor:pointer;
+        }
         .kbf-ap-sheet-overlay{
           position:fixed;
           inset:0;
@@ -804,6 +816,12 @@ function bntm_shortcode_kbf_organizer_profile() {
           </div>
         <?php endforeach; ?>
         </div>
+        <div class="kbf-empty kbf-ap-empty-filter" style="display:none;padding:60px 20px;">
+          <i class="ph ph-magnifying-glass kbf-icon" style="font-size:44px; margin:0 auto 14px;display:block;opacity:.35;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
+          <p style="font-size:15px;font-weight:600;color:var(--kbf-navy);margin-bottom:4px;">No funds found</p>
+          <p style="color:var(--kbf-slate);font-size:13px;">Try adjusting your status or escrow filter.</p>
+          <button type="button" class="kbf-btn kbf-btn-primary kbf-ap-clear" style="margin-top:14px;">Clear Filters</button>
+        </div>
         <div class="kbf-table-pager" data-kbf-card-pager-ui="organizer-campaigns"></div>
         <?php endif; ?>
       </div>
@@ -1027,6 +1045,8 @@ function bntm_shortcode_kbf_organizer_profile() {
         var prevBtn = pager.querySelector('.kbf-table-prev');
         var nextBtn = pager.querySelector('.kbf-table-next');
         var pageLabel = pager.querySelector('.kbf-table-pager-page');
+        var filterEmpty = (scope === 'organizer-campaigns') ? document.querySelector('.kbf-ap-empty-filter') : null;
+        var clearFilterBtn = filterEmpty ? filterEmpty.querySelector('.kbf-ap-clear') : null;
         var page = 1;
         var perPage = 5;
         /**
@@ -1078,6 +1098,9 @@ function bntm_shortcode_kbf_organizer_profile() {
           prevBtn.disabled = page <= 1;
           nextBtn.disabled = page >= pages;
           pager.style.display = total > 0 ? 'flex' : 'none';
+          if(filterEmpty){
+            filterEmpty.style.display = total > 0 ? 'none' : 'block';
+          }
         }
         function getPagerLoadingDelay(){
           var delay = 250;
@@ -1124,6 +1147,14 @@ function bntm_shortcode_kbf_organizer_profile() {
           var escrowSel = document.getElementById('kbf-filter-escrow');
           if(statusSel) statusSel.addEventListener('change', function(){ page = 1; render(); });
           if(escrowSel) escrowSel.addEventListener('change', function(){ page = 1; render(); });
+          if(clearFilterBtn){
+            clearFilterBtn.addEventListener('click', function(){
+              if(statusSel) statusSel.value = 'all';
+              if(escrowSel) escrowSel.value = 'all';
+              page = 1;
+              render();
+            });
+          }
         }
         render();
       }

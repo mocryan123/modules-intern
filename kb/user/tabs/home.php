@@ -559,6 +559,18 @@
         }
       </style>
       <style>
+        #kbf-filter-status-wrap,
+        #kbf-filter-escrow-wrap{
+          cursor:pointer;
+        }
+        #kbf-filter-status,
+        #kbf-filter-escrow{
+          cursor:pointer;
+        }
+        #kbf-filter-status option,
+        #kbf-filter-escrow option{
+          cursor:pointer;
+        }
         .kbf-home-filter-btn{display:none;}
         .kbf-home-sheet-overlay{
           position:fixed;
