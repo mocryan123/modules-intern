@@ -4413,9 +4413,11 @@ function bntm_shortcode_ch_feed()
     }
 
     $sidebar_category_limit = 8;
-    $followed_sidebar_category_ids = array_slice(array_keys($followed), 0, $sidebar_category_limit);
-    $has_more_categories = count($categories) > $sidebar_category_limit;
-    $has_more_followed = count($followed) > $sidebar_category_limit;
+    $categories_safe = is_array($categories) ? $categories : [];
+    $followed_safe = is_array($followed) ? $followed : [];
+    $followed_sidebar_category_ids = array_slice(array_keys($followed_safe), 0, $sidebar_category_limit);
+    $has_more_categories = count($categories_safe) > $sidebar_category_limit;
+    $has_more_followed = count($followed_safe) > $sidebar_category_limit;
 
     $bookmark_filter = '';
     $user_bookmarks = [];
@@ -5068,7 +5070,7 @@ function bntm_shortcode_ch_feed()
                             All Topics
                         </a>
                         <?php $shown_category_count = 0; ?>
-                        <?php foreach ($categories as $cat):
+                        <?php foreach ($categories_safe as $cat):
                             if ($shown_category_count >= $sidebar_category_limit) {
                                 break;
                             }
@@ -5204,7 +5206,7 @@ function bntm_shortcode_ch_feed()
                                                 if ($cat->is_private) {
                                                     if (!$user_id)
                                                         continue;
-                                                    if (!current_user_can('manage_options') && !isset($followed[$cat->id]))
+                                                    if (!current_user_can('manage_options') && !isset($followed_safe[$cat->id]))
                                                         continue;
                                                 }
                                                 $browser_count++;
@@ -5234,8 +5236,8 @@ function bntm_shortcode_ch_feed()
                                         <div class="ch-category-browser-section">
                                             <h4>Following</h4>
                                             <div class="ch-category-browser-list">
-                                                <?php if (!empty($followed)): ?>
-                                                    <?php foreach ($followed as $cat_id => $dummy): ?>
+                                                <?php if (!empty($followed_safe)): ?>
+                                                    <?php foreach ($followed_safe as $cat_id => $dummy): ?>
                                                         <?php $cat = $categories_by_id[(int) $cat_id] ?? null; ?>
                                                         <?php if ($cat): ?>
                                                             <a href="?cat=<?php echo esc_attr($cat->slug); ?>"

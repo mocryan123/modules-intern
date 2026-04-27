@@ -3669,6 +3669,23 @@ function ch_global_styles()
             max-height: 320px;
         }
 
+        @media (min-width: 769px) {
+            .ch-post-media-preview-feed.ch-post-media-gallery-1 .ch-post-media-thumb {
+                aspect-ratio: auto;
+                min-height: 0;
+                max-height: 420px;
+                background: color-mix(in srgb, var(--ch-bg) 90%, var(--ch-surface) 10%);
+            }
+
+            .ch-post-media-preview-feed.ch-post-media-gallery-1 .ch-post-media-thumb-img,
+            .ch-post-media-preview-feed.ch-post-media-gallery-1 .ch-post-media-thumb-video {
+                height: auto;
+                min-height: 0;
+                max-height: 420px;
+                object-fit: contain;
+            }
+        }
+
         .ch-post-media-thumb {
             display: block;
             overflow: hidden;
