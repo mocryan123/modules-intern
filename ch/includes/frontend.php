@@ -4412,24 +4412,6 @@ function bntm_shortcode_ch_feed()
         $followed = array_flip($fids);
     }
 
-    $sidebar_category_limit = 8;
-    $categories_safe = is_array($categories) ? $categories : [];
-    $followed_safe = is_array($followed) ? $followed : [];
-    $sidebar_visible_categories = [];
-    foreach ($categories_safe as $cat_row) {
-        if (!empty($cat_row->is_private)) {
-            if (!$user_id)
-                continue;
-            if (!current_user_can('manage_options') && !isset($followed_safe[$cat_row->id]))
-                continue;
-        }
-        $sidebar_visible_categories[] = $cat_row;
-    }
-    $sidebar_categories = array_slice($sidebar_visible_categories, 0, $sidebar_category_limit);
-    $followed_sidebar_category_ids = array_slice(array_keys($followed_safe), 0, $sidebar_category_limit);
-    $has_more_categories = count($sidebar_visible_categories) > $sidebar_category_limit;
-    $has_more_followed = count($followed_safe) > $sidebar_category_limit;
-
     $bookmark_filter = '';
     $user_bookmarks = [];
     if ($user_id) {
@@ -4523,6 +4505,24 @@ function bntm_shortcode_ch_feed()
     foreach ($categories as $category_row) {
         $categories_by_id[(int) $category_row->id] = $category_row;
     }
+
+    $sidebar_category_limit = 8;
+    $categories_safe = is_array($categories) ? $categories : [];
+    $followed_safe = is_array($followed) ? $followed : [];
+    $sidebar_visible_categories = [];
+    foreach ($categories_safe as $cat_row) {
+        if (!empty($cat_row->is_private)) {
+            if (!$user_id)
+                continue;
+            if (!current_user_can('manage_options') && !isset($followed_safe[$cat_row->id]))
+                continue;
+        }
+        $sidebar_visible_categories[] = $cat_row;
+    }
+    $sidebar_categories = array_slice($sidebar_visible_categories, 0, $sidebar_category_limit);
+    $followed_sidebar_category_ids = array_slice(array_keys($followed_safe), 0, $sidebar_category_limit);
+    $has_more_categories = count($sidebar_visible_categories) > $sidebar_category_limit;
+    $has_more_followed = count($followed_safe) > $sidebar_category_limit;
 
 
     // Fetch current user's votes on the visible posts for active-up/active-down state
@@ -5170,7 +5170,7 @@ function bntm_shortcode_ch_feed()
                                                 <circle cx="12" cy="12" r="9" />
                                                 <path d="M12 8v4l3 3" />
                                             </svg>
-                                            View all following categories
+                                            View all following
                                         </button>
                                     </div>
                                 <?php endif; ?>
