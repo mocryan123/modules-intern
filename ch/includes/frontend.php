@@ -4414,6 +4414,8 @@ function bntm_shortcode_ch_feed()
 
     $sidebar_category_limit = 8;
     $followed_sidebar_category_ids = array_slice(array_keys($followed), 0, $sidebar_category_limit);
+    $has_more_categories = count($categories) > $sidebar_category_limit;
+    $has_more_followed = count($followed) > $sidebar_category_limit;
 
     $bookmark_filter = '';
     $user_bookmarks = [];
@@ -5098,6 +5100,21 @@ function bntm_shortcode_ch_feed()
                             <?php $shown_category_count++; ?>
                         <?php endforeach; ?>
 
+                        <?php if ($has_more_categories || $has_more_followed): ?>
+                            <div style="margin-top:10px;">
+                                <button type="button" class="ch-btn ch-btn-outline ch-btn-full ch-btn-sm"
+                                    onclick="chOpenModal('ch-modal-category-browser')"
+                                    style="font-size:13px;">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        stroke-width="2.4">
+                                        <circle cx="12" cy="12" r="9" />
+                                        <path d="M12 8v4l3 3" />
+                                    </svg>
+                                    View all categories
+                                </button>
+                            </div>
+                        <?php endif; ?>
+
                         <?php
                         $cat_creation_on = get_option('ch_user_category_creation', 0);
                         $cat_karma_threshold = (int) get_option('ch_category_creation_karma', 100);
@@ -5168,6 +5185,79 @@ function bntm_shortcode_ch_feed()
                         <?php endif; ?>
                     </div>
                 </aside>
+
+                <?php if ($has_more_categories || $has_more_followed): ?>
+                    <div id="ch-modal-category-browser" class="ch-modal-overlay" style="display:none;">
+                        <div class="ch-modal ch-modal-lg">
+                            <div class="ch-modal-header">
+                                <h3>Browse Categories</h3>
+                                <button class="ch-modal-close" onclick="chCloseModal('ch-modal-category-browser')">&times;</button>
+                            </div>
+                            <div class="ch-modal-body">
+                                <div class="ch-category-browser-grid">
+                                    <div class="ch-category-browser-section">
+                                        <h4>All Categories</h4>
+                                        <div class="ch-category-browser-list">
+                                            <?php
+                                            $browser_count = 0;
+                                            foreach ($categories as $cat):
+                                                if ($cat->is_private) {
+                                                    if (!$user_id)
+                                                        continue;
+                                                    if (!current_user_can('manage_options') && !isset($followed[$cat->id]))
+                                                        continue;
+                                                }
+                                                $browser_count++;
+                                                ?>
+                                                <a href="?cat=<?php echo esc_attr($cat->slug); ?>"
+                                                    class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>"
+                                                    data-cat-slug="<?php echo esc_attr($cat->slug); ?>">
+                                                    <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
+                                                    <span class="ch-cat-name"><?php echo esc_html($cat->name); ?></span>
+                                                    <?php if ($cat->is_private): ?>
+                                                        <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                            stroke-width="2" style="opacity:.5;margin-left:2px;flex-shrink:0" title="Private">
+                                                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                                                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                        </svg>
+                                                    <?php endif; ?>
+                                                    <span class="ch-cat-count"><?php echo (int) $cat->post_count; ?></span>
+                                                </a>
+                                            <?php endforeach; ?>
+                                            <?php if ($browser_count === 0): ?>
+                                                <div class="ch-empty-state" style="padding:14px 10px;">No categories available.</div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+
+                                    <?php if ($user_id): ?>
+                                        <div class="ch-category-browser-section">
+                                            <h4>Following</h4>
+                                            <div class="ch-category-browser-list">
+                                                <?php if (!empty($followed)): ?>
+                                                    <?php foreach ($followed as $cat_id => $dummy): ?>
+                                                        <?php $cat = $categories_by_id[(int) $cat_id] ?? null; ?>
+                                                        <?php if ($cat): ?>
+                                                            <a href="?cat=<?php echo esc_attr($cat->slug); ?>"
+                                                                class="ch-cat-link <?php echo $cat_slug === $cat->slug ? 'active' : ''; ?>"
+                                                                data-followed-cat-id="<?php echo (int) $cat->id; ?>"
+                                                                data-cat-slug="<?php echo esc_attr($cat->slug); ?>">
+                                                                <span class="ch-cat-dot" style="background:<?php echo esc_attr($cat->color); ?>"></span>
+                                                                <span class="ch-cat-name"><?php echo esc_html($cat->name); ?></span>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <div class="ch-empty-state" style="padding:14px 10px;">You are not following any categories yet.</div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <!-- Main Feed -->
                 <main class="ch-feed-main">

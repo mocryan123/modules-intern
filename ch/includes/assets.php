@@ -2945,6 +2945,29 @@ function ch_global_styles()
             border-radius: 10px;
         }
 
+        .ch-category-browser-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .ch-category-browser-section h4 {
+            margin: 0 0 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--ch-text-subtle);
+        }
+
+        .ch-category-browser-list {
+            display: grid;
+            gap: 6px;
+            max-height: 60vh;
+            overflow: auto;
+            padding-right: 2px;
+        }
+
         .ch-cat-item {
             display: flex;
             align-items: center;
@@ -8032,6 +8055,14 @@ function ch_global_styles()
             .ch-search-form .ch-search-input {
                 min-width: 0 !important;
                 flex: 1 !important;
+            }
+
+            .ch-category-browser-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ch-category-browser-list {
+                max-height: 48vh;
             }
 
             .ch-search-form button {
