@@ -221,11 +221,6 @@
     .kbf-topbar + .kbf-dashboard-shell{
         margin-top:0 !important;
     }
-    @media (max-width: 1200px){
-        .kbf-dashboard-shell{
-            padding:74px 0 0;
-        }
-    }
     .kbf-tab-content{
         margin-bottom:24px;
         overflow:visible !important;
@@ -750,7 +745,8 @@
         color:#4b5563;
         font-size:13.5px;
         margin:0 0 18px;
-        max-width:520px;
+        width:100%;
+        max-width:none;
     }
     .kbf-hero-grid{
         display:grid;
@@ -894,7 +890,7 @@
         color:#fff;
     }
     @media (max-width: 900px){
-        .kbf-dashboard-shell{ max-width:90%; padding-top:74px; }
+        .kbf-dashboard-shell{ max-width:90%; }
         .kbf-topbar + .kbf-dashboard-shell{ margin-top:0 !important; }
         .kbf-hero-wrap{ margin-top:12px; }
         .kbf-hero-grid{ grid-template-columns:1fr; }

@@ -52,10 +52,43 @@ function kbf_dashboard_withdrawals_tab($business_id) {
     ?>
     <!-- ================== HTML ================== -->
     <style>
-      .kbf-cashout-wrap .kbf-cashout-table tbody td:first-child{
-        display:table-cell !important;
+      .kbf-cashout-table{
+        min-width:760px;
+        table-layout:fixed;
       }
-      .kbf-cashout-wrap .kbf-cashout-title{
+      .kbf-cashout-table th,
+      .kbf-cashout-table td{
+        vertical-align:top;
+      }
+      .kbf-cashout-table th,
+      .kbf-cashout-table td{color:#0f172a;}
+      .kbf-cashout-table tbody td:first-child{
+        display:table-cell !important;
+        max-width:none;
+        overflow:visible;
+        text-overflow:clip;
+        white-space:normal;
+      }
+      .kbf-cashout-table th:nth-child(2),
+      .kbf-cashout-table td:nth-child(2),
+      .kbf-cashout-table th:nth-child(3),
+      .kbf-cashout-table td:nth-child(3),
+      .kbf-cashout-table th:nth-child(6),
+      .kbf-cashout-table td:nth-child(6),
+      .kbf-cashout-table th:nth-child(7),
+      .kbf-cashout-table td:nth-child(7),
+      .kbf-cashout-table th:nth-child(8),
+      .kbf-cashout-table td:nth-child(8){
+        white-space:nowrap;
+      }
+      .kbf-cashout-table td:nth-child(1),
+      .kbf-cashout-table td:nth-child(4),
+      .kbf-cashout-table td:nth-child(5){
+        white-space:normal;
+        overflow-wrap:anywhere;
+        word-break:break-word;
+      }
+      .kbf-cashout-title{
         display:-webkit-box;
         -webkit-line-clamp:2;
         -webkit-box-orient:vertical;
@@ -65,15 +98,47 @@ function kbf_dashboard_withdrawals_tab($business_id) {
         overflow-wrap:anywhere;
         word-break:break-word;
       }
-      .kbf-cashout-wrap .kbf-cashout-table td:nth-child(5){
+      .kbf-cashout-table td:nth-child(5){
         overflow-wrap:anywhere;
         word-break:break-word;
+      }
+      .kbf-cashout-empty{
+        overflow-x:hidden;
+        overflow-y:hidden;
+      }
+      .kbf-cashout-empty .kbf-table-empty-head{
+        min-width:100%;
+        white-space:nowrap;
+        color:#0f172a;
+      }
+      .kbf-cashout-wrap{
+        scrollbar-width:thin;
+        scrollbar-color:#2070e0 #f8fafc;
+      }
+      .kbf-cashout-empty::-webkit-scrollbar,
+      .kbf-cashout-wrap::-webkit-scrollbar{
+        height:8px;
+      }
+      .kbf-cashout-empty::-webkit-scrollbar-track,
+      .kbf-cashout-wrap::-webkit-scrollbar-track{
+        background:#f8fafc;
+        border-radius:999px;
+      }
+      .kbf-cashout-empty::-webkit-scrollbar-thumb,
+      .kbf-cashout-wrap::-webkit-scrollbar-thumb{
+        background:#2070e0;
+        border-radius:999px;
+        border:2px solid #f8fafc;
+      }
+      .kbf-cashout-empty::-webkit-scrollbar-thumb:hover,
+      .kbf-cashout-wrap::-webkit-scrollbar-thumb:hover{
+        background:#2070e0;
       }
     </style>
     <div class="kbf-section">
       <h3 class="kbf-section-title">Cashout History</h3>
       <?php if(empty($rows)): ?>
-        <div class="kbf-table-empty" data-kbf-table-desc="Tracks your cashout requests, payout account details, and release status.">
+        <div class="kbf-table-empty kbf-cashout-empty" data-kbf-table-desc="Tracks your cashout requests, payout account details, and release status.">
           <div class="kbf-table-empty-head" style="grid-template-columns:1.6fr .9fr .9fr 1fr 1.6fr .9fr .9fr .9fr;">
             <span>Fundraiser</span>
             <span>Amount</span>
