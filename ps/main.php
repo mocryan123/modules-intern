@@ -399,6 +399,27 @@ function bntm_shortcode_ps_dashboard() {
         let notificationCount = 0;
         let isMobileView = window.innerWidth <= 768;
 
+        // WP timezone offset injected from PHP — ensures JS parses DB timestamps correctly
+        // regardless of whether MySQL uses UTC or local time on the server.
+        const WP_TZ        = '<?php echo esc_js( wp_timezone_string() ); ?>';           // e.g. "Asia/Manila"
+        const WP_TZ_OFFSET = '<?php echo esc_js( (new DateTime("now", wp_timezone()))->format("P") ); ?>'; // e.g. "+08:00"
+
+        // Parse a DB datetime string (no timezone info) as WP local time → JS Date
+        function parseDbTime(str) {
+            if (!str) return new Date();
+            return new Date(str.replace(' ', 'T') + WP_TZ_OFFSET);
+        }
+
+        // Format a JS Date as PH time (uses WP_TZ so it's always correct)
+        function formatPhTime(date) {
+            return date.toLocaleTimeString('en-PH', {
+                timeZone: WP_TZ,
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
         window.addEventListener('resize', function() { isMobileView = window.innerWidth <= 768; });
 
         // ── Persistence helpers (localStorage survives reloads and tab closes) ──
@@ -571,7 +592,7 @@ function bntm_shortcode_ps_dashboard() {
                     existing.forEach(o => existMap[o.id] = o);
                     res.data.orders.forEach(o => existMap[o.id] = o);
                     const merged = Object.values(existMap)
-                        .sort((a, b) => new Date(b.created_at.replace(' ', 'T') + '+08:00') - new Date(a.created_at.replace(' ', 'T') + '+08:00'))
+                        .sort((a, b) => parseDbTime(b.created_at) - parseDbTime(a.created_at))
                         .slice(0, 20);
                     saveCachedOrders(merged);
 
@@ -641,7 +662,7 @@ function bntm_shortcode_ps_dashboard() {
                                 <div style="font-weight:600;font-size:${fontSize};color:#111;word-break:break-word;">Order #${order.rand_id}</div>
                             </div>
                             <div style="font-size:${customerFontSize};color:#6b7280;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${order.customer_name}</div>
-                            <div style="font-size:${timeFontSize};color:#9ca3af;margin-top:2px;white-space:nowrap;">${new Date(order.created_at.replace(' ', 'T') + '+08:00').toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                            <div style="font-size:${timeFontSize};color:#9ca3af;margin-top:2px;white-space:nowrap;">${formatPhTime(parseDbTime(order.created_at))}</div>
                         </div>
                         <div style="text-align:right;font-weight:600;font-size:${fontSize};color:#16a34a;white-space:nowrap;margin-left:8px;flex-shrink:0;">₱${parseFloat(order.total_price).toFixed(2)}</div>
                     </div>
