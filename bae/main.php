@@ -2206,7 +2206,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                 </button>
                 <?php else: ?>
                 <!-- Not logged in: show login button -->
-                <button class="bae-header-login-btn" id="bae-header-login-btn" onclick="baeTicketModalOpen()" title="Enter your ticket to access your workspace">
+                <button class="bae-header-login-btn" id="bae-header-login-btn" onclick="baeTicketModalOpen('header')" title="Access your workspace with a ticket, or generate one">
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>
                     <span>Enter Ticket</span>
                 </button>
@@ -2222,12 +2222,12 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                         <div class="bae-ticket-modal-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>
                         </div>
-                        <span class="bae-ticket-modal-title">Enter Your Ticket</span>
+                        <span class="bae-ticket-modal-title" id="bae-tkm-title">Access Your Ticket</span>
                     </div>
                     <button class="bae-modal-close" onclick="baeTicketModalClose()" aria-label="Close">&times;</button>
                 </div>
                 <div class="bae-ticket-modal-body">
-                    <p class="bae-ticket-modal-desc">Enter your access ticket to open your workspace. Your ticket is your permanent identity — no account needed.</p>
+                    <p class="bae-ticket-modal-desc" id="bae-tkm-desc">Enter your access ticket to open your workspace, or generate one to bind this workspace for later return. No account needed.</p>
 
                     <!-- Step 1: Ticket input -->
                     <div id="bae-tkm-step-ticket">
@@ -2265,9 +2265,9 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                 <div class="bae-ticket-modal-footer">
                     <span class="bae-ticket-modal-footer-hint">
                         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                        New here?
+                        <span id="bae-tkm-footer-hint-text">No ticket yet?</span>
                     </span>
-                    <button class="bae-ticket-modal-new-btn" onclick="baeTicketModalGenerate()" id="bae-tkm-new-btn">Generate a free ticket</button>
+                    <button class="bae-ticket-modal-new-btn" onclick="baeTicketModalGenerate()" id="bae-tkm-new-btn">Generate and bind ticket</button>
                 </div>
             </div>
         </div>
@@ -4438,6 +4438,17 @@ if (dlPngBtn) {
             var btns = document.querySelectorAll('.bae-pricing-cta');
             var clickedBtn = event && event.target ? event.target : null;
             var origText   = clickedBtn ? clickedBtn.textContent : '';
+
+            var hasTicket = /(?:^|;\s*)bae_ticket=/.test(document.cookie || '');
+            if (!hasTicket) {
+                if (clickedBtn) clickedBtn.textContent = origText;
+                btns.forEach(function(b){ b.disabled = false; });
+                baePricingClose();
+                baeTicketModalOpen('pricing');
+                baeTicketModalShowErr('Bind this workspace with a ticket first before upgrading.');
+                return;
+            }
+
             btns.forEach(function(b){ b.disabled = true; });
             if (clickedBtn) clickedBtn.textContent = 'Redirecting...';
 
@@ -4453,7 +4464,14 @@ if (dlPngBtn) {
                     if (res.success && res.data.checkout_url) {
                         window.location.href = res.data.checkout_url;
                     } else {
-                        alert(res.data && res.data.message ? res.data.message : 'Something went wrong. Please try again.');
+                        var msg = (res.data && res.data.message) ? res.data.message : 'Something went wrong. Please try again.';
+                        if (/not logged in|unauthorized|no identity|ticket/i.test(msg)) {
+                            baePricingClose();
+                            baeTicketModalOpen('pricing');
+                            baeTicketModalShowErr('Bind this workspace with a ticket first before upgrading.');
+                        } else {
+                            alert(msg);
+                        }
                         btns.forEach(function(b){ b.disabled = false; });
                         if (clickedBtn) clickedBtn.textContent = origText;
                     }
@@ -4538,9 +4556,34 @@ if (dlPngBtn) {
     });
 
     /* ══ TICKET LOGIN MODAL ══ */
-    function baeTicketModalOpen() {
+    var baeTicketSubmitIdleLabel = 'Continue';
+    function baeTicketModalApplyContext(context) {
+        var mode = context || 'header';
+        var titleEl = document.getElementById('bae-tkm-title');
+        var descEl = document.getElementById('bae-tkm-desc');
+        var hintEl = document.getElementById('bae-tkm-footer-hint-text');
+        var newBtn = document.getElementById('bae-tkm-new-btn');
+        var submitLbl = document.getElementById('bae-tkm-lbl');
+        if (mode === 'pricing') {
+            if (titleEl) titleEl.textContent = 'Bind Ticket To Continue';
+            if (descEl) descEl.textContent = 'Enter your existing ticket, or generate one now to bind this workspace before upgrading your plan.';
+            if (hintEl) hintEl.textContent = 'Need a ticket first?';
+            if (newBtn) newBtn.textContent = 'Generate and bind ticket';
+            baeTicketSubmitIdleLabel = 'Continue to Upgrade';
+        } else {
+            if (titleEl) titleEl.textContent = 'Access Your Ticket';
+            if (descEl) descEl.textContent = 'Enter your access ticket to open your workspace, or generate one to bind this workspace for later return. No account needed.';
+            if (hintEl) hintEl.textContent = 'No ticket yet?';
+            if (newBtn) newBtn.textContent = 'Generate and bind ticket';
+            baeTicketSubmitIdleLabel = 'Open Workspace';
+        }
+        if (submitLbl) submitLbl.textContent = baeTicketSubmitIdleLabel;
+    }
+
+    function baeTicketModalOpen(context) {
         var overlay = document.getElementById('bae-ticket-modal-overlay');
         if (!overlay) return;
+        baeTicketModalApplyContext(context);
         overlay.classList.add('open');
         // Reset to step 1
         baeTicketModalBackToTicket();
@@ -4573,7 +4616,7 @@ if (dlPngBtn) {
         btn.disabled = loading;
         if (spin)  spin.style.display = loading ? 'block' : 'none';
         if (arrow) arrow.style.display = loading ? 'none' : '';
-        if (lbl)   lbl.textContent = loading ? 'Verifying…' : 'Open Workspace';
+        if (lbl)   lbl.textContent = loading ? 'Verifying...' : baeTicketSubmitIdleLabel;
     }
 
     function baeTicketModalShowErr(msg) {
