@@ -41,7 +41,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
       }
       if($pending_count > 0): ?>
       <div class="kbf-alert kbf-alert-info" style="margin-bottom:20px;">
-        <span class="kbf-strong">How fund approval works:</span> After you submit a fund, our admin team reviews it (usually within 24â€“48 hours).
+        <span class="kbf-strong">How fund approval works:</span> After you submit a fund, our admin team reviews it (usually within 24-48 hours).
         Once approved, your fund goes <span class="kbf-strong">live</span> and becomes visible to all sponsors on the Browse page.
         You'll see the status change from <em>Pending</em> to <em>Active</em> here.
       </div>
@@ -65,7 +65,7 @@ function kbf_dashboard_my_funds_tab($business_id, $nonce_cancel, $nonce_extend) 
           <?php if($f->status === 'pending'): ?>
           <div style="background:#fef3c7;border-left:3px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:10px;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <div><span class="kbf-strong">Under Review</span> -- Awaiting admin approval. Not visible to sponsors yet. Usually 24â€“48 hours.</div>
+            <div><span class="kbf-strong">Under Review</span> -- Awaiting admin approval. Not visible to sponsors yet. Usually 24-48 hours.</div>
           </div>
           <?php elseif($f->status === 'suspended'): ?>
           <div class="kbf-alert kbf-alert-error kbf-alert-noicon" style="margin-bottom:12px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">
