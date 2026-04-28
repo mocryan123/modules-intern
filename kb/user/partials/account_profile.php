@@ -811,7 +811,7 @@ function bntm_shortcode_kbf_organizer_profile() {
         <?php if(false): ?><div></div><?php endif; ?>
 
         <div class="kbf-section-header" style="margin-bottom:14px;align-items:center;display:flex;justify-content:space-between;width:100%;flex-wrap:wrap;gap:12px;">
-          <h3 class="kbf-section-title">Campaigns</h3>
+          <h3 class="kbf-section-title">All Campaigns</h3>
           <div class="kbf-inline-filters" style="display:flex;gap:12px;align-items:center;margin-left:auto;flex-wrap:wrap;justify-content:flex-end;">
             <button type="button" class="kbf-btn kbf-btn-secondary kbf-ap-filter-btn" onclick="kbfAccountProfileOpenSheet()">
               <i class="ph ph-sliders kbf-icon" style="font-size:14px" aria-hidden="true"></i>
