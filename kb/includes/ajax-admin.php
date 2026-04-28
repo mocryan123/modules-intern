@@ -292,14 +292,17 @@ function bntm_ajax_kbf_admin_recheck_payment() {
     }
     $has_public = function_exists('kbf_maya_public_key') ? (kbf_maya_public_key() !== '') : false;
     $has_secret = function_exists('kbf_maya_secret_key') ? (kbf_maya_secret_key() !== '') : false;
-    $msg = 'No paid status found yet in Maya for this transaction.';
+    $cancel_status = 'failed';
+    $wpdb->update($st, ['payment_status' => $cancel_status], ['id' => (int)$sp->id], ['%s'], ['%d']);
+
+    $msg = 'No paid status found in Maya. Status was changed to ' . ucfirst($cancel_status) . '.';
     if (!$has_checkout) {
         $msg .= ' Missing checkoutId on this record.';
     }
     if (!$has_public || !$has_secret) {
         $msg .= ' Please check Maya live API keys (public/secret).';
     }
-    wp_send_json_error(['message'=>$msg]);
+    wp_send_json_error(['message'=>$msg, 'status_updated' => true, 'new_status' => $cancel_status]);
 }
 
 function bntm_ajax_kbf_admin_verify_organizer() {
