@@ -61,20 +61,21 @@ function kbf_admin_transactions_tab() {
       <h3 class="kbf-section-title">All Transactions</h3>
       <?php if(empty($rows)): ?>
         <div class="kbf-table-empty" data-kbf-table-desc="Displays sponsorship transactions, payment status, and transaction reference.">
-          <div class="kbf-table-empty-head" style="grid-template-columns:1.5fr 1.1fr .8fr .8fr 1.2fr .8fr;">
+          <div class="kbf-table-empty-head" style="grid-template-columns:1.5fr 1.1fr .8fr .8fr 1.2fr .8fr .8fr;">
             <span>Fundraiser</span>
             <span>Supporter</span>
             <span>Amount</span>
             <span>Payment</span>
             <span>TRN / Reference</span>
             <span>Date</span>
+            <span>Action</span>
           </div>
           <div class="kbf-table-empty-body">No transactions found.</div>
         </div>
       <?php else: ?>
       <div class="kbf-table-wrap" data-kbf-table-desc="Displays sponsorship transactions, payment status, and transaction reference.">
         <table class="kbf-table">
-          <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>TRN / Reference</th><th>Date</th></tr></thead>
+          <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Amount</th><th>Payment</th><th>TRN / Reference</th><th>Date</th><th>Action</th></tr></thead>
           <tbody>
           <?php foreach($rows as $s): ?>
             <?php $payment_status_class = sanitize_html_class((string)$s->payment_status); ?>
@@ -85,6 +86,13 @@ function kbf_admin_transactions_tab() {
               <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($payment_status_class); ?>"><?php echo esc_html(ucfirst((string)$s->payment_status)); ?></span></td>
               <td class="kbf-meta"><?php echo esc_html($s->payment_reference ? $s->payment_reference : $s->rand_id); ?></td>
               <td class="kbf-meta"><?php echo esc_html($format_date($s->created_at)); ?></td>
+              <td>
+                <?php if ((string)$s->payment_status !== 'completed'): ?>
+                  <button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfConfirmPayment(<?php echo (int)$s->id; ?>)">Mark Complete</button>
+                <?php else: ?>
+                  <span class="kbf-meta">-</span>
+                <?php endif; ?>
+              </td>
             </tr>
           <?php endforeach; ?>
           </tbody>
