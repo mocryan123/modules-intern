@@ -2288,21 +2288,20 @@ function bntm_kbf_render_landing() {
         pointer-events: none;
     }
     .kbf-cookie-inner {
-        display: flex;
-        align-items: center;
-        gap: 24px;
+        display: block;
     }
     .kbf-cookie-content {
-        flex: 1 1 auto;
         min-width: 0;
-        padding-right: 4px;
+        padding-right: 28px;
+        text-align: left;
+        margin-bottom: 14px;
     }
     .kbf-cookie-actions {
-        flex: 0 0 auto;
         display: flex;
         gap: 8px;
         align-items: center;
-        flex-shrink: 0;
+        justify-content: flex-start;
+        flex-wrap: wrap;
     }
     .kbf-cookie-close {
         position: absolute;
@@ -2393,17 +2392,13 @@ function bntm_kbf_render_landing() {
             max-width: calc(100% - 24px);
             border-radius: 14px;
         }
-        .kbf-cookie-inner {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 16px;
-        }
         .kbf-cookie-content {
             padding-right: 28px;
+            margin-bottom: 12px;
         }
         .kbf-cookie-actions {
             flex-direction: row;
-            justify-content: flex-end;
+            justify-content: flex-start;
         }
         .kbf-cookie-btn {
             flex: 1;
