@@ -1416,7 +1416,7 @@ function bntm_shortcode_kbf_fund_details() {
           <form id="kbf-sponsor-form" onsubmit="return false;">
             <input type="hidden" name="fund_id" value="<?php echo esc_attr((int) $fund->id); ?>">
             <div class="kbf-form-row" style="gap:0;">
-              <div class="kbf-form-group"><label>Name / Company / Account</label><input type="text" name="sponsor_name" id="spd-name" placeholder="Your name, company, or account" value="<?php echo esc_attr($prefill_sponsor_name); ?>"></div>
+              <div class="kbf-form-group"><label>Name / Company / Account</label><input type="text" name="sponsor_name" id="spd-name" placeholder="Your name, company, or account" value="<?php echo esc_attr($prefill_sponsor_name); ?>" required></div>
               <div class="kbf-form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;"><label class="kbf-checkbox-row"><input type="checkbox" id="spd-anon" onchange="var n=document.getElementById('spd-name');if(!n)return;if(this.checked){n.dataset.prev=n.value;n.value='Anonymous';n.disabled=true;n.style.background='#f8fafc';n.style.color='var(--kbf-slate)';}else{n.disabled=false;n.value=n.dataset.prev||'';n.style.background='';n.style.color='';}"> Sponsor Anonymously</label></div>
             </div>
             <div class="kbf-form-group">
@@ -2327,7 +2327,7 @@ function kbfSyncDetailPanels(){
                 if(group){
                     var err = document.createElement('div');
                     err.className = 'kbf-field-error';
-                    err.textContent = 'This field is required.';
+                    err.textContent = (el.name === 'sponsor_name') ? 'Name is required.' : 'This field is required.';
                     group.appendChild(err);
                 }
                 if(!first) first = el;
