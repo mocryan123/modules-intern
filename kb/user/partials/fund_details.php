@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
     /**
@@ -1779,7 +1779,6 @@ function bntm_shortcode_kbf_fund_details() {
                         </button>
                       <?php elseif(!$current_user_id): ?>
                         <button type="button" onclick="if(window.kbfOpenAuthModal){window.kbfOpenAuthModal('Sign in to rate this organizer.');}else{window.location.href='<?php echo esc_js(kbf_get_page_url('signin')); ?>';}">
-                          <i class="ph ph-thumbs-up kbf-icon" style="font-size:13px;" aria-hidden="true"></i>
                           Add Trust
                         </button>
                       <?php else: ?>
