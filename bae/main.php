@@ -2396,25 +2396,21 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     </script>
     <div class="bae-wrap" id="bae-wrap" style="opacity:0;transition:opacity 0.25s ease;">
 
-        <!-- Page loader -->
-        <div id="bae-page-loader" class="bae-page-loader bae-page-loader-enter" aria-live="polite">
-            <div class="bae-loader-panel">
-                <div class="bae-loader-logo"><?php echo bae_render_brand_mark(); ?></div>
-                <div class="bae-loader-kicker">Mothie</div>
-                <div class="bae-loader-title">
-                    <span class="jp">読み込み中</span>
-                    <span class="en" id="bae-loader-title-en">Loading your workspace</span>
-                </div>
-                <div class="bae-loader-orbit" aria-hidden="true">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-                <div class="bae-loader-meta">
-                    <span id="bae-loader-meta-step">Preparing assets</span>
-                </div>
-            </div>
-        </div>
+                  <!-- Page loader redesigned: fade in/out, dots, subtle text, no branding -->
+          <div id="bae-page-loader" class="bae-page-loader bae-page-loader-enter" aria-live="polite">
+              <div class="bae-loader-panel">
+                  <!-- Branding removed -->
+                  <div class="bae-loader-dots" aria-hidden="true">
+                      <span></span><span></span><span></span><span></span><span></span>
+                  </div>
+                  <div class="bae-loader-title">
+                      <span class="en" id="bae-loader-title-en">loading page</span>
+                  </div>
+                  <div class="bae-loader-meta">
+                      <span id="bae-loader-meta-step">Preparing assets</span>
+                  </div>
+              </div>
+          </div>
         <style>
         @keyframes bae-loader-orbit-pulse {
             0%, 100% {
@@ -2426,128 +2422,111 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                 opacity: 1;
             }
         }
-        .bae-page-loader {
-            --brand:       #F32D86;
-            --brand-deep:  #c4196a;
-            --brand-soft:  #f76fb0;
-            --pink:        #F32D86;
-            --bg:         #000000;
-            --surface:    #161616;
-            --border:     rgba(255,255,255,0.06);
-            --border-2:   rgba(255,255,255,0.10);
-            --text:       #f5f5f5;
-            --text-2:     #a0a0a0;
-            --text-3:     #555555;
-            position: fixed;
-            inset: 0;
-            z-index: 100000;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background:
-                radial-gradient(circle at 18% 18%, rgba(243,45,134,.18), transparent 34%),
-                radial-gradient(circle at 82% 14%, rgba(243,45,134,.12), transparent 28%),
-                linear-gradient(180deg, rgba(10,10,15,.94) 0%, rgba(17,17,24,.97) 100%);
-            transition: opacity .45s ease, visibility .45s ease, transform .5s ease;
-            transform-origin: center top;
-            padding: 24px;
-            pointer-events: auto;
-        }
-        .bae-page-loader.bae-light {
-            --bg:         #EFF3F6;
-            --surface:    #ffffff;
-            --border:     rgba(0,0,0,0.07);
-            --border-2:   rgba(0,0,0,0.12);
-            --text:       #111418;
-            --text-2:     #5a6472;
-            --text-3:     #93a0af;
-        }
-        .bae-page-loader.is-hidden {
-            opacity: 0;
-            visibility: hidden;
-            transform: scale(1.015);
-            pointer-events: none;
-        }
-        .bae-page-loader.is-transitioning {
-            position: fixed;
-            inset: 0;
-        }
-        .bae-loader-panel {
-            width: min(360px, 100%);
-            padding: 28px 26px 24px;
-            text-align: center;
-        }
-        .bae-loader-logo {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 14px;
-        }
-        .bae-loader-logo .bae-brand-mark {
-            width: 72px;
-        }
-        .bae-loader-logo .bae-brand-logo-img {
-            width: 72px;
-            height: 72px;
-            object-fit: contain;
-        }
-        .bae-loader-kicker {
-            font-size: 11px;
-            letter-spacing: .18em;
-            text-transform: uppercase;
-            color: var(--text-3);
-            margin-bottom: 12px;
-        }
-        .bae-loader-title {
-            font-family: 'Instrument Serif', serif;
-            font-size: clamp(28px, 4vw, 34px);
-            line-height: 1.05;
-            color: var(--text);
-            margin-bottom: 18px;
-        }
-        .bae-loader-title .jp {
-            display: none;
-        }
-        .bae-loader-title .en {
-            font: inherit;
-            color: inherit;
-        }
-        .bae-loader-orbit {
-            display: flex;
-            gap: 9px;
-            align-items: center;
-            justify-content: center;
-            min-height: 16px;
-            margin-bottom: 14px;
-        }
-        .bae-loader-orbit span {
-            width: 9px;
-            height: 9px;
-            border-radius: 999px;
-            background: linear-gradient(180deg, var(--brand-soft) 0%, var(--brand) 70%, var(--pink) 100%);
-            animation: bae-loader-orbit-pulse 0.9s ease-in-out infinite;
-        }
-        .bae-loader-orbit span:nth-child(2) { animation-delay: .12s; }
-        .bae-loader-orbit span:nth-child(3) { animation-delay: .24s; }
-        .bae-loader-meta {
-            display: flex;
-            justify-content: center;
-            font-size: 12px;
-            color: var(--text-2);
-            letter-spacing: .05em;
-        }
-        .bae-page-loader.bae-light {
-            background:
-                radial-gradient(circle at 18% 18%, rgba(243,45,134,.14), transparent 34%),
-                radial-gradient(circle at 82% 14%, rgba(243,45,134,.09), transparent 28%),
-                linear-gradient(180deg, rgba(250,250,250,.95) 0%, rgba(244,243,255,.98) 100%);
-        }
-        .bae-page-loader .bae-brand-logo-img { filter: invert(1); }
-        .bae-page-loader.bae-light .bae-brand-logo-img { filter: none; }
-        @media (max-width: 640px) {
-            .bae-page-loader { padding: 16px; }
-            .bae-loader-panel { padding: 24px 20px 20px; }
-        }
+                  /* LOADER – ultra smooth fade, gentle dots, subtle text */
+          .bae-page-loader {
+              --brand:       #F32D86;
+              --brand-deep:  #c4196a;
+              --brand-soft:  #f76fb0;
+              --bg:         #000000;
+              --surface:    #161616;
+              --text:       #f5f5f5;
+              --text-2:     #a0a0a0;
+              --text-3:     #555555;
+              position: fixed;
+              inset: 0;
+              z-index: 100000;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: radial-gradient(circle at 18% 18%, rgba(243,45,134,.18), transparent 34%),
+                          radial-gradient(circle at 82% 14%, rgba(243,45,134,.12), transparent 28%),
+                          linear-gradient(180deg, rgba(10,10,15,.94) 0%, rgba(17,17,24,.97) 100%);
+              transition: opacity 0.55s cubic-bezier(0.2, 0.9, 0.4, 1.1), visibility 0.55s ease;
+              transform-origin: center center;
+              padding: 24px;
+              pointer-events: auto;
+              opacity: 1;
+              visibility: visible;
+          }
+          .bae-page-loader.is-hidden {
+              opacity: 0;
+              visibility: hidden;
+              pointer-events: none;
+          }
+          .bae-page-loader.bae-light {
+              --bg:         #EFF3F6;
+              --surface:    #ffffff;
+              --text:       #111418;
+              --text-2:     #5a6472;
+              --text-3:     #93a0af;
+              background: radial-gradient(circle at 18% 18%, rgba(243,45,134,.14), transparent 34%),
+                          radial-gradient(circle at 82% 14%, rgba(243,45,134,.09), transparent 28%),
+                          linear-gradient(180deg, rgba(250,250,250,.95) 0%, rgba(244,243,255,.98) 100%);
+          }
+          .bae-loader-panel {
+              width: min(280px, 100%);
+              padding: 24px 20px;
+              text-align: center;
+          }
+          /* Dots animation – soft bounce, no bars */
+          .bae-loader-dots {
+              display: flex;
+              gap: 12px;
+              align-items: center;
+              justify-content: center;
+              min-height: 32px;
+              margin-bottom: 24px;
+          }
+          .bae-loader-dots span {
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, var(--brand-soft), var(--brand));
+              animation: bae-dot-bounce 1.2s ease-in-out infinite;
+              opacity: 0.5;
+              transform: scale(0.8);
+          }
+          .bae-loader-dots span:nth-child(1) { animation-delay: 0s; }
+          .bae-loader-dots span:nth-child(2) { animation-delay: 0.12s; }
+          .bae-loader-dots span:nth-child(3) { animation-delay: 0.24s; }
+          .bae-loader-dots span:nth-child(4) { animation-delay: 0.36s; }
+          .bae-loader-dots span:nth-child(5) { animation-delay: 0.48s; }
+          
+          @keyframes bae-dot-bounce {
+              0%, 60%, 100% {
+                  transform: scale(0.7);
+                  opacity: 0.4;
+              }
+              30% {
+                  transform: scale(1.2);
+                  opacity: 1;
+              }
+          }
+          .bae-loader-title {
+              font-family: 'Geist', sans-serif;
+              font-size: 9px;
+              letter-spacing: 0.2em;
+              text-transform: uppercase;
+              color: var(--text-3);
+              margin-bottom: 8px;
+              opacity: 0.6;
+          }
+          .bae-loader-title .en {
+              font: inherit;
+              color: inherit;
+          }
+          .bae-loader-meta {
+              font-size: 11px;
+              color: var(--text-2);
+              letter-spacing: 0.05em;
+              margin-top: 4px;
+          }
+          .bae-page-loader .bae-brand-logo-img { filter: invert(1); }
+          .bae-page-loader.bae-light .bae-brand-logo-img { filter: none; }
+          @media (max-width: 640px) {
+              .bae-page-loader { padding: 16px; }
+              .bae-loader-panel { padding: 20px 16px; }
+          }
         </style>
 
         <!-- Header -->
@@ -5972,17 +5951,48 @@ if (dlPngBtn) {
             }, 360);
         };
 
+               // Fade out loader smoothly (called when page fully loaded)
         function revealWrap() {
-            if (loader) {
+            if (!loader) return;
+            if (window.gsap) {
+                gsap.to(loader, {
+                    opacity: 0,
+                    duration: 0.55,
+                    ease: "power2.inOut",
+                    onComplete: function() {
+                        loader.classList.add('is-hidden');
+                        loader.style.display = 'none';
+                        loader.style.opacity = ''; // reset for future use
+                    }
+                });
+            } else {
                 loader.classList.add('is-hidden');
                 setTimeout(function() {
                     if (loader) loader.style.display = 'none';
-                }, 460);
+                }, 550);
             }
-            if (wrap) {
-                wrap.style.opacity = '1';
-            }
+            if (wrap) wrap.style.opacity = '1';
         }
+        
+        // Show loader with fade in before page transition
+        window.baeShowPageTransition = function(title, step, href) {
+            if (!loader) return;
+            baeSetLoaderCopy(title || 'loading page', step || 'Preparing assets');
+            loader.style.display = 'flex';
+            loader.classList.remove('is-hidden');
+            if (window.gsap) {
+                gsap.fromTo(loader,
+                    { opacity: 0, visibility: 'visible' },
+                    { opacity: 1, duration: 0.5, ease: 'power2.out' }
+                );
+            } else {
+                loader.style.opacity = '1';
+                loader.style.visibility = 'visible';
+            }
+            setTimeout(function() {
+                if (href) window.location.href = href;
+            }, 460);
+        };
 
         // Use document.fonts if available for proper font-load timing
         if (document.fonts && document.fonts.ready) {
