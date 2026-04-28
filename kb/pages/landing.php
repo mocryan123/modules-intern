@@ -3215,8 +3215,8 @@ function bntm_kbf_render_landing() {
                     <p class="kbf-cookie-message">By clicking "Accept All Cookies", you agree to the storing of cookies on your device to enhance site navigation, analyze site usage, and assist in our marketing efforts. <a href="<?php echo esc_url(kbf_get_page_url('privacy')); ?>">Privacy policy</a></p>
                 </div>
                 <div class="kbf-cookie-actions">
-                    <button id="kbf-cookie-manage" class="kbf-cookie-btn kbf-cookie-manage" type="button">Manage cookies</button>
-                    <button id="kbf-cookie-accept" class="kbf-cookie-btn kbf-cookie-accept" type="button">Accept all</button>
+                    <button id="kbf-cookie-manage" class="kbf-cookie-btn kbf-cookie-manage" type="button">Reject cookies</button>
+                    <button id="kbf-cookie-accept" class="kbf-cookie-btn kbf-cookie-accept" type="button">Allow cookies</button>
                 </div>
             </div>
         </div>
@@ -3539,12 +3539,12 @@ function bntm_kbf_render_landing() {
             hideBanner();
         });
 
-        // Manage cookies â€” for now same as accept; can be extended
+        // Reject cookies
         if (manageBtn) {
             manageBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                setCookieState('accepted');
+                setCookieState('declined');
                 hideBanner();
             });
         }
