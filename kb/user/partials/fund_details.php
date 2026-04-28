@@ -189,8 +189,7 @@ function bntm_shortcode_kbf_fund_details() {
          GROUP BY
              is_anonymous,
              CASE WHEN is_anonymous=0 THEN COALESCE(NULLIF(sponsor_name,''),'Anonymous') ELSE id END
-         ORDER BY total_given DESC
-         LIMIT 10",
+         ORDER BY total_given DESC",
         $fund->id
     ));
     $organizer = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$pt} WHERE business_id=%d",$fund->business_id));
@@ -324,8 +323,7 @@ function bntm_shortcode_kbf_fund_details() {
                  GROUP BY
                      is_anonymous,
                      CASE WHEN is_anonymous=0 THEN COALESCE(NULLIF(sponsor_name,''),'Anonymous') ELSE id END
-                 ORDER BY total_given DESC
-                 LIMIT 10",
+                 ORDER BY total_given DESC",
                 $fund->id
             ));
             $days = $fund->deadline ? max(0, ceil((strtotime($fund->deadline) - time()) / 86400)) : null;
@@ -765,6 +763,7 @@ function bntm_shortcode_kbf_fund_details() {
       min-height:0;
       margin:0;
       flex:1 1 auto;
+      height:420px;
     }
     .kbf-leaderboard-head{
       display:flex;
@@ -785,6 +784,23 @@ function bntm_shortcode_kbf_fund_details() {
       overflow-x:hidden;
       padding-right:6px;
       margin-top:12px;
+      scrollbar-width:thin;
+      scrollbar-color:#2070e0 #f8fafc;
+    }
+    .kbf-leaderboard-body::-webkit-scrollbar{
+      width:10px;
+    }
+    .kbf-leaderboard-body::-webkit-scrollbar-track{
+      background:#f8fafc;
+      border-radius:999px;
+    }
+    .kbf-leaderboard-body::-webkit-scrollbar-thumb{
+      background:#2070e0;
+      border-radius:999px;
+      border:2px solid #f8fafc;
+    }
+    .kbf-leaderboard-body::-webkit-scrollbar-thumb:hover{
+      background:#2070e0;
     }
     /* Empty state fills card and centers */
     .kbf-leaderboard-empty{
@@ -795,7 +811,7 @@ function bntm_shortcode_kbf_fund_details() {
       justify-content:center;
       padding:24px 10px;
       text-align:center;
-      min-height:260px;
+      min-height:0;
     }
     .kbf-leaderboard-empty i{
       font-size:28px;
@@ -1049,7 +1065,7 @@ function bntm_shortcode_kbf_fund_details() {
     .kbf-more-menu button:active{
         background:#e7f1ff;
     }
-    @media(max-width:900px){
+    @media(max-width:1200px){
         .kbf-detail-panels{display:flex;flex-direction:column;gap:20px;}
         .kbf-detail-left,.kbf-detail-right{width:100%;}
         .kbf-detail-left,.kbf-photo-gallery{max-width:100%;}
@@ -1746,7 +1762,6 @@ function bntm_shortcode_kbf_fund_details() {
                   </div>
                 <?php endforeach; ?>
               </div>
-              <div class="kbf-table-pager kbf-table-pager-inline" data-kbf-leaderboard-pager></div>
             <?php else: ?>
               <div class="kbf-leaderboard-empty">
                 <i class="ph-fill ph-heart kbf-icon" style="font-size:32px; margin:0 auto 10px;display:block;opacity:.25;filter:invert(27%) sepia(12%) saturate(1090%) hue-rotate(182deg) brightness(92%) contrast(88%)" aria-hidden="true"></i>
@@ -3155,75 +3170,8 @@ function kbfSyncDetailPanels(){
         document.addEventListener('pointerdown', kbfCtaHitFix, true);
         document.addEventListener('click', kbfCtaHitFix, true);
     })();
-    /**
-     * @function  initLeaderboardPager
-     * @purpose   Builds and runs client-side pagination UI for leaderboard entries.
-     * @used-by   DOMContentLoaded handler
-     * @calls     document.querySelector, querySelectorAll, render
-     * @params    none
-     * @returns   void
-     * @status    ACTIVE
-     */
-    function initLeaderboardPager(){
-        var list = document.querySelector('[data-kbf-leaderboard-list]');
-        var pager = document.querySelector('[data-kbf-leaderboard-pager]');
-        if(!list || !pager) return;
-        var items = Array.prototype.slice.call(list.querySelectorAll('.kbf-leaderboard-item'));
-        if(items.length === 0) { pager.style.display = 'none'; return; }
-        pager.innerHTML = '' +
-          '<div class="kbf-table-pager-left">Show&nbsp;' +
-          '<select class="kbf-table-rows">' +
-            '<option value="5" selected>5</option>' +
-            '<option value="10">10</option>' +
-            '<option value="20">20</option>' +
-          '</select> rows' +
-          '</div>' +
-          '<div class="kbf-table-pager-right">' +
-            '<button class="kbf-table-pager-btn kbf-table-prev" type="button">Prev</button>' +
-            '<span class="kbf-table-pager-page">1 / 1</span>' +
-            '<button class="kbf-table-pager-btn kbf-table-next" type="button">Next</button>' +
-          '</div>';
-        var select = pager.querySelector('.kbf-table-rows');
-        var prevBtn = pager.querySelector('.kbf-table-prev');
-        var nextBtn = pager.querySelector('.kbf-table-next');
-        var pageLabel = pager.querySelector('.kbf-table-pager-page');
-        var page = 1;
-        var perPage = 5;
-        /**
-         * @function  render
-         * @purpose   Renders current leaderboard page slice and updates pager controls.
-         * @used-by   initLeaderboardPager, page-size change, prev/next button handlers
-         * @calls     Math.max, Math.ceil, Array.prototype.forEach
-         * @params    none
-         * @returns   void
-         * @status    ACTIVE
-         */
-        function render(){
-            var total = items.length;
-            var pages = Math.max(1, Math.ceil(total / perPage));
-            if(page > pages) page = pages;
-            var start = (page - 1) * perPage;
-            var end = start + perPage;
-            items.forEach(function(item, i){
-                item.style.display = (i >= start && i < end) ? '' : 'none';
-            });
-            pageLabel.textContent = page + ' / ' + pages;
-            prevBtn.disabled = page <= 1;
-            nextBtn.disabled = page >= pages;
-            pager.style.display = total > perPage ? 'flex' : 'none';
-        }
-        select.addEventListener('change', function(){
-            perPage = parseInt(this.value, 10) || 5;
-            page = 1;
-            render();
-        });
-        prevBtn.addEventListener('click', function(){ if(page > 1){ page--; render(); } });
-        nextBtn.addEventListener('click', function(){ if(page < Math.ceil(items.length / perPage)){ page++; render(); } });
-        render();
-    }
     document.addEventListener('DOMContentLoaded', function(){
         kbfInitBenefitQuickSelect();
-        initLeaderboardPager();
     });
     </script>
     <?php
