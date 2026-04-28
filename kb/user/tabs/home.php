@@ -558,6 +558,9 @@
         .kbf-home-sponsor-wrap + .kbf-table-pager .kbf-table-pager-right{
           margin-left:auto;
         }
+        .kbf-home-sponsor-wrap + .kbf-table-pager .kbf-pager-pages{
+          display:none;
+        }
         .kbf-sponsor-details summary{
           cursor:pointer;
           font-size:13px;
@@ -590,6 +593,38 @@
           .kbf-sponsor-details-content{
             transition:none;
             transform:none;
+          }
+        }
+        @media (max-width: 680px){
+          .kbf-home-sponsor-wrap .kbf-table{
+            min-width:0;
+            table-layout:auto;
+          }
+          .kbf-home-sponsor-table col{
+            width:auto !important;
+          }
+          .kbf-home-sponsor-table th,
+          .kbf-home-sponsor-table td{
+            white-space:normal;
+            overflow:visible;
+            text-overflow:clip;
+            word-break:break-word;
+          }
+          .kbf-home-sponsor-table th:nth-child(1),
+          .kbf-home-sponsor-table td:nth-child(1){
+            width:26%;
+          }
+          .kbf-home-sponsor-table th:nth-child(2),
+          .kbf-home-sponsor-table td:nth-child(2){
+            width:34%;
+          }
+          .kbf-home-sponsor-table th:nth-child(3),
+          .kbf-home-sponsor-table td:nth-child(3){
+            width:20%;
+          }
+          .kbf-home-sponsor-table th:nth-child(4),
+          .kbf-home-sponsor-table td:nth-child(4){
+            width:20%;
           }
         }
       </style>
