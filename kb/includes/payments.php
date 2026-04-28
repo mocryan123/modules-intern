@@ -103,6 +103,77 @@ if (!function_exists('kbf_reconcile_pending_sponsorships')) {
     }
 }
 
+if (!function_exists('kbf_maya_payload_has_paid_status')) {
+    function kbf_maya_payload_has_paid_status($payload) {
+        if (!is_array($payload)) return false;
+        $candidates = [];
+        $paths = [
+            ['status'],
+            ['paymentStatus'],
+            ['checkoutStatus'],
+            ['data', 'status'],
+            ['data', 'paymentStatus'],
+            ['data', 'checkoutStatus'],
+            ['resource', 'status'],
+            ['resource', 'paymentStatus'],
+            ['resource', 'checkoutStatus'],
+            ['payment', 'status'],
+            ['payment', 'paymentStatus'],
+        ];
+        foreach ($paths as $path) {
+            $val = $payload;
+            foreach ($path as $key) {
+                if (!is_array($val) || !array_key_exists($key, $val)) {
+                    $val = null;
+                    break;
+                }
+                $val = $val[$key];
+            }
+            if (is_string($val) && $val !== '') {
+                $candidates[] = strtoupper(trim($val));
+            }
+        }
+        if (!empty($payload['payments']) && is_array($payload['payments'])) {
+            foreach ($payload['payments'] as $p) {
+                if (!is_array($p)) continue;
+                foreach (['status', 'paymentStatus', 'checkoutStatus'] as $k) {
+                    if (!empty($p[$k]) && is_string($p[$k])) {
+                        $candidates[] = strtoupper(trim($p[$k]));
+                    }
+                }
+            }
+        }
+        $paid = ['COMPLETED','PAID','PAYMENT_SUCCESS','CHECKOUT_SUCCESS','AUTHORIZED','CAPTURED','SUCCESS','DONE'];
+        foreach ($candidates as $s) {
+            if (in_array($s, $paid, true)) return true;
+        }
+        return false;
+    }
+}
+
+if (!function_exists('kbf_maya_extract_payment_reference')) {
+    function kbf_maya_extract_payment_reference($payload, $fallback = '') {
+        if (!is_array($payload)) return (string)$fallback;
+        $candidates = [
+            $payload['receiptNumber'] ?? '',
+            $payload['requestReferenceNumber'] ?? '',
+            $payload['id'] ?? '',
+            $payload['resource']['receiptNumber'] ?? '',
+            $payload['resource']['requestReferenceNumber'] ?? '',
+            $payload['resource']['id'] ?? '',
+            $payload['data']['receiptNumber'] ?? '',
+            $payload['data']['requestReferenceNumber'] ?? '',
+            $payload['data']['id'] ?? '',
+        ];
+        foreach ($candidates as $c) {
+            if (!empty($c) && is_string($c)) {
+                return sanitize_text_field($c);
+            }
+        }
+        return (string)$fallback;
+    }
+}
+
 if (!function_exists('kbf_is_production_mode')) {
     function kbf_is_production_mode() {
         return !(bool) kbf_get_setting('kbf_demo_mode', true);
@@ -296,44 +367,36 @@ if (!function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
         }
 
         $checkout_id = isset($gateway_payload['checkoutId']) ? sanitize_text_field((string)$gateway_payload['checkoutId']) : '';
-        if ($checkout_id === '') return false;
-
-        $checkout = kbf_maya_request('/checkout/v1/checkouts/' . rawurlencode($checkout_id), null, 'GET');
-        if (isset($checkout['error'])) {
-            $checkout = kbf_maya_request('/checkout/v1/checkouts/' . rawurlencode($checkout_id), null, 'GET', true);
-        }
-        if (isset($checkout['error']) || !is_array($checkout)) return false;
-
-        $status_candidates = array_filter([
-            isset($checkout['status']) ? strtoupper((string)$checkout['status']) : '',
-            isset($checkout['paymentStatus']) ? strtoupper((string)$checkout['paymentStatus']) : '',
-            isset($checkout['checkoutStatus']) ? strtoupper((string)$checkout['checkoutStatus']) : '',
-            isset($checkout['data']['status']) ? strtoupper((string)$checkout['data']['status']) : '',
-            isset($checkout['data']['paymentStatus']) ? strtoupper((string)$checkout['data']['paymentStatus']) : '',
-            isset($checkout['data']['checkoutStatus']) ? strtoupper((string)$checkout['data']['checkoutStatus']) : '',
-        ]);
-        $paid_statuses = ['COMPLETED', 'PAID', 'PAYMENT_SUCCESS', 'CHECKOUT_SUCCESS', 'AUTHORIZED'];
+        $rrn = 'KBF-' . sanitize_text_field((string)$sponsorship->rand_id);
         $is_paid = false;
-        foreach ($status_candidates as $status) {
-            if (in_array($status, $paid_statuses, true)) {
+        $payment_reference = '';
+
+        if ($checkout_id !== '') {
+            $checkout = kbf_maya_request('/checkout/v1/checkouts/' . rawurlencode($checkout_id), null, 'GET');
+            if (isset($checkout['error'])) {
+                $checkout = kbf_maya_request('/checkout/v1/checkouts/' . rawurlencode($checkout_id), null, 'GET', true);
+            }
+            if (is_array($checkout) && !isset($checkout['error']) && function_exists('kbf_maya_payload_has_paid_status') && kbf_maya_payload_has_paid_status($checkout)) {
                 $is_paid = true;
-                break;
+                $payment_reference = function_exists('kbf_maya_extract_payment_reference')
+                    ? kbf_maya_extract_payment_reference($checkout, $checkout_id)
+                    : $checkout_id;
             }
         }
-        if (!$is_paid) return false;
 
-        $payment_reference = '';
-        if (!empty($checkout['receiptNumber'])) {
-            $payment_reference = sanitize_text_field((string)$checkout['receiptNumber']);
-        } elseif (!empty($checkout['requestReferenceNumber'])) {
-            $payment_reference = sanitize_text_field((string)$checkout['requestReferenceNumber']);
-        } elseif (!empty($checkout['id'])) {
-            $payment_reference = sanitize_text_field((string)$checkout['id']);
-        } else {
-            $payment_reference = $checkout_id;
+        // Fallback: check by requestReferenceNumber for cases where checkout lookup is unavailable/incomplete.
+        if (!$is_paid && $rrn !== '') {
+            $payment = kbf_maya_request('/payments/v1/payment-rrns/' . rawurlencode($rrn), null, 'GET', true);
+            if (is_array($payment) && !isset($payment['error']) && function_exists('kbf_maya_payload_has_paid_status') && kbf_maya_payload_has_paid_status($payment)) {
+                $is_paid = true;
+                $payment_reference = function_exists('kbf_maya_extract_payment_reference')
+                    ? kbf_maya_extract_payment_reference($payment, $rrn)
+                    : $rrn;
+            }
         }
 
-        return kbf_mark_sponsorship_completed((int)$sponsorship->id, $payment_reference);
+        if (!$is_paid) return false;
+        return kbf_mark_sponsorship_completed((int)$sponsorship->id, $payment_reference !== '' ? $payment_reference : ($checkout_id !== '' ? $checkout_id : $rrn));
     }
 }
 
