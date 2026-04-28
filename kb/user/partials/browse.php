@@ -334,7 +334,7 @@ function bntm_shortcode_kbf_browse() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. ?50" min="50" step="1" required>
+              <input type="number" name="amount" placeholder="Min. ?50" min="1" step="1" required>
               <div id="kbf-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
             </div>
             <div class="kbf-form-group"><label>Message (optional)</label><textarea name="message" rows="2" placeholder="Leave an encouraging message..."></textarea></div>
