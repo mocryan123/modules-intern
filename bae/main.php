@@ -2825,10 +2825,9 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 
         <!-- Mobile floating bottom nav -->
         <button type="button" class="bae-mobile-nav-toggle" id="bae-mobile-nav-toggle" onclick="baeMobileNavToggle()" aria-expanded="true" aria-controls="bae-mobile-nav" title="Toggle navigation">
-            <svg id="bae-mob-nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-            <svg id="bae-mob-nav-icon-closed" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="m18 15-6-6-6 6"/></svg>
-            <span id="bae-mobile-nav-toggle-label">Hide Menu</span>
-        </button>
+    <svg id="bae-mob-nav-icon-open" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    <svg id="bae-mob-nav-icon-closed" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="m18 15-6-6-6 6"/></svg>
+</button>
         <nav class="bae-mobile-nav" id="bae-mobile-nav">
             <?php foreach ($nav_tabs as $slug => $tab): ?>
             <?php
@@ -5968,14 +5967,14 @@ if (dlPngBtn) {
 
         var collapsed = (localStorage.getItem('bae_mobile_nav_collapsed') === '1');
 
-        function apply() {
-            nav.classList.toggle('collapsed', collapsed);
-            toggle.classList.toggle('collapsed', collapsed);
-            toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-            if (label) label.textContent = collapsed ? 'Show Menu' : 'Hide Menu';
-            if (iconOpen) iconOpen.style.display = collapsed ? 'none' : '';
-            if (iconClosed) iconClosed.style.display = collapsed ? '' : 'none';
-        }
+       function apply() {
+    nav.classList.toggle('collapsed', collapsed);
+    toggle.classList.toggle('collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    // label removed – no text to update
+    if (iconOpen) iconOpen.style.display = collapsed ? 'none' : '';
+    if (iconClosed) iconClosed.style.display = collapsed ? '' : 'none';
+}
 
         window.baeMobileNavToggle = function() {
             collapsed = !collapsed;
