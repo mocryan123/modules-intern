@@ -251,6 +251,7 @@ function bntm_shortcode_kbf_fund_details() {
         ));
     }
     $is_self = $current_user_id && $current_user_id === (int)$fund->business_id;
+    $prefill_sponsor_name = $current_user_id ? sanitize_text_field((string)wp_get_current_user()->display_name) : '';
     $prefill_email = $current_user_id ? wp_get_current_user()->user_email : '';
     $prefill_phone = $current_user_id ? sanitize_text_field((string)get_user_meta($current_user_id, 'kbf_phone', true)) : '';
     $poster_title_default = (string)wp_unslash($fund->title);
@@ -1458,9 +1459,9 @@ function bntm_shortcode_kbf_fund_details() {
           </div>
           <form id="kbf-sponsor-form" onsubmit="return false;">
             <input type="hidden" name="fund_id" value="<?php echo esc_attr((int) $fund->id); ?>">
-            <div class="kbf-form-row">
-              <div class="kbf-form-group"><label>Name / Company / Account</label><input type="text" name="sponsor_name" id="spd-name" placeholder="Your name, company, or account"></div>
-              <div class="kbf-form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;"><label class="kbf-checkbox-row"><input type="checkbox" id="spd-anon" onchange="document.getElementById('spd-name').disabled=this.checked"> Sponsor Anonymously</label></div>
+            <div class="kbf-form-row" style="gap:0;">
+              <div class="kbf-form-group"><label>Name / Company / Account</label><input type="text" name="sponsor_name" id="spd-name" placeholder="Your name, company, or account" value="<?php echo esc_attr($prefill_sponsor_name); ?>"></div>
+              <div class="kbf-form-group" style="display:flex;align-items:flex-end;padding-bottom:4px;"><label class="kbf-checkbox-row"><input type="checkbox" id="spd-anon" onchange="var n=document.getElementById('spd-name');if(!n)return;if(this.checked){n.dataset.prev=n.value;n.value='Anonymous';n.disabled=true;n.style.background='#f8fafc';n.style.color='var(--kbf-slate)';}else{n.disabled=false;n.value=n.dataset.prev||'';n.style.background='';n.style.color='';}"> Sponsor Anonymously</label></div>
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
