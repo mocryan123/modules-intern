@@ -267,7 +267,7 @@ function bntm_ajax_kbf_admin_recheck_payment() {
     global $wpdb;
     $st = $wpdb->prefix.'kbf_sponsorships';
     $id = intval($_POST['sponsorship_id']);
-    $sp = $wpdb->get_row($wpdb->prepare("SELECT id,email,payment_status FROM {$st} WHERE id=%d", $id));
+    $sp = $wpdb->get_row($wpdb->prepare("SELECT id,email,payment_status,gateway_payload,rand_id FROM {$st} WHERE id=%d", $id));
     if(!$sp) {
         wp_send_json_error(['message'=>'Sponsorship not found.']);
     }
@@ -285,7 +285,21 @@ function bntm_ajax_kbf_admin_recheck_payment() {
         wp_send_json_success(['message'=>'Maya recheck successful. Payment marked completed.']);
     }
 
-    wp_send_json_error(['message'=>'No paid status found yet in Maya for this transaction.']);
+    $has_checkout = false;
+    if (!empty($sp->gateway_payload)) {
+        $gw = json_decode((string)$sp->gateway_payload, true);
+        $has_checkout = is_array($gw) && !empty($gw['checkoutId']);
+    }
+    $has_public = function_exists('kbf_maya_public_key') ? (kbf_maya_public_key() !== '') : false;
+    $has_secret = function_exists('kbf_maya_secret_key') ? (kbf_maya_secret_key() !== '') : false;
+    $msg = 'No paid status found yet in Maya for this transaction.';
+    if (!$has_checkout) {
+        $msg .= ' Missing checkoutId on this record.';
+    }
+    if (!$has_public || !$has_secret) {
+        $msg .= ' Please check Maya live API keys (public/secret).';
+    }
+    wp_send_json_error(['message'=>$msg]);
 }
 
 function bntm_ajax_kbf_admin_verify_organizer() {

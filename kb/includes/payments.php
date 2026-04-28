@@ -384,7 +384,29 @@ if (!function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
             }
         }
 
-        // Fallback: check by requestReferenceNumber for cases where checkout lookup is unavailable/incomplete.
+        // Fallback 1: check payment by checkoutId (Maya may expose final state here first).
+        if (!$is_paid && $checkout_id !== '') {
+            $payment_by_id = kbf_maya_request('/payments/v1/payments/' . rawurlencode($checkout_id), null, 'GET', true);
+            if (is_array($payment_by_id) && !isset($payment_by_id['error']) && function_exists('kbf_maya_payload_has_paid_status') && kbf_maya_payload_has_paid_status($payment_by_id)) {
+                $is_paid = true;
+                $payment_reference = function_exists('kbf_maya_extract_payment_reference')
+                    ? kbf_maya_extract_payment_reference($payment_by_id, $checkout_id)
+                    : $checkout_id;
+            }
+        }
+
+        // Fallback 2: lightweight payment status endpoint by checkoutId.
+        if (!$is_paid && $checkout_id !== '') {
+            $payment_status = kbf_maya_request('/payments/v1/payments/' . rawurlencode($checkout_id) . '/status', null, 'GET');
+            if (is_array($payment_status) && !isset($payment_status['error']) && function_exists('kbf_maya_payload_has_paid_status') && kbf_maya_payload_has_paid_status($payment_status)) {
+                $is_paid = true;
+                $payment_reference = function_exists('kbf_maya_extract_payment_reference')
+                    ? kbf_maya_extract_payment_reference($payment_status, $checkout_id)
+                    : $checkout_id;
+            }
+        }
+
+        // Fallback 3: check by requestReferenceNumber for cases where checkout lookup is unavailable/incomplete.
         if (!$is_paid && $rrn !== '') {
             $payment = kbf_maya_request('/payments/v1/payment-rrns/' . rawurlencode($rrn), null, 'GET', true);
             if (is_array($payment) && !isset($payment['error']) && function_exists('kbf_maya_payload_has_paid_status') && kbf_maya_payload_has_paid_status($payment)) {
