@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /* Fund details shortcode */
 if (!function_exists('kbf_fund_details_load_fund')) {
     /**
