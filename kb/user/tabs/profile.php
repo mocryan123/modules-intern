@@ -823,25 +823,37 @@ function kbf_dashboard_profile_tab( $business_id ) {
     document.getElementById('kbf-payout-type')?.addEventListener('change', window.kbfUpdatePayoutFields);
     window.kbfUpdatePayoutFields();
 
+    function kbfFormatMobileNumber(value){
+        var digits = String(value || '').replace(/\D/g, '').substring(0, 11);
+        if (!digits) return '';
+        if (digits.charAt(0) !== '0') digits = '0' + digits.substring(0, 10);
+        if (digits.length > 1 && digits.charAt(1) !== '9') digits = '09' + digits.substring(2);
+        digits = digits.substring(0, 11);
+        if(digits.length <= 4) return digits;
+        if(digits.length <= 7) return digits.substring(0,4) + ' ' + digits.substring(4);
+        return digits.substring(0,4) + ' ' + digits.substring(4,7) + ' ' + digits.substring(7);
+    }
+
     // ===== AUTO-FORMAT PAYOUT NUMBER =====
     (function(){
         const numEl = document.getElementById('kbf-payout-number');
         const typeSel = document.getElementById('kbf-payout-type');
         if(!numEl || !typeSel) return;
-        numEl.addEventListener('input', function(){
+        function formatPayoutNumber(){
             const val = this.value.replace(/\D/g,'');
             const type = typeSel.value;
             if(type === 'gcash' || type === 'maya_wallet'){
-                const trimmed = val.substring(0, 11);
-                if(trimmed.length <= 4) this.value = trimmed;
-                else if(trimmed.length <= 7) this.value = trimmed.substring(0,4) + ' ' + trimmed.substring(4);
-                else this.value = trimmed.substring(0,4) + ' ' + trimmed.substring(4,7) + ' ' + trimmed.substring(7);
+                this.value = kbfFormatMobileNumber(this.value);
             } else if(type === 'card'){
                 const trimmed = val.substring(0, 16);
                 const groups = trimmed.match(/.{1,4}/g);
                 this.value = groups ? groups.join(' ') : trimmed;
             }
+        }
+        ['input', 'change', 'blur', 'paste'].forEach(function(evt){
+            numEl.addEventListener(evt, formatPayoutNumber);
         });
+        formatPayoutNumber.call(numEl);
     })();
 
     // ===== AUTO-FORMAT PHONE NUMBER =====
@@ -849,24 +861,13 @@ function kbf_dashboard_profile_tab( $business_id ) {
         const phone = document.getElementById('kbf-contact-phone') || document.querySelector('[name="phone"]');
         if(!phone) return;
 
-        function formatMobileNumber(value){
-            var digits = String(value || '').replace(/\D/g, '').substring(0, 11);
-            if (!digits) return '';
-            if (digits.charAt(0) !== '0') digits = '0' + digits.substring(0, 10);
-            if (digits.length > 1 && digits.charAt(1) !== '9') digits = '09' + digits.substring(2);
-            digits = digits.substring(0, 11);
-            if(digits.length <= 4) return digits;
-            if(digits.length <= 7) return digits.substring(0,4) + ' ' + digits.substring(4);
-            return digits.substring(0,4) + ' ' + digits.substring(4,7) + ' ' + digits.substring(7);
-        }
-
         phone.setAttribute('inputmode', 'numeric');
         phone.setAttribute('maxlength', '13');
         phone.placeholder = '09XX XXX XXXX';
-        phone.value = formatMobileNumber(phone.value);
+        phone.value = kbfFormatMobileNumber(phone.value);
         ['input', 'change', 'blur', 'paste'].forEach(function(evt){
             phone.addEventListener(evt, function(){
-                this.value = formatMobileNumber(this.value);
+                this.value = kbfFormatMobileNumber(this.value);
             });
         });
     })();
