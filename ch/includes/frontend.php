@@ -7149,31 +7149,39 @@ $rand_id = ch_request_text($_GET['view_post'] ?? '');
                                                     </svg>
                                                     <?php echo $cm->vote_count; ?>
                                                 </button>
+                                            <?php endif; ?>
+
+                                            <?php if ($user_id || (!$user_id && empty($post->is_private))): ?>
+                                                <button class="ch-comment-action" onclick="chToggleReplyForm(<?php echo (int) $cm->id; ?>)">Reply</button>
+                                            <?php endif; ?>
+
+                                            <?php if ($user_id && ($cm->user_id === 0 || $cm->user_id != $user_id) && !current_user_can('manage_options')): ?>
                                                 <button class="ch-comment-action"
-                                                    onclick="chToggleReplyForm(<?php echo (int) $cm->id; ?>)">Reply</button>
-                                                <?php if ($user_id && ($cm->user_id === 0 || $cm->user_id != $user_id) && !current_user_can('manage_options')): ?>
-                                                    <button class="ch-comment-action"
-                                                        onclick="chReportComment(<?php echo (int) $cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Report</button>
-                                                <?php endif; ?>
-                                                <?php if ($user_id && ($cm->user_id !== 0 && $cm->user_id == $user_id || current_user_can('manage_options'))): ?>
-                                                    <button class="ch-comment-action"
-                                                        onclick="chEditComment(<?php echo (int) $cm->id; ?>)">Edit</button>
-                                                    <button class="ch-comment-action ch-danger-action"
-                                                        onclick="chDeleteComment(<?php echo (int) $cm->id; ?>, '<?php echo esc_attr($nonce); ?>', this)">Delete</button>
-                                                <?php endif; ?>
+                                                    onclick="chReportComment(<?php echo (int) $cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Report</button>
+                                            <?php endif; ?>
+                                            <?php if ($user_id && ($cm->user_id !== 0 && $cm->user_id == $user_id || current_user_can('manage_options'))): ?>
+                                                <button class="ch-comment-action"
+                                                    onclick="chEditComment(<?php echo (int) $cm->id; ?>)">Edit</button>
+                                                <button class="ch-comment-action ch-danger-action"
+                                                    onclick="chDeleteComment(<?php echo (int) $cm->id; ?>, '<?php echo esc_attr($nonce); ?>', this)">Delete</button>
                                             <?php endif; ?>
                                         </div>
 
                                         <?php if ($user_id): ?>
-                                            <div class="ch-reply-form" id="ch-reply-form-<?php echo (int) $cm->id; ?>"
-                                                style="display:none">
-                                                <textarea class="ch-input ch-textarea" id="ch-reply-content-<?php echo (int) $cm->id; ?>"
-                                                    rows="2" placeholder="Write a reply..."></textarea>
+                                            <div class="ch-reply-form" id="ch-reply-form-<?php echo (int) $cm->id; ?>" style="display:none">
+                                                <textarea class="ch-input ch-textarea" id="ch-reply-content-<?php echo (int) $cm->id; ?>" rows="2" placeholder="Write a reply..."></textarea>
                                                 <div style="margin-top:8px">
-                                                    <button class="ch-btn ch-btn-primary ch-btn-sm"
-                                                        onclick="chSubmitComment(<?php echo (int) $post->id; ?>, <?php echo (int) $cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Reply</button>
-                                                    <button class="ch-btn ch-btn-secondary ch-btn-sm"
-                                                        onclick="chToggleReplyForm(<?php echo (int) $cm->id; ?>)">Cancel</button>
+                                                    <button class="ch-btn ch-btn-primary ch-btn-sm" onclick="chSubmitComment(<?php echo (int) $post->id; ?>, <?php echo (int) $cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Reply</button>
+                                                    <button class="ch-btn ch-btn-secondary ch-btn-sm" onclick="chToggleReplyForm(<?php echo (int) $cm->id; ?>)">Cancel</button>
+                                                </div>
+                                            </div>
+                                        <?php elseif (empty($post->is_private)): ?>
+                                            <div class="ch-reply-form" id="ch-reply-form-<?php echo (int) $cm->id; ?>" style="display:none">
+                                                <input type="text" id="ch-guest-reply-name-<?php echo (int) $cm->id; ?>" class="ch-input" placeholder="Your name (optional — leave blank for Anonymous)" maxlength="100" style="margin-bottom:8px;">
+                                                <textarea class="ch-input ch-textarea" id="ch-reply-content-<?php echo (int) $cm->id; ?>" rows="2" placeholder="Write a reply..."></textarea>
+                                                <div style="margin-top:8px">
+                                                    <button class="ch-btn ch-btn-primary ch-btn-sm" onclick="chSubmitGuestComment(<?php echo (int) $post->id; ?>, <?php echo (int) $cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Reply</button>
+                                                    <button class="ch-btn ch-btn-secondary ch-btn-sm" onclick="chToggleReplyForm(<?php echo (int) $cm->id; ?>)">Cancel</button>
                                                 </div>
                                             </div>
                                         <?php endif; ?>

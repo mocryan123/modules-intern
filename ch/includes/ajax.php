@@ -1176,10 +1176,7 @@ function bntm_ajax_ch_add_comment() {
         }
     }
 
-    // Disallow guests from replying to other comments (only allow top-level guest comments)
-    if (!$user_id && $parent_id > 0) {
-        wp_send_json_error(['message' => 'Guests cannot reply to other comments']);
-    }
+    // Guests are allowed to reply to comments on public posts (handled by frontend form)
 
     $result = $wpdb->insert("{$wpdb->prefix}ch_comments", [
         'rand_id'      => bntm_rand_id(),
