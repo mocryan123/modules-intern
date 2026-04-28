@@ -52,7 +52,8 @@ function bntm_kbf_should_use_fullwidth_template($title) {
 }
 
 // Ensure required pages exist and have the correct shortcodes.
-add_action('admin_init', 'bntm_kbf_ensure_pages');
+// Keep callable for manual "Generate Pages" actions, but avoid recreating
+// deleted pages on every admin request.
 function bntm_kbf_ensure_pages() {
     if (!current_user_can('manage_options')) return;
     $pages = bntm_kbf_get_pages();
@@ -123,6 +124,14 @@ function bntm_kbf_ensure_pages() {
             update_post_meta($new_id, '_wp_page_template', 'kbf-fullwidth.php');
         }
     }
+}
+
+add_action('admin_init', 'bntm_kbf_maybe_bootstrap_pages', 5);
+function bntm_kbf_maybe_bootstrap_pages() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('kbf_pages_bootstrap_done', '') === 'done') return;
+    bntm_kbf_ensure_pages();
+    update_option('kbf_pages_bootstrap_done', 'done');
 }
 
 // One-time slug migration for existing pages that still use old slugs (e.g., konekbayan-*)
