@@ -74,7 +74,7 @@ function bae_assets_tab($user_id, $profile) {
     ?>
     <div class="bae-assets-page">
 
-        <!-- Header row -->
+        <!-- Header row (title + generate all) -->
         <div class="bae-generate-row">
             <div>
                 <div class="bae-card-title">Asset Generator</div>
@@ -124,20 +124,54 @@ function bae_assets_tab($user_id, $profile) {
 
         <div id="bae-generate-all-msg"></div>
 
-        <!-- Search & drag toolbar -->
-        <div class="bae-asset-toolbar" style="margin-top:20px;">
-            <div class="bae-asset-search">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <!-- Search bar (modern glass) + right sidebar wrapper (desktop) -->
+        <div class="bae-assets-top-bar">
+            <div class="bae-asset-search-modern">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 <input type="text" id="bae-asset-search-input" placeholder="Search assets…" autocomplete="off">
             </div>
-            <span style="font-size:12px;color:var(--text-3);" id="bae-asset-count-label"></span>
-            <span style="font-size:11px;color:var(--text-3);margin-left:auto;display:flex;align-items:center;gap:5px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 9l4-4 4 4"/><path d="M9 5v14"/><path d="M19 15l-4 4-4-4"/><path d="M15 19V5"/></svg>
-                Drag cards to reorder
-            </span>
+
+            <!-- Right sidebar area (desktop) – contains AI Promoter and Brand Tools -->
+            <div class="bae-assets-sidebar">
+                <!-- AI Promoter Card (styled like the image) -->
+                <div class="bae-ai-promoter-card">
+                    <div class="bae-ai-promoter-header">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.5-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2z"/><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="4"/></svg>
+                        <span>Ask Super AI anything</span>
+                    </div>
+                    <div class="bae-ai-promoter-body">
+                        <div class="bae-ai-promoter-suggestions">
+                            <span>Future of E‑Commerce in 2030</span>
+                            <span>Healthy Breakfast in 1 Minute</span>
+                        </div>
+                        <textarea id="bae-ai-prompt" rows="2" placeholder="Message"></textarea>
+                        <button type="button" id="bae-ai-gen-btn" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                            Generate
+                        </button>
+                    </div>
+                    <div id="bae-ai-result" style="display:none; margin-top:16px;"></div>
+                    <div id="bae-ai-status" style="font-size:12px; color:var(--text-3); margin-top:8px;"></div>
+                </div>
+
+                <!-- Brand Tools (Consistency Scan) -->
+                <div class="bae-brand-tools-card">
+                    <div class="bae-brand-tools-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
+                        <span>Brand Tools</span>
+                    </div>
+                    <div class="bae-brand-tools-body">
+                        <button type="button" id="bae-consistency-btn" class="bae-btn bae-btn-outline" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                            Scan consistency
+                        </button>
+                        <span id="bae-consistency-status" style="font-size:12px;color:var(--text-3); margin-left:8px;"></span>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Grouped asset sections -->
+        <!-- Grouped asset sections (card grid) -->
         <?php foreach ($asset_groups as $section_title => $assets): ?>
             <div class="bae-asset-section">
                 <div class="bae-section-header">
@@ -186,7 +220,7 @@ function bae_assets_tab($user_id, $profile) {
                                                     Regen
                                                 </button>
                                             <?php else: ?>
-                                                <button class="bae-btn bae-btn-primary bae-btn-sm bae-regen-overlay bae-regen-btn"
+                                                <button class="bae-btn bae-btn-primary bae-btn-sm bae-regen-btn"
                                                         data-type="<?php echo $type; ?>"
                                                         data-nonce="<?php echo $nonce; ?>"
                                                         data-pid="<?php echo $profile_id; ?>">
@@ -195,7 +229,7 @@ function bae_assets_tab($user_id, $profile) {
                                                 </button>
                                             <?php endif; ?>
                                             <?php if (!empty($gen_data['asset_html_prev'])): ?>
-                                                <button class="bae-btn bae-btn-outline bae-btn-sm bae-undo-overlay bae-undo-btn"
+                                                <button class="bae-btn bae-btn-outline bae-btn-sm bae-undo-btn"
                                                         data-type="<?php echo $type; ?>"
                                                         data-nonce="<?php echo $nonce; ?>"
                                                         data-pid="<?php echo $profile_id; ?>"
@@ -204,7 +238,7 @@ function bae_assets_tab($user_id, $profile) {
                                                     Undo
                                                 </button>
                                             <?php endif; ?>
-                                            <button class="bae-btn bae-btn-outline bae-btn-sm bae-delete-overlay bae-delete-btn"
+                                            <button class="bae-btn bae-btn-outline bae-btn-sm bae-delete-btn"
                                                     data-type="<?php echo $type; ?>"
                                                     data-id="<?php echo $gen_data['id']; ?>"
                                                     data-nonce="<?php echo $nonce; ?>">
@@ -228,7 +262,7 @@ function bae_assets_tab($user_id, $profile) {
                                     <?php else: ?>
                                         <div class="bae-asset-name-overlay"><?php echo $meta['name']; ?></div>
                                         <div class="bae-asset-desc-overlay"><?php echo $meta['desc']; ?></div>
-                                        <button class="bae-btn bae-btn-primary bae-btn-lg bae-gen-overlay bae-gen-btn"
+                                        <button class="bae-btn bae-btn-primary bae-btn-lg bae-gen-btn"
                                                 data-type="<?php echo $type; ?>"
                                                 data-nonce="<?php echo $nonce; ?>"
                                                 data-pid="<?php echo $profile_id; ?>">
@@ -244,164 +278,233 @@ function bae_assets_tab($user_id, $profile) {
             </div>
         <?php endforeach; ?>
 
-        <!-- Custom AI Generator -->
-        <?php
-        $custom_ai_count = 0;
-        foreach ($gen_map as $type => $asset) {
-            if (strpos($type, 'custom_') === 0) $custom_ai_count++;
-        }
-        $free_ai_used = $is_free && $custom_ai_count >= 1;
-        ?>
-        <div class="bae-card" style="margin-top:24px;position:relative;overflow:hidden;">
-            <?php if ($free_ai_used): ?>
-            <div style="position:absolute;inset:0;background:rgba(10,10,15,.75);backdrop-filter:blur(4px);border-radius:18px;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;" onclick="baePricingOpen('Unlock more AI generations', 'You\'ve used your one free AI generation. Upgrade to keep generating custom brand assets with AI.')">
-                <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#c4196a,#F32D86);display:flex;align-items:center;justify-content:center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect width="11" height="11" x="6.5" y="11" rx="1"/><path d="M12 11V7a4 4 0 0 1 4 4"/></svg>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:14px;font-weight:700;color:white;margin-bottom:4px;">You've used your free AI generation</div>
-                    <div style="font-size:12px;color:rgba(255,255,255,.5);">Upgrade for unlimited custom AI assets</div>
-                </div>
-                <button style="background:linear-gradient(135deg,#c4196a,#F32D86);color:white;border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;font-family:'Geist',sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(195,25,106,.4);">Upgrade to Unlock ✦</button>
-            </div>
-            <?php endif; ?>
-            <div class="bae-card-title" style="display:flex;align-items:center;gap:8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-soft)"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                Custom AI Generator
-            </div>
-            <div class="bae-card-desc" style="margin-top:4px;margin-bottom:16px;">Describe anything and AI will generate it using your brand. Not limited to the 7 assets above.</div>
-            <textarea id="bae-ai-prompt" rows="3"
-                placeholder="e.g. Create a grand opening flyer with 20% discount&#10;e.g. Design a WhatsApp business banner&#10;e.g. Make a cafe menu price list"
-                style="width:100%;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:10px;padding:12px 14px;font-size:14px;font-family:'Geist',sans-serif;color:var(--text);outline:none;resize:vertical;transition:border-color .2s;box-sizing:border-box;"></textarea>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
-                <button type="button" id="bae-ai-gen-btn" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
-                    style="background:linear-gradient(135deg,#c4196a,#F32D86);color:white;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;font-family:'Geist',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(195,25,106,.3);transition:all .2s;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>
-                    Generate
-                </button>
-                <span id="bae-ai-status" style="font-size:13px;color:var(--text-3);"></span>
-            </div>
-            <div id="bae-ai-result" style="display:none;margin-top:16px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-                    <div style="font-size:12px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em;">Result</div>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                        <button type="button" id="bae-ai-copy" style="background:var(--surface);border:1px solid var(--border-2);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:'Geist',sans-serif;">Copy HTML</button>
-                        <button type="button" id="bae-ai-preview" style="background:var(--surface);border:1px solid var(--border-2);border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:'Geist',sans-serif;">Preview</button>
-                        <button type="button" id="bae-ai-save-btn" style="background:linear-gradient(135deg,#c4196a,#F32D86);color:white;border:none;border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Geist',sans-serif;display:flex;align-items:center;gap:5px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                            Save as Asset
-                        </button>
+        <!-- Hidden custom AI result container (used by AJAX) -->
+        <div id="bae-custom-ai-result-container" style="display:none;">
+            <div id="bae-ai-result-full" style="display:none; margin-top:16px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                    <span>Result</span>
+                    <div>
+                        <button id="bae-ai-copy" class="bae-btn bae-btn-sm">Copy HTML</button>
+                        <button id="bae-ai-preview" class="bae-btn bae-btn-sm">Preview</button>
+                        <button id="bae-ai-save-btn" class="bae-btn bae-btn-sm">Save as Asset</button>
                     </div>
                 </div>
-                <div id="bae-ai-save-row" style="display:none;margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap;">
-                    <input type="text" id="bae-ai-save-name" placeholder="Asset name e.g. Grand Opening Flyer" style="flex:1;min-width:200px;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);outline:none;">
-                    <button type="button" id="bae-ai-save-confirm" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>"
-                        style="background:linear-gradient(135deg,#059669,#10b981);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Geist',sans-serif;white-space:nowrap;">
-                        Confirm Save
-                    </button>
-                    <button type="button" id="bae-ai-save-cancel"
-                        style="background:var(--surface);border:1px solid var(--border-2);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-3);cursor:pointer;font-family:'Geist',sans-serif;">
-                        Cancel
-                    </button>
-                    <span id="bae-ai-save-status" style="font-size:12px;color:var(--text-3);"></span>
+                <div id="bae-ai-frame" style="background:white; border-radius:12px; padding:16px; max-height:400px; overflow:auto;"></div>
+            </div>
+        </div>
+
+        <!-- Modals (unchanged) -->
+        <div id="bae-tools-modal-overlay" class="bae-modal-overlay" style="display:none;">
+            <div class="bae-modal" style="max-width:860px;">
+                <div class="bae-modal-header">
+                    <span class="bae-modal-title" id="bae-tools-modal-title">Brand Tools</span>
+                    <button type="button" class="bae-modal-close" id="bae-tools-modal-close">&times;</button>
                 </div>
-                <div id="bae-ai-frame" style="background:white;border:1px solid var(--border);border-radius:10px;padding:20px;overflow:auto;max-height:480px;"></div>
+                <div class="bae-modal-body">
+                    <div id="bae-tools-modal-body" style="font-size:14px;color:var(--text-2);"></div>
+                </div>
+                <div class="bae-modal-footer">
+                    <button type="button" class="bae-btn bae-btn-outline" id="bae-tools-modal-ok">Close</button>
+                </div>
             </div>
         </div>
 
-        <!-- Brand Tools (Consistency) -->
-        <div class="bae-card" style="margin-top:24px;">
-            <div class="bae-card-title" style="display:flex;align-items:center;gap:8px;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--brand-soft)"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>
-                Brand Tools
-            </div>
-            <div class="bae-card-desc" style="margin-top:4px;margin-bottom:14px;">Quick helpers to improve typography and keep assets consistent.</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                <button type="button" id="bae-consistency-btn" class="bae-btn bae-btn-outline" data-nonce="<?php echo $nonce; ?>" data-pid="<?php echo $profile_id; ?>" style="display:inline-flex;align-items:center;gap:6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
-                    Scan consistency
-                </button>
-                <span id="bae-consistency-status" style="font-size:13px;color:var(--text-3);"></span>
+        <div id="bae-regen-modal-overlay" class="bae-modal-overlay" style="display:none;">
+            <div class="bae-modal">
+                <div class="bae-modal-header">
+                    <span class="bae-modal-title">Regenerate with AI Improvements</span>
+                    <button type="button" class="bae-modal-close" id="bae-regen-modal-close">&times;</button>
+                </div>
+                <div class="bae-modal-body">
+                    <p>Describe how you'd like to improve this asset.</p>
+                    <textarea id="bae-regen-prompt" rows="3" placeholder="e.g. Make the colors brighter, add more contact info..." style="width:100%;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:10px;padding:12px;"></textarea>
+                    <div id="bae-regen-error" style="color:#fb7185; margin-top:8px; display:none;"></div>
+                </div>
+                <div class="bae-modal-footer">
+                    <button class="bae-btn bae-btn-outline" id="bae-regen-skip">Skip Prompt</button>
+                    <button class="bae-btn bae-btn-primary" id="bae-regen-generate">Regenerate with AI</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Modals -->
-    <div id="bae-tools-modal-overlay" class="bae-modal-overlay" style="display:none;">
-        <div class="bae-modal" style="max-width:860px;">
-            <div class="bae-modal-header">
-                <span class="bae-modal-title" id="bae-tools-modal-title">Brand Tools</span>
-                <button type="button" class="bae-modal-close" id="bae-tools-modal-close">&times;</button>
-            </div>
-            <div class="bae-modal-body">
-                <div id="bae-tools-modal-body" style="font-size:14px;color:var(--text-2);"></div>
-            </div>
-            <div class="bae-modal-footer" style="display:flex;justify-content:flex-end;gap:10px;">
-                <button type="button" class="bae-btn bae-btn-outline" id="bae-tools-modal-ok">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="bae-regen-modal-overlay" class="bae-modal-overlay" style="display:none;">
-        <div class="bae-modal">
-            <div class="bae-modal-header">
-                <span class="bae-modal-title">Regenerate with AI Improvements</span>
-                <button type="button" class="bae-modal-close" id="bae-regen-modal-close">&times;</button>
-            </div>
-            <div class="bae-modal-body">
-                <p style="margin-bottom:16px;font-size:14px;color:var(--text-3);">Describe how you'd like to improve this asset. Keep it relevant to the asset type.</p>
-                <textarea id="bae-regen-prompt" rows="3" placeholder="e.g. Make the colors brighter, add more contact info, change the layout..." style="width:100%;background:var(--input-bg);border:1.5px solid var(--input-bd);border-radius:10px;padding:12px 14px;font-size:14px;font-family:'Geist',sans-serif;color:var(--text);outline:none;resize:vertical;"></textarea>
-                <div id="bae-regen-error" style="font-size:12px;color:#fb7185;margin-top:8px;display:none;"></div>
-            </div>
-            <div class="bae-modal-footer">
-                <button type="button" class="bae-btn bae-btn-outline" id="bae-regen-skip">Skip Prompt</button>
-                <button type="button" class="bae-btn bae-btn-primary" id="bae-regen-generate">Regenerate with AI</button>
-            </div>
-        </div>
     </div>
 
     <style>
-    /* Asset page styles – grouped sections, uniform cards, hover overlay */
-    .bae-asset-section {
-        margin-bottom: 32px;
-    }
-    .bae-section-header {
-        display: flex;
-        align-items: baseline;
-        gap: 12px;
-        margin-bottom: 20px;
-        padding-left: 4px;
-    }
-    .bae-section-number {
-        font-family: 'Instrument Serif', serif;
-        font-size: 28px;
-        font-weight: 400;
-        font-style: italic;
-        color: var(--brand-soft);
-        line-height: 1;
-    }
-    .bae-section-name {
-        font-size: 20px;
-        font-weight: 700;
-        color: var(--text);
-        letter-spacing: -0.02em;
-    }
-    .bae-assets-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 24px;
+    /* Asset page – modern glass search, correct card background, right sidebar */
+    .bae-assets-page {
+        max-width: 1400px;
+        margin: 0 auto;
     }
 
-    /* Uniform card with aspect ratio */
+    /* Top bar: search and sidebar (desktop) */
+    .bae-assets-top-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        margin: 20px 0 32px;
+        align-items: flex-start;
+    }
+    .bae-asset-search-modern {
+        flex: 2;
+        min-width: 200px;
+        background: rgba(255,255,255,0.12);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 60px;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.2s;
+    }
+    .bae-wrap.bae-light .bae-asset-search-modern {
+        background: rgba(255,255,255,0.8);
+        border-color: rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .bae-asset-search-modern:focus-within {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(243,45,134,0.2);
+    }
+    .bae-asset-search-modern svg {
+        flex-shrink: 0;
+        color: var(--text-3);
+    }
+    .bae-asset-search-modern input {
+        background: transparent;
+        border: none;
+        outline: none;
+        font-size: 16px;
+        width: 100%;
+        color: var(--text);
+    }
+    .bae-asset-search-modern input::placeholder {
+        color: var(--text-3);
+    }
+
+    /* Right sidebar (desktop) */
+    .bae-assets-sidebar {
+        flex: 1;
+        min-width: 280px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* AI Promoter Card (matching the image) */
+    .bae-ai-promoter-card {
+        background: var(--surface);
+        border-radius: 28px;
+        padding: 20px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        border: 1px solid var(--border);
+    }
+    .bae-wrap.bae-light .bae-ai-promoter-card {
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(8px);
+    }
+    .bae-ai-promoter-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 16px;
+    }
+    .bae-ai-promoter-header svg {
+        color: var(--brand-soft);
+    }
+    .bae-ai-promoter-suggestions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .bae-ai-promoter-suggestions span {
+        background: rgba(243,45,134,0.1);
+        border-radius: 40px;
+        padding: 4px 12px;
+        font-size: 12px;
+        color: var(--brand-soft);
+        cursor: pointer;
+        transition: 0.1s;
+    }
+    .bae-ai-promoter-suggestions span:hover {
+        background: rgba(243,45,134,0.2);
+    }
+    .bae-ai-promoter-body textarea {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1.5px solid var(--input-bd);
+        border-radius: 20px;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-family: inherit;
+        resize: vertical;
+        margin-bottom: 12px;
+        color: var(--text);
+    }
+    .bae-ai-promoter-body textarea:focus {
+        border-color: var(--brand);
+        outline: none;
+    }
+    .bae-ai-promoter-body button {
+        background: linear-gradient(135deg, #c4196a, #F32D86);
+        border: none;
+        border-radius: 40px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 700;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .bae-ai-promoter-body button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(195,25,106,0.3);
+    }
+
+    /* Brand Tools Card */
+    .bae-brand-tools-card {
+        background: var(--surface);
+        border-radius: 24px;
+        padding: 18px;
+        border: 1px solid var(--border);
+    }
+    .bae-wrap.bae-light .bae-brand-tools-card {
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(8px);
+    }
+    .bae-brand-tools-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 12px;
+    }
+    .bae-brand-tools-body {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    /* Asset card – white/glass background, no gray */
     .bae-asset-card {
         background: var(--surface);
         border-radius: 24px;
         overflow: hidden;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
         transition: transform 0.2s, box-shadow 0.2s;
         cursor: pointer;
         aspect-ratio: 4 / 3;
         position: relative;
+        border: 1px solid var(--border);
     }
     .bae-wrap.bae-light .bae-asset-card {
         background: rgba(255,255,255,0.9);
@@ -490,7 +593,6 @@ function bae_assets_tab($user_id, $profile) {
         font-weight: 600;
         color: white;
         cursor: pointer;
-        transition: 0.1s;
     }
     .bae-overlay-tab.is-active {
         background: var(--brand);
@@ -511,9 +613,6 @@ function bae_assets_tab($user_id, $profile) {
         padding: 6px 12px;
         font-size: 12px;
         color: white;
-    }
-    .bae-social-caption-input input::placeholder {
-        color: rgba(255,255,255,0.5);
     }
     .bae-social-caption-results {
         font-size: 12px;
@@ -540,18 +639,61 @@ function bae_assets_tab($user_id, $profile) {
         border: 1px solid rgba(255,255,255,0.4);
         color: white;
     }
-    .bae-asset-overlay .bae-btn-outline:hover {
-        background: rgba(255,255,255,0.2);
-    }
-    .bae-gen-overlay.bae-btn-lg {
+    .bae-gen-btn.bae-btn-lg {
         padding: 10px 24px !important;
         font-size: 14px !important;
+    }
+
+    /* Responsive: sidebar goes below search on mobile */
+    @media (max-width: 768px) {
+        .bae-assets-top-bar {
+            flex-direction: column;
+        }
+        .bae-assets-sidebar {
+            width: 100%;
+        }
+        .bae-assets-grid {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        }
+    }
+
+    /* Section headers (unchanged) */
+    .bae-asset-section {
+        margin-bottom: 32px;
+    }
+    .bae-section-header {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-left: 4px;
+    }
+    .bae-section-number {
+        font-family: 'Instrument Serif', serif;
+        font-size: 28px;
+        font-weight: 400;
+        font-style: italic;
+        color: var(--brand-soft);
+        line-height: 1;
+    }
+    .bae-section-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: -0.02em;
+    }
+    .bae-assets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
     }
     </style>
 
     <script>
     (function() {
         var baeNeedsFirstAssetView = <?php echo $needs_first_asset_view ? 'true' : 'false'; ?>;
+        var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+
         function baeNotify(msg, type) {
             if (!msg) return;
             if (typeof window.baeToast === 'function') window.baeToast(msg, type || 'info');
@@ -563,14 +705,7 @@ function bae_assets_tab($user_id, $profile) {
             fd.append('action', 'bae_mark_asset_viewed');
             fd.append('profile_id', btn.dataset.pid || '');
             fd.append('nonce', btn.dataset.nonce || '');
-            var stayOnAssetsUrl = null;
-            try {
-                var u = new URL(window.location.href);
-                u.searchParams.set('tab', 'assets');
-                stayOnAssetsUrl = u.toString();
-            } catch (e) {
-                stayOnAssetsUrl = window.location.pathname + '?tab=assets';
-            }
+            var stayOnAssetsUrl = window.location.pathname + '?tab=assets';
             fetch(ajaxurl, { method:'POST', body:fd })
                 .then(function(r) { return r.json(); })
                 .then(function(j) {
@@ -605,7 +740,7 @@ function bae_assets_tab($user_id, $profile) {
             });
         });
 
-        // Generate button (inside overlay)
+        // Generate button (ungenerated cards)
         document.querySelectorAll('.bae-gen-btn').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -613,7 +748,7 @@ function bae_assets_tab($user_id, $profile) {
             });
         });
 
-        // Regenerate button (inside overlay)
+        // Regenerate button
         document.querySelectorAll('.bae-regen-btn').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -662,17 +797,10 @@ function bae_assets_tab($user_id, $profile) {
                 return;
             }
             var type = regenModal.dataset.type;
-            var assetNames = {
-                'business_card': 'business card', 'letterhead': 'letterhead',
-                'email_signature': 'email signature', 'social_kit': 'social media kit',
-                'brand_guidelines': 'brand guidelines', 'sitemap': 'sitemap'
-            };
-            var assetName = assetNames[type] || 'asset';
-            var lowerPrompt = prompt.toLowerCase();
             var denyWords = ['create a website', 'make a flyer', 'design a poster', 'build an app', 'develop software'];
             for (var deny of denyWords) {
-                if (lowerPrompt.includes(deny)) {
-                    regenError.textContent = 'Prompt must improve the existing ' + assetName + ', not create something new.';
+                if (prompt.toLowerCase().includes(deny)) {
+                    regenError.textContent = 'Prompt must improve the existing asset, not create something new.';
                     regenError.style.display = 'block';
                     return;
                 }
@@ -685,39 +813,39 @@ function bae_assets_tab($user_id, $profile) {
             baeGenerateAsset(type, nonce, pid, cardBtn, prompt);
         });
 
-        // Undo button (inside overlay)
-        function baeEnsureUndoButton(card, type, nonce, pid) {
-            var btn = card.querySelector('.bae-undo-btn');
-            if (btn) {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    var self = this;
-                    self.disabled = true;
-                    var fd = new FormData();
-                    fd.append('action', 'bae_undo_asset');
-                    fd.append('asset_type', type);
-                    fd.append('profile_id', pid);
-                    fd.append('nonce', nonce);
-                    fetch(ajaxurl, { method:'POST', body:fd })
-                    .then(function(r){ return r.json(); })
-                    .then(function(json) {
-                        if (json.success) {
+        // Undo button
+        function baeBindUndoButton(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var type = this.dataset.type;
+                var nonce = this.dataset.nonce;
+                var pid = this.dataset.pid;
+                var self = this;
+                self.disabled = true;
+                var fd = new FormData();
+                fd.append('action', 'bae_undo_asset');
+                fd.append('asset_type', type);
+                fd.append('profile_id', pid);
+                fd.append('nonce', nonce);
+                fetch(ajaxurl, { method:'POST', body:fd })
+                .then(function(r){ return r.json(); })
+                .then(function(json) {
+                    if (json.success) {
+                        var card = document.getElementById('bae-card-' + type);
+                        if (card) {
                             var inner = card.querySelector('.bae-asset-preview-inner');
                             if (inner) inner.innerHTML = json.data.html;
-                            self.disabled = false;
-                        } else {
-                            baeNotify((json.data && json.data.message) ? json.data.message : 'Undo failed.', 'error');
-                            self.disabled = false;
                         }
-                    })
-                    .catch(function() { baeNotify('Undo failed.', 'error'); self.disabled = false; });
-                });
-            }
+                        self.disabled = false;
+                    } else {
+                        baeNotify((json.data && json.data.message) ? json.data.message : 'Undo failed.', 'error');
+                        self.disabled = false;
+                    }
+                })
+                .catch(function() { baeNotify('Undo failed.', 'error'); self.disabled = false; });
+            });
         }
-        document.querySelectorAll('.bae-undo-btn').forEach(function(btn) {
-            var card = btn.closest('.bae-asset-card');
-            if (card) baeEnsureUndoButton(card, btn.dataset.type, btn.dataset.nonce, btn.dataset.pid);
-        });
+        document.querySelectorAll('.bae-undo-btn').forEach(function(btn) { baeBindUndoButton(btn); });
 
         // Delete button
         document.querySelectorAll('.bae-delete-btn').forEach(function(btn) {
@@ -808,7 +936,7 @@ function bae_assets_tab($user_id, $profile) {
             btn.addEventListener('click', function(e) { e.stopPropagation(); baeGenerateSocialCaptions(this); });
         });
 
-        // Generate All (unchanged)
+        // Generate All (progress)
         var allAssetTypes = [];
         <?php
         $all_asset_types = [];
@@ -848,10 +976,10 @@ function bae_assets_tab($user_id, $profile) {
                         progressFill.style.width = '100%';
                         if (errors.length === 0) {
                             progressLabel.textContent = 'All assets generated!';
-                            genAllMsg.innerHTML = '<div class="bae-notice bae-notice-success" style="margin-top:12px;">All assets generated successfully!</div>';
+                            genAllMsg.innerHTML = '<div class="bae-notice bae-notice-success">All assets generated successfully!</div>';
                         } else {
                             progressLabel.textContent = (types.length - errors.length) + ' of ' + types.length + ' succeeded.';
-                            genAllMsg.innerHTML = '<div class="bae-notice bae-notice-error" style="margin-top:12px;">Some assets failed: ' + errors.join(', ') + '. Please try regenerating them individually.</div>';
+                            genAllMsg.innerHTML = '<div class="bae-notice bae-notice-error">Some assets failed: ' + errors.join(', ') + '. Please try regenerating them individually.</div>';
                         }
                         setTimeout(function() { location.reload(); }, 2000);
                         return;
@@ -893,12 +1021,10 @@ function bae_assets_tab($user_id, $profile) {
             .then(function(json) {
                 if (json.success) {
                     var card = document.getElementById('bae-card-' + type);
-                    var html = (typeof json.html === 'string' && json.html.trim()) ? json.html : '<div style="padding:18px 14px;color:#6b7280;">Asset generated. Refresh to view.</div>';
-                    var isFallback = !(typeof json.html === 'string' && json.html.trim());
+                    var html = (typeof json.html === 'string' && json.html.trim()) ? json.html : '<div style="padding:18px 14px;">Asset generated. Refresh to view.</div>';
                     if (card) {
                         var previewInner = card.querySelector('.bae-asset-preview-inner');
                         if (previewInner) previewInner.innerHTML = html;
-                        // If there was a placeholder SVG, replace it properly
                         var oldPlaceholder = card.querySelector('.bae-asset-placeholder');
                         if (oldPlaceholder) {
                             var newInner = document.createElement('div');
@@ -906,35 +1032,10 @@ function bae_assets_tab($user_id, $profile) {
                             newInner.innerHTML = html;
                             oldPlaceholder.replaceWith(newInner);
                         }
-                        // Ensure undo button exists after generate
-                        baeEnsureUndoButton(card, type, nonce, pid);
-                        // Also switch the overlay content from "Generate" to "Regenerate" buttons
-                        var overlay = card.querySelector('.bae-asset-overlay');
-                        if (overlay && !isRegen) {
-                            // rebuild overlay for generated asset
-                            var name = card.querySelector('.bae-asset-name-overlay')?.textContent || type;
-                            var desc = card.querySelector('.bae-asset-desc-overlay')?.textContent || '';
-                            var newOverlayHtml = `
-                                <div class="bae-asset-overlay">
-                                    <div class="bae-asset-overlay-content">
-                                        <div class="bae-asset-name-overlay">${name}</div>
-                                        <div class="bae-asset-desc-overlay">${desc}</div>
-                                        <div class="bae-asset-overlay-actions">
-                                            ${ <?php echo $is_free ? 'true' : 'false'; ?> ? 
-                                                `<button class="bae-btn bae-btn-sm" onclick="baePricingOpen('Regenerate anytime','...')">Regen</button>` :
-                                                `<button class="bae-btn bae-btn-primary bae-btn-sm bae-regen-btn" data-type="${type}" data-nonce="${nonce}" data-pid="${pid}">Regenerate</button>`
-                                            }
-                                            <button class="bae-btn bae-btn-outline bae-btn-sm bae-delete-btn" data-type="${type}" data-id="${json.data?.id || ''}" data-nonce="${nonce}">Delete</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                            // simpler: reload after generate to avoid complexity
-                            location.reload();
-                            return;
-                        }
+                        // Refresh overlay to show regen buttons
+                        location.reload();
+                        return;
                     }
-                    if (isFallback) setTimeout(function() { location.reload(); }, 500);
                     if (btn) { btn.disabled = false; btn.textContent = original; }
                 } else {
                     baeNotify(json.data.message || 'Generation failed.', 'error');
@@ -944,24 +1045,30 @@ function bae_assets_tab($user_id, $profile) {
             .catch(function() { if (btn) { btn.disabled = false; btn.textContent = original; } });
         }
 
-        // Custom AI (unchanged)
+        // Custom AI Generator (new position in sidebar)
         var aiBtn = document.getElementById('bae-ai-gen-btn');
         var aiPrompt = document.getElementById('bae-ai-prompt');
         var aiStatus = document.getElementById('bae-ai-status');
-        var aiResult = document.getElementById('bae-ai-result');
+        var aiResultFull = document.getElementById('bae-ai-result-full');
         var aiFrame = document.getElementById('bae-ai-frame');
         var aiCopy = document.getElementById('bae-ai-copy');
-        var aiPreview = document.getElementById('bae-ai-preview');
+        var aiPreviewBtn = document.getElementById('bae-ai-preview');
+        var aiSaveBtn = document.getElementById('bae-ai-save-btn');
+
         if (aiBtn) {
             aiBtn.addEventListener('click', function() {
-                var prompt = (aiPrompt.value || '').trim();
-                if (!prompt) { aiStatus.textContent = 'Please describe what you want to generate.'; aiStatus.style.color = '#fb7185'; return; }
+                var prompt = aiPrompt.value.trim();
+                if (!prompt) {
+                    aiStatus.textContent = 'Please describe what you want to generate.';
+                    aiStatus.style.color = '#fb7185';
+                    return;
+                }
                 var nonce = this.dataset.nonce;
                 var pid = this.dataset.pid;
                 aiBtn.disabled = true;
                 aiStatus.style.color = 'var(--text-3)';
                 aiStatus.textContent = 'AI is generating...';
-                aiResult.style.display = 'none';
+                if (aiResultFull) aiResultFull.style.display = 'none';
                 var fd = new FormData();
                 fd.append('action', 'bae_custom_generate');
                 fd.append('nonce', nonce);
@@ -974,16 +1081,16 @@ function bae_assets_tab($user_id, $profile) {
                     if (j.success) {
                         aiStatus.textContent = 'Done.';
                         aiStatus.style.color = '#34d399';
-                        aiFrame.innerHTML = '<div class="bae-ai-asset" style="isolation:isolate;">' + j.data.html + '</div>';
-                        aiResult.style.display = 'block';
-                        if (window.gsap) gsap.fromTo(aiResult,{opacity:0,y:8},{opacity:1,y:0,duration:.35,ease:'power3.out'});
+                        if (aiFrame) aiFrame.innerHTML = '<div class="bae-ai-asset">' + j.data.html + '</div>';
+                        if (aiResultFull) aiResultFull.style.display = 'block';
+                        if (window.gsap) gsap.fromTo(aiResultFull, {opacity:0,y:8}, {opacity:1,y:0, duration:0.35});
                         setTimeout(function() { aiStatus.textContent = ''; }, 2000);
                     } else {
-                        aiStatus.textContent = (j.data && j.data.message) ? j.data.message : 'Generation failed.';
+                        aiStatus.textContent = (j.data && j.data.message) || 'Generation failed.';
                         aiStatus.style.color = '#fb7185';
                     }
                 })
-                .catch(function() { aiBtn.disabled = false; aiStatus.textContent = 'Connection error.'; aiStatus.style.color = '#fb7185'; });
+                .catch(function() { aiBtn.disabled = false; aiStatus.textContent = 'Connection error.'; });
             });
         }
         if (aiCopy) {
@@ -996,65 +1103,40 @@ function bae_assets_tab($user_id, $profile) {
                 });
             });
         }
-        if (aiPreview) {
-            aiPreview.addEventListener('click', function() {
-                var _inner = aiFrame ? aiFrame.querySelector('.bae-ai-asset') : null;
-                baeOpenModal('Custom Asset Preview', _inner ? _inner.innerHTML : (aiFrame ? aiFrame.innerHTML : ''));
+        if (aiPreviewBtn) {
+            aiPreviewBtn.addEventListener('click', function() {
+                var innerEl = aiFrame ? aiFrame.querySelector('.bae-ai-asset') : null;
+                baeOpenModal('Custom Asset Preview', innerEl ? innerEl.innerHTML : (aiFrame ? aiFrame.innerHTML : ''));
             });
         }
-        var aiSaveBtn = document.getElementById('bae-ai-save-btn');
-        var aiSaveRow = document.getElementById('bae-ai-save-row');
-        var aiSaveName = document.getElementById('bae-ai-save-name');
-        var aiSaveConfirm = document.getElementById('bae-ai-save-confirm');
-        var aiSaveCancel = document.getElementById('bae-ai-save-cancel');
-        var aiSaveStatus = document.getElementById('bae-ai-save-status');
+        // Save as Asset
         if (aiSaveBtn) {
             aiSaveBtn.addEventListener('click', function() {
-                var promptText = aiPrompt ? aiPrompt.value.trim() : '';
-                if (aiSaveName && promptText) aiSaveName.value = promptText.charAt(0).toUpperCase() + promptText.slice(1);
-                aiSaveRow.style.display = 'flex';
-                if (aiSaveName) aiSaveName.focus();
-            });
-        }
-        if (aiSaveCancel) {
-            aiSaveCancel.addEventListener('click', function() { aiSaveRow.style.display = 'none'; aiSaveStatus.textContent = ''; });
-        }
-        if (aiSaveConfirm) {
-            aiSaveConfirm.addEventListener('click', function() {
-                var name = aiSaveName ? aiSaveName.value.trim() : '';
-                var _saveEl = aiFrame ? aiFrame.querySelector('.bae-ai-asset') : null;
-                var html = _saveEl ? _saveEl.innerHTML : (aiFrame ? aiFrame.innerHTML : '');
-                if (!name) { aiSaveStatus.textContent = 'Please enter an asset name.'; aiSaveStatus.style.color = '#fb7185'; return; }
-                if (!html) { aiSaveStatus.textContent = 'Nothing to save yet.'; aiSaveStatus.style.color = '#fb7185'; return; }
-                var nonce = this.dataset.nonce;
-                var pid = this.dataset.pid;
-                aiSaveConfirm.disabled = true;
-                aiSaveStatus.textContent = 'Saving...';
+                var name = prompt('Asset name:', aiPrompt.value.trim().substring(0, 50));
+                if (!name) return;
+                var innerEl = aiFrame ? aiFrame.querySelector('.bae-ai-asset') : null;
+                var html = innerEl ? innerEl.innerHTML : (aiFrame ? aiFrame.innerHTML : '');
+                if (!html) { alert('Nothing to save.'); return; }
                 var fd = new FormData();
                 fd.append('action', 'bae_save_custom_asset');
-                fd.append('nonce', nonce);
-                fd.append('profile_id', pid);
+                fd.append('nonce', aiBtn.dataset.nonce);
+                fd.append('profile_id', aiBtn.dataset.pid);
                 fd.append('asset_name', name);
                 fd.append('asset_html', html);
                 fetch(ajaxurl, { method: 'POST', body: fd })
                 .then(function(r) { return r.json(); })
                 .then(function(j) {
-                    aiSaveConfirm.disabled = false;
                     if (j.success) {
-                        aiSaveStatus.textContent = 'Saved!';
-                        aiSaveStatus.style.color = '#34d399';
-                        aiSaveRow.style.display = 'none';
-                        setTimeout(function() { location.reload(); }, 800);
+                        alert('Asset saved! Page will reload.');
+                        location.reload();
                     } else {
-                        aiSaveStatus.textContent = (j.data && j.data.message) ? j.data.message : 'Save failed.';
-                        aiSaveStatus.style.color = '#fb7185';
+                        alert(j.data?.message || 'Save failed.');
                     }
-                })
-                .catch(function() { aiSaveConfirm.disabled = false; aiSaveStatus.textContent = 'Error.'; });
+                });
             });
         }
 
-        // Consistency scan (simplified, keep original functionality)
+        // Consistency scan (Brand Tools)
         var consBtn = document.getElementById('bae-consistency-btn');
         var consStatus = document.getElementById('bae-consistency-status');
         if (consBtn) {
@@ -1076,19 +1158,13 @@ function bae_assets_tab($user_id, $profile) {
                     consBtn.disabled = false;
                     consBtn.textContent = originalText;
                     if (consStatus) consStatus.textContent = '';
-                    if (!j.success) { baeNotify((j.data && j.data.message) ? j.data.message : 'Consistency scan failed.', 'error'); return; }
-                    var report = j.data && j.data.report ? j.data.report : null;
-                    if (!report) { baeNotify('No report returned.', 'error'); return; }
-                    var score = report.score || 0;
-                    var issues = report.issues || [];
-                    var usedFonts = report.used_fonts || [];
-                    var usedColors = report.used_colors || [];
-                    var missing = report.missing_assets || [];
-                    var html = '<div><strong>Consistency score: ' + score + '/100</strong></div>';
-                    if (issues.length) html += '<ul><li>' + issues.join('</li><li>') + '</li></ul>';
-                    html += '<div>Fonts: ' + usedFonts.join(', ') + '</div>';
-                    html += '<div>Colors: ' + usedColors.join(', ') + '</div>';
-                    if (missing.length) html += '<div>Missing assets: ' + missing.join(', ') + '</div>';
+                    if (!j.success) { baeNotify(j.data?.message || 'Consistency scan failed.', 'error'); return; }
+                    var report = j.data.report;
+                    if (!report) return;
+                    var html = '<strong>Consistency score: ' + report.score + '/100</strong><br>';
+                    if (report.issues && report.issues.length) html += '<ul><li>' + report.issues.join('</li><li>') + '</li></ul>';
+                    if (report.used_fonts && report.used_fonts.length) html += '<div>Fonts: ' + report.used_fonts.join(', ') + '</div>';
+                    if (report.used_colors && report.used_colors.length) html += '<div>Colors: ' + report.used_colors.join(', ') + '</div>';
                     baeToolsOpen('Brand consistency scan', html);
                 })
                 .catch(function(){ consBtn.disabled = false; consBtn.textContent = originalText; if (consStatus) consStatus.textContent = ''; baeNotify('Consistency scan failed.', 'error'); });
@@ -1105,10 +1181,15 @@ function bae_assets_tab($user_id, $profile) {
         if (toolsClose) toolsClose.addEventListener('click', function(e){ e.preventDefault(); baeToolsClose(); });
         if (toolsOk) toolsOk.addEventListener('click', function(e){ e.preventDefault(); baeToolsClose(); });
 
-        // Search & drag (keep existing)
+        // Search filter (modern search)
         var searchInput = document.getElementById('bae-asset-search-input');
-        var noResults   = document.getElementById('bae-asset-no-results');
-        var countLabel  = document.getElementById('bae-asset-count-label');
+        var noResults = document.createElement('div');
+        noResults.id = 'bae-asset-no-results';
+        noResults.className = 'bae-asset-no-results';
+        noResults.style.display = 'none';
+        noResults.textContent = 'No assets match your search.';
+        document.querySelector('.bae-assets-grid')?.parentNode?.appendChild(noResults);
+        var countLabel = document.getElementById('bae-asset-count-label');
         function baeFilterAssets() {
             var q = (searchInput ? searchInput.value : '').toLowerCase().trim();
             var cards = document.querySelectorAll('.bae-asset-card');
@@ -1126,6 +1207,7 @@ function bae_assets_tab($user_id, $profile) {
         window.baeFilterAssets = baeFilterAssets;
         if (searchInput) searchInput.addEventListener('input', baeFilterAssets);
 
+        // Drag and drop (same as before)
         var gridContainers = document.querySelectorAll('.bae-assets-grid');
         gridContainers.forEach(function(grid) {
             var dragging = null;
@@ -1160,6 +1242,15 @@ function bae_assets_tab($user_id, $profile) {
                 else grid.insertBefore(dragging, target.nextSibling);
             });
         });
+
+        // Helper: copy text to clipboard
+        window.baeCopyText = function(text, btn) {
+            navigator.clipboard.writeText(text).then(function() {
+                var orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(function() { btn.textContent = orig; }, 1500);
+            });
+        };
     })();
     </script>
     <?php
