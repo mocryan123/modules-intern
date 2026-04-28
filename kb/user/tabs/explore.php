@@ -97,6 +97,14 @@ function kbf_dashboard_find_funds_tab() {
                 $current_user_email
             ));
         }
+        if ($payment_result === 'success' && $pay_sponsorship && isset($pay_sponsorship->payment_status) && $pay_sponsorship->payment_status !== 'completed' && function_exists('kbf_mark_sponsorship_completed')) {
+            kbf_mark_sponsorship_completed((int)$pay_sponsorship->id, (string)$pay_sponsorship->rand_id);
+            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,amount,email,payment_status,rand_id FROM {$pay_st} WHERE id=%d AND email=%s",
+                (int)$pay_sponsorship->id,
+                $current_user_email
+            ));
+        }
 
         $pay_fund_title   = $pay_fund ? $pay_fund->title : 'this fundraiser';
         $pay_fund_url     = kbf_get_page_url('fund_details');
@@ -114,16 +122,6 @@ function kbf_dashboard_find_funds_tab() {
                 'countdown' => 6,
                 'redirect'  => $pay_fund_url,
                 'btn_text'  => 'View Fundraiser',
-            ];
-        } elseif ($payment_result === 'success') {
-            $payment_banner_data = [
-                'type'     => 'warning',
-                'icon'     => 'ph-fill ph-clock-countdown',
-                'title'    => 'Payment Processing',
-                'message'  => 'Your payment is being verified. It will reflect shortly once confirmation is received.',
-                'countdown' => 5,
-                'redirect'  => $pay_fund_url,
-                'btn_text'  => 'Refresh Fundraiser',
             ];
         } elseif ($payment_result === 'failed') {
             $payment_banner_data = [

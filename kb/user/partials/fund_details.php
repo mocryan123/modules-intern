@@ -290,7 +290,7 @@ function bntm_shortcode_kbf_fund_details() {
             (int)$return_sponsorship->id
         ));
     }
-    if ($demo_mode && $payment_result === 'success' && $return_sponsorship && $return_sponsorship->payment_status !== 'completed' && function_exists('kbf_mark_sponsorship_completed')) {
+    if ($payment_result === 'success' && $return_sponsorship && $return_sponsorship->payment_status !== 'completed' && function_exists('kbf_mark_sponsorship_completed')) {
         kbf_mark_sponsorship_completed((int)$return_sponsorship->id, $payment_ref !== '' ? $payment_ref : (string)$return_sponsorship->rand_id);
         $return_sponsorship = $wpdb->get_row($wpdb->prepare(
             "SELECT id,amount,payment_status,email,rand_id,fund_id FROM {$st} WHERE id=%d LIMIT 1",

@@ -130,7 +130,7 @@ if (!function_exists('kbf_dashboard_handle_payment_success')) {
                 if (function_exists('kbf_maya_sync_sponsorship_from_checkout') && kbf_maya_sync_sponsorship_from_checkout((int)$row->id, (string)$row->email)) {
                     return true;
                 }
-                if ($demo_mode && function_exists('kbf_mark_sponsorship_completed')) {
+                if (function_exists('kbf_mark_sponsorship_completed')) {
                     kbf_mark_sponsorship_completed((int)$row->id);
                     return true;
                 }
@@ -141,7 +141,7 @@ if (!function_exists('kbf_dashboard_handle_payment_success')) {
                 if (function_exists('kbf_maya_sync_sponsorship_from_checkout') && kbf_maya_sync_sponsorship_from_checkout((int)$row->id, (string)$row->email)) {
                     return true;
                 }
-                if ($demo_mode && function_exists('kbf_mark_sponsorship_completed')) {
+                if (function_exists('kbf_mark_sponsorship_completed')) {
                     kbf_mark_sponsorship_completed((int)$row->id);
                     return true;
                 }
