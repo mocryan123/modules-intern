@@ -57,6 +57,52 @@ if (!function_exists('kbf_cleanup_stale_pending_sponsorships')) {
     }
 }
 
+if (!function_exists('kbf_reconcile_pending_sponsorships')) {
+    /**
+     * Recheck recent pending Maya sponsorships and mark paid ones completed.
+     * This handles cases where sponsors paid but closed the tab before returning.
+     */
+    function kbf_reconcile_pending_sponsorships($limit = 20, $min_age_minutes = 2, $max_age_hours = 48) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'kbf_sponsorships';
+        $limit = max(1, min(100, (int)$limit));
+        $min_age_minutes = max(1, (int)$min_age_minutes);
+        $max_age_hours = max(1, (int)$max_age_hours);
+
+        $newest_cutoff = gmdate('Y-m-d H:i:s', time() - ($min_age_minutes * MINUTE_IN_SECONDS));
+        $oldest_cutoff = gmdate('Y-m-d H:i:s', time() - ($max_age_hours * HOUR_IN_SECONDS));
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT id
+             FROM {$table}
+             WHERE payment_status='pending'
+               AND gateway_payload IS NOT NULL
+               AND gateway_payload != ''
+               AND created_at <= %s
+               AND created_at >= %s
+             ORDER BY created_at DESC
+             LIMIT %d",
+            $newest_cutoff,
+            $oldest_cutoff,
+            $limit
+        ));
+        if (empty($rows)) {
+            return 0;
+        }
+
+        $completed = 0;
+        foreach ($rows as $row) {
+            if (!isset($row->id)) {
+                continue;
+            }
+            if (function_exists('kbf_maya_sync_sponsorship_from_checkout') && kbf_maya_sync_sponsorship_from_checkout((int)$row->id, '')) {
+                $completed++;
+            }
+        }
+        return $completed;
+    }
+}
+
 if (!function_exists('kbf_is_production_mode')) {
     function kbf_is_production_mode() {
         return !(bool) kbf_get_setting('kbf_demo_mode', true);

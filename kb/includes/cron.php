@@ -5,6 +5,17 @@ if (!defined('ABSPATH')) exit;
 // CRON
 // ============================================================
 
+add_filter('cron_schedules', 'kbf_register_cron_intervals');
+function kbf_register_cron_intervals($schedules) {
+    if (!isset($schedules['kbf_every_5_minutes'])) {
+        $schedules['kbf_every_5_minutes'] = [
+            'interval' => 5 * MINUTE_IN_SECONDS,
+            'display'  => 'Every 5 Minutes (KBF)',
+        ];
+    }
+    return $schedules;
+}
+
 add_action('kbf_check_deadlines', 'kbf_cron_check_deadlines');
 if (!wp_next_scheduled('kbf_check_deadlines')) {
     wp_schedule_event(time(), 'hourly', 'kbf_check_deadlines');
@@ -13,6 +24,11 @@ if (!wp_next_scheduled('kbf_check_deadlines')) {
 add_action('kbf_cleanup_pending_sponsorships', 'kbf_cron_cleanup_pending_sponsorships');
 if (!wp_next_scheduled('kbf_cleanup_pending_sponsorships')) {
     wp_schedule_event(time(), 'hourly', 'kbf_cleanup_pending_sponsorships');
+}
+
+add_action('kbf_reconcile_pending_payments', 'kbf_cron_reconcile_pending_payments');
+if (!wp_next_scheduled('kbf_reconcile_pending_payments')) {
+    wp_schedule_event(time(), 'kbf_every_5_minutes', 'kbf_reconcile_pending_payments');
 }
 
 function kbf_cron_check_deadlines() {
@@ -76,6 +92,12 @@ function kbf_cron_check_deadlines() {
 function kbf_cron_cleanup_pending_sponsorships() {
     if (function_exists('kbf_cleanup_stale_pending_sponsorships')) {
         kbf_cleanup_stale_pending_sponsorships();
+    }
+}
+
+function kbf_cron_reconcile_pending_payments() {
+    if (function_exists('kbf_reconcile_pending_sponsorships')) {
+        kbf_reconcile_pending_sponsorships(20, 2, 48);
     }
 }
 
