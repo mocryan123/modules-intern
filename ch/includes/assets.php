@@ -11783,11 +11783,19 @@ function ch_post_view_scripts()
             };
 
             window.chSubmitGuestComment = function (postId, parentId, nonce) {
-                const nameEl = document.getElementById('ch-guest-comment-name');
-                const contentEl = document.getElementById('ch-comment-content');
+                // Choose element IDs depending on whether this is a reply or top-level guest comment
+                const nameId = parentId > 0 ? 'ch-guest-reply-name-' + parentId : 'ch-guest-comment-name';
+                const contentId = parentId > 0 ? 'ch-reply-content-' + parentId : 'ch-comment-content';
+
+                const nameEl = document.getElementById(nameId);
+                const contentEl = document.getElementById(contentId);
                 const content = contentEl ? contentEl.value.trim() : '';
                 const guestName = nameEl ? nameEl.value.trim() : '';
                 if (!content) { alert('Please enter your comment'); return; }
+
+                // Find and show loading state on the closest submit button if present
+                const btn = contentEl ? contentEl.closest('.ch-comment-form, .ch-reply-form')?.querySelector('.ch-btn-primary') : null;
+                const restore = btn ? chBtnLoading(btn, 'Posting...') : () => {};
 
                 const fd = new FormData();
                 fd.append('action', 'ch_add_comment');
@@ -11803,10 +11811,11 @@ function ch_post_view_scripts()
                         if (json.success) {
                             chReloadAfterSuccess(0);
                         } else {
+                            restore();
                             alert(json.data?.message || 'Failed to post comment');
                         }
                     })
-                    .catch(() => alert('Network error.'));
+                    .catch(() => { restore(); alert('Network error.'); });
             };
 
             window.chDeleteComment = async function (commentId, nonce, triggerBtn) {
