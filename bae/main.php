@@ -1364,17 +1364,26 @@ function bae_wizard_shortcode($user_id) {
 }
 .bae-pill-swatch {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+    justify-content: center;
     width: 100%;
+    position: relative;
 }
 .bae-pill {
     width: 180px;
-    height: 44px;
-    border-radius: 44px;
+    height: 56px;  /* taller to fit text inside */
+    border-radius: 28px;  /* pill shape */
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 8px 12px;
+    position: relative;
+    color: white; /* fallback, JS will override */
+    font-family: 'Geist', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.1s ease;
     border: 1px solid rgba(255,255,255,0.15);
-    transition: transform 0.1s ease;
 }
 .bae-pill-swatch .bae-hex {
     font-size: 12px;
@@ -1955,7 +1964,7 @@ function bae_wizard_shortcode($user_id) {
         }
 
         // ── Render palette cards into Step 3 ──────────────────────────────
-      function renderPalettes(palettes, isAI) {
+     function renderPalettes(palettes, isAI) {
     var container = document.getElementById('bae-wiz-palette-carousel');
     var hint      = document.getElementById('bae-wiz-palette-hint');
     var loading   = document.getElementById('bae-wiz-palette-loading');
@@ -1977,15 +1986,20 @@ function bae_wizard_shortcode($user_id) {
         card.setAttribute('data-accent', p.accent);
         card.setAttribute('data-personality', p.personality);
 
-        // Build HTML: three pill swatches stacked
+        // Build pill HTML with hex INSIDE the pill
         var swatchesHtml = '';
         var colorKeys = ['primary', 'secondary', 'accent'];
         colorKeys.forEach(function(key) {
             var hex = p[key];
+            // Determine text color (black or white) based on luminance
+            var rgb = baeHexToRgb(hex);
+            var luminance = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
+            var textColor = luminance > 128 ? '#000000' : '#ffffff';
             swatchesHtml += `
                 <div class="bae-pill-swatch">
-                    <div class="bae-pill" style="background: ${hex};"></div>
-                    <div class="bae-hex">${hex.toUpperCase()}</div>
+                    <div class="bae-pill" style="background: ${hex}; color: ${textColor};">
+                        ${hex.toUpperCase()}
+                    </div>
                 </div>
             `;
         });
@@ -1999,19 +2013,16 @@ function bae_wizard_shortcode($user_id) {
         `;
 
         card.addEventListener('click', function(e) {
-            // Remove selected from all cards
             document.querySelectorAll('.bae-palette-card').forEach(function(c) {
                 c.classList.remove('selected');
             });
             card.classList.add('selected');
 
-            // Update global state
             state.primary   = card.getAttribute('data-primary');
             state.secondary = card.getAttribute('data-secondary');
             state.accent    = card.getAttribute('data-accent');
             state.personality = card.getAttribute('data-personality');
 
-            // Enable continue button
             document.getElementById('bae-wiz-next-3').disabled = false;
             document.getElementById('bae-wiz-vibe-err').style.display = 'none';
         });
@@ -2019,7 +2030,6 @@ function bae_wizard_shortcode($user_id) {
         container.appendChild(card);
     });
 
-    // Hide loading, show carousel
     loading.style.display = 'none';
     container.style.display = 'flex';
 }
