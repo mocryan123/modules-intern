@@ -1035,7 +1035,11 @@ function bntm_kbf_render_landing() {
         background: linear-gradient(135deg, #7ec4ff 0%, #3d8ef0 80%);
         box-shadow: 0 4px 10px rgba(61, 142, 240, 0.25);
     }
-    .kbf-compare-table { margin-top: 18px; border: 1px solid var(--kbf-border); border-radius: var(--kbf-radius-lg); overflow: hidden; background: #fff; box-shadow: var(--kbf-shadow); }
+    .kbf-compare-table { margin-top: 18px; border: 1px solid var(--kbf-border); border-radius: var(--kbf-radius-lg); overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; background: #fff; box-shadow: var(--kbf-shadow); scrollbar-width: thin; scrollbar-color: #2070e0 #f8fafc; }
+    .kbf-compare-table::-webkit-scrollbar { height: 10px; }
+    .kbf-compare-table::-webkit-scrollbar-track { background: #f8fafc; border-radius: 999px; }
+    .kbf-compare-table::-webkit-scrollbar-thumb { background: #2070e0; border-radius: 999px; border: 2px solid #f8fafc; }
+    .kbf-compare-table::-webkit-scrollbar-thumb:hover { background: #2070e0; }
     .kbf-compare-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--kbf-border); font-size: 18px; }
     .kbf-compare-row strong { color: #0d1a2e; font-weight: 600; }
     .kbf-compare-row:last-child { border-bottom: none; }
@@ -1777,7 +1781,9 @@ function bntm_kbf_render_landing() {
     }
     .kbf-compare-table {
         border-radius: 16px;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
         border: 1px solid #edf0f4;
     }
     .kbf-compare-table .kbf-compare-head, .kbf-compare-row:first-child {

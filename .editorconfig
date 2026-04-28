@@ -1,0 +1,11 @@
+root = true
+
+[*.{php,js,css,html,md,json,yml,yaml,txt}]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{png,jpg,jpeg,gif,webp,ico,svg,pdf,docx}]
+insert_final_newline = false
+trim_trailing_whitespace = false
