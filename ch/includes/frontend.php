@@ -7180,6 +7180,9 @@ $rand_id = ch_request_text($_GET['view_post'] ?? '');
 
                                         <!-- Nested replies -->
                                         <?php if (!empty($replies_map[$cm->id])): ?>
+                                            <div class="ch-replies-toggle-wrap" style="margin-top:8px;margin-bottom:6px;">
+                                                <button type="button" class="ch-comment-action ch-toggle-replies" data-target="<?php echo (int) $cm->id; ?>">Hide replies</button>
+                                            </div>
                                             <div class="ch-replies">
                                                 <?php foreach ($replies_map[$cm->id] as $reply): ?>
                                                     <div class="ch-comment ch-comment-reply" id="ch-comment-<?php echo $reply->id; ?>">
@@ -7218,6 +7221,27 @@ $rand_id = ch_request_text($_GET['view_post'] ?? '');
                             <?php endforeach; endif; ?>
                     </div>
                 </section>
+                <script>
+                (function(){
+                    document.addEventListener('click', function(e){
+                        var btn = e.target.closest && e.target.closest('.ch-toggle-replies');
+                        if(!btn) return;
+                        var id = btn.getAttribute('data-target');
+                        if(!id) return;
+                        var comment = document.getElementById('ch-comment-' + id);
+                        if(!comment) return;
+                        var replies = comment.querySelector('.ch-replies');
+                        if(!replies) return;
+                        if (replies.style.display === 'none') {
+                            replies.style.display = '';
+                            btn.textContent = 'Hide replies';
+                        } else {
+                            replies.style.display = 'none';
+                            btn.textContent = 'Show replies';
+                        }
+                    });
+                })();
+                </script>
             </div>
 
             <!-- Post Sidebar -->
