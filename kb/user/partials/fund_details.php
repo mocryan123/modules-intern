@@ -381,50 +381,6 @@ function bntm_shortcode_kbf_fund_details() {
         }
     }
 
-    // Open Graph meta for social share previews
-    if (!empty($fund)) {
-        static $kbf_og_added = false;
-        if (!$kbf_og_added) {
-            $kbf_og_added = true;
-            $og_title = wp_strip_all_tags($fund->title);
-            $og_desc  = wp_trim_words(wp_strip_all_tags($fund->description), 28, '...');
-            $og_img   = '';
-            if (!empty($photos) && is_array($photos)) {
-                $og_img = isset($photos[0]) ? $photos[0] : '';
-            }
-            if (!$og_img && $organizer && !empty($organizer->avatar_url)) {
-                $og_img = $organizer->avatar_url;
-            }
-            if (!$og_img && defined('BNTM_KBF_URL')) {
-                $og_img = BNTM_KBF_URL . 'assets/branding/logo.png';
-            }
-            /**
-             * @function  kbf_fund_details_wp_head_meta_callback (anonymous closure)
-             * @purpose   Outputs Open Graph and Twitter meta tags for the current fund share page.
-             * @used-by   [wp_head action hook]
-             * @calls     [esc_attr, esc_url]
-             * @params    [none]
-             * @returns   [void]
-             * @status    ACTIVE
-             */
-            add_action('wp_head', function() use ($og_title, $og_desc, $og_img, $share_url) {
-                echo "\n<meta property=\"og:type\" content=\"article\" />";
-                echo "\n<meta property=\"og:title\" content=\"" . esc_attr($og_title) . "\" />";
-                echo "\n<meta property=\"og:description\" content=\"" . esc_attr($og_desc) . "\" />";
-                echo "\n<meta property=\"og:url\" content=\"" . esc_url($share_url) . "\" />";
-                if (!empty($og_img)) {
-                    echo "\n<meta property=\"og:image\" content=\"" . esc_url($og_img) . "\" />";
-                }
-                echo "\n<meta name=\"twitter:card\" content=\"summary_large_image\" />";
-                echo "\n<meta name=\"twitter:title\" content=\"" . esc_attr($og_title) . "\" />";
-                echo "\n<meta name=\"twitter:description\" content=\"" . esc_attr($og_desc) . "\" />";
-                if (!empty($og_img)) {
-                    echo "\n<meta name=\"twitter:image\" content=\"" . esc_url($og_img) . "\" />\n";
-                }
-            }, 1);
-        }
-    }
-
     ob_start();
     ?>
 

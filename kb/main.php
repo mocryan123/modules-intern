@@ -890,6 +890,8 @@ add_action('init', 'kbf_handle_email_verification', 9);
 add_action('wp_head', 'kbf_output_share_meta', 5);
 function kbf_output_share_meta() {
     if (is_admin()) return;
+    // Prefer the dedicated Fund Details meta handler when available to avoid duplicate OG/Twitter tags.
+    if (function_exists('kbf_fund_details_output_social_meta')) return;
     if (empty($_GET['kbf_share']) && empty($_GET['fund_id'])) return;
     if (!function_exists('esc_attr')) return;
     global $wpdb;
