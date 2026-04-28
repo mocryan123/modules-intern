@@ -283,7 +283,7 @@ function bntm_shortcode_kbf_fund_details() {
             $fund->id
         ));
     }
-    if ($demo_mode && $payment_result === 'success' && $return_sponsorship && function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
+    if ($payment_result === 'success' && $return_sponsorship && function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
         kbf_maya_sync_sponsorship_from_checkout((int)$return_sponsorship->id, (string)$return_sponsorship->email);
         $return_sponsorship = $wpdb->get_row($wpdb->prepare(
             "SELECT id,amount,payment_status,email,rand_id,fund_id FROM {$st} WHERE id=%d LIMIT 1",

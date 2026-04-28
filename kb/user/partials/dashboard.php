@@ -111,6 +111,7 @@ if (!function_exists('kbf_dashboard_handle_payment_success')) {
         if ($payment_state !== 'success' || !$user_id) return false;
         global $wpdb;
         $st = $wpdb->prefix . 'kbf_sponsorships';
+        $demo_mode = (bool) kbf_get_setting('kbf_demo_mode', true);
         $user_obj = get_userdata((int) $user_id);
         $current_email = $user_obj && !empty($user_obj->user_email) ? strtolower((string) $user_obj->user_email) : '';
         $is_admin = user_can((int) $user_id, 'manage_options');
@@ -126,14 +127,24 @@ if (!function_exists('kbf_dashboard_handle_payment_success')) {
         if ($sid > 0) {
             $row = $wpdb->get_row($wpdb->prepare("SELECT id,email FROM {$st} WHERE id=%d", $sid));
             if ($row && isset($row->id) && $can_mark(isset($row->email) ? $row->email : null)) {
-                kbf_mark_sponsorship_completed((int)$row->id);
-                return true;
+                if (function_exists('kbf_maya_sync_sponsorship_from_checkout') && kbf_maya_sync_sponsorship_from_checkout((int)$row->id, (string)$row->email)) {
+                    return true;
+                }
+                if ($demo_mode && function_exists('kbf_mark_sponsorship_completed')) {
+                    kbf_mark_sponsorship_completed((int)$row->id);
+                    return true;
+                }
             }
         } elseif ($ref !== '') {
             $row = $wpdb->get_row($wpdb->prepare("SELECT id,email FROM {$st} WHERE rand_id=%s", $ref));
             if ($row && isset($row->id) && $can_mark(isset($row->email) ? $row->email : null)) {
-                kbf_mark_sponsorship_completed((int)$row->id);
-                return true;
+                if (function_exists('kbf_maya_sync_sponsorship_from_checkout') && kbf_maya_sync_sponsorship_from_checkout((int)$row->id, (string)$row->email)) {
+                    return true;
+                }
+                if ($demo_mode && function_exists('kbf_mark_sponsorship_completed')) {
+                    kbf_mark_sponsorship_completed((int)$row->id);
+                    return true;
+                }
             }
         }
         return false;
@@ -217,8 +228,8 @@ function bntm_shortcode_kbf_dashboard() {
         }
     }
 
-    // Confirm payment in demo mode only (webhook is disabled in demo, so we confirm on redirect).
-    if ($is_logged_in && $demo_mode && $payment_state === 'success' && $has_valid_payment_ref) {
+    // Confirm payment from redirect (live mode verifies via checkout status, demo mode allows local fallback).
+    if ($is_logged_in && $payment_state === 'success' && $has_valid_payment_ref) {
         kbf_dashboard_handle_payment_success($payment_state, $business_id);
     }
 

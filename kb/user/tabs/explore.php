@@ -84,8 +84,16 @@ function kbf_dashboard_find_funds_tab() {
         $pay_sponsorship = null;
         if ($payment_sid > 0 && $current_user_email !== '') {
             $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
-                "SELECT id,amount FROM {$pay_st} WHERE id=%d AND email=%s",
+                "SELECT id,amount,email,payment_status,rand_id FROM {$pay_st} WHERE id=%d AND email=%s",
                 $payment_sid,
+                $current_user_email
+            ));
+        }
+        if ($payment_result === 'success' && $pay_sponsorship && function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
+            kbf_maya_sync_sponsorship_from_checkout((int)$pay_sponsorship->id, (string)$pay_sponsorship->email);
+            $pay_sponsorship = $wpdb->get_row($wpdb->prepare(
+                "SELECT id,amount,email,payment_status,rand_id FROM {$pay_st} WHERE id=%d AND email=%s",
+                (int)$pay_sponsorship->id,
                 $current_user_email
             ));
         }
@@ -95,7 +103,7 @@ function kbf_dashboard_find_funds_tab() {
         $pay_fund_url     = add_query_arg('fund', $payment_fund_token ?: $payment_fund_id, $pay_fund_url);
         $pay_sponsor_amount = $pay_sponsorship ? number_format((float)$pay_sponsorship->amount, 2) : '';
 
-        if ($payment_result === 'success') {
+        if ($payment_result === 'success' && $pay_sponsorship && isset($pay_sponsorship->payment_status) && $pay_sponsorship->payment_status === 'completed') {
             $payment_banner_data = [
                 'type'     => 'success',
                 'icon'     => 'ph-fill ph-check-circle',
@@ -106,6 +114,16 @@ function kbf_dashboard_find_funds_tab() {
                 'countdown' => 6,
                 'redirect'  => $pay_fund_url,
                 'btn_text'  => 'View Fundraiser',
+            ];
+        } elseif ($payment_result === 'success') {
+            $payment_banner_data = [
+                'type'     => 'warning',
+                'icon'     => 'ph-fill ph-clock-countdown',
+                'title'    => 'Payment Processing',
+                'message'  => 'Your payment is being verified. It will reflect shortly once confirmation is received.',
+                'countdown' => 5,
+                'redirect'  => $pay_fund_url,
+                'btn_text'  => 'Refresh Fundraiser',
             ];
         } elseif ($payment_result === 'failed') {
             $payment_banner_data = [
