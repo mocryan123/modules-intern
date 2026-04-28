@@ -11,7 +11,7 @@ function bae_identity_tab($user_id, $profile) {
             <p>Complete your <a href="?tab=overview">Brand Profile</a> first to see your Identity Board.</p>
         </div>
         <?php
-        return ob_get_clean();
+        return bae_wrap_tab_panel(ob_get_clean());
     }
 
     $p        = $profile;
@@ -249,7 +249,7 @@ function bae_identity_tab($user_id, $profile) {
     });
     </script>
     <?php
-    return ob_get_clean();
+    return bae_wrap_tab_panel(ob_get_clean());
 }
 
 // =============================================================================

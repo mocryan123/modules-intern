@@ -65,6 +65,14 @@ function bae_render_brand_wordmark_merge($class = '') {
         . '</span>';
 }
 
+function bae_wrap_tab_panel($html) {
+    if (!is_string($html) || $html === '') {
+        return $html;
+    }
+
+    return '<div class="bae-page-panel">' . $html . '</div>';
+}
+
 add_action('wp_head', function() {
     static $bae_favicon_rendered = false;
 
@@ -1011,22 +1019,38 @@ function bae_wizard_shortcode($user_id) {
     .bae-wiz-back:hover { color: #8b88a4; }
     .bae-wiz-error { font-size: 12px; color: #fb7185; margin-bottom: 12px; display: none; margin-top: -8px; }
     .bae-wiz-generating { text-align: center; }
-    /* ── Moth loader (replaces plain spinner) ── */
+    /* ── Moth loader (soft pulse dots) ── */
     .bae-wiz-moth-loader {
-        display: flex; gap: 10px; justify-content: center;
-        align-items: flex-end; margin: 0 auto 28px; height: 36px;
+        display: flex;
+        gap: 9px;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 28px;
+        min-height: 18px;
     }
     .bae-moth-dot {
-        width: 13px; border-radius: 999px; flex-shrink: 0;
+        width: 11px;
+        height: 11px;
+        border-radius: 999px;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 0 rgba(243,45,134,0.24);
     }
-    .bae-moth-dot-1 { background: #F32D86; animation: bae-moth-rise 1.5s ease-in-out 0s infinite; }
-    .bae-moth-dot-2 { background: #c4196a; animation: bae-moth-rise 1.5s ease-in-out 0.18s infinite; }
-    .bae-moth-dot-3 { background: #9b1157; animation: bae-moth-rise 1.5s ease-in-out 0.36s infinite; }
-    .bae-moth-dot-4 { background: #c4196a; animation: bae-moth-rise 1.5s ease-in-out 0.54s infinite; }
-    .bae-moth-dot-5 { background: #F32D86; animation: bae-moth-rise 1.5s ease-in-out 0.72s infinite; }
-    @keyframes bae-moth-rise {
-        0%, 100% { height: 8px;  opacity: 0.35; border-radius: 999px; }
-        45%       { height: 30px; opacity: 1;    border-radius: 6px 6px 999px 999px; }
+    .bae-moth-dot-1 { background: #F32D86; animation: bae-moth-pulse 1.2s ease-in-out 0s infinite; }
+    .bae-moth-dot-2 { background: #c4196a; animation: bae-moth-pulse 1.2s ease-in-out 0.14s infinite; }
+    .bae-moth-dot-3 { background: #9b1157; animation: bae-moth-pulse 1.2s ease-in-out 0.28s infinite; }
+    .bae-moth-dot-4 { background: #c4196a; animation: bae-moth-pulse 1.2s ease-in-out 0.42s infinite; }
+    .bae-moth-dot-5 { background: #F32D86; animation: bae-moth-pulse 1.2s ease-in-out 0.56s infinite; }
+    @keyframes bae-moth-pulse {
+        0%, 100% {
+            transform: translateY(0) scale(0.72);
+            opacity: 0.42;
+            box-shadow: 0 0 0 0 rgba(243,45,134,0.08);
+        }
+        45% {
+            transform: translateY(-5px) scale(1.02);
+            opacity: 1;
+            box-shadow: 0 0 0 6px rgba(243,45,134,0.12);
+        }
     }
     .bae-wiz-gen-title { font-family: 'Instrument Serif', serif; font-size: 26px; font-style: italic; color: #ede9ff; margin-bottom: 8px; }
     .bae-wiz-gen-sub { font-size: 13px; color: #4d4a65; }
@@ -2381,7 +2405,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
                     <span class="jp">読み込み中</span>
                     <span class="en" id="bae-loader-title-en">Loading your workspace</span>
                 </div>
-                <div class="bae-loader-bars">
+                <div class="bae-loader-orbit" aria-hidden="true">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -2392,9 +2416,15 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
             </div>
         </div>
         <style>
-        @keyframes bae-loader-bar {
-            0%, 100% { transform: scaleY(0.35); opacity: 0.35; }
-            50% { transform: scaleY(1); opacity: 1; }
+        @keyframes bae-loader-orbit-pulse {
+            0%, 100% {
+                transform: translateY(0) scale(0.72);
+                opacity: 0.38;
+            }
+            50% {
+                transform: translateY(-4px) scale(1);
+                opacity: 1;
+            }
         }
         .bae-page-loader {
             --brand:       #F32D86;
@@ -2482,24 +2512,23 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
             font: inherit;
             color: inherit;
         }
-        .bae-loader-bars {
+        .bae-loader-orbit {
             display: flex;
-            gap: 8px;
-            align-items: flex-end;
+            gap: 9px;
+            align-items: center;
             justify-content: center;
-            height: 38px;
+            min-height: 16px;
             margin-bottom: 14px;
         }
-        .bae-loader-bars span {
-            width: 7px;
-            height: 100%;
+        .bae-loader-orbit span {
+            width: 9px;
+            height: 9px;
             border-radius: 999px;
-            background: linear-gradient(180deg, var(--brand-soft) 0%, var(--brand) 55%, var(--pink) 100%);
-            transform-origin: bottom center;
-            animation: bae-loader-bar 1s ease-in-out infinite;
+            background: linear-gradient(180deg, var(--brand-soft) 0%, var(--brand) 70%, var(--pink) 100%);
+            animation: bae-loader-orbit-pulse 0.9s ease-in-out infinite;
         }
-        .bae-loader-bars span:nth-child(2) { animation-delay: .14s; }
-        .bae-loader-bars span:nth-child(3) { animation-delay: .28s; }
+        .bae-loader-orbit span:nth-child(2) { animation-delay: .12s; }
+        .bae-loader-orbit span:nth-child(3) { animation-delay: .24s; }
         .bae-loader-meta {
             display: flex;
             justify-content: center;
@@ -2523,11 +2552,15 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 
         <!-- Header -->
         <div class="bae-header">
-            <div class="bae-header-logo">
-                <div class="bae-header-brand">
-                    <img class="bae-header-logo-img" src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie">
-                    <span class="bae-header-wordmark">MOTHIE</span>
-                </div>
+            <div class="bae-header-theme-center">
+                <button class="bae-theme-switch" id="bae-theme-btn" onclick="baeToggleTheme()" aria-label="Toggle theme" title="Toggle light/dark">
+                    <div class="bae-ts-track" id="bae-toggle-track">
+                        <div class="bae-ts-thumb" id="bae-ts-thumb">
+                            <svg id="bae-ts-sun" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                            <svg id="bae-ts-moon" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                        </div>
+                    </div>
+                </button>
             </div>
             <?php
                 /* ── 7-TAB NAV ── */
@@ -2622,22 +2655,13 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
             </div>
 
             <div class="bae-header-right">
-                <button class="bae-theme-switch" id="bae-theme-btn" onclick="baeToggleTheme()" aria-label="Toggle theme" title="Toggle light/dark">
-                    <div class="bae-ts-track" id="bae-toggle-track">
-                        <div class="bae-ts-thumb" id="bae-ts-thumb">
-                            <svg id="bae-ts-sun" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-                            <svg id="bae-ts-moon" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                        </div>
-                    </div>
-                </button>
-
                 <?php if ($ticket): ?>
                 <!-- Logged in: show ticket chip + logout button -->
                 <div class="bae-auth-ticket-chip" id="bae-auth-ticket-chip" title="Your access ticket">
                     <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></svg>
                     <span class="bae-auth-ticket-val"><?php echo esc_html($ticket); ?></span>
                 </div>
-                <button class="bae-header-logout-btn" id="bae-header-logout-btn" onclick="baeHeaderLogout()" title="Sign out / Clear ticket">
+                <button class="bae-header-logout-btn" id="bae-header-logout-btn" onclick="baeHeaderLogout()" title="Sign out / Clear ticket" aria-label="Logout">
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     <span>Logout</span>
                 </button>
@@ -2882,6 +2906,10 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 
         <!-- Sidebar nav (desktop) -->
         <nav class="bae-sidebar" id="bae-sidebar">
+            <div class="bae-sidebar-brand">
+                <img class="bae-header-logo-img" src="<?php echo esc_url(bae_module_logo_url()); ?>" alt="Mothie">
+                <span class="bae-header-wordmark">MOTHIE</span>
+            </div>
             <div class="bae-sidebar-toggle">
                 <button class="bae-sidebar-toggle-btn" id="bae-sidebar-toggle-btn" onclick="baeSidebarToggle()" title="Collapse sidebar">
                     <svg id="bae-sb-icon-collapse" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -2942,7 +2970,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 
     </div>
 
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@200;300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
     /* ═══════════════════════════════════════════════════
        BAE — DESIGN SYSTEM v2
@@ -2975,11 +3003,14 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         --input-bg:   #111111;
         --input-bd:   rgba(243,45,134,0.25);
         --shadow:     0 1px 3px rgba(0,0,0,0.7), 0 8px 24px rgba(0,0,0,0.5);
+        --canvas-bg:  radial-gradient(circle at 16% 12%, rgba(243,45,134,0.18) 0%, rgba(243,45,134,0) 34%), radial-gradient(circle at 86% 0%, rgba(123,97,255,0.2) 0%, rgba(123,97,255,0) 38%), linear-gradient(150deg, #0a0b12 0%, #10121d 46%, #111019 100%);
     }
 
     .bae-wrap.bae-light {
         background:
-            linear-gradient(160deg, #ffffff 0%, #EFF3F6 30%, #e8edf1 100%);
+            radial-gradient(circle at 12% 14%, rgba(243,45,134,0.18) 0%, rgba(243,45,134,0) 32%),
+            radial-gradient(circle at 88% 4%, rgba(123,97,255,0.16) 0%, rgba(123,97,255,0) 36%),
+            linear-gradient(150deg, #fdf8ff 0%, #f4f7ff 42%, #edf4ff 100%);
         --bg:         #EFF3F6;
         --bg-2:       #e8edf1;
         --bg-3:       #dde4ea;
@@ -2993,14 +3024,15 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         --input-bg:   #ffffff;
         --input-bd:   rgba(243,45,134,0.25);
         --shadow:     0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
+        --canvas-bg:  radial-gradient(circle at 12% 14%, rgba(243,45,134,0.18) 0%, rgba(243,45,134,0) 32%), radial-gradient(circle at 88% 4%, rgba(123,97,255,0.16) 0%, rgba(123,97,255,0) 36%), linear-gradient(150deg, #fdf8ff 0%, #f4f7ff 42%, #edf4ff 100%);
     }
 
     /* Base reset */
     .bae-wrap *, .bae-wrap *::before, .bae-wrap *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     .bae-wrap {
-        font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: var(--bg);
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--canvas-bg);
         color: var(--text);
         border-radius: 0;
         overflow: hidden;
@@ -3009,6 +3041,12 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         min-height: 100vh;
         display: flex;
         flex-direction: column;
+    }
+
+    /* Force one font family across the BAE interface */
+    .bae-wrap,
+    .bae-wrap * {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
     }
     /* body row = sidebar + content */
     .bae-body-row {
@@ -3037,6 +3075,21 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     }
     .bae-sidebar::-webkit-scrollbar { display: none; }
     .bae-sidebar.collapsed { width: 52px; }
+    .bae-sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 6px 10px;
+        margin-bottom: 2px;
+        flex-shrink: 0;
+    }
+    .bae-sidebar.collapsed .bae-sidebar-brand {
+        justify-content: center;
+        padding: 4px 0 10px;
+    }
+    .bae-sidebar.collapsed .bae-sidebar-brand .bae-header-wordmark {
+        display: none;
+    }
     .bae-sidebar-toggle {
         display: flex; align-items: center; justify-content: flex-end;
         padding: 4px 2px 10px;
@@ -3075,6 +3128,165 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     .bae-sidebar.collapsed .bae-hn-label { display: none; }
     .bae-sidebar.collapsed .bae-hn-item { padding: 9px; justify-content: center; }
     .bae-sidebar.collapsed .bae-sidebar-toggle { justify-content: center; }
+
+    @media (min-width: 981px) {
+        .bae-body-row {
+            gap: 14px;
+            padding: 0 16px 16px;
+            margin-top: -58px;
+            padding-top: 58px;
+        }
+
+        .bae-sidebar {
+            width: 236px;
+            height: calc(100vh - 16px);
+            margin: 0;
+            padding: 14px 12px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.42);
+            background: linear-gradient(172deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.58) 100%);
+            backdrop-filter: blur(18px) saturate(145%);
+            -webkit-backdrop-filter: blur(18px) saturate(145%);
+            box-shadow: 0 22px 44px rgba(51, 29, 95, 0.14), inset 0 1px 0 rgba(255,255,255,0.62);
+            border-right: 1px solid rgba(255,255,255,0.42);
+            top: 0;
+            gap: 4px;
+            overflow: visible;
+        }
+
+        .bae-wrap:not(.bae-light) .bae-sidebar {
+            border-color: rgba(255,255,255,0.12);
+            background: linear-gradient(170deg, rgba(28,28,31,0.75) 0%, rgba(22,22,26,0.62) 100%);
+            box-shadow: 0 24px 48px rgba(0,0,0,0.48), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .bae-sidebar::before {
+            content: '';
+            position: absolute;
+            left: -1px;
+            top: 12px;
+            bottom: 12px;
+            width: 5px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(243,45,134,0.92), rgba(127,93,255,0.78));
+            opacity: 0.82;
+        }
+
+        .bae-sidebar.collapsed {
+            width: 80px;
+        }
+
+        .bae-sidebar-toggle {
+            justify-content: flex-start;
+            padding: 2px 4px 8px;
+        }
+
+        .bae-sidebar.collapsed .bae-sidebar-toggle {
+            justify-content: center;
+        }
+
+        .bae-sidebar-toggle-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.66);
+            color: var(--text-2);
+            box-shadow: 0 6px 18px rgba(42, 28, 80, 0.12);
+        }
+
+        .bae-wrap:not(.bae-light) .bae-sidebar-toggle-btn {
+            border-color: rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+        }
+
+        .bae-sidebar .bae-hn-item {
+            gap: 12px;
+            padding: 10px 11px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-2);
+            transition: color .18s, background .18s, transform .18s, box-shadow .18s;
+        }
+
+        .bae-sidebar .bae-hn-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            justify-content: center;
+            background: rgba(255,255,255,0.58);
+            border: 1px solid rgba(255,255,255,0.62);
+            box-shadow: 0 4px 12px rgba(33, 12, 73, 0.1);
+        }
+
+        .bae-wrap:not(.bae-light) .bae-sidebar .bae-hn-icon {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: none;
+        }
+
+        .bae-sidebar .bae-hn-item:hover {
+            color: var(--text);
+            transform: translateX(2px);
+            background: rgba(255,255,255,0.42);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.42);
+        }
+
+        .bae-wrap:not(.bae-light) .bae-sidebar .bae-hn-item:hover {
+            background: rgba(255,255,255,0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .bae-sidebar .bae-hn-active {
+            color: #2d163f !important;
+            background: linear-gradient(135deg, rgba(243,45,134,0.25), rgba(127,93,255,0.2)) !important;
+            box-shadow: inset 0 0 0 1px rgba(243,45,134,0.35), 0 8px 16px rgba(163, 57, 149, 0.16);
+        }
+
+        .bae-wrap:not(.bae-light) .bae-sidebar .bae-hn-active {
+            color: #fff !important;
+            background: linear-gradient(135deg, rgba(243,45,134,0.3), rgba(127,93,255,0.26)) !important;
+            box-shadow: inset 0 0 0 1px rgba(243,45,134,0.35), 0 10px 20px rgba(0,0,0,0.35);
+        }
+
+        .bae-sidebar .bae-hn-active .bae-hn-icon {
+            background: rgba(255,255,255,0.78);
+            border-color: rgba(255,255,255,0.84);
+        }
+
+        .bae-wrap:not(.bae-light) .bae-sidebar .bae-hn-active .bae-hn-icon {
+            background: rgba(255,255,255,0.14);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .bae-sidebar .bae-hn-label {
+            letter-spacing: 0.01em;
+        }
+
+        .bae-sidebar.collapsed .bae-hn-item {
+            padding: 10px;
+            justify-content: center;
+            transform: none !important;
+        }
+
+        .bae-sidebar.collapsed .bae-hn-icon {
+            margin-right: 0;
+        }
+
+        .bae-sidebar .bae-hn-locked {
+            opacity: 0.58;
+        }
+    }
+
+    @media (max-width: 980px) {
+        .bae-body-row {
+            padding: 0;
+            gap: 0;
+        }
+    }
+
     .bae-tab-content {
         flex: 1;
         min-width: 0;
@@ -3105,9 +3317,14 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         align-items: center;
         gap: 12px;
         padding: 0 20px;
+        margin: 0;
         height: 58px;
+        border: 0;
         border-bottom: none;
-        background: var(--bg);
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
         transition: background 0.5s;
         position: sticky; top: 0; z-index: 100;
         overflow-x: auto; scrollbar-width: none;
@@ -3122,18 +3339,28 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     }
     .bae-header-logo-img {
         width: 32px;
-        height: 32px;
+        width: 36px; height: 36px; padding: 0; border-radius: 999px;
         object-fit: contain;
-        flex-shrink: 0;
+        color: #f32d86;
+        background: linear-gradient(165deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.78) 100%);
         display: block;
     }
     .bae-wrap .bae-header-logo-img { filter: invert(1); }
+    .bae-wrap:not(.bae-light) .bae-header-logout-btn {
+        color: #ff89c0;
+        background: linear-gradient(165deg, rgba(42,44,55,0.92) 0%, rgba(34,36,45,0.8) 100%);
+        border-color: rgba(255,255,255,0.18);
+        box-shadow: 0 12px 26px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.04);
+    }
     .bae-wrap.bae-light .bae-header-logo-img { filter: none; }
-    .bae-header-wordmark {
-        font-family: 'Noto Serif JP', 'Noto Serif', 'Yu Mincho', 'Hiragino Mincho Pro', serif;
+        color: #fff;
+        background: linear-gradient(145deg, #c4196a, #f32d86);
+        border-color: rgba(243,45,134,0.58);
+        box-shadow: 0 14px 28px rgba(243,45,134,0.34), inset 0 1px 0 rgba(255,255,255,0.28);
+        transform: translateY(-1px);
         font-size: 10px;
         font-weight: 300;
-        letter-spacing: 0.32em;
+    .bae-header-logout-btn svg { flex-shrink: 0; width: 14px; height: 14px; }
         color: var(--text-2);
         text-transform: uppercase;
         writing-mode: horizontal-tb;
@@ -3144,6 +3371,16 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     .bae-wrap.bae-light .bae-header-wordmark { color: var(--text-3); }
     .bae-header-logo {
         display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .bae-header-theme-center {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
     }
     .bae-brand-mark {
         width: 52px;
@@ -3577,20 +3814,34 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 
     /* ── Header Logout Button ── */
     .bae-header-logout-btn {
-        display: inline-flex; align-items: center; gap: 7px;
-        padding: 7px 14px; border-radius: 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; padding: 0; border-radius: 999px;
         font-size: 12px; font-weight: 600; font-family: 'Geist', sans-serif;
-        color: var(--text-2); background: var(--surface-2);
-        border: 1px solid var(--border); cursor: pointer; white-space: nowrap;
-        transition: color .15s, background .15s, border-color .15s, transform .15s;
+        color: #f32d86;
+        background: linear-gradient(165deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.78) 100%);
+        border: 1px solid rgba(255,255,255,0.86); cursor: pointer; white-space: nowrap;
+        box-shadow: 0 10px 22px rgba(106,73,170,0.15), inset 0 1px 0 rgba(255,255,255,0.98), inset 0 -1px 0 rgba(255,255,255,0.5);
+        backdrop-filter: blur(10px) saturate(145%);
+        -webkit-backdrop-filter: blur(10px) saturate(145%);
+        transition: color .15s, background .15s, border-color .15s, transform .15s, box-shadow .15s;
         letter-spacing: .01em;
     }
+    .bae-wrap:not(.bae-light) .bae-header-logout-btn {
+        color: #ff89c0;
+        background: linear-gradient(165deg, rgba(42,44,55,0.92) 0%, rgba(34,36,45,0.8) 100%);
+        border-color: rgba(255,255,255,0.18);
+        box-shadow: 0 12px 26px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.04);
+    }
     .bae-header-logout-btn:hover {
-        color: #fb7185; background: rgba(244,63,94,0.07);
-        border-color: rgba(244,63,94,0.22); transform: translateY(-1px);
+        color: #fff;
+        background: linear-gradient(145deg, #c4196a, #f32d86);
+        border-color: rgba(243,45,134,0.58);
+        box-shadow: 0 14px 28px rgba(243,45,134,0.34), inset 0 1px 0 rgba(255,255,255,0.28);
+        transform: translateY(-1px);
     }
     .bae-header-logout-btn:active { transform: translateY(0); }
-    .bae-header-logout-btn svg { flex-shrink: 0; }
+    .bae-header-logout-btn svg { flex-shrink: 0; width: 14px; height: 14px; }
+    .bae-header-logout-btn span { display: none; }
 
     /* ── Ticket Login Modal ── */
     .bae-ticket-modal-overlay {
@@ -3694,7 +3945,9 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     @media (max-width: 480px) {
         .bae-auth-ticket-chip { display: none; }
         .bae-header-login-btn span, .bae-header-logout-btn span { display: none; }
-        .bae-header-login-btn, .bae-header-logout-btn { padding: 7px 10px; }
+        .bae-header-login-btn { padding: 7px 10px; }
+        .bae-header-theme-center { left: 50%; }
+        .bae-header-theme-center .bae-ts-track { transform: scale(0.92); }
     }
 
 
@@ -4042,20 +4295,114 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 
     @media (min-width: 1025px) {
         .bae-tab-content {
-            padding: 42px 96px;
+            padding: 0 56px 34px;
+            background: transparent;
+        }
+
+        .bae-page-panel {
+            position: relative;
+            padding: clamp(22px, 2.3vw, 34px);
+            border-radius: 30px;
+            border: 0;
+            background: linear-gradient(160deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.75) 100%);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            box-shadow: 0 28px 54px rgba(33, 12, 73, 0.18), inset 0 1px 0 rgba(255,255,255,0.68);
+            overflow: hidden;
+            isolation: isolate;
+        }
+
+        .bae-page-panel::before,
+        .bae-page-panel::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(3px);
+        }
+
+        .bae-page-panel::before {
+            top: -110px;
+            right: -130px;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(243,45,134,0.17) 0%, rgba(243,45,134,0) 72%);
+        }
+
+        .bae-page-panel::after {
+            bottom: -120px;
+            left: -120px;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(109,92,255,0.16) 0%, rgba(109,92,255,0) 74%);
+        }
+
+        .bae-wrap:not(.bae-light) .bae-page-panel {
+            background: linear-gradient(160deg, rgba(38,38,44,0.82) 0%, rgba(28,28,34,0.68) 100%);
+            box-shadow: 0 28px 60px rgba(0,0,0,0.52), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        /* Light theme tokens inside page panel */
+        .bae-wrap.bae-light .bae-page-panel {
+            --text: #1a1a1a;
+            --text-2: #4a4a4a;
+            --text-3: #6a6a6a;
+            --surface: rgba(255,255,255,0.7);
+            --surface-2: rgba(255,255,255,0.6);
+            --border: rgba(0,0,0,0.12);
+            --border-2: rgba(0,0,0,0.18);
+            --input-bg: rgba(255,255,255,0.94);
+            --input-bd: rgba(243,45,134,0.34);
+            --bg-3: #fafbff;
+        }
+
+        /* Dark theme tokens inside page panel */
+        .bae-wrap:not(.bae-light) .bae-page-panel {
+            --text: #eef1ff;
+            --text-2: #b4bbd3;
+            --text-3: #8b94b2;
+            --surface: rgba(34,36,44,0.74);
+            --surface-2: rgba(30,32,39,0.66);
+            --border: rgba(255,255,255,0.14);
+            --border-2: rgba(255,255,255,0.2);
+            --input-bg: rgba(32,34,43,0.82);
+            --input-bd: rgba(243,45,134,0.45);
+            --bg-3: rgba(28,30,38,0.9);
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .bae-page-panel {
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
         }
     }
 
     /* ── CARDS ── */
     .bae-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.7);
+        border: 0;
         border-radius: 18px;
         padding: 26px;
         margin-bottom: 20px;
         transition: background 0.5s, border-color 0.5s;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
     }
-    .bae-card:hover { border-color: var(--border-2); }
+    .bae-card:hover { box-shadow: 0 12px 28px rgba(51, 29, 95, 0.12); }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-card {
+        background: rgba(34,36,44,0.74);
+    }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-card:hover {
+        box-shadow: 0 14px 30px rgba(0,0,0,0.36);
+    }
     .bae-card-header {
         display: flex; align-items: center; justify-content: space-between;
         margin-bottom: 22px;
@@ -4063,7 +4410,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     .bae-card-title {
         font-family: 'Instrument Serif', serif;
         font-size: 17px; font-style: italic;
-        color: var(--text); transition: color 0.5s;
+        color: #1a1a1a; transition: color 0.5s;
         display: flex; align-items: center; gap: 10px;
     }
     .bae-card-title::before {
@@ -4072,7 +4419,17 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         background: linear-gradient(180deg, var(--brand), var(--pink));
         border-radius: 999px; flex-shrink: 0;
     }
-    .bae-card-desc { font-size: 13px; color: var(--text-3); margin-top: 4px; transition: color 0.5s; }
+    .bae-card-desc { font-size: 13px; color: #4a4a4a; margin-top: 4px; transition: color 0.5s; }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-card-title,
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-stat-value {
+        color: var(--text);
+    }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-card-desc,
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-stat-label,
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-stat-sub,
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-asset-meta {
+        color: var(--text-2);
+    }
 
     /* ── STATS ── */
     .bae-stats-row {
@@ -4080,33 +4437,49 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         gap: 14px; margin-bottom: 24px;
     }
     .bae-stat-card {
-        background: var(--surface); border: 1px solid var(--border);
+        background: rgba(255,255,255,0.65); border: 1px solid rgba(255,255,255,0.48);
         border-radius: 16px; padding: 20px 22px;
         transition: background 0.5s, border-color 0.5s, transform 0.2s;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
     }
-    .bae-stat-card:hover { transform: translateY(-2px); border-color: var(--border-2); }
+    .bae-stat-card { border: 0; }
+    .bae-stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(51, 29, 95, 0.12); }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-stat-card {
+        background: rgba(30,32,39,0.7);
+    }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-stat-card:hover {
+        box-shadow: 0 12px 26px rgba(0,0,0,0.34);
+    }
     .bae-stat-label {
-        font-size: 10px; font-weight: 700; color: var(--text-3);
+        font-size: 10px; font-weight: 700; color: #6a6a6a;
         text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;
         transition: color 0.5s;
     }
     .bae-stat-value {
         font-family: 'Instrument Serif', serif;
-        font-size: 28px; color: var(--text); line-height: 1;
+        font-size: 28px; color: #1a1a1a; line-height: 1;
         transition: color 0.5s;
     }
-    .bae-stat-sub { font-size: 12px; color: var(--text-3); margin-top: 4px; transition: color 0.5s; }
+    .bae-stat-sub { font-size: 12px; color: #6a6a6a; margin-top: 4px; transition: color 0.5s; }
 
     /* ── BADGES ── */
     .bae-badge {
         display: inline-flex; align-items: center; gap: 5px;
-        padding: 4px 11px; border-radius: 999px;
+        padding: 6px 13px; border-radius: 999px;
         font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
     }
-    .bae-badge-green  { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
-    .bae-badge-gray   { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--border); }
-    .bae-badge-yellow { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
-    .bae-badge-purple { background: rgba(243,45,134,0.12); color: var(--brand-soft); border: 1px solid rgba(243,45,134,0.2); }
+    .bae-badge-green  { background: rgba(16,185,129,0.25); color: #10b981; border: 1px solid rgba(16,185,129,0.4); }
+    .bae-badge-gray   { background: rgba(100,100,110,0.35); color: #1a1a1a; border: 1px solid rgba(100,100,110,0.5); }
+    .bae-badge-yellow { background: rgba(245,158,11,0.25); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); }
+    .bae-badge-purple { background: rgba(243,45,134,0.25); color: #f32d86; border: 1px solid rgba(243,45,134,0.4); }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-badge-gray {
+        background: rgba(255,255,255,0.14);
+        color: #e8edff;
+        border-color: rgba(255,255,255,0.24);
+    }
 
     /* ── BUTTONS ── */
     .bae-btn {
@@ -4155,23 +4528,41 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     .bae-form-group input[type="url"],
     .bae-form-group select,
     .bae-form-group textarea {
-        background: var(--input-bg);
-        border: 1px solid var(--input-bd);
-        border-radius: 11px; padding: 11px 14px;
+        background: linear-gradient(165deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.86) 100%);
+        border: 0;
+        border-radius: 14px; padding: 12px 15px;
         font-size: 14px; font-family: 'Geist', sans-serif;
         color: var(--text);
         outline: none; width: 100%;
-        transition: border-color 0.2s, box-shadow 0.2s, background 0.5s, color 0.5s;
+        box-shadow: 0 8px 18px rgba(87, 68, 130, 0.08), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(255,255,255,0.45);
+        backdrop-filter: blur(8px) saturate(140%);
+        -webkit-backdrop-filter: blur(8px) saturate(140%);
+        transition: border-color 0.2s, box-shadow 0.2s, background 0.3s, color 0.5s, transform 0.2s;
         appearance: none;
     }
     .bae-form-group input:focus,
     .bae-form-group select:focus,
     .bae-form-group textarea:focus {
-        border-color: var(--brand);
-        box-shadow: 0 0 0 3px rgba(243,45,134,0.15);
+        border-color: rgba(243,45,134,0.52);
+        box-shadow: 0 0 0 3px rgba(243,45,134,0.16), 0 12px 26px rgba(123, 83, 182, 0.16), inset 0 1px 0 rgba(255,255,255,0.95);
+        transform: translateY(-1px);
     }
     .bae-form-group input::placeholder,
-    .bae-form-group textarea::placeholder { color: var(--text-3); }
+    .bae-form-group textarea::placeholder { color: #8a8c99; }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-form-group input[type="text"],
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-form-group input[type="email"],
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-form-group input[type="tel"],
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-form-group input[type="url"],
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-form-group select,
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-form-group textarea {
+        background: linear-gradient(165deg, rgba(40,42,50,0.96) 0%, rgba(31,33,41,0.88) 100%);
+        border: 0;
+        box-shadow: 0 12px 24px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(255,255,255,0.04);
+    }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-form-group input::placeholder,
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-form-group textarea::placeholder {
+        color: #8b94b2;
+    }
     .bae-form-group textarea { resize: vertical; min-height: 90px; }
     .bae-form-group small { font-size: 12px; color: var(--text-3); transition: color 0.5s; }
 
@@ -4179,7 +4570,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     .bae-color-row { display: flex; align-items: center; gap: 10px; }
     .bae-color-row input[type="color"] {
         width: 44px; height: 44px;
-        border: 1px solid var(--border-2); border-radius: 11px;
+        border: 0; border-radius: 11px;
         padding: 2px; cursor: pointer; background: none;
         flex-shrink: 0;
     }
@@ -4189,37 +4580,52 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 
     /* ── NOTICES ── */
     .bae-notice { padding: 12px 16px; border-radius: 11px; font-size: 13px; margin-top: 14px; }
-    .bae-notice-success { background: rgba(16,185,129,0.1); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
-    .bae-notice-error   { background: rgba(244,63,94,0.1); color: #fb7185; border: 1px solid rgba(244,63,94,0.2); }
-    .bae-notice-info    { background: rgba(243,45,134,0.1); color: var(--brand-soft); border: 1px solid rgba(243,45,134,0.2); }
+    .bae-notice-success { background: rgba(16,185,129,0.1); color: #34d399; border: 0; box-shadow: inset 0 0 0 1px rgba(16,185,129,0.16); }
+    .bae-notice-error   { background: rgba(244,63,94,0.1); color: #fb7185; border: 0; box-shadow: inset 0 0 0 1px rgba(244,63,94,0.16); }
+    .bae-notice-info    { background: rgba(243,45,134,0.1); color: var(--brand-soft); border: 0; box-shadow: inset 0 0 0 1px rgba(243,45,134,0.16); }
 
     /* ── EMPTY STATE ── */
-    .bae-empty { text-align: center; padding: 60px 20px; color: var(--text-3); }
-    .bae-empty svg { width: 52px; height: 52px; margin-bottom: 16px; opacity: 0.3; }
-    .bae-empty p { font-size: 14px; margin-top: 8px; }
+    .bae-empty { text-align: center; padding: 60px 20px; color: #6a6a6a; }
+    .bae-empty svg { width: 52px; height: 52px; margin-bottom: 16px; opacity: 0.5; color: #8a8a8a; }
+    .bae-empty p { font-size: 14px; margin-top: 8px; color: #5a5a5a; }
+    .bae-empty strong { color: #1a1a1a; font-weight: 600; }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-empty,
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-empty p {
+        color: var(--text-2);
+    }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-empty svg {
+        color: #9ca6c8;
+        opacity: 0.7;
+    }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-empty strong {
+        color: var(--text);
+    }
 
     /* ── SECTION LABEL ── */
     .bae-section-label {
         font-size: 10px; font-weight: 700;
-        color: var(--brand-soft); text-transform: uppercase;
+        color: #c4196a; text-transform: uppercase;
         letter-spacing: 0.12em; margin-bottom: 16px;
         transition: color 0.5s;
     }
 
     /* ── DIVIDER ── */
-    .bae-divider { height: 1px; background: var(--border); margin: 24px 0; transition: background 0.5s; }
+    .bae-divider { height: 1px; background: rgba(0,0,0,0.1); margin: 24px 0; transition: background 0.5s; }
 
     /* ── ASSET GRID ── */
     .bae-assets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
 .bae-asset-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.7);
+    border: 0;
     border-radius: 18px;
     overflow: hidden;
     transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
     position: relative;
     cursor: pointer;
+}
+.bae-wrap:not(.bae-light) .bae-page-panel .bae-asset-card {
+    background: rgba(34,36,44,0.74);
 }
 .bae-asset-card:hover {
     transform: translateY(-4px);
@@ -4314,14 +4720,20 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 .bae-asset-name {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text);
+    color: #1a1a1a;
     transition: color 0.5s;
 }
 .bae-asset-meta {
     font-size: 12px;
-    color: var(--text-3);
+    color: #6a6a6a;
     margin-top: 3px;
     transition: color 0.5s;
+}
+.bae-wrap:not(.bae-light) .bae-page-panel .bae-asset-name {
+    color: var(--text);
+}
+.bae-wrap:not(.bae-light) .bae-page-panel .bae-asset-meta {
+    color: var(--text-2);
 }
 
 /* On hover, text flips to white so it's readable over the dark overlay */
@@ -4329,8 +4741,8 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
 .bae-asset-card:hover .bae-asset-meta { color: rgba(255,255,255,.65); }
 
 /* Light mode hover keeps dark text since overlay is lighter */
-.bae-wrap.bae-light .bae-asset-card:hover .bae-asset-name { color: var(--text); }
-.bae-wrap.bae-light .bae-asset-card:hover .bae-asset-meta { color: var(--text-2); }
+.bae-wrap.bae-light .bae-asset-card:hover .bae-asset-name { color: #fff; }
+.bae-wrap.bae-light .bae-asset-card:hover .bae-asset-meta { color: rgba(255,255,255,.65); }
 
 
 
@@ -4377,15 +4789,18 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     /* ── IDENTITY BOARD ── */
     .bae-color-swatches { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
     .bae-swatch { display: flex; flex-direction: column; align-items: center; gap: 7px; }
-    .bae-swatch-block { width: 72px; height: 72px; border-radius: 16px; border: 1px solid var(--border); }
-    .bae-swatch-label { font-size: 11px; color: var(--text-3); text-align: center; transition: color 0.5s; }
-    .bae-swatch-hex { font-size: 11px; font-weight: 700; color: var(--text-2); font-family: monospace; transition: color 0.5s; }
+    .bae-swatch-block { width: 72px; height: 72px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.12); }
+    .bae-swatch-label { font-size: 11px; color: #4a4a4a; text-align: center; transition: color 0.5s; }
+    .bae-swatch-hex { font-size: 11px; font-weight: 700; color: #1a1a1a; font-family: monospace; transition: color 0.5s; }
     .bae-swatch { cursor: pointer; }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-swatch-block { border-color: rgba(255,255,255,0.2); }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-swatch-label { color: var(--text-2); }
+    .bae-wrap:not(.bae-light) .bae-page-panel .bae-swatch-hex { color: var(--text); }
     .bae-swatch-copy-btn {
         font-size: 10px; font-weight: 700;
-        padding: 3px 9px; border-radius: 999px;
-        background: var(--bg-3); color: var(--text-3);
-        border: 1px solid var(--border-2);
+        padding: 5px 11px; border-radius: 999px;
+        background: rgba(100,100,110,0.25); color: #1a1a1a;
+        border: 0;
         cursor: pointer; font-family: 'Geist', sans-serif;
         transition: all 0.2s; display: flex; align-items: center; gap: 4px;
         opacity: 0; transform: translateY(3px);
@@ -4400,7 +4815,7 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         right: 0;
         min-width: 88px;
         background: var(--surface);
-        border: 1px solid var(--border-2);
+        border: 0;
         border-radius: 12px;
         box-shadow: 0 18px 36px rgba(0,0,0,.24);
         padding: 6px;
@@ -4669,25 +5084,28 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
     .bae-bento-card .bae-form-group input,
     .bae-bento-card .bae-form-group select,
     .bae-bento-card .bae-form-group textarea {
-        background: var(--bg-2);
-        border: 1.5px solid transparent;
+        background: linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.86) 100%);
+        border: 1px solid rgba(255,255,255,0.86);
+        border-bottom-color: rgba(243,45,134,0.28);
         border-radius: 14px;
-        padding: 11px 14px;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        padding: 12px 15px;
+        box-shadow: 0 8px 18px rgba(87, 68, 130, 0.08), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(255,255,255,0.45);
+        backdrop-filter: blur(8px) saturate(138%);
+        -webkit-backdrop-filter: blur(8px) saturate(138%);
         transition: border-color .2s, box-shadow .2s;
     }
     .bae-bento-card .bae-form-group input:focus,
     .bae-bento-card .bae-form-group select:focus,
     .bae-bento-card .bae-form-group textarea:focus {
-        border-color: rgba(243,45,134,0.5);
-        box-shadow: 0 0 0 3px rgba(243,45,134,0.1), inset 0 1px 3px rgba(0,0,0,0.05);
+        border-color: rgba(243,45,134,0.52);
+        box-shadow: 0 0 0 3px rgba(243,45,134,0.14), 0 12px 24px rgba(123, 83, 182, 0.16), inset 0 1px 0 rgba(255,255,255,0.95);
         outline: none;
     }
     .bae-wrap.bae-light .bae-bento-card .bae-form-group input,
     .bae-wrap.bae-light .bae-bento-card .bae-form-group select,
     .bae-wrap.bae-light .bae-bento-card .bae-form-group textarea {
-        background: #f5f4ff;
-        border-color: transparent;
+        background: linear-gradient(165deg, rgba(255,255,255,0.97) 0%, rgba(249,246,255,0.92) 100%);
+        border-color: rgba(255,255,255,0.9);
     }
     /* AI pill buttons */
     .bae-ai-pill {

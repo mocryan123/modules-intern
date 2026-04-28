@@ -1,7 +1,7 @@
 <?php if (!defined('ABSPATH')) exit;
 function bae_brand_book_tab($user_id, $profile) {
     if (empty($profile)) {
-        return '<div class="bae-empty"><strong>Complete your <a href="?tab=overview">Brand Profile</a> first.</strong></div>';
+        return bae_wrap_tab_panel('<div class="bae-empty"><strong>Complete your <a href="?tab=overview">Brand Profile</a> first.</strong></div>');
     }
 
     $templates = bae_get_book_templates();
@@ -163,7 +163,7 @@ function bae_brand_book_tab($user_id, $profile) {
     $out .= 'buildFilm();setPage(0);';
     $out .= '})();</script>';
 
-    return $out;
+    return bae_wrap_tab_panel($out);
 }
 
 add_action('wp_ajax_bae_render_book',        'bntm_ajax_bae_render_book');

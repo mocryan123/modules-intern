@@ -108,7 +108,7 @@ function bae_home_dashboard($user_id, $profile) {
         </div>
     </div>
     <?php
-    return ob_get_clean();
+    return bae_wrap_tab_panel(ob_get_clean());
 }
 
 // =============================================================================

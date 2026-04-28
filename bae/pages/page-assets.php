@@ -11,7 +11,7 @@ function bae_assets_tab($user_id, $profile) {
             <p>Complete your <a href="?tab=overview">Brand Profile</a> first to generate assets.</p>
         </div>
         <?php
-        return ob_get_clean();
+        return bae_wrap_tab_panel(ob_get_clean());
     }
 
     global $wpdb;
@@ -1309,7 +1309,7 @@ function bae_assets_tab($user_id, $profile) {
     })();
     </script>
     <?php
-    return ob_get_clean();
+    return bae_wrap_tab_panel(ob_get_clean());
 }
 
 // =============================================================================

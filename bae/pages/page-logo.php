@@ -490,6 +490,6 @@ function bae_logo_tab($user_id, $profile) {
     })();
     </script>
     <?php
-    return ob_get_clean();
+    return bae_wrap_tab_panel(ob_get_clean());
 }
 

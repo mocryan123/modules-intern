@@ -8,7 +8,7 @@ function bae_kit_tab($user_id, $profile) {
             <p><a href="?tab=overview" class="bae-btn bae-btn-primary" style="margin-top:12px;display:inline-flex;">Go to Brand Profile &rarr;</a></p>
         </div>
         <?php
-        return ob_get_clean();
+        return bae_wrap_tab_panel(ob_get_clean());
     }
 
     if (!bae_has_viewed_onboarding_asset($profile)) {
@@ -23,7 +23,7 @@ function bae_kit_tab($user_id, $profile) {
             </a>
         </div>
         <?php
-        return ob_get_clean();
+        return bae_wrap_tab_panel(ob_get_clean());
     }
 
     $p         = $profile;
@@ -177,7 +177,7 @@ function bae_kit_tab($user_id, $profile) {
     })();
     </script>
     <?php
-    return ob_get_clean();
+    return bae_wrap_tab_panel(ob_get_clean());
 }
 
 // =============================================================================

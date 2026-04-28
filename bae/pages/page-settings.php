@@ -187,6 +187,6 @@ function bae_settings_tab($user_id, $profile) {
     })();
     </script>
     <?php
-    $output = ob_get_clean();
+    $output = bae_wrap_tab_panel(ob_get_clean());
     return apply_filters( 'bae_settings_tab_output', $output );
 }
