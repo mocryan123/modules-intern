@@ -75,7 +75,17 @@ function kbf_admin_transactions_tab() {
         </div>
       <?php else: ?>
       <div class="kbf-table-wrap" data-kbf-table-desc="Displays sponsorship transactions, payment status, sponsor contact, and transaction reference.">
-        <table class="kbf-table">
+        <table class="kbf-table kbf-table-payments">
+          <colgroup>
+            <col style="width:18%;">
+            <col style="width:12%;">
+            <col style="width:18%;">
+            <col style="width:9%;">
+            <col style="width:9%;">
+            <col style="width:18%;">
+            <col style="width:9%;">
+            <col style="width:7%;">
+          </colgroup>
           <thead><tr><th>Fundraiser</th><th>Supporter</th><th>Contact</th><th>Amount</th><th>Payment</th><th>TRN / Reference</th><th>Date</th><th>Action</th></tr></thead>
           <tbody>
           <?php foreach($rows as $s): ?>
@@ -84,14 +94,16 @@ function kbf_admin_transactions_tab() {
               <td><span class="kbf-strong"><?php echo esc_html(wp_trim_words($s->fund_title,5)); ?></span></td>
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?></td>
               <td class="kbf-meta">
-                <div><?php echo esc_html($s->email ? $s->email : '--'); ?></div>
-                <div><?php echo esc_html($s->phone ? $s->phone : '--'); ?></div>
+                <div class="kbf-cell-stack" style="gap:2px;">
+                  <span><?php echo esc_html($s->email ? $s->email : '--'); ?></span>
+                  <span><?php echo esc_html($s->phone ? $s->phone : '--'); ?></span>
+                </div>
               </td>
               <td><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo $format_currency($s->amount, 2); ?></span></td>
               <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($payment_status_class); ?>"><?php echo esc_html(ucfirst((string)$s->payment_status)); ?></span></td>
               <td class="kbf-meta"><?php echo esc_html($s->payment_reference ? $s->payment_reference : '--'); ?></td>
               <td class="kbf-meta"><?php echo esc_html($format_date($s->created_at)); ?></td>
-              <td>
+              <td style="white-space:nowrap;">
                 <?php if ((string)$s->payment_status !== 'completed'): ?>
                   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                     <button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfRecheckPayment(<?php echo (int)$s->id; ?>)">Recheck Maya</button>
