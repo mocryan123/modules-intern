@@ -109,7 +109,7 @@ function bntm_kbf_render_maintenance() {
         <h1 class="kbf-maintenance-title">System Update</h1>
         <p class="kbf-maintenance-sub">
           The page you are trying to reach is temporarily unavailable.
-          We are performing updates to improve your experience. Please check back soon. Wowe
+          We are performing updates to improve your experience. Please check back soon.
         </p>
         <div class="kbf-maintenance-line" aria-hidden="true"></div>
       </div>
