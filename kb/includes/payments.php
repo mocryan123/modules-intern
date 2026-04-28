@@ -5,6 +5,58 @@
 
 if (!defined('ABSPATH')) exit;
 
+if (!function_exists('kbf_get_sponsorship_cancel_status')) {
+    /**
+     * Resolve which final "cancel" status is supported by DB schema.
+     * Uses "cancelled" when enum allows it, otherwise falls back to "failed".
+     */
+    function kbf_get_sponsorship_cancel_status() {
+        global $wpdb;
+        static $resolved = null;
+        if ($resolved !== null) {
+            return $resolved;
+        }
+        $table = $wpdb->prefix . 'kbf_sponsorships';
+        $col = $wpdb->get_row("SHOW COLUMNS FROM {$table} LIKE 'payment_status'");
+        $type = $col && isset($col->Type) ? strtolower((string)$col->Type) : '';
+        $resolved = (strpos($type, "'cancelled'") !== false) ? 'cancelled' : 'failed';
+        return $resolved;
+    }
+}
+
+if (!function_exists('kbf_cleanup_stale_pending_sponsorships')) {
+    /**
+     * Finalize stale pending sponsorships and optionally purge very old cancelled ones.
+     */
+    function kbf_cleanup_stale_pending_sponsorships() {
+        global $wpdb;
+        $table = $wpdb->prefix . 'kbf_sponsorships';
+        $cancel_status = kbf_get_sponsorship_cancel_status();
+
+        $pending_hours = max(1, (int) apply_filters('kbf_pending_expiry_hours', 24));
+        $purge_days = max(0, (int) apply_filters('kbf_cancelled_purge_days', 180));
+
+        $cutoff_pending = gmdate('Y-m-d H:i:s', time() - ($pending_hours * HOUR_IN_SECONDS));
+        $wpdb->query($wpdb->prepare(
+            "UPDATE {$table}
+             SET payment_status=%s, updated_at=NOW()
+             WHERE payment_status='pending' AND created_at < %s",
+            $cancel_status,
+            $cutoff_pending
+        ));
+
+        if ($purge_days > 0) {
+            $cutoff_purge = gmdate('Y-m-d H:i:s', time() - ($purge_days * DAY_IN_SECONDS));
+            $wpdb->query($wpdb->prepare(
+                "DELETE FROM {$table}
+                 WHERE payment_status=%s AND created_at < %s",
+                $cancel_status,
+                $cutoff_purge
+            ));
+        }
+    }
+}
+
 if (!function_exists('kbf_is_production_mode')) {
     function kbf_is_production_mode() {
         return !(bool) kbf_get_setting('kbf_demo_mode', true);

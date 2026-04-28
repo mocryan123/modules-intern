@@ -10,6 +10,11 @@ if (!wp_next_scheduled('kbf_check_deadlines')) {
     wp_schedule_event(time(), 'hourly', 'kbf_check_deadlines');
 }
 
+add_action('kbf_cleanup_pending_sponsorships', 'kbf_cron_cleanup_pending_sponsorships');
+if (!wp_next_scheduled('kbf_cleanup_pending_sponsorships')) {
+    wp_schedule_event(time(), 'hourly', 'kbf_cleanup_pending_sponsorships');
+}
+
 function kbf_cron_check_deadlines() {
     global $wpdb;
     $table = $wpdb->prefix . 'kbf_funds';
@@ -65,6 +70,12 @@ function kbf_cron_check_deadlines() {
         // TODO: Hook your 3rd-party notification service here
         // Example: do_action('kbf_fund_deadline_reached', $fund);
         // =====================================================
+    }
+}
+
+function kbf_cron_cleanup_pending_sponsorships() {
+    if (function_exists('kbf_cleanup_stale_pending_sponsorships')) {
+        kbf_cleanup_stale_pending_sponsorships();
     }
 }
 

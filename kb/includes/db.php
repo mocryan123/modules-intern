@@ -437,9 +437,25 @@ function bntm_kbf_ensure_saved_funds_table() {
         dbDelta($tables['kbf_saved_funds']);
     }
 }
+if (!function_exists('bntm_kbf_ensure_sponsorship_status_enum')) {
+    function bntm_kbf_ensure_sponsorship_status_enum() {
+        global $wpdb;
+        $st = $wpdb->prefix . 'kbf_sponsorships';
+        $col = $wpdb->get_row("SHOW COLUMNS FROM {$st} LIKE 'payment_status'");
+        if (!$col || empty($col->Type)) return;
+        $type = strtolower((string)$col->Type);
+        if (strpos($type, "'cancelled'") !== false) return;
+        $wpdb->query(
+            "ALTER TABLE {$st}
+             MODIFY payment_status ENUM('pending','completed','failed','cancelled','refunded') DEFAULT 'pending'"
+        );
+    }
+}
+add_action('init', 'bntm_kbf_ensure_sponsorship_status_enum', 2);
+
 add_action('init', 'bntm_kbf_maybe_update_db', 1);
 function bntm_kbf_maybe_update_db() {
-    $target = '2.0.4';
+    $target = '2.0.5';
     $installed = get_option('kbf_db_version');
     if ($installed !== $target) {
         bntm_kbf_create_tables();
