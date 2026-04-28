@@ -410,14 +410,21 @@ function bntm_shortcode_ps_dashboard() {
             return new Date(str.replace(' ', 'T') + WP_TZ_OFFSET);
         }
 
-        // Format a JS Date as PH time (uses WP_TZ so it's always correct)
+        // Format a JS Date as PH time (Asia/Manila timezone)
         function formatPhTime(date) {
-            return date.toLocaleTimeString('en-PH', {
-                timeZone: WP_TZ,
+            const time = date.toLocaleTimeString('en-PH', {
+                timeZone: 'Asia/Manila',
                 hour: 'numeric',
                 minute: '2-digit',
                 hour12: true
             });
+            const d = date.toLocaleDateString('en-PH', {
+                timeZone: 'Asia/Manila',
+                month: 'numeric',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            return time + '<br>' + d;
         }
 
         window.addEventListener('resize', function() { isMobileView = window.innerWidth <= 768; });
@@ -828,7 +835,7 @@ function ps_overview_tab($business_id) {
                     <td style="font-size:12px;color:#6b7280;"><?php echo (int)$o->copies; ?>x &bull; <?php echo esc_html($o->paper_size); ?> &bull; <?php echo $o->color_mode === 'color' ? 'Color' : 'B&amp;W'; ?></td>
                     <td><strong>&#8369;<?php echo number_format($o->total_price, 2); ?></strong></td>
                     <td><span class="ps-badge ps-badge-<?php echo esc_attr($o->status); ?>"><?php echo esc_html(ucfirst(str_replace('_',' ',$o->status))); ?></span></td>
-                    <td style="font-size:12px;color:#6b7280;"><?php echo date('M d, Y', strtotime($o->created_at)); ?></td>
+                    <td style="font-size:12px;color:#6b7280;"><?php echo date('g:i A', strtotime($o->created_at)); ?><br><?php echo date('n/j/Y', strtotime($o->created_at)); ?></td>
                 </tr>
                 <?php endforeach; endif; ?>
             </tbody>
@@ -988,7 +995,7 @@ function ps_orders_tab($business_id) {
                             <?php endif; ?>
                         </select>
                     </td>
-                    <td style="font-size:12px;color:#6b7280;white-space:nowrap;"><?php echo date('M d, Y', strtotime($o->created_at)); ?></td>
+                    <td style="font-size:12px;color:#6b7280;white-space:nowrap;"><?php echo date('g:i A', strtotime($o->created_at)); ?><br><?php echo date('n/j/Y', strtotime($o->created_at)); ?></td>
                     <td>
                         <div style="display:flex;gap:6px;flex-direction:column;">
                             <button class="bntm-btn-small bntm-btn-primary ps-view-btn" data-id="<?php echo $o->id; ?>" data-nonce="<?php echo $nonce; ?>">View All Details</button>
@@ -2918,7 +2925,8 @@ function bntm_ajax_ps_submit_order() {
         'total_pages' => $real_total_pages, 'unit_price' => $real_unit, 'total_price' => $final_total,
         'payment_method' => $payment_method, 'status' => 'pending',
         'payment_status' => 'unpaid',
-    ], ['%s','%d','%s','%s','%s','%s','%s','%d','%d','%d','%s','%s','%s','%s','%s','%s','%d','%f','%f','%s','%s','%s']);
+        'created_at' => current_time('mysql'),
+    ], ['%s','%d','%s','%s','%s','%s','%s','%d','%d','%d','%s','%s','%s','%s','%s','%s','%d','%f','%f','%s','%s','%s','%s']);
 
     if ($result) {
         wp_send_json_success(['rand_id' => $rand_id, 'total' => $final_total]);
@@ -2971,7 +2979,7 @@ function bntm_ajax_ps_get_orders() {
         <div><div style="color:#9ca3af;font-size:12px;margin-bottom:2px;">Customer</div><div style="font-weight:600;"><?php echo esc_html($o->customer_name); ?></div></div>
         <div><div style="color:#9ca3af;font-size:12px;margin-bottom:2px;">Email</div><div><?php echo esc_html($o->customer_email); ?></div></div>
         <div><div style="color:#9ca3af;font-size:12px;margin-bottom:2px;">Phone</div><div><?php echo esc_html($o->customer_phone ?: '—'); ?></div></div>
-        <div><div style="color:#9ca3af;font-size:12px;margin-bottom:2px;">Order Date</div><div><?php echo date('M d, Y h:i A', strtotime($o->created_at)); ?></div></div>
+        <div><div style="color:#9ca3af;font-size:12px;margin-bottom:2px;">Order Date</div><div><?php echo date('g:i A', strtotime($o->created_at)); ?><br><?php echo date('n/j/Y', strtotime($o->created_at)); ?></div></div>
     </div>
     <div style="background:#f9fafb;border-radius:10px;padding:16px;margin-bottom:20px;">
         <h4 style="margin:0 0 12px;font-size:14px;">File Details</h4>
