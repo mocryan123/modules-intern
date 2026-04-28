@@ -21,7 +21,7 @@ function kbf_dashboard_sponsorships_tab($business_id) {
     $st = $wpdb->prefix . 'kbf_sponsorships';
 
     $total_count = (int)$wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d",
+        "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed'",
         $business_id
     ));
     $per_page = 50;
@@ -33,18 +33,13 @@ function kbf_dashboard_sponsorships_tab($business_id) {
     $offset = ($current_page - 1) * $per_page;
 
     $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d ORDER BY s.created_at DESC LIMIT %d OFFSET %d",
+        "SELECT s.*,f.title as fund_title FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='completed' ORDER BY s.created_at DESC LIMIT %d OFFSET %d",
         $business_id,
         $per_page,
         $offset
     ));
 
     $demo_mode = (bool)kbf_get_setting('kbf_demo_mode', true);
-    $pending_count = (int)$wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$st} s JOIN {$ft} f ON s.fund_id=f.id WHERE f.business_id=%d AND s.payment_status='pending'",
-        $business_id
-    ));
-
     $format_date = function($value) {
         if (!$value) {
             return '--';
@@ -72,16 +67,17 @@ function kbf_dashboard_sponsorships_tab($business_id) {
         }
         .kbf-supporters-table th,
         .kbf-supporters-table td{color:#0f172a;}
-        .kbf-supporters-table th:nth-child(3),
-        .kbf-supporters-table td:nth-child(3),
         .kbf-supporters-table th:nth-child(4),
         .kbf-supporters-table td:nth-child(4),
         .kbf-supporters-table th:nth-child(6),
-        .kbf-supporters-table td:nth-child(6){
+        .kbf-supporters-table td:nth-child(6),
+        .kbf-supporters-table th:nth-child(7),
+        .kbf-supporters-table td:nth-child(7){
           white-space:nowrap;
         }
         .kbf-supporters-table td:nth-child(2),
-        .kbf-supporters-table td:nth-child(5){
+        .kbf-supporters-table td:nth-child(5),
+        .kbf-supporters-table td:nth-child(6){
           white-space:normal;
           overflow-wrap:anywhere;
           word-break:break-word;
@@ -132,36 +128,34 @@ function kbf_dashboard_sponsorships_tab($business_id) {
           <span style="flex-shrink:0;color:inherit;display:inline-flex;align-items:center;"><i class="ph-fill ph-warning" aria-hidden="true"></i></span>
         <div><span class="kbf-strong">Demo mode active.</span> Payments are simulated for testing.</div>
       </div>
-      <?php elseif($pending_count > 0): ?>
-      <div class="kbf-alert kbf-alert-warning" style="margin-bottom:16px;">
-        <span class="kbf-strong"><?php echo $pending_count; ?> sponsorship<?php echo $pending_count>1?'s':''; ?> pending payment confirmation.</span>
-          Go to Admin &gt; Payments tab to manually confirm payments.
-      </div>
       <?php endif; ?>
       <?php if(empty($rows)): ?>
-        <div class="kbf-table-empty" data-kbf-table-desc="Shows all sponsorships received for your campaigns, including amount and payment status.">
-          <div class="kbf-table-empty-head" style="grid-template-columns:2fr 1.2fr .8fr .8fr 1.4fr .8fr;">
+        <div class="kbf-table-empty" data-kbf-table-desc="Shows completed sponsorships received for your campaigns, including amount and transaction reference.">
+          <div class="kbf-table-empty-head" style="grid-template-columns:2fr 1.2fr .8fr .9fr 1.4fr 1.1fr .8fr;">
             <span>Campaign</span>
             <span>Supporter</span>
             <span>Amount</span>
-            <span>Payment</span>
+            <span>Status</span>
             <span>Note</span>
+            <span>TRN / Reference</span>
             <span>Date</span>
           </div>
           <div class="kbf-table-empty-body">No sponsorships yet.</div>
         </div>
       <?php else: ?>
-        <div class="kbf-table-wrap" data-kbf-table-desc="Shows all sponsorships received for your campaigns, including amount and payment status.">
+        <div class="kbf-table-wrap" data-kbf-table-desc="Shows completed sponsorships received for your campaigns, including amount and transaction reference.">
           <table class="kbf-table kbf-supporters-table">
             <colgroup>
-              <col style="width:24%;">
-              <col style="width:28%;">
+              <col style="width:22%;">
+              <col style="width:22%;">
+              <col style="width:10%;">
               <col style="width:12%;">
               <col style="width:14%;">
               <col style="width:12%;">
               <col style="width:10%;">
+              <col style="width:12%;">
             </colgroup>
-            <thead><tr><th scope="col">Campaign</th><th scope="col">Supporter</th><th scope="col">Amount</th><th scope="col">Payment</th><th scope="col">Note</th><th scope="col">Date</th></tr></thead>
+            <thead><tr><th scope="col">Campaign</th><th scope="col">Supporter</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col">Note</th><th scope="col">TRN / Reference</th><th scope="col">Date</th></tr></thead>
             <tbody>
             <?php foreach($rows as $s): ?>
               <tr>
@@ -177,17 +171,12 @@ function kbf_dashboard_sponsorships_tab($business_id) {
                   </td>
                 <td><span class="kbf-strong">&#8369;<?php echo number_format($s->amount,2); ?></span></td>
                 <td>
-                  <?php
-                    $status_raw = strtolower((string)$s->payment_status);
-                    $allowed_statuses = ['pending', 'completed', 'failed', 'cancelled', 'canceled', 'on_hold', 'refunded', 'expired'];
-                    $status_class = in_array($status_raw, $allowed_statuses, true) ? $status_raw : 'unknown';
-                    $status_label = $status_raw !== '' ? ucwords(str_replace('_', ' ', $status_raw)) : 'Unknown';
-                  ?>
-                  <span class="kbf-badge kbf-badge-<?php echo esc_attr(sanitize_html_class($status_class)); ?>"><?php echo esc_html($status_label); ?></span>
+                  <span class="kbf-badge kbf-badge-completed">Completed</span>
                 </td>
                 <td class="kbf-meta" style="font-style:italic;max-width:200px;">
                   <span class="kbf-clamp-2"><?php echo esc_html($s->message?:' -- '); ?></span>
                 </td>
+                <td class="kbf-meta"><?php echo esc_html($s->payment_reference ? $s->payment_reference : $s->rand_id); ?></td>
                 <td class="kbf-meta"><?php echo $format_date($s->created_at); ?></td>
               </tr>
             <?php endforeach; ?>
