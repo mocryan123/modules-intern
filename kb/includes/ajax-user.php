@@ -1221,7 +1221,7 @@ function bntm_ajax_kbf_sponsor_fund() {
     }
     global $wpdb;$ft=$wpdb->prefix.'kbf_funds';$st=$wpdb->prefix.'kbf_sponsorships';
     $id=intval($_POST['fund_id']);$amount=floatval($_POST['amount']);
-    if($amount<50) wp_send_json_error(['message'=>'Minimum sponsorship is &#8369;50.']);
+    if($amount<1) wp_send_json_error(['message'=>'Minimum sponsorship is &#8369;1.']);
     $fund=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$ft} WHERE id=%d AND status='active'",$id));
     if(!$fund) wp_send_json_error(['message'=>'Fund not found or not accepting sponsorships.']);
     $anon=intval($_POST['is_anonymous']??0);

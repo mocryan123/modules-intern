@@ -510,7 +510,7 @@ function bntm_ajax_kbf_create_checkout() {
     $is_anon      = intval($_POST['is_anonymous'] ?? 0);
     $method       = sanitize_text_field($_POST['payment_method'] ?? 'online_payment');
 
-    if ($amount < 50) wp_send_json_error(['message' => 'Minimum sponsorship is &#8369;50.']);
+    if ($amount < 1) wp_send_json_error(['message' => 'Minimum sponsorship is &#8369;1.']);
     if (empty($email) || empty($phone)) {
         wp_send_json_error(['message' => 'Email and phone are required to proceed.']);
     }
