@@ -12,53 +12,63 @@ function bntm_kbf_render_maintenance() {
     ?>
     <style>
       :root{
-        --kbf-ink:#0f172a;
-        --kbf-muted:#64748b;
-        --kbf-green:#166534;
-        --kbf-green-2:#22c55e;
-        --kbf-green-3:#bbf7d0;
+        --kbf-navy:#1a3a66;
+        --kbf-blue:#3d8ef0;
+        --kbf-slate:#64748b;
+        --kbf-bg:#f8fafc;
+        --kbf-border:#e2e8f0;
       }
       .kbf-maintenance, .kbf-maintenance body{
         font-family: 'Poppins', system-ui, -apple-system, sans-serif;
       }
       .kbf-maintenance{
+        height:100vh;
+        height:100dvh;
         min-height:100vh;
         display:flex;
         align-items:center;
         justify-content:center;
-        padding:40px 20px;
-        background:#ffffff;
-        color:var(--kbf-ink);
+        padding:24px 18px;
+        background:var(--kbf-bg);
+        color:var(--kbf-navy);
         text-align:center;
       }
       .kbf-maintenance-card{
-        max-width:720px;
+        max-width:640px;
         width:100%;
         margin:0 auto;
+        padding:24px 20px;
+        border:1px solid var(--kbf-border);
+        border-radius:16px;
+        background:#fff;
       }
       .kbf-maintenance-title{
-        font-size:28px;
-        font-weight:600;
-        color:var(--kbf-green);
-        margin:18px 0 8px;
+        font-size:34px;
+        line-height:1.18;
+        font-weight:700;
+        letter-spacing:-0.02em;
+        color:var(--kbf-navy);
+        margin:12px 0 10px;
       }
       .kbf-maintenance-sub{
         font-size:14px;
-        line-height:1.6;
-        color:var(--kbf-muted);
+        line-height:1.7;
+        color:var(--kbf-slate);
         margin:0 auto;
-        max-width:520px;
+        max-width:540px;
+        font-weight:500;
       }
       .kbf-maintenance-illus{
-        width:260px;
+        width:220px;
         height:auto;
         margin:0 auto;
         display:block;
       }
       @media (max-width:640px){
-        .kbf-maintenance-title{font-size:24px;}
-        .kbf-maintenance-sub{font-size:13.5px;}
-        .kbf-maintenance-illus{width:220px;}
+        .kbf-maintenance-card{padding:20px 16px;}
+        .kbf-maintenance-title{font-size:28px;}
+        .kbf-maintenance-sub{font-size:13px;}
+        .kbf-maintenance-illus{width:190px;}
       }
     </style>
 
@@ -102,7 +112,7 @@ function bntm_kbf_render_maintenance() {
             <path d="M196 228c8-8 16-8 24 0"/>
           </g>
         </svg>
-        <h1 class="kbf-maintenance-title">Fundora: Maintainance</h1>
+        <h1 class="kbf-maintenance-title">System Update</h1>
         <p class="kbf-maintenance-sub">
           The page you are trying to reach is temporarily unavailable.
           We are performing updates to improve your experience. Please check back soon.
