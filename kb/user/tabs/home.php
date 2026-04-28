@@ -1515,8 +1515,16 @@
         function configureHomeSponsorPagers(){
           document.querySelectorAll('.kbf-home-sponsor-wrap').forEach(function(wrap){
             if(!wrap) return;
-            var pager = wrap.nextElementSibling;
+            var pager = wrap.parentElement ? wrap.parentElement.querySelector('.kbf-table-pager') : null;
+            if(!pager){
+              var maybe = wrap.nextElementSibling;
+              if(maybe && maybe.classList && maybe.classList.contains('kbf-table-pager')) pager = maybe;
+            }
             if(!pager || !pager.classList.contains('kbf-table-pager')) return;
+            var left = pager.querySelector('.kbf-table-pager-left');
+            if(left) left.style.display = 'none';
+            var right = pager.querySelector('.kbf-table-pager-right');
+            if(right) right.style.marginLeft = 'auto';
             var select = pager.querySelector('.kbf-table-rows');
             if(select && select.value !== '5'){
               select.value = '5';
