@@ -1264,7 +1264,7 @@ function kbf_dashboard_find_funds_tab() {
             </div>
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
-              <input type="number" name="amount" placeholder="Min. &#8369;50" min="50" step="1" required>
+              <input type="number" name="amount" placeholder="Min. &#8369;50" min="1" step="1" required>
               <div id="kbff-sponsor-limit" class="kbf-meta" style="margin-top:4px;"></div>
             </div>
             <div class="kbf-form-group">

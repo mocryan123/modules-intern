@@ -1466,8 +1466,8 @@ function bntm_shortcode_kbf_fund_details() {
             <div class="kbf-form-group">
               <label>Amount (PHP) *</label>
               <input type="text" name="amount_display" id="kbf-sponsor-amount-display" placeholder="Min. &#8369;50" inputmode="numeric" autocomplete="off" required>
-              <input type="hidden" name="amount" id="kbf-sponsor-amount" min="50" step="1">
-              <div class="kbf-meta" style="margin-top:4px;">Minimum sponsorship: &#8369;50.00</div>
+              <input type="hidden" name="amount" id="kbf-sponsor-amount" min="1" step="1">
+              <div class="kbf-meta" style="margin-top:4px;">Minimum sponsorship: &#8369;1.00</div>
               <?php if($fund->goal_amount>0): ?>
               <?php endif; ?>
             </div>
@@ -2598,8 +2598,8 @@ function kbfSyncDetailPanels(){
         if(!kbfValidateRequired(form)) return;
         const amountEl = form.querySelector('input[name="amount"]');
         const amt = amountEl ? parseFloat((amountEl.value || '0').replace(/,/g, '')) : 0;
-        if(amt < 50){
-            msg.innerHTML='<div class="kbf-alert kbf-alert-error">Minimum sponsorship is &#8369;50.00.</div>';
+        if(amt < 1){
+            msg.innerHTML='<div class="kbf-alert kbf-alert-error">Minimum sponsorship is &#8369;1.00.</div>';
             return;
         }
         kbfSetBtnLoading(btn,true,'Processing...');
