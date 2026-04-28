@@ -2863,7 +2863,7 @@ function bntm_kbf_render_landing() {
                     Filipino Crowdfunding Platform
                   </p>
                   <h1 class="kbf-hero-heading">
-                    Fundora: Start a fund, Change a Life. Tesyy
+                    Fundora: Start a fund, Change a Life. Tesyysss
                   </h1>
                   <p class="kbf-hero-desc">
                     Why Filipinos are moving from Social Media donation posts to a platform designed for trust, transparency, and real accountability.
