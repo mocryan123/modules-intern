@@ -1148,6 +1148,50 @@ function ps_orders_tab($business_id) {
                                 });
                             });
                         });
+                        // Re-attach event listeners to pickup buttons
+                        document.querySelectorAll('.ps-pickup-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                if (!confirm('Mark this order as picked up?')) return;
+                                const fd = new FormData();
+                                fd.append('action', 'ps_mark_picked_up');
+                                fd.append('order_id', this.dataset.id);
+                                fd.append('nonce', nonce);
+                                fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
+                                    if (json.success) location.reload();
+                                    else alert('Error: ' + json.data.message);
+                                });
+                            });
+                        });
+                        // Re-attach event listeners to mark paid buttons
+                        document.querySelectorAll('.ps-markpaid-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                if (!confirm('Mark this order as paid?')) return;
+                                const orderId = this.dataset.id;
+                                const fd = new FormData();
+                                fd.append('action', 'ps_mark_paid');
+                                fd.append('order_id', orderId);
+                                fd.append('nonce', nonce);
+                                fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
+                                    if (json.success) location.reload();
+                                    else alert('Error: ' + json.data.message);
+                                });
+                            });
+                        });
+                        // Re-attach event listeners to delete buttons
+                        document.querySelectorAll('.ps-delete-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                if (!confirm('Delete this order permanently?')) return;
+                                const orderId = this.dataset.id;
+                                const fd = new FormData();
+                                fd.append('action', 'ps_delete_order');
+                                fd.append('order_id', orderId);
+                                fd.append('nonce', nonce);
+                                fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
+                                    if (json.success) { const row = document.getElementById('ps-order-row-' + orderId); if (row) row.remove(); }
+                                    else alert('Error: ' + json.data.message);
+                                });
+                            });
+                        });
                     }
                 })
                 .catch(err => console.error('Search error:', err));
@@ -3265,7 +3309,16 @@ function bntm_ajax_ps_search_orders() {
 
         $html .= '<td style="font-size:12px;color:#6b7280;white-space:nowrap;">' . date('g:i A', strtotime($o->created_at)) . '<br>' . date('n/j/Y', strtotime($o->created_at)) . '</td>';
         
-        $html .= '<td><div style="display:flex;gap:6px;flex-direction:column;"></div></td></tr>';
+        $html .= '<td><div style="display:flex;gap:6px;flex-direction:column;">';
+        $html .= '<button class="bntm-btn-small bntm-btn-primary ps-view-btn" data-id="' . $o->id . '" data-nonce="' . $nonce . '">View All Details</button>';
+        if (!in_array($o->status, ['picked_up', 'cancelled'])) {
+            $html .= '<button class="bntm-btn-small bntm-btn-secondary ps-pickup-btn" data-id="' . $o->id . '" data-nonce="' . $nonce . '">Picked Up</button>';
+        }
+        if ($o->payment_status === 'unpaid') {
+            $html .= '<button class="bntm-btn-small bntm-btn-primary ps-markpaid-btn" data-id="' . $o->id . '" data-nonce="' . $nonce . '" style="background:linear-gradient(135deg,#16a34a,#22c55e);border-color:#16a34a;">Mark Paid</button>';
+        }
+        $html .= '<button class="bntm-btn-small bntm-btn-danger ps-delete-btn" data-id="' . $o->id . '" data-nonce="' . $nonce . '">Delete</button>';
+        $html .= '</div></td></tr>';
     }
 
     wp_send_json_success(['html' => $html]);
