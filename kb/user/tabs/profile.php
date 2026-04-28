@@ -77,11 +77,11 @@ function kbf_dashboard_profile_tab( $business_id ) {
     // Profile completion
     $has_name    = ! empty( trim( $user->display_name ) );
     $has_social  = ! empty( trim( $social_name ) );
-    $has_bio     = $profile && ! empty( trim( (string) $profile->bio ) );
+    $has_profile_type = ! empty( trim( (string) $profile_type ) );
     $has_payout  = ! empty( $payout_type ) && ! empty( $payout_name ) && ! empty( $payout_number );
     $has_address = ! empty( trim( $address ) );
 
-    $onboard_done = ( $has_name ? 1 : 0 ) + ( $has_social ? 1 : 0 ) + ( $has_bio ? 1 : 0 ) + ( $has_payout ? 1 : 0 ) + ( $has_address ? 1 : 0 );
+    $onboard_done = ( $has_name ? 1 : 0 ) + ( $has_social ? 1 : 0 ) + ( $has_profile_type ? 1 : 0 ) + ( $has_payout ? 1 : 0 ) + ( $has_address ? 1 : 0 );
     $onboard_pct  = round( ( $onboard_done / KBF_PROFILE_CHECKLIST_ITEMS ) * 100 );
 
     ob_start();
@@ -605,7 +605,7 @@ function kbf_dashboard_profile_tab( $business_id ) {
           </div>
           <div class="kbf-form-group kbf-bio-wrap">
             <label>Bio / About</label>
-            <textarea name="bio" rows="4" maxlength="250" placeholder="Tell sponsors about yourself..." required><?php echo esc_textarea(isset($profile->bio) ? str_replace('\\', '', wp_unslash($profile->bio)) : ''); ?></textarea>
+            <textarea name="bio" rows="4" maxlength="250" placeholder="Tell sponsors about yourself..."><?php echo esc_textarea(isset($profile->bio) ? str_replace('\\', '', wp_unslash($profile->bio)) : ''); ?></textarea>
             <div class="kbf-char-count" id="kbf-profile-bio-count">0 / 250</div>
             <div class="kbf-field-error"></div>
           </div>
@@ -1362,10 +1362,9 @@ function kbf_dashboard_profile_tab( $business_id ) {
           }
         }
 
-        // Validation: Bio / About (required)
+        // Validation: Bio / About (optional, max length only)
         const bio = form.querySelector('textarea[name="bio"]');
-        if(!bio || !bio.value.trim()) showErr(bio, 'Bio is required.');
-        else if(bio.value.length > 250) showErr(bio, 'Bio must be 250 characters or less.');
+        if(bio && bio.value.length > 250) showErr(bio, 'Bio must be 250 characters or less.');
 
         // Validation: Phone (required)
         const phone = form.querySelector('[name="phone"]');

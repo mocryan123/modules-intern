@@ -201,7 +201,7 @@ add_action('user_register', 'kbf_mark_first_login', 10, 1);
 
 /**
  * Keep onboarding visibility flag in sync with current profile completeness.
- * This prevents stale kbf_show_onboarding meta from forcing the modal after 5/5 completion.
+ * This prevents stale kbf_show_onboarding meta from forcing the modal after completion.
  */
 if (!function_exists('kbf_sync_onboarding_flag_for_user')) {
     function kbf_sync_onboarding_flag_for_user($user_id = 0) {
@@ -216,7 +216,7 @@ if (!function_exists('kbf_sync_onboarding_flag_for_user')) {
         global $wpdb;
         $pt = $wpdb->prefix . 'kbf_organizer_profiles';
         $profile = $wpdb->get_row($wpdb->prepare(
-            "SELECT bio,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d",
+            "SELECT profile_type,payout_type,payout_name,payout_number FROM {$pt} WHERE business_id=%d",
             $user_id
         ));
         $user = get_userdata($user_id);
@@ -225,12 +225,11 @@ if (!function_exists('kbf_sync_onboarding_flag_for_user')) {
 
         $has_display_name = $user && !empty(trim((string) $user->display_name));
         $has_social_name = !empty(trim($social_name));
-        $has_bio = $profile && !empty(trim((string) $profile->bio));
         $has_profile_type = $profile && !empty(trim((string) $profile->profile_type));
         $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
         $has_address = !empty(trim($address));
 
-        $is_complete = ($has_display_name && $has_social_name && $has_bio && $has_profile_type && $has_payout && $has_address);
+        $is_complete = ($has_display_name && $has_social_name && $has_profile_type && $has_payout && $has_address);
         if (!$is_complete) {
             return false;
         }

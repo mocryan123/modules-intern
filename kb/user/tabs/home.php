@@ -28,12 +28,11 @@
       $has_avatar = $profile && !empty($profile->avatar_url);
       $has_display_name = $user && !empty(trim((string) $user->display_name));
       $has_social_name = !empty(trim($social_name));
-      $has_bio = $profile && !empty(trim((string) $profile->bio));
       $has_profile_type = $profile && !empty(trim((string) $profile->profile_type));
       $has_payout = $profile && !empty($profile->payout_type) && !empty($profile->payout_name) && !empty($profile->payout_number);
       $has_address = !empty(trim((string) $address));
-      $onboard_required = 6;
-      $onboard_done = ($has_display_name ? 1 : 0) + ($has_social_name ? 1 : 0) + ($has_bio ? 1 : 0) + ($has_profile_type ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
+      $onboard_required = 5;
+      $onboard_done = ($has_display_name ? 1 : 0) + ($has_social_name ? 1 : 0) + ($has_profile_type ? 1 : 0) + ($has_payout ? 1 : 0) + ($has_address ? 1 : 0);
       $onboard_pct = round(($onboard_done / $onboard_required) * 100);
       $onboard_complete = ($onboard_done >= $onboard_required);
       // Source of truth: show onboarding only while required 5/5 profile fields are incomplete.
@@ -373,7 +372,7 @@
                 <h4 id="kbf-onboard-title">Set up your account profile</h4>
                 <p>Complete the essentials below to unlock withdrawals and build supporter trust.</p>
                 <div class="kbf-onboard-progress">
-                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/6</span></div>
+                  <div class="kbf-count"><?php echo (int) $onboard_done; ?><span>/5</span></div>
                   <div class="kbf-onboard-bar"><span style="width:<?php echo (int) $onboard_pct; ?>%;"></span></div>
                 </div>
               </div>
@@ -386,10 +385,6 @@
                   <li class="kbf-onboard-step <?php echo $has_social_name ? 'is-done' : ''; ?>">
                     <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Social name</span>
                     <span class="kbf-onboard-meta"><?php echo $has_social_name ? 'Done' : 'Pending'; ?></span>
-                  </li>
-                  <li class="kbf-onboard-step <?php echo $has_bio ? 'is-done' : ''; ?>">
-                    <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>About/Bio</span>
-                    <span class="kbf-onboard-meta"><?php echo $has_bio ? 'Done' : 'Pending'; ?></span>
                   </li>
                   <li class="kbf-onboard-step <?php echo $has_profile_type ? 'is-done' : ''; ?>">
                     <span class="kbf-step-left"><span class="kbf-onboard-dot"></span>Account type</span>
