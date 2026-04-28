@@ -114,6 +114,7 @@ add_action('wp_ajax_ps_get_order_status',        'bntm_ajax_ps_get_order_status'
 add_action('wp_ajax_nopriv_ps_get_order_status', 'bntm_ajax_ps_get_order_status');
 add_action('wp_ajax_ps_update_order_status',     'bntm_ajax_ps_update_order_status');
 add_action('wp_ajax_ps_get_orders',              'bntm_ajax_ps_get_orders');
+add_action('wp_ajax_ps_search_orders',           'bntm_ajax_ps_search_orders');
 add_action('wp_ajax_ps_delete_order',            'bntm_ajax_ps_delete_order');
 add_action('wp_ajax_ps_save_pricing',            'bntm_ajax_ps_save_pricing');
 add_action('wp_ajax_ps_calculate_price',         'bntm_ajax_ps_calculate_price');
@@ -928,14 +929,14 @@ function ps_orders_tab($business_id) {
             <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;">
                     <input type="hidden" name="page_id" value="<?php echo get_the_ID(); ?>">
                     <input type="hidden" name="tab" value="orders">
-                    <input type="text" name="search" value="<?php echo esc_attr($search); ?>" placeholder="Search by name, email, order ID..." class="bntm-input" style="flex:1;min-width:200px;">
-                    <select name="status" class="bntm-select">
+                    <input type="text" id="ps-search-input" name="search" value="<?php echo esc_attr($search); ?>" placeholder="Search by name, email, order ID..." class="bntm-input" style="flex:1;min-width:200px;">
+                    <select id="ps-status-filter" name="status" class="bntm-select">
                         <option value="">All Statuses</option>
                         <?php foreach ($statuses as $s): ?>
                             <option value="<?php echo $s; ?>" <?php selected($filter_status, $s); ?>><?php echo ucfirst(str_replace('_',' ',$s)); ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <select name="payment" class="bntm-select">
+                    <select id="ps-payment-filter" name="payment" class="bntm-select">
                         <option value="">All Payments</option>
                         <option value="unpaid" <?php selected($filter_payment, 'unpaid'); ?>>Unpaid</option>
                         <option value="paid"   <?php selected($filter_payment, 'paid');   ?>>Paid</option>
@@ -1080,6 +1081,92 @@ function ps_orders_tab($business_id) {
                 });
             });
         });
+
+        // ── Auto-search functionality ──
+        let searchTimeout;
+        const searchInput = document.getElementById('ps-search-input');
+        const statusFilter = document.getElementById('ps-status-filter');
+        const paymentFilter = document.getElementById('ps-payment-filter');
+        const tableBody = document.getElementById('ps-orders-tbody');
+
+        function performSearch() {
+            if (!tableBody) return;
+            
+            const fd = new FormData();
+            fd.append('action', 'ps_search_orders');
+            fd.append('search', searchInput.value);
+            fd.append('status', statusFilter.value);
+            fd.append('payment', paymentFilter.value);
+            fd.append('nonce', nonce);
+            
+            fetch(ajaxurl, {method: 'POST', body: fd})
+                .then(r => r.json())
+                .then(json => {
+                    if (json.success) {
+                        tableBody.innerHTML = json.data.html;
+                        // Re-attach event listeners to newly rendered status selects
+                        document.querySelectorAll('.ps-status-select').forEach(sel => {
+                            sel.addEventListener('change', function() {
+                                const fd = new FormData();
+                                fd.append('action', 'ps_update_order_status');
+                                fd.append('order_id', this.dataset.id);
+                                fd.append('status', this.value);
+                                fd.append('nonce', nonce);
+                                fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
+                                    if (!json.success) {
+                                        alert('Failed to update status: ' + json.data.message);
+                                    } else if (json.data.send_ready_email) {
+                                        psSendReadyEmail({
+                                            customer_email      : json.data.customer_email,
+                                            customer_name       : json.data.customer_name,
+                                            rand_id             : json.data.rand_id,
+                                            file_name           : json.data.file_name,
+                                            paper_size          : json.data.paper_size,
+                                            color_mode          : json.data.color_mode,
+                                            copies              : json.data.copies,
+                                            sides               : json.data.sides,
+                                            orientation         : json.data.orientation,
+                                            binding             : json.data.binding,
+                                            total_pages         : json.data.total_pages,
+                                            additional_services : json.data.additional_services,
+                                            total_price         : json.data.total_price,
+                                            payment_method      : json.data.payment_method,
+                                        });
+                                    }
+                                });
+                            });
+                        });
+                        // Re-attach event listeners to view buttons
+                        document.querySelectorAll('.ps-view-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const fd = new FormData();
+                                fd.append('action', 'ps_get_orders');
+                                fd.append('order_id', this.dataset.id);
+                                fd.append('nonce', nonce);
+                                fetch(ajaxurl, {method:'POST', body:fd}).then(r=>r.json()).then(json => {
+                                    if (json.success && json.data.html) psOpenModal(json.data.html);
+                                });
+                            });
+                        });
+                    }
+                })
+                .catch(err => console.error('Search error:', err));
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(performSearch, 300);
+            });
+        }
+
+        if (statusFilter) {
+            statusFilter.addEventListener('change', performSearch);
+        }
+
+        if (paymentFilter) {
+            paymentFilter.addEventListener('change', performSearch);
+        }
 
         document.querySelectorAll('.ps-view-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -3088,6 +3175,100 @@ function bntm_ajax_ps_mark_paid() {
     $result = $wpdb->update($t, ['payment_status' => 'paid'], ['id' => $order_id], ['%s'], ['%d']);
     if ($result !== false) wp_send_json_success(['message' => 'Order marked as paid.']);
     else wp_send_json_error(['message' => 'Update failed.']);
+}
+
+function bntm_ajax_ps_search_orders() {
+    check_ajax_referer('ps_admin_nonce', 'nonce');
+    if (!is_user_logged_in()) wp_send_json_error(['message' => 'Unauthorized']);
+
+    global $wpdb;
+    $t = $wpdb->prefix . 'ps_orders';
+    $current_user = wp_get_current_user();
+    $business_id = $current_user->ID;
+
+    $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+    $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+    $payment = isset($_POST['payment']) ? sanitize_text_field($_POST['payment']) : '';
+
+    $where = "WHERE business_id=%d";
+    $params = [$business_id];
+    
+    if ($status) {
+        $where .= " AND status=%s";
+        $params[] = $status;
+    }
+    if ($payment) {
+        $where .= " AND payment_status=%s";
+        $params[] = $payment;
+    }
+    if ($search) {
+        $where .= " AND (customer_name LIKE %s OR customer_email LIKE %s OR rand_id LIKE %s OR file_name LIKE %s)";
+        $like = '%' . $wpdb->esc_like($search) . '%';
+        $params = array_merge($params, [$like, $like, $like, $like]);
+    }
+
+    $sql = "SELECT * FROM {$t} {$where} ORDER BY created_at DESC LIMIT 100";
+    $orders = $wpdb->get_results($wpdb->prepare($sql, ...$params));
+
+    if (empty($orders)) {
+        wp_send_json_success(['html' => '<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:40px;">No orders found.</td></tr>']);
+        return;
+    }
+
+    $statuses = ['pending', 'printing', 'ready', 'picked_up', 'cancelled'];
+    $nonce = wp_create_nonce('ps_admin_nonce');
+    $html = '';
+
+    foreach ($orders as $o) {
+        $html .= '<tr id="ps-order-row-' . $o->id . '">';
+        $html .= '<td><strong>#' . esc_html($o->rand_id) . '</strong></td>';
+        $html .= '<td>';
+        $html .= '<div style="font-weight:600;font-size:13px;">' . esc_html($o->customer_name) . '</div>';
+        $html .= '<div style="font-size:11px;color:#6b7280;">' . esc_html($o->customer_email) . '</div>';
+        if ($o->customer_phone) $html .= '<div style="font-size:11px;color:#6b7280;">' . esc_html($o->customer_phone) . '</div>';
+        $html .= '</td>';
+        
+        $html .= '<td style="max-width:150px;">';
+        $html .= '<div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' . esc_attr($o->file_name) . '">' . esc_html($o->file_name) . '</div>';
+        $html .= '<div style="font-size:11px;color:#9ca3af;">' . ps_format_filesize($o->file_size) . '</div>';
+        if ($o->file_path && file_exists($o->file_path)) {
+            $html .= '<a href="' . esc_url(ps_get_file_url($o->file_path)) . '" download="' . esc_attr($o->file_name) . '" target="_blank" style="font-size:11px;color:#1a3c8f;">Download</a>';
+        }
+        $html .= '</td>';
+
+        $html .= '<td style="font-size:12px;">';
+        $html .= '<div>' . (int)$o->copies . ' copy/ies</div>';
+        $html .= '<div>' . esc_html($o->paper_size) . ' &bull; ' . ($o->color_mode === 'color' ? 'Color' : 'B&amp;W') . '</div>';
+        $html .= '<div>' . esc_html(ucfirst($o->orientation)) . ' &bull; ' . esc_html(ucfirst($o->sides)) . '-sided</div>';
+        if ($o->binding !== 'none') $html .= '<div>Binding: ' . esc_html(ucfirst($o->binding)) . '</div>';
+        $html .= '</td>';
+
+        $html .= '<td style="text-align:center;"><span style="font-weight:700;">' . (int)$o->total_pages . '</span><div style="font-size:11px;color:#9ca3af;">' . $o->page_count . ' doc pg</div></td>';
+        $html .= '<td><strong>&#8369;' . number_format($o->total_price, 2) . '</strong></td>';
+        
+        $html .= '<td>';
+        $html .= '<span class="ps-badge ' . ($o->payment_status === 'paid' ? 'ps-badge-ready' : 'ps-badge-pending') . '">' . ucfirst($o->payment_status) . '</span>';
+        if ($o->payment_method) $html .= '<div style="font-size:11px;color:#6b7280;margin-top:4px;">' . esc_html($o->payment_method) . '</div>';
+        $html .= '</td>';
+
+        $html .= '<td>';
+        $html .= '<select class="ps-status-select bntm-select" data-id="' . $o->id . '" data-nonce="' . $nonce . '" style="font-size:12px;padding:4px 8px;" ' . (in_array($o->status, ['picked_up', 'cancelled']) ? 'disabled' : '') . '>';
+        foreach ($statuses as $s) {
+            if ($s === 'picked_up') continue;
+            $selected = $o->status === $s ? 'selected' : '';
+            $html .= '<option value="' . $s . '" ' . $selected . '>' . ucfirst(str_replace('_', ' ', $s)) . '</option>';
+        }
+        if ($o->status === 'picked_up') {
+            $html .= '<option value="picked_up" selected disabled>Picked Up</option>';
+        }
+        $html .= '</select></td>';
+
+        $html .= '<td style="font-size:12px;color:#6b7280;white-space:nowrap;">' . date('g:i A', strtotime($o->created_at)) . '<br>' . date('n/j/Y', strtotime($o->created_at)) . '</td>';
+        
+        $html .= '<td><div style="display:flex;gap:6px;flex-direction:column;"></div></td></tr>';
+    }
+
+    wp_send_json_success(['html' => $html]);
 }
 
 function bntm_ajax_ps_delete_order() {
