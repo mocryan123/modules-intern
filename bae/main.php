@@ -1276,96 +1276,139 @@ function bae_wizard_shortcode($user_id) {
 
         <!-- Step 3: Color Palette (AI-powered) -->
         <div class="bae-wiz-screen" id="bae-step-3" style="display:none;">
-            <div class="bae-wiz-question">Choose your brand colors</div>
-            <div class="bae-wiz-hint" id="bae-wiz-palette-hint">Personalized palettes for your brand — loading...</div>
+    <div class="bae-wiz-question">Choose your brand colors</div>
+    <div class="bae-wiz-hint" id="bae-wiz-palette-hint">Personalized palettes for your brand — loading...</div>
 
-            <!-- AI loading state -->
-            <div id="bae-wiz-palette-loading" style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:32px 0;">
-                <div style="display:flex;gap:8px;">
-                    <div class="bae-wiz-palette-dot" style="width:10px;height:10px;border-radius:50%;background:#c4196a;animation:bae-wiz-bounce 1.2s ease-in-out infinite;"></div>
-                    <div class="bae-wiz-palette-dot" style="width:10px;height:10px;border-radius:50%;background:#F32D86;animation:bae-wiz-bounce 1.2s ease-in-out 0.2s infinite;"></div>
-                    <div class="bae-wiz-palette-dot" style="width:10px;height:10px;border-radius:50%;background:#F32D86;animation:bae-wiz-bounce 1.2s ease-in-out 0.4s infinite;"></div>
-                </div>
-                <div style="font-size:13px;color:#4d4a65;" id="bae-wiz-palette-loading-txt">Generating palettes for your brand...</div>
-            </div>
-
-            <!-- Palette tiles — filled by JS -->
-            <div id="bae-wiz-palette-tiles" style="display:none;width:100%;"></div>
-            <div class="bae-wiz-error" id="bae-wiz-palette-warning" style="display:none;"></div>
-
-            <div class="bae-wiz-error" id="bae-wiz-vibe-err">Please pick a palette.</div>
-            <button class="bae-wiz-next" id="bae-wiz-next-3" onclick="baeWizGo(4)" disabled>Continue &rarr;</button>
-            <button class="bae-wiz-back" onclick="baeWizGo(2)">&#8592; Back</button>
+    <!-- AI loading state -->
+    <div id="bae-wiz-palette-loading" style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:32px 0;">
+        <div style="display:flex;gap:8px;">
+            <div class="bae-wiz-palette-dot" style="width:10px;height:10px;border-radius:50%;background:#c4196a;animation:bae-wiz-bounce 1.2s ease-in-out infinite;"></div>
+            <div class="bae-wiz-palette-dot" style="width:10px;height:10px;border-radius:50%;background:#F32D86;animation:bae-wiz-bounce 1.2s ease-in-out 0.2s infinite;"></div>
+            <div class="bae-wiz-palette-dot" style="width:10px;height:10px;border-radius:50%;background:#F32D86;animation:bae-wiz-bounce 1.2s ease-in-out 0.4s infinite;"></div>
         </div>
+        <div style="font-size:13px;color:#4d4a65;" id="bae-wiz-palette-loading-txt">Generating palettes for your brand...</div>
+    </div>
+
+    <!-- Horizontal carousel container (replaces #bae-wiz-palette-tiles) -->
+    <div id="bae-wiz-palette-carousel" class="bae-wiz-palette-carousel" style="display:none;"></div>
+
+    <!-- Warning & error messages -->
+    <div class="bae-wiz-error" id="bae-wiz-palette-warning" style="display:none;"></div>
+    <div class="bae-wiz-error" id="bae-wiz-vibe-err">Please pick a palette.</div>
+
+    <button class="bae-wiz-next" id="bae-wiz-next-3" onclick="baeWizGo(4)" disabled>Continue &rarr;</button>
+    <button class="bae-wiz-back" onclick="baeWizGo(2)">← Back</button>
+</div>
 
         <style>
         @keyframes bae-wiz-bounce {
             0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
             40% { transform: scale(1); opacity: 1; }
         }
-        /* Vertical palette list */
-.bae-wiz-palette-list {
+     /* Horizontal carousel for palette cards */
+.bae-wiz-palette-carousel {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 20px;
+    padding: 8px 4px 24px 4px;
+    margin: 16px 0 20px 0;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
 }
-.bae-wiz-palette-card {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+.bae-wiz-palette-carousel::-webkit-scrollbar {
+    height: 4px;
+}
+.bae-wiz-palette-carousel::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+}
+.bae-wiz-palette-carousel::-webkit-scrollbar-thumb {
+    background: rgba(243,45,134,0.4);
+    border-radius: 4px;
+}
+
+/* Card */
+.bae-palette-card {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
     background: rgba(255,255,255,0.06);
-    border: 1.5px solid rgba(255,255,255,0.08);
-    border-radius: 20px;
-    padding: 18px 20px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 28px;
+    padding: 20px 16px 24px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 }
-.bae-wiz-palette-card:hover {
-    border-color: rgba(243,45,134,0.4);
-    background: rgba(243,45,134,0.06);
-}
-.bae-wiz-palette-card.selected {
+.bae-palette-card.selected {
     border-color: #F32D86;
     background: rgba(243,45,134,0.12);
-    box-shadow: 0 0 0 3px rgba(243,45,134,0.12);
+    box-shadow: 0 0 0 2px rgba(243,45,134,0.2);
 }
-.bae-wiz-palette-swatches {
+.bae-palette-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(243,45,134,0.5);
+}
+
+/* Stack of pill swatches */
+.bae-palette-swatches {
     display: flex;
+    flex-direction: column;
     gap: 12px;
-    margin-bottom: 6px;
+    align-items: center;
+    width: 100%;
 }
-.bae-wiz-palette-swatch {
+.bae-pill-swatch {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
+    width: 100%;
 }
-.bae-wiz-palette-swatch-color {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+.bae-pill {
+    width: 180px;
+    height: 44px;
+    border-radius: 44px;
     border: 1px solid rgba(255,255,255,0.15);
+    transition: transform 0.1s ease;
 }
-.bae-wiz-palette-swatch-hex {
-    font-size: 11px;
+.bae-pill-swatch .bae-hex {
+    font-size: 12px;
     font-family: monospace;
-    color: var(--text-3);
+    font-weight: 600;
+    color: var(--text-2);
+    letter-spacing: 0.5px;
 }
-.bae-wiz-palette-info {
-    flex: 1;
-}
-.bae-wiz-palette-name {
-    font-size: 14px;
+.bae-palette-name {
+    font-size: 16px;
     font-weight: 700;
+    font-family: 'Instrument Serif', serif;
     color: var(--text);
-    margin-bottom: 4px;
+    text-align: center;
+    margin-top: 8px;
 }
-.bae-wiz-palette-reason {
+.bae-palette-reason {
     font-size: 12px;
     color: var(--text-3);
+    text-align: center;
     line-height: 1.5;
+    margin-top: 4px;
+}
+
+/* Light mode overrides */
+.bae-wiz-wrap.bae-light .bae-palette-card {
+    background: rgba(255,255,255,0.8);
+    border-color: rgba(0,0,0,0.08);
+}
+.bae-wiz-wrap.bae-light .bae-palette-card.selected {
+    background: rgba(243,45,134,0.12);
+}
+.bae-wiz-wrap.bae-light .bae-pill {
+    border-color: rgba(0,0,0,0.08);
 }
         .bae-wiz-palette-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .bae-wiz-palette-card.selected .bae-wiz-palette-check { background: #F32D86; border-color: #F32D86; }
@@ -1912,59 +1955,63 @@ function bae_wizard_shortcode($user_id) {
         }
 
         // ── Render palette cards into Step 3 ──────────────────────────────
-        function renderPalettes(palettes, isAI) {
-    var container = document.getElementById('bae-wiz-palette-tiles');
+      function renderPalettes(palettes, isAI) {
+    var container = document.getElementById('bae-wiz-palette-carousel');
     var hint      = document.getElementById('bae-wiz-palette-hint');
     var loading   = document.getElementById('bae-wiz-palette-loading');
 
+    if (!container) return;
     container.innerHTML = '';
-    container.className = 'bae-wiz-palette-list'; // vertical list
 
     if (isAI) {
-        hint.textContent = 'AI-picked palettes for ' + state.name + ' — choose a vertical set that feels right.';
+        hint.textContent = 'AI-picked palettes for ' + state.name + ' — swipe to pick one.';
     } else {
         hint.textContent = 'Pick a palette that fits your brand.';
     }
 
-    palettes.forEach(function(p, i) {
+    palettes.forEach(function(p, idx) {
         var card = document.createElement('div');
-        card.className = 'bae-wiz-palette-card';
-        card.dataset.primary     = p.primary;
-        card.dataset.secondary   = p.secondary;
-        card.dataset.accent      = p.accent;
-        card.dataset.personality = p.personality;
+        card.className = 'bae-palette-card';
+        card.setAttribute('data-primary', p.primary);
+        card.setAttribute('data-secondary', p.secondary);
+        card.setAttribute('data-accent', p.accent);
+        card.setAttribute('data-personality', p.personality);
+
+        // Build HTML: three pill swatches stacked
+        var swatchesHtml = '';
+        var colorKeys = ['primary', 'secondary', 'accent'];
+        colorKeys.forEach(function(key) {
+            var hex = p[key];
+            swatchesHtml += `
+                <div class="bae-pill-swatch">
+                    <div class="bae-pill" style="background: ${hex};"></div>
+                    <div class="bae-hex">${hex.toUpperCase()}</div>
+                </div>
+            `;
+        });
 
         card.innerHTML = `
-            <div class="bae-wiz-palette-swatches">
-                <div class="bae-wiz-palette-swatch">
-                    <div class="bae-wiz-palette-swatch-color" style="background:${p.primary}"></div>
-                    <div class="bae-wiz-palette-swatch-hex">${p.primary}</div>
-                </div>
-                <div class="bae-wiz-palette-swatch">
-                    <div class="bae-wiz-palette-swatch-color" style="background:${p.secondary}"></div>
-                    <div class="bae-wiz-palette-swatch-hex">${p.secondary}</div>
-                </div>
-                <div class="bae-wiz-palette-swatch">
-                    <div class="bae-wiz-palette-swatch-color" style="background:${p.accent}"></div>
-                    <div class="bae-wiz-palette-swatch-hex">${p.accent}</div>
-                </div>
+            <div class="bae-palette-swatches">
+                ${swatchesHtml}
             </div>
-            <div class="bae-wiz-palette-info">
-                <div class="bae-wiz-palette-name">${p.name}</div>
-                <div class="bae-wiz-palette-reason">${p.reason}</div>
-            </div>
+            <div class="bae-palette-name">${p.name}</div>
+            <div class="bae-palette-reason">${p.reason}</div>
         `;
 
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.bae-wiz-palette-card').forEach(function(c){
+        card.addEventListener('click', function(e) {
+            // Remove selected from all cards
+            document.querySelectorAll('.bae-palette-card').forEach(function(c) {
                 c.classList.remove('selected');
             });
             card.classList.add('selected');
-            state.primary     = card.dataset.primary;
-            state.secondary   = card.dataset.secondary;
-            state.accent      = card.dataset.accent;
-            state.personality = card.dataset.personality;
-            baeRenderPaletteWarning('bae-wiz-palette-warning', state.primary, state.secondary, state.accent);
+
+            // Update global state
+            state.primary   = card.getAttribute('data-primary');
+            state.secondary = card.getAttribute('data-secondary');
+            state.accent    = card.getAttribute('data-accent');
+            state.personality = card.getAttribute('data-personality');
+
+            // Enable continue button
             document.getElementById('bae-wiz-next-3').disabled = false;
             document.getElementById('bae-wiz-vibe-err').style.display = 'none';
         });
@@ -1972,8 +2019,9 @@ function bae_wizard_shortcode($user_id) {
         container.appendChild(card);
     });
 
-    loading.style.display   = 'none';
-    container.style.display = 'block';
+    // Hide loading, show carousel
+    loading.style.display = 'none';
+    container.style.display = 'flex';
 }
 
         // ── Show Step 3 — wait for palette promise if needed ──────────────
