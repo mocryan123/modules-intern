@@ -964,6 +964,12 @@ function bntm_kbf_render_landing() {
     /* SECTIONS */
     .kbf-section { margin-top: 54px; scroll-margin-top: calc(var(--kbf-topbar-h, 64px) + 16px); }
     .kbf-section:first-of-type { margin-top: 32px; }
+    .kbf-section-band{
+        background: #f3f7ff;
+        border: 1px solid #dbe7ff;
+        border-radius: 16px;
+        padding: 22px 20px;
+    }
     #kbf-home { margin-top: 14px; margin-bottom: 90px; }
     #kbf-overview { margin-top: 60px; }
     #kbf-how { margin-top: 80px; }
@@ -2386,6 +2392,10 @@ function bntm_kbf_render_landing() {
         border-color: #d5dbe4;
     }
     @media (max-width: 720px) {
+        .kbf-section-band{
+            padding: 16px 14px;
+            border-radius: 14px;
+        }
         .kbf-cookie-banner {
             bottom: 16px;
             padding: 20px 18px;
@@ -2946,7 +2956,7 @@ function bntm_kbf_render_landing() {
         </div>
 
         <!-- FEATURES -->
-        <div id="kbf-how" class="kbf-section kbf-reveal delay-1">
+        <div id="kbf-how" class="kbf-section kbf-section-band kbf-reveal delay-1">
           <h2 style="font-size: 1.5em; font-weight: 500;">Key features that build trust</h2>
           <p class="kbf-lead">The biggest barrier to online fundraising in the Philippines is not generosity. It is trust. Fundora is built so every campaign is verifiable and every organizer is accountable.</p>
           <div class="kbf-feature-grid">
@@ -2988,7 +2998,7 @@ function bntm_kbf_render_landing() {
           </div>
         </div>
 
-                  <div class="kbf-section" style="margin-top:18px;">
+                  <div class="kbf-section kbf-reveal is-in" style="margin-top:80px;">
             <h2 style="font-size: 1.4em; font-weight: 500;">How Fundora works</h2>
             <div class="kbf-two-col">
               <div class="kbf-card kbf-card--soft kbf-card--shine">
@@ -3135,7 +3145,7 @@ function bntm_kbf_render_landing() {
 
         <!-- WHO SHOULD USE FUNDORA -->
         <div class="kbf-divider"></div>
-        <div class="kbf-section kbf-reveal delay-2">
+        <div class="kbf-section kbf-section-band kbf-reveal delay-2">
           <h2 style="font-size: 1.5em; font-weight: 400;">Who should use Fundora?</h2>
           <p class="kbf-lead">Fundora is built for anyone who needs to raise money from a Filipino community  -  and for donors who want confidence before giving.</p>
           <div class="kbf-feature-grid kbf-feature-grid--two" style="margin-top:18px;">
