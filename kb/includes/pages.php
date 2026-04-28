@@ -16,6 +16,7 @@ function bntm_kbf_get_pages() {
         'Fundora: Sign In' => '[kbf_signin]',
         'Fundora: Sign Up' => '[kbf_signup]',
         'Fundora: Reset Password' => '[kbf_reset_password]',
+        'Fundora: Maintenance' => '[kbf_maintenance]',
     ];
 }
 
@@ -30,6 +31,7 @@ function bntm_kbf_get_page_slug_map() {
         'Fundora: Sign In' => 'fundora-sign-in',
         'Fundora: Sign Up' => 'fundora-sign-up',
         'Fundora: Reset Password' => 'fundora-reset-password',
+        'Fundora: Maintenance' => 'fundora-maintenance',
     ];
 }
 
@@ -44,11 +46,12 @@ function bntm_kbf_get_shortcode_slug_map() {
         'kbf_signin'   => 'fundora-sign-in',
         'kbf_signup'   => 'fundora-sign-up',
         'kbf_reset_password' => 'fundora-reset-password',
+        'kbf_maintenance' => 'fundora-maintenance',
     ];
 }
 
 function bntm_kbf_should_use_fullwidth_template($title) {
-    return in_array($title, ['Fundora: User', 'Fundora: Admin'], true);
+    return in_array($title, ['Fundora: User', 'Fundora: Admin', 'Fundora: Maintenance'], true);
 }
 
 // Ensure required pages exist and have the correct shortcodes.
