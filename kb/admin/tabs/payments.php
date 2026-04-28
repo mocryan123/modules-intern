@@ -84,7 +84,7 @@ function kbf_admin_transactions_tab() {
               <td><?php echo $s->is_anonymous?'<em style="color:var(--kbf-slate);">Anonymous</em>':esc_html($s->sponsor_name); ?></td>
               <td><span style="color:var(--kbf-blue);" class="kbf-strong">&#8369;<?php echo $format_currency($s->amount, 2); ?></span></td>
               <td><span class="kbf-badge kbf-badge-<?php echo esc_attr($payment_status_class); ?>"><?php echo esc_html(ucfirst((string)$s->payment_status)); ?></span></td>
-              <td class="kbf-meta"><?php echo esc_html($s->payment_reference ? $s->payment_reference : $s->rand_id); ?></td>
+              <td class="kbf-meta"><?php echo esc_html($s->payment_reference ? $s->payment_reference : '--'); ?></td>
               <td class="kbf-meta"><?php echo esc_html($format_date($s->created_at)); ?></td>
               <td>
                 <?php if ((string)$s->payment_status !== 'completed'): ?>

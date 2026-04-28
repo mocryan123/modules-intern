@@ -153,7 +153,6 @@ function kbf_dashboard_sponsorships_tab($business_id) {
               <col style="width:14%;">
               <col style="width:12%;">
               <col style="width:10%;">
-              <col style="width:12%;">
             </colgroup>
             <thead><tr><th scope="col">Campaign</th><th scope="col">Supporter</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col">Note</th><th scope="col">TRN / Reference</th><th scope="col">Date</th></tr></thead>
             <tbody>
@@ -176,7 +175,7 @@ function kbf_dashboard_sponsorships_tab($business_id) {
                 <td class="kbf-meta" style="font-style:italic;max-width:200px;">
                   <span class="kbf-clamp-2"><?php echo esc_html($s->message?:' -- '); ?></span>
                 </td>
-                <td class="kbf-meta"><?php echo esc_html($s->payment_reference ? $s->payment_reference : $s->rand_id); ?></td>
+                <td class="kbf-meta"><?php echo esc_html($s->payment_reference ? $s->payment_reference : '--'); ?></td>
                 <td class="kbf-meta"><?php echo $format_date($s->created_at); ?></td>
               </tr>
             <?php endforeach; ?>
