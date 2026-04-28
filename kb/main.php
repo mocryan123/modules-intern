@@ -548,6 +548,30 @@ if (!function_exists('kbf_signin_page_url')) {
     }
 }
 
+if (!function_exists('kbf_redirect_session_error_to_signup')) {
+    function kbf_redirect_session_error_to_signup() {
+        if (is_admin()) {
+            return;
+        }
+        if (empty($_GET['session_error']) || (string) $_GET['session_error'] !== '1') {
+            return;
+        }
+        $req_uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+        $req_path = (string) wp_parse_url($req_uri, PHP_URL_PATH);
+        if (!$req_path || !preg_match('#/(?:wp-login\.php|login)/?$#i', $req_path)) {
+            return;
+        }
+        $signup_url = function_exists('kbf_get_page_url') ? (string) kbf_get_page_url('signup') : '';
+        if (!$signup_url) {
+            $signup_url = home_url('/fundora-sign-up/');
+        }
+        $target = add_query_arg('session_error', '1', $signup_url);
+        wp_safe_redirect($target);
+        exit;
+    }
+    add_action('init', 'kbf_redirect_session_error_to_signup', 1);
+}
+
 if (!function_exists('kbf_set_reauth_lock_cookie')) {
     function kbf_set_reauth_lock_cookie() {
         if (headers_sent()) {
