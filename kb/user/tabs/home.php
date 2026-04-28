@@ -108,39 +108,18 @@
             $last_appeal_by_fund[(int)$arow->fund_id] = $arow;
         }
 
-        // Prefetch top 5 completed sponsors per fund in batch to avoid N+1 queries in the render loop.
-        $top_ids_sql = "SELECT fund_id, SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY amount DESC, created_at DESC), ',', 5) AS top_ids
+        // Prefetch all completed sponsors per fund in batch so table pagination can navigate every record.
+        $preview_sql = "SELECT id,fund_id,sponsor_name,is_anonymous,message,amount,payment_method,created_at
                         FROM {$st}
                         WHERE payment_status='completed' AND fund_id IN ({$in_placeholders})
-                        GROUP BY fund_id";
-        $top_id_rows = $wpdb->get_results($wpdb->prepare($top_ids_sql, $fund_ids));
-        $preview_ids = [];
-        $top_ids_by_fund = [];
-        foreach ((array)$top_id_rows as $top_row) {
-            $fid = (int)$top_row->fund_id;
-            $ids = array_filter(array_map('intval', explode(',', (string)$top_row->top_ids)));
-            if (!empty($ids)) {
-                $top_ids_by_fund[$fid] = $ids;
-                $preview_ids = array_merge($preview_ids, $ids);
-            }
-        }
-        if (!empty($preview_ids)) {
-            $preview_ids = array_values(array_unique($preview_ids));
-            $id_placeholders = implode(',', array_fill(0, count($preview_ids), '%d'));
-            $preview_sql = "SELECT id,fund_id,sponsor_name,is_anonymous,message,amount,payment_method,created_at FROM {$st} WHERE id IN ({$id_placeholders})";
-            $preview_rows = $wpdb->get_results($wpdb->prepare($preview_sql, $preview_ids));
-            $preview_by_id = [];
-            foreach ((array)$preview_rows as $prow) {
-                $preview_by_id[(int)$prow->id] = $prow;
-            }
-            foreach ($top_ids_by_fund as $fid => $ids) {
+                        ORDER BY fund_id ASC, created_at DESC, id DESC";
+        $preview_rows = $wpdb->get_results($wpdb->prepare($preview_sql, $fund_ids));
+        foreach ((array)$preview_rows as $prow) {
+            $fid = (int)$prow->fund_id;
+            if (!isset($sponsor_preview_by_fund[$fid])) {
                 $sponsor_preview_by_fund[$fid] = [];
-                foreach ($ids as $sid) {
-                    if (isset($preview_by_id[$sid])) {
-                        $sponsor_preview_by_fund[$fid][] = $preview_by_id[$sid];
-                    }
-                }
             }
+            $sponsor_preview_by_fund[$fid][] = $prow;
         }
     }
     $escrow_requests = [];
@@ -573,6 +552,12 @@
         .kbf-home-sponsor-table td:nth-child(3){text-align:right;}
         .kbf-home-sponsor-table th:nth-child(4),
         .kbf-home-sponsor-table td:nth-child(4){text-align:right;}
+        .kbf-home-sponsor-wrap + .kbf-table-pager .kbf-table-pager-left{
+          display:none;
+        }
+        .kbf-home-sponsor-wrap + .kbf-table-pager .kbf-table-pager-right{
+          margin-left:auto;
+        }
         .kbf-sponsor-details summary{
           cursor:pointer;
           font-size:13px;
@@ -1527,6 +1512,22 @@
       });
 
       (function(){
+        function configureHomeSponsorPagers(){
+          document.querySelectorAll('.kbf-home-sponsor-wrap').forEach(function(wrap){
+            if(!wrap) return;
+            var pager = wrap.nextElementSibling;
+            if(!pager || !pager.classList.contains('kbf-table-pager')) return;
+            var select = pager.querySelector('.kbf-table-rows');
+            if(select && select.value !== '5'){
+              select.value = '5';
+              select.dispatchEvent(new Event('change'));
+            }
+          });
+        }
+        if (window.kbfInitTablePager) {
+          window.kbfInitTablePager();
+        }
+        configureHomeSponsorPagers();
         var items = document.querySelectorAll('.kbf-sponsor-details');
         if (!items || !items.length) return;
 
@@ -1589,6 +1590,7 @@
             } else {
               openDetails(details, content);
             }
+            setTimeout(configureHomeSponsorPagers, 0);
           });
         });
       })();
