@@ -2025,34 +2025,35 @@ function bae_wizard_shortcode($user_id) {
 }
 
         // ── Show Step 3 — wait for palette promise if needed ──────────────
-        function showStep3() {
-            var loading = document.getElementById('bae-wiz-palette-loading');
-            var loadTxt = document.getElementById('bae-wiz-palette-loading-txt');
-            loading.style.display = 'flex';
-            document.getElementById('bae-wiz-palette-tiles').style.display = 'none';
-            document.getElementById('bae-wiz-next-3').disabled = true;
+       function showStep3() {
+    var loading = document.getElementById('bae-wiz-palette-loading');
+    var loadTxt = document.getElementById('bae-wiz-palette-loading-txt');
+    loading.style.display = 'flex';
+    // The old palette-tiles no longer exists – remove the error-causing line
+    // document.getElementById('bae-wiz-palette-tiles').style.display = 'none';
+    document.getElementById('bae-wiz-next-3').disabled = true;
 
-            if (palettesReady && palettesData) {
-                renderPalettes(palettesData, palettesData !== staticPalettes);
-                return;
-            }
+    if (palettesReady && palettesData) {
+        renderPalettes(palettesData, palettesData !== staticPalettes);
+        return;
+    }
 
-            loadTxt.textContent = 'Generating palettes for ' + state.name + '...';
+    loadTxt.textContent = 'Generating palettes for ' + state.name + '...';
 
-            if (!palettePromise) {
-                fireAIPalettes(state.name, state.industry);
-            }
+    if (!palettePromise) {
+        fireAIPalettes(state.name, state.industry);
+    }
 
-            var rendered = false;
-            var timeout = setTimeout(function() {
-                if (!rendered) { rendered = true; renderPalettes(staticPalettes, false); }
-            }, 12000);
+    var rendered = false;
+    var timeout = setTimeout(function() {
+        if (!rendered) { rendered = true; renderPalettes(staticPalettes, false); }
+    }, 12000);
 
-            palettePromise.then(function(palettes) {
-                clearTimeout(timeout);
-                if (!rendered) { rendered = true; renderPalettes(palettes, palettes !== staticPalettes); }
-            });
-        }
+    palettePromise.then(function(palettes) {
+        clearTimeout(timeout);
+        if (!rendered) { rendered = true; renderPalettes(palettes, palettes !== staticPalettes); }
+    });
+}
 
         // ── Fire AI tagline generation in background ──────────────────────
         function fireAITaglines(name, industry, personality) {
