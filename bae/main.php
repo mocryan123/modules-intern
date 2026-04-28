@@ -4352,15 +4352,22 @@ header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         }
     }
 
-    @media (max-width: 1024px) {
+       @media (max-width: 1024px) {
         .bae-page-panel {
-            padding: 0;
-            border: 0;
-            border-radius: 0;
-            background: transparent;
-            box-shadow: none;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
+            /* Keep glassmorphism but tweak for mobile */
+            background: linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,255,255,0.82));
+            backdrop-filter: blur(16px) saturate(140%);
+            -webkit-backdrop-filter: blur(16px) saturate(140%);
+            border-radius: 24px;
+            margin: 12px;
+            padding: 20px;
+            box-shadow: 0 12px 28px rgba(33,12,73,0.15), inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+    
+        /* Dark mode variant for mobile */
+        .bae-wrap:not(.bae-light) .bae-page-panel {
+            background: linear-gradient(160deg, rgba(38,38,44,0.88), rgba(28,28,34,0.78));
+            box-shadow: 0 12px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
         }
     }
 
