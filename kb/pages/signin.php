@@ -56,7 +56,7 @@ function bntm_kbf_render_signin() {
         $login_error = 'This account is suspended.';
     }
     if (!empty($_GET['session_error']) && $_GET['session_error'] === '1') {
-        $login_error = 'Your session expired. Please sign in again.';
+        $login_error = 'Signed out because your account was used on another device.';
     }
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['kbf_auth_action'])) {
         $auth_action = sanitize_key((string) wp_unslash($_POST['kbf_auth_action']));

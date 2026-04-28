@@ -556,14 +556,16 @@ if (!function_exists('kbf_redirect_session_error_to_signin')) {
         if (empty($_GET['session_error']) || (string) $_GET['session_error'] !== '1') {
             return;
         }
-        $req_uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
-        $req_path = (string) wp_parse_url($req_uri, PHP_URL_PATH);
-        if (!$req_path || !preg_match('#/(?:wp-login\.php|login)/?$#i', $req_path)) {
-            return;
-        }
         $signin_url = function_exists('kbf_signin_page_url') ? (string) kbf_signin_page_url() : '';
         if (!$signin_url) {
             $signin_url = home_url('/fundora-sign-in/');
+        }
+
+        $signin_path = (string) wp_parse_url($signin_url, PHP_URL_PATH);
+        $req_uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+        $req_path = (string) wp_parse_url($req_uri, PHP_URL_PATH);
+        if ($signin_path && $req_path && untrailingslashit($req_path) === untrailingslashit($signin_path)) {
+            return;
         }
         $target = add_query_arg('session_error', '1', $signin_url);
         wp_safe_redirect($target);
