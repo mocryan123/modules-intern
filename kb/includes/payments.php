@@ -551,6 +551,13 @@ function bntm_ajax_kbf_create_checkout() {
     $amount_str = number_format($amount, 2, '.', '');
 
     // Build Maya Checkout payload
+    $item_name = 'Fundora: ' . (string)$fund->title;
+    if (function_exists('mb_substr')) {
+        $item_name = mb_substr($item_name, 0, 100, 'UTF-8');
+    } else {
+        $item_name = substr($item_name, 0, 100);
+    }
+
     $payload = [
         'totalAmount' => [
             'value'    => $amount_str,
@@ -568,7 +575,7 @@ function bntm_ajax_kbf_create_checkout() {
             ]),
         ],
         'items' => [[
-            'name'        => 'KonekBayan Fund Support',
+            'name'        => $item_name,
             'description' => 'Sponsorship for: ' . $fund->title,
             'quantity'    => '1',
             'code'        => 'KBF-' . $rand_id,
