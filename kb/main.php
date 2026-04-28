@@ -20,6 +20,11 @@ if (!defined('KB_PATH')) {
     define('KB_PATH', BNTM_KBF_PATH);
 }
 
+// Clear PHP opcache to ensure updated code is served after git pulls
+if (extension_loaded('Zend OPcache')) {
+    opcache_reset();
+}
+
 // Minimal logging to help diagnose white screen issues.
 if (!function_exists('kbf_log')) {
     function kbf_log($message, $context = []) {
