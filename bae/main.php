@@ -1303,26 +1303,70 @@ function bae_wizard_shortcode($user_id) {
             0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
             40% { transform: scale(1); opacity: 1; }
         }
-        .bae-wiz-palette-card {
-            width: 100%;
-            background: rgba(255,255,255,0.04);
-            border: 1.5px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 16px 18px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .bae-wiz-palette-card:hover { border-color: rgba(243,45,134,0.4); background: rgba(243,45,134,0.06); }
-        .bae-wiz-palette-card.selected { border-color: #F32D86; background: rgba(243,45,134,0.12); box-shadow: 0 0 0 3px rgba(243,45,134,0.12); }
-        .bae-wiz-palette-swatches { display: flex; gap: 6px; flex-shrink: 0; }
-        .bae-wiz-palette-swatch { width: 28px; height: 44px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        .bae-wiz-palette-info { flex: 1; min-width: 0; }
-        .bae-wiz-palette-name { font-size: 14px; font-weight: 700; color: #ede9ff; margin-bottom: 3px; }
-        .bae-wiz-palette-reason { font-size: 12px; color: #4d4a65; line-height: 1.5; }
+        /* Vertical palette list */
+.bae-wiz-palette-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+.bae-wiz-palette-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.bae-wiz-palette-card:hover {
+    border-color: rgba(243,45,134,0.4);
+    background: rgba(243,45,134,0.06);
+}
+.bae-wiz-palette-card.selected {
+    border-color: #F32D86;
+    background: rgba(243,45,134,0.12);
+    box-shadow: 0 0 0 3px rgba(243,45,134,0.12);
+}
+.bae-wiz-palette-swatches {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+.bae-wiz-palette-swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.bae-wiz-palette-swatch-color {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.bae-wiz-palette-swatch-hex {
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--text-3);
+}
+.bae-wiz-palette-info {
+    flex: 1;
+}
+.bae-wiz-palette-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+.bae-wiz-palette-reason {
+    font-size: 12px;
+    color: var(--text-3);
+    line-height: 1.5;
+}
         .bae-wiz-palette-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .bae-wiz-palette-card.selected .bae-wiz-palette-check { background: #F32D86; border-color: #F32D86; }
         .bae-wiz-palette-ai-badge {
@@ -1869,68 +1913,68 @@ function bae_wizard_shortcode($user_id) {
 
         // ── Render palette cards into Step 3 ──────────────────────────────
         function renderPalettes(palettes, isAI) {
-            var container = document.getElementById('bae-wiz-palette-tiles');
-            var hint      = document.getElementById('bae-wiz-palette-hint');
-            var loading   = document.getElementById('bae-wiz-palette-loading');
+    var container = document.getElementById('bae-wiz-palette-tiles');
+    var hint      = document.getElementById('bae-wiz-palette-hint');
+    var loading   = document.getElementById('bae-wiz-palette-loading');
 
-            container.innerHTML = '';
+    container.innerHTML = '';
+    container.className = 'bae-wiz-palette-list'; // vertical list
 
-            if (isAI) {
-                hint.textContent = 'AI-picked palettes for ' + state.name + ' — pick the one that feels right.';
-                var badge = document.createElement('div');
-                badge.className = 'bae-wiz-palette-ai-badge';
-                badge.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg> Personalized by AI for ' + state.name;
-                container.appendChild(badge);
-            } else {
-                hint.textContent = 'Pick a palette that fits your brand. You can fine-tune colors later.';
-            }
+    if (isAI) {
+        hint.textContent = 'AI-picked palettes for ' + state.name + ' — choose a vertical set that feels right.';
+    } else {
+        hint.textContent = 'Pick a palette that fits your brand.';
+    }
 
-            palettes.forEach(function(p, i) {
-                var card = document.createElement('div');
-                card.className = 'bae-wiz-palette-card';
-                card.dataset.primary     = p.primary;
-                card.dataset.secondary   = p.secondary;
-                card.dataset.accent      = p.accent;
-                card.dataset.personality = p.personality;
+    palettes.forEach(function(p, i) {
+        var card = document.createElement('div');
+        card.className = 'bae-wiz-palette-card';
+        card.dataset.primary     = p.primary;
+        card.dataset.secondary   = p.secondary;
+        card.dataset.accent      = p.accent;
+        card.dataset.personality = p.personality;
 
-                card.innerHTML =
-                    '<div class="bae-wiz-palette-swatches">' +
-                        '<div class="bae-wiz-palette-swatch" style="background:' + p.primary   + ';"></div>' +
-                        '<div class="bae-wiz-palette-swatch" style="background:' + p.secondary + ';"></div>' +
-                        '<div class="bae-wiz-palette-swatch" style="background:' + p.accent    + ';"></div>' +
-                    '</div>' +
-                    '<div class="bae-wiz-palette-info">' +
-                        '<div class="bae-wiz-palette-name">' + p.name + '</div>' +
-                        '<div class="bae-wiz-palette-reason">' + p.reason + '</div>' +
-                    '</div>' +
-                    '<div class="bae-wiz-palette-check">' +
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>' +
-                    '</div>';
+        card.innerHTML = `
+            <div class="bae-wiz-palette-swatches">
+                <div class="bae-wiz-palette-swatch">
+                    <div class="bae-wiz-palette-swatch-color" style="background:${p.primary}"></div>
+                    <div class="bae-wiz-palette-swatch-hex">${p.primary}</div>
+                </div>
+                <div class="bae-wiz-palette-swatch">
+                    <div class="bae-wiz-palette-swatch-color" style="background:${p.secondary}"></div>
+                    <div class="bae-wiz-palette-swatch-hex">${p.secondary}</div>
+                </div>
+                <div class="bae-wiz-palette-swatch">
+                    <div class="bae-wiz-palette-swatch-color" style="background:${p.accent}"></div>
+                    <div class="bae-wiz-palette-swatch-hex">${p.accent}</div>
+                </div>
+            </div>
+            <div class="bae-wiz-palette-info">
+                <div class="bae-wiz-palette-name">${p.name}</div>
+                <div class="bae-wiz-palette-reason">${p.reason}</div>
+            </div>
+        `;
 
-                card.addEventListener('click', function() {
-                    container.querySelectorAll('.bae-wiz-palette-card').forEach(function(c){ c.classList.remove('selected'); });
-                    card.classList.add('selected');
-                    state.primary     = card.dataset.primary;
-                    state.secondary   = card.dataset.secondary;
-                    state.accent      = card.dataset.accent;
-                    state.personality = card.dataset.personality;
-                    baeRenderPaletteWarning('bae-wiz-palette-warning', state.primary, state.secondary, state.accent);
-                    document.getElementById('bae-wiz-next-3').disabled = false;
-                    document.getElementById('bae-wiz-vibe-err').style.display = 'none';
-                    if (window.gsap) gsap.fromTo(card, {scale:0.98}, {scale:1, duration:0.25, ease:'back.out(2)'});
-                });
-
-                container.appendChild(card);
-
-                if (window.gsap) {
-                    gsap.fromTo(card, {opacity:0, y:10}, {opacity:1, y:0, duration:0.3, delay: i * 0.06, ease:'power3.out'});
-                }
+        card.addEventListener('click', function() {
+            document.querySelectorAll('.bae-wiz-palette-card').forEach(function(c){
+                c.classList.remove('selected');
             });
+            card.classList.add('selected');
+            state.primary     = card.dataset.primary;
+            state.secondary   = card.dataset.secondary;
+            state.accent      = card.dataset.accent;
+            state.personality = card.dataset.personality;
+            baeRenderPaletteWarning('bae-wiz-palette-warning', state.primary, state.secondary, state.accent);
+            document.getElementById('bae-wiz-next-3').disabled = false;
+            document.getElementById('bae-wiz-vibe-err').style.display = 'none';
+        });
 
-            loading.style.display   = 'none';
-            container.style.display = 'block';
-            baeRenderPaletteWarning('bae-wiz-palette-warning', '', '', '');
-        }
+        container.appendChild(card);
+    });
+
+    loading.style.display   = 'none';
+    container.style.display = 'block';
+}
 
         // ── Show Step 3 — wait for palette promise if needed ──────────────
         function showStep3() {
