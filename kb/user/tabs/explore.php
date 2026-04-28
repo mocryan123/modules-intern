@@ -1004,10 +1004,12 @@ function kbf_dashboard_find_funds_tab() {
         z-index:9999;
         transform:translateY(100%);
         transition:transform 0.3s cubic-bezier(.4,0,.2,1);
-        max-height:none;
+        max-height:80dvh;
+        display:flex;
+        flex-direction:column;
         overflow-x:hidden;
-        overflow-y:visible;
-        padding:0 0 32px;
+        overflow-y:hidden;
+        padding:0 0 12px;
         box-shadow:var(--kbf-shadow-lg);
       }
       #kbff-sheet.open{transform:translateY(0);}
@@ -1029,6 +1031,24 @@ function kbf_dashboard_find_funds_tab() {
         display:grid;
         gap:12px;
         overflow-x:hidden;
+        overflow-y:auto;
+        -webkit-overflow-scrolling:touch;
+        scrollbar-width:thin;
+        scrollbar-color:#4f8ef7 #dbeafe;
+      }
+      .kbff-sheet-body::-webkit-scrollbar{
+        width:8px;
+      }
+      .kbff-sheet-body::-webkit-scrollbar-track{
+        background:#dbeafe;
+        border-radius:999px;
+      }
+      .kbff-sheet-body::-webkit-scrollbar-thumb{
+        background:#4f8ef7;
+        border-radius:999px;
+      }
+      .kbff-sheet-body::-webkit-scrollbar-thumb:hover{
+        background:#3b82f6;
       }
         .kbff-sheet-apply{
           height:44px;
@@ -1077,6 +1097,17 @@ function kbf_dashboard_find_funds_tab() {
         #kbff-sort-select-wrap,
         #kbff-saved-select-wrap{ display:none !important; }
         .kbff-filter-btn{ display:inline-flex; }
+        #kbff-sheet{
+          max-height:62dvh;
+        }
+        .kbff-sheet-body{
+          max-height:calc(62dvh - 140px);
+        }
+        .kbff-sheet-actions{
+          padding-top:10px;
+          border-top:1px solid #e2e8f0;
+          background:#fff;
+        }
       }
       @media (max-width: 560px){
         .kbff-sheet-grid-cat,

@@ -215,7 +215,7 @@
     .kbf-dashboard-shell{
         max-width:80%;
         margin:0 auto;
-        padding-top:30px;
+        padding-top:70px;
         box-sizing:border-box;
     }
     .kbf-topbar + .kbf-dashboard-shell{
