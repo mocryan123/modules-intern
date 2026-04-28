@@ -7155,7 +7155,7 @@ $rand_id = ch_request_text($_GET['view_post'] ?? '');
                                                 <button class="ch-comment-action" onclick="chToggleReplyForm(<?php echo (int) $cm->id; ?>)">Reply</button>
                                             <?php endif; ?>
 
-                                            <?php if ($user_id && ($cm->user_id === 0 || $cm->user_id != $user_id) && !current_user_can('manage_options')): ?>
+                                            <?php if ($user_id && ($cm->user_id === 0 || $cm->user_id != $user_id)): ?>
                                                 <button class="ch-comment-action"
                                                     onclick="chReportComment(<?php echo (int) $cm->id; ?>, '<?php echo esc_attr($nonce); ?>')">Report</button>
                                             <?php endif; ?>
@@ -7224,7 +7224,7 @@ $rand_id = ch_request_text($_GET['view_post'] ?? '');
                                                             <p><?php echo ch_highlight_mentions(nl2br(esc_html($reply->content))); ?></p>
                                                             <?php if ($user_id): ?>
                                                                 <div class="ch-comment-actions">
-                                                                    <?php if (($reply->user_id === 0 || $reply->user_id != $user_id) && !current_user_can('manage_options')): ?>
+                                                                    <?php if (($reply->user_id === 0 || $reply->user_id != $user_id)): ?>
                                                                         <button class="ch-comment-action"
                                                                             onclick="chReportComment(<?php echo (int) $reply->id; ?>, '<?php echo esc_attr($nonce); ?>')">Report</button>
                                                                     <?php endif; ?>
