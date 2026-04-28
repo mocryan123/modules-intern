@@ -6,218 +6,556 @@ function bae_logo_tab($user_id, $profile) {
     $p = $profile;
     ob_start();
     ?>
-    <div style="padding:28px;max-width:960px;margin:0 auto;">
-        <div style="margin-bottom:24px;">
-            <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;">Logo Studio</div>
-            <div style="font-size:22px;font-weight:700;color:var(--text);line-height:1.2;">Your Logo</div>
-            <div style="font-size:14px;color:var(--text-3);margin-top:6px;">Upload your logo or build one with the CSS builder. This logo is used across all your brand assets.</div>
+    <div class="bae-logo-studio">
+        <!-- Header -->
+        <div class="bae-studio-header">
+            <div class="bae-studio-title">
+                <span class="bae-studio-eyebrow">Logo Studio</span>
+                <h2>Your Logo</h2>
+                <p>Upload your logo or build one with the CSS builder. This logo is used across all your brand assets.</p>
+            </div>
         </div>
 
-        <div class="bae-bento-grid">
-
-        <!-- ══ Logo Studio (full width) ══ -->
-        <div class="bae-bento-card span-12">
-            <div class="bae-bento-label">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                Logo Studio
-            </div>
-            <div class="bae-logo-studio-grid">
-
-                <!-- Sub-panel A: Upload -->
-                <div style="padding:20px;background:var(--bg-3);border:2px dashed var(--border-2);border-radius:18px;transition:border-color .2s;" id="bae-logo-upload-area">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-                        <div style="width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--brand-deep),var(--brand));display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <span style="font-size:11px;font-weight:800;color:white;">A</span>
+        <!-- Two-column layout like "Tool Storage" image -->
+        <div class="bae-studio-layout">
+            <!-- Left: Main preview + controls -->
+            <div class="bae-studio-main">
+                <!-- Live Preview Card -->
+                <div class="bae-card bae-preview-card">
+                    <div class="bae-card-header">
+                        <span class="bae-card-title">Live Preview</span>
+                        <div class="bae-preview-toggles">
+                            <span class="bae-preview-badge light">Light</span>
+                            <span class="bae-preview-badge dark">Dark</span>
                         </div>
-                        <div style="font-size:12px;font-weight:700;color:var(--text-2);">Upload Your Logo <span style="font-weight:400;color:var(--text-3);">— PNG, SVG, JPG</span></div>
                     </div>
-                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-                        <div id="bae-logo-preview-wrap" style="width:80px;height:80px;border-radius:12px;background:var(--surface);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-                            <?php if (!empty($p['logo_url'])): ?>
-                                <img src="<?php echo esc_url($p['logo_url']); ?>" style="max-width:100%;max-height:100%;object-fit:contain;" id="bae-logo-preview-img">
-                            <?php else: ?>
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                            <?php endif; ?>
+                    <div class="bae-preview-grid">
+                        <div class="bae-preview-swatch light-bg">
+                            <div id="bae-logo-lockup-light"><?php echo bae_render_logo_lockup($p, ['dark'=>false]); ?></div>
                         </div>
-                        <div style="flex:1;min-width:160px;">
-                            <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;">Transparent PNG recommended.</div>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                                <label style="display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border-2);border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all .2s;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <div class="bae-preview-swatch dark-bg">
+                            <div id="bae-logo-lockup-dark"><?php echo bae_render_logo_lockup($p, ['dark'=>true]); ?></div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Area (drag & drop) -->
+                    <div id="bae-logo-upload-area" class="bae-upload-area">
+                        <div class="bae-upload-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                        </div>
+                        <div class="bae-upload-info">
+                            <div class="bae-upload-title">Upload your logo</div>
+                            <div class="bae-upload-desc">PNG, SVG, JPG (max 2MB). Transparent PNG recommended.</div>
+                            <div class="bae-upload-actions">
+                                <label class="bae-btn bae-btn-outline bae-btn-sm">
                                     Choose File
                                     <input type="file" id="bae-logo-file-input" accept="image/*" style="display:none;">
                                 </label>
-                                <?php if (!empty($p['logo_url'])): ?>
-                                <button type="button" id="bae-logo-remove-btn" style="background:none;border:1px solid rgba(244,63,94,.3);border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;color:#fb7185;cursor:pointer;font-family:'Geist',sans-serif;">Remove</button>
-                                <button type="button" id="bae-logo-check-btn" class="bae-btn bae-btn-outline bae-btn-sm" style="display:flex;align-items:center;gap:5px;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                                    Check BG
-                                </button>
-                                <?php endif; ?>
-                                <span id="bae-logo-upload-status" style="font-size:12px;color:var(--text-3);"></span>
-                            </div>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;">
-                                <button type="button" id="bae-logo-download-png" class="bae-btn bae-btn-outline bae-btn-sm">PNG</button>
-                                <button type="button" id="bae-logo-download-svg" class="bae-btn bae-btn-outline bae-btn-sm">SVG</button>
-                                <span id="bae-logo-download-status" style="font-size:12px;color:var(--text-3);"></span>
+                                <span id="bae-logo-upload-status" class="bae-upload-status"></span>
                             </div>
                         </div>
+                        <div id="bae-logo-preview-wrap" class="bae-upload-preview">
+                            <?php if (!empty($p['logo_url'])): ?>
+                                <img src="<?php echo esc_url($p['logo_url']); ?>" id="bae-logo-preview-img">
+                            <?php else: ?>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <input type="hidden" name="logo_url" id="bae-logo-url-hidden" value="<?php echo esc_attr($p['logo_url'] ?? ''); ?>">
-                    <!-- Logo Background Checker -->
-                    <div id="bae-logo-bg-checker" style="display:none;margin-top:14px;">
-                        <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Background Checker</div>
-                        <div id="bae-logo-bg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>
-                    </div>
-                </div>
+                    <input type="hidden" id="bae-logo-url-hidden" value="<?php echo esc_attr($p['logo_url'] ?? ''); ?>">
 
-                <!-- Sub-panel B: CSS Builder -->
-                <div id="bae-logo-css-builder-panel" style="<?php echo !empty($p['logo_url']) ? 'display:none;' : ''; ?>transition:opacity .3s;">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-                        <div style="width:22px;height:22px;border-radius:6px;background:var(--bg-3);border:1px solid var(--border-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <span style="font-size:11px;font-weight:800;color:var(--text-2);">B</span>
+                    <!-- CSS Builder (collapsible if logo uploaded) -->
+                    <div id="bae-logo-css-builder" class="<?php echo !empty($p['logo_url']) ? 'bae-collapsed' : ''; ?>">
+                        <div class="bae-builder-header" onclick="baeToggleBuilder()">
+                            <span>CSS Logo Builder <span class="bae-builder-sub">— fallback when no logo</span></span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
                         </div>
-                        <div style="font-size:12px;font-weight:700;color:var(--text-2);">CSS Logo Builder <span style="font-weight:400;color:var(--text-3);">— Fallback when no logo</span></div>
-                    </div>
-                    <div class="bae-form-grid">
-                        <div class="bae-form-group">
-                            <label>Logo Type</label>
-                            <select name="logo_style">
-                                <?php
-                                $styles = [
-                                    'wordmark'    => 'Wordmark — Name as logo',
-                                    'lettermark'  => 'Lettermark — Initials only',
-                                    'combination' => 'Combination — Icon + Name',
-                                    'emblem'      => 'Emblem — Icon inside badge',
-                                    'monogram'    => 'Monogram — Stylized initials',
-                                    'abstract'    => 'Abstract Mark — Icon only',
-                                    'badge'       => 'Badge — Circular seal',
-                                    'stacked'     => 'Stacked — Icon above name',
-                                    'outlined'    => 'Outlined — Name with border',
-                                    'minimal'     => 'Minimal — Initials with dot',
-                                ];
-                                $sls = $p['logo_style'] ?? 'wordmark';
-                                foreach ($styles as $val => $lbl):
-                                ?>
-                                    <option value="<?php echo $val; ?>" <?php selected($sls, $val); ?>><?php echo $lbl; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="bae-form-group">
-                            <label>Logo Icon</label>
-                            <div id="bae-icon-picker" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;padding:10px;background:var(--bg-3);border-radius:12px;border:1px solid var(--border-2);max-height:180px;overflow-y:auto;">
-                                <?php
-                                $all_icons = bae_get_all_icons();
-                                $sli = $p['logo_icon'] ?? '';
-                                foreach ($all_icons as $icon_key => $icon_label):
-                                    $svg = bae_get_icon_svg_preview($icon_key);
-                                ?>
-                                <div class="bae-icon-tile <?php echo $sli === $icon_key ? 'selected' : ''; ?>"
-                                     onclick="baeSelectIcon(this)"
-                                     data-value="<?php echo esc_attr($icon_key); ?>"
-                                     title="<?php echo esc_attr($icon_label); ?>"
-                                     style="width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;border:1.5px solid transparent;background:var(--surface);transition:all .15s;padding:4px;">
-                                    <?php echo $svg; ?>
+                        <div class="bae-builder-content">
+                            <div class="bae-form-grid">
+                                <div class="bae-form-group">
+                                    <label>Logo Type</label>
+                                    <select name="logo_style" id="bae-logo-style">
+                                        <?php
+                                        $styles = [
+                                            'wordmark'    => 'Wordmark — Name as logo',
+                                            'lettermark'  => 'Lettermark — Initials only',
+                                            'combination' => 'Combination — Icon + Name',
+                                            'emblem'      => 'Emblem — Icon inside badge',
+                                            'monogram'    => 'Monogram — Stylized initials',
+                                            'abstract'    => 'Abstract Mark — Icon only',
+                                            'badge'       => 'Badge — Circular seal',
+                                            'stacked'     => 'Stacked — Icon above name',
+                                            'outlined'    => 'Outlined — Name with border',
+                                            'minimal'     => 'Minimal — Initials with dot',
+                                        ];
+                                        $sls = $p['logo_style'] ?? 'wordmark';
+                                        foreach ($styles as $val => $lbl): ?>
+                                            <option value="<?php echo $val; ?>" <?php selected($sls, $val); ?>><?php echo $lbl; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
-                                <?php endforeach; ?>
+                                <div class="bae-form-group">
+                                    <label>Icon <span class="bae-helper-icon">(pick one)</span></label>
+                                    <div class="bae-icon-grid" id="bae-icon-picker">
+                                        <?php
+                                        $all_icons = bae_get_all_icons();
+                                        $sli = $p['logo_icon'] ?? '';
+                                        foreach ($all_icons as $icon_key => $icon_label):
+                                            $svg = bae_get_icon_svg_preview($icon_key);
+                                        ?>
+                                        <div class="bae-icon-tile <?php echo $sli === $icon_key ? 'selected' : ''; ?>"
+                                             data-value="<?php echo esc_attr($icon_key); ?>"
+                                             title="<?php echo esc_attr($icon_label); ?>">
+                                            <?php echo $svg; ?>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <input type="hidden" id="bae-logo-icon-hidden" name="logo_icon" value="<?php echo esc_attr($sli); ?>">
+                                </div>
                             </div>
-                            <input type="hidden" id="bae-logo-icon-hidden" name="logo_icon" value="<?php echo esc_attr($sli); ?>">
+                            <div class="bae-form-grid">
+                                <div class="bae-form-group">
+                                    <label>Icon Scale — <span id="bae-logo-icon-scale-value"><?php echo esc_html((int)($p['logo_icon_scale'] ?? 100)); ?>%</span></label>
+                                    <input type="range" id="bae-logo-icon-scale" name="logo_icon_scale" min="60" max="160" step="5" value="<?php echo esc_attr((int)($p['logo_icon_scale'] ?? 100)); ?>">
+                                </div>
+                                <div class="bae-form-group">
+                                    <label>Spacing — <span id="bae-logo-spacing-value"><?php echo esc_html((int)($p['logo_spacing'] ?? 14)); ?>px</span></label>
+                                    <input type="range" id="bae-logo-spacing" name="logo_spacing" min="6" max="28" step="1" value="<?php echo esc_attr((int)($p['logo_spacing'] ?? 14)); ?>">
+                                </div>
+                                <div class="bae-form-group">
+                                    <label>Icon Position</label>
+                                    <?php $logo_pos = $p['logo_position'] ?? 'auto'; ?>
+                                    <select name="logo_position" id="bae-logo-position">
+                                        <option value="auto" <?php selected($logo_pos, 'auto'); ?>>Auto</option>
+                                        <option value="left" <?php selected($logo_pos, 'left'); ?>>Left</option>
+                                        <option value="top" <?php selected($logo_pos, 'top'); ?>>Top</option>
+                                        <option value="right" <?php selected($logo_pos, 'right'); ?>>Right</option>
+                                    </select>
+                                </div>
+                                <div class="bae-form-group">
+                                    <label>Text Case</label>
+                                    <?php $logo_case = $p['logo_text_case'] ?? 'default'; ?>
+                                    <select name="logo_text_case" id="bae-logo-case">
+                                        <option value="default" <?php selected($logo_case, 'default'); ?>>Default</option>
+                                        <option value="uppercase" <?php selected($logo_case, 'uppercase'); ?>>UPPERCASE</option>
+                                        <option value="title" <?php selected($logo_case, 'title'); ?>>Title Case</option>
+                                        <option value="lowercase" <?php selected($logo_case, 'lowercase'); ?>>lowercase</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="bae-form-grid" style="margin-top:12px;">
-                        <div class="bae-form-group">
-                            <label for="bae-logo-icon-scale">Icon Scale — <span id="bae-logo-icon-scale-value"><?php echo esc_html((int)($p['logo_icon_scale'] ?? 100)); ?>%</span></label>
-                            <input type="range" id="bae-logo-icon-scale" name="logo_icon_scale" min="60" max="160" step="5" value="<?php echo esc_attr((int)($p['logo_icon_scale'] ?? 100)); ?>">
-                        </div>
-                        <div class="bae-form-group">
-                            <label for="bae-logo-spacing">Spacing — <span id="bae-logo-spacing-value"><?php echo esc_html((int)($p['logo_spacing'] ?? 14)); ?>px</span></label>
-                            <input type="range" id="bae-logo-spacing" name="logo_spacing" min="6" max="28" step="1" value="<?php echo esc_attr((int)($p['logo_spacing'] ?? 14)); ?>">
-                        </div>
-                        <div class="bae-form-group">
-                            <label>Icon Position</label>
-                            <?php $logo_position = $p['logo_position'] ?? 'auto'; ?>
-                            <select name="logo_position">
-                                <option value="auto" <?php selected($logo_position, 'auto'); ?>>Auto</option>
-                                <option value="left" <?php selected($logo_position, 'left'); ?>>Left</option>
-                                <option value="top" <?php selected($logo_position, 'top'); ?>>Top</option>
-                                <option value="right" <?php selected($logo_position, 'right'); ?>>Right</option>
-                            </select>
-                        </div>
-                        <div class="bae-form-group">
-                            <label>Text Case</label>
-                            <?php $logo_text_case = $p['logo_text_case'] ?? 'default'; ?>
-                            <select name="logo_text_case">
-                                <option value="default" <?php selected($logo_text_case, 'default'); ?>>Default</option>
-                                <option value="uppercase" <?php selected($logo_text_case, 'uppercase'); ?>>UPPERCASE</option>
-                                <option value="title" <?php selected($logo_text_case, 'title'); ?>>Title Case</option>
-                                <option value="lowercase" <?php selected($logo_text_case, 'lowercase'); ?>>lowercase</option>
-                            </select>
+
+                    <!-- Save & Download -->
+                    <div class="bae-studio-actions">
+                        <button type="button" id="bae-logo-save-btn" class="bae-btn bae-btn-primary">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            Save Logo Settings
+                        </button>
+                        <span id="bae-logo-save-status" class="bae-save-status"></span>
+                        <div class="bae-download-group">
+                            <button type="button" id="bae-logo-download-png" class="bae-btn bae-btn-outline bae-btn-sm">PNG</button>
+                            <button type="button" id="bae-logo-download-svg" class="bae-btn bae-btn-outline bae-btn-sm">SVG</button>
+                            <span id="bae-logo-download-status" class="bae-download-status"></span>
                         </div>
                     </div>
                 </div>
-            </div><!-- /logo studio grid -->
-        </div><!-- /bento card logo -->
+            </div>
 
-        </div><!-- /bae-bento-grid -->
-
-        <style>
-            .bae-logo-studio-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-@media (max-width: 768px) {
-    .bae-logo-studio-grid {
-        grid-template-columns: 1fr;
-    }
-}
-        .bae-icon-tile:hover { border-color: rgba(243,45,134,.4) !important; background: rgba(243,45,134,.08) !important; }
-        .bae-icon-tile.selected { border-color: #F32D86 !important; background: rgba(243,45,134,.15) !important; }
-        #bae-icon-picker::-webkit-scrollbar { width: 4px; }
-        #bae-icon-picker::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 999px; }
-
-        /* Live preview */
-        #bae-logo-live-preview { margin-top:20px; padding:20px; background:var(--bg-3); border:1px solid var(--border-2); border-radius:16px; }
-        #bae-logo-live-preview-label { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-3); margin-bottom:12px; }
-        .bae-logo-preview-swatch { display:flex; align-items:center; justify-content:center; border-radius:12px; padding:22px 28px; min-height:80px; }
-        .bae-logo-preview-swatch.light-bg { background:#ffffff; border:1px solid #e5e7eb; }
-        .bae-logo-preview-swatch.dark-bg  { background:#0f0e17; border:1px solid rgba(255,255,255,.08); }
-
-        /* Save button */
-        #bae-logo-save-btn { margin-top:18px; display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#c4196a,#F32D86); color:#fff; border:none; border-radius:12px; padding:12px 28px; font-size:14px; font-weight:700; font-family:'Geist',sans-serif; cursor:pointer; transition:all .2s; box-shadow:0 6px 20px rgba(195,25,106,.35); }
-        #bae-logo-save-btn:hover { transform:translateY(-1px); box-shadow:0 10px 28px rgba(195,25,106,.45); }
-        #bae-logo-save-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-
-        /* Drag hover */
-        #bae-logo-upload-area.drag-over { border-color:#F32D86 !important; background:rgba(243,45,134,.06); }
-        </style>
-
-        <!-- Live Preview -->
-        <div id="bae-logo-live-preview">
-            <div id="bae-logo-live-preview-label">Live Preview</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div class="bae-logo-preview-swatch light-bg">
-                    <div id="bae-logo-lockup-light"><?php echo bae_render_logo_lockup($p, ['dark'=>false]); ?></div>
+            <!-- Right: Logo Variants "Pods" (like Tool Storage) -->
+            <div class="bae-studio-sidebar">
+                <div class="bae-pods-header">
+                    <span class="bae-pods-title">Logo Variants</span>
+                    <span class="bae-pods-count"><?php echo count($styles); ?> styles</span>
                 </div>
-                <div class="bae-logo-preview-swatch dark-bg">
-                    <div id="bae-logo-lockup-dark"><?php echo bae_render_logo_lockup($p, ['dark'=>true]); ?></div>
+                <div class="bae-pods-grid" id="bae-pods-grid">
+                    <?php foreach ($styles as $style_key => $style_label):
+                        $current_style = $p['logo_style'] ?? 'wordmark';
+                        $is_active = ($current_style === $style_key);
+                    ?>
+                    <div class="bae-pod" data-style="<?php echo esc_attr($style_key); ?>">
+                        <div class="bae-pod-preview">
+                            <?php
+                            // Generate a quick preview for this style using current brand data
+                            $preview_profile = $p;
+                            $preview_profile['logo_style'] = $style_key;
+                            // Keep existing logo_url? If logo_url exists, we show that, else show CSS preview.
+                            if (!empty($p['logo_url'])) {
+                                echo '<img src="'.esc_url($p['logo_url']).'" style="max-height:40px;max-width:100%;object-fit:contain;">';
+                            } else {
+                                echo bae_render_logo_lockup($preview_profile, ['dark'=>false, 'compact'=>true]);
+                            }
+                            ?>
+                        </div>
+                        <div class="bae-pod-info">
+                            <div class="bae-pod-name"><?php echo esc_html(explode(' — ', $style_label)[0]); ?></div>
+                            <div class="bae-pod-status <?php echo $is_active ? 'active' : 'inactive'; ?>">
+                                <?php echo $is_active ? 'Active' : 'Inactive'; ?>
+                            </div>
+                        </div>
+                        <button class="bae-pod-apply" data-style="<?php echo esc_attr($style_key); ?>">Apply</button>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
 
-        <!-- Save -->
-        <div style="margin-top:4px;">
-            <button type="button" id="bae-logo-save-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                Save Logo Settings
-            </button>
-            <span id="bae-logo-save-status" style="font-size:12px;color:var(--text-3);margin-left:12px;"></span>
+        <!-- Background Checker (hidden until needed) -->
+        <div id="bae-logo-bg-checker" style="display:none;">
+            <div class="bae-checker-header">Background Checker</div>
+            <div id="bae-logo-bg-grid" class="bae-checker-grid"></div>
         </div>
-
     </div>
 
+    <style>
+    /* Logo Studio – Tool Storage style */
+    .bae-logo-studio {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .bae-studio-header {
+        margin-bottom: 28px;
+    }
+    .bae-studio-eyebrow {
+        font-size: 11px;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--text-3);
+    }
+    .bae-studio-header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 4px 0 6px;
+        color: var(--text);
+    }
+    .bae-studio-header p {
+        font-size: 14px;
+        color: var(--text-3);
+        max-width: 600px;
+    }
+
+    /* Two‑column layout */
+    .bae-studio-layout {
+        display: flex;
+        gap: 28px;
+        align-items: stretch;
+    }
+    .bae-studio-main {
+        flex: 2;
+        min-width: 0;
+    }
+    .bae-studio-sidebar {
+        flex: 1.2;
+        min-width: 280px;
+    }
+    @media (max-width: 900px) {
+        .bae-studio-layout { flex-direction: column; }
+        .bae-studio-sidebar { width: 100%; }
+    }
+
+    /* Preview Card */
+    .bae-preview-card {
+        background: var(--surface);
+        border-radius: 28px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+    .bae-preview-card .bae-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 24px 0;
+    }
+    .bae-preview-toggles {
+        display: flex;
+        gap: 8px;
+    }
+    .bae-preview-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 40px;
+        background: var(--bg-3);
+        color: var(--text-2);
+    }
+    .bae-preview-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 20px 24px;
+    }
+    .bae-preview-swatch {
+        border-radius: 18px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 110px;
+        border: 1px solid var(--border);
+    }
+    .light-bg { background: #ffffff; }
+    .dark-bg { background: #0f0e17; }
+
+    /* Upload Area */
+    .bae-upload-area {
+        background: var(--bg-3);
+        border: 2px dashed var(--border-2);
+        border-radius: 20px;
+        margin: 0 24px 20px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+        transition: border-color .2s, background .2s;
+    }
+    .bae-upload-area.drag-over {
+        border-color: var(--brand);
+        background: rgba(243,45,134,.05);
+    }
+    .bae-upload-icon {
+        color: var(--text-3);
+    }
+    .bae-upload-info {
+        flex: 1;
+        min-width: 180px;
+    }
+    .bae-upload-title {
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--text);
+    }
+    .bae-upload-desc {
+        font-size: 12px;
+        color: var(--text-3);
+        margin-bottom: 10px;
+    }
+    .bae-upload-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .bae-upload-preview {
+        width: 70px;
+        height: 70px;
+        background: var(--surface);
+        border-radius: 12px;
+        border: 1px solid var(--border-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .bae-upload-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    /* CSS Builder (collapsible) */
+    .bae-collapsed .bae-builder-content {
+        display: none;
+    }
+    .bae-builder-header {
+        padding: 14px 24px;
+        background: var(--bg-3);
+        border-top: 1px solid var(--border);
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text-2);
+    }
+    .bae-builder-header svg {
+        transition: transform .2s;
+    }
+    .bae-collapsed .bae-builder-header svg {
+        transform: rotate(180deg);
+    }
+    .bae-builder-content {
+        padding: 20px 24px 24px;
+        transition: all .2s;
+    }
+    .bae-builder-sub {
+        font-weight: 400;
+        color: var(--text-3);
+        font-size: 12px;
+    }
+
+    /* Form grids */
+    .bae-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    @media (max-width: 600px) {
+        .bae-form-grid { grid-template-columns: 1fr; }
+    }
+    .bae-form-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-2);
+        margin-bottom: 8px;
+        display: block;
+    }
+    .bae-icon-grid {
+        display: grid;
+        grid-template-columns: repeat(8,1fr);
+        gap: 6px;
+        background: var(--bg-3);
+        border-radius: 14px;
+        padding: 10px;
+        border: 1px solid var(--border-2);
+        max-height: 180px;
+        overflow-y: auto;
+    }
+    .bae-icon-tile {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        border: 1.5px solid transparent;
+        background: var(--surface);
+        cursor: pointer;
+        transition: all .15s;
+    }
+    .bae-icon-tile:hover { border-color: rgba(243,45,134,.4); background: rgba(243,45,134,.08); }
+    .bae-icon-tile.selected { border-color: var(--brand); background: rgba(243,45,134,.15); }
+
+    /* Action buttons */
+    .bae-studio-actions {
+        padding: 16px 24px 24px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        border-top: 1px solid var(--border);
+    }
+    .bae-download-group {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .bae-save-status, .bae-download-status {
+        font-size: 12px;
+        color: var(--text-3);
+    }
+
+    /* Right sidebar – Variants pods */
+    .bae-pods-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 18px;
+        padding-left: 4px;
+    }
+    .bae-pods-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+    }
+    .bae-pods-count {
+        font-size: 12px;
+        color: var(--text-3);
+    }
+    .bae-pods-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+    .bae-pod {
+        background: var(--surface);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: all .2s;
+    }
+    .bae-pod:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        border-color: rgba(243,45,134,.3);
+    }
+    .bae-pod-active {
+        border-left: 3px solid var(--brand);
+    }
+    .bae-pod-preview {
+        width: 80px;
+        height: 60px;
+        background: var(--bg-3);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+        font-size: 12px;
+    }
+    .bae-pod-info {
+        flex: 1;
+    }
+    .bae-pod-name {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text);
+        margin-bottom: 4px;
+    }
+    .bae-pod-status {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+    .bae-pod-status.active {
+        color: var(--brand-soft);
+    }
+    .bae-pod-status.inactive {
+        color: var(--text-3);
+    }
+    .bae-pod-apply {
+        background: transparent;
+        border: 1px solid var(--border-2);
+        border-radius: 40px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-2);
+        cursor: pointer;
+        transition: all .15s;
+        white-space: nowrap;
+    }
+    .bae-pod-apply:hover {
+        background: rgba(243,45,134,.1);
+        border-color: var(--brand);
+        color: var(--brand);
+    }
+
+    /* Checker */
+    .bae-checker-header {
+        font-size: 12px;
+        font-weight: 700;
+        margin: 20px 0 12px;
+        color: var(--text-2);
+    }
+    .bae-checker-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill,minmax(90px,1fr));
+        gap: 10px;
+    }
+    </style>
+
     <script>
-    (function(){
+    (function() {
         var ajaxurl = window.ajaxurl || '';
         var baeLogoProfile = <?php echo wp_json_encode([
             'id'             => (int)($p['id'] ?? 0),
@@ -237,259 +575,315 @@ function bae_logo_tab($user_id, $profile) {
             'nonce'          => wp_create_nonce('bae_save_profile'),
         ]); ?>;
 
-        /* ── ICON PICKER ── */
-        window.baeSelectIcon = function(el) {
+        // Icon picker
+        function baeSelectIcon(el) {
             document.querySelectorAll('.bae-icon-tile').forEach(function(t){ t.classList.remove('selected'); });
             el.classList.add('selected');
             var val = el.dataset.value || '';
             document.getElementById('bae-logo-icon-hidden').value = val;
             baeLogoProfile.logo_icon = val;
             baeRequestPreviewRefresh();
-        };
+        }
+        window.baeSelectIcon = baeSelectIcon;
+        document.querySelectorAll('.bae-icon-tile').forEach(function(tile) {
+            tile.addEventListener('click', function() { baeSelectIcon(this); });
+        });
 
-        /* ── CONTROL BINDING ── */
-        function bindControl(selector, profileKey, isRange, unit) {
-            document.querySelectorAll(selector).forEach(function(el) {
-                el.addEventListener('change', function() {
-                    baeLogoProfile[profileKey] = isRange ? parseInt(this.value,10) : this.value;
-                    baeRequestPreviewRefresh();
-                });
-                if (isRange) {
-                    el.addEventListener('input', function() {
-                        baeLogoProfile[profileKey] = parseInt(this.value,10);
-                        var v = document.getElementById(el.id+'-value');
-                        if (v) v.textContent = this.value + (unit||'');
-                        baeRequestPreviewRefresh();
-                    });
-                }
+        // Bind controls
+        function bindSelect(selector, key) {
+            document.querySelector(selector).addEventListener('change', function() {
+                baeLogoProfile[key] = this.value;
+                baeRequestPreviewRefresh();
             });
         }
-        bindControl('[name="logo_style"]',    'logo_style',     false);
-        bindControl('[name="logo_position"]', 'logo_position',  false);
-        bindControl('[name="logo_text_case"]','logo_text_case', false);
-        bindControl('#bae-logo-icon-scale',   'logo_icon_scale',true, '%');
-        bindControl('#bae-logo-spacing',      'logo_spacing',   true, 'px');
+        bindSelect('#bae-logo-style', 'logo_style');
+        bindSelect('#bae-logo-position', 'logo_position');
+        bindSelect('#bae-logo-case', 'logo_text_case');
 
-        /* ── LIVE PREVIEW (debounced) ── */
+        var scaleRange = document.getElementById('bae-logo-icon-scale');
+        var spacingRange = document.getElementById('bae-logo-spacing');
+        function updateRange(which) {
+            var val = which.value;
+            var span = document.getElementById(which.id+'-value');
+            if (span) span.textContent = val + (which.id === 'bae-logo-icon-scale' ? '%' : 'px');
+            baeLogoProfile[which.id === 'bae-logo-icon-scale' ? 'logo_icon_scale' : 'logo_spacing'] = parseInt(val,10);
+            baeRequestPreviewRefresh();
+        }
+        if (scaleRange) scaleRange.addEventListener('input', function() { updateRange(this); });
+        if (spacingRange) spacingRange.addEventListener('input', function() { updateRange(this); });
+
+        // Live preview + debounce
         var previewTimer = null;
         function baeRequestPreviewRefresh() {
             clearTimeout(previewTimer);
-            previewTimer = setTimeout(baeRefreshPreview, 220);
+            previewTimer = setTimeout(baeRefreshPreview, 200);
         }
         function baeRefreshPreview() {
             var logoUrl = document.getElementById('bae-logo-url-hidden').value;
             if (logoUrl) {
-                var light = '<img src="'+logoUrl+'" style="max-height:52px;max-width:160px;object-fit:contain;" alt="logo">';
-                var dark  = '<img src="'+logoUrl+'" style="max-height:52px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1);opacity:.92;" alt="logo">';
-                var ll = document.getElementById('bae-logo-lockup-light');
-                var ld = document.getElementById('bae-logo-lockup-dark');
-                if (ll) ll.innerHTML = light;
-                if (ld) ld.innerHTML = dark;
+                var lightHtml = '<img src="'+logoUrl+'" style="max-height:52px;max-width:160px;object-fit:contain;" alt="logo">';
+                var darkHtml = '<img src="'+logoUrl+'" style="max-height:52px;max-width:160px;object-fit:contain;filter:brightness(0) invert(1);opacity:.92;" alt="logo">';
+                var lightCont = document.getElementById('bae-logo-lockup-light');
+                var darkCont = document.getElementById('bae-logo-lockup-dark');
+                if (lightCont) lightCont.innerHTML = lightHtml;
+                if (darkCont) darkCont.innerHTML = darkHtml;
                 return;
             }
             var fd = new FormData();
             fd.append('action','bae_logo_preview');
             fd.append('nonce', baeLogoProfile.nonce);
-            fd.append('profile_id',      baeLogoProfile.id);
-            fd.append('logo_style',      baeLogoProfile.logo_style);
-            fd.append('logo_icon',       baeLogoProfile.logo_icon);
+            fd.append('profile_id', baeLogoProfile.id);
+            fd.append('logo_style', baeLogoProfile.logo_style);
+            fd.append('logo_icon', baeLogoProfile.logo_icon);
             fd.append('logo_icon_scale', baeLogoProfile.logo_icon_scale);
-            fd.append('logo_spacing',    baeLogoProfile.logo_spacing);
-            fd.append('logo_position',   baeLogoProfile.logo_position);
-            fd.append('logo_text_case',  baeLogoProfile.logo_text_case);
+            fd.append('logo_spacing', baeLogoProfile.logo_spacing);
+            fd.append('logo_position', baeLogoProfile.logo_position);
+            fd.append('logo_text_case', baeLogoProfile.logo_text_case);
             fetch(ajaxurl,{method:'POST',body:fd})
                 .then(function(r){return r.json();})
                 .then(function(data){
-                    if (!data.success) return;
-                    var ll = document.getElementById('bae-logo-lockup-light');
-                    var ld = document.getElementById('bae-logo-lockup-dark');
-                    if (ll && data.data.light) ll.innerHTML = data.data.light;
-                    if (ld && data.data.dark)  ld.innerHTML = data.data.dark;
+                    if (data.success) {
+                        var light = document.getElementById('bae-logo-lockup-light');
+                        var dark = document.getElementById('bae-logo-lockup-dark');
+                        if (light && data.data.light) light.innerHTML = data.data.light;
+                        if (dark && data.data.dark) dark.innerHTML = data.data.dark;
+                    }
                 }).catch(function(){});
         }
 
-        /* ── SAVE ── */
-        var saveBtn    = document.getElementById('bae-logo-save-btn');
+        // Save settings
+        var saveBtn = document.getElementById('bae-logo-save-btn');
         var saveStatus = document.getElementById('bae-logo-save-status');
-        var saveSVG    = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> ';
-
         function baeLogoSave(extra) {
-            if (saveBtn) { saveBtn.disabled=true; saveBtn.textContent='Saving…'; }
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
             var fd = new FormData();
             fd.append('action','bae_save_profile');
             fd.append('nonce', baeLogoProfile.nonce);
-            fd.append('profile_id',      baeLogoProfile.id);
-            fd.append('logo_style',      baeLogoProfile.logo_style);
-            fd.append('logo_icon',       baeLogoProfile.logo_icon);
+            fd.append('profile_id', baeLogoProfile.id);
+            fd.append('logo_style', baeLogoProfile.logo_style);
+            fd.append('logo_icon', baeLogoProfile.logo_icon);
             fd.append('logo_icon_scale', baeLogoProfile.logo_icon_scale);
-            fd.append('logo_spacing',    baeLogoProfile.logo_spacing);
-            fd.append('logo_position',   baeLogoProfile.logo_position);
-            fd.append('logo_text_case',  baeLogoProfile.logo_text_case);
-            fd.append('logo_url',        document.getElementById('bae-logo-url-hidden').value);
-            fd.append('business_name',   baeLogoProfile.business_name);
-            fd.append('tagline',         baeLogoProfile.tagline);
-            fd.append('primary_color',   baeLogoProfile.primary_color);
+            fd.append('logo_spacing', baeLogoProfile.logo_spacing);
+            fd.append('logo_position', baeLogoProfile.logo_position);
+            fd.append('logo_text_case', baeLogoProfile.logo_text_case);
+            fd.append('logo_url', document.getElementById('bae-logo-url-hidden').value);
+            fd.append('business_name', baeLogoProfile.business_name);
+            fd.append('tagline', baeLogoProfile.tagline);
+            fd.append('primary_color', baeLogoProfile.primary_color);
             fd.append('secondary_color', baeLogoProfile.secondary_color);
-            fd.append('accent_color',    baeLogoProfile.accent_color);
-            fd.append('font_heading',    baeLogoProfile.font_heading);
-            if (extra) Object.keys(extra).forEach(function(k){ fd.append(k,extra[k]); });
+            fd.append('accent_color', baeLogoProfile.accent_color);
+            fd.append('font_heading', baeLogoProfile.font_heading);
+            if (extra) Object.keys(extra).forEach(function(k){ fd.append(k, extra[k]); });
             fetch(ajaxurl,{method:'POST',body:fd})
                 .then(function(r){return r.json();})
                 .then(function(data){
-                    if (saveBtn){ saveBtn.disabled=false; saveBtn.innerHTML=saveSVG+'Save Logo Settings'; }
-                    if (saveStatus){
-                        saveStatus.textContent = data.success ? '✓ Saved' : (data.data&&data.data.message?data.data.message:'Save failed.');
+                    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Logo Settings'; }
+                    if (saveStatus) {
+                        saveStatus.textContent = data.success ? '✓ Saved' : (data.data && data.data.message ? data.data.message : 'Save failed.');
                         saveStatus.style.color = data.success ? '#34d399' : '#fb7185';
-                        setTimeout(function(){ if(saveStatus) saveStatus.textContent=''; },3000);
+                        setTimeout(function(){ if(saveStatus) saveStatus.textContent = ''; }, 3000);
                     }
-                    if (data.success && typeof window.baeToast==='function') window.baeToast('Logo settings saved.','success');
+                    if (data.success && typeof window.baeToast === 'function') window.baeToast('Logo settings saved.','success');
                 })
                 .catch(function(){
-                    if (saveBtn){ saveBtn.disabled=false; saveBtn.innerHTML=saveSVG+'Save Logo Settings'; }
-                    if (saveStatus){ saveStatus.textContent='Network error.'; saveStatus.style.color='#fb7185'; }
+                    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Logo Settings'; }
+                    if (saveStatus) { saveStatus.textContent = 'Network error.'; saveStatus.style.color = '#fb7185'; }
                 });
         }
         if (saveBtn) saveBtn.addEventListener('click', function(){ baeLogoSave(); });
 
-        /* ── FILE UPLOAD ── */
-        var fileInput    = document.getElementById('bae-logo-file-input');
-        var uploadArea   = document.getElementById('bae-logo-upload-area');
+        // File upload
+        var fileInput = document.getElementById('bae-logo-file-input');
+        var uploadArea = document.getElementById('bae-logo-upload-area');
         var uploadStatus = document.getElementById('bae-logo-upload-status');
-
         function baeUploadFile(file) {
             if (!file) return;
-            var allowed=['image/png','image/jpeg','image/jpg','image/svg+xml','image/gif','image/webp'];
-            if (!allowed.includes(file.type)){ if(uploadStatus){uploadStatus.textContent='PNG, JPG, SVG only.';uploadStatus.style.color='#fb7185';} return; }
-            if (file.size>2*1024*1024){ if(uploadStatus){uploadStatus.textContent='Max 2MB.';uploadStatus.style.color='#fb7185';} return; }
-            if (uploadStatus){ uploadStatus.textContent='Uploading…'; uploadStatus.style.color='var(--text-3)'; }
-            var fd=new FormData();
+            var allowed = ['image/png','image/jpeg','image/jpg','image/svg+xml','image/gif','image/webp'];
+            if (!allowed.includes(file.type)) {
+                if (uploadStatus) { uploadStatus.textContent = 'PNG, JPG, SVG only.'; uploadStatus.style.color = '#fb7185'; }
+                return;
+            }
+            if (file.size > 2*1024*1024) {
+                if (uploadStatus) { uploadStatus.textContent = 'Max 2MB.'; uploadStatus.style.color = '#fb7185'; }
+                return;
+            }
+            if (uploadStatus) { uploadStatus.textContent = 'Uploading…'; uploadStatus.style.color = 'var(--text-3)'; }
+            var fd = new FormData();
             fd.append('action','bae_upload_logo');
             fd.append('nonce', baeLogoProfile.nonce);
-            fd.append('logo_file',file);
-            if (baeLogoProfile.id) fd.append('profile_id',baeLogoProfile.id);
+            fd.append('logo_file', file);
+            if (baeLogoProfile.id) fd.append('profile_id', baeLogoProfile.id);
             fetch(ajaxurl,{method:'POST',body:fd})
                 .then(function(r){return r.json();})
                 .then(function(data){
-                    if (data.success&&data.data&&data.data.url){
-                        var url=data.data.url;
-                        document.getElementById('bae-logo-url-hidden').value=url;
-                        baeLogoProfile.logo_url=url;
-                        var wrap=document.getElementById('bae-logo-preview-wrap');
-                        if(wrap) wrap.innerHTML='<img id="bae-logo-preview-img" src="'+url+'" style="max-width:100%;max-height:100%;object-fit:contain;">';
-                        baeShowUploadedActions();
-                        var builder=document.getElementById('bae-logo-css-builder-panel');
-                        if(builder) builder.style.display='none';
-                        if(uploadStatus){uploadStatus.textContent='✓ Uploaded';uploadStatus.style.color='#34d399';}
+                    if (data.success && data.data && data.data.url) {
+                        var url = data.data.url;
+                        document.getElementById('bae-logo-url-hidden').value = url;
+                        baeLogoProfile.logo_url = url;
+                        var previewWrap = document.getElementById('bae-logo-preview-wrap');
+                        if (previewWrap) previewWrap.innerHTML = '<img src="'+url+'" style="max-width:100%;max-height:100%;object-fit:contain;">';
+                        var builder = document.getElementById('bae-logo-css-builder');
+                        if (builder) builder.classList.add('bae-collapsed');
+                        if (uploadStatus) { uploadStatus.textContent = '✓ Uploaded'; uploadStatus.style.color = '#34d399'; }
                         baeRefreshPreview();
                         baeLogoSave({logo_url:url});
+                        // Add remove/check buttons
+                        baeEnsurePostUploadButtons();
                     } else {
-                        if(uploadStatus){uploadStatus.textContent=(data.data&&data.data.message)?data.data.message:'Upload failed.';uploadStatus.style.color='#fb7185';}
+                        if (uploadStatus) { uploadStatus.textContent = (data.data && data.data.message) ? data.data.message : 'Upload failed.'; uploadStatus.style.color = '#fb7185'; }
                     }
-                }).catch(function(){ if(uploadStatus){uploadStatus.textContent='Network error.';uploadStatus.style.color='#fb7185';} });
+                }).catch(function(){ if (uploadStatus) { uploadStatus.textContent = 'Network error.'; uploadStatus.style.color = '#fb7185'; } });
+        }
+        if (fileInput) fileInput.addEventListener('change', function(){ baeUploadFile(this.files[0]); });
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', function(e){ e.preventDefault(); this.classList.add('drag-over'); });
+            uploadArea.addEventListener('dragleave', function(){ this.classList.remove('drag-over'); });
+            uploadArea.addEventListener('drop', function(e){ e.preventDefault(); this.classList.remove('drag-over'); baeUploadFile(e.dataTransfer.files && e.dataTransfer.files[0]); });
         }
 
-        function baeShowUploadedActions() {
-            if (document.getElementById('bae-logo-remove-btn')) return;
-            var ref = document.querySelector('#bae-logo-upload-area [style*="gap:8px"][style*="flex-wrap"]');
-            if (!ref) return;
-            var div=document.createElement('div');
-            div.innerHTML='<button type="button" id="bae-logo-remove-btn" style="background:none;border:1px solid rgba(244,63,94,.3);border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;color:#fb7185;cursor:pointer;font-family:\'Geist\',sans-serif;">Remove</button>'
-                         +'<button type="button" id="bae-logo-check-btn" class="bae-btn bae-btn-outline bae-btn-sm" style="display:flex;align-items:center;gap:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Check BG</button>';
-            while(div.firstChild) ref.appendChild(div.firstChild);
-            baeBindUploadedActions();
-        }
-
-        function baeBindUploadedActions() {
-            var rb=document.getElementById('bae-logo-remove-btn');
-            if(rb&&!rb._b){
-                rb._b=true;
-                rb.addEventListener('click',function(){
-                    document.getElementById('bae-logo-url-hidden').value='';
-                    baeLogoProfile.logo_url='';
-                    var wrap=document.getElementById('bae-logo-preview-wrap');
-                    if(wrap) wrap.innerHTML='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1.5"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
-                    var builder=document.getElementById('bae-logo-css-builder-panel');
-                    if(builder) builder.style.display='';
-                    var checker=document.getElementById('bae-logo-bg-checker');
-                    if(checker) checker.style.display='none';
-                    this.remove(); var cb=document.getElementById('bae-logo-check-btn'); if(cb) cb.remove();
-                    baeRequestPreviewRefresh();
-                    baeLogoSave({logo_url:''});
-                });
-            }
-            var cb=document.getElementById('bae-logo-check-btn');
-            if(cb&&!cb._b){
-                cb._b=true;
-                cb.addEventListener('click',function(){
-                    var logoUrl=document.getElementById('bae-logo-url-hidden').value;
-                    if(!logoUrl) return;
-                    var checker=document.getElementById('bae-logo-bg-checker');
-                    var grid=document.getElementById('bae-logo-bg-grid');
-                    if(!checker||!grid) return;
-                    checker.style.display=checker.style.display==='none'?'':'none';
-                    if(checker.style.display===''&&grid.children.length===0){
-                        ['#ffffff','#000000','#f5f5f5','#1a1a2e','#F32D86','#2d1066','#ea580c','#16213e'].forEach(function(bg){
-                            var cell=document.createElement('div');
-                            cell.style.cssText='background:'+bg+';border-radius:8px;padding:10px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(128,128,128,.2);';
-                            cell.innerHTML='<img src="'+logoUrl+'" style="max-width:70px;max-height:40px;object-fit:contain;">';
+        function baeEnsurePostUploadButtons() {
+            var existingRemove = document.getElementById('bae-logo-remove-btn');
+            if (existingRemove) return;
+            var actionsDiv = document.querySelector('.bae-upload-actions');
+            if (!actionsDiv) return;
+            var removeBtn = document.createElement('button');
+            removeBtn.id = 'bae-logo-remove-btn';
+            removeBtn.className = 'bae-btn bae-btn-outline bae-btn-sm';
+            removeBtn.textContent = 'Remove';
+            var checkBtn = document.createElement('button');
+            checkBtn.id = 'bae-logo-check-btn';
+            checkBtn.className = 'bae-btn bae-btn-outline bae-btn-sm';
+            checkBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Check BG';
+            actionsDiv.appendChild(removeBtn);
+            actionsDiv.appendChild(checkBtn);
+            removeBtn.addEventListener('click', function() {
+                document.getElementById('bae-logo-url-hidden').value = '';
+                baeLogoProfile.logo_url = '';
+                var previewWrap = document.getElementById('bae-logo-preview-wrap');
+                if (previewWrap) previewWrap.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="1"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                var builder = document.getElementById('bae-logo-css-builder');
+                if (builder) builder.classList.remove('bae-collapsed');
+                removeBtn.remove();
+                checkBtn.remove();
+                baeRefreshPreview();
+                baeLogoSave({logo_url:''});
+            });
+            checkBtn.addEventListener('click', function() {
+                var logoUrl = document.getElementById('bae-logo-url-hidden').value;
+                if (!logoUrl) return;
+                var checker = document.getElementById('bae-logo-bg-checker');
+                var grid = document.getElementById('bae-logo-bg-grid');
+                if (!checker || !grid) return;
+                if (checker.style.display === 'none') {
+                    checker.style.display = 'block';
+                    if (grid.children.length === 0) {
+                        var colors = ['#ffffff','#000000','#f5f5f5','#1a1a2e','#F32D86','#2d1066','#ea580c','#16213e'];
+                        colors.forEach(function(bg) {
+                            var cell = document.createElement('div');
+                            cell.style.cssText = 'background:'+bg+';border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(128,128,128,.2);';
+                            cell.innerHTML = '<img src="'+logoUrl+'" style="max-width:70px;max-height:40px;object-fit:contain;">';
                             grid.appendChild(cell);
                         });
                     }
+                } else {
+                    checker.style.display = 'none';
+                }
+            });
+        }
+        baeEnsurePostUploadButtons(); // in case logo already exists on load
+
+        // Pods (variant) click handling
+        document.querySelectorAll('.bae-pod-apply').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var style = this.dataset.style;
+                var styleSelect = document.getElementById('bae-logo-style');
+                if (styleSelect) {
+                    styleSelect.value = style;
+                    // trigger change
+                    var evt = new Event('change');
+                    styleSelect.dispatchEvent(evt);
+                }
+                // Update active status in pods UI
+                document.querySelectorAll('.bae-pod').forEach(function(pod) {
+                    var podStyle = pod.dataset.style;
+                    var statusSpan = pod.querySelector('.bae-pod-status');
+                    if (podStyle === style) {
+                        statusSpan.classList.remove('inactive');
+                        statusSpan.classList.add('active');
+                        statusSpan.textContent = 'Active';
+                    } else {
+                        statusSpan.classList.remove('active');
+                        statusSpan.classList.add('inactive');
+                        statusSpan.textContent = 'Inactive';
+                    }
                 });
-            }
-        }
+                // Also scroll to top and show toast
+                if (typeof window.baeToast === 'function') window.baeToast('Applied '+style+' style', 'success');
+            });
+        });
 
-        if(fileInput) fileInput.addEventListener('change',function(){ baeUploadFile(this.files[0]); });
+        // Toggle CSS Builder
+        window.baeToggleBuilder = function() {
+            var builder = document.getElementById('bae-logo-css-builder');
+            if (builder) builder.classList.toggle('bae-collapsed');
+        };
 
-        if(uploadArea){
-            uploadArea.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag-over');});
-            uploadArea.addEventListener('dragleave',function(){this.classList.remove('drag-over');});
-            uploadArea.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('drag-over');baeUploadFile(e.dataTransfer.files&&e.dataTransfer.files[0]);});
-        }
-
-        // Bind any server-rendered remove/check buttons (for users who already have a logo)
-        baeBindUploadedActions();
-
-        /* ── DOWNLOAD ── */
+        // Download
+        var pngBtn = document.getElementById('bae-logo-download-png');
+        var svgBtn = document.getElementById('bae-logo-download-svg');
         function baeLogoDownload(fmt) {
-            var st=document.getElementById('bae-logo-download-status');
-            var logoUrl=document.getElementById('bae-logo-url-hidden').value;
-            if(logoUrl&&fmt==='png'){
-                var a=document.createElement('a'); a.href=logoUrl; a.download=(baeLogoProfile.business_name||'logo')+'.png'; a.click(); return;
+            var st = document.getElementById('bae-logo-download-status');
+            var logoUrl = document.getElementById('bae-logo-url-hidden').value;
+            if (logoUrl && fmt === 'png') {
+                var a = document.createElement('a'); a.href = logoUrl; a.download = (baeLogoProfile.business_name || 'logo') + '.png'; a.click();
+                return;
             }
-            if(st){st.textContent='Preparing…';st.style.color='var(--text-3)';}
-            var lockupEl=document.getElementById('bae-logo-lockup-light');
-            if(!lockupEl){if(st) st.textContent='Nothing to export.'; return;}
-            var name=baeLogoProfile.business_name||'logo';
-            if(fmt==='svg'){
-                var blob=new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="320" height="80"><foreignObject width="320" height="80"><body xmlns="http://www.w3.org/1999/xhtml" style="margin:0;padding:14px;display:flex;align-items:center;">'+lockupEl.innerHTML+'</body></foreignObject></svg>'],{type:'image/svg+xml'});
-                var url=URL.createObjectURL(blob);
-                var a=document.createElement('a'); a.href=url; a.download=name+'.svg'; a.click();
-                setTimeout(function(){URL.revokeObjectURL(url);},2000);
-                if(st){st.textContent='✓ Downloaded';setTimeout(function(){if(st)st.textContent='';},2500);}
+            if (st) { st.textContent = 'Preparing…'; st.style.color = 'var(--text-3)'; }
+            var lockupEl = document.getElementById('bae-logo-lockup-light');
+            if (!lockupEl) { if(st) st.textContent = 'Nothing to export.'; return; }
+            var name = baeLogoProfile.business_name || 'logo';
+            if (fmt === 'svg') {
+                var svgString = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100"><foreignObject width="400" height="100"><body xmlns="http://www.w3.org/1999/xhtml" style="margin:0;padding:12px;display:flex;align-items:center;">'+lockupEl.innerHTML+'</body></foreignObject></svg>';
+                var blob = new Blob([svgString], {type:'image/svg+xml'});
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a'); a.href = url; a.download = name+'.svg'; a.click();
+                setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+                if(st){ st.textContent = '✓ Downloaded'; setTimeout(function(){ if(st) st.textContent=''; },2500); }
             } else {
-                var canvas=document.createElement('canvas'); canvas.width=640; canvas.height=160;
-                var ctx=canvas.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,640,160);
-                var svgBlob=new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160"><foreignObject width="640" height="160"><body xmlns="http://www.w3.org/1999/xhtml" style="margin:0;padding:24px;display:flex;align-items:center;zoom:2;">'+lockupEl.innerHTML+'</body></foreignObject></svg>'],{type:'image/svg+xml'});
-                var burl=URL.createObjectURL(svgBlob);
-                var img=document.createElement('img'); img.crossOrigin='anonymous';
-                img.onload=function(){
+                var canvas = document.createElement('canvas'); canvas.width = 800; canvas.height = 200;
+                var ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,800,200);
+                var svgBlob = new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200"><foreignObject width="800" height="200"><body xmlns="http://www.w3.org/1999/xhtml" style="margin:0;padding:24px;display:flex;align-items:center;zoom:2;">'+lockupEl.innerHTML+'</body></foreignObject></svg>'], {type:'image/svg+xml'});
+                var burl = URL.createObjectURL(svgBlob);
+                var img = new Image(); img.crossOrigin = 'anonymous';
+                img.onload = function() {
                     ctx.drawImage(img,0,0); URL.revokeObjectURL(burl);
-                    var a=document.createElement('a'); a.download=name+'.png'; a.href=canvas.toDataURL('image/png'); a.click();
-                    if(st){st.textContent='✓ Downloaded';setTimeout(function(){if(st)st.textContent='';},2500);}
+                    var a = document.createElement('a'); a.download = name+'.png'; a.href = canvas.toDataURL('image/png'); a.click();
+                    if(st){ st.textContent = '✓ Downloaded'; setTimeout(function(){ if(st) st.textContent=''; },2500); }
                 };
-                img.onerror=function(){ if(st){st.textContent='PNG failed — try SVG.';st.style.color='#fb7185';} };
-                img.src=burl;
+                img.onerror = function(){ if(st){ st.textContent = 'PNG failed — try SVG.'; st.style.color = '#fb7185'; } };
+                img.src = burl;
             }
         }
-        var pngBtn=document.getElementById('bae-logo-download-png');
-        var svgBtn=document.getElementById('bae-logo-download-svg');
-        if(pngBtn) pngBtn.addEventListener('click',function(){baeLogoDownload('png');});
-        if(svgBtn) svgBtn.addEventListener('click',function(){baeLogoDownload('svg');});
+        if(pngBtn) pngBtn.addEventListener('click', function(){ baeLogoDownload('png'); });
+        if(svgBtn) svgBtn.addEventListener('click', function(){ baeLogoDownload('svg'); });
 
+        // Initial sync: mark active pod
+        var currentStyle = baeLogoProfile.logo_style;
+        document.querySelectorAll('.bae-pod').forEach(function(pod) {
+            var podStyle = pod.dataset.style;
+            var statusSpan = pod.querySelector('.bae-pod-status');
+            if (podStyle === currentStyle) {
+                statusSpan.classList.add('active');
+                statusSpan.classList.remove('inactive');
+                statusSpan.textContent = 'Active';
+            } else {
+                statusSpan.classList.add('inactive');
+                statusSpan.classList.remove('active');
+                statusSpan.textContent = 'Inactive';
+            }
+        });
     })();
     </script>
     <?php
     return bae_wrap_tab_panel(ob_get_clean());
 }
-
