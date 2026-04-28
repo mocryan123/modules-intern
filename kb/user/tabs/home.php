@@ -555,11 +555,11 @@
         .kbf-home-sponsor-wrap + .kbf-table-pager .kbf-table-pager-left{
           display:none;
         }
-        .kbf-home-sponsor-wrap + .kbf-table-pager .kbf-table-pager-right{
-          margin-left:auto;
+        .kbf-home-sponsor-wrap + .kbf-table-pager{
+          justify-content:center;
         }
-        .kbf-home-sponsor-wrap + .kbf-table-pager .kbf-pager-pages{
-          display:none;
+        .kbf-home-sponsor-wrap + .kbf-table-pager .kbf-table-pager-right{
+          margin-left:0;
         }
         .kbf-sponsor-details summary{
           cursor:pointer;
@@ -1548,6 +1548,40 @@
 
       (function(){
         function configureHomeSponsorPagers(){
+          function limitSponsorPageButtons(pager){
+            if(!pager) return;
+            var pagesWrap = pager.querySelector('.kbf-pager-pages');
+            if(!pagesWrap) return;
+            var pageBtns = Array.prototype.slice.call(pagesWrap.querySelectorAll('.kbf-page-btn'));
+            if(!pageBtns.length) return;
+
+            var totalPages = pageBtns.length;
+            var activeBtn = pagesWrap.querySelector('.kbf-page-btn.is-active');
+            var current = activeBtn ? parseInt(activeBtn.textContent, 10) : 1;
+            if(!current || current < 1) current = 1;
+
+            var wanted = [];
+            if(totalPages <= 4){
+              wanted = pageBtns.map(function(btn){ return parseInt(btn.textContent, 10); });
+            } else {
+              wanted = [1, current - 1, current, current + 1].filter(function(n){
+                return n >= 1 && n <= totalPages;
+              });
+            }
+
+            var seen = {};
+            wanted = wanted.filter(function(n){
+              if(seen[n]) return false;
+              seen[n] = true;
+              return true;
+            }).slice(0, 4);
+
+            pageBtns.forEach(function(btn){
+              var n = parseInt(btn.textContent, 10);
+              btn.style.display = wanted.indexOf(n) !== -1 ? '' : 'none';
+            });
+          }
+
           document.querySelectorAll('.kbf-home-sponsor-wrap').forEach(function(wrap){
             if(!wrap) return;
             var pager = wrap.parentElement ? wrap.parentElement.querySelector('.kbf-table-pager') : null;
@@ -1564,6 +1598,13 @@
             if(select && select.value !== '5'){
               select.value = '5';
               select.dispatchEvent(new Event('change'));
+            }
+            limitSponsorPageButtons(pager);
+            if(pager.dataset.kbfSponsorPagerBound !== '1'){
+              pager.dataset.kbfSponsorPagerBound = '1';
+              pager.addEventListener('click', function(){
+                setTimeout(function(){ limitSponsorPageButtons(pager); }, 0);
+              });
             }
           });
         }
