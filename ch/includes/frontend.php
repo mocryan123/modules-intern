@@ -7195,11 +7195,28 @@ $rand_id = ch_request_text($_GET['view_post'] ?? '');
                                                 <?php foreach ($replies_map[$cm->id] as $reply): ?>
                                                     <div class="ch-comment ch-comment-reply" id="ch-comment-<?php echo $reply->id; ?>">
                                                         <div class="ch-comment-avatar ch-avatar-xs">
-                                                            <?php echo strtoupper(substr($reply->is_anonymous ? 'A' : ($reply->author_name ?: 'U'), 0, 1)); ?>
-                                                        </div>
+                                                                <?php
+                                                                if ($reply->user_id == 0 && !empty($reply->guest_name)) {
+                                                                    $initial = strtoupper(substr($reply->guest_name, 0, 1));
+                                                                } elseif ($reply->is_anonymous) {
+                                                                    $initial = 'A';
+                                                                } else {
+                                                                    $initial = strtoupper(substr($reply->author_name ?? 'U', 0, 1));
+                                                                }
+                                                                echo esc_html($initial);
+                                                                ?>
+                                                            </div>
                                                         <div class="ch-comment-body">
                                                             <div class="ch-comment-header">
-                                                                <strong><?php echo $reply->is_anonymous ? 'Anonymous' : esc_html($reply->author_name ?? 'Member'); ?></strong>
+                                                                <strong><?php
+                                                                    if ($reply->user_id == 0 && !empty($reply->guest_name)) {
+                                                                        echo esc_html($reply->guest_name) . ' <span style="font-size:11px;font-weight:400;color:#9ca3af;">(guest)</span>';
+                                                                    } elseif ($reply->is_anonymous) {
+                                                                        echo 'Anonymous';
+                                                                    } else {
+                                                                        echo esc_html($reply->author_name ?? 'Member');
+                                                                    }
+                                                                ?></strong>
                                                                 <span
                                                                     class="ch-comment-time"><?php echo human_time_diff(strtotime($reply->created_at), current_time('timestamp')); ?>
                                                                     ago</span>
