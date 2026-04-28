@@ -261,6 +261,33 @@ function bntm_ajax_kbf_admin_confirm_payment() {
     wp_send_json_success(['message'=>'Payment confirmed! Sponsor notified.']);
 }
 
+function bntm_ajax_kbf_admin_recheck_payment() {
+    check_ajax_referer('kbf_admin_action');
+    if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }
+    global $wpdb;
+    $st = $wpdb->prefix.'kbf_sponsorships';
+    $id = intval($_POST['sponsorship_id']);
+    $sp = $wpdb->get_row($wpdb->prepare("SELECT id,email,payment_status FROM {$st} WHERE id=%d", $id));
+    if(!$sp) {
+        wp_send_json_error(['message'=>'Sponsorship not found.']);
+    }
+    if((string)$sp->payment_status === 'completed') {
+        wp_send_json_success(['message'=>'Payment is already completed.']);
+    }
+
+    $synced = false;
+    if (function_exists('kbf_maya_sync_sponsorship_from_checkout')) {
+        $synced = (bool) kbf_maya_sync_sponsorship_from_checkout((int)$sp->id, (string)$sp->email);
+    }
+
+    $updated = $wpdb->get_var($wpdb->prepare("SELECT payment_status FROM {$st} WHERE id=%d", (int)$sp->id));
+    if ($synced || (string)$updated === 'completed') {
+        wp_send_json_success(['message'=>'Maya recheck successful. Payment marked completed.']);
+    }
+
+    wp_send_json_error(['message'=>'No paid status found yet in Maya for this transaction.']);
+}
+
 function bntm_ajax_kbf_admin_verify_organizer() {
     check_ajax_referer('kbf_admin_action');
     if(!current_user_can('manage_options')) { wp_send_json_error(['message'=>'Unauthorized']); }

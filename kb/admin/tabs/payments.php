@@ -88,7 +88,10 @@ function kbf_admin_transactions_tab() {
               <td class="kbf-meta"><?php echo esc_html($format_date($s->created_at)); ?></td>
               <td>
                 <?php if ((string)$s->payment_status !== 'completed'): ?>
-                  <button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfConfirmPayment(<?php echo (int)$s->id; ?>)">Mark Complete</button>
+                  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfRecheckPayment(<?php echo (int)$s->id; ?>)">Recheck Maya</button>
+                    <button type="button" class="kbf-btn kbf-btn-secondary kbf-btn-sm" onclick="kbfConfirmPayment(<?php echo (int)$s->id; ?>)">Mark Complete</button>
+                  </div>
                 <?php else: ?>
                   <span class="kbf-meta">-</span>
                 <?php endif; ?>

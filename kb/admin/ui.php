@@ -967,6 +967,7 @@ window.kbfProcessEscrowRequest=function(id,type){
      * @status    ACTIVE | NEEDS REVIEW
      */
     window.kbfConfirmPayment=function(id){if(!confirm('Mark this sponsorship as paid?'))return;kbfAdmin('kbf_admin_confirm_payment',{sponsorship_id:id});};
+    window.kbfRecheckPayment=function(id){if(!confirm('Recheck this pending payment with Maya now?'))return;kbfAdmin('kbf_admin_recheck_payment',{sponsorship_id:id});};
     /**
      * @function  kbfToggleMobileMenu
      * @purpose   Handles kbfToggleMobileMenu behavior for the admin UI script.
