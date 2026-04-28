@@ -837,6 +837,7 @@ function kbf_global_assets() {
     .kbf-badge-pending   { background:#fef3c7; color:#b45309; }
     .kbf-badge-active    { background:#dcfce7; color:#15803d; }
     .kbf-badge-completed { background:#dbeafe; color:#1d4ed8; }
+    .kbf-badge-failed    { background:#fee2e2; color:#b91c1c; }
     .kbf-badge-cancelled { background:#fee2e2; color:#b91c1c; }
     .kbf-badge-suspended { background:#ffe4e6; color:#be123c; }
     .kbf-badge-draft     { background:#f1f5f9; color:#475569; }
