@@ -131,15 +131,20 @@ if (!function_exists('kbf_fund_details_output_social_meta')) {
         $fund_details_url = kbf_get_page_url('fund_details');
         $share_url = add_query_arg('kbf_share', $fund->share_token, $fund_details_url);
         $og_title = wp_strip_all_tags((string)$fund->title);
-        $og_desc = wp_trim_words(wp_strip_all_tags((string)$fund->description), 28, '...');
+        $og_desc = wp_trim_words(wp_strip_all_tags((string)$fund->description), 20, '...');
+        $site_name = get_bloginfo('name');
 
-        echo "\n<meta property=\"og:type\" content=\"article\" />";
+        echo "\n<meta property=\"og:type\" content=\"website\" />";
+        echo "\n<meta property=\"og:site_name\" content=\"" . esc_attr($site_name) . "\" />";
         echo "\n<meta property=\"og:title\" content=\"" . esc_attr($og_title) . "\" />";
         echo "\n<meta property=\"og:description\" content=\"" . esc_attr($og_desc) . "\" />";
         echo "\n<meta property=\"og:url\" content=\"" . esc_url($share_url) . "\" />";
         if (!empty($og_img)) {
             echo "\n<meta property=\"og:image\" content=\"" . esc_url($og_img) . "\" />";
             echo "\n<meta property=\"og:image:secure_url\" content=\"" . esc_url($og_img) . "\" />";
+            echo "\n<meta property=\"og:image:type\" content=\"image/jpeg\" />";
+            echo "\n<meta property=\"og:image:width\" content=\"1200\" />";
+            echo "\n<meta property=\"og:image:height\" content=\"630\" />";
         }
         echo "\n<meta name=\"twitter:card\" content=\"summary_large_image\" />";
         echo "\n<meta name=\"twitter:title\" content=\"" . esc_attr($og_title) . "\" />";

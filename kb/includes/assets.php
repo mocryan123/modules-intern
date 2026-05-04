@@ -2297,7 +2297,7 @@ function kbf_global_assets() {
     };
     window.kbfSharePlatform = function(platform) {
         if(platform === 'facebook') {
-            window.open(window._kbfFbUrl || ('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(_kbfShareUrl)), '_blank', 'width=620,height=500,left=200,top=100');
+            window.open(window._kbfFbUrl || ('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(_kbfShareUrl)), '_blank');
         } else if(platform === 'twitter') {
             window.open(window._kbfXUrl || ('https://twitter.com/intent/tweet?text=' + encodeURIComponent(_kbfShareTitle) + '&url=' + encodeURIComponent(_kbfShareUrl)), '_blank');
         } else if(platform === 'instagram') {
