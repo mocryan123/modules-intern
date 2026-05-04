@@ -302,6 +302,26 @@ function kbf_dashboard_profile_tab( $business_id ) {
         min-width: 0;
         box-sizing: border-box;
       }
+      /* Custom blue scrollbar for select dropdowns */
+      .kbf-form-group select {
+        scrollbar-width: thin;
+        scrollbar-color: #2070e0 #f8fafc;
+      }
+      .kbf-form-group select::-webkit-scrollbar {
+        width: 10px;
+      }
+      .kbf-form-group select::-webkit-scrollbar-track {
+        background: #f8fafc;
+        border-radius: 999px;
+      }
+      .kbf-form-group select::-webkit-scrollbar-thumb {
+        background: #2070e0;
+        border-radius: 999px;
+        border: 2px solid #f8fafc;
+      }
+      .kbf-form-group select::-webkit-scrollbar-thumb:hover {
+        background: #2070e0;
+      }
       .kbf-form-group small,
       .kbf-form-hint {
         display: block;

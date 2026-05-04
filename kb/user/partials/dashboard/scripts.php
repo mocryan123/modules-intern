@@ -148,6 +148,7 @@
         var btnPrev = document.getElementById('kbf-create-prev');
         var btnNext = document.getElementById('kbf-create-next');
         var btnSave = document.getElementById('kbf-create-save-close');
+        var createFooterNote = document.getElementById('kbf-create-footer-note');
         var msg = document.getElementById('kbf-create-msg');
         var success = document.getElementById('kbf-create-success');
         var successView = document.getElementById('kbf-success-view');
@@ -163,7 +164,6 @@
         var descInput = document.getElementById('kbf-create-description');
         var goalInput = document.getElementById('kbf-goal-amount');
         var deadlineInput = document.getElementById('kbf-create-deadline');
-        var deadlineTodayMeta = document.getElementById('kbf-create-deadline-today');
         var photoInput = document.getElementById('kbf-create-photos');
         var photoGrid = document.getElementById('kbf-create-photo-grid');
         var tierList = document.getElementById('kbf-tier-list');
@@ -294,6 +294,62 @@
         }
 
         /**
+         * @function  updatePlatformFeeBreakdown
+         * @purpose   Calculates and updates platform fee breakdown for fully funded and partially funded scenarios
+         * @used-by   [goal amount input listener]
+         * @calls     [document.getElementById, parseFloat, toLocaleString]
+         * @params    none
+         * @returns   void
+         * @status    ACTIVE
+         */
+        function updatePlatformFeeBreakdown(){
+          if (!goalInput) return;
+          var goalValue = parseFloat(String(goalInput.value || '0').replace(/,/g, ''));
+          if (isNaN(goalValue) || goalValue <= 0) {
+            goalValue = 0;
+          }
+
+          // Fully funded: 3% fee
+          var fullyFundedFee = goalValue * 0.03;
+          var fullyFundedPayout = goalValue - fullyFundedFee;
+
+          // Partially funded: 5% fee
+          var partiallyFundedFee = goalValue * 0.05;
+          var partiallyFundedPayout = goalValue - partiallyFundedFee;
+
+          // Update fully funded scenario
+          var fullyFeeAmountEl = document.getElementById('kbf-fee-amount-full');
+          var fullyPayoutEl = document.getElementById('kbf-payout-full');
+          if (fullyFeeAmountEl) {
+            fullyFeeAmountEl.textContent = fullyFundedFee.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          }
+          if (fullyPayoutEl) {
+            fullyPayoutEl.textContent = 'PHP ' + fullyFundedPayout.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          }
+
+          // Update partially funded scenario
+          var partialFeeAmountEl = document.getElementById('kbf-fee-amount-partial');
+          var partialPayoutEl = document.getElementById('kbf-payout-partial');
+          if (partialFeeAmountEl) {
+            partialFeeAmountEl.textContent = partiallyFundedFee.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          }
+          if (partialPayoutEl) {
+            partialPayoutEl.textContent = 'PHP ' + partiallyFundedPayout.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          }
+        }
+
+        function updateCreateFooterNote(step){
+          if (!createFooterNote) return;
+          var noteMap = {
+            1: 'Step 1 - Choose who you are raising for and a category.',
+            2: 'Step 2 - Add the campaign name and description.',
+            3: 'Step 3 - Add photos and optional support tiers.',
+            4: 'Step 4 - Set your goal, deadline, and contact details.'
+          };
+          createFooterNote.textContent = noteMap[step] || noteMap[1];
+        }
+
+        /**
          * @function  setStep
          * @purpose   Handles setStep behavior in the dashboard script flow
          * @used-by   [same file references detected]
@@ -331,6 +387,8 @@
           if (btnNext) {
             btnNext.textContent = nextStep === 4 ? 'Review & Submit' : 'Next';
           }
+
+          updateCreateFooterNote(nextStep);
 
           var body = modal.querySelector('.kbf-modal-body');
           if (body) {
@@ -1089,46 +1147,6 @@
         }
 
         /**
-         * @function  renderCreateDeadlineMeta
-         * @purpose   Renders a visible current-date highlighter and selected date context for create deadline input.
-         * @used-by   [initialization, deadline focus/click/change handlers]
-         * @calls     [none]
-         * @params    none
-         * @returns   void
-         * @status    ACTIVE
-         */
-        function renderCreateDeadlineMeta(){
-          if (!deadlineTodayMeta || !deadlineInput) return;
-          var now = new Date();
-          var todayLabel = now.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
-          var minRaw = String(deadlineInput.getAttribute('min') || '').trim();
-          var minLabel = '';
-          if (minRaw) {
-            var minDate = new Date(minRaw + 'T00:00:00');
-            if (!isNaN(minDate.getTime())) {
-              minLabel = minDate.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
-            }
-          }
-
-          var selectedLabel = '';
-          if (deadlineInput.value) {
-            var selectedDate = new Date(deadlineInput.value + 'T00:00:00');
-            if (!isNaN(selectedDate.getTime())) {
-              selectedLabel = selectedDate.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
-            }
-          }
-
-          var html = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:700;">Today: ' + todayLabel + '</span>';
-          if (minLabel) {
-            html += '<span style="margin-left:8px;color:#64748b;">Earliest: ' + minLabel + '</span>';
-          }
-          if (selectedLabel) {
-            html += '<span style="margin-left:8px;color:#0f172a;font-weight:600;">Selected: ' + selectedLabel + '</span>';
-          }
-          deadlineTodayMeta.innerHTML = html;
-        }
-
-        /**
          * @function  formatCreatePhoneNumber
          * @purpose   Formats create-modal phone input to 09XX XXX XXXX style, matching profile behavior.
          * @used-by   [phone input listeners, applyProfilePhonePrefill]
@@ -1337,17 +1355,16 @@
           goalInput.addEventListener('input', function(){
             updateCampaignData();
             clearError(goalInput);
+            updatePlatformFeeBreakdown();
           });
+          updatePlatformFeeBreakdown();
         }
 
         if (deadlineInput) {
           deadlineInput.addEventListener('change', function(){
             updateCampaignData();
             clearError(deadlineInput);
-            renderCreateDeadlineMeta();
           });
-          deadlineInput.addEventListener('focus', renderCreateDeadlineMeta);
-          deadlineInput.addEventListener('click', renderCreateDeadlineMeta);
         }
 
         if (photoInput) {
@@ -1553,7 +1570,7 @@
         renderTiers();
         bindCounter(titleInput);
         bindCounter(descInput);
-        renderCreateDeadlineMeta();
+        updateCreateFooterNote(1);
         setStep(1);
         updateCampaignData();
       });
@@ -2186,10 +2203,13 @@
     function kbfSetMuniOptions(muniEl, list){
         if (!muniEl) return;
         muniEl.innerHTML = '<option value="">Select Municipality</option>';
-        for (var i=0;i<list.length;i++){
+        var sortedList = list.slice().sort(function(a, b) {
+            return String(a.label || '').localeCompare(String(b.label || ''), 'en', { numeric: true });
+        });
+        for (var i=0;i<sortedList.length;i++){
             var opt = document.createElement('option');
-            opt.value = list[i].label;
-            opt.textContent = list[i].label;
+            opt.value = sortedList[i].label;
+            opt.textContent = sortedList[i].label;
             muniEl.appendChild(opt);
         }
         if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(muniEl);
@@ -2206,10 +2226,13 @@
     function kbfSetBrgyOptions(brgyEl, list){
         if (!brgyEl) return;
         brgyEl.innerHTML = '<option value="">Select Barangay</option>';
-        for (var i=0;i<list.length;i++){
+        var sortedList = list.slice().sort(function(a, b) {
+            return String(a || '').localeCompare(String(b || ''), 'en', { numeric: true });
+        });
+        for (var i=0;i<sortedList.length;i++){
             var opt = document.createElement('option');
-            opt.value = list[i];
-            opt.textContent = list[i];
+            opt.value = sortedList[i];
+            opt.textContent = sortedList[i];
             brgyEl.appendChild(opt);
         }
         if (typeof window.kbfRefreshSelect === 'function') window.kbfRefreshSelect(brgyEl);
@@ -2240,10 +2263,12 @@
                             for (var b=0;b<barangays.length;b++){
                                 brgyList.push(kbfTitleCase(barangays[b]));
                             }
+                            brgyList.sort(function(a, b) { return String(a || '').localeCompare(String(b || ''), 'en', { numeric: true }); });
                             out.push({ key: muniName, label: kbfTitleCase(muniName), barangays: brgyList });
                         }
                     }
                 }
+                out.sort(function(a, b) { return String(a.label || '').localeCompare(String(b.label || ''), 'en', { numeric: true }); });
                 break;
             }
         }

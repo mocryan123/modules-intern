@@ -1007,6 +1007,8 @@
     .kbf-user-ui #kbf-modal-create .kbf-modal-footer .kbf-btn-secondary.kbf-modal-left,
     .kbf-user-ui #kbf-modal-edit .kbf-modal-footer .kbf-btn-secondary.kbf-modal-left{
         margin-right:auto;
+        display:inline-flex !important;
+        visibility:visible !important;
     }
     .kbf-user-ui .kbf-modal-footer .kbf-btn{
         min-height:40px;
@@ -1014,6 +1016,18 @@
         padding:10px 18px;
         font-weight:600;
         letter-spacing:.1px;
+    }
+    .kbf-user-ui .kbf-modal-footer .kbf-btn:disabled{
+        opacity:0.55;
+        cursor:not-allowed;
+        background:#f3f4f6 !important;
+        color:#9ca3af !important;
+        border-color:#e5e7eb !important;
+        box-shadow:none !important;
+    }
+    .kbf-user-ui .kbf-modal-footer .kbf-btn:disabled:hover{
+        transform:none !important;
+        box-shadow:none !important;
     }
     .kbf-user-ui .kbf-modal-footer .kbf-btn-primary{
         box-shadow:0 10px 22px #2563eb47;
@@ -1295,6 +1309,26 @@
         border-color:#3b82f6b2;
         box-shadow:0 0 0 3px #3b82f61f;
     }
+    /* Custom blue scrollbar for select dropdowns */
+    .kbf-user-ui .kbf-modal select{
+        scrollbar-width:thin;
+        scrollbar-color:#2070e0 #f8fafc;
+    }
+    .kbf-user-ui .kbf-modal select::-webkit-scrollbar{
+        width:10px;
+    }
+    .kbf-user-ui .kbf-modal select::-webkit-scrollbar-track{
+        background:#f8fafc;
+        border-radius:999px;
+    }
+    .kbf-user-ui .kbf-modal select::-webkit-scrollbar-thumb{
+        background:#2070e0;
+        border-radius:999px;
+        border:2px solid #f8fafc;
+    }
+    .kbf-user-ui .kbf-modal select::-webkit-scrollbar-thumb:hover{
+        background:#2070e0;
+    }
     .kbf-user-ui .kbf-field-error{
         margin-top:6px;
         font-size:11.5px;
@@ -1443,6 +1477,131 @@
     .kbf-user-ui #kbf-modal-create .kbf-form-row > .kbf-form-group{
         width:100%;
         min-width:0;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-form-section{
+        margin-bottom:24px;
+        padding-bottom:20px;
+        border-bottom:1px solid #e5e7eb;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-form-section:last-of-type{
+        border-bottom:none;
+        margin-bottom:16px;
+        padding-bottom:0;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-form-section-title{
+        display:block;
+        font-size:13px;
+        font-weight:700;
+        color:#0f172a;
+        text-transform:uppercase;
+        letter-spacing:0.5px;
+        margin-bottom:14px;
+        margin-top:0;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-location-grid{
+        display:grid;
+        grid-template-columns:repeat(3, 1fr);
+        gap:16px;
+    }
+    @media (max-width: 820px){
+        .kbf-user-ui #kbf-modal-create .kbf-location-grid{
+            gap:12px;
+        }
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-form-section .kbf-form-row{
+        display:grid;
+        grid-template-columns:repeat(2, 1fr);
+        gap:16px;
+    }
+    @media (max-width: 720px){
+        .kbf-user-ui #kbf-modal-create .kbf-form-section .kbf-form-row{
+            grid-template-columns:1fr;
+            gap:12px;
+        }
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-form-section:nth-child(3) > .kbf-form-group{
+        margin-bottom:12px;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-breakdown-card{
+        background:#f0f9ff;
+        border:1.5px solid #bfdbfe;
+        border-radius:14px;
+        padding:16px;
+        margin-top:12px;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-breakdown-header{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin-bottom:14px;
+        font-size:11px;
+        font-weight:700;
+        text-transform:uppercase;
+        letter-spacing:0.5px;
+        color:#1d4ed8;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-breakdown-header i{
+        font-size:16px;
+        flex-shrink:0;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-breakdown-scenarios{
+        display:grid;
+        gap:12px;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-scenario{
+        background:#ffffff;
+        border-radius:10px;
+        padding:12px;
+        display:flex;
+        gap:12px;
+        align-items:flex-start;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-status{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        padding:6px 12px;
+        border-radius:8px;
+        font-size:11px;
+        font-weight:700;
+        white-space:nowrap;
+        flex-shrink:0;
+        text-transform:capitalize;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-fully-funded{
+        background:#dcfce7;
+        color:#15803d;
+        border:1px solid #86efac;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-partially-funded{
+        background:#fed7aa;
+        color:#d97706;
+        border:1px solid #fdba74;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-details{
+        flex:1;
+        display:flex;
+        flex-direction:column;
+        gap:4px;
+        min-width:0;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-label{
+        font-size:12px;
+        font-weight:600;
+        color:#334155;
+        line-height:1.35;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-deduction{
+        font-size:11.5px;
+        color:#64748b;
+        line-height:1.35;
+    }
+    .kbf-user-ui #kbf-modal-create .kbf-fee-payout{
+        font-size:11.5px;
+        color:#0f172a;
+        font-weight:600;
+        line-height:1.4;
+        margin-top:2px;
     }
     .kbf-user-ui #kbf-modal-edit .kbf-step-content{
         height:500px;
@@ -2094,6 +2253,24 @@ html.kbf-modal-lock, body.kbf-modal-lock {
         width:fit-content;
         margin-bottom:18px;
     }
+    #kbf-modal-create .kbf-modal-header{
+        position:relative;
+        display:flex;
+        flex-direction:column;
+        align-items:flex-start;
+        justify-content:flex-start;
+        gap:12px;
+        padding-right:56px;
+    }
+    #kbf-modal-create .kbf-modal-header h3{
+        width:100%;
+    }
+    #kbf-modal-create .kbf-modal-header .kbf-modal-close{
+        position:absolute;
+        right:24px;
+        top:20px;
+        flex:0 0 auto;
+    }
     #kbf-modal-create .kbf-create-step{
         display:flex;
         align-items:center;
@@ -2243,10 +2420,19 @@ html.kbf-modal-lock, body.kbf-modal-lock {
         transition:all .2s ease;
         cursor:pointer;
     }
+    #kbf-modal-create .kbf-choice-card:hover{
+        border-color:#bfdbfe;
+        background:#f9fbff;
+        transform:translateY(-2px);
+    }
     #kbf-modal-create .kbf-choice-card.is-selected{
         border-color:#60a5fa;
-        box-shadow:0 8px 18px rgba(59,130,246,.18);
         background:#eff6ff;
+        color:#1d4ed8;
+    }
+    #kbf-modal-create .kbf-choice-card.is-selected:hover{
+        border-color:#3b82f6;
+        transform:translateY(-2px);
     }
     #kbf-modal-create .kbf-category-grid{
         display:grid;
@@ -2260,22 +2446,34 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     #kbf-modal-create .kbf-category-card{
         border:1px solid #e2e8f0;
         border-radius:12px;
-        padding:10px;
+        padding:20px 14px;
         display:flex;
+        flex-direction:column;
         align-items:center;
-        gap:8px;
+        justify-content:center;
+        gap:12px;
         background:#ffffff;
         font-size:12.5px;
         font-weight:600;
         color:#334155;
         transition:all .2s ease;
         cursor:pointer;
+        text-align:center;
+        min-height:110px;
     }
-    #kbf-modal-create .kbf-category-card i{font-size:16px;}
+    #kbf-modal-create .kbf-category-card i{font-size:28px;}
+    #kbf-modal-create .kbf-category-card:hover{
+        border-color:#bfdbfe;
+        background:#f9fbff;
+        transform:translateY(-2px);
+    }
     #kbf-modal-create .kbf-category-card.is-selected{
         border-color:#60a5fa;
         background:#eff6ff;
-        color:#1d4ed8;
+    }
+    #kbf-modal-create .kbf-category-card.is-selected:hover{
+        border-color:#3b82f6;
+        transform:translateY(-2px);
     }
     #kbf-modal-create .kbf-category-card.is-hidden{display:none;}
     #kbf-modal-create .kbf-photo-grid{
@@ -2623,17 +2821,34 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     }
     #kbf-modal-create .kbf-modal-footer{
         display:flex;
-        align-items:center;
-        justify-content:space-between;
-        gap:12px;
+        flex-direction:column;
+        align-items:stretch;
+        justify-content:flex-start;
+        gap:10px;
         width:100%;
         max-width:100%;
         box-sizing:border-box;
     }
+    #kbf-modal-create .kbf-create-footer-note{
+        width:100%;
+        text-align:center;
+        color:#475569;
+        font-size:12.5px;
+        font-weight:500;
+        line-height:1.45;
+    }
     #kbf-modal-create .kbf-create-footer-actions{
         display:flex;
         align-items:center;
+        justify-content:flex-start;
         gap:10px;
+        width:100%;
+    }
+    #kbf-modal-create #kbf-create-prev{
+        margin-right:auto;
+    }
+    #kbf-modal-create .kbf-create-footer-actions .kbf-btn{
+        min-width:0;
     }
     #kbf-modal-create .kbf-create-success{
         display:none;
@@ -2671,10 +2886,8 @@ html.kbf-modal-lock, body.kbf-modal-lock {
     }
     @media (max-width: 820px){
         #kbf-modal-create .kbf-modal{height:min(92vh, 720px);}
-        #kbf-modal-create .kbf-create-stepper{
-            width:100%;
-            justify-content:flex-start;
-            gap:8px;
+        #kbf-modal-create .kbf-modal-header{
+            gap:10px;
         }
         #kbf-modal-create .kbf-create-step{
             flex:1 1 calc(50% - 8px);
@@ -2693,47 +2906,11 @@ html.kbf-modal-lock, body.kbf-modal-lock {
         #kbf-modal-create .kbf-category-grid{
             grid-template-columns:repeat(2,minmax(0,1fr));
         }
-        #kbf-modal-create .kbf-modal-footer{
-            display:grid;
-            grid-template-columns:1fr;
-            grid-template-areas:
-                "next"
-                "back"
-                "save";
-            grid-auto-rows:auto;
-            gap:10px;
-            align-items:stretch;
-            justify-items:stretch;
-            width:100%;
-            max-width:100%;
-            box-sizing:border-box;
-            margin:0;
-        }
-        #kbf-modal-create .kbf-modal-footer > *{
-            min-width:0;
-            max-width:100%;
-        }
         #kbf-modal-create .kbf-create-footer-actions{
-            display:contents;
-        }
-        #kbf-modal-create #kbf-create-next{
-            grid-area:next;
             width:100%;
         }
-        #kbf-modal-create #kbf-create-prev{
-            grid-area:back;
-            width:100%;
-        }
-        #kbf-modal-create #kbf-create-save-close{
-            grid-area:save;
-            width:100%;
-        }
-        #kbf-modal-create .kbf-modal-footer .kbf-btn{
-            width:100%;
-            min-width:0;
-            display:flex;
-            align-self:stretch;
-            box-sizing:border-box;
+        #kbf-modal-create .kbf-create-footer-actions .kbf-btn{
+            flex:1 1 0;
         }
     }
     @media (max-width: 640px){
@@ -2752,6 +2929,13 @@ html.kbf-modal-lock, body.kbf-modal-lock {
         }
         #kbf-modal-create .kbf-create-step{
             flex:1 1 100%;
+        }
+        #kbf-modal-create .kbf-create-footer-actions{
+            width:100%;
+        }
+        #kbf-modal-create .kbf-create-footer-actions .kbf-btn{
+            flex:1 1 0;
+            min-width:0;
         }
         #kbf-modal-create .kbf-photo-grid{
             grid-template-columns:repeat(2,minmax(0,1fr));
