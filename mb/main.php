@@ -24,6 +24,13 @@ function bntm_mb_get_pages() {
         'MentorBe Dashboard' => '[mb_dashboard]',
         'Browse Tasks'       => '[mb_browse]',
         'Public Profile'     => '[mb_profile_view]',
+        'MentorBe Home'      => '[mb_home]',
+        'Help Center'        => '[mb_help]',
+        'Terms and Privacy'  => '[mb_terms]',
+        'Inbox'              => '[mb_inbox]',
+        'Checkout'           => '[mb_checkout]',
+        'Earnings'           => '[mb_earnings]',
+        'Admin Dashboard'    => '[mb_admin]',
     ];
 }
 
@@ -113,9 +120,16 @@ function bntm_mb_get_tables() {
 
 function bntm_mb_get_shortcodes() {
     return [
-        'mb_dashboard'     => 'bntm_shortcode_mb',
-        'mb_browse'        => 'bntm_shortcode_mb_browse',
-        'mb_profile_view'  => 'bntm_shortcode_mb_profile_view',
+        'mb_dashboard'    => 'bntm_shortcode_mb',
+        'mb_browse'       => 'bntm_shortcode_mb_browse',
+        'mb_profile_view' => 'bntm_shortcode_mb_profile_view',
+        'mb_home'         => 'bntm_shortcode_mb_home',
+        'mb_help'         => 'bntm_shortcode_mb_help',
+        'mb_terms'        => 'bntm_shortcode_mb_terms',
+        'mb_inbox'        => 'bntm_shortcode_mb_inbox',
+        'mb_checkout'     => 'bntm_shortcode_mb_checkout',
+        'mb_earnings'     => 'bntm_shortcode_mb_earnings',
+        'mb_admin'        => 'bntm_shortcode_mb_admin',
     ];
 }
 
@@ -268,6 +282,10 @@ function bntm_shortcode_mb() {
     .bntm-applicant-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
     .bntm-applicant-row:last-child { border-bottom: none; }
     .bntm-avatar { width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; object-fit: cover; }
+    .mb-coming-soon-wrap { max-width: 520px; margin: 40px auto; text-align: center; padding: 48px 24px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; }
+    .mb-coming-soon-icon { width: 80px; height: 80px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: var(--bntm-primary); }
+    .mb-coming-soon-wrap h2 { margin: 0 0 10px; font-size: 22px; }
+    .mb-coming-soon-wrap p { color: #6b7280; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
     </style>
 
     <script>
@@ -2101,6 +2119,515 @@ function bntm_shortcode_mb_profile_view() {
     .bntm-mb-profile-header h2 { margin: 0; }
     @media (max-width: 500px) { .bntm-mb-profile-header { flex-direction: column; text-align: center; } }
     </style>
+    <?php
+    return ob_get_clean();
+}
+
+/* ===========================================================================
+   G2. ADDITIONAL FRONTEND SHORTCODE FUNCTIONS
+=========================================================================== */
+
+// ---------------------------------------------------------------------------
+// [mb_home] — Landing / Marketing Page
+// ---------------------------------------------------------------------------
+function bntm_shortcode_mb_home() {
+    global $wpdb;
+    $live_count      = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_tasks WHERE status = 'live'");
+    $provider_count  = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_user_profiles WHERE user_role = 'provider' AND status = 'active'");
+    $completed_count = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_tasks WHERE status = 'completed'");
+
+    $browse_page  = get_page_by_path('browse-tasks');
+    $browse_url   = $browse_page ? get_permalink($browse_page->ID) : '#';
+    $login_url    = wp_login_url();
+    $register_url = wp_registration_url();
+
+    ob_start();
+    ?>
+    <div class="mb-home-wrap">
+
+        <!-- Hero -->
+        <section class="mb-hero">
+            <div class="mb-hero-inner">
+                <h1>Find skilled help, right in your community.</h1>
+                <p>MentorBe connects you with verified local providers for any task — home repairs, tutoring, design, and more.</p>
+                <div class="mb-hero-cta">
+                    <?php if (!is_user_logged_in()): ?>
+                        <a href="<?php echo esc_url($register_url); ?>" class="bntm-btn-primary mb-btn-lg">Get Started Free</a>
+                        <a href="<?php echo esc_url($browse_url); ?>" class="bntm-btn-secondary mb-btn-lg">Browse Tasks</a>
+                    <?php else: ?>
+                        <a href="<?php echo esc_url(home_url('/mentorbe-dashboard')); ?>" class="bntm-btn-primary mb-btn-lg">Go to Dashboard</a>
+                        <a href="<?php echo esc_url($browse_url); ?>" class="bntm-btn-secondary mb-btn-lg">Browse Tasks</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="mb-stats-bar">
+            <div class="mb-stat-item">
+                <span class="mb-stat-num"><?php echo number_format($live_count); ?>+</span>
+                <span class="mb-stat-label">Live Tasks</span>
+            </div>
+            <div class="mb-stat-item">
+                <span class="mb-stat-num"><?php echo number_format($provider_count); ?>+</span>
+                <span class="mb-stat-label">Skilled Providers</span>
+            </div>
+            <div class="mb-stat-item">
+                <span class="mb-stat-num"><?php echo number_format($completed_count); ?>+</span>
+                <span class="mb-stat-label">Tasks Completed</span>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section class="mb-how-section">
+            <h2>How MentorBe Works</h2>
+            <div class="mb-how-grid">
+                <div class="mb-how-card">
+                    <div class="mb-how-icon">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </div>
+                    <h4>1. Post a Task</h4>
+                    <p>Describe what you need, set your budget, and add the skills required. Takes less than 2 minutes.</p>
+                </div>
+                <div class="mb-how-card">
+                    <div class="mb-how-icon">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <h4>2. Receive Proposals</h4>
+                    <p>Skilled providers in your area apply with their rate and a cover message. Review and compare at your own pace.</p>
+                </div>
+                <div class="mb-how-card">
+                    <div class="mb-how-icon">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                    <h4>3. Get It Done</h4>
+                    <p>Accept the best applicant, collaborate through your inbox, and approve the work when you're satisfied.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories -->
+        <?php
+        $categories = $wpdb->get_results(
+            "SELECT category, COUNT(*) as skill_count FROM {$wpdb->prefix}mb_skills WHERE status='active' GROUP BY category ORDER BY skill_count DESC LIMIT 8"
+        );
+        if (!empty($categories)): ?>
+        <section class="mb-categories-section">
+            <h2>Popular Categories</h2>
+            <div class="mb-categories-grid">
+                <?php foreach ($categories as $cat): ?>
+                    <a href="<?php echo esc_url($browse_url); ?>" class="mb-category-chip">
+                        <?php echo esc_html($cat->category); ?>
+                        <span><?php echo $cat->skill_count; ?> skills</span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
+        <!-- CTA Banner -->
+        <?php if (!is_user_logged_in()): ?>
+        <section class="mb-cta-banner">
+            <h2>Ready to get started?</h2>
+            <p>Join MentorBe as a Client to post tasks, or as a Provider to earn by sharing your skills.</p>
+            <div class="mb-hero-cta">
+                <a href="<?php echo esc_url($register_url); ?>" class="bntm-btn-primary mb-btn-lg">Sign Up Now</a>
+                <a href="<?php echo esc_url($login_url); ?>" class="bntm-btn-secondary mb-btn-lg">Log In</a>
+            </div>
+        </section>
+        <?php endif; ?>
+
+    </div>
+
+    <style>
+    .mb-home-wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px 48px; }
+    .mb-hero { background: var(--bntm-primary); border-radius: 16px; padding: 64px 32px; margin-bottom: 32px; text-align: center; }
+    .mb-hero h1 { font-size: 34px; color: #fff; margin: 0 0 12px; line-height: 1.2; }
+    .mb-hero p { font-size: 17px; color: rgba(255,255,255,.85); margin: 0 0 28px; }
+    .mb-hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .mb-btn-lg { padding: 12px 28px; font-size: 15px; }
+    .mb-stats-bar { display: flex; justify-content: center; gap: 48px; padding: 28px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 40px; flex-wrap: wrap; }
+    .mb-stat-item { text-align: center; }
+    .mb-stat-num { display: block; font-size: 28px; font-weight: 700; color: var(--bntm-primary); }
+    .mb-stat-label { font-size: 13px; color: #6b7280; }
+    .mb-how-section, .mb-categories-section, .mb-cta-banner { margin-bottom: 48px; }
+    .mb-how-section h2, .mb-categories-section h2, .mb-cta-banner h2 { text-align: center; font-size: 24px; margin-bottom: 24px; }
+    .mb-how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 20px; }
+    .mb-how-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; text-align: center; }
+    .mb-how-icon { width: 52px; height: 52px; background: var(--bntm-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: #fff; }
+    .mb-how-card h4 { margin: 0 0 8px; font-size: 16px; }
+    .mb-how-card p { font-size: 13px; color: #6b7280; margin: 0; }
+    .mb-categories-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .mb-category-chip { display: flex; flex-direction: column; align-items: center; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 20px; text-decoration: none; color: #111827; font-weight: 600; font-size: 14px; transition: border-color .15s; min-width: 120px; }
+    .mb-category-chip:hover { border-color: var(--bntm-primary); color: var(--bntm-primary); }
+    .mb-category-chip span { font-size: 11px; color: #9ca3af; font-weight: 400; margin-top: 3px; }
+    .mb-cta-banner { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 16px; padding: 48px 24px; text-align: center; }
+    .mb-cta-banner p { color: #6b7280; margin-bottom: 20px; }
+    @media (max-width: 600px) {
+        .mb-hero { padding: 40px 20px; }
+        .mb-hero h1 { font-size: 24px; }
+        .mb-stats-bar { gap: 24px; }
+    }
+    </style>
+    <?php
+    return ob_get_clean();
+}
+
+// ---------------------------------------------------------------------------
+// [mb_help] — Help Center / FAQ
+// ---------------------------------------------------------------------------
+function bntm_shortcode_mb_help() {
+    $faqs = [
+        'For Clients' => [
+            [
+                'q' => 'How do I post a task?',
+                'a' => 'Log in, go to your Client Dashboard, and click "Post a Task". Fill in the title, description, required skills, and your budget. You can save it as a draft or publish it immediately for providers to see.'
+            ],
+            [
+                'q' => 'How do I choose a provider?',
+                'a' => 'Once your task is live, providers will submit applications with their proposed rate and a cover message. Go to Manage Tasks, click "View Applicants", review their profiles and proposals, then click Accept on the one you want. All other applicants are automatically declined.'
+            ],
+            [
+                'q' => 'What happens after I accept a provider?',
+                'a' => 'The task moves to "In Progress". You can communicate with the provider through your Inbox. When the provider marks their work ready for review, you can inspect the deliverables and mark the task as Completed.'
+            ],
+            [
+                'q' => 'Can I cancel a task?',
+                'a' => 'Yes — you can cancel any task that is still in Draft or Live status from your Manage Tasks tab. Tasks that are already In Progress cannot be cancelled directly; please use the dispute process if there is an issue.'
+            ],
+            [
+                'q' => 'How is payment handled?',
+                'a' => 'MentorBe uses an escrow-based payment system (coming soon). Your budget is held securely and released to the provider only after you approve the completed work. Refunds for cancelled tasks are processed automatically.'
+            ],
+        ],
+        'For Providers' => [
+            [
+                'q' => 'How do I find tasks that match my skills?',
+                'a' => 'Go to your Provider Dashboard and open the Task Feed tab. Use the skill filter or search bar to find tasks relevant to your expertise. Only live tasks are shown.'
+            ],
+            [
+                'q' => 'How do I apply to a task?',
+                'a' => 'Click "Apply" on any task card in the feed. Enter your proposed rate and write a cover message explaining your approach and experience. You can only apply to each task once.'
+            ],
+            [
+                'q' => 'How do I withdraw an application?',
+                'a' => 'Go to My Applications and click "Withdraw" next to any pending application. Accepted applications cannot be withdrawn — contact support if you need assistance.'
+            ],
+            [
+                'q' => 'How do I get paid?',
+                'a' => 'Once a client accepts your application and you complete the work, submit it for review via the Active Jobs tab. When the client approves, your earnings are released to your account. The Earnings page shows your full payment history.'
+            ],
+            [
+                'q' => 'How do I get verified?',
+                'a' => 'Go to Settings and find the Identity Verification section. Verification by MentorBe admins is being rolled out — once verified, a badge will appear on your public profile, increasing trust with clients.'
+            ],
+        ],
+        'Account & General' => [
+            [
+                'q' => 'Can I switch between Client and Provider?',
+                'a' => 'Your role is set during onboarding. To change roles, please contact support — we\'re building multi-role support in an upcoming update.'
+            ],
+            [
+                'q' => 'How do I update my email or password?',
+                'a' => 'Go to your Dashboard, open the Settings tab, and find the Personal Information and Account Security sections.'
+            ],
+            [
+                'q' => 'How do I report a problem or dispute?',
+                'a' => 'The dispute resolution system is coming in the next platform update. In the meantime, please reach out to our support team through the contact form.'
+            ],
+        ],
+    ];
+
+    ob_start();
+    ?>
+    <div class="mb-help-wrap">
+        <div class="mb-help-hero">
+            <h1>Help Center</h1>
+            <p>Find answers to common questions about using MentorBe.</p>
+            <input type="text" id="mb-faq-search" placeholder="Search questions..." class="mb-faq-search-input">
+        </div>
+
+        <div id="mb-faq-content">
+        <?php foreach ($faqs as $section => $items): ?>
+            <div class="mb-faq-section" data-section="<?php echo esc_attr(strtolower($section)); ?>">
+                <h2><?php echo esc_html($section); ?></h2>
+                <?php foreach ($items as $faq): ?>
+                    <div class="mb-faq-item" data-question="<?php echo esc_attr(strtolower($faq['q'] . ' ' . $faq['a'])); ?>">
+                        <button class="mb-faq-question" type="button">
+                            <span><?php echo esc_html($faq['q']); ?></span>
+                            <svg class="mb-faq-chevron" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                        <div class="mb-faq-answer">
+                            <p><?php echo esc_html($faq['a']); ?></p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endforeach; ?>
+        <p id="mb-faq-no-results" style="display:none;text-align:center;color:#6b7280;padding:32px 0;">No results found for your search.</p>
+        </div>
+    </div>
+
+    <style>
+    .mb-help-wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+    .mb-help-hero { text-align: center; margin-bottom: 36px; }
+    .mb-help-hero h1 { font-size: 28px; margin-bottom: 8px; }
+    .mb-help-hero p { color: #6b7280; margin-bottom: 18px; }
+    .mb-faq-search-input { display: block; width: 100%; max-width: 440px; margin: 0 auto; padding: 11px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+    .mb-faq-section { margin-bottom: 32px; }
+    .mb-faq-section h2 { font-size: 18px; color: var(--bntm-primary); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; }
+    .mb-faq-item { border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; overflow: hidden; }
+    .mb-faq-question { width: 100%; background: #fff; border: none; padding: 14px 16px; text-align: left; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .mb-faq-question:hover { background: #f9fafb; }
+    .mb-faq-chevron { flex-shrink: 0; transition: transform .2s; }
+    .mb-faq-item.open .mb-faq-chevron { transform: rotate(180deg); }
+    .mb-faq-answer { display: none; padding: 0 16px 14px; background: #fff; }
+    .mb-faq-answer p { margin: 0; color: #4b5563; font-size: 14px; line-height: 1.6; }
+    .mb-faq-item.open .mb-faq-answer { display: block; }
+    </style>
+    <script>
+    (function() {
+        document.querySelectorAll('.mb-faq-question').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var item = this.closest('.mb-faq-item');
+                var isOpen = item.classList.contains('open');
+                document.querySelectorAll('.mb-faq-item.open').forEach(function(el) { el.classList.remove('open'); });
+                if (!isOpen) item.classList.add('open');
+            });
+        });
+
+        document.getElementById('mb-faq-search').addEventListener('input', function() {
+            var q = this.value.toLowerCase().trim();
+            var anyVisible = false;
+            document.querySelectorAll('.mb-faq-item').forEach(function(item) {
+                var text = item.dataset.question;
+                var match = !q || text.indexOf(q) !== -1;
+                item.style.display = match ? '' : 'none';
+                if (match) anyVisible = true;
+            });
+            document.querySelectorAll('.mb-faq-section').forEach(function(sec) {
+                var hasVisible = Array.from(sec.querySelectorAll('.mb-faq-item')).some(function(el) { return el.style.display !== 'none'; });
+                sec.style.display = hasVisible ? '' : 'none';
+            });
+            document.getElementById('mb-faq-no-results').style.display = anyVisible ? 'none' : 'block';
+        });
+    })();
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
+// ---------------------------------------------------------------------------
+// [mb_terms] — Terms of Service & Privacy Policy
+// ---------------------------------------------------------------------------
+function bntm_shortcode_mb_terms() {
+    ob_start();
+    ?>
+    <div class="mb-terms-wrap">
+        <div class="mb-terms-nav">
+            <a href="#terms" class="mb-terms-nav-link active">Terms of Service</a>
+            <a href="#privacy" class="mb-terms-nav-link">Privacy Policy</a>
+        </div>
+
+        <section id="terms" class="mb-terms-section">
+            <h1>Terms of Service</h1>
+            <p class="mb-terms-date">Last updated: <?php echo date('F j, Y'); ?></p>
+
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing or using MentorBe, you agree to be bound by these Terms of Service. If you do not agree, please do not use the platform.</p>
+
+            <h2>2. User Roles</h2>
+            <p>MentorBe operates with two primary user roles: <strong>Clients</strong>, who post tasks and hire providers, and <strong>Providers</strong>, who offer their skills and complete tasks. Each role carries distinct responsibilities as described throughout these terms.</p>
+
+            <h2>3. Account Registration</h2>
+            <p>You must provide accurate information during registration. You are responsible for maintaining the security of your account credentials. MentorBe is not liable for losses resulting from unauthorized account access.</p>
+
+            <h2>4. Task Posting</h2>
+            <p>Clients may post tasks that comply with applicable laws. Tasks involving illegal activity, harassment, or violation of third-party rights are strictly prohibited and will result in immediate account suspension.</p>
+
+            <h2>5. Applications and Contracts</h2>
+            <p>When a Client accepts a Provider application, a binding service agreement is formed between those two parties. MentorBe facilitates but is not a party to this agreement.</p>
+
+            <h2>6. Payments and Escrow</h2>
+            <p>MentorBe holds task budgets in escrow upon applicant acceptance. Funds are released to the Provider upon Client approval of completed work. Disputed payments are subject to the Dispute Resolution process.</p>
+
+            <h2>7. Dispute Resolution</h2>
+            <p>If a Client and Provider cannot resolve a disagreement, either party may escalate to MentorBe moderation. Admin decisions on financial resolutions are final.</p>
+
+            <h2>8. Prohibited Conduct</h2>
+            <p>Users must not: impersonate others, post false reviews, circumvent platform fees, use MentorBe for spam, or engage in any fraudulent activity. Violations result in suspension or permanent banning.</p>
+
+            <h2>9. Limitation of Liability</h2>
+            <p>MentorBe is provided "as is". We are not liable for the quality of services rendered by Providers or for damages arising from platform use beyond the amount held in escrow for any given transaction.</p>
+
+            <h2>10. Modifications</h2>
+            <p>We may update these terms at any time. Continued use of MentorBe after updates constitutes acceptance of the revised terms.</p>
+        </section>
+
+        <section id="privacy" class="mb-terms-section" style="margin-top:48px;">
+            <h1>Privacy Policy</h1>
+            <p class="mb-terms-date">Last updated: <?php echo date('F j, Y'); ?></p>
+
+            <h2>1. Information We Collect</h2>
+            <p>We collect information you provide during registration (name, email, role), profile updates (bio, avatar, skills), task activity (posts, applications, messages), and payment data processed through our escrow system.</p>
+
+            <h2>2. How We Use Your Information</h2>
+            <p>Your information is used to operate the MentorBe platform, match tasks with providers, process payments, communicate platform updates, and resolve disputes.</p>
+
+            <h2>3. Information Sharing</h2>
+            <p>We do not sell your personal information. We share data only with parties directly involved in a task transaction and with service providers necessary to operate the platform.</p>
+
+            <h2>4. Profile Visibility</h2>
+            <p>Your display name, bio, skills, and completed task count are visible on your public profile. Your email address and financial information are never publicly displayed.</p>
+
+            <h2>5. Data Retention</h2>
+            <p>We retain your account data for as long as your account is active. You may request account deletion at any time; financial records may be retained for up to 7 years to comply with legal obligations.</p>
+
+            <h2>6. Security</h2>
+            <p>Passwords are stored as salted hashes. Financial transactions use secure escrow channels. We apply reasonable technical and organizational measures to protect your data.</p>
+
+            <h2>7. Cookies</h2>
+            <p>MentorBe uses cookies for authentication and session management only. We do not use third-party advertising cookies.</p>
+
+            <h2>8. Your Rights</h2>
+            <p>You have the right to access, correct, or delete your personal data. Contact our support team to exercise these rights.</p>
+
+            <h2>9. Contact</h2>
+            <p>Questions about this Privacy Policy may be sent to the site administrator through the Help Center.</p>
+        </section>
+    </div>
+
+    <style>
+    .mb-terms-wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+    .mb-terms-nav { display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 2px solid #e5e7eb; padding-bottom: 0; }
+    .mb-terms-nav-link { padding: 10px 20px; font-weight: 600; font-size: 14px; text-decoration: none; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color .15s, border-color .15s; }
+    .mb-terms-nav-link:hover, .mb-terms-nav-link.active { color: var(--bntm-primary); border-bottom-color: var(--bntm-primary); }
+    .mb-terms-section h1 { font-size: 26px; margin-bottom: 4px; }
+    .mb-terms-date { color: #9ca3af; font-size: 13px; margin-bottom: 28px; }
+    .mb-terms-section h2 { font-size: 16px; margin: 24px 0 8px; }
+    .mb-terms-section p { color: #4b5563; font-size: 14px; line-height: 1.7; margin: 0 0 12px; }
+    </style>
+    <script>
+    (function() {
+        document.querySelectorAll('.mb-terms-nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                document.querySelectorAll('.mb-terms-nav-link').forEach(function(l) { l.classList.remove('active'); });
+                this.classList.add('active');
+            });
+        });
+    })();
+    </script>
+    <?php
+    return ob_get_clean();
+}
+
+// ---------------------------------------------------------------------------
+// [mb_inbox] — Inbox / Messaging (Phase 2 stub)
+// ---------------------------------------------------------------------------
+function bntm_shortcode_mb_inbox() {
+    if (!is_user_logged_in()) {
+        return '<div class="bntm-notice">Please log in to access your inbox.</div>';
+    }
+    ob_start();
+    ?>
+    <div class="mb-coming-soon-wrap">
+        <div class="mb-coming-soon-icon">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        </div>
+        <h2>Inbox</h2>
+        <p>Pre-commitment messaging and in-task communication is coming in Phase 2. You will be able to negotiate terms, share files, and communicate securely with clients or providers directly here.</p>
+        <a href="<?php echo esc_url(home_url('/mentorbe-dashboard')); ?>" class="bntm-btn-secondary">Back to Dashboard</a>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+// ---------------------------------------------------------------------------
+// [mb_checkout] — Checkout / Billing (Phase 2 stub)
+// ---------------------------------------------------------------------------
+function bntm_shortcode_mb_checkout() {
+    if (!is_user_logged_in()) {
+        return '<div class="bntm-notice">Please log in to access billing.</div>';
+    }
+    ob_start();
+    ?>
+    <div class="mb-coming-soon-wrap">
+        <div class="mb-coming-soon-icon">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        </div>
+        <h2>Checkout &amp; Billing</h2>
+        <p>Escrow-based payments are coming in Phase 2. Once live, your budget will be securely held here upon accepting a provider and released automatically when you approve completed work.</p>
+        <a href="<?php echo esc_url(home_url('/mentorbe-dashboard')); ?>" class="bntm-btn-secondary">Back to Dashboard</a>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+// ---------------------------------------------------------------------------
+// [mb_earnings] — Provider Earnings (Phase 2 stub)
+// ---------------------------------------------------------------------------
+function bntm_shortcode_mb_earnings() {
+    if (!is_user_logged_in()) {
+        return '<div class="bntm-notice">Please log in to view your earnings.</div>';
+    }
+    ob_start();
+    ?>
+    <div class="mb-coming-soon-wrap">
+        <div class="mb-coming-soon-icon">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2M4.93 4.93l14.14 14.14"/></svg>
+        </div>
+        <h2>Earnings</h2>
+        <p>Your full earnings ledger, payout history, and withdrawal options are coming in Phase 2. Completed task payments will be tracked and displayed here once the escrow system is live.</p>
+        <a href="<?php echo esc_url(home_url('/mentorbe-dashboard')); ?>" class="bntm-btn-secondary">Back to Dashboard</a>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+// ---------------------------------------------------------------------------
+// [mb_admin] — Admin Dashboard (Phase 3 stub)
+// ---------------------------------------------------------------------------
+function bntm_shortcode_mb_admin() {
+    if (!is_user_logged_in()) {
+        return '<div class="bntm-notice">Please log in.</div>';
+    }
+    $profile = mb_get_user_profile(get_current_user_id());
+    if (!$profile || $profile->user_role !== 'admin') {
+        return '<div class="bntm-notice">Access restricted to administrators.</div>';
+    }
+    ob_start();
+    ?>
+    <div class="mb-coming-soon-wrap">
+        <div class="mb-coming-soon-icon">
+            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <h2>Admin Dashboard</h2>
+        <p>The full admin panel — including user verification, task moderation, dispute resolution, and financial auditing — is coming in Phase 3.</p>
+        <p style="font-size:13px;color:#9ca3af;">You are logged in as an administrator. Your role is recognized.</p>
+    </div>
+
+    <?php
+    // Quick admin stats while the full dashboard is pending
+    global $wpdb;
+    $stats = [
+        'Total Users'      => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_user_profiles"),
+        'Live Tasks'       => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_tasks WHERE status = 'live'"),
+        'In Progress'      => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_tasks WHERE status = 'in_progress'"),
+        'Completed Tasks'  => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_tasks WHERE status = 'completed'"),
+        'Total Providers'  => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_user_profiles WHERE user_role = 'provider'"),
+        'Unverified Users' => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}mb_user_profiles WHERE verification_status = 'unverified'"),
+    ];
+    ?>
+    <div class="bntm-stats-row" style="margin-top:24px;flex-wrap:wrap;">
+        <?php foreach ($stats as $label => $value): ?>
+        <div class="bntm-stat-card">
+            <div class="stat-content">
+                <h3><?php echo esc_html($label); ?></h3>
+                <p class="stat-number"><?php echo number_format($value); ?></p>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
     <?php
     return ob_get_clean();
 }
